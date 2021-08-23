@@ -3282,6 +3282,190 @@ Dropdown.Link = DropdownLink;
 
 /***/ }),
 
+/***/ "./resources/js/Components/Forms/Checkbox.js":
+/*!***************************************************!*\
+  !*** ./resources/js/Components/Forms/Checkbox.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Checkbox)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
+
+function Checkbox(_ref) {
+  var id = _ref.id,
+      name = _ref.name,
+      value = _ref.value,
+      handleChange = _ref.handleChange;
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("input", {
+    type: "checkbox",
+    name: name,
+    value: value,
+    id: id,
+    className: "rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50",
+    onChange: function onChange(e) {
+      return handleChange(e);
+    }
+  });
+}
+
+/***/ }),
+
+/***/ "./resources/js/Components/Forms/FileInput.js":
+/*!****************************************************!*\
+  !*** ./resources/js/Components/Forms/FileInput.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ FileInput)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
+
+function FileInput(_ref) {
+  var id = _ref.id,
+      name = _ref.name,
+      value = _ref.value,
+      className = _ref.className,
+      autoComplete = _ref.autoComplete,
+      required = _ref.required,
+      isFocused = _ref.isFocused,
+      handleChange = _ref.handleChange,
+      placeholder = _ref.placeholder;
+  var input = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)();
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (isFocused) {
+      input.current.focus();
+    }
+  }, []);
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("input", {
+    type: "file",
+    name: name,
+    id: id,
+    value: value,
+    className: "flex-1 block w-full sm:text-sm " + className,
+    ref: input,
+    required: required,
+    "data-pristine-required": required,
+    onChange: function onChange(e) {
+      return handleChange(e);
+    }
+  });
+}
+
+/***/ }),
+
+/***/ "./resources/js/Components/Forms/Input.js":
+/*!************************************************!*\
+  !*** ./resources/js/Components/Forms/Input.js ***!
+  \************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Input)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
+
+function Input(_ref) {
+  var _ref$type = _ref.type,
+      type = _ref$type === void 0 ? 'text' : _ref$type,
+      id = _ref.id,
+      name = _ref.name,
+      value = _ref.value,
+      _ref$className = _ref.className,
+      className = _ref$className === void 0 ? '' : _ref$className,
+      autoComplete = _ref.autoComplete,
+      required = _ref.required,
+      isFocused = _ref.isFocused,
+      handleChange = _ref.handleChange,
+      placeholder = _ref.placeholder;
+  var input = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)();
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (isFocused) {
+      input.current.focus();
+    }
+  }, []);
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("input", {
+    type: type,
+    name: name,
+    id: id,
+    value: value,
+    className: "focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300 " + className,
+    ref: input,
+    autoComplete: autoComplete,
+    required: required,
+    "data-pristine-required": required,
+    placeholder: placeholder,
+    onChange: function onChange(e) {
+      return handleChange(e);
+    }
+  });
+}
+
+/***/ }),
+
+/***/ "./resources/js/Components/Forms/TextArea.js":
+/*!***************************************************!*\
+  !*** ./resources/js/Components/Forms/TextArea.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ TextArea)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
+
+function TextArea(_ref) {
+  var id = _ref.id,
+      name = _ref.name,
+      value = _ref.value,
+      className = _ref.className,
+      required = _ref.required,
+      isFocused = _ref.isFocused,
+      handleChange = _ref.handleChange,
+      _ref$row = _ref.row,
+      row = _ref$row === void 0 ? "4" : _ref$row,
+      placeholder = _ref.placeholder,
+      defaultValue = _ref.defaultValue;
+  var input = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)();
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (isFocused) {
+      input.current.focus();
+    }
+  }, []);
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("textarea", {
+    name: name,
+    id: id,
+    rows: row,
+    className: "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md",
+    placeholder: placeholder,
+    defaultValue: defaultValue,
+    "data-pristine-required": required,
+    onChange: function onChange(e) {
+      return handleChange(e);
+    }
+  });
+}
+
+/***/ }),
+
 /***/ "./resources/js/Components/Input.js":
 /*!******************************************!*\
   !*** ./resources/js/Components/Input.js ***!
@@ -3687,6 +3871,394 @@ function Guest(_ref) {
     })]
   });
 }
+
+/***/ }),
+
+/***/ "./resources/js/Pages/Account/Registration.js":
+/*!****************************************************!*\
+  !*** ./resources/js/Pages/Account/Registration.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var _inertiajs_inertia_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @inertiajs/inertia-react */ "./node_modules/@inertiajs/inertia-react/dist/index.js");
+/* harmony import */ var _Layouts_Authenticated__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @/Layouts/Authenticated */ "./resources/js/Layouts/Authenticated.js");
+/* harmony import */ var _Components_Forms_Input__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @/Components/Forms/Input */ "./resources/js/Components/Forms/Input.js");
+/* harmony import */ var _Components_Forms_TextArea__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @/Components/Forms/TextArea */ "./resources/js/Components/Forms/TextArea.js");
+/* harmony import */ var _Components_Forms_FileInput__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @/Components/Forms/FileInput */ "./resources/js/Components/Forms/FileInput.js");
+/* harmony import */ var pristinejs__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! pristinejs */ "./node_modules/pristinejs/dist/pristine.js");
+/* harmony import */ var pristinejs__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(pristinejs__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _Components_Forms_Checkbox__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @/Components/Forms/Checkbox */ "./resources/js/Components/Forms/Checkbox.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+
+
+
+
+
+
+
+
+
+
+var defaultConfig = {
+  // class of the parent element where the error/success class is added
+  classTo: 'form-group',
+  errorClass: 'has-danger',
+  successClass: 'has-success',
+  // class of the parent element where error text element is appended
+  errorTextParent: 'form-group',
+  // type of element to create for the error text
+  errorTextTag: 'div',
+  // class of the error text element
+  errorTextClass: 'text-red-500 text-xs mt-1'
+};
+
+function Registration(props) {
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
+      _useState2 = _slicedToArray(_useState, 2),
+      formData = _useState2[0],
+      setFormData = _useState2[1];
+  /**
+   * Validate the form and submit
+   */
+
+
+  function validateAndSubmitForm() {
+    var pristine = new (pristinejs__WEBPACK_IMPORTED_MODULE_6___default())(document.getElementById("account_registration"), defaultConfig);
+    var is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required], textarea[data-pristine-required]'));
+
+    if (!is_validated) {
+      return false;
+    }
+
+    Inertia.post('/account/registration', formData);
+  }
+  /**
+   * Handle input change
+   */
+
+
+  function handleChange(event) {
+    var name = event.target.name;
+    var value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+    var newState = Object.assign({}, formData);
+
+    if (event.target.type == 'file' && event.target.files) {
+      newState[name] = event.target.files[0];
+    } else {
+      newState[name] = value;
+    }
+
+    setFormData(newState);
+  }
+
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)(_Layouts_Authenticated__WEBPACK_IMPORTED_MODULE_2__.default, {
+    auth: props.auth,
+    errors: props.errors,
+    header: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("h2", {
+      className: "font-semibold text-xl text-gray-800 leading-tight",
+      children: "Account Registration"
+    }),
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_inertiajs_inertia_react__WEBPACK_IMPORTED_MODULE_1__.Head, {
+      title: "Account Registration"
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+      className: "py-12 px-24",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("form", {
+        className: "space-y-6",
+        action: "#",
+        method: "POST",
+        id: "account_registration",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+          className: "space-y-6",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+            className: "bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+              className: "md:grid md:grid-cols-3 md:gap-6",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+                className: "md:col-span-1",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("h3", {
+                  className: "text-lg font-medium leading-6 text-gray-900",
+                  children: "Company Information"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("p", {
+                  className: "mt-1 text-sm text-gray-500",
+                  children: "Enter your company information. We will be using this information to create your business account"
+                })]
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+                className: "mt-5 md:mt-0 md:col-span-2",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+                  className: "grid grid-cols-6 gap-6",
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+                    className: "form-group col-span-6 sm:col-span-4",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("label", {
+                      htmlFor: "company_name",
+                      className: "block text-sm font-medium text-gray-700",
+                      children: "Company Name"
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+                      className: "mt-1 flex rounded-md shadow-sm",
+                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_Components_Forms_Input__WEBPACK_IMPORTED_MODULE_3__.default, {
+                        name: "company_name",
+                        required: true,
+                        id: "company_name",
+                        placeholder: "Your company name",
+                        handleChange: handleChange
+                      })
+                    })]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+                    className: "form-group col-span-6 sm:col-span-4",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("label", {
+                      htmlFor: "company_type",
+                      className: "block text-sm font-medium text-gray-700",
+                      children: "Company type"
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+                      className: "mt-1",
+                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("select", {
+                        required: true,
+                        "data-pristine-required": true,
+                        id: "company_type",
+                        name: "company_type",
+                        className: "mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm",
+                        handleChange: handleChange,
+                        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("option", {
+                          children: "Select company type"
+                        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("option", {
+                          children: "United States"
+                        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("option", {
+                          children: "Canada"
+                        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("option", {
+                          children: "Mexico"
+                        })]
+                      })
+                    })]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+                    className: "form-group col-span-6 sm:col-span-4",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("label", {
+                      htmlFor: "website",
+                      className: "block text-sm font-medium text-gray-700",
+                      children: "Company website"
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+                      className: "mt-1 flex rounded-md shadow-sm",
+                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_Components_Forms_Input__WEBPACK_IMPORTED_MODULE_3__.default, {
+                        required: true,
+                        name: "website",
+                        id: "website",
+                        placeholder: "Enter your company website",
+                        handleChange: handleChange
+                      })
+                    })]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+                    className: "form-group col-span-6 sm:col-span-4",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("label", {
+                      htmlFor: "email",
+                      className: "block text-sm font-medium text-gray-700",
+                      children: "Email (Technical point of contact)"
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+                      className: "mt-1 flex rounded-md shadow-sm",
+                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_Components_Forms_Input__WEBPACK_IMPORTED_MODULE_3__.default, {
+                        required: true,
+                        type: "email",
+                        name: "email",
+                        id: "email",
+                        placeholder: "Email",
+                        handleChange: handleChange
+                      })
+                    })]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+                    className: "form-group col-span-6 sm:col-span-4",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("label", {
+                      htmlFor: "estimated_launch_date",
+                      className: "block text-sm font-medium text-gray-700",
+                      children: "Estimated launch date"
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+                      className: "mt-1 flex rounded-md shadow-sm",
+                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_Components_Forms_Input__WEBPACK_IMPORTED_MODULE_3__.default, {
+                        required: true,
+                        type: "date",
+                        name: "estimated_launch_date",
+                        id: "estimated_launch_date",
+                        placeholder: "",
+                        handleChange: handleChange
+                      })
+                    })]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+                    className: "form-group col-span-6 sm:col-span-4",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("label", {
+                      htmlFor: "type_of_integration",
+                      className: "block text-sm font-medium text-gray-700",
+                      children: "Type of integration"
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+                      className: "mt-1",
+                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("select", {
+                        required: true,
+                        "data-pristine-required": true,
+                        id: "type_of_integration",
+                        name: "type_of_integration",
+                        className: "mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm",
+                        handleChange: handleChange,
+                        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("option", {
+                          children: "Select integration type"
+                        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("option", {
+                          children: "United States"
+                        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("option", {
+                          children: "Canada"
+                        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("option", {
+                          children: "Mexico"
+                        })]
+                      })
+                    })]
+                  })]
+                })
+              })]
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+            className: "bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+              className: "md:grid md:grid-cols-3 md:gap-6",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+                className: "md:col-span-1",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("h3", {
+                  className: "text-lg font-medium leading-6 text-gray-900",
+                  children: "Whatsapp Information"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("p", {
+                  className: "mt-1 text-sm text-gray-500",
+                  children: "Information will be used to create your whatsapp business account"
+                })]
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+                className: "mt-5 md:mt-0 md:col-span-2",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+                  className: "grid grid-cols-6 gap-6",
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+                    className: "form-group col-span-6 sm:col-span-4",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("label", {
+                      htmlFor: "phone_number",
+                      className: "block text-sm font-medium text-gray-700",
+                      children: "Phone number"
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+                      className: "mt-1 flex rounded-md shadow-sm",
+                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_Components_Forms_Input__WEBPACK_IMPORTED_MODULE_3__.default, {
+                        required: true,
+                        name: "phone_number",
+                        id: "phone_number",
+                        placeholder: "",
+                        handleChange: handleChange
+                      })
+                    })]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+                    className: "form-group col-span-6 sm:col-span-4",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("label", {
+                      htmlFor: "display_name",
+                      className: "block text-sm font-medium text-gray-700",
+                      children: "Display Name"
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+                      className: "mt-1 flex rounded-md shadow-sm",
+                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_Components_Forms_Input__WEBPACK_IMPORTED_MODULE_3__.default, {
+                        required: true,
+                        name: "display_name",
+                        id: "display_name",
+                        placeholder: "",
+                        handleChange: handleChange
+                      })
+                    })]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+                    className: "form-group col-span-6 sm:col-span-4",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("label", {
+                      htmlFor: "profile_picture",
+                      className: "block text-sm font-medium text-gray-700",
+                      children: "Profile picture"
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+                      className: "mt-1 flex rounded-md",
+                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_Components_Forms_FileInput__WEBPACK_IMPORTED_MODULE_5__.default, {
+                        required: true,
+                        name: "profile_picture",
+                        id: "profile_picture",
+                        handleChange: handleChange
+                      })
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("p", {
+                      className: "mt-2 text-sm text-gray-500",
+                      children: "500px by 500px with 100px magin"
+                    })]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+                    className: "form-group col-span-6 sm:col-span-4",
+                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("label", {
+                      htmlFor: "profile_description",
+                      className: "block text-sm font-medium text-gray-700",
+                      children: "Profile description"
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+                      className: "mt-1 flex rounded-md shadow-sm",
+                      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_Components_Forms_TextArea__WEBPACK_IMPORTED_MODULE_4__.default, {
+                        required: true,
+                        name: "profile_description",
+                        id: "profile_description",
+                        placeholder: "",
+                        handleChange: handleChange
+                      })
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("p", {
+                      className: "mt-2 text-sm text-gray-500",
+                      children: "Max 139 characters"
+                    })]
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+                    className: "form-group col-span-6 sm:col-span-4",
+                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+                      className: "flex items-start",
+                      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+                        className: "flex items-center h-5",
+                        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_Components_Forms_Checkbox__WEBPACK_IMPORTED_MODULE_7__.default, {
+                          id: "oba",
+                          name: "oba",
+                          handleChange: handleChange
+                        })
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+                        className: "ml-3 text-sm",
+                        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("label", {
+                          htmlFor: "oba",
+                          className: "font-medium text-gray-700",
+                          children: "Official business account"
+                        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("p", {
+                          className: "text-gray-500",
+                          children: "Request for Whatsapp official business account (OBA)."
+                        })]
+                      })]
+                    })
+                  })]
+                })
+              })]
+            })
+          })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+          className: "flex justify-end",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("button", {
+            type: "button",
+            className: "bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500",
+            children: "Cancel"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("button", {
+            type: "button",
+            onClick: validateAndSubmitForm,
+            className: "ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500",
+            children: "Save"
+          })]
+        })]
+      })
+    })]
+  });
+}
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Registration);
 
 /***/ }),
 
@@ -25598,6 +26170,414 @@ function arrObjKeys(obj, inspect) {
     }
     return xs;
 }
+
+
+/***/ }),
+
+/***/ "./node_modules/pristinejs/dist/pristine.js":
+/*!**************************************************!*\
+  !*** ./node_modules/pristinejs/dist/pristine.js ***!
+  \**************************************************/
+/***/ (function(module) {
+
+(function (global, factory) {
+     true ? module.exports = factory() :
+    0;
+}(this, (function () { 'use strict';
+
+    var lang = {
+        required: "This field is required",
+        email: "This field requires a valid e-mail address",
+        number: "This field requires a number",
+        integer: "This field requires an integer value",
+        url: "This field requires a valid website URL",
+        tel: "This field requires a valid telephone number",
+        maxlength: "This fields length must be < ${1}",
+        minlength: "This fields length must be > ${1}",
+        min: "Minimum value for this field is ${1}",
+        max: "Maximum value for this field is ${1}",
+        pattern: "Please match the requested format"
+    };
+
+    function findAncestor(el, cls) {
+        while ((el = el.parentElement) && !el.classList.contains(cls)) {}
+        return el;
+    }
+
+    function tmpl(o) {
+        var _arguments = arguments;
+
+        return this.replace(/\${([^{}]*)}/g, function (a, b) {
+            return _arguments[b];
+        });
+    }
+
+    function groupedElemCount(input) {
+        return input.pristine.self.form.querySelectorAll('input[name="' + input.getAttribute('name') + '"]:checked').length;
+    }
+
+    function mergeConfig(obj1, obj2) {
+        for (var attr in obj2) {
+            if (!(attr in obj1)) {
+                obj1[attr] = obj2[attr];
+            }
+        }
+        return obj1;
+    }
+
+    function isFunction(obj) {
+        return !!(obj && obj.constructor && obj.call && obj.apply);
+    }
+
+    var defaultConfig = {
+        classTo: 'form-group',
+        errorClass: 'has-danger',
+        successClass: 'has-success',
+        errorTextParent: 'form-group',
+        errorTextTag: 'div',
+        errorTextClass: 'text-help'
+    };
+
+    var PRISTINE_ERROR = 'pristine-error';
+    var SELECTOR = "input:not([type^=hidden]):not([type^=submit]), select, textarea";
+    var ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern'];
+    var EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+    var validators = {};
+
+    var _ = function _(name, validator) {
+        validator.name = name;
+        if (!validator.msg) validator.msg = lang[name];
+        if (validator.priority === undefined) validator.priority = 1;
+        validators[name] = validator;
+    };
+
+    _('text', { fn: function fn(val) {
+            return true;
+        }, priority: 0 });
+    _('required', { fn: function fn(val) {
+            return this.type === 'radio' || this.type === 'checkbox' ? groupedElemCount(this) : val !== undefined && val !== '';
+        }, priority: 99, halt: true });
+    _('email', { fn: function fn(val) {
+            return !val || EMAIL_REGEX.test(val);
+        } });
+    _('number', { fn: function fn(val) {
+            return !val || !isNaN(parseFloat(val));
+        }, priority: 2 });
+    _('integer', { fn: function fn(val) {
+            return !val || /^\d+$/.test(val);
+        } });
+    _('minlength', { fn: function fn(val, length) {
+            return !val || val.length >= parseInt(length);
+        } });
+    _('maxlength', { fn: function fn(val, length) {
+            return !val || val.length <= parseInt(length);
+        } });
+    _('min', { fn: function fn(val, limit) {
+            return !val || (this.type === 'checkbox' ? groupedElemCount(this) >= parseInt(limit) : parseFloat(val) >= parseFloat(limit));
+        } });
+    _('max', { fn: function fn(val, limit) {
+            return !val || (this.type === 'checkbox' ? groupedElemCount(this) <= parseInt(limit) : parseFloat(val) <= parseFloat(limit));
+        } });
+    _('pattern', { fn: function fn(val, pattern) {
+            var m = pattern.match(new RegExp('^/(.*?)/([gimy]*)$'));return !val || new RegExp(m[1], m[2]).test(val);
+        } });
+
+    function Pristine(form, config, live) {
+
+        var self = this;
+
+        init(form, config, live);
+
+        function init(form, config, live) {
+
+            form.setAttribute("novalidate", "true");
+
+            self.form = form;
+            self.config = mergeConfig(config || {}, defaultConfig);
+            self.live = !(live === false);
+            self.fields = Array.from(form.querySelectorAll(SELECTOR)).map(function (input) {
+
+                var fns = [];
+                var params = {};
+                var messages = {};
+
+                [].forEach.call(input.attributes, function (attr) {
+                    if (/^data-pristine-/.test(attr.name)) {
+                        var name = attr.name.substr(14);
+                        if (name.endsWith('-message')) {
+                            messages[name.slice(0, name.length - 8)] = attr.value;
+                            return;
+                        }
+                        if (name === 'type') name = attr.value;
+                        _addValidatorToField(fns, params, name, attr.value);
+                    } else if (~ALLOWED_ATTRIBUTES.indexOf(attr.name)) {
+                        _addValidatorToField(fns, params, attr.name, attr.value);
+                    } else if (attr.name === 'type') {
+                        _addValidatorToField(fns, params, attr.value);
+                    }
+                });
+
+                fns.sort(function (a, b) {
+                    return b.priority - a.priority;
+                });
+
+                self.live && input.addEventListener(!~['radio', 'checkbox'].indexOf(input.getAttribute('type')) ? 'input' : 'change', function (e) {
+                    self.validate(e.target);
+                }.bind(self));
+
+                return input.pristine = { input: input, validators: fns, params: params, messages: messages, self: self };
+            }.bind(self));
+        }
+
+        function _addValidatorToField(fns, params, name, value) {
+            var validator = validators[name];
+            if (validator) {
+                fns.push(validator);
+                if (value) {
+                    var valueParams = value.split(',');
+                    valueParams.unshift(null); // placeholder for input's value
+                    params[name] = valueParams;
+                }
+            }
+        }
+
+        /***
+         * Checks whether the form/input elements are valid
+         * @param input => input element(s) or a jquery selector, null for full form validation
+         * @param silent => do not show error messages, just return true/false
+         * @returns {boolean} return true when valid false otherwise
+         */
+        self.validate = function (input, silent) {
+            silent = input && silent === true || input === true;
+            var fields = self.fields;
+            if (input !== true && input !== false) {
+                if (input instanceof HTMLElement) {
+                    fields = [input.pristine];
+                } else if (input instanceof NodeList || input instanceof (window.$ || Array) || input instanceof Array) {
+                    fields = Array.from(input).map(function (el) {
+                        return el.pristine;
+                    });
+                }
+            }
+
+            var valid = true;
+
+            for (var i = 0; fields[i]; i++) {
+                var field = fields[i];
+                if (_validateField(field)) {
+                    !silent && _showSuccess(field);
+                } else {
+                    valid = false;
+                    !silent && _showError(field);
+                }
+            }
+            return valid;
+        };
+
+        /***
+         * Get errors of a specific field or the whole form
+         * @param input
+         * @returns {Array|*}
+         */
+        self.getErrors = function (input) {
+            if (!input) {
+                var erroneousFields = [];
+                for (var i = 0; i < self.fields.length; i++) {
+                    var field = self.fields[i];
+                    if (field.errors.length) {
+                        erroneousFields.push({ input: field.input, errors: field.errors });
+                    }
+                }
+                return erroneousFields;
+            }
+            if (input.tagName && input.tagName.toLowerCase() === "select") {
+                return input.pristine.errors;
+            }
+            return input.length ? input[0].pristine.errors : input.pristine.errors;
+        };
+
+        /***
+         * Validates a single field, all validator functions are called and error messages are generated
+         * when a validator fails
+         * @param field
+         * @returns {boolean}
+         * @private
+         */
+        function _validateField(field) {
+            var errors = [];
+            var valid = true;
+            for (var i = 0; field.validators[i]; i++) {
+                var validator = field.validators[i];
+                var params = field.params[validator.name] ? field.params[validator.name] : [];
+                params[0] = field.input.value;
+                if (!validator.fn.apply(field.input, params)) {
+                    valid = false;
+
+                    if (isFunction(validator.msg)) {
+                        errors.push(validator.msg(field.input.value, params));
+                    } else {
+                        var error = field.messages[validator.name] || validator.msg;
+                        errors.push(tmpl.apply(error, params));
+                    }
+
+                    if (validator.halt === true) {
+                        break;
+                    }
+                }
+            }
+            field.errors = errors;
+            return valid;
+        }
+
+        /***
+         *
+         * @param elem => The dom element where the validator is applied to
+         * @param fn => validator function
+         * @param msg => message to show when validation fails. Supports templating. ${0} for the input's value, ${1} and
+         * so on are for the attribute values
+         * @param priority => priority of the validator function, higher valued function gets called first.
+         * @param halt => whether validation should stop for this field after current validation function
+         */
+        self.addValidator = function (elem, fn, msg, priority, halt) {
+            if (elem instanceof HTMLElement) {
+                elem.pristine.validators.push({ fn: fn, msg: msg, priority: priority, halt: halt });
+                elem.pristine.validators.sort(function (a, b) {
+                    return b.priority - a.priority;
+                });
+            } else {
+                console.warn("The parameter elem must be a dom element");
+            }
+        };
+
+        /***
+         * An utility function that returns a 2-element array, first one is the element where error/success class is
+         * applied. 2nd one is the element where error message is displayed. 2nd element is created if doesn't exist and cached.
+         * @param field
+         * @returns {*}
+         * @private
+         */
+        function _getErrorElements(field) {
+            if (field.errorElements) {
+                return field.errorElements;
+            }
+            var errorClassElement = findAncestor(field.input, self.config.classTo);
+            var errorTextParent = null,
+                errorTextElement = null;
+            if (self.config.classTo === self.config.errorTextParent) {
+                errorTextParent = errorClassElement;
+            } else {
+                errorTextParent = errorClassElement.querySelector('.' + self.config.errorTextParent);
+            }
+            if (errorTextParent) {
+                errorTextElement = errorTextParent.querySelector('.' + PRISTINE_ERROR);
+                if (!errorTextElement) {
+                    errorTextElement = document.createElement(self.config.errorTextTag);
+                    errorTextElement.className = PRISTINE_ERROR + ' ' + self.config.errorTextClass;
+                    errorTextParent.appendChild(errorTextElement);
+                    errorTextElement.pristineDisplay = errorTextElement.style.display;
+                }
+            }
+            return field.errorElements = [errorClassElement, errorTextElement];
+        }
+
+        function _showError(field) {
+            var errorElements = _getErrorElements(field);
+            var errorClassElement = errorElements[0],
+                errorTextElement = errorElements[1];
+
+            if (errorClassElement) {
+                errorClassElement.classList.remove(self.config.successClass);
+                errorClassElement.classList.add(self.config.errorClass);
+            }
+            if (errorTextElement) {
+                errorTextElement.innerHTML = field.errors.join('<br/>');
+                errorTextElement.style.display = errorTextElement.pristineDisplay || '';
+            }
+        }
+
+        /***
+         * Adds error to a specific field
+         * @param input
+         * @param error
+         */
+        self.addError = function (input, error) {
+            input = input.length ? input[0] : input;
+            input.pristine.errors.push(error);
+            _showError(input.pristine);
+        };
+
+        function _removeError(field) {
+            var errorElements = _getErrorElements(field);
+            var errorClassElement = errorElements[0],
+                errorTextElement = errorElements[1];
+            if (errorClassElement) {
+                // IE > 9 doesn't support multiple class removal
+                errorClassElement.classList.remove(self.config.errorClass);
+                errorClassElement.classList.remove(self.config.successClass);
+            }
+            if (errorTextElement) {
+                errorTextElement.innerHTML = '';
+                errorTextElement.style.display = 'none';
+            }
+            return errorElements;
+        }
+
+        function _showSuccess(field) {
+            var errorClassElement = _removeError(field)[0];
+            errorClassElement && errorClassElement.classList.add(self.config.successClass);
+        }
+
+        /***
+         * Resets the errors
+         */
+        self.reset = function () {
+            for (var i = 0; self.fields[i]; i++) {
+                self.fields[i].errorElements = null;
+            }
+            Array.from(self.form.querySelectorAll('.' + PRISTINE_ERROR)).map(function (elem) {
+                elem.parentNode.removeChild(elem);
+            });
+            Array.from(self.form.querySelectorAll('.' + self.config.classTo)).map(function (elem) {
+                elem.classList.remove(self.config.successClass);
+                elem.classList.remove(self.config.errorClass);
+            });
+        };
+
+        /***
+         * Resets the errors and deletes all pristine fields
+         */
+        self.destroy = function () {
+            self.reset();
+            self.fields.forEach(function (field) {
+                delete field.input.pristine;
+            });
+            self.fields = [];
+        };
+
+        self.setGlobalConfig = function (config) {
+            defaultConfig = config;
+        };
+
+        return self;
+    }
+
+    /***
+     *
+     * @param name => Name of the global validator
+     * @param fn => validator function
+     * @param msg => message to show when validation fails. Supports templating. ${0} for the input's value, ${1} and
+     * so on are for the attribute values
+     * @param priority => priority of the validator function, higher valued function gets called first.
+     * @param halt => whether validation should stop for this field after current validation function
+     */
+    Pristine.addValidator = function (name, fn, msg, priority, halt) {
+        _(name, { fn: fn, msg: msg, priority: priority, halt: halt });
+    };
+
+    return Pristine;
+
+})));
 
 
 /***/ }),
@@ -57798,6 +58778,8 @@ module.exports = function getSideChannel() {
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 var map = {
+	"./Account/Registration": "./resources/js/Pages/Account/Registration.js",
+	"./Account/Registration.js": "./resources/js/Pages/Account/Registration.js",
 	"./Auth/ConfirmPassword": "./resources/js/Pages/Auth/ConfirmPassword.js",
 	"./Auth/ConfirmPassword.js": "./resources/js/Pages/Auth/ConfirmPassword.js",
 	"./Auth/ForgotPassword": "./resources/js/Pages/Auth/ForgotPassword.js",
@@ -57910,6 +58892,18 @@ webpackContext.id = "./resources/js/Pages sync recursive ^\\.\\/.*$";
 /******/ 				}
 /******/ 			}
 /******/ 			return result;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	(() => {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__webpack_require__.n = (module) => {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				() => (module['default']) :
+/******/ 				() => (module);
+/******/ 			__webpack_require__.d(getter, { a: getter });
+/******/ 			return getter;
 /******/ 		};
 /******/ 	})();
 /******/ 	

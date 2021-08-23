@@ -1,0 +1,35 @@
+import React, { useEffect, useRef } from 'react';
+
+export default function TextArea({
+    id,
+    name,
+    value,
+    className,
+    required,
+    isFocused,
+    handleChange,
+    row="4",
+    placeholder,
+    defaultValue,
+}) {
+    const input = useRef();
+
+    useEffect(() => {
+        if (isFocused) {
+            input.current.focus();
+        }
+    }, []);
+
+    return (
+        <textarea
+            name={name}
+            id={id}
+            rows={row}
+            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md"
+            placeholder={placeholder}
+            defaultValue={defaultValue}
+            data-pristine-required={required}
+            onChange={(e) => handleChange(e)}
+        />
+    );
+}
