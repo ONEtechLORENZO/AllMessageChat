@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
-import { Head } from '@inertiajs/inertia-react';
+import React from 'react';
 import Authenticated from '@/Layouts/Authenticated';
 import Input from '@/Components/Forms/Input';
 import TextArea from '@/Components/Forms/TextArea';
 import FileInput from '@/Components/Forms/FileInput';
 import PristineJS from 'pristinejs';
 import Checkbox from '@/Components/Forms/Checkbox';
+import { Head, useForm, Link } from '@inertiajs/inertia-react';
+import Dropdown from '@/Components/Forms/Dropdown';
+import InputError from '@/Components/Forms/InputError';
 
-const defaultConfig = {
+const defaultPristineConfig = {
     // class of the parent element where the error/success class is added
     classTo: 'form-group',
     errorClass: 'has-danger',
@@ -22,20 +24,45 @@ const defaultConfig = {
 
 function Registration(props) {
 
-    const [formData, setFormData] = useState([]);
+    const { data, setData, post, processing, errors, reset } = useForm({
+        company_name: '',
+        company_type: '',
+        website: '',
+        email: '',
+        estimated_launch_date: '',
+        type_of_integration: '',
+        phone_number: '',
+        display_name: '',
+        business_manager_id: '',
+        profile_picture: '',
+        profile_description: '',
+        oba: false,
+    });
+
+    const company_types = [
+        {value: 'Sole Proprietorship', label: 'Sole Proprietorship'},
+        {value: 'Partnership', label: 'Partnership'},
+        {value: 'Limited Liability Company (LLC)', label: 'Limited Liability Company (LLC)'},
+        {value: 'Corporation', label: 'Corporation'},
+    ];
+
+    const integrations = [
+        {value: 'Website', label: 'Website'},
+        {value: 'Support', label: 'Support'},
+    ];
 
     /**
      * Validate the form and submit
      */
     function validateAndSubmitForm() 
     {
-        var pristine = new PristineJS(document.getElementById("account_registration"), defaultConfig);
+        var pristine = new PristineJS(document.getElementById("account_registration"), defaultPristineConfig);
         let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required], textarea[data-pristine-required]'));
         if(!is_validated) {
             return false;
         }
 
-        Inertia.post('/account/registration', formData);
+        post(route('store_account_registration'));
     }
 
     /**
@@ -44,7 +71,7 @@ function Registration(props) {
     function handleChange(event) {
         const name = event.target.name;
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-        let newState = Object.assign({}, formData);
+        let newState = Object.assign({}, data);
         if(event.target.type == 'file' && event.target.files) {
             newState[name] = event.target.files[0];
         }
@@ -52,7 +79,7 @@ function Registration(props) {
             newState[name] = value;
         }
 
-        setFormData(newState);
+        setData(newState);
     }
 
     return (
@@ -83,6 +110,7 @@ function Registration(props) {
                                             <div className="mt-1 flex rounded-md shadow-sm">
                                                 <Input name='company_name' required={true} id='company_name' placeholder='Your company name' handleChange={handleChange} />
                                             </div>
+                                            <InputError message={errors.company_name} />
                                         </div>
                                     
                                         <div className="form-group col-span-6 sm:col-span-4">
@@ -90,20 +118,16 @@ function Registration(props) {
                                                 Company type
                                             </label>
                                             <div className="mt-1">
-                                                <select
-                                                    required={true}
-                                                    data-pristine-required={true}
+                                                <Dropdown 
+                                                    required={true} 
                                                     id="company_type"
                                                     name="company_type"
-                                                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                                     handleChange={handleChange}
-                                                >
-                                                    <option>Select company type</option>
-                                                    <option>United States</option>
-                                                    <option>Canada</option>
-                                                    <option>Mexico</option>
-                                                </select>
+                                                    options={company_types}
+                                                    value={data.company_type}
+                                                />
                                             </div>
+                                            <InputError message={errors.company_type} />
                                         </div>
 
                                         <div className="form-group col-span-6 sm:col-span-4">
@@ -113,6 +137,7 @@ function Registration(props) {
                                             <div className="mt-1 flex rounded-md shadow-sm">
                                                 <Input required={true} name='website' id='website' placeholder='Enter your company website' handleChange={handleChange} />
                                             </div>
+                                            <InputError message={errors.website} />
                                         </div>
 
                                         <div className="form-group col-span-6 sm:col-span-4">
@@ -122,6 +147,7 @@ function Registration(props) {
                                             <div className="mt-1 flex rounded-md shadow-sm">
                                                 <Input required={true} type='email' name='email' id='email' placeholder='Email'  handleChange={handleChange}/>
                                             </div>
+                                            <InputError message={errors.email} />
                                         </div>
 
                                         <div className="form-group col-span-6 sm:col-span-4">
@@ -131,6 +157,7 @@ function Registration(props) {
                                             <div className="mt-1 flex rounded-md shadow-sm">
                                                 <Input required={true} type='date' name='estimated_launch_date' id='estimated_launch_date' placeholder='' handleChange={handleChange} />
                                             </div>
+                                            <InputError message={errors.estimated_launch_date} />
                                         </div>
 
                                         <div className="form-group col-span-6 sm:col-span-4">
@@ -138,20 +165,16 @@ function Registration(props) {
                                                 Type of integration
                                             </label>
                                             <div className="mt-1">
-                                                <select
-                                                    required={true}
-                                                    data-pristine-required={true}
+                                                <Dropdown 
+                                                    required={true} 
                                                     id="type_of_integration"
                                                     name="type_of_integration"
-                                                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                                     handleChange={handleChange}
-                                                >
-                                                    <option>Select integration type</option>
-                                                    <option>United States</option>
-                                                    <option>Canada</option>
-                                                    <option>Mexico</option>
-                                                </select>
+                                                    options={integrations}
+                                                    value={data.type_of_integration}
+                                                />
                                             </div>
+                                            <InputError message={errors.type_of_integration} />
                                         </div>
 
                                     </div>
@@ -176,6 +199,7 @@ function Registration(props) {
                                             <div className="mt-1 flex rounded-md shadow-sm">
                                                 <Input required={true} name='phone_number' id='phone_number' placeholder='' handleChange={handleChange} />
                                             </div>
+                                            <InputError message={errors.phone_number} />
                                         </div>
 
                                         <div className="form-group col-span-6 sm:col-span-4">
@@ -185,6 +209,17 @@ function Registration(props) {
                                             <div className="mt-1 flex rounded-md shadow-sm">
                                                 <Input required={true} name='display_name' id='display_name' placeholder='' handleChange={handleChange} />
                                             </div>
+                                            <InputError message={errors.display_name} />
+                                        </div>
+
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <label htmlFor="business_manager_id" className="block text-sm font-medium text-gray-700">
+                                                Business manager Id
+                                            </label>
+                                            <div className="mt-1 flex rounded-md shadow-sm">
+                                                <Input required={true} name='business_manager_id' id='business_manager_id' placeholder='' handleChange={handleChange} />
+                                            </div>
+                                            <InputError message={errors.business_manager_id} />
                                         </div>
 
                                         <div className="form-group col-span-6 sm:col-span-4">
@@ -192,9 +227,10 @@ function Registration(props) {
                                                 Profile picture
                                             </label>
                                             <div className="mt-1 flex rounded-md">
-                                                <FileInput required={true} name='profile_picture' id='profile_picture' handleChange={handleChange} />
+                                                <FileInput accept="image/png, image/jpeg, image/jpg" required={true} name='profile_picture' id='profile_picture' handleChange={handleChange} />
                                             </div>
                                             <p className="mt-2 text-sm text-gray-500">500px by 500px with 100px magin</p>
+                                            <InputError message={errors.profile_picture} />
                                         </div>
 
                                         <div className="form-group col-span-6 sm:col-span-4">
@@ -205,6 +241,7 @@ function Registration(props) {
                                                 <TextArea required={true} name='profile_description' id='profile_description' placeholder='' handleChange={handleChange} />
                                             </div>
                                             <p className="mt-2 text-sm text-gray-500">Max 139 characters</p>
+                                            <InputError message={errors.profile_description} />
                                         </div>
 
                                         <div className="form-group col-span-6 sm:col-span-4">
@@ -222,6 +259,7 @@ function Registration(props) {
                                                     </label>
                                                     <p className="text-gray-500">Request for Whatsapp official business account (OBA).</p>
                                                 </div>
+                                                <InputError message={errors.oba} />
                                             </div>
                                         </div>
                                     </div>
@@ -230,12 +268,12 @@ function Registration(props) {
                         </div>
                     </div>
                     <div className="flex justify-end">
-                        <button
-                            type="button"
+                        <Link 
+                            href={route('dashboard')}
                             className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
                             Cancel
-                        </button>
+                        </Link>
                         <button
                             type="button"
                             onClick={validateAndSubmitForm}

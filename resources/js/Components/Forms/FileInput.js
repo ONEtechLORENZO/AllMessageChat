@@ -5,7 +5,7 @@ export default function FileInput({
     name,
     value,
     className,
-    autoComplete,
+    accept='',
     required,
     isFocused,
     handleChange,
@@ -33,6 +33,7 @@ export default function FileInput({
             required={required}
             data-pristine-required={required}
             onChange={(e) => handleChange(e)}
+            accept={accept}
         />
     );
 }
