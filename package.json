@@ -27,6 +27,7 @@
         "tailwindcss": "^2.1.2"
     },
     "dependencies": {
-        "pristinejs": "^0.1.9"
+        "pristinejs": "^0.1.9",
+        "react-select": "^4.3.1"
     }
 }

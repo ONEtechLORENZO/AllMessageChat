@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use Response;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -20,6 +21,19 @@ class UserController extends Controller
     }
 
     /**
+     * Show detail view of account
+     */
+    public function showAccount(Request $request, $id) 
+    {
+        $user_id = $request->user()->id;
+        $account = Account::where('user_id', $user_id)
+            ->where('id', $id)
+            ->first();
+            
+        return Inertia::render('Account/Detail', ['account' => $account]);
+    }
+
+    /**
      * Show account registration form
      */
     public function accountRegistration(Request $request)
@@ -32,7 +46,7 @@ class UserController extends Controller
      */
     public function storeAccountRegistration(Request $request) 
     {
-        $validated = $request->validate([
+        $request->validate([
             'company_name' => 'required|max:255',
             'company_type' => 'required',
             'website' => 'required|max:255',
@@ -70,5 +84,13 @@ class UserController extends Controller
         $account->save();
 
         return Redirect::route('dashboard');
+    }
+
+    /**
+     * Show template form
+     */
+    public function newTemplate()
+    {
+        return Inertia::render('Account/Template/New');
     }
 }

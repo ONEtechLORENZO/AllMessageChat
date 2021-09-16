@@ -25,6 +25,9 @@ export default function Dashboard(props) {
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    <div className="pb-5">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900">Business profiles</h3>
+                    </div>
                     <div className="bg-white shadow overflow-hidden rounded-md">
                         <ul role="list" className="divide-y divide-gray-200">
                             {props.accounts.map((account) => {
@@ -39,7 +42,7 @@ export default function Dashboard(props) {
                                 return (
                                     <li key={account.id} className="px-6 py-4">
                                         <div className="flex">
-                                            <h2>{account.display_name}</h2>
+                                            <h2><Link href={route('account_view', account.id)}>{account.display_name}</Link></h2>
                                             <span className={`ml-3 text-sm inline-flex items-center px-2 py-0.5 rounded font-medium ${status_class_names}`}>
                                                 {account.status}
                                             </span>
