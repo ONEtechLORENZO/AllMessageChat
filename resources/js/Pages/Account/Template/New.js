@@ -10,19 +10,7 @@ import { Head, useForm, Link } from '@inertiajs/inertia-react';
 import Dropdown from '@/Components/Forms/Dropdown';
 import InputError from '@/Components/Forms/InputError';
 import languages from '@/Pages/languages';
-
-const defaultPristineConfig = {
-    // class of the parent element where the error/success class is added
-    classTo: 'form-group',
-    errorClass: 'has-danger',
-    successClass: 'has-success',
-    // class of the parent element where error text element is appended
-    errorTextParent: 'form-group',
-    // type of element to create for the error text
-    errorTextTag: 'div',
-    // class of the error text element
-    errorTextClass: 'text-red-500 text-xs mt-1'
-};
+import categories, {defaultPristineConfig, header_templates, button_types} from '@/Pages/Constants'; 
 
 function NewTemplate(props) {
 
@@ -30,53 +18,8 @@ function NewTemplate(props) {
         template_name: '',
         category: '',
         languages: '',
-        text: '',
-        email: '',
-        estimated_launch_date: '',
-        type_of_integration: '',
-        phone_number: '',
-        display_name: '',
-        business_manager_id: '',
-        profile_picture: '',
-        profile_description: '',
-        oba: false,
+        header_template: '',
     });
-
-    const categories = [
-        {value: 'Account Update', label: 'Account Update'},
-        {value: 'Alert Update', label: 'Alert Update'},
-        {value: 'Appointment Update', label: 'Appointment Update'},
-        {value: 'Issue Resolution', label: 'Issue Resolution'},
-        {value: 'Payment Update', label: 'Payment Update'},
-        {value: 'Personal Finance Update', label: 'Personal Finance Update'},
-        {value: 'Reservation Update', label: 'Reservation Update'},
-        {value: 'Shipping Update', label: 'Shipping Update'},
-        {value: 'Ticket Update', label: 'Ticket Update'},
-        {value: 'Transportation Update', label: 'Transportation Update'},
-    ]
-
-    const company_types = [
-        {value: 'Sole Proprietorship', label: 'Sole Proprietorship'},
-        {value: 'Partnership', label: 'Partnership'},
-        {value: 'Limited Liability Company (LLC)', label: 'Limited Liability Company (LLC)'},
-        {value: 'Corporation', label: 'Corporation'},
-    ];
-
-    const integrations = [
-        {value: 'Website', label: 'Website'},
-        {value: 'Support', label: 'Support'},
-    ];
-
-    const templates = [
-        {value: 'text', label: 'Text'},
-        {value: 'media', label: 'Media'},
-        {value: 'interactive', label: 'Interactive (Buttons)'},
-    ];
-
-    const button_types = [
-        {value: 'Quick Reply', label: 'Quick Reply'},
-        {value: 'Call to Action', label: 'Call to Action'},
-    ];
 
     /**
      * Validate the form and submit
@@ -158,23 +101,6 @@ function NewTemplate(props) {
                                         </div>
 
                                         <div className="form-group col-span-6 sm:col-span-4">
-                                            <label htmlFor="template" className="block text-sm font-medium text-gray-700">
-                                                Template
-                                            </label>
-                                            <div className="mt-1">
-                                                <Dropdown 
-                                                    required={true} 
-                                                    id="template"
-                                                    name="template"
-                                                    handleChange={handleChange}
-                                                    options={templates}
-                                                    value={data.template}
-                                                />
-                                            </div>
-                                            <InputError message={errors.category} />
-                                        </div>
-                                    
-                                        <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="language" className="block text-sm font-medium text-gray-700">
                                                 Language
                                             </label>
@@ -189,14 +115,32 @@ function NewTemplate(props) {
                                         </div>
 
                                         <div className="form-group col-span-6 sm:col-span-4">
-                                            <label htmlFor="body_header" className="block text-sm font-medium text-gray-700">
-                                                Header
+                                            <label htmlFor="template" className="block text-sm font-medium text-gray-700">
+                                                Header Template
                                             </label>
                                             <div className="mt-1">
-                                                <TextArea id="body_header" name="body_header" handleChange={handleChange} />
+                                                <Dropdown 
+                                                    required={true} 
+                                                    id="template"
+                                                    name="template"
+                                                    handleChange={handleChange}
+                                                    options={header_templates}
+                                                    value={data.header_template}
+                                                />
                                             </div>
-                                            <InputError message={errors.body_header} />
+                                            <InputError message={errors.header_template} />
                                         </div>
+
+                                        {data.header_template == 'text' ?
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <label htmlFor="template" className="block text-sm font-medium text-gray-700">
+                                                Text
+                                            </label>
+                                            <div className="mt-1">
+                                                <Input name='header_text' required={data.header_template == 'text' ? true : false} id='header_text' placeholder='' handleChange={handleChange} />
+                                            </div>
+                                            <InputError message={errors.header_text} />
+                                        </div> : ''}
 
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="body" className="block text-sm font-medium text-gray-700">

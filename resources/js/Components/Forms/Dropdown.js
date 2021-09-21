@@ -30,7 +30,7 @@ export default function Dropdown({
             ref={input}
             onChange={(e) => handleChange(e)}
          >
-            <option>{emptyOption}</option>
+            <option value=''>{emptyOption}</option>
             {options && options.map((option) => {
                 return <option key={option.value} value={option.value}>{option.label}</option>;
             })}

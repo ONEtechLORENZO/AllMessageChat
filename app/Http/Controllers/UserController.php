@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
-use Response;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -29,7 +28,7 @@ class UserController extends Controller
         $account = Account::where('user_id', $user_id)
             ->where('id', $id)
             ->first();
-            
+     
         return Inertia::render('Account/Detail', ['account' => $account]);
     }
 
@@ -89,8 +88,24 @@ class UserController extends Controller
     /**
      * Show template form
      */
-    public function newTemplate()
+    public function newTemplate($account_id)    
     {
         return Inertia::render('Account/Template/New');
+    }
+
+    /**
+     * Create new template
+     */
+    public function createNewTemplate(Request $request, $account_id)
+    {
+        $request->validate([
+            'template_name' => 'required|max:255',
+            'category' => 'required',
+            'languages' => 'required',
+        ]);
+
+        $user_id = $request->user()->id;
+
+        return Redirect::route('account_view', $account_id);
     }
 }

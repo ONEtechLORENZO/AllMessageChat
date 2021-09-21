@@ -8,19 +8,7 @@ import Checkbox from '@/Components/Forms/Checkbox';
 import { Head, useForm, Link } from '@inertiajs/inertia-react';
 import Dropdown from '@/Components/Forms/Dropdown';
 import InputError from '@/Components/Forms/InputError';
-
-const defaultPristineConfig = {
-    // class of the parent element where the error/success class is added
-    classTo: 'form-group',
-    errorClass: 'has-danger',
-    successClass: 'has-success',
-    // class of the parent element where error text element is appended
-    errorTextParent: 'form-group',
-    // type of element to create for the error text
-    errorTextTag: 'div',
-    // class of the error text element
-    errorTextClass: 'text-red-500 text-xs mt-1'
-};
+import {defaultPristineConfig} from '@/Pages/Constants';
 
 function Registration(props) {
 

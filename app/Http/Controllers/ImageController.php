@@ -10,11 +10,8 @@ class ImageController extends Controller
     public function showImage(Request $request, $type, $id) {
         if($type == 'profile') {
             $user_id = $request->user()->id;
-            if($user_id != $id) {
-                return false;
-            }
-
-            $account = Account::where('user_id', $id)
+            
+            $account = Account::where('user_id', $user_id)
                 ->where('id', $id)
                 ->first();
 
