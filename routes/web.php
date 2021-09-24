@@ -30,6 +30,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
 
+    // Users
+    Route::get('/admin/user', [UserController::class, 'user'])->name('user');
+    Route::get('admin/user/create', [UserController::class, 'createUser'])->name('create_user');
+    Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_user');
+    Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_user');
+    Route::post('/admin/user/registration', [UserController::class, 'storeUserRegistration'])->name('store_user_data');
+    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('user_detail');
+
+
+
     Route::get('/account/registration', [UserController::class, 'accountRegistration'])->name('account_registration');
 
     Route::post('/account/registration', [UserController::class, 'storeAccountRegistration'])->name('store_account_registration');

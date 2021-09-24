@@ -20,7 +20,7 @@ export default function Dropdown({
     }, []);
 
     return (
-        <select
+        <select 
             name={name}
             id={id}
             value={value}
@@ -32,7 +32,7 @@ export default function Dropdown({
          >
             <option value=''>{emptyOption}</option>
             {options && options.map((option) => {
-                return <option key={option.value} value={option.value}>{option.label}</option>;
+                return <option defaultValue={option.value === value}  key={option.value} value={option.value}>{option.label}</option>;
             })}
         </select>
     );
