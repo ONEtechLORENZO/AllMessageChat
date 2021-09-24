@@ -44,9 +44,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('/account/registration', [UserController::class, 'storeAccountRegistration'])->name('store_account_registration');
 
-    Route::get('/account/{id}/template/new', [UserController::class, 'newTemplate'])->name('new_template');
-
     Route::post('/account/{id}/template', [UserController::class, 'createNewTemplate'])->name('create_new_template');
+
+    Route::get('/account/{id}/template/{template_id}', [UserController::class, 'templateDetailView'])->name('template_detail_view');
+
+    Route::post('/account/{id}/template/{template_id}', [UserController::class, 'storeTemplate'])->name('store_template');
 
     Route::get('/account/{id}', [UserController::class, 'showAccount'])->name('account_view');
 

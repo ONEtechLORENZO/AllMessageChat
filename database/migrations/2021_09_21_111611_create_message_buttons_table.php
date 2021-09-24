@@ -17,7 +17,11 @@ class CreateMessageButtonsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('message_id');
             $table->string('button_type')->nullable();
-            $table->string('header_type')->nullable();
+            $table->string('body')->nullable();
+            $table->string('action')->nullable();
+            $table->string('phone_number')->nullable();
+            $table->string('url_type')->nullable();
+            $table->text('url')->nullable();
             $table->timestamps();
             $table->foreign('message_id')->references('id')->on('messages');
         });

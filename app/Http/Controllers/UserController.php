@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Account;
+use App\Models\Message;
+use App\Models\MessageButton;
+use App\Models\Template;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -122,8 +125,13 @@ class UserController extends Controller
         $account = Account::where('user_id', $user_id)
             ->where('id', $id)
             ->first();
+
+        $templates = [];
+        if($account) {
+            $templates = Template::where('account_id', $id)->get();
+        }
      
-        return Inertia::render('Account/Detail', ['account' => $account]);
+        return Inertia::render('Account/Detail', ['account' => $account, 'templates' => $templates]);
     }
 
     /**
@@ -184,7 +192,7 @@ class UserController extends Controller
      */
     public function newTemplate($account_id)    
     {
-        return Inertia::render('Account/Template/New');
+        return Inertia::render('Account/Template/New', ['account_id' => $account_id]);
     }
 
     /**
@@ -198,8 +206,172 @@ class UserController extends Controller
             'languages' => 'required',
         ]);
 
-        $user_id = $request->user()->id;
+        $template = new Template();
+        $template->name = $request->get('template_name');
+        $template->category = $request->get('category');
+        $template->languages = $request->get('languages');
+        $template->status = 'draft';
+        $template->account_id = $account_id;
+        $template->save();
 
         return Redirect::route('account_view', $account_id);
+    }
+
+    /**
+     * Template's detail view
+     */
+    public function templateDetailView(Request $request, $account_id, $template_id)
+    {
+        $user_id = $request->user()->id;
+        $account = Account::where('user_id', $user_id)
+            ->where('id', $account_id)
+            ->first();
+        
+        if(!$account) {
+            abort(401, 'You are not authorised to view this');
+        }
+
+        $template = Template::where('account_id', $account_id)
+            ->where('id', $template_id)
+            ->first();
+
+        // Setting language
+        $language = $template->languages[0];
+        if($request->has('language')) {
+            $language = $request->get('language');
+        }
+
+        $message = Message::where('template_id', $template_id)
+            ->where('language', $language)
+            ->first();
+
+        if(!$message) {
+            $message = new Message();
+        }
+
+        $message_buttons = [];
+        if($message->id) {
+            $message_buttons = MessageButton::where('message_id', $message->id)->get();
+        }
+
+        return Inertia::render('Account/Template/Detail', [
+            'template' => $template,
+            'message' => $message,
+            'language' => $language,
+            'buttons' => $message_buttons,
+        ]);
+    }
+
+    /**
+     * Store template
+     */
+    public function storeTemplate(Request $request, $account_id, $template_id) 
+    {
+        $validation_array = [
+            'header_type' => 'required',
+            'body' => 'max:1024',
+            'body_footer' => 'max:60',
+        ];
+
+        if($request->get('header_type') == 'text') {
+            $validation_array['header_text'] = 'required|max:60';
+        }
+ 
+        $request->validate($validation_array);        
+
+        $user_id = $request->user()->id;
+        $account = Account::where('user_id', $user_id)
+            ->where('id', $account_id)
+            ->first();
+        
+        if(!$account) {
+            abort(401, 'You are not authorised to view this');
+        }
+
+        // Storing Message
+        $message = Message::where('template_id', $template_id)
+            ->where('language', $request->get('language'))
+            ->first();
+
+        if(!$message) {
+            $message = new Message();
+        }
+
+        $message->header_type = $request->get('header_type');
+        if($message->header_type == 'text') {
+            $message->header_content = $request->get('header_text');
+        }
+        else {
+            $message->header_content = '';
+        }
+
+        $message->body = $request->get('body');
+        $message->footer_content = $request->get('body_footer');
+        $message->template_id = $template_id;
+        $message->language = $request->get('language');
+        $message->save();
+
+        $message_id = $message->id;
+
+        // Storing Buttons if available
+        $buttons = $request->get('buttons');
+        if(count($buttons) > 0) {
+            foreach($buttons as $button) {
+                $buttonObj = new MessageButton();
+                if($button['id']) {
+                    $buttonObj = MessageButton::find($button['id']);
+                }
+
+                $buttonObj->button_type = $button['button_type'];
+                $buttonObj->body = $button['button_text'];
+                if($buttonObj->button_type == 'Call to Action') {
+                    $buttonObj->action = $button['action'];
+                    if($buttonObj->action == 'call_phone_number') {
+                        $buttonObj->body = $button['button_text'];
+                        $buttonObj->phone_number = $button['phone_number'];
+                    }
+                    else {
+                        $buttonObj->body = '';
+                        $buttonObj->phone_number = '';
+                    }
+
+                    if($buttonObj->action == 'visit_website') {
+                        $buttonObj->url_type = $button['url_type'];
+                        $buttonObj->url = $button['url'];
+                    }
+                    else {
+                        $buttonObj->url_type = '';
+                        $buttonObj->url = '';
+                    }
+                }
+                else {
+                    $buttonObj->action = '';
+                    $buttonObj->phone_number = '';
+                    $buttonObj->url_type = '';
+                    $buttonObj->url = '';
+                }
+                $buttonObj->message_id = $message_id;
+                $buttonObj->save();
+            }
+        }
+
+        $template = Template::where('account_id', $account_id)
+            ->where('id', $template_id)
+            ->first();
+
+        // Setting language
+        $language = $template->languages[0];
+        if($request->has('language')) {
+            $language = $request->get('language');
+        }
+
+        $message_buttons = MessageButton::where('message_id', $message_id)->get();
+
+        return Inertia::render('Account/Template/Detail', [
+            'template' => $template,
+            'message' => $message,
+            'language' => $language,
+            'buttons' => $message_buttons,
+        ]);
     }
 }

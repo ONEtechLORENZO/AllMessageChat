@@ -3,7 +3,7 @@ import { Dialog, Transition } from '@headlessui/react'
 import Select from 'react-select';
 import Authenticated from '@/Layouts/Authenticated';
 import { Inertia } from '@inertiajs/inertia';
-import { Head, useForm } from '@inertiajs/inertia-react';
+import { Head, useForm, Link } from '@inertiajs/inertia-react';
 import languages from '@/Pages/languages';
 import PristineJS from 'pristinejs';
 import Input from '@/Components/Forms/Input';
@@ -158,7 +158,26 @@ export default function Detail(props) {
                     </div>
                     <div className="bg-white shadow overflow-hidden rounded-md">
                         <ul role="list" className="divide-y divide-gray-200">
+                            {props.templates.map((data) => {
+                                let status_class_names = 'bg-yellow-100 text-yellow-800';
+                                if(data.status == 'new') {
+                                    status_class_names = 'bg-green-100 text-green-800';
+                                }
+                                else if(data.status == 'rejected') {
+                                    status_class_names = 'bg-red-100 text-red-800';
+                                }
 
+                                return (
+                                    <li key={data.id} className="px-6 py-4">
+                                        <div className="flex">
+                                            <h2><Link href={route('template_detail_view', [data.account_id, data.id])}>{data.name}</Link></h2>
+                                            <span className={`ml-3 text-sm inline-flex items-center px-2 py-0.5 rounded font-medium ${status_class_names}`}>
+                                                {data.status}
+                                            </span>
+                                        </div>
+                                    </li>
+                                );
+                            })}
                         </ul>
                         {!props.templates || props.templates.length == 0 ? 
                             <div className="text-center py-12">
