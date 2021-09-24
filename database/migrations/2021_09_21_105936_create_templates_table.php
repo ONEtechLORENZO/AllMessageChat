@@ -15,11 +15,13 @@ class CreateTemplatesTable extends Migration
     {
         Schema::create('templates', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('account_id');
             $table->string('name');
             $table->string('category');
             $table->json('languages');
             $table->string('status');
             $table->timestamps();
+            $table->foreign('account_id')->references('id')->on('accounts');
         });
     }
 

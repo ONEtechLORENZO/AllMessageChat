@@ -30,6 +30,7 @@ export default function TextArea({
             defaultValue={defaultValue}
             data-pristine-required={required}
             onChange={(e) => handleChange(e)}
+            value={value}
         />
     );
 }

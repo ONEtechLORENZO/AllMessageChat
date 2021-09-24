@@ -55,4 +55,14 @@ export const defaultPristineConfig = {
     errorTextClass: 'text-red-500 text-xs mt-1'
 };
 
+export const call_to_action_lists = [
+    {value: 'call_phone_number', label: 'Call phone number'},
+    {value: 'visit_website', label: 'Visit website'},
+];
+
+export const url_types = [
+    {value: 'Static', label: 'Static'},
+    {value: 'Dynamic', label: 'Dynamic'},
+];
+
 export default categories;
