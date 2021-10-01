@@ -69,9 +69,18 @@ export default function Dashboard(props) {
                     <h2 className="font-semibold text-xl text-gray-800 leading-tight"> {data.id ? "Edit User" : "Create User"} </h2>
                 </div> 
                 <div>
+
+                {data.id != '' &&
+                    <button 
+                        className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                        Change Password
+                    </button>
+                }
+                
                 <Link 
                     href={route('user')}
-                        className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        className="ml-3 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
 					>
                     Cancel
                 </Link>
@@ -109,15 +118,18 @@ export default function Dashboard(props) {
                 </div>
                 <InputError message={errors.email} />
     		</div>
-            <div className="form-group col-span-6 sm:col-span-4 mt-5">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                    Password
-                </label>
-                <div className="mt-1 flex rounded-md shadow-sm">
-                    <Input name='password' value={(data.password)} required={true} type='password' id='password' placeholder='Your password' handleChange={handleChange} />
-                </div>
-                <InputError message={errors.password} />
-            </div>
+            {data.id == '' &&
+                    <div className="form-group col-span-6 sm:col-span-4 mt-5">
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                            Password
+                        </label>
+                        <div className="mt-1 flex rounded-md shadow-sm">
+                            <Input name='password' value={(data.password)} required={true} type='password' id='password' placeholder='Your password' handleChange={handleChange} />
+                        </div>
+                        <InputError message={errors.password} />
+                    </div>
+            }
+
     		<div className="form-group col-span-6 sm:col-span-4 mt-5">
                 <div className="flex items-start">
                     <div className="flex items-center h-5">
