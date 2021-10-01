@@ -5,6 +5,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\MessageLogController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -38,7 +41,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/admin/user/registration', [UserController::class, 'storeUserRegistration'])->name('store_user_data');
     Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('user_detail');
 
+    // Settings
+    Route::get('/admin/settings/outgoing_server' , [SettingsController::class, 'settings'])->name('settings');
+    Route::get('/admin/settings/to_mail' , [SettingsController::class, 'toMail'])->name('to_mail');
+    Route::post('/admin/settings/saveSMTP', [SettingsController::class, 'saveOutgoingServerData'])->name('store_smtp_data');
+    Route::post('/admin/settings/saveToAddress', [SettingsController::class, 'saveToAddressData'])->name('store_toAddress_data');
 
+    // Messages
+    Route::get('/messages/list' , [MessageLogController::class , 'list'])->name('messages');
+    Route::get('/messages/destination' , [MessageLogController::class , 'destination'])->name('destination');
 
     Route::get('/account/registration', [UserController::class, 'accountRegistration'])->name('account_registration');
 

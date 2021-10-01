@@ -2,8 +2,8 @@ import React ,{ useEffect } from 'react';
 import Authenticated from '@/Layouts/Authenticated';
 import { Head, Link } from '@inertiajs/inertia-react';
 import Moment from 'moment';
-  import { ToastContainer, toast } from 'react-toastify';
-  import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Dashboard(props) {
 
@@ -16,6 +16,15 @@ export default function Dashboard(props) {
       console.log(res,'Deleted Successfully.');
     })
   }
+
+    const listColumn = [
+        {label: 'Name'},
+        {label: 'Email'},
+        {label: 'status'},
+        {label: 'role'},
+        {label: 'create at'},
+        {label: 'action'},
+    ];
 
  
     return (
@@ -49,39 +58,18 @@ export default function Dashboard(props) {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            Name
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            Email
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            Status
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            Role
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            Created Time
-                          </th>
-                          <th scope="col"  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                           Action
-                          </th>
+                          { listColumn && listColumn.map((column) => {
+                            return(
+                                <>
+                                  <th
+                                    scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                  >
+                                    {column.label}
+                                  </th>
+                                </>
+                              )
+                          })}
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">

@@ -10,7 +10,13 @@ use App\Models\Template;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
+use App\Models\MailToAddress;
+use App\Models\OutgoingServerConfig;
+use Swift_SmtpTransport;
+use Swift_Mailer;
 use DB;
+use Mail;
+
 
 class UserController extends Controller
 {
@@ -31,7 +37,7 @@ class UserController extends Controller
     public function user(Request $request)
     {
         $users = DB::table('users')->get();
-        return Inertia::render('Admin/List', ['users' => $users ]);
+        return Inertia::render('Admin/User/List', ['users' => $users ]);
     } 
 
     /**
@@ -41,7 +47,7 @@ class UserController extends Controller
     {
          
         $user = new User();
-        return Inertia::render('Admin/CreateUser', ['user' => $user]);   
+        return Inertia::render('Admin/User/CreateUser', ['user' => $user]);   
     } 
 
     /**
@@ -53,7 +59,7 @@ class UserController extends Controller
         $user = new User();
         $user = User::findOrFail($id);
         $password = $user->password;
-        return Inertia::render('Admin/CreateUser', ['user' => $user , 'password' => $password]);   
+        return Inertia::render('Admin/User/CreateUser', ['user' => $user , 'password' => $password]);   
     } 
 
     /**
@@ -62,7 +68,7 @@ class UserController extends Controller
      public function userDetail($id)
       {
           $user = User::findOrFail($id);
-          return Inertia::render('Admin/UserDetail', ['user' => $user]);   
+          return Inertia::render('Admin/User/UserDetail', ['user' => $user]);   
       } 
 
     /**
@@ -104,7 +110,7 @@ class UserController extends Controller
     /**
      * Delete User form list
      */
-     public function deleteUser(Request $request)
+    public function deleteUser(Request $request)
        {
            $id = $request->get('id');
            $user = User::find($id);    
@@ -213,6 +219,7 @@ class UserController extends Controller
         $template->status = 'draft';
         $template->account_id = $account_id;
         $template->save();
+
 
         return Redirect::route('account_view', $account_id);
     }
@@ -366,6 +373,45 @@ class UserController extends Controller
         }
 
         $message_buttons = MessageButton::where('message_id', $message_id)->get();
+
+        // Send mail script
+        $accFields = [
+            'Company Name' => 'company_name', 'Company Type' => 'company_type', 'Company Service Website' =>  'website', 'Technical Point Of Contact' => 'email', 'Estimated Lunch Date' => 'estimated_launch_date', 'Type of Integration' => 'type_of_integration', 'Phone Number' => 'phone_number', 'Display Name' => 'display_name'
+        ];
+        $toAddressInfo = MailToAddress::where('user_id' ,$user_id )->first();
+
+        // backup mailing configuration
+        $backup = Mail::getSwiftMailer();
+        $smtpConfigData = OutgoingServerConfig::where('user_id' ,$user_id )->first();
+
+        // set mailing configuration
+        $transport = new \Swift_SmtpTransport(
+                                    $smtpConfigData->server_name, 
+                                    $smtpConfigData->port_num, 
+                                    $smtpConfigData->port_type
+                                );
+
+        $transport->setUsername($smtpConfigData->user_name , $smtpConfigData->from_name );
+        $transport->setPassword( unserialize( base64_decode( $smtpConfigData->password) ) );
+
+
+        $maildoll = new Swift_Mailer($transport);
+        // set mailtrap mailer
+        Mail::setSwiftMailer($maildoll);
+
+        Mail::send('Mail.MailTemplate', [
+                    'account_data' => $account , 
+                    'template_data' => $template , 
+                    'temp_content' => $message , 
+                    'account_field' => $accFields ,
+                    'buttons' => $message_buttons,
+                ], 
+                function($message) use( $toAddressInfo , $template ,$smtpConfigData ) {
+                   $message->to($toAddressInfo->to_email, $toAddressInfo->to_name)->subject( $template->category );
+                   $message->from($smtpConfigData->from_email , $smtpConfigData->from_name); 
+                });
+
+        Mail::setSwiftMailer($backup);  // Set Mailer Original credential
 
         return Inertia::render('Account/Template/Detail', [
             'template' => $template,
