@@ -26,6 +26,14 @@ Route::get('/', function () {
     ]);
 });
 
+Route::get('/incoming', function () {
+
+});
+
+Route::post('/incoming', function () {
+
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
