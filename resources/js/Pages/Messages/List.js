@@ -112,6 +112,9 @@ export default function Dashboard(props) {
                             </td>
                             </tr>
                         ))}
+                        {props.messages.length == 0 && 
+                            <tr> <td colspan="4" class="p-4"> <span class="px-6 py-4 whitespace-nowrap text-right text-gray-500 text-sm font-medium"> No conversation start yet. </span> </td></tr> 
+                        } 
                       </tbody>
                     </table>
                   </div>

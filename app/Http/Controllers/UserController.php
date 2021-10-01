@@ -396,6 +396,7 @@ class UserController extends Controller
 
 
         $maildoll = new Swift_Mailer($transport);
+        
         // set mailtrap mailer
         Mail::setSwiftMailer($maildoll);
 

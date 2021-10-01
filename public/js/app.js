@@ -26816,9 +26816,9 @@ function Dashboard(props) {
                             });
                           })
                         })
-                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("tbody", {
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("tbody", {
                         className: "bg-white divide-y divide-gray-200",
-                        children: props.messages.map(function (message) {
+                        children: [props.messages.map(function (message) {
                           return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("tr", {
                             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("td", {
                               className: "px-6 py-4 whitespace-nowrap",
@@ -26867,7 +26867,16 @@ function Dashboard(props) {
                               })
                             })]
                           }, message.name);
-                        })
+                        }), props.messages.length == 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("tr", {
+                          children: [" ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("td", {
+                            colspan: "4",
+                            "class": "p-4",
+                            children: [" ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                              "class": "px-6 py-4 whitespace-nowrap text-right text-gray-500 text-sm font-medium",
+                              children: " No conversation start yet. "
+                            }), " "]
+                          })]
+                        })]
                       })]
                     })
                   })
