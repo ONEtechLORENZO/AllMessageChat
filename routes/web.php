@@ -29,12 +29,8 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/incoming', function () {
-
-});
-
 Route::post('/incoming', function () {
-
+    $post_data = file_get_contents("php://input");
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
