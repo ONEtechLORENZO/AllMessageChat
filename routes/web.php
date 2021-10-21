@@ -7,7 +7,8 @@ use Inertia\Inertia;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\MessageLogController;
-
+use App\Models\MessageLog;
+use App\Models\MessageResponse;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,9 +30,8 @@ Route::get('/', function () {
     ]);
 });
 
-Route::post('/incoming', function () {
-    $post_data = file_get_contents("php://input");
-});
+Route::post('/incoming' , [MessageLogController::class , 'messageConfig'] );
+Route::get('/incoming-cm', [MessageLogController::class, 'incomingMessageResponse'])->name('incoming_message_response');    
 
 Route::middleware(['auth', 'verified'])->group(function () {
     
@@ -40,10 +40,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Users
     Route::get('/admin/user', [UserController::class, 'user'])->name('user');
     Route::get('admin/user/create', [UserController::class, 'createUser'])->name('create_user');
-    Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_user');
+    Route::get('admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_user');
     Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_user');
     Route::post('/admin/user/registration', [UserController::class, 'storeUserRegistration'])->name('store_user_data');
     Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('user_detail');
+    Route::post('/admin/user/regenerate_token', [UserController::class, 'regenerateToken'])->name('regenerate_token');
 
     // Settings
     Route::get('/admin/settings/outgoing_server' , [SettingsController::class, 'settings'])->name('settings');
@@ -54,6 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Messages
     Route::get('/messages/list' , [MessageLogController::class , 'list'])->name('messages');
     Route::get('/messages/destination' , [MessageLogController::class , 'destination'])->name('destination');
+    Route::post('/messages/search_content' , [MessageLogController::class , 'searchContent'])->name('searchContent');
 
     Route::get('/account/registration', [UserController::class, 'accountRegistration'])->name('account_registration');
 
@@ -68,6 +70,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/account/{id}', [UserController::class, 'showAccount'])->name('account_view');
 
     Route::get('/image/{type}/{id}', [ImageController::class, 'showImage'])->name('show_image');
+
+    // Create new Incoming URL
+    Route::post('account/{id}/incoming_url' , [UserController::class, 'createNewIncomingURL'])->name('create_new_incoming_url');
 });
 
 

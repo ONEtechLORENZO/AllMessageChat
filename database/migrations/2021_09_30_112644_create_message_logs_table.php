@@ -19,6 +19,7 @@ class CreateMessageLogsTable extends Migration
             $table->integer('account_id')->nullable();
             $table->string('channel')->nullable();
             $table->mediumText('content')->nullable();
+            $table->string('type')->nullable();
             $table->string('direction')->nullable();
             $table->integer('sender')->nullable();
             $table->string('country')->nullable();

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import Authenticated from '@/Layouts/Authenticated';
 import { Head, Link } from '@inertiajs/inertia-react';
 import Moment from 'moment';
@@ -9,9 +9,30 @@ export default function UserDetail(props) {
         {value: props.user.name, label: 'Name'},
         {value: props.user.email, label: 'Email'},
         {value: props.user.role, label: 'Role'},
+        {value: props.token, label: 'Token' , action:'regenarate'},
         {value: (props.user.status == 1) ? 'Active': 'Inactive', label: 'Active Status'},
         {value: Moment(props.user.created_at).format('MMM DD, Y'), label: 'Created At'},
     ];
+    const [spinClass , setSpinClass] = useState([]);
+    const [token , setToken ]= useState(props.token);
+    
+    // Update Token
+    function updateToken(){
+        setSpinClass('animate-spin');
+
+        axios({
+            method: 'post',
+            url: route('regenerate_token'),
+            data: {
+                user_id: props.user.id,
+            }
+        })
+        .then( (response) =>{
+            setToken(response.data.token);
+            setSpinClass(' ');
+        });
+
+    }
 
     return (
         <Authenticated
@@ -43,7 +64,18 @@ export default function UserDetail(props) {
                               {field.label}
                             </dt>
                             <dd class="mt-1 text-sm text-gray-900">
-                              {field.value}
+                                { field.hasOwnProperty('action') ?
+                                    <>
+                                    {token}
+                                    <span class="cursor-pointer" title="Regenarate Token">
+                                        <svg xmlns="http://www.w3.org/2000/svg" onClick={updateToken} class={"h-5 w-5 " + spinClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    </span>
+                                    </>
+                                : <> {field.value} </>
+                                }
+
                             </dd>
                           </div>
                           </>

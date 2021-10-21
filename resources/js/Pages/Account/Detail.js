@@ -29,7 +29,8 @@ export default function Detail(props) {
         'status': {'label': 'Status'},
     };
 
-    const [accountModalOpen, setAccountModalOpen] = useState(false);
+    const [accountModalOpen, setAccountModalOpen ] = useState(false);
+    const [incomingUrlModalOpen , setIncomingUrlModalOpen ] = useState(false);
 
     const cancelButtonRef = useRef(null);
 
@@ -37,6 +38,7 @@ export default function Detail(props) {
         template_name: '',
         category: '',
         languages: '',
+        incoming_url: '',
     });
 
     /**
@@ -85,6 +87,23 @@ export default function Detail(props) {
             },
         });
     }
+
+    /**
+     * Create new Incoming URL
+     */
+     function createNewIncomingUrl(){
+        var pristine = new PristineJS(document.getElementById("new_incoming_url"), defaultPristineConfig);
+        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required]'));
+        if(!is_validated) {
+            return false;
+        }
+        Inertia.post(route('create_new_incoming_url', props.account.id), data, {
+            onSuccess: () => {
+                setIncomingUrlModalOpen(false);
+            },
+        });
+
+     }
 
     return (
         <Authenticated
@@ -143,6 +162,34 @@ export default function Detail(props) {
                                 getOptionValue ={(option )=> option.code} 
                             />
                         </div>
+                    </div>
+                    <div className="pb-5 pt-5">
+                        <div className="flex justify-between">
+                            <div>
+                                <h3 className="text-lg leading-6 font-medium text-gray-900 mt-3"> Incoming URL </h3>
+                            </div>
+                            <div>
+                                <button type='button' onClick={() => setIncomingUrlModalOpen(true)} className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    Add Incoming URL
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-white shadow overflow-hidden rounded-md">
+                        <ul role="list" className="divide-y divide-gray-200">
+                            {props.incoming_url.map((data) => {
+                                return (
+                                    <li key={data.id} className="px-6 py-4">
+                                        <div className="flex">
+                                            <h2> {data.incoming_url} </h2>
+                                        </div>
+                                    </li>
+                                );
+                            })}
+                            {props.incoming_url.length == 0 &&
+                                <li className="flex p-5"> No URL added yet. </li>
+                            }
+                        </ul>
                     </div>
                     <div className="pb-5 pt-5">
                         <div className="flex justify-between">
@@ -313,6 +360,83 @@ export default function Detail(props) {
                                         type="button"
                                         className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
                                         onClick={() => setAccountModalOpen(false)}
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </Transition.Child>
+                    </div>
+                </Dialog>
+            </Transition.Root>
+
+            <Transition.Root show={incomingUrlModalOpen} as={Fragment}>
+                <Dialog as="div" className="fixed z-10 inset-0 overflow-y-auto" initialFocus={cancelButtonRef} onClose={setIncomingUrlModalOpen}>
+                    <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                        <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-300"
+                            enterFrom="opacity-0"
+                            enterTo="opacity-100"
+                            leave="ease-in duration-200"
+                            leaveFrom="opacity-100"
+                            leaveTo="opacity-0"
+                        >
+                            <Dialog.Overlay className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                        </Transition.Child>
+
+                        {/* This element is to trick the browser into centering the modal contents. */}
+                        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+                            &#8203;
+                        </span>
+                        <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-300"
+                            enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                            enterTo="opacity-100 translate-y-0 sm:scale-100"
+                            leave="ease-in duration-200"
+                            leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                            leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                        >
+                            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                                <div>
+                                    <div className="">
+                                        <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
+                                            Add Incoming URL
+                                        </Dialog.Title>
+                                        <div className="mt-2">
+                                            <p className="text-sm text-gray-500 pt-2 pb-4">
+                                                Create a new WhatsApp call back URL. Each url must have a unique consisting. 
+                                            </p>
+
+                                            <form id="new_incoming_url">
+                                            <div className="grid gap-6">                                                
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor="incoming_url" className="block text-sm font-medium text-gray-700">
+                                                        Name
+                                                    </label>
+                                                    <div className="mt-1 flex rounded-md shadow-sm">
+                                                        <Input name='incoming_url' required={true} id='incoming_url' placeholder='Incoming URL' handleChange={handleChange} />
+                                                    </div>
+                                                    <InputError message={errors.incoming_url} />
+                                                </div>
+                                            </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                                    <button
+                                        type="button"
+                                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
+                                        onClick={() => createNewIncomingUrl()}
+                                    >
+                                        Create
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
+                                        onClick={() => setIncomingUrlModalOpen(false)}
                                     >
                                         Close
                                     </button>

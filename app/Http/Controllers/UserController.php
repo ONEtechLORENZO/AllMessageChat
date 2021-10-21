@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use App\Models\MailToAddress;
 use App\Models\OutgoingServerConfig;
+use App\Models\IncomingUrl;
 use Swift_SmtpTransport;
 use Swift_Mailer;
 use DB;
@@ -68,7 +69,8 @@ class UserController extends Controller
      public function userDetail($id)
       {
           $user = User::findOrFail($id);
-          return Inertia::render('Admin/User/UserDetail', ['user' => $user]);   
+          $token = $user->remember_token;
+          return Inertia::render('Admin/User/UserDetail', ['user' => $user , 'token' => $token]);   
       } 
 
     /**
@@ -76,6 +78,7 @@ class UserController extends Controller
      */
     public function storeUserRegistration(Request $request)
     {
+        $token = '';
         if(!$request->get('id')){
             $request->validate([
                 'name' => 'required|max:255',
@@ -85,6 +88,7 @@ class UserController extends Controller
             ]);
             $user = new User();
             $password = bcrypt($request->get('password'));
+        
         }   else {
             $user = User::findOrFail($request->get('id'));
             $password = $request->get('password');
@@ -93,7 +97,8 @@ class UserController extends Controller
             $fields = [
                 'name', 'email', 'role' , 'status' 
             ];
-            
+
+
             $user->name = $request->get('name');
             $user->email = $request->get('email');
             $user->role = $request->get('role');
@@ -102,10 +107,34 @@ class UserController extends Controller
                 $user->password = $password;
             }
             $user->save();
-
+            if( !$request->get('id') ){
+                //Create token new user
+                $this->creareAccessToken($user);
+            }
             return Redirect::route('user');
         
     }   
+
+    
+    /**
+     * Regenerate Accrss Token
+     */
+    public function regenerateToken(Request $request){
+        $userId = $request->get('user_id');
+        $user = User::findOrFail($request->get('user_id'));
+        $token = $this->creareAccessToken($user);
+        echo json_encode( ['token' => $token->plainTextToken]);
+    } 
+    
+    /**
+     * Create access token to the user
+     */
+    public function creareAccessToken($user){
+                $token = $user->createToken('WHATSAPP_API');
+                $user->remember_token = $token->plainTextToken;
+                $user->save();
+                return $token;
+    }
 
     /**
      * Delete User form list
@@ -132,12 +161,13 @@ class UserController extends Controller
             ->where('id', $id)
             ->first();
 
-        $templates = [];
+        $templates = $incomingUrls = [];
         if($account) {
             $templates = Template::where('account_id', $id)->get();
+            $incomingUrls = IncomingUrl::where('account_id', $id)->get();
         }
      
-        return Inertia::render('Account/Detail', ['account' => $account, 'templates' => $templates]);
+        return Inertia::render('Account/Detail', ['account' => $account, 'templates' => $templates , 'incoming_url' => $incomingUrls ]);
     }
 
     /**
@@ -224,6 +254,21 @@ class UserController extends Controller
         return Redirect::route('account_view', $account_id);
     }
 
+    /**
+     * Create new Incoming URL
+     */
+    public function createNewIncomingURL(Request $request , $account_id){
+        $request->validate([ 
+            'incoming_url' => 'required',
+        ]);
+        $incomingUrl = new IncomingUrl();
+        $incomingUrl->incoming_url = $request->get('incoming_url');
+        $incomingUrl->account_id = $account_id;
+
+        $incomingUrl->save();
+
+        return Redirect::route('account_view', $account_id);
+    }
     /**
      * Template's detail view
      */

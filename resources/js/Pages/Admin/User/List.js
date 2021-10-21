@@ -37,7 +37,7 @@ export default function Dashboard(props) {
                 </div> 
                 <div>
                 <Link
-                    href="/admin/user/create"
+                    href={route('create_user')}
                     className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 >
                     Create new User
@@ -84,7 +84,7 @@ export default function Dashboard(props) {
                                 </div>
                                 <div className="ml-4">
                                   <div className="text-sm font-medium text-gray-900">
-                                    <Link href={"/admin/user/" +person.id }> {person.name} </Link>
+                                    <Link  href={route('user_detail' , [person.id])} > {person.name} </Link>
                                   </div>
                                 </div>
                               </div>
@@ -104,7 +104,7 @@ export default function Dashboard(props) {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                               <div className="-mt-px flex divide-x divide-gray-200">
-                              <Link href={"/admin/user/edit/"+person.id} className="px-2 text-indigo-600 hover:text-indigo-900">
+                              <Link href={route('edit_user' , [person.id])} className="px-2 text-indigo-600 hover:text-indigo-900">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                 </svg>
