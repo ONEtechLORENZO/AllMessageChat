@@ -59,6 +59,12 @@ export default function Dashboard(props) {
         {value: 'Customer', label: 'Customer'},
     ];
 
+    // Cheack Admin user
+    var isAdmin = false;
+    if(  data.role == 'Admin' || props.currentUser.role == 'Admin' ){
+        isAdmin  = true;
+    }
+
 	return(
 	
 		<Authenticated
@@ -148,7 +154,7 @@ export default function Dashboard(props) {
                     <InputError message={errors.oba} />
                 </div>
             </div>
-
+            { isAdmin &&
     		<div className="form-group col-span-6 sm:col-span-4 mt-5">
     			<label htmlFor="role" className="block text-sm font-medium text-gray-700">
                 	Role
@@ -164,6 +170,7 @@ export default function Dashboard(props) {
                         />
                 </div>
     		</div>
+            }
     		</form>
     	</div>
 

@@ -37,7 +37,14 @@ class UserController extends Controller
      */
     public function user(Request $request)
     {
-        $users = DB::table('users')->get();
+        $user = $request->user();
+        $users = DB::table('users')
+                    ->where( function($query) use($user){
+                        if($user->role != 'Admin' ){
+                            $query->where('id' , $user->id);
+                        }
+                    })
+                    ->get();
         return Inertia::render('Admin/User/List', ['users' => $users ]);
     } 
 
@@ -54,13 +61,13 @@ class UserController extends Controller
     /**
      * Edit User
      */
-    public function editUser($id)
+    public function editUser(Request $request ,$id)
     {
 
-        $user = new User();
         $user = User::findOrFail($id);
         $password = $user->password;
-        return Inertia::render('Admin/User/CreateUser', ['user' => $user , 'password' => $password]);   
+        $currentUser = $request->user();
+        return Inertia::render('Admin/User/CreateUser', ['user' => $user , 'password' => $password , 'currentUser' => $currentUser]);   
     } 
 
     /**
@@ -169,6 +176,26 @@ class UserController extends Controller
      
         return Inertia::render('Account/Detail', ['account' => $account, 'templates' => $templates , 'incoming_url' => $incomingUrls ]);
     }
+    
+    /**
+     * Edit Account Data
+     */
+    public function editAccountData( $id ){
+        $account = Account::findOrFail($id);
+        return Inertia::render('Account/Registration', ['account' => $account]);
+    } 
+
+    /**
+     * Delete account 
+     */
+    public function deleteAccount( Request $request ){
+    
+        $accountId = $request->get('id');
+        $user_id = $request->user()->id;
+        Account::destroy($accountId);
+        $accounts = Account::where('user_id', $user_id)->get();
+        echo json_encode(['accounts' => $accounts]); die;
+    } 
 
     /**
      * Show account registration form
@@ -183,20 +210,52 @@ class UserController extends Controller
      */
     public function storeAccountRegistration(Request $request) 
     {
-        $request->validate([
-            'company_name' => 'required|max:255',
-            'company_type' => 'required',
-            'website' => 'required|max:255',
-            'email' => 'required|max:255|email',
-            'estimated_launch_date' => 'required|date',
-            'type_of_integration' => 'required',
-            'phone_number' => 'required|numeric',
-            'display_name' => 'required|max:255',
-            'business_manager_id' => 'required|max:255',
-            'profile_picture' => 'required|image|mimes:jpg,png',
-            'profile_description' => 'required|max:139',
-            'oba' => 'required|boolean',
-        ]);
+
+        $user_id = $request->user()->id;
+        // Create new account
+        if($request->has('id') && $request->get('id') > 0){
+            $id = $request->get('id');
+            $request->validate([
+                    'company_name' => 'required|max:255',
+                    'company_type' => 'required',
+                    'website' => 'required|max:255',
+                    'email' => 'required|max:255|email',
+                    'estimated_launch_date' => 'required|date',
+                    'type_of_integration' => 'required',
+                    'phone_number' => 'required|numeric',
+                    'display_name' => 'required|max:255',
+                    'business_manager_id' => 'required|max:255',
+                    'profile_description' => 'required|max:139',
+                    'oba' => 'required|boolean',
+            ]);
+            $existPhnCheck = Account::where('phone_number', $request->get('phone_number'))->where('id', '!=' , $id)->first();
+            if($existPhnCheck){
+                $request->validate([
+                    'phone_number' => 'required|numeric|unique:accounts',
+                    ]);
+            }
+            $account = Account::findOrFail($id);
+        } else {
+            $request->validate([
+                    'company_name' => 'required|max:255',
+                    'company_type' => 'required',
+                    'website' => 'required|max:255',
+                    'email' => 'required|max:255|email',
+                    'estimated_launch_date' => 'required|date',
+                    'type_of_integration' => 'required',
+                    'phone_number' => 'required|numeric|unique:accounts',
+                    'display_name' => 'required|max:255',
+                    'business_manager_id' => 'required|max:255',
+                    'profile_picture' => 'required|image|mimes:jpg,png',
+                    'profile_description' => 'required|max:139',
+                    'oba' => 'required|boolean',
+            ]);
+            $account = new Account();
+        
+            // Storing the profile picture
+            $path = $request->file('profile_picture')->store('profile_pictures');
+            $account->profile_picture = $path;
+        }
 
         $fields = [
             'company_name', 'company_type', 'website', 'email', 
@@ -204,19 +263,14 @@ class UserController extends Controller
             'business_manager_id', 'profile_description', 'oba',
         ];
 
-        $user_id = $request->user()->id;
         
-        // Create new account
-        $account = new Account();
         foreach($fields as $field_name) {
             $field_value = $request->get($field_name);
             $account->$field_name = $field_value;
         }
         // Setting logged in user id
         $account->user_id = $user_id;
-        // Storing the profile picture
-        $path = $request->file('profile_picture')->store('profile_pictures');
-        $account->profile_picture = $path;
+
         $account->status = 'New'; // Setting the status as New.
         $account->save();
 

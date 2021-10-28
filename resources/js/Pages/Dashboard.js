@@ -1,8 +1,47 @@
-import React from 'react';
+import React,{useState} from 'react';
 import Authenticated from '@/Layouts/Authenticated';
 import { Head, Link } from '@inertiajs/inertia-react';
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 
 export default function Dashboard(props) {
+    
+    const[ deleteAccoutId , setDeleteAccountId] = useState('');
+    const[ accounts , setAccountList] = useState(props.accounts);
+
+    // Delete Account
+    function deleteAccount(event){
+        var accountId = event.target.dataset.account_id;
+        setDeleteAccountId(accountId);
+
+        confirmAlert({
+            title: 'Confirm to Delete',
+            message: 'Are you sure to do this.',
+            buttons: [
+            {
+              label: 'Yes',
+              onClick: () => {
+                axios({
+                    method: 'delete',
+                    url: route( 'delete_account', accountId),
+                    data: {
+                        id: accountId
+                    }
+                })
+                .then( (response) =>{
+                    setAccountList(response.data.accounts);
+                });
+
+              }
+            },
+            {
+              label: 'No',
+              onClick: () => setDeleteAccountId('')
+            }
+          ]
+        });
+    }
+
     return (
         <Authenticated
             auth={props.auth}
@@ -30,7 +69,7 @@ export default function Dashboard(props) {
                     </div>
                     <div className="bg-white shadow overflow-hidden rounded-md">
                         <ul role="list" className="divide-y divide-gray-200">
-                            {props.accounts.map((account) => {
+                            {accounts.map((account) => {
                                 let status_class_names = 'bg-yellow-100 text-yellow-800';
                                 if(account.status == 'Success') {
                                     status_class_names = 'bg-green-100 text-green-800';
@@ -41,17 +80,32 @@ export default function Dashboard(props) {
 
                                 return (
                                     <li key={account.id} className="px-6 py-4">
-                                        <div className="flex">
+                                        <div className="flex justify-between">
+                                            <div className="flex">
                                             <h2><Link href={route('account_view', account.id)}>{account.display_name}</Link></h2>
                                             <span className={`ml-3 text-sm inline-flex items-center px-2 py-0.5 rounded font-medium ${status_class_names}`}>
                                                 {account.status}
                                             </span>
+                                            </div>
+                                            
+                                            <div className='inline-flex'>
+                                                  <button
+                                                      onClick={(e) => deleteAccount(e)}
+                                                      data-account_id={account.id}
+                                                      type="button"
+                                                      className="inline-flex items-center px-4 py-1 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                                      >
+                                                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                      </svg>
+                                                  </button>
+                                            </div>
                                         </div>
                                     </li>
                                 );
                             })}
                         </ul>
-                        {!props.accounts || props.accounts.length == 0 ? 
+                        {!accounts || accounts.length == 0 ? 
                             <div className="text-center py-12">
                                 <svg
                                     className="mx-auto h-12 w-12 text-gray-400"

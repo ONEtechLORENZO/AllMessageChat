@@ -2,6 +2,8 @@ import React, {useState} from 'react';
 import Authenticated from '@/Layouts/Authenticated';
 import { Head, Link } from '@inertiajs/inertia-react';
 import Moment from 'moment';
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 
 export default function UserDetail(props) {
 
@@ -18,19 +20,34 @@ export default function UserDetail(props) {
     
     // Update Token
     function updateToken(){
-        setSpinClass('animate-spin');
+        confirmAlert({
+            title: 'Confirm to change the token',
+            message: 'Are you sure to do this.',
+            buttons: [
+                {
+                    label: 'Yes',
+                    onClick: () => {
+                        setSpinClass('animate-spin');
 
-        axios({
-            method: 'post',
-            url: route('regenerate_token'),
-            data: {
-                user_id: props.user.id,
-            }
-        })
-        .then( (response) =>{
-            setToken(response.data.token);
-            setSpinClass(' ');
-        });
+                        axios({
+                            method: 'post',
+                            url: route('regenerate_token'),
+                            data: {
+                                user_id: props.user.id,
+                            }
+                        })
+                        .then( (response) =>{
+                            setToken(response.data.token);
+                            setSpinClass(' ');
+                        });
+                    }
+                },    
+                {
+                    label: 'No',
+                   onClick: () => '',
+                }
+        ]
+    });
 
     }
 

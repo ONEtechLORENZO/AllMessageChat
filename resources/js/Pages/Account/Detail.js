@@ -110,9 +110,14 @@ export default function Detail(props) {
             auth={props.auth}
             errors={props.errors}
             header={<div className="flex justify-between"> 
-                <div> 
-                    <h2 className="font-semibold text-xl text-gray-800 leading-tight">Profile Info</h2>
-                </div> 
+                    <div> <h2 className="font-semibold text-xl text-gray-800 leading-tight">Profile Info</h2> </div>
+                    <div className="inline-flex">
+                        <Link 
+                            href={route('edit_account' , props.account.id)}
+                            class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
+                            Edit
+                        </Link>
+                    </div>
             </div>}
         >
             <Head title="Profile Info" />

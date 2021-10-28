@@ -8,6 +8,7 @@ use Auth;
 use App\Models\MessageLog;
 use App\Models\IncomingUrl;
 use App\Models\MessageResponse;
+use App\Models\Account;
 use DateTime;
 use DB;
 class MessageLogController extends Controller
@@ -25,22 +26,25 @@ class MessageLogController extends Controller
     {
         $limit = 10;
         $condition = '';
+        $user = Auth::user();
         if(isset($_GET['key'])){
             $condition = $request->get('key');
         }
 
-        $messageLogs = MessageLog::orderBy('id' , 'desc')
+        $messageLogs = MessageLog::select( 'direction' , 'message_logs.created_at' , 'display_name' , 'content' , 'sender' , 'destinations' , 'message_logs.status' )
+                        ->rightJoin('accounts' , 'accounts.id' , 'account_id')
+                        ->orderBy('message_logs.id' , 'desc')
+                        ->where('message_logs.user_id' , $user->id )
                         ->where( function($query) use ( $condition ) { 
                             if( $condition != ''){
                                 $query->where('content' ,  'like', '%' . $condition . '%' );
-                                $query->orWhere('status' , 'like', '%' . $condition . '%' );
+                                $query->orWhere('message_logs.status' , 'like', '%' . $condition . '%' );
                             }
                         })
                         ->paginate($limit);
                             
         $totalMessages = $messageLogs->total();
        
-        $user = Auth::user();
         $name = $user->name;
         $currentPage = (isset($_GET['page'])) ? $_GET['page'] : 1 ;
         
@@ -61,7 +65,10 @@ class MessageLogController extends Controller
         $keyWord = $request->get('key');
        
  //      DB::enableQueryLog();
-        $messageLogs = MessageLog::orderBy('id' , 'desc')
+        $messageLogs = MessageLog::select( 'direction' , 'message_logs.created_at' , 'display_name' , 'content' , 'sender' , 'destinations' , 'message_logs.status' )
+                        ->rightJoin('accounts' , 'accounts.id' , 'account_id')
+                        ->orderBy('message_logs.id' , 'desc')
+                        ->where('message_logs.user_id' , $user->id )
                         ->where( function($query) use ( $keyWord ) {
                             if($keyWord['messageContent']){
                                 $query->where('content' ,  'like', '%' . $keyWord['messageContent'] . '%' );
@@ -73,7 +80,7 @@ class MessageLogController extends Controller
                                 $query->where('direction' , $keyWord['messageDirection'] );
                             }
                             if($keyWord['messageStatus']){
-                                $query->where('status' , $keyWord['messageStatus'] );
+                                $query->where('message_logs.status' , $keyWord['messageStatus'] );
                             }
                         })    
                         ->paginate($limit);
@@ -103,31 +110,32 @@ class MessageLogController extends Controller
         $post_data = file_get_contents("php://input");
         $data = json_decode($post_data);
         
+    error_log( print_r( 'Incoming Response' , true) );
+    error_log( print_r( $post_data , true) );
+
         if( isset($data->destination) && $this->origin == $data->destination ) {
             $this->incomingMessageResponse($data);
+        } else {
+
+            $messageLog = MessageLog::where('messageId' , $data->messageId )->first();
+
+            if (isset($data->resultDescription) && str_contains( $data->resultDescription , 'Message failed')) { 
+                $messageLog->status = 'Failed';
+            }else{
+                $messageLog->status = 'Delivered';
+            }
+            $messageLog->type = $data->messageType;
+            $messageLog->save ();
+            
+            $response = new MessageResponse();
+            $response->message_id = $data->messageId;
+            $response->ref_id = $data->refId;
+            $response->type = $data->messageType;
+            $response->response = $data->resultDescription;
+            $response->save();
         }
 
-        $messageLog = MessageLog::where('messageId' , $data->messageId )->first();
-        if (str_contains( $data->resultDescription , 'Message failed')) { 
-            $messageLog->status = 'Failed';
-        }else{
-            $messageLog->status = 'Delivered';
-        }
-        $messageLog->type = $data->messageType;
-        $messageLog->save ();
-
-        $response = new MessageResponse();
-        $response->message_id = $data->messageId;
-        $response->ref_id = $data->refId;
-        $response->type = $data->messageType;
-        $response->response = $data->resultDescription;
-        $response->save();
-        
         // Update CRM Record
-        $this->sendMessageResponse($data);
-        
-//        error_log(print_r( $data , true));
-
     }
 
     public function sendMessageResponse($data){
@@ -148,13 +156,12 @@ class MessageLogController extends Controller
             $postData['timeUtc'] = $date->format('Y-m-d\TH:i:s');
             $postData['channel'] = 'WhatsApp';
 
-error_log( print_r( 'Send Message Response' , true) );
-error_log( print_r( json_encode($postData) , true) );
+    error_log( print_r( 'Send Message Response - '. $messageLog->content , true) );
 
        $callBackUrl = IncomingUrl::where('account_id' , $messageLog->account_id)->first(); 
        $curl = curl_init();
        curl_setopt_array($curl, array(
-                   //CURLOPT_URL => 'https://demo.blackant.io/gio/gio-whatsapp/public/incoming-cm', //$callBackUrl->incoming_url,
+            //       CURLOPT_URL => 'https://demo.blackant.io/incoming/test.php', 
                    CURLOPT_URL => $callBackUrl->incoming_url,
                    CURLOPT_RETURNTRANSFER => true,
                    CURLOPT_ENCODING => '',
@@ -185,7 +192,12 @@ error_log( print_r( json_encode($postData) , true) );
     public function incomingMessageResponse($data){
 
         if( $this->origin == $data->destination ) {
-            $id = Auth::id();
+            
+                $getAccount = Account::where('phone_number' , $data->destination )->first();
+                $accountId = $getAccount->id;
+                $user_id = $getAccount->user_id;            
+
+            
             $messageLog = MessageLog::where('messageId' , $data->messageId )->first();
             if(! $messageLog){
                 $messageLog = new MessageLog();
@@ -196,15 +208,14 @@ error_log( print_r( json_encode($postData) , true) );
             $messageLog->content = $data->content->message->text;
             $messageLog->sender = $data->source;
             $messageLog->status = 'Incoming';
-            $messageLog->user_id = $id;
+            $messageLog->user_id = $user_id;
             $messageLog->refId = $data->route->refId;
             $messageLog->messageId = $data->messageId;
             $messageLog->destinations = json_encode( array($data->destination) );
             $messageLog->country = '';
-       $messageLog->account_id = 1;
-       $messageLog->save();
-        return true;
-
+            $messageLog->account_id = $accountId;
+            $messageLog->save();
+            return true;
         }
     } 
 
@@ -214,8 +225,13 @@ error_log( print_r( json_encode($postData) , true) );
     public function saveMessageLog( $data )
     {
             $id = Auth::id();
+            $accountId = '';
+            if(isset($_POST['account_number'])){
+                $getAccount = Account::where('phone_number' , $_POST['account_number'] )->first();
+                $accountId = $getAccount->id;
+            }
             $messageLog = new MessageLog();
-            $messageLog->account_id = 1;
+            $messageLog->account_id = $accountId;
             $messageLog->channel = 'WhatsApp';
             $messageLog->content = $data['subject'];
             $messageLog->direction = 'Out';
@@ -228,7 +244,7 @@ error_log( print_r( json_encode($postData) , true) );
             $messageLog->destinations = json_encode($data['destinations']); 
             $messageLog->save();    
 
-            $this->sendMessageResponse($messageLog);
+//            $this->sendMessageResponse($messageLog);
         return true; 
     }        
 
@@ -236,20 +252,19 @@ error_log( print_r( json_encode($postData) , true) );
      * Send Messages using API from CRM
      */
     public function sendMessage(Request $request){
-    
+   
         $data['authorization'] = $this->token;
         $data['apiKey'] = $this->apiKey;
         
         $data['platFormId'] = $this->platFormId;
         $data['platFormParentId'] = $this->platFormParentId; 
         $data['priority'] = 'NORMAL';
-        $data['source'] = $this->origin;
+        $data['source'] = $_POST['account_number'];
         $data['destinations'] = array( $_POST['destination']);
         $data['subject'] = $_POST['content'];
         $data['refId'] = mt_rand(10000000,99999999);
 
-//error_log( print_R( json_encode($data), true));
-
+        // Post message to Whatsapp with linkmobility
         $curl = curl_init();
         curl_setopt_array($curl, array(
                     CURLOPT_URL => 'https://n-eu.linkmobility.io/whatsapp-message/messages',

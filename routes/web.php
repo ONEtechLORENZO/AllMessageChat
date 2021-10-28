@@ -57,17 +57,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/messages/destination' , [MessageLogController::class , 'destination'])->name('destination');
     Route::post('/messages/search_content' , [MessageLogController::class , 'searchContent'])->name('searchContent');
 
+    // Accounts
     Route::get('/account/registration', [UserController::class, 'accountRegistration'])->name('account_registration');
-
-    Route::post('/account/registration', [UserController::class, 'storeAccountRegistration'])->name('store_account_registration');
-
+    Route::get('/account/edit/{id}', [UserController::class, 'editAccountData'])->name('edit_account');
+    Route::post('/account/storeRegistration', [UserController::class, 'storeAccountRegistration'])->name('store_account_registration');
     Route::post('/account/{id}/template', [UserController::class, 'createNewTemplate'])->name('create_new_template');
-
     Route::get('/account/{id}/template/{template_id}', [UserController::class, 'templateDetailView'])->name('template_detail_view');
-
     Route::post('/account/{id}/template/{template_id}', [UserController::class, 'storeTemplate'])->name('store_template');
-
     Route::get('/account/{id}', [UserController::class, 'showAccount'])->name('account_view');
+    Route::delete('/account/delete_account', [UserController::class, 'deleteAccount'])->name('delete_account');
 
     Route::get('/image/{type}/{id}', [ImageController::class, 'showImage'])->name('show_image');
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Authenticated from '@/Layouts/Authenticated';
 import Input from '@/Components/Forms/Input';
 import TextArea from '@/Components/Forms/TextArea';
@@ -13,6 +13,7 @@ import {defaultPristineConfig} from '@/Pages/Constants';
 function Registration(props) {
 
     const { data, setData, post, processing, errors, reset } = useForm({
+        id: '',
         company_name: '',
         company_type: '',
         website: '',
@@ -39,6 +40,14 @@ function Registration(props) {
         {value: 'Support', label: 'Support'},
     ];
 
+    useEffect(() => {
+        if (typeof props.account !== 'undefined') {
+            let newData = Object.assign({}, props.account);
+            setData(newData);
+        }
+    },[]);
+
+
     /**
      * Validate the form and submit
      */
@@ -46,10 +55,10 @@ function Registration(props) {
     {
         var pristine = new PristineJS(document.getElementById("account_registration"), defaultPristineConfig);
         let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required], textarea[data-pristine-required]'));
+
         if(!is_validated) {
             return false;
         }
-
         post(route('store_account_registration'));
     }
 
@@ -80,6 +89,7 @@ function Registration(props) {
 
             <div className="py-12 px-24">
                 <form className="space-y-6" action="#" method="POST" id="account_registration">
+                    <input type="hidden" value={data.id} name="id" />
                     <div className="space-y-6">
                         <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
                             <div className="md:grid md:grid-cols-3 md:gap-6">
@@ -96,7 +106,7 @@ function Registration(props) {
                                                 Company Name
                                             </label>
                                             <div className="mt-1 flex rounded-md shadow-sm">
-                                                <Input name='company_name' required={true} id='company_name' placeholder='Your company name' handleChange={handleChange} />
+                                                <Input name='company_name' value={data.company_name} required={true} id='company_name' placeholder='Your company name' handleChange={handleChange} />
                                             </div>
                                             <InputError message={errors.company_name} />
                                         </div>
@@ -123,7 +133,7 @@ function Registration(props) {
                                                 Company website
                                             </label>
                                             <div className="mt-1 flex rounded-md shadow-sm">
-                                                <Input required={true} name='website' id='website' placeholder='Enter your company website' handleChange={handleChange} />
+                                                <Input required={true} name='website' value={data.website} id='website' placeholder='Enter your company website' handleChange={handleChange} />
                                             </div>
                                             <InputError message={errors.website} />
                                         </div>
@@ -133,7 +143,7 @@ function Registration(props) {
                                                 Email (Technical point of contact)
                                             </label>
                                             <div className="mt-1 flex rounded-md shadow-sm">
-                                                <Input required={true} type='email' name='email' id='email' placeholder='Email'  handleChange={handleChange}/>
+                                                <Input required={true} type='email' name='email' value={data.email}  id='email' placeholder='Email'  handleChange={handleChange}/>
                                             </div>
                                             <InputError message={errors.email} />
                                         </div>
@@ -143,7 +153,7 @@ function Registration(props) {
                                                 Estimated launch date
                                             </label>
                                             <div className="mt-1 flex rounded-md shadow-sm">
-                                                <Input required={true} type='date' name='estimated_launch_date' id='estimated_launch_date' placeholder='' handleChange={handleChange} />
+                                                <Input required={true} type='date' name='estimated_launch_date' value={data.estimated_launch_date} id='estimated_launch_date' placeholder='' handleChange={handleChange} />
                                             </div>
                                             <InputError message={errors.estimated_launch_date} />
                                         </div>
@@ -185,7 +195,7 @@ function Registration(props) {
                                                 Phone number
                                             </label>
                                             <div className="mt-1 flex rounded-md shadow-sm">
-                                                <Input required={true} name='phone_number' id='phone_number' placeholder='' handleChange={handleChange} />
+                                                <Input required={true} name='phone_number' value={data.phone_number} id='phone_number' placeholder='' handleChange={handleChange} />
                                             </div>
                                             <InputError message={errors.phone_number} />
                                         </div>
@@ -195,7 +205,7 @@ function Registration(props) {
                                                 Display Name
                                             </label>
                                             <div className="mt-1 flex rounded-md shadow-sm">
-                                                <Input required={true} name='display_name' id='display_name' placeholder='' handleChange={handleChange} />
+                                                <Input required={true} name='display_name' value={data.display_name} id='display_name' placeholder='' handleChange={handleChange} />
                                             </div>
                                             <InputError message={errors.display_name} />
                                         </div>
@@ -205,7 +215,7 @@ function Registration(props) {
                                                 Business manager Id
                                             </label>
                                             <div className="mt-1 flex rounded-md shadow-sm">
-                                                <Input required={true} name='business_manager_id' id='business_manager_id' placeholder='' handleChange={handleChange} />
+                                                <Input required={true} name='business_manager_id' value={data.business_manager_id} id='business_manager_id' placeholder='' handleChange={handleChange} />
                                             </div>
                                             <InputError message={errors.business_manager_id} />
                                         </div>
@@ -215,7 +225,10 @@ function Registration(props) {
                                                 Profile picture
                                             </label>
                                             <div className="mt-1 flex rounded-md">
-                                                <FileInput accept="image/png, image/jpeg, image/jpg" required={true} name='profile_picture' id='profile_picture' handleChange={handleChange} />
+                                                {data.profile_picture ?
+                                                 <FileInput accept="image/png, image/jpeg, image/jpg" name='profile_picture' id='profile_picture' handleChange={handleChange} />
+                                                :<FileInput accept="image/png, image/jpeg, image/jpg"  required={true} name='profile_picture' id='profile_picture' handleChange={handleChange} />
+                                                }
                                             </div>
                                             <p className="mt-2 text-sm text-gray-500">500px by 500px with 100px magin</p>
                                             <InputError message={errors.profile_picture} />
@@ -226,7 +239,7 @@ function Registration(props) {
                                                 Profile description
                                             </label>
                                             <div className="mt-1 flex rounded-md shadow-sm">
-                                                <TextArea required={true} name='profile_description' id='profile_description' placeholder='' handleChange={handleChange} />
+                                                <TextArea required={true} name='profile_description' value={data.profile_description} id='profile_description' placeholder='' handleChange={handleChange} />
                                             </div>
                                             <p className="mt-2 text-sm text-gray-500">Max 139 characters</p>
                                             <InputError message={errors.profile_description} />
@@ -239,6 +252,7 @@ function Registration(props) {
                                                         id="oba"
                                                         name="oba"
                                                         handleChange={handleChange}
+                                                        value={data.oba}
                                                     />
                                                 </div>
                                                 <div className="ml-3 text-sm">
