@@ -17,14 +17,20 @@ use App\Http\Controllers\MessageLogController;
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // Message send from CRM
-    Route::post('/vtSendMessage', [MessageLogController::class, 'sendMessage']);
+    if( isset($_POST['template']) && $_POST['template'] != ''){
+        Route::post('/vtSendMessage', [MessageLogController::class, 'sendTemplateMessage']);
+    } else {
+        Route::post('/vtSendMessage', [MessageLogController::class, 'sendMessage']);
+    }
+    Route::post('/vtFetchTemplate', [MessageLogController::class, 'getTemplates']);
 });
 
 
 
 
 //Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/sendMessages', [MessageLogController::class, 'sendMessage'])->name('send_message');    
-    Route::get('/sendMessageResponse', [MessageLogController::class, 'sendMessageResponse'])->name('send_message_response');    
-    Route::get('/incomingMessageResponse', [MessageLogController::class, 'incomingMessageResponse'])->name('incoming_message_response');    
+Route::get('/sendImageTemplateMessages', [MessageLogController::class, 'sendImageTemplateMessages'])->name('send_message');    
+Route::get('/sendMessages', [MessageLogController::class, 'sendMessage'])->name('send_message');    
+Route::get('/sendMessageResponse', [MessageLogController::class, 'sendMessageResponse'])->name('send_message_response');    
+Route::get('/incomingMessageResponse', [MessageLogController::class, 'incomingMessageResponse'])->name('incoming_message_response');    
 //});

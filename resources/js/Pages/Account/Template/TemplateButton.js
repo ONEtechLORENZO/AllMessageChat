@@ -8,6 +8,7 @@ function TemplateButton(props)
 {
     return (
         <>
+            <input type="hidden" name="id" value={props.data.id} />
             <div className="form-group col-span-6 sm:col-span-4">
                 <label htmlFor="button_type" className="block text-sm font-medium text-gray-700">
                     Button type

@@ -66,6 +66,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/account/{id}/template/{template_id}', [UserController::class, 'storeTemplate'])->name('store_template');
     Route::get('/account/{id}', [UserController::class, 'showAccount'])->name('account_view');
     Route::delete('/account/delete_account', [UserController::class, 'deleteAccount'])->name('delete_account');
+    Route::post('saveTemplateStatus/account/{acc_id}/template/{tmp_id}', [UserController::class, 'saveTemplateStatus'])->name('template_status_form');
 
     Route::get('/image/{type}/{id}', [ImageController::class, 'showImage'])->name('show_image');
 

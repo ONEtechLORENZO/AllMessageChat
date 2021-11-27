@@ -26,7 +26,6 @@ export default function Dashboard(props) {
         {label: 'action'},
     ];
 
- 
     return (
         <Authenticated
             auth={props.auth}
@@ -36,12 +35,14 @@ export default function Dashboard(props) {
                     <h2 className="font-semibold text-xl text-gray-800 leading-tight">Users</h2>
                 </div> 
                 <div>
+                { props.auth.user.role == 'Admin' &&
                 <Link
                     href={route('create_user')}
                     className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 >
                     Create new User
                 </Link>
+                }
                 </div> 
             </div>}
         >

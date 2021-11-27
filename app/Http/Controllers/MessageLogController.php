@@ -9,6 +9,7 @@ use App\Models\MessageLog;
 use App\Models\IncomingUrl;
 use App\Models\MessageResponse;
 use App\Models\Account;
+use App\Models\Template;
 use DateTime;
 use DB;
 class MessageLogController extends Controller
@@ -233,7 +234,7 @@ class MessageLogController extends Controller
             $messageLog = new MessageLog();
             $messageLog->account_id = $accountId;
             $messageLog->channel = 'WhatsApp';
-            $messageLog->content = $data['subject'];
+            $messageLog->content = isset($data['subject']) ? $data['subject'] : '';
             $messageLog->direction = 'Out';
             $messageLog->sender = $data['source'];
             $messageLog->country = 'India';
@@ -252,6 +253,11 @@ class MessageLogController extends Controller
      * Send Messages using API from CRM
      */
     public function sendMessage(Request $request){
+/*
+        $_POST['account_number'] = '+447797882221';
+        $_POST['destination'] = '+919994269535';
+        $_POST['content'] = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do elusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis ute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
+*/
    
         $data['authorization'] = $this->token;
         $data['apiKey'] = $this->apiKey;
@@ -312,6 +318,185 @@ class MessageLogController extends Controller
         echo json_encode($result); die;
     }
 
-    
-}
+    /**
+     * Send message with template
+     */
+    public function sendTemplateMessage( Request $request ){
+        
+        if(isset($_POST['account_number'])) {
+            $getAccount = Account::where('phone_number' , $_POST['account_number'] )->first();
+            $account_id = $getAccount->id;
+        }
+        $template_id = $_POST['template'];
+        $template = Template::where('account_id', $account_id)
+            ->where('id', $template_id)
+            ->where('account_id', $account_id)
+            ->first();
 
+        $data['authorization'] = $this->token;
+        $data['apiKey'] = $this->apiKey;
+
+        $data['platFormId'] = $this->platFormId;
+        $data['platFormParentId'] = $this->platFormParentId;
+        $data['priority'] = 'NORMAL';
+        $data['source'] = $_POST['account_number'];
+        $data['destinations'] = array( $_POST['destination']);
+        $data['refId'] = mt_rand(10000000,99999999);
+
+        $data['name_space'] = $template->template_name_space; //'80343e40_4c1a_4173_aac7_87b5593c3439';
+        $data['temp_name'] = $template->template_name; //"customer_test";
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+                    CURLOPT_URL => 'https://n-eu.linkmobility.io/whatsapp-message/messages',
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_ENCODING => '',
+                    CURLOPT_MAXREDIRS => 10,
+                    CURLOPT_TIMEOUT => 0,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                    CURLOPT_CUSTOMREQUEST => 'POST',
+                    CURLOPT_POSTFIELDS =>'{
+
+                    "platformId":"'.$data['platFormId'].'",
+                    "platformPartnerId":"'.$data['platFormParentId'].'",
+                    "priority":"'.$data['priority'].'",
+                    "eventReportGates":[
+                    "zxMLiFn6"
+                    ],
+                    "refId":"'.$data['refId'].'",
+                    "source":"'.$data['source'].'",
+                    "destinations":'.json_encode($data['destinations']).' ,
+
+                    "messages": [
+                    {
+                    "type": "template",
+                    "template": {
+                        "namespace": "'.$data['name_space'].'",
+                        "name": "'.$data['temp_name'].'",
+                        "language": {
+                            "code": "en"
+                        }
+                    }
+                    }
+                    ]
+                    }',
+                    CURLOPT_HTTPHEADER => array(
+                            'Content-Type: application/json',
+                            'x-api-key: '.$data['apiKey'],
+                            'Authorization: '.$data['authorization'],
+                            ),
+                    ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+        if( $response ){
+            $result = json_decode($response);
+            $data['result'] = $result;
+            $this->saveMessageLog($data);
+        }
+        echo json_encode($result); die;
+
+    }
+
+    /**
+     * Send Template Message with Image
+     */ 
+    public function sendImageTemplateMessages(Request $request){
+
+        $_POST['account_number'] = $this->origin;
+        $_POST['destination'] = '+919994269535';
+
+        if(isset($_POST['account_number'])) {
+            $getAccount = Account::where('phone_number' , $_POST['account_number'] )->first();
+            $account_id = $getAccount->id;
+        }
+
+        $data['authorization'] = $this->token;
+        $data['apiKey'] = $this->apiKey;
+
+        $data['platFormId'] = $this->platFormId;
+        $data['platFormParentId'] = $this->platFormParentId;
+        $data['priority'] = 'NORMAL';
+        $data['source'] = $_POST['account_number'];
+        $data['destinations'] = array( $_POST['destination']);
+        $data['refId'] = mt_rand(10000000,99999999);
+
+        $data['name_space'] = '80343e40_4c1a_4173_aac7_87b5593c3439';
+        $data['temp_name'] = 'image_template';
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+                    CURLOPT_URL => 'https://n-eu.linkmobility.io/whatsapp-message/messages',
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_ENCODING => '',
+                    CURLOPT_MAXREDIRS => 10,
+                    CURLOPT_TIMEOUT => 0,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                    CURLOPT_CUSTOMREQUEST => 'POST',
+                    CURLOPT_POSTFIELDS =>'
+{
+    "platformId": "COMMON_API",
+    "platformPartnerId": 19408,
+    "priority": "NORMAL",
+    "refId": "Ba_Test002",
+    "source": "+447797882221",
+    "destinations": [
+        "+919994269535"
+    ],
+    "messages": [
+        {
+            "type":"template",
+            "template":{
+                "namespace":"80343e40_4c1a_4173_aac7_87b5593c3439",
+                "name":"image_template",
+                "language":{
+                    "code":"en"
+                },
+                "components":[
+                    {
+                        "type":"header",
+                        "parameters":[
+                            {
+                            "type":"image",
+                            "image": {
+                                    "link": "https://demo.blackant.io/gio/video.mp4"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}
+                   ',
+                    CURLOPT_HTTPHEADER => array(
+                            'Content-Type: application/json',
+                            'x-api-key: '.$data['apiKey'],
+                            'Authorization: '.$data['authorization'],
+                            ),
+                    ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+        if( $response ){
+            $result = json_decode($response);
+            $data['result'] = $result;
+            $this->saveMessageLog($data);
+        }
+        echo json_encode($result); die;
+
+    }
+    
+    /** 
+     * Return templates list
+     */
+    public function getTemplates( Request $request ){
+        $user = $request->user();
+        $getTemplates = Template::leftJoin('accounts' , 'accounts.id' , 'account_id')
+            ->where('user_id' , $user->id)
+            ->get();
+        
+        echo json_encode( $getTemplates );
+    }
+}

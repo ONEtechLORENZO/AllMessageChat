@@ -36,22 +36,26 @@
 					<tr>
 						<td></td>
 					<td>
+                            @if($temp_content->header_content)
 							<tr>
 								<td> <b> Header </b> </td>
 								<td> - {{ $temp_content -> header_content }}</td>
 							</tr> 
+                            @endif
+                            @if($temp_content -> body)
 							<tr>
 								<td> <b> Body </b> </td>
 								<td> - {{ $temp_content -> body }}</td>
 							</tr> 
+                            @endif
+                            @if($temp_content -> footer_content)
 							<tr>
 								<td> <b> Footer </b> </td>
 								<td> - {{ $temp_content -> footer_content }}</td>
 							</tr> 
-							<tr>
-								<td> <b> Header </b> </td>
-								<td> - {{ $temp_content -> header_content }}</td>
-							</tr> 
+                            @endif
+                            
+                            @if(count($buttons))
 							<tr>
 								<td colspan="2"><h3> content of Buttons </h3></td>
 							</tr>
@@ -95,7 +99,7 @@
 									</table>
 								</td>
 							</tr>
-	                    
+	                    @endif
 	                </td>
 				</tr> 
 				</table>
@@ -109,5 +113,17 @@
 	<tr>
 		<td> <b> Profile Description</b></td>
 		<td> - {{$account_data->profile_description}} </td>
+	</tr>
+	<tr>
+		<td> <b> Callback Delivery Report</b></td>
+		<td> - {{url('incoming')}} </td>
+	</tr>
+	<tr>
+		<td> <b> Callback Incoming Tracffic</b></td>
+		<td> - {{url('incoming')}} </td>
+	</tr>
+	<tr>
+		<td> <b> Request for Whatsapp official business account (OBA)</b></td>
+		<td> - @if($account_data->oba) Yes @else No @endif </td>
 	</tr>
 </table>

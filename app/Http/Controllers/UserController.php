@@ -308,6 +308,21 @@ class UserController extends Controller
         return Redirect::route('account_view', $account_id);
     }
 
+    /** 
+     * Save template status
+     */
+    public function saveTemplateStatus(Request $request, $account_id , $template_id){
+        $template = Template::where('account_id', $account_id)
+            ->where('id', $template_id)
+            ->where('account_id', $account_id)
+            ->first();
+        $template->template_name_space = $request->get('template_name_space');
+        $template->template_name = $request->get('template_name');
+        $template->save();
+
+        return Redirect::route('account_view', $account_id);
+    }
+
     /**
      * Create new Incoming URL
      */
@@ -423,41 +438,43 @@ class UserController extends Controller
         $buttons = $request->get('buttons');
         if(count($buttons) > 0) {
             foreach($buttons as $button) {
-                $buttonObj = new MessageButton();
-                if($button['id']) {
-                    $buttonObj = MessageButton::find($button['id']);
-                }
+                if($button['button_type']){
+                    $buttonObj = new MessageButton();
+                    if($button['id']) {
+                        $buttonObj = MessageButton::find($button['id']);
+                    }
 
-                $buttonObj->button_type = $button['button_type'];
-                $buttonObj->body = $button['button_text'];
-                if($buttonObj->button_type == 'Call to Action') {
-                    $buttonObj->action = $button['action'];
-                    if($buttonObj->action == 'call_phone_number') {
-                        $buttonObj->body = $button['button_text'];
-                        $buttonObj->phone_number = $button['phone_number'];
+                    $buttonObj->button_type = $button['button_type'];
+                    $buttonObj->body = $button['button_text'];
+                    if($buttonObj->button_type == 'Call to Action') {
+                        $buttonObj->action = $button['action'];
+                        if($buttonObj->action == 'call_phone_number') {
+                            $buttonObj->body = $button['button_text'];
+                            $buttonObj->phone_number = $button['phone_number'];
+                        }
+                        else {
+                            $buttonObj->body = '';
+                            $buttonObj->phone_number = '';
+                        }
+
+                        if($buttonObj->action == 'visit_website') {
+                            $buttonObj->url_type = $button['url_type'];
+                            $buttonObj->url = $button['url'];
+                        }
+                        else {
+                            $buttonObj->url_type = '';
+                            $buttonObj->url = '';
+                        }
                     }
                     else {
-                        $buttonObj->body = '';
+                        $buttonObj->action = '';
                         $buttonObj->phone_number = '';
-                    }
-
-                    if($buttonObj->action == 'visit_website') {
-                        $buttonObj->url_type = $button['url_type'];
-                        $buttonObj->url = $button['url'];
-                    }
-                    else {
                         $buttonObj->url_type = '';
                         $buttonObj->url = '';
                     }
+                    $buttonObj->message_id = $message_id;
+                    $buttonObj->save();
                 }
-                else {
-                    $buttonObj->action = '';
-                    $buttonObj->phone_number = '';
-                    $buttonObj->url_type = '';
-                    $buttonObj->url = '';
-                }
-                $buttonObj->message_id = $message_id;
-                $buttonObj->save();
             }
         }
 
@@ -475,43 +492,46 @@ class UserController extends Controller
 
         // Send mail script
         $accFields = [
-            'Company Name' => 'company_name', 'Company Type' => 'company_type', 'Company Service Website' =>  'website', 'Technical Point Of Contact' => 'email', 'Estimated Lunch Date' => 'estimated_launch_date', 'Type of Integration' => 'type_of_integration', 'Phone Number' => 'phone_number', 'Display Name' => 'display_name'
+            'Company Name' => 'company_name', 'Company Type' => 'company_type', 'Company Service Website' =>  'website', 'Technical Point Of Contact' => 'email', 'Estimated Lunch Date' => 'estimated_launch_date', 'Type of Integration' => 'type_of_integration', 'Phone Number' => 'phone_number', 'Display Name' => 'display_name', 'Business Manager Id' => 'business_manager_id'
         ];
+
         $toAddressInfo = MailToAddress::where('user_id' ,$user_id )->first();
 
         // backup mailing configuration
         $backup = Mail::getSwiftMailer();
         $smtpConfigData = OutgoingServerConfig::where('user_id' ,$user_id )->first();
+        if($smtpConfigData){
 
-        // set mailing configuration
-        $transport = new \Swift_SmtpTransport(
-                                    $smtpConfigData->server_name, 
-                                    $smtpConfigData->port_num, 
-                                    $smtpConfigData->port_type
-                                );
+            // set mailing configuration
+            $transport = new \Swift_SmtpTransport(
+                    $smtpConfigData->server_name, 
+                    $smtpConfigData->port_num, 
+                    $smtpConfigData->port_type
+                    );
 
-        $transport->setUsername($smtpConfigData->user_name , $smtpConfigData->from_name );
-        $transport->setPassword( unserialize( base64_decode( $smtpConfigData->password) ) );
+            $transport->setUsername($smtpConfigData->user_name , $smtpConfigData->from_name );
+            $transport->setPassword( unserialize( base64_decode( $smtpConfigData->password) ) );
 
+            $maildoll = new Swift_Mailer($transport);
 
-        $maildoll = new Swift_Mailer($transport);
-        
-        // set mailtrap mailer
-        Mail::setSwiftMailer($maildoll);
+            // set mailtrap mailer
+            Mail::setSwiftMailer($maildoll);
 
-        Mail::send('Mail.MailTemplate', [
-                    'account_data' => $account , 
-                    'template_data' => $template , 
-                    'temp_content' => $message , 
-                    'account_field' => $accFields ,
-                    'buttons' => $message_buttons,
+            if($toAddressInfo){
+                Mail::send('Mail.MailTemplate', [
+                        'account_data' => $account , 
+                        'template_data' => $template , 
+                        'temp_content' => $message , 
+                        'account_field' => $accFields ,
+                        'buttons' => $message_buttons,
                 ], 
                 function($message) use( $toAddressInfo , $template ,$smtpConfigData ) {
-                   $message->to($toAddressInfo->to_email, $toAddressInfo->to_name)->subject( $template->category );
-                   $message->from($smtpConfigData->from_email , $smtpConfigData->from_name); 
+                    $message->to($toAddressInfo->to_email, $toAddressInfo->to_name)->subject( $template->category .' - ' .$template->name );
+                    $message->from($smtpConfigData->from_email , $smtpConfigData->from_name); 
                 });
-
-        Mail::setSwiftMailer($backup);  // Set Mailer Original credential
+            }
+            Mail::setSwiftMailer($backup);  // Set Mailer Original credential
+        }
 
         return Inertia::render('Account/Template/Detail', [
             'template' => $template,
