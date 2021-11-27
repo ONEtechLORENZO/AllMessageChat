@@ -1,9 +1,6 @@
-import { Fragment, useState , useEffect } from 'react'
-import { Disclosure, Menu, RadioGroup, Switch, Transition } from '@headlessui/react'
-import SideBar from '@/Components/Admin/SideBar'
-//import OutgoingServer from '@/Components/Admin/OutgoingServer'
-import { QuestionMarkCircleIcon, SearchIcon } from '@heroicons/react/solid'
-import { Head, useForm, Link } from '@inertiajs/inertia-react';
+import { useEffect } from 'react';
+import SideBar from '@/Components/Admin/SideBar';
+import { Head, useForm } from '@inertiajs/inertia-react';
 import Authenticated from '@/Layouts/Authenticated';
 import Input from '@/Components/Forms/Input';
 import PristineJS from 'pristinejs';
@@ -17,12 +14,8 @@ import {
 
 const subNavigation = [
   { name: 'Outgoing Server', href: route('settings') , icon: CogIcon, current: true },
-  { name: 'To Address', href: route('to_mail') , icon: MailIcon, current: false },
+  { name: 'Template notification', href: route('to_mail') , icon: MailIcon, current: false },
 ]
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
 
 export default function index(props) {
       const { data, setData, post, processing, errors, reset } = useForm({
@@ -44,16 +37,16 @@ export default function index(props) {
         }   
     },[]);
 
-  /**
+    /**
      * Handle input change
      */ 
     function handleChange(event) {
-      const name = event.target.name;
-      const value =  event.target.value;
-      let newState = Object.assign({}, data);
-      newState[name] = value;
+        const name = event.target.name;
+        const value =  event.target.value;
+        let newState = Object.assign({}, data);
+        newState[name] = value;
        
-      setData(newState);
+        setData(newState);
     }
 
     /**
@@ -69,13 +62,14 @@ export default function index(props) {
 
         post(route('store_smtp_data'));
     }
-  return (
-          <Authenticated
+
+    return (
+        <Authenticated
             auth={props.auth}
             errors={props.errors}
-          >
-          <Head title="Settings" />    
-    <div className="relative min-h-screen">
+        >
+            <Head title="Settings" />    
+                <div className="relative min-h-screen">
 
       <main className="max-w-7xl mx-auto pb-10 lg:py-12 lg:px-8">
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-5">
@@ -98,10 +92,10 @@ export default function index(props) {
                     <div className="mt-6 grid grid-cols-4 gap-6">
                       <div className="col-span-4 sm:col-span-2 form-group">
                         <label htmlFor="from_name" className="block text-sm font-medium text-gray-700">
-                          First name
+                            From name
                         </label>
                         <div className="mt-1 flex rounded-md shadow-sm">
-                        <Input name='from_name' value={data.from_name} required={true} type='text' id='from_name' placeholder='Your name' handleChange={handleChange} />
+                        <Input name='from_name' value={data.from_name} required={true} type='text' id='from_name' placeholder='From name' handleChange={handleChange} />
                       </div>
                         <InputError message={errors.from_name} />
                       </div>
@@ -146,18 +140,16 @@ export default function index(props) {
                       </div>
 
                       <div className="col-span-4 sm:col-span-1 form-group">
-                        <div className="mt-1 flex rounded-md shadow-sm">
-                        <div className="col-span-4 ml-2">
-                          <label htmlFor="expiration-date" className="">
-                            SSL
-                            <input class="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300 " name='port_type' value="ssl" checked={data.port_type === "ssl"} required={true} type='radio' id='port_type' onChange={(e) => handleChange(e)}/>
-                          </label>
+                        <div className="space-y-2">
+                        <div className="flex items-center">
+                            <input class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" name='port_type' value="ssl" checked={data.port_type === "ssl"} required={true} type='radio' id='ssl' onChange={(e) => handleChange(e)}/>
+                            <label htmlFor="ssl" className="ml-3 block text-sm font-medium text-gray-700">
+                                SSL
+                            </label>
                         </div>
-                        <div className="col-span-4 ml-2">
-                          <label>
-                            TLS
-                          <input class="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300 " name='port_type' value="tls" checked={data.port_type === "tls"} required={true} type='radio' id='port_type' onChange={(e) => handleChange(e)} />
-                          </label>
+                        <div className="flex items-center">
+                            <input class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" name='port_type' value="tls" checked={data.port_type === "tls"} required={true} type='radio' id='tls' onChange={(e) => handleChange(e)} />
+                            <label htmlFor="tls" className="ml-3 block text-sm font-medium text-gray-700"> TLS </label>
                         </div>
                       </div>
                         <InputError message={errors.port_type} />
@@ -199,8 +191,8 @@ export default function index(props) {
             </section>
           </div>
         </div>
-      </main>
-    </div>
-    </Authenticated>
-  )
+                </main>
+            </div>
+        </Authenticated>
+    );
 }

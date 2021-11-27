@@ -1,8 +1,5 @@
-import { Fragment, useState , useEffect } from 'react'
-import { Disclosure, Menu, RadioGroup, Switch, Transition } from '@headlessui/react'
-import SideBar from '@/Components/Admin/SideBar'
-//import OutgoingServer from '@/Components/Admin/OutgoingServer'
-import { QuestionMarkCircleIcon, SearchIcon } from '@heroicons/react/solid'
+import { useEffect } from 'react';
+import SideBar from '@/Components/Admin/SideBar';
 import { Head, useForm, Link } from '@inertiajs/inertia-react';
 import Authenticated from '@/Layouts/Authenticated';
 import Input from '@/Components/Forms/Input';
@@ -17,12 +14,8 @@ import {
 
 const subNavigation = [
   { name: 'Outgoing Server', href: "{route('settings')" , icon: CogIcon, current: true },
-  { name: 'To Address', href: "{route('to_mail')}" , icon: MailIcon, current: false },
+  { name: 'Template notification', href: "{route('to_mail')}" , icon: MailIcon, current: false },
 ]
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
 
 export default function index(props) {
       const { data, setData, post, processing, errors, reset } = useForm({

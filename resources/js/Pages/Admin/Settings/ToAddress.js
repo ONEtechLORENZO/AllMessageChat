@@ -1,8 +1,5 @@
-import { Fragment, useState , useEffect } from 'react'
-import { Disclosure, Menu, RadioGroup, Switch, Transition } from '@headlessui/react'
-import SideBar from '@/Components/Admin/SideBar'
-//import OutgoingServer from '@/Components/Admin/OutgoingServer'
-import { QuestionMarkCircleIcon, SearchIcon } from '@heroicons/react/solid'
+import { useEffect } from 'react';
+import SideBar from '@/Components/Admin/SideBar';
 import { Head, useForm, Link } from '@inertiajs/inertia-react';
 import Authenticated from '@/Layouts/Authenticated';
 import Input from '@/Components/Forms/Input';
@@ -17,12 +14,8 @@ import {
 
 const subNavigation = [
   { name: 'Outgoing Server', href: route('settings') , icon: CogIcon, current: false },
-  { name: 'To Address', href: route('to_mail') , icon: MailIcon, current: true },
+  { name: 'Template notification', href: route('to_mail') , icon: MailIcon, current: true },
 ]
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
 
 export default function index(props) {
       const { data, setData, post, processing, errors, reset } = useForm({
@@ -84,15 +77,18 @@ export default function index(props) {
                   <div className="bg-white py-6 px-4 sm:p-6">
                     <div>
                       <h2 id="payment-details-heading" className="text-lg leading-6 font-medium text-gray-900">
-                        To mail address
+                        Template Notification
                       </h2>
+                      <p className="mt-1 text-sm text-gray-500">
+                        Configure the email where you want to send notification when template gets saved
+                      </p>
                      
                     </div>
 
                     <div className="mt-6 grid grid-cols-4 gap-6">
                       <div className="col-span-4 sm:col-span-2 form-group">
                         <label htmlFor="to_name" className="block text-sm font-medium text-gray-700">
-                          To name
+                          Name
                         </label>
                         <div className="mt-1 flex rounded-md shadow-sm">
                         <Input name='to_name' value={data.to_name} required={true} type='text' id='to_name' placeholder='Your name' handleChange={handleChange} />
@@ -102,7 +98,7 @@ export default function index(props) {
 
                       <div className="col-span-4 sm:col-span-2 form-group">
                         <label htmlFor="to_email" className="block text-sm font-medium text-gray-700">
-                           To Email
+                           Email
                         </label>
                         <div className="mt-1 flex rounded-md shadow-sm">
                         <Input name='to_email' value={data.to_email} required={true} type='email' id='to_email' placeholder='To Email' handleChange={handleChange} />
