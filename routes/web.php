@@ -48,7 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Settings
     Route::get('/admin/settings/outgoing_server' , [SettingsController::class, 'settings'])->name('settings');
-    Route::get('/admin/settings/to_mail' , [SettingsController::class, 'toMail'])->name('to_mail');
+    Route::get('/admin/settings/template_notification' , [SettingsController::class, 'toMail'])->name('template_notification');
     Route::post('/admin/settings/saveSMTP', [SettingsController::class, 'saveOutgoingServerData'])->name('store_smtp_data');
     Route::post('/admin/settings/saveToAddress', [SettingsController::class, 'saveToAddressData'])->name('store_toAddress_data');
 

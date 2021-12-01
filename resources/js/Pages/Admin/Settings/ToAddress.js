@@ -1,21 +1,11 @@
 import { useEffect } from 'react';
-import SideBar from '@/Components/Admin/SideBar';
 import { Head, useForm, Link } from '@inertiajs/inertia-react';
 import Authenticated from '@/Layouts/Authenticated';
 import Input from '@/Components/Forms/Input';
 import PristineJS from 'pristinejs';
 import InputError from '@/Components/Forms/InputError';
 import {defaultPristineConfig} from '@/Pages/Constants';
-
-import {
-  CogIcon,
-  MailIcon,
-} from '@heroicons/react/outline'
-
-const subNavigation = [
-  { name: 'Outgoing Server', href: route('settings') , icon: CogIcon, current: false },
-  { name: 'Template notification', href: route('to_mail') , icon: MailIcon, current: true },
-]
+import SideBar from './SideBar.js';
 
 export default function index(props) {
       const { data, setData, post, processing, errors, reset } = useForm({
@@ -68,7 +58,7 @@ export default function index(props) {
 
       <main className="max-w-7xl mx-auto pb-10 lg:py-12 lg:px-8">
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-5">
-          <SideBar subNavigation={subNavigation} />
+          <SideBar />
           
           <div className="space-y-6 sm:px-6 lg:px-0 lg:col-span-9">
             <section aria-labelledby="payment-details-heading">
