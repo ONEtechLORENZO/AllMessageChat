@@ -1,6 +1,8 @@
-import React,{ useEffect } from 'react';
+import React, { Fragment, useRef, useEffect, useState } from 'react';
 import Authenticated from '@/Layouts/Authenticated';
 import Input from '@/Components/Forms/Input';
+import { Inertia } from '@inertiajs/inertia';
+import { Dialog, Transition } from '@headlessui/react'
 import TextArea from '@/Components/Forms/TextArea';
 import FileInput from '@/Components/Forms/FileInput';
 import PristineJS from 'pristinejs';
@@ -9,6 +11,7 @@ import { Head, useForm, Link } from '@inertiajs/inertia-react';
 import Dropdown from '@/Components/Forms/Dropdown';
 import InputError from '@/Components/Forms/InputError';
 import {defaultPristineConfig} from '@/Pages/Constants';
+import ConfirmPassword from '@/Pages/Auth/ConfirmPassword';
 
 export default function Dashboard(props) {
 
@@ -59,10 +62,45 @@ export default function Dashboard(props) {
         {value: 'Customer', label: 'Customer'},
     ];
 
+    // Password change modal
+    const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
+    const cancelButtonRef = useRef(null);
+
+    /**
+     * Open modal for change the password
+     */
+    function createNewPassword() {
+        var pristine = new PristineJS(document.getElementById("user_new_password"));
+        let is_validated = pristine.validate();
+        if(!is_validated) {
+            return false;
+        }
+        var new_pass = document.getElementById("new_password");
+        var conf_pass = document.getElementById("confirm_password");
+
+        pristine.addValidator(new_pass, function (value ) {
+            console.log(value );
+            if (value == pristine.confirm_password) {
+                return true;
+            }
+            return false;
+        }, "The new password and confirm password must match", 2, false);
+ 
+        Inertia.post(route('change_password', props.user.id), data, {
+            onSuccess: () => {
+                console.log('Password saved successfully')
+            }
+        });
+    }
+
     // Cheack Admin user
     var isAdmin = false;
     if(  data.role == 'Admin' || props.currentUser.role == 'Admin' ){
         isAdmin  = true;
+    }
+    var isChangePassword = false;
+    if (data.id == props.currentUser.id) {
+        isChangePassword = true;
     }
 
 	return(
@@ -72,12 +110,13 @@ export default function Dashboard(props) {
             errors={props.errors}
             header={<div className="flex justify-between"> 
                 <div> 
-                    <h2 className="font-semibold text-xl text-gray-800 leading-tight"> {data.id ? "Edit User" : "Create User"} </h2>
+                    <h2 className="font-Seminole text-xl text-gray-800 leading-tight"> {data.id ? "Edit User" : "Create User"} </h2>
                 </div> 
                 <div>
 
-                {data.id != '' &&
-                    <button 
+                {isChangePassword &&
+                    <button
+                       onClick={() => setChangePasswordModalOpen(true)}
                         className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
                         Change Password
@@ -124,17 +163,6 @@ export default function Dashboard(props) {
                 </div>
                 <InputError message={errors.email} />
     		</div>
-            {data.id == '' &&
-                    <div className="form-group col-span-6 sm:col-span-4 mt-5">
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                            Password
-                        </label>
-                        <div className="mt-1 flex rounded-md shadow-sm">
-                            <Input name='password' value={(data.password)} required={true} type='password' id='password' placeholder='Your password' handleChange={handleChange} />
-                        </div>
-                        <InputError message={errors.password} />
-                    </div>
-            }
 
     		<div className="form-group col-span-6 sm:col-span-4 mt-5">
                 <div className="flex items-start">
@@ -162,7 +190,7 @@ export default function Dashboard(props) {
 				<div className="mt-1 flex rounded-md shadow-sm">
                 	<Dropdown 
                         required={false} 
-                        id="rold"
+                        id="role"
                         name="role"
                         handleChange={handleChange}
                         options={roleOptions}
@@ -171,11 +199,95 @@ export default function Dashboard(props) {
                 </div>
     		</div>
             }
-    		</form>
-    	</div>
+                    </form>
+                </div>                    
+                </div>
 
+                        <Transition.Root show={changePasswordModalOpen} as={Fragment}>
+                <Dialog as="div" className="fixed z-10 inset-0 overflow-y-auto" initialFocus={cancelButtonRef} onClose={setChangePasswordModalOpen}>
+                    <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                        <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-300"
+                            enterFrom="opacity-0"
+                            enterTo="opacity-100"
+                            leave="ease-in duration-200"
+                            leaveFrom="opacity-100"
+                            leaveTo="opacity-0"
+                        >
+                            <Dialog.Overlay className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                        </Transition.Child>
 
-    </div>
-    </Authenticated>
+                        {/* This element is to trick the browser into centering the modal contents. */}
+                        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+                            &#8203;
+                        </span>
+                        <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-300"
+                            enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                            enterTo="opacity-100 translate-y-0 sm:scale-100"
+                            leave="ease-in duration-200"
+                            leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                            leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                        >
+                            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                                <div>
+                                    <div className="">
+                                        <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
+                                            Change Password
+                                        </Dialog.Title>
+                                        <div className="mt-2">
+                                            <form id="user_new_password">
+                                            <div className="grid gap-6">                                                
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor="new_password" className="block text-sm font-medium text-gray-700">
+                                                        New Password
+                                                    </label>
+                                                    <div className="mt-1 flex rounded-md shadow-sm">
+                                                        <Input type="password" minlength="8" name='new_password' required={true} id='new_password' placeholder='New Password' handleChange={handleChange} />
+                                                    </div>
+                                                    <InputError message={errors.incoming_url} />
+                                                </div>
+                                                </div>
+                                                <div className="grid gap-6 mt-3">                                                
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor="confirm_password" className="block text-sm font-medium text-gray-700">
+                                                        Confirm Password
+                                                    </label>
+                                                    <div className="mt-1 flex rounded-md shadow-sm">
+                                                        <Input type="password" minlength="8" name='confirm_password' required={true} id='confirm_password' placeholder='Confirm Password' handleChange={handleChange} />
+                                                    </div>
+                                                    <InputError message={errors.incoming_url} />
+                                                </div>
+                                            </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                                    <button
+                                        type="button"
+                                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
+                                        onClick={() => createNewPassword()}
+                                    >
+                                        Change 
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
+                                        onClick={() => setChangePasswordModalOpen(false)}
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </Transition.Child>
+                    </div>
+                </Dialog>
+            </Transition.Root>
+
+        </Authenticated>
+                    
 	);
 }

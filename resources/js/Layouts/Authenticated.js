@@ -24,9 +24,11 @@ export default function Authenticated({ auth, header, children }) {
                                 <NavLink href={route('dashboard')} active={route().current('dashboard')}>
                                     Dashboard
                                 </NavLink>
+                                {auth.user.role == 'Admin' &&
                                 <NavLink href={route('user')} active={route().current('user')}>
                                     User
                                 </NavLink>
+                                }
                                 <NavLink href={route('messages')} active={route().current('messages')}>
                                     Message Log
                                 </NavLink>
@@ -61,9 +63,14 @@ export default function Authenticated({ auth, header, children }) {
                                     </Dropdown.Trigger>
 
                                     <Dropdown.Content>
+                                        <Dropdown.Link href={route('user_profile', auth.user.id)} method="get" as="button">
+                                           Profile
+                                        </Dropdown.Link>
+                                        {auth.user.role == 'Admin' &&
                                         <Dropdown.Link href={route('settings')} method="get" as="button">
                                             Settings
                                         </Dropdown.Link>
+                                        }
                                         <Dropdown.Link href={route('logout')} method="post" as="button">
                                             Log Out
                                         </Dropdown.Link>

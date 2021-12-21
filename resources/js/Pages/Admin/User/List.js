@@ -2,18 +2,16 @@ import React ,{ useEffect } from 'react';
 import Authenticated from '@/Layouts/Authenticated';
 import { Head, Link } from '@inertiajs/inertia-react';
 import Moment from 'moment';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 export default function Dashboard(props) {
 
   // Delete Record 
-  function removeToCollection(id){
-    axios.delete("/admin/user/delete", {
+  function removeUser(id){
+    axios.get("user/delete", {
       params:{'id': id}
     })
     .then(res => {
-      console.log(res,'Deleted Successfully.');
+      window.location.reload();
     })
   }
 
@@ -111,7 +109,7 @@ export default function Dashboard(props) {
                                 </svg>
                               </Link>
 
-                              <a href='#' onClick={() => {if(window.confirm('Do you want delete the user?')){removeToCollection(person.id)};}} className="px-2 text-indigo-600 hover:text-indigo-900" >
+                              <a href='#' onClick={() => {if(window.confirm('Do you want delete the user?')){removeUser(person.id)};}} className="px-2 text-indigo-600 hover:text-indigo-900" >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>

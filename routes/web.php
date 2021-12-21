@@ -7,8 +7,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\MessageLogController;
-use App\Models\MessageLog;
-use App\Models\MessageResponse;
+use App\Http\Middleware\IsAdmin;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,32 +29,21 @@ Route::get('/', function () {
     ]);
 });
 
-Route::post('/incoming' , [MessageLogController::class , 'messageConfig'] );
-Route::get('/incoming-cm', [MessageLogController::class, 'incomingMessageResponse'])->name('incoming_message_response');    
+Route::post('/incoming', [MessageLogController::class, 'messageConfig']);
+Route::get('/incoming-cm', [MessageLogController::class, 'incomingMessageResponse'])->name('incoming_message_response');
 
+// Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
-    
+
+
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
-
-    // Users
-    Route::get('/admin/user', [UserController::class, 'user'])->name('user');
-    Route::get('admin/user/create', [UserController::class, 'createUser'])->name('create_user');
-    Route::get('admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_user');
-    Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_user');
-    Route::post('/admin/user/registration', [UserController::class, 'storeUserRegistration'])->name('store_user_data');
-    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('user_detail');
-    Route::post('/admin/user/regenerate_token', [UserController::class, 'regenerateToken'])->name('regenerate_token');
-
-    // Settings
-    Route::get('/admin/settings/outgoing_server' , [SettingsController::class, 'settings'])->name('settings');
-    Route::get('/admin/settings/template_notification' , [SettingsController::class, 'toMail'])->name('template_notification');
-    Route::post('/admin/settings/saveSMTP', [SettingsController::class, 'saveOutgoingServerData'])->name('store_smtp_data');
-    Route::post('/admin/settings/saveToAddress', [SettingsController::class, 'saveToAddressData'])->name('store_toAddress_data');
+    
+    Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('user_profile');
 
     // Messages
-    Route::get('/messages/list' , [MessageLogController::class , 'list'])->name('messages');
-    Route::get('/messages/destination' , [MessageLogController::class , 'destination'])->name('destination');
-    Route::post('/messages/search_content' , [MessageLogController::class , 'searchContent'])->name('searchContent');
+    Route::get('/messages/list', [MessageLogController::class, 'list'])->name('messages');
+    Route::get('/messages/destination', [MessageLogController::class, 'destination'])->name('destination');
+    Route::post('/messages/search_content', [MessageLogController::class, 'searchContent'])->name('searchContent');
 
     // Accounts
     Route::get('/account/registration', [UserController::class, 'accountRegistration'])->name('account_registration');
@@ -71,8 +59,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/image/{type}/{id}', [ImageController::class, 'showImage'])->name('show_image');
 
     // Create new Incoming URL
-    Route::post('account/{id}/incoming_url' , [UserController::class, 'createNewIncomingURL'])->name('create_new_incoming_url');
+    Route::post('account/{id}/incoming_url', [UserController::class, 'createNewIncomingURL'])->name('create_new_incoming_url');
+});
+
+// Check user is admin
+Route::middleware('auth', IsAdmin::class)->group(function () {
+    // Users
+    Route::get('/admin/user', [UserController::class, 'user'])->name('user');
+    Route::get('admin/user/create', [UserController::class, 'createUser'])->name('create_user');
+    Route::get('admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_user');
+    Route::get('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_user');
+    Route::post('/admin/user/registration', [UserController::class, 'storeUserRegistration'])->name('store_user_data');
+    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('user_detail');
+    Route::post('/admin/user/regenerate_token', [UserController::class, 'regenerateToken'])->name('regenerate_token');
+    Route::post('/admin/user/change_password/{id}', [UserController::class, 'changePassword'])->name('change_password');
+
+    // Settings
+    Route::get('/admin/settings/outgoing_server', [SettingsController::class, 'settings'])->name('settings');
+    Route::get('/admin/settings/template_notification', [SettingsController::class, 'toMail'])->name('template_notification');
+    Route::post('/admin/settings/saveSMTP', [SettingsController::class, 'saveOutgoingServerData'])->name('store_smtp_data');
+    Route::post('/admin/settings/saveToAddress', [SettingsController::class, 'saveToAddressData'])->name('store_toAddress_data');
 });
 
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
