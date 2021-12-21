@@ -231,4 +231,15 @@ return [
 
     ],
 
+    // Added link mobility data
+    'linkMobURL' => env('LINK_URL'),
+    'apiKey' =>  env('API_KEY'),
+    'token' =>  env('TOKEN'),
+    'origin' =>  env('ORIGIN'),
+    'platFormId' =>  env('PLATFORM_ID'),
+    'platFormParentId' => env('PLATFORM_PARENT_ID'),
+
+    // CRM Data
+    'crmUserName' => env('CRM_USER_NAME'),
+    'crmAccessKey' => env('CRM_ACCESS_KEY'),
 ];
