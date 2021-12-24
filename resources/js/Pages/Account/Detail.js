@@ -151,23 +151,6 @@ export default function Detail(props) {
                             </dl>
                         </div>
                     </div>
-
-                    <div className="pb-5 pt-5">
-                        <h3 className="text-lg leading-6 font-medium text-gray-900">Languages</h3>
-                    </div>
-                    <div className="bg-white shadow rounded-md">
-                        <p className="p-5">
-                            In this section you can select the languages that you would like to use for WhatsApp. You can apply these languages for your WhatsApp messages and templates. Click on the box to select and add a new language.
-                        </p>
-                        <div className='pb-5 pl-5 pr-5'>
-                            <Select 
-                                options={languages} 
-                                isMulti
-                                getOptionLabel ={(option) => option.name}
-                                getOptionValue ={(option )=> option.code} 
-                            />
-                        </div>
-                    </div>
                     <div className="pb-5 pt-5">
                         <div className="flex justify-between">
                             <div>
