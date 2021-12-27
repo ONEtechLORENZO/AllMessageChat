@@ -16,6 +16,7 @@ use App\Models\IncomingUrl;
 use Swift_SmtpTransport;
 use Swift_Mailer;
 use DB;
+use Illuminate\Support\Facades\Log;
 use Mail;
 
 
@@ -85,6 +86,7 @@ class UserController extends Controller
      */
     public function storeUserRegistration(Request $request)
     {
+        Log::info('Save user data process start');
         if (!$request->get('id')) {
             $request->validate([
                 'name' => 'required|max:255',
@@ -117,6 +119,7 @@ class UserController extends Controller
                 }
             );
         }
+        Log::info('Record saved successfully.');
         return Redirect::route('user');
     }
 
@@ -125,6 +128,7 @@ class UserController extends Controller
      */
     public function changePassword(Request $request, $id)
     {
+        Log::info('Password change process start');
         $user = User::findOrFail($id);
         $request->validate([
             'new_password' => 'required|min:8|required_with:confirm_password|same:confirm_password',
@@ -132,6 +136,7 @@ class UserController extends Controller
         ]);
         $user->password = bcrypt($request->get('new_password'));
         $user->save();
+        Log::info('Password changed successfully.');
         return Redirect::route('user_detail', $id);
     }
 
@@ -142,6 +147,7 @@ class UserController extends Controller
     {
         $user = User::findOrFail($request->get('user_id'));
         $token = $this->createAccessToken($user);
+        Log::info('Token Generated.');
         echo json_encode(['token' => $token->plainTextToken]);
     }
 
@@ -165,6 +171,7 @@ class UserController extends Controller
         $user = User::find($id);
 
         if ($user->delete()) {
+            Log::info('User deleted.');
             return response()->json(['success' => true, 'url' => '/admin/user', 'success' => 'Record deleted'], 200);
         }
     }
@@ -225,6 +232,7 @@ class UserController extends Controller
     public function storeAccountRegistration(Request $request)
     {
 
+        Log::info('Store account information - Start');
         $user_id = $request->user()->id;
         // Create new account
         if ($request->has('id') && $request->get('id') > 0) {
@@ -288,6 +296,7 @@ class UserController extends Controller
         $account->status = 'New'; // Setting the status as New.
         $account->save();
 
+        Log::info('Account information saved successfully.');
         return Redirect::route('dashboard');
     }
 
@@ -304,6 +313,7 @@ class UserController extends Controller
      */
     public function createNewTemplate(Request $request, $account_id)
     {
+        Log::info('Save template process start');
         $request->validate([
             'template_name' => 'required|max:255',
             'category' => 'required',
@@ -318,6 +328,7 @@ class UserController extends Controller
         $template->account_id = $account_id;
         $template->save();
 
+        Log::info('Template saved successfully');
         return Redirect::route('account_view', $account_id);
     }
 
@@ -403,6 +414,7 @@ class UserController extends Controller
      */
     public function storeTemplate(Request $request, $account_id, $template_id)
     {
+        Log::info('Store template data start');
         $validation_array = [
             'header_type' => 'required',
             'body' => 'max:1024',
@@ -547,6 +559,7 @@ class UserController extends Controller
             Mail::setSwiftMailer($backup);  // Set Mailer Original credential
         }
 
+        Log::info('Template data saved successfully.');
         return Inertia::render('Account/Template/Detail', [
             'template' => $template,
             'message' => $message,

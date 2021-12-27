@@ -10,6 +10,7 @@ use App\Models\IncomingUrl;
 use App\Models\MessageResponse;
 use App\Models\Account;
 use App\Models\Template;
+use Illuminate\Support\Facades\Log;
 use DateTime;
 
 class MessageLogController extends Controller
@@ -109,8 +110,7 @@ class MessageLogController extends Controller
         $post_data = file_get_contents("php://input");
         $data = json_decode($post_data);
 
-        error_log(print_r('Incoming Response', true));
-        error_log(print_r($post_data, true));
+        Log::info('Incoming response process start.');
 
         if (isset($data->destination) && $this->origin == $data->destination) {
             $this->incomingMessageResponse($data);
@@ -134,6 +134,7 @@ class MessageLogController extends Controller
             $response->save();
         }
 
+        Log::info('Save message Log successfully.');
         // Update CRM Record
     }
 
@@ -141,9 +142,9 @@ class MessageLogController extends Controller
     {
         $postData = [];
         $messageId = $data->messageId;
-
         $messageLog = MessageLog::where('messageId', $messageId)->first();
         if ($messageLog) {
+            Log::info('Message send to CRM process start');
             $date = new DateTime();
             $postData['reference'] = $messageLog->refId;
             $postData['messageContext'] = $messageLog->content;
@@ -180,6 +181,7 @@ class MessageLogController extends Controller
 
             $response = curl_exec($curl);
             curl_close($curl);
+            Log::info('Message send to CRM process done.');
             return $response;
         }
     }
@@ -189,18 +191,17 @@ class MessageLogController extends Controller
      */
     public function incomingMessageResponse($data)
     {
-
         if ($this->origin == $data->destination) {
 
             $getAccount = Account::where('phone_number', $data->destination)->first();
             $accountId = $getAccount->id;
             $user_id = $getAccount->user_id;
 
-
             $messageLog = MessageLog::where('messageId', $data->messageId)->first();
             if (!$messageLog) {
                 $messageLog = new MessageLog();
             }
+            Log::info('Store incoming messages start');
             $messageLog->direction = 'In';
             $messageLog->channel = $data->content->type;
             $messageLog->type = $data->content->message->contentType;
@@ -214,6 +215,7 @@ class MessageLogController extends Controller
             $messageLog->country = '';
             $messageLog->account_id = $accountId;
             $messageLog->save();
+            Log::info('Incoming messages stored successfully.');
             return true;
         }
     }
@@ -229,6 +231,7 @@ class MessageLogController extends Controller
             $getAccount = Account::where('phone_number', $_POST['account_number'])->first();
             $accountId = $getAccount->id;
         }
+        Log::info('Store outgoing messages start');
         $messageLog = new MessageLog();
         $messageLog->account_id = $accountId;
         $messageLog->channel = 'WhatsApp';
@@ -242,7 +245,7 @@ class MessageLogController extends Controller
         $messageLog->messageId = $data['result']->messageIds[0];
         $messageLog->destinations = json_encode($data['destinations']);
         $messageLog->save();
-
+        Log::info('Outgoing messages stored successfully.');
         return true;
     }
 
@@ -261,7 +264,8 @@ class MessageLogController extends Controller
         $data['destinations'] = array($_POST['destination']);
         $data['subject'] = $_POST['content'];
         $data['refId'] = mt_rand(10000000, 99999999);
-
+       
+        log::info('Sent text message using link mobility start');
         // Post message to Whatsapp with linkmobility
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -307,6 +311,7 @@ class MessageLogController extends Controller
             $data['result'] = $result;
             $this->saveMessageLog($data);
         }
+        Log::info('Message send successfully.');
         echo json_encode($result);
         die;
     }
@@ -316,7 +321,7 @@ class MessageLogController extends Controller
      */
     public function sendTemplateMessage(Request $request)
     {
-
+        Log::info('Send message Template using link mobiliity');
         if (isset($_POST['account_number'])) {
             $getAccount = Account::where('phone_number', $_POST['account_number'])->first();
             $account_id = $getAccount->id;
@@ -388,6 +393,7 @@ class MessageLogController extends Controller
             $data['result'] = $result;
             $this->saveMessageLog($data);
         }
+        Log::info('Send template successfully.');
         echo json_encode($result);
         die;
     }
