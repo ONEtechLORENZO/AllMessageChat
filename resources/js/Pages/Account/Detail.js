@@ -9,7 +9,6 @@ import PristineJS from 'pristinejs';
 import Input from '@/Components/Forms/Input';
 import Dropdown from '@/Components/Forms/Dropdown';
 import InputError from '@/Components/Forms/InputError';
-
 import categories, {defaultPristineConfig} from '@/Pages/Constants';
 
 export default function Detail(props) {

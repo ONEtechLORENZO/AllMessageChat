@@ -82,23 +82,24 @@ class MessageLogObserver
         $postData = [];
         if($messageLog){
             $date = new DateTime();
-            $postData['reference'] = $messageLog->refId;
+            $postData['reference'] = '';//$messageLog->refId;
             $postData['messageContext'] = $messageLog->content;
             $postData['from'] = [ 'number' => $messageLog->sender , 'name' => $messageLog->sender ];
-            $postData['to'] = [ 'number' => json_decode( $messageLog->destinations )[0]  ];
+            $postData['to'] = [ 'number' => $messageLog->destinations ];
             $postData['message'] = [ 'text' => $messageLog->content , 'media' => ['mediaUri' => '', 'contentType' => $messageLog->type , 'title' => '' ]  ];
             $postData['custom'] = (object)[];
             $postData['groupings'] = ['', '', ''];
             $postData['time'] = $date->format('Y-m-d H:i:s');
             $postData['timeUtc'] = $date->format('Y-m-d\TH:i:s');
             $postData['channel'] = 'WhatsApp';
-           
+          
+            
             // Get CRM URL based on account 
             $callBackUrl = IncomingUrl::where('account_id' , $messageLog->account_id)->first();
             $curl = curl_init();
             curl_setopt_array($curl, array(
-                        //       CURLOPT_URL => 'https://demo.blackant.io/incoming/test.php',
-                        CURLOPT_URL => $callBackUrl->incoming_url,
+                              CURLOPT_URL => 'https://plustore.dashboard5.it//whatsapp-webhook.php?id=61653b499e3022.85191355&workflow_id=80&secret_key=fe9bruph',
+               //         CURLOPT_URL => $callBackUrl->incoming_url,
                         CURLOPT_RETURNTRANSFER => true,
                         CURLOPT_ENCODING => '',
                         CURLOPT_MAXREDIRS => 10,

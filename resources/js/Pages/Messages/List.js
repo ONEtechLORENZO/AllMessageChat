@@ -185,9 +185,7 @@ export default function Dashboard(props) {
                             </td>
                             */}
                             <td className="px-6 py-4 whitespace-nowrap text-right text-gray-500 text-sm font-medium">
-                               {(JSON.parse(message.destinations)).map((destination , key) =>
-                                    <> {destination} {(JSON.parse(message.destinations)).length > 1 && (JSON.parse(message.destinations)).length != key + 1 ?  <> , </> : <></>} </>
-                               )}
+                               {message.destinations}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 {message.status == 'Queued' && 

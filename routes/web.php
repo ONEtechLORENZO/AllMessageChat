@@ -30,7 +30,7 @@ Route::get('/', function () {
 });
 
 Route::post('/incoming', [MessageLogController::class, 'messageConfig']);
-Route::get('/incoming-cm', [MessageLogController::class, 'incomingMessageResponse'])->name('incoming_message_response');
+//Route::get('/incoming-cm', [MessageLogController::class, 'incomingMessageResponse'])->name('incoming_message_response');
 
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {

@@ -232,12 +232,20 @@ return [
     ],
 
     // Added link mobility data
+    /*
     'linkMobURL' => env('LINK_URL'),
     'apiKey' =>  env('API_KEY'),
     'token' =>  env('TOKEN'),
     'origin' =>  env('ORIGIN'),
     'platFormId' =>  env('PLATFORM_ID'),
     'platFormParentId' => env('PLATFORM_PARENT_ID'),
+    */
+
+    // GupShup
+    'api_url' => env('API_URL'),
+    'apiKey' =>  env('API_KEY'),
+    'src_name' => env('SRC_NAME'),
+    'origin' => env('ORIGIN'),
 
     // CRM Data
     'crmUserName' => env('CRM_USER_NAME'),

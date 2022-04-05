@@ -106,38 +106,31 @@ class MessageLogController extends Controller
      */
     public function messageConfig()
     {
+
         $post_data = file_get_contents("php://input");
-        $data = json_decode($post_data, true);
-        $data = $data['payload'];
-        $data['source'] = $_GET['origin'];
+        $data = json_decode($post_data);
 
-        // For set callback url
-        if($data['type'] == 'user-event'){
-            return true;
-        }
         Log::info('Incoming response process start.');
-        log::info($data);
 
-        if ( isset($data['sender']) &&  config('app.origin') != $data['sender']['phone']) {
+        if (isset($data->destination) && $this->origin == $data->destination) {
             $this->incomingMessageResponse($data);
         } else {
-            $messageLog = MessageLog::where('messageId', $data['gsId'])->first();
 
-            if (isset($data['type']) && str_contains($data['type'], 'failed')) {
+            $messageLog = MessageLog::where('messageId', $data->messageId)->first();
+
+            if (isset($data->resultDescription) && str_contains($data->resultDescription, 'Message failed')) {
                 $messageLog->status = 'Failed';
-            } else if(isset($data['type']) && $data['type'] == 'sent'){
+            } else {
                 $messageLog->status = 'Delivered';
             }
-            //$messageLog->type = $data->messageType;
-            Log::info($messageLog);
-
+            $messageLog->type = $data->messageType;
             $messageLog->save();
 
             $response = new MessageResponse();
-            $response->message_id = $data['id'];
-            $response->ref_id = (isset($data['gsId']))? $data['gsId'] : '';
-    //        $response->type = $data->messageType;
-            $response->response = $data['type'];
+            $response->message_id = $data->messageId;
+            $response->ref_id = $data->refId;
+            $response->type = $data->messageType;
+            $response->response = $data->resultDescription;
             $response->save();
         }
 
@@ -148,7 +141,7 @@ class MessageLogController extends Controller
     public function sendMessageResponse($data)
     {
         $postData = [];
-        $messageId = $data->id;
+        $messageId = $data->messageId;
         $messageLog = MessageLog::where('messageId', $messageId)->first();
         if ($messageLog) {
             Log::info('Message send to CRM process start');
@@ -181,8 +174,8 @@ class MessageLogController extends Controller
                 CURLOPT_HTTPHEADER => array(
                     'Content-Type: application/json',
                     'operation: login',
-                    'username: '. config('app.crmUserName'),
-                    'accessKey: '. config('app.crmAccessKey')
+                    'username: '. config('crmUserName'),
+                    'accessKey: '. config('crmAccessKey')
                 ),
             ));
 
@@ -198,29 +191,29 @@ class MessageLogController extends Controller
      */
     public function incomingMessageResponse($data)
     {
-        if (config('app.origin') != $data['sender']['phone']) {
+        if ($this->origin == $data->destination) {
 
-            $getAccount = Account::where('phone_number', $data['source'])->first();
+            $getAccount = Account::where('phone_number', $data->destination)->first();
             $accountId = $getAccount->id;
             $user_id = $getAccount->user_id;
 
-            $messageLog = MessageLog::where('messageId', $data['id'])->first();
+            $messageLog = MessageLog::where('messageId', $data->messageId)->first();
             if (!$messageLog) {
                 $messageLog = new MessageLog();
             }
             Log::info('Store incoming messages start');
             $messageLog->direction = 'In';
-            $messageLog->channel = 'whatsapp';
-            $messageLog->type = $data['type'];
-            $messageLog->content = $data['payload']['text'];
-            $messageLog->sender = $data['sender']['phone'];
+            $messageLog->channel = $data->content->type;
+            $messageLog->type = $data->content->message->contentType;
+            $messageLog->content = $data->content->message->text;
+            $messageLog->sender = $data->source;
             $messageLog->status = 'Incoming';
             $messageLog->user_id = $user_id;
-//            $messageLog->refId = $data->route->refId;
-            $messageLog->messageId = $data['id'];
-            $messageLog->destinations =$data['source'] ;//json_encode(array($data->destination));
-            $messageLog->country = $data['sender']['country_code'];
-            $messageLog->account_id = ($accountId) ? $accountId : '' ;
+            $messageLog->refId = $data->route->refId;
+            $messageLog->messageId = $data->messageId;
+            $messageLog->destinations = json_encode(array($data->destination));
+            $messageLog->country = '';
+            $messageLog->account_id = $accountId;
             $messageLog->save();
             Log::info('Incoming messages stored successfully.');
             return true;
@@ -238,7 +231,6 @@ class MessageLogController extends Controller
             $getAccount = Account::where('phone_number', $_POST['account_number'])->first();
             $accountId = $getAccount->id;
         }
-
         Log::info('Store outgoing messages start');
         $messageLog = new MessageLog();
         $messageLog->account_id = $accountId;
@@ -250,8 +242,8 @@ class MessageLogController extends Controller
         $messageLog->status = 'Queued';
         $messageLog->user_id = $id;
         $messageLog->refId = $data['refId'];
-        $messageLog->messageId = $data['result']->messageId;
-        $messageLog->destinations = ($data['destination']);
+        $messageLog->messageId = $data['result']->messageIds[0];
+        $messageLog->destinations = json_encode($data['destinations']);
         $messageLog->save();
         Log::info('Outgoing messages stored successfully.');
         return true;
@@ -262,41 +254,54 @@ class MessageLogController extends Controller
      */
     public function sendMessage(Request $request)
     {
-        //$data['authorization'] = config('app.token');
+        $data['authorization'] = config('app.token');
         $data['apiKey'] = config('app.apiKey');
 
+        $data['platFormId'] = config('app.platFormId');
+        $data['platFormParentId'] = config('app.platFormParentId');
         $data['priority'] = 'NORMAL';
-        $data['source'] = $_POST['account_number']; //config('app.origin');
-        $data['destination'] = ($_POST['destination']);
+        $data['source'] = $_POST['account_number'];
+        $data['destinations'] = array($_POST['destination']);
         $data['subject'] = $_POST['content'];
         $data['refId'] = mt_rand(10000000, 99999999);
-        $data['srcName'] = config('app.src_name'); 
-        
-        $content = [
-            "type" => "text",
-            "text" => $_POST['content']
-        ];
-        $message = urlencode(json_encode($content));
-
-        log::info('Sent text message using GupShup - start');
-
+       
+        log::info('Sent text message using link mobility start');
         // Post message to Whatsapp with linkmobility
         $curl = curl_init();
         curl_setopt_array($curl, array(
-                    CURLOPT_URL => config('app.api_url'),
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_ENCODING => '',
-                    CURLOPT_MAXREDIRS => 10,
-                    CURLOPT_TIMEOUT => 0,
-                    CURLOPT_FOLLOWLOCATION => true,
-                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                    CURLOPT_CUSTOMREQUEST => 'POST',
-                    CURLOPT_POSTFIELDS => 'channel=whatsapp&source='.$data['source'].'&destination='.$data['destination'].'&src.name='.config('app.src_name').'&message='.$message,
-                    CURLOPT_HTTPHEADER => array(
-                        'Content-Type: application/x-www-form-urlencoded',
-                        'apikey: '. $data['apiKey']
-                        ),
-                    ));
+            CURLOPT_URL => config('app.linkMobURL'), 
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => '{
+                    "platformId":"' . $data['platFormId'] . '",
+                    "platformPartnerId":"' . $data['platFormParentId'] . '",
+                    "priority":"' . $data['priority'] . '",
+                    "eventReportGates":[
+                    "zxMLiFn6"
+                    ],
+                    "refId":"' . $data['refId'] . '",
+                    "source":"' . $data['source'] . '",
+                    "destinations":' . json_encode($data['destinations']) . ' ,
+                    "messages":[
+                    {
+                        "type":"text",
+                        "previewUrl": false,
+                        "text": {
+                            "body": "' . $data['subject'] . '"
+                        }
+                    }]
+                    }',
+            CURLOPT_HTTPHEADER => array(
+                'x-api-key: ' . $data['apiKey'],
+                'Authorization: ' . $data['authorization'],
+                'Content-Type: application/json'
+            ),
+        ));
 
         $response = curl_exec($curl);
         curl_close($curl);
@@ -349,7 +354,6 @@ class MessageLogController extends Controller
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
-            /*
             CURLOPT_POSTFIELDS => '{
 
                     "platformId":"' . $data['platFormId'] . '",
@@ -375,21 +379,10 @@ class MessageLogController extends Controller
                     }
                     ]
                     }',
-            */
-            CURLOPT_POSTFIELDS => '{
-                "channel" : "whatsapp",
-                "source" : "' . $data['source'] . '",
-                "destination" : "' . json_encode($data['destinations']) . '"
-                "src.name":"DemoApp"
-                "template" : {
-                   "id": "'.$data['temp-id'].'",
-                   "params": []
-                }                 
-            }',
             CURLOPT_HTTPHEADER => array(
-                'Content-Type: application/x-www-form-urlencoded',
-                'apikey: ' . $data['apiKey'],
-                //'Authorization: ' . $data['authorization'],
+                'Content-Type: application/json',
+                'x-api-key: ' . $data['apiKey'],
+                'Authorization: ' . $data['authorization'],
             ),
         ));
 
