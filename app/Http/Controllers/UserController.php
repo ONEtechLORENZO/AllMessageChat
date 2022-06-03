@@ -470,7 +470,6 @@ class UserController extends Controller
         $message->language = $request->get('language');
         $message->attach_file = isset($attachFilePath['url'])? $attachFilePath['url'] : '';
         $message->example = $request->get('example');
-        $message->template_uid = '';
         $message->save();
         
         $message_id = $message->id;

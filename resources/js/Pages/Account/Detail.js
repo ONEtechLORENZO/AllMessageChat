@@ -206,7 +206,7 @@ export default function Detail(props) {
                                         <div className="flex">
                                             <h2><Link href={route('template_detail_view', [data.account_id, data.id])}>{data.name}</Link></h2>
                                             <span className={`ml-3 text-sm inline-flex items-center px-2 py-0.5 rounded font-medium ${status_class_names}`}>
-                                                {data.status}
+                                                {(data.status).toUpperCase()}
                                             </span>
                                         </div>
                                     </li>

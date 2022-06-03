@@ -211,7 +211,7 @@ function NewTemplate(props)
                         >
                             Back
                         </Link>
-                        {(props.template.status) == 'draft' &&
+                      	{temp_status == 'draft' &&
                         <button
                             type="button"
                             onClick={validateAndSubmitForm}

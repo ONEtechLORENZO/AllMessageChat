@@ -99,14 +99,14 @@ class TemplateController extends Controller
         }
 
         $postData = array(
-                'elementName' => strtolower(str_replace(' ', '_',$template->name)),
+                'elementName' => strtolower(str_replace(' ', '_',$template->name)).'_'.mt_rand(1000,9999).'_'.$data['account_id'],
                 'languageCode' => 'en_US',
                 'category' => strtoupper(str_replace(' ', '_',$template->category)),
                 'templateType' => strtoupper($data['data']->header_type),
                 'vertical' => $template->category, // 'Ticket update',//strtoupper(str_replace(' ', '_',$template->category)),
                 'content' => $data['data']->body,
                 'footer' => $data['data']->body_footer,
-                'example' => $data['data']->body
+                'example' => $data['data']->example,
                 );
 
         if($data['file']){
@@ -116,8 +116,7 @@ class TemplateController extends Controller
             $postData['header'] = $data['data']->header_text;
             $postData['buttons'] = json_encode($buttons);
         }       
-
- //       dd($postData);
+//dd($postData);
         $result = $this->restApiCall('POST', $endPoint, $header, http_build_query($postData) );
         $retrun = [ 'staus' => false ];
         if($result->status == 'success'){
@@ -127,7 +126,7 @@ class TemplateController extends Controller
             $template->save();
             $return = [ 'status' => $result->status , 'template_status' => $result->template->status];
         }
-        return $return;
+        return json_encode($result);
     }
 
     /**

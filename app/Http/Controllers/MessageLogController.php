@@ -136,7 +136,7 @@ class MessageLogController extends Controller
             if ( isset($data['sender']) &&  config('app.origin') != $data['sender']['phone']) {
                 $this->incomingMessageResponse($data);
             } else {
-                $messageLog = MessageLog::where('messageId', $data['gsId'])->first();
+                $messageLog = MessageLog::where('messageId', $data['id'])->first();
 
                 if (isset($data['type']) && str_contains($data['type'], 'failed')) {
                     $messageLog->status = 'Failed';
@@ -332,7 +332,9 @@ class MessageLogController extends Controller
      */
     public function sendTemplateMessage(Request $request)
     {
+
         Log::info('Send message Template using link mobiliity');
+
         $url = str_replace('msg', 'template/msg', config('app.api_url'));
 
         $data['apiKey'] = config('app.apiKey');
@@ -364,6 +366,7 @@ class MessageLogController extends Controller
                 'message' => json_encode($message)
             ]
         ];
+
         $request = new \GuzzleHttp\Psr7\Request('POST', 'http://api.gupshup.io/sm/api/v1/template/msg', $headers);
         $res = $client->sendAsync($request, $options)->wait();
         $response = $res->getBody()->getContents();
