@@ -4,16 +4,18 @@ namespace App\Observers;
 
 use App\Models\MessageLog;
 use App\Models\IncomingUrl;
+use Illuminate\Support\Facades\Log;
 use DateTime;
 
 class MessageLogObserver
 {
-
-    private $apiKey = 'UfJj3x7ECaPvRyxDqjU4B6rNyTfV05aV';
-    private $token = 'Basic djZWc3o1WkM6VUpIaGNkRE4zdkNUUjhmOQ==';
-    private $origin = "+447797882221";
+/*
+    private $apiKey = config('app.apiKey');
+    private $token = config('app.token');
+    private $origin = config('app.origin');
     private $platFormId = 'COMMON_API';
     private $platFormParentId = '19408';
+*/
 
     /**
      * Handle the MessageLog "created" event.
@@ -23,8 +25,9 @@ class MessageLogObserver
      */
     public function created(MessageLog $messageLog)
     {
-        error_log( print_r( ' MessageLogObserver Message Created - '.$messageLog->status , true) );
-        $this->sendMessageResponse($messageLog);
+        Log::info('MessageLogObserver Message Created - '.$messageLog->status);
+       $staus =  $this->sendMessageResponse($messageLog);
+       Log::info('Send message log status - '. $staus);
     }
 
     /**
@@ -35,9 +38,12 @@ class MessageLogObserver
      */
     public function updated(MessageLog $messageLog)
     {
-        error_log( print_r( ' MessageLogObserver Message status Update - '.$messageLog->status , true) );
-        if( $messageLog->status == 'Failed' || $messageLog->status == 'Delivered' )
-            $this->sendMessageResponse($messageLog);
+        Log::info('MessageLogObserver Message status Update - '.$messageLog->status);
+
+        if( $messageLog->status == 'Failed' || $messageLog->status == 'Delivered' ){
+//            $staus = $this->sendMessageResponse($messageLog);
+            Log::info('Send message log status - '. $staus);
+            }
     }
 
     /**
@@ -93,12 +99,12 @@ class MessageLogObserver
             $postData['timeUtc'] = $date->format('Y-m-d\TH:i:s');
             $postData['channel'] = 'WhatsApp';
           
-            
+           Log::info(['Observer data log -', $postData] ); 
             // Get CRM URL based on account 
             $callBackUrl = IncomingUrl::where('account_id' , $messageLog->account_id)->first();
             $curl = curl_init();
             curl_setopt_array($curl, array(
-                              CURLOPT_URL => 'https://plustore.dashboard5.it//whatsapp-webhook.php?id=61653b499e3022.85191355&workflow_id=80&secret_key=fe9bruph',
+                              CURLOPT_URL => 'https://demo.blackant.io/hub5/crm/whatsapp-webhook.php?id=624de9b9264142.67637801%20&workflow_id=80&secret_key=fe9bruph',
                //         CURLOPT_URL => $callBackUrl->incoming_url,
                         CURLOPT_RETURNTRANSFER => true,
                         CURLOPT_ENCODING => '',
@@ -112,7 +118,7 @@ class MessageLogObserver
                             'Content-Type: application/json',
                             'operation: login',
                             'username: admin',
-                            'accessKey: KFI7IDWsrLV4iMW'
+                            'accessKey: wpfYKID7sbZGM61'
                             ),
                         ));
 

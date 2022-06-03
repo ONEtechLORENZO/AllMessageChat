@@ -247,6 +247,10 @@ return [
     'src_name' => env('SRC_NAME'),
     'origin' => env('ORIGIN'),
 
+    'partner_username' => env('PARTNER_USERNAME'),
+    'partner_password' => env('PARTNER_PASS'),
+    'partner_url' => env('PARTNER_URL'),
+
     // CRM Data
     'crmUserName' => env('CRM_USER_NAME'),
     'crmAccessKey' => env('CRM_ACCESS_KEY'),

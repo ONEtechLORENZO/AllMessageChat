@@ -10,7 +10,9 @@ use App\Models\IncomingUrl;
 use App\Models\MessageResponse;
 use App\Models\Account;
 use App\Models\Template;
+use App\Models\Message;
 use Illuminate\Support\Facades\Log;
+ use Illuminate\Support\Facades\Http;
 use DateTime;
 
 class MessageLogController extends Controller
@@ -108,39 +110,52 @@ class MessageLogController extends Controller
     {
         $post_data = file_get_contents("php://input");
         $data = json_decode($post_data, true);
+
+        log::info($data);
+        $response = $data; 
         $data = $data['payload'];
         $data['source'] = $_GET['origin'];
 
         // For set callback url
-        if($data['type'] == 'user-event'){
+        if((isset($data['type']) && $data['type'] == 'user-event' )|| (isset($data['phone']) && $data['phone'] == 'callbackSetPhone' )|| ( isset($data['type']) && $data['type'] == 'sandbox-start' )){
             return true;
         }
         Log::info('Incoming response process start.');
-        log::info($data);
-
-        if ( isset($data['sender']) &&  config('app.origin') != $data['sender']['phone']) {
-            $this->incomingMessageResponse($data);
-        } else {
-            $messageLog = MessageLog::where('messageId', $data['gsId'])->first();
-
-            if (isset($data['type']) && str_contains($data['type'], 'failed')) {
-                $messageLog->status = 'Failed';
-            } else if(isset($data['type']) && $data['type'] == 'sent'){
-                $messageLog->status = 'Delivered';
+    
+        if($response['type'] == 'template-event'){
+                log::info(['template response', $data]);
+            $template = Template::where('template_uid', $data['id'])
+            ->first();
+            if($data['status'] != 'rejected'){
+                $template->status = strtoupper($data['status']);
+            } else {
+                $template->status = strtoupper($data['status']). ' ( Reason: '.$data['rejectedReason']. ' )';
             }
-            //$messageLog->type = $data->messageType;
-            Log::info($messageLog);
+            $template->save();
+        } else {
+            if ( isset($data['sender']) &&  config('app.origin') != $data['sender']['phone']) {
+                $this->incomingMessageResponse($data);
+            } else {
+                $messageLog = MessageLog::where('messageId', $data['gsId'])->first();
 
-            $messageLog->save();
+                if (isset($data['type']) && str_contains($data['type'], 'failed')) {
+                    $messageLog->status = 'Failed';
+                } else if(isset($data['type']) && $data['type'] == 'sent'){
+                    $messageLog->status = 'Delivered';
+                }
+                //$messageLog->type = $data->messageType;
+                Log::info($messageLog);
 
-            $response = new MessageResponse();
-            $response->message_id = $data['id'];
-            $response->ref_id = (isset($data['gsId']))? $data['gsId'] : '';
-    //        $response->type = $data->messageType;
-            $response->response = $data['type'];
-            $response->save();
+                $messageLog->save();
+
+                $response = new MessageResponse();
+                $response->message_id = $data['id'];
+                $response->ref_id = (isset($data['gsId']))? $data['gsId'] : '';
+                //        $response->type = $data->messageType;
+                $response->response = $data['type'];
+                $response->save();
+            }
         }
-
         Log::info('Save message Log successfully.');
         // Update CRM Record
     }
@@ -240,6 +255,7 @@ class MessageLogController extends Controller
         }
 
         Log::info('Store outgoing messages start');
+        log::info($data);
         $messageLog = new MessageLog();
         $messageLog->account_id = $accountId;
         $messageLog->channel = 'WhatsApp';
@@ -317,89 +333,47 @@ class MessageLogController extends Controller
     public function sendTemplateMessage(Request $request)
     {
         Log::info('Send message Template using link mobiliity');
-        if (isset($_POST['account_number'])) {
-            $getAccount = Account::where('phone_number', $_POST['account_number'])->first();
-            $account_id = $getAccount->id;
-        }
-        $template_id = $_POST['template'];
-        $template = Template::where('account_id', $account_id)
-            ->where('id', $template_id)
-            ->where('account_id', $account_id)
+        $url = str_replace('msg', 'template/msg', config('app.api_url'));
+
+        $data['apiKey'] = config('app.apiKey');
+        $data['source'] = $_POST['account_number']; //config('app.origin');
+        $data['destination'] = ($_POST['destination']);
+        $data['subject'] = $_POST['content'];
+        $data['refId'] = mt_rand(10000000, 99999999);
+        $data['srcName'] = config('app.src_name');
+
+        $template = Template::where('template_uid', $_POST['template'])->first();
+        $message = Message::where('template_id', $template->id)
+            ->where('language', $template->languages[0])
             ->first();
 
-        $data['authorization'] = config('app.token');
-        $data['apiKey'] = config('app.apiKey');
+        $type = strtolower($template->type);
 
-        $data['platFormId'] = config('app.platFormId');
-        $data['platFormParentId'] = config('app.platFormParentId');
-        $data['priority'] = 'NORMAL';
-        $data['source'] = $_POST['account_number'];
-        $data['destinations'] = array($_POST['destination']);
-        $data['refId'] = mt_rand(10000000, 99999999);
+        $client = new \GuzzleHttp\Client();
+        $headers = [
+            'apikey' => $data['apiKey'],
+            'Content-Type' => 'application/x-www-form-urlencoded'
+        ];
+        $template = ['id' => $_POST['template'], "params"=> ["Testing"], 'text' => $_POST['content'] ];
+        $message = ['type' => $type,  $type => ['link' => $message->attach_file ]];
+        $options = [
+            'form_params' => [
+                'source' => '390236755409',
+                'destination' => '919994269535',
+                'template' => json_encode($template),
+                'message' => json_encode($message)
+            ]
+        ];
+        $request = new \GuzzleHttp\Psr7\Request('POST', 'http://api.gupshup.io/sm/api/v1/template/msg', $headers);
+        $res = $client->sendAsync($request, $options)->wait();
+        $response = $res->getBody()->getContents();
 
-        $data['name_space'] = $template->template_name_space; 
-        $data['temp_name'] = $template->template_name; 
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => config('app.linkMobURL'),
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            /*
-            CURLOPT_POSTFIELDS => '{
-
-                    "platformId":"' . $data['platFormId'] . '",
-                    "platformPartnerId":"' . $data['platFormParentId'] . '",
-                    "priority":"' . $data['priority'] . '",
-                    "eventReportGates":[
-                    "zxMLiFn6"
-                    ],
-                    "refId":"' . $data['refId'] . '",
-                    "source":"' . $data['source'] . '",
-                    "destinations":' . json_encode($data['destinations']) . ' ,
-
-                    "messages": [
-                    {
-                    "type": "template",
-                    "template": {
-                        "namespace": "' . $data['name_space'] . '",
-                        "name": "' . $data['temp_name'] . '",
-                        "language": {
-                            "code": "en"
-                        }
-                    }
-                    }
-                    ]
-                    }',
-            */
-            CURLOPT_POSTFIELDS => '{
-                "channel" : "whatsapp",
-                "source" : "' . $data['source'] . '",
-                "destination" : "' . json_encode($data['destinations']) . '"
-                "src.name":"DemoApp"
-                "template" : {
-                   "id": "'.$data['temp-id'].'",
-                   "params": []
-                }                 
-            }',
-            CURLOPT_HTTPHEADER => array(
-                'Content-Type: application/x-www-form-urlencoded',
-                'apikey: ' . $data['apiKey'],
-                //'Authorization: ' . $data['authorization'],
-            ),
-        ));
-
-        $response = curl_exec($curl);
-        curl_close($curl);
         if ($response) {
             $result = json_decode($response);
             $data['result'] = $result;
             $this->saveMessageLog($data);
         }
+        
         Log::info('Send template successfully.');
         echo json_encode($result);
         die;
@@ -410,11 +384,39 @@ class MessageLogController extends Controller
      */
     public function getTemplates(Request $request)
     {
+    /*
         $user = $request->user();
         $getTemplates = Template::leftJoin('accounts', 'accounts.id', 'account_id')
+            ->leftJoin('messages', 'template_id', 'templates.id')
             ->where('user_id', $user->id)
             ->get();
+    */
 
-        echo json_encode($getTemplates);
+    $apiUrl = str_replace('msg', 'template/list/', config('app.api_url'));
+    $apiUrl .=  config('app.src_name');
+    $templates = '';
+    $curl = curl_init();
+    curl_setopt_array($curl, array(
+            CURLOPT_URL => $apiUrl,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/x-www-form-urlencoded',
+                'apikey: ' . config('app.apiKey'),
+                //'Authorization: ' . $data['authorization'],
+            ),
+        ));
+        $response = curl_exec($curl);
+        curl_close($curl);
+        if ($response) {
+            $result = json_decode($response);
+            $templates = ($result->templates);
+        }
+        echo json_encode($templates);
     }
 }

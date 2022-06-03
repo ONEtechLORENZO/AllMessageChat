@@ -194,10 +194,10 @@ export default function Detail(props) {
                         <ul role="list" className="divide-y divide-gray-200">
                             {props.templates.map((data) => {
                                 let status_class_names = 'bg-yellow-100 text-yellow-800';
-                                if(data.status == 'new') {
+                                if((data.status).toLowerCase() == 'approved') {
                                     status_class_names = 'bg-green-100 text-green-800';
                                 }
-                                else if(data.status == 'rejected') {
+                                else if(data.status == 'rejected' || (data.status).indexOf('REJECTED') != -1 ) {
                                     status_class_names = 'bg-red-100 text-red-800';
                                 }
 

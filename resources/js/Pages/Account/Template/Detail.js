@@ -31,14 +31,17 @@ function NewTemplate(props)
         header_type: props.message.header_type ? props.message.header_type : '',
         header_text: props.message.header_content ? props.message.header_content : '',
         body: props.message.body ? props.message.body : '',
+        example: props.message.example ? props.message.example : '',
         body_footer: props.message.footer_content ? props.message.footer_content : '',
         buttons: props.buttons,
         template_name: props.template.template_name ? props.template.template_name : '',
         template_name_space: props.template.template_name_space ? props.template.template_name_space : '',
+        attach_file: props.template.attach_file ? props.template.attach_file : '',
     });
 
     const [buttons, setButtons] = useState([]);
-    
+   
+    const [temp_status, setStatus] = useState(props.template.status);
 
     useEffect(() => {
         let tmpButtons = Object.assign([], buttons);
@@ -85,7 +88,13 @@ function NewTemplate(props)
 
         let post_data = Object.assign({}, data);
         post_data['buttons'] = buttons;
-        Inertia.post(route('store_template', [props.template.account_id, props.template.id]), post_data);
+        Inertia.post(route('store_template', [props.template.account_id, props.template.id]), post_data, {
+            onSuccess: () => {
+                setStatus('submitted');
+            }
+        });
+        
+        
     }
     
     /**
@@ -162,7 +171,7 @@ function NewTemplate(props)
     {
         Inertia.visit(route('template_detail_view', [props.template.account_id, props.template.id]) + '?language=' + language);
     }
-
+    
     return (
         <Authenticated
             auth={props.auth}
@@ -172,16 +181,37 @@ function NewTemplate(props)
                     <h2 className="font-semibold text-xl text-gray-800 leading-tight">
                         {props.template.name}
                     </h2>
+
                     <div>
+                        {temp_status.toLowerCase() == 'approved' ?
+                           <span class="shadow-sm mr-3 text-sm font-medium rounded-md text-green-700  p-3 bg-green-100">
+                                {temp_status}
+                            </span>
+                        : 
+                           <>
+                           {(temp_status).toLowerCase() == 'submitted' || temp_status == 'draft' ?
+                          <span class="shadow-sm text-sm mr-3 font-medium rounded-md text-yellow-700  p-3 bg-yellow-100">
+                              {temp_status.toUpperCase()}
+                            </span>
+                            : 
+                            <span class="shadow-sm text-sm mr-3 font-medium rounded-md text-red-700  p-3 bg-red-100">
+                                {temp_status}
+                            </span>
+                            }
+                            </>
+                        }
+                    {/* 
                        <button type='button' onClick={() => setTemplateModalOpen(true)} className="mr-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-gray-700  hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             Change Template Status
                         </button>
+                        */}
                         <Link 
                             href={route('account_view', props.template.account_id)}
-                            className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="bg-white mr-3 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
                             Back
                         </Link>
+                        {(props.template.status) == 'draft' &&
                         <button
                             type="button"
                             onClick={validateAndSubmitForm}
@@ -189,6 +219,7 @@ function NewTemplate(props)
                         >
                             Save
                         </button>
+                        }
                     </div>
                 </div>
             }
@@ -249,6 +280,18 @@ function NewTemplate(props)
                                                 </div> 
                                             : ''}
 
+
+                                            {data.header_type == 'image' || data.header_type == 'document' || data.header_type == 'video' ?
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor="attach_file" className="block text-sm font-medium text-gray-700">
+                                                        Attach file
+                                                    </label>
+                                                    <div className="mt-1">
+                                                        <Input type="file" name='attach_file' required={true} id='attach_file' placeholder='' handleChange={handleChange} />
+                                                    </div>
+                                                </div>
+                                            : ''}                                            
+
                                             <div className="form-group col-span-6 sm:col-span-4">
                                                 <label htmlFor="body" className="block text-sm font-medium text-gray-700">
                                                     Body
@@ -258,6 +301,17 @@ function NewTemplate(props)
                                                 </div>
                                                 <p className='mt-2 text-sm text-gray-500 float-right'>{body_max_length - data.body.length}</p>
                                                 <InputError message={errors.body} />
+                                            </div>
+
+                                            <div className="form-group col-span-6 sm:col-span-4">
+                                                <label htmlFor="example" className="block text-sm font-medium text-gray-700">
+                                                    Example
+                                                </label>
+                                                <div className="mt-1">
+                                                    <TextArea id="example" name="example" required={true} handleChange={handleChange} value={data.example} />
+                                                </div>
+                                                <p className='mt-2 text-sm text-gray-500 float-right'>{body_max_length - data.example.length}</p>
+                                                <InputError message={errors.example} />
                                             </div>
 
                                             <div className="form-group col-span-6 sm:col-span-4">

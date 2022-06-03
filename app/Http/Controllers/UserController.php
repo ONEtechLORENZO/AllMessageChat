@@ -18,7 +18,8 @@ use Swift_Mailer;
 use DB;
 use Illuminate\Support\Facades\Log;
 use Mail;
-
+use App\Http\Controllers\TemplateController;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -435,6 +436,17 @@ class UserController extends Controller
         if (!$account) {
             abort(401, 'You are not authorised to view this');
         }
+        
+        // store Template attachments
+        $attachFilePath = '';
+        if($request->file('attach_file')) {
+            //$attachFilePath = $request->file('attach_file')->store('attach_files');
+            $file = $request->file('attach_file') ;
+            $fileName = $file->getClientOriginalName() ;
+            $destinationPath = public_path().'/attach_files' ;
+            $file->move($destinationPath,$fileName);
+            $attachFilePath = ['url' => asset('attach_files/'.$fileName), 'path' => $destinationPath.'/'.$fileName];
+        }
 
         // Storing Message
         $message = Message::where('template_id', $template_id)
@@ -456,8 +468,11 @@ class UserController extends Controller
         $message->footer_content = $request->get('body_footer');
         $message->template_id = $template_id;
         $message->language = $request->get('language');
+        $message->attach_file = isset($attachFilePath['url'])? $attachFilePath['url'] : '';
+        $message->example = $request->get('example');
+        $message->template_uid = '';
         $message->save();
-
+        
         $message_id = $message->id;
 
         // Storing Buttons if available
@@ -504,6 +519,12 @@ class UserController extends Controller
         $template = Template::where('account_id', $account_id)
             ->where('id', $template_id)
             ->first();
+
+
+        // Submit template to GupShup
+        $tempController = new TemplateController();
+        $result = $tempController->submitTemplate(['account_id' => $account_id, 'template_id' => $template_id, 'data' => $request, 'file' => $attachFilePath]);
+        Log::info($result);
 
         // Setting language
         $language = $template->languages[0];

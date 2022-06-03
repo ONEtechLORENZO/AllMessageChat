@@ -3,8 +3,197 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Template;
 
 class TemplateController extends Controller
 {
-    //
+
+    /**
+     *  Submit Template to GupShup
+     **/
+    public function submitTemplate($data){
+        $partnerToken = $this->getPartnerToken();
+        $appId = $this->getAppId($partnerToken);
+        $appToken = $this->getAppToken($partnerToken, $appId);
+        if($appToken ) {
+            $result = $this->saveTemplate($appToken, $appId, $data); 
+        }
+        return $result;
+    }
+
+    /** 
+     * Return App Token
+     */
+    public function getPartnerToken(){
+        $username = config('app.partner_username');
+        $password = config('app.partner_password');
+        $postFields = "email={$username}&password={$password}";
+        $endPoint = 'account/login';
+        $header = array(
+                'Content-Type: application/x-www-form-urlencoded'
+                );
+        $getAppToken = $this->restApiCall('POST', $endPoint, $header, $postFields);
+        $return = '';
+        if($getAppToken){
+            $return = $getAppToken->token;
+        } 
+        return $return;
+    }
+
+    /**
+     * Return App Id
+     */
+    public function getAppId($token){
+        $appId = '';
+        $endPoint = 'account/api/partnerApps';
+        $header = array(
+                "token: {$token}"
+                );
+        $getAppList = $this->restApiCall('GET', $endPoint, $header );
+        $appList = $getAppList->partnerAppsList;
+        if($appList && isset($appList[0])){
+            $appId = $appList[0]->id;
+        }
+        return $appId;
+    }
+    
+    /**
+     * Return App token
+     **/
+    public function getAppToken($token , $id){
+        $appToken = '';
+        $endPoint = "app/{$id}/token";
+        $header = array(
+                "token: {$token}",
+                );
+        $getAppToken = $this->restApiCall('GET', $endPoint, $header);
+        if($getAppToken->status == 'success'){
+            $appToken = $getAppToken->token->token;
+        }
+        return $appToken;
+    }
+
+    /**
+     * Save Template
+     **/
+    public function saveTemplate($token , $id, $data ){
+        $endPoint = "app/{$id}/templates";
+        $header = array(
+                'Content-Type: application/x-www-form-urlencoded',
+                "token: {$token}",
+                );
+       
+        $template = Template::where('account_id', $data['account_id'])
+            ->where('id', $data['template_id'])
+            ->first();
+        
+        $buttons = [];
+        foreach($data['data']->buttons as $button){
+            $buttonData = [
+                'type' => str_replace(' ', '_',$button['button_type']),
+                'text' => $button['button_text'],
+                'phone_number' => $button['phone_number'],
+                'url' => $button['url'],
+            ];
+            $buttons[] = (object)$buttonData;
+        }
+
+        $postData = array(
+                'elementName' => strtolower(str_replace(' ', '_',$template->name)),
+                'languageCode' => 'en_US',
+                'category' => strtoupper(str_replace(' ', '_',$template->category)),
+                'templateType' => strtoupper($data['data']->header_type),
+                'vertical' => $template->category, // 'Ticket update',//strtoupper(str_replace(' ', '_',$template->category)),
+                'content' => $data['data']->body,
+                'footer' => $data['data']->body_footer,
+                'example' => $data['data']->body
+                );
+
+        if($data['file']){
+            $uploadFileData = $this->getUploadFile($token , $id, $data['file']);
+            $postData = array_merge($postData, $uploadFileData);
+        } else {
+            $postData['header'] = $data['data']->header_text;
+            $postData['buttons'] = json_encode($buttons);
+        }       
+
+ //       dd($postData);
+        $result = $this->restApiCall('POST', $endPoint, $header, http_build_query($postData) );
+        $retrun = [ 'staus' => false ];
+        if($result->status == 'success'){
+            $template->template_uid = $result->template->id;
+            $template->type = $result->template->templateType;
+            $template->status = 'SUBMITTED'; //result->template->status;
+            $template->save();
+            $return = [ 'status' => $result->status , 'template_status' => $result->template->status];
+        }
+        return $return;
+    }
+
+    /**
+     * Upload File
+     **/
+    public function getUploadFile($token , $id, $path){
+        $endPoint = "app/{$id}/upload/media";
+        $rootPath = url('/'); //app_path();
+        $storagePath = storage_path('app');
+        $fileMimeType = mime_content_type("{$path['path']}");
+        $header = array(
+                "Authorization: {$token}",
+                );
+        $postData = [
+            'file' => '@"'.$path['url'].'"',
+            'file_type' => $fileMimeType
+        ];
+
+        $type = '';
+        if(strstr($fileMimeType, "video/")){
+            $type = 'VIDEO';
+        }else if(strstr($fileMimeType, "image/")){
+            $type = 'IMAGE';
+        } else {
+            $type = 'DOCUMENT';
+        }
+        $getFileId = $this->restApiCall('POST', $endPoint, $header, $postData ); 
+        $fileId = $getFileId->handleId->message;
+      
+        $templatePostData = [
+            'templateType' => $type,
+            'appId' => $id, 
+            'exampleMedia' => $fileId,
+            'enableSample' => 'true',
+        ];
+       return $templatePostData;
+    } 
+
+    /**
+     * cURL request 
+     *
+     * @param $method string
+     * @param $header array
+     * @param $data array
+     */
+    public function restApiCall($method, $endPoint, $header = [], $postFields = '' ){
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+                    CURLOPT_URL => config('app.partner_url').$endPoint,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_ENCODING => '',
+                    CURLOPT_MAXREDIRS => 10,
+                    CURLOPT_TIMEOUT => 0,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                    CURLOPT_CUSTOMREQUEST => $method,
+                    CURLOPT_POSTFIELDS => $postFields,
+                    CURLOPT_HTTPHEADER => $header,
+                    ));
+
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+        return json_decode($response);
+
+    }
 }
