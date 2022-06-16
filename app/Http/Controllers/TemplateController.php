@@ -124,9 +124,13 @@ class TemplateController extends Controller
             $template->type = $result->template->templateType;
             $template->status = 'SUBMITTED'; //result->template->status;
             $template->save();
-            $return = [ 'status' => $result->status , 'template_status' => $result->template->status];
-        }
+	    $return = [ 'status' => $result->status , 'template_status' => $result->template->status];
+	} else {
+		$template->status = $result->message;
+		$return = [ 'status' => $result->status , 'template_status' => $result->message];	
+	}
         return json_encode($result);
+
     }
 
     /**
@@ -193,6 +197,33 @@ class TemplateController extends Controller
 
         curl_close($curl);
         return json_decode($response);
+    }
+	
+    /** 
+     * Create template
+     **/
+    public function createTemplate(Request $request){
+        $account_id = $request->get('account_id');
 
+        $template = new Template();
+        $template->name = $request->get('elementName');
+        $template->category = $request->get('category');
+        $template->languages = $request->get('languageCode');
+        $template->status = 'DRAFT';
+        $template->account_id = $account_id;
+        $template->save();
+
+        $template_id = $template->id;
+        $attachFilePath = '';
+        if($request->file('attach_file')) {
+            $file = $request->file('attach_file') ;
+            $fileName = $file->getClientOriginalName() ;
+            $destinationPath = public_path().'/attach_files' ;
+            $file->move($destinationPath,$fileName);
+            $attachFilePath = ['url' => asset('attach_files/'.$fileName), 'path' => $destinationPath.'/'.$fileName];
+        }
+
+        $response = $this->submitTemplate(['account_id' => $account_id, 'template_id' => $template_id, 'data' => $request, 'file' => $attachFilePath]);
+        dd($response);
     }
 }

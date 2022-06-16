@@ -124,7 +124,7 @@ class MessageLogController extends Controller
     
         if($response['type'] == 'template-event'){
                 log::info(['template response', $data]);
-            $template = Template::where('template_uid', $data['id'])
+            $template = Template::where('template_uid', $data['gsId'])
             ->first();
             if($data['status'] != 'rejected'){
                 $template->status = strtoupper($data['status']);
@@ -136,7 +136,7 @@ class MessageLogController extends Controller
             if ( isset($data['sender']) &&  config('app.origin') != $data['sender']['phone']) {
                 $this->incomingMessageResponse($data);
             } else {
-                $messageLog = MessageLog::where('messageId', $data['id'])->first();
+                $messageLog = MessageLog::where('messageId', $data['gsId'])->first();
 
                 if (isset($data['type']) && str_contains($data['type'], 'failed')) {
                     $messageLog->status = 'Failed';

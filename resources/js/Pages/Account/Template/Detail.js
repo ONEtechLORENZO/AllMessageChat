@@ -90,7 +90,8 @@ function NewTemplate(props)
         post_data['buttons'] = buttons;
         Inertia.post(route('store_template', [props.template.account_id, props.template.id]), post_data, {
             onSuccess: () => {
-                setStatus('submitted');
+              //  setStatus('submitted');
+              window.location.reload();
             }
         });
         
