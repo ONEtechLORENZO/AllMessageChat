@@ -121,11 +121,14 @@ class MessageLogController extends Controller
             return true;
         }
         Log::info('Incoming response process start.');
-    
+    	$eventType = 'Message';
         if($response['type'] == 'template-event'){
+		$eventType = 'Template';
                 log::info(['template response', $data]);
             $template = Template::where('template_uid', $data['gsId'])
             ->first();
+		
+	$status = $data['status'];
             if($data['status'] != 'rejected'){
                 $template->status = strtoupper($data['status']);
             } else {
@@ -137,25 +140,23 @@ class MessageLogController extends Controller
                 $this->incomingMessageResponse($data);
             } else {
                 $messageLog = MessageLog::where('messageId', $data['gsId'])->first();
-
                 if (isset($data['type']) && str_contains($data['type'], 'failed')) {
-                    $messageLog->status = 'Failed';
+                    $status = 'Failed';
                 } else if(isset($data['type']) && $data['type'] == 'sent'){
-                    $messageLog->status = 'Delivered';
+                    $status = 'Delivered';
                 }
+                    $messageLog->status = $status;
                 //$messageLog->type = $data->messageType;
                 Log::info($messageLog);
-
                 $messageLog->save();
-
-                $response = new MessageResponse();
-                $response->message_id = $data['id'];
-                $response->ref_id = (isset($data['gsId']))? $data['gsId'] : '';
-                //        $response->type = $data->messageType;
-                $response->response = $data['type'];
-                $response->save();
             }
-        }
+			$data['id'] = $data['gsId'];
+	}
+
+	$response = MessageResponse::where('message_id', $data['id'])->first();
+	$response->ref_id = $status; 
+	$response->response = $post_data;
+	$response->save();
         Log::info('Save message Log successfully.');
         // Update CRM Record
     }
@@ -270,6 +271,16 @@ class MessageLogController extends Controller
         $messageLog->destinations = ($data['destination']);
         $messageLog->save();
         Log::info('Outgoing messages stored successfully.');
+
+
+	// Save response
+	$response = new MessageResponse();
+	$response->message_id = $data['result']->messageId;
+	$response->ref_id = 'Queued';
+        $response->type = 'Message';
+	$response->response = $data['result'];
+	$response->save();
+
         return true;
     }
 

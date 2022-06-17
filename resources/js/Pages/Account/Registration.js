@@ -26,6 +26,17 @@ function Registration(props) {
         profile_picture: '',
         profile_description: '',
         oba: false,
+	api_token: '',
+        call_back_url: '',
+        enqueued: '',
+        failed: '',
+        read: '',
+        sent: '',
+        delivered: '',
+        delete: '',
+        others: '',
+        template: '',
+        account_related_events: '',
     });
 
     const company_types = [
@@ -123,7 +134,7 @@ function Registration(props) {
                                                     handleChange={handleChange}
                                                     options={company_types}
                                                     value={data.company_type}
-                                                />
+                                               />
                                             </div>
                                             <InputError message={errors.company_type} />
                                         </div>
@@ -262,6 +273,300 @@ function Registration(props) {
                                                     <p className="text-gray-500">Request for Whatsapp official business account (OBA).</p>
                                                 </div>
                                                 <InputError message={errors.oba} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
+                            <div className="md:grid md:grid-cols-3 md:gap-6">
+                                <div className="md:col-span-1">
+                                    <h3 className="text-lg font-medium leading-6 text-gray-900">API Information</h3>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        Information will be used to use your whatsapp API call.
+                                    </p>
+                                </div>
+                                <div className="mt-5 md:mt-0 md:col-span-2">
+                                    <div className="grid grid-cols-6 gap-6">
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <label htmlFor="api_token" className="block text-sm font-medium text-gray-700">
+                                                API Token
+                                            </label>
+                                            <div className="mt-1 flex rounded-md shadow-sm">
+                                                <Input required={true} name='api_token' value={data.api_token} id='api_token' placeholder='' handleChange={handleChange} />
+                                            </div>
+                                            <InputError message={errors.api_token} />
+                                        </div>
+
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <label htmlFor="call_back_url" className="block text-sm font-medium text-gray-700">
+                                                Callback URL
+                                            </label>
+                                            <div className="mt-1 flex rounded-md shadow-sm">
+                                                <Input required={true} name='call_back_url' value={data.call_back_url} id='call_back_url' placeholder='' handleChange={handleChange} />
+                                            </div>
+                                            <InputError message={errors.call_back_url} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
+                            <div className="md:grid md:grid-cols-3 md:gap-6">
+                                <div className="md:col-span-1">
+                                    <h3 className="text-lg font-medium leading-6 text-gray-900">Message Events</h3>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        Information will be used to which response to reurn on your whatsapp API call.
+                                    </p>
+                                </div>
+                                <div className="mt-5 md:mt-0 md:col-span-2">
+                                    <div className="grid grid-cols-6 gap-6">
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <div className="flex items-start">
+                                                <div className="flex items-center h-5">
+                                                    <Checkbox
+                                                        id="enqueued"
+                                                        name="enqueued"
+                                                        handleChange={handleChange}
+                                                        value={data.enqueued}
+                                                    />
+                                                </div>
+                                                <div className="ml-3 text-sm">
+                                                    <label htmlFor="enqueued" className="font-medium text-gray-700">
+                                                        Enqueued
+                                                    </label>
+                                                    <p className="text-gray-500">Return sent messasge enqueue response to callback url.</p>
+                                                </div>
+                                                <InputError message={errors.enqueued} />
+                                            </div>
+                                        </div>
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <div className="flex items-start">
+                                                <div className="flex items-center h-5">
+                                                    <Checkbox
+                                                        id="failed"
+                                                        name="failed"
+                                                        handleChange={handleChange}
+                                                        value={data.failed}
+                                                    />
+                                                </div>
+                                                <div className="ml-3 text-sm">
+                                                    <label htmlFor="failed" className="font-medium text-gray-700">
+                                                        failed
+                                                    </label>
+                                                    <p className="text-gray-500">Return sent messasge failed response to callback url.</p>
+                                                </div>
+                                                <InputError message={errors.failed} />
+                                            </div>
+                                        </div>
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <div className="flex items-start">
+                                                <div className="flex items-center h-5">
+                                                    <Checkbox
+                                                        id="read"
+                                                        name="read"
+                                                        handleChange={handleChange}
+                                                        value={data.read}
+                                                    />
+                                                </div>
+                                                <div className="ml-3 text-sm">
+                                                    <label htmlFor="read" className="font-medium text-gray-700">
+                                                        read
+                                                    </label>
+                                                    <p className="text-gray-500">Return sent messasge read response to callback url.</p>
+                                                </div>
+                                                <InputError message={errors.read} />
+                                            </div>
+                                        </div>
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <div className="flex items-start">
+                                                <div className="flex items-center h-5">
+                                                    <Checkbox
+                                                        id="sent"
+                                                        name="sent"
+                                                        handleChange={handleChange}
+                                                        value={data.sent}
+                                                    />
+                                                </div>
+                                                <div className="ml-3 text-sm">
+                                                    <label htmlFor="sent" className="font-medium text-gray-700">
+                                                        Sent
+                                                    </label>
+                                                    <p className="text-gray-500">Return sent messasge sent response to callback url.</p>
+                                                </div>
+                                                <InputError message={errors.sent} />
+                                            </div>
+                                        </div>
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <div className="flex items-start">
+                                                <div className="flex items-center h-5">
+                                                    <Checkbox
+                                                        id="delivered"
+                                                        name="delivered"
+                                                        handleChange={handleChange}
+                                                        value={data.delivered}
+                                                    />
+                                                </div>
+                                                <div className="ml-3 text-sm">
+                                                    <label htmlFor="delivered" className="font-medium text-gray-700">
+                                                        delivered
+                                                    </label>
+                                                    <p className="text-gray-500">Return sent messasge delivered response to callback url.</p>
+                                                </div>
+                                                <InputError message={errors.delivered} />
+                                            </div>
+                                        </div>
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <div className="flex items-start">
+                                                <div className="flex items-center h-5">
+                                                    <Checkbox
+                                                        id="delete"
+                                                        name="delete"
+                                                        handleChange={handleChange}
+                                                        value={data.delete}
+                                                    />
+                                                </div>
+                                                <div className="ml-3 text-sm">
+                                                    <label htmlFor="delete" className="font-medium text-gray-700">
+                                                        delete
+                                                    </label>
+                                                    <p className="text-gray-500">Return sent messasge delete response to callback url.</p>
+                                                </div>
+                                                <InputError message={errors.delete} />
+                                            </div>
+                                        </div>
+
+                                        
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
+                            <div className="md:grid md:grid-cols-3 md:gap-6">
+                                <div className="md:col-span-1">
+                                    <h3 className="text-lg font-medium leading-6 text-gray-900">Message Events</h3>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        Information will be used to which response to reurn on your whatsapp API call.
+                                    </p>
+                                </div>
+                                <div className="mt-5 md:mt-0 md:col-span-2">
+                                    <div className="grid grid-cols-6 gap-6">
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <div className="flex items-start">
+                                                <div className="flex items-center h-5">
+                                                    <Checkbox
+                                                        id="enqueued"
+                                                        name="enqueued"
+                                                        handleChange={handleChange}
+                                                        value={data.enqueued}
+                                                    />
+                                                </div>
+                                                <div className="ml-3 text-sm">
+                                                    <label htmlFor="enqueued" className="font-medium text-gray-700">
+                                                        Enqueued
+                                                    </label>
+                                                    <p className="text-gray-500">Return sent messasge enqueue response to callback url.</p>
+                                                </div>
+                                                <InputError message={errors.enqueued} />
+                                            </div>
+                                        </div>
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <div className="flex items-start">
+                                                <div className="flex items-center h-5">
+                                                    <Checkbox
+                                                        id="failed"
+                                                        name="failed"
+                                                        handleChange={handleChange}
+                                                        value={data.failed}
+                                                    />
+                                                </div>
+                                                <div className="ml-3 text-sm">
+                                                    <label htmlFor="failed" className="font-medium text-gray-700">
+                                                        failed
+                                                    </label>
+                                                    <p className="text-gray-500">Return sent messasge failed response to callback url.</p>
+                                                </div>
+                                                <InputError message={errors.failed} />
+                                            </div>
+                                        </div>
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <div className="flex items-start">
+                                                <div className="flex items-center h-5">
+                                                    <Checkbox
+                                                        id="read"
+                                                        name="read"
+                                                        handleChange={handleChange}
+                                                        value={data.read}
+                                                    />
+                                                </div>
+                                                <div className="ml-3 text-sm">
+                                                    <label htmlFor="read" className="font-medium text-gray-700">
+                                                        read
+                                                    </label>
+                                                    <p className="text-gray-500">Return sent messasge read response to callback url.</p>
+                                                </div>
+                                                <InputError message={errors.read} />
+                                            </div>
+                                        </div>
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <div className="flex items-start">
+                                                <div className="flex items-center h-5">
+                                                    <Checkbox
+                                                        id="sent"
+                                                        name="sent"
+                                                        handleChange={handleChange}
+                                                        value={data.sent}
+                                                    />
+                                                </div>
+                                                <div className="ml-3 text-sm">
+                                                    <label htmlFor="sent" className="font-medium text-gray-700">
+                                                        Sent
+                                                    </label>
+                                                    <p className="text-gray-500">Return sent messasge sent response to callback url.</p>
+                                                </div>
+                                                <InputError message={errors.sent} />
+                                            </div>
+                                        </div>
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <div className="flex items-start">
+                                                <div className="flex items-center h-5">
+                                                    <Checkbox
+                                                        id="delivered"
+                                                        name="delivered"
+                                                        handleChange={handleChange}
+                                                        value={data.delivered}
+                                                    />
+                                                </div>
+                                                <div className="ml-3 text-sm">
+                                                    <label htmlFor="delivered" className="font-medium text-gray-700">
+                                                        delivered
+                                                    </label>
+                                                    <p className="text-gray-500">Return sent messasge delivered response to callback url.</p>
+                                                </div>
+                                                <InputError message={errors.delivered} />
+                                            </div>
+                                        </div>
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <div className="flex items-start">
+                                                <div className="flex items-center h-5">
+                                                    <Checkbox
+                                                        id="delete"
+                                                        name="delete"
+                                                        handleChange={handleChange}
+                                                        value={data.delete}
+                                                    />
+                                                </div>
+                                                <div className="ml-3 text-sm">
+                                                    <label htmlFor="delete" className="font-medium text-gray-700">
+                                                        delete
+                                                    </label>
+                                                    <p className="text-gray-500">Return sent messasge delete response to callback url.</p>
+                                                </div>
+                                                <InputError message={errors.delete} />
                                             </div>
                                         </div>
                                     </div>

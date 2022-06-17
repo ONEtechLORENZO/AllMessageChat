@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Template;
+use App\Models\MessageResponse;
+use Illuminate\Support\Facades\Log;
 
 class TemplateController extends Controller
 {
+	public $result = '';
 
     /**
      *  Submit Template to GupShup
@@ -16,9 +19,9 @@ class TemplateController extends Controller
         $appId = $this->getAppId($partnerToken);
         $appToken = $this->getAppToken($partnerToken, $appId);
         if($appToken ) {
-            $result = $this->saveTemplate($appToken, $appId, $data); 
+            $this->result = $this->saveTemplate($appToken, $appId, $data); 
         }
-        return $result;
+        return $this->result;
     }
 
     /** 
@@ -36,7 +39,9 @@ class TemplateController extends Controller
         $return = '';
         if($getAppToken){
             $return = $getAppToken->token;
-        } 
+        } else {
+		$this->result = 'Partner token not generated.';
+	}
         return $return;
     }
 
@@ -53,6 +58,9 @@ class TemplateController extends Controller
         $appList = $getAppList->partnerAppsList;
         if($appList && isset($appList[0])){
             $appId = $appList[0]->id;
+        } 
+	if($appId == '') {
+                $this->result = 'App id not generated.';
         }
         return $appId;
     }
@@ -67,8 +75,10 @@ class TemplateController extends Controller
                 "token: {$token}",
                 );
         $getAppToken = $this->restApiCall('GET', $endPoint, $header);
-        if($getAppToken->status == 'success'){
+        if($getAppToken && $getAppToken->status == 'success'){
             $appToken = $getAppToken->token->token;
+        } else {
+                $this->result = 'App token not generated.';
         }
         return $appToken;
     }
@@ -88,7 +98,12 @@ class TemplateController extends Controller
             ->first();
         
         $buttons = [];
-        foreach($data['data']->buttons as $button){
+	$buttonArr = $data['data']->buttons;
+	if(!is_array($data['data']->buttons)){
+		$buttonArr = json_decode($data['data']->buttons);		
+	}
+
+        foreach($buttonArr as $button){
             $buttonData = [
                 'type' => str_replace(' ', '_',$button['button_type']),
                 'text' => $button['button_text'],
@@ -103,7 +118,7 @@ class TemplateController extends Controller
                 'languageCode' => 'en_US',
                 'category' => strtoupper(str_replace(' ', '_',$template->category)),
                 'templateType' => strtoupper($data['data']->header_type),
-                'vertical' => $template->category, // 'Ticket update',//strtoupper(str_replace(' ', '_',$template->category)),
+                'vertical' => $template->category,
                 'content' => $data['data']->body,
                 'footer' => $data['data']->body_footer,
                 'example' => $data['data']->example,
@@ -116,7 +131,6 @@ class TemplateController extends Controller
             $postData['header'] = $data['data']->header_text;
             $postData['buttons'] = json_encode($buttons);
         }       
-//dd($postData);
         $result = $this->restApiCall('POST', $endPoint, $header, http_build_query($postData) );
         $retrun = [ 'staus' => false ];
         if($result->status == 'success'){
@@ -129,6 +143,16 @@ class TemplateController extends Controller
 		$template->status = $result->message;
 		$return = [ 'status' => $result->status , 'template_status' => $result->message];	
 	}
+	
+Log::info(['Template log', $result]);
+	// Save response
+        $response = new MessageResponse();
+        $response->message_id = $result->template->id;
+        $response->ref_id = 'SUBMITTED';
+        $response->type = 'Template';
+        $response->response = $result;
+        $response->save();
+
         return json_encode($result);
 
     }
@@ -211,9 +235,11 @@ class TemplateController extends Controller
         $template->languages = $request->get('languageCode');
         $template->status = 'DRAFT';
         $template->account_id = $account_id;
-        $template->save();
-
+//        $template->save();
         $template_id = $template->id;
+
+        $template_id = 25;
+
         $attachFilePath = '';
         if($request->file('attach_file')) {
             $file = $request->file('attach_file') ;
