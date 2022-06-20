@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ApiResposne extends Model
+class ApiResponse extends Model
 {
     use HasFactory;
 }

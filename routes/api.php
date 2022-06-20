@@ -24,7 +24,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/vtSendMessage', [MessageLogController::class, 'sendMessage']);
     }
     Route::post('/vtFetchTemplate', [MessageLogController::class, 'getTemplates']);
-
     // Create template
     Route::post('/v1/create-wa-template', [TemplateController::class, 'createTemplate']);
 

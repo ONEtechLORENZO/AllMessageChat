@@ -6,10 +6,15 @@ use Illuminate\Http\Request;
 use App\Models\Template;
 use App\Models\MessageResponse;
 use Illuminate\Support\Facades\Log;
+use App\Models\Account;
+use App\Models\Message;
 
 class TemplateController extends Controller
 {
 	public $result = '';
+    public $textTemplateFields = ['elementName', 'languageCode', 'category', 'header_type', 'vertical', 'body', 'header_text', 'body_footer', 'buttons', 'example'];
+    public $attahmentTemplateFields = ['elementName', 'languageCode', 'category', 'header_type', 'vertical', 'body', 'body_footer', 'example'];
+
 
     /**
      *  Submit Template to GupShup
@@ -150,7 +155,7 @@ Log::info(['Template log', $result]);
         $response->message_id = $result->template->id;
         $response->ref_id = 'SUBMITTED';
         $response->type = 'Template';
-        $response->response = $result;
+        $response->response = base64_encode( serialize($result));
         $response->save();
 
         return json_encode($result);
@@ -226,30 +231,96 @@ Log::info(['Template log', $result]);
     /** 
      * Create template
      **/
-    public function createTemplate(Request $request){
-        $account_id = $request->get('account_id');
 
-        $template = new Template();
-        $template->name = $request->get('elementName');
-        $template->category = $request->get('category');
-        $template->languages = $request->get('languageCode');
-        $template->status = 'DRAFT';
-        $template->account_id = $account_id;
-//        $template->save();
-        $template_id = $template->id;
 
-        $template_id = 25;
+    function createTemplate(Request $request){
+        $token = str_replace('Bearer ', '',$_SERVER['HTTP_AUTHORIZATION']);
+        $account = Account::where('api_token', $token)->first();
+        $response = ['status' => '128', 'message' => 'User permission denied'];
+        $postFields = array_keys($_POST);
+        if($account){
+            $account_id = $account->id;
+            $status = true;
+            $return = '';
+            if( $request->header_type && strtoupper($request->header_type) == 'TEXT'){
+                foreach($this->textTemplateFields as $field){
+                    //    if( ($request->$field || $field == 'buttons' ) ){
+                    if( in_array($field, $postFields) && ($request->$field || $field == 'buttons' ) ){
+                        if($field == 'elementName'){
+                            // $request->$field = strtolower(str_replace(' ', '_', $request->$field)).'_'.rand ( 1000 , 9999 );
+                        }
+                        if($field == 'category' || $field == 'vertical' || $field == 'header_type'){
+                            //            $request->$field = strtoupper(str_replace(' ', '_', $request->$field));
+                        }
+                        if($field == 'buttons'){
+                            $request->$field = json_decode($request->$field);
+                            if(is_array($request->$field)){
+                                $request->$field = json_encode($request->$field);
+                            } else {
+                                $status = false;
+                                $statusCode = 400;
+                                $message = "{$field} field is not an array";
+                                $result = 'Bad Request';
+                            }
+                        }
+                        $templateData[$field] = $request->$field;
+                    } else {
+                        $status = false;
+                        $statusCode = 400;
+                        $message = "{$field} field is empty";
+                        $result = 'Bad Request';
+                    }
+                }
+            } else {
 
-        $attachFilePath = '';
-        if($request->file('attach_file')) {
-            $file = $request->file('attach_file') ;
-            $fileName = $file->getClientOriginalName() ;
-            $destinationPath = public_path().'/attach_files' ;
-            $file->move($destinationPath,$fileName);
-            $attachFilePath = ['url' => asset('attach_files/'.$fileName), 'path' => $destinationPath.'/'.$fileName];
+            }
+            if(!$status){
+                $return = (['status' =>  $status, 'status_code' => $statusCode, 'result' => $result, 'message' => $message ]);
+            } else {
+
+///                $template = new Template();
+            $template = Template::find(42);
+            
+                $template->name = $request->get('elementName');
+                $template->category = $request->get('category');
+                $template->languages = [$request->get('languageCode')];
+                $template->status = 'DRAFT';
+                $template->account_id = $account_id;
+                $template->save();
+                $template_id = $template->id;
+            
+                $message = new Message();
+                $message->header_type = $request->get('header_type');
+                if ($message->header_type == 'text') {
+                    $message->header_content = $request->get('header_text');
+                } else {
+                    $message->header_content = '';
+                }
+
+                $message->body = $request->get('body');
+                $message->footer_content = $request->get('body_footer');
+                $message->template_id = $template_id;
+                $message->language = $request->get('languageCode');
+                $message->attach_file = isset($attachFilePath['url'])? $attachFilePath['url'] : '';
+                $message->example = $request->get('example');
+                $message->save();
+
+                //$template_id = 42;
+
+                $attachFilePath = '';
+                if($request->file('attach_file')) {
+                    $file = $request->file('attach_file') ;
+                    $fileName = $file->getClientOriginalName() ;
+                    $destinationPath = public_path().'/attach_files' ;
+                    $file->move($destinationPath,$fileName);
+                    $attachFilePath = ['url' => asset('attach_files/'.$fileName), 'path' => $destinationPath.'/'.$fileName];
+                }
+                $return = $this->submitTemplate(['account_id' => $account_id, 'template_id' => $template_id, 'data' => $request, 'file' => $attachFilePath]);
+            }
+        } else {
+            $return = (['status' =>  false, 'status_code' => $statusCode, 'result' => $result, 'message' => $message ]);
         }
+        dd($return);
 
-        $response = $this->submitTemplate(['account_id' => $account_id, 'template_id' => $template_id, 'data' => $request, 'file' => $attachFilePath]);
-        dd($response);
     }
 }

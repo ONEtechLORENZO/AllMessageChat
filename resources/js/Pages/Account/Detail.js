@@ -26,10 +26,27 @@ export default function Detail(props) {
         'profile_picture': {'label': 'Profile picture', 'type': 'image'},
         'profile_description': {'label': 'Profile description'},
         'status': {'label': 'Status'},
+        };
+        const api_fields = {
+        'api_token': {'label': 'API Token'},
+        'call_back_url': {'label': 'Callback URL'},
+        'enqueued': {'label': 'Enqueued'},
+        'failed': {'label': 'Failed'},
+        'read': {'label': 'Read'},
+        'sent': {'label': 'Sent'},
+        'delivered': {'label': 'Delivered'},
+        'delete': {'label': 'Delete'},
+        'others': {'label': 'Others'},
+        'template': {'label': 'Template'},
+        'account_related_events': {'label': 'Account'},
+
     };
 
     const [accountModalOpen, setAccountModalOpen ] = useState(false);
     const [incomingUrlModalOpen , setIncomingUrlModalOpen ] = useState(false);
+
+    const [token , setToken ]= useState(props['account']['api_token']);
+    const [spinClass , setSpinClass] = useState([]);
 
     const cancelButtonRef = useRef(null);
 
@@ -39,6 +56,23 @@ export default function Detail(props) {
         languages: '',
         incoming_url: '',
     });
+
+    /**
+     * Update Token
+     */
+    function updateToken(){
+        axios({
+            method: 'post',
+            url: route('regenerate_token'),
+            data: {
+                account_id: props.account.id,
+            }
+        })
+        .then((response) => {
+            setToken(response.data.token);
+            setSpinClass(' ');
+        });
+    }
 
     /**
      * Handle input change
@@ -143,6 +177,57 @@ export default function Detail(props) {
                                                 <img src={`/image/profile/${props['account']['id']}`} alt="Profile picture" className='h-64 w-64' />
                                             : 
                                                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{props['account'][key]}</dd>
+                                            }
+                                        </div>
+                                    );
+                                })}
+                            </dl>
+                        </div>
+                    </div>
+                    <div className="pb-5 pt-5">
+                        <div className="px-4 py-5 sm:px-6">
+                            <h3 className="text-lg leading-6 font-medium text-gray-900">API Information</h3>
+                            <p className="mt-1 max-w-2xl text-sm text-gray-500"></p>
+                        </div>
+                        <div className="border-t border-gray-200">
+                            <dl>
+                                {Object.keys(api_fields).map((key, index) => {
+                                    let bg_color = 'bg-gray-50';
+                                    if(index % 2 == 0) {
+                                        bg_color = 'bg-white';
+                                    }
+
+                                    return (
+                                        <div key={key} className={`${bg_color} px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
+                                            <dt className="text-sm font-medium text-gray-500">{api_fields[key]['label']}</dt>
+                                            {key == 'api_token' ?
+                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                    {token}
+                                                    <span class="cursor-pointer" title="Regenarate Token">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" onClick={() => {if(window.confirm('Do you want change the user token?')){updateToken()};}} class={"h-5 w-5 " + spinClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                            </svg>
+                                                        </span>
+                                                </dd>
+                                            :<>
+                                            { key == 'call_back_url' ?
+                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                    {props['events'][key]}
+                                                </dd>
+                                            : 
+                                            <>
+                                                {(props['events'][key]) ?
+                                                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                        <input type="checkbox" disabled checked />
+                                                    </dd>
+                                                :
+                                                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                        <input type="checkbox" disabled />
+                                                    </dd>
+                                                }
+                                            </>
+                                            }
+                                            </>
                                             }
                                         </div>
                                     );

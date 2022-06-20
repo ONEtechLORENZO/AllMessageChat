@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateApiResposnesTable extends Migration
+class CreateApiResponsesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,12 @@ class CreateApiResposnesTable extends Migration
      */
     public function up()
     {
-        Schema::create('api_resposnes', function (Blueprint $table) {
+        Schema::create('api_responses', function (Blueprint $table) {
             $table->id();
 
-		$table->string('account_id', 20 );
-		$table->string('event_name');
-		$table->string('event_value');
-		
+            $table->string('account_id', 20 );
+            $table->longText('events');
+
             $table->timestamps();
         });
     }
@@ -31,6 +30,6 @@ class CreateApiResposnesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('api_resposnes');
+        Schema::dropIfExists('api_responses');
     }
 }

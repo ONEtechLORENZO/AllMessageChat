@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Redirect;
 use App\Models\MailToAddress;
 use App\Models\OutgoingServerConfig;
 use App\Models\IncomingUrl;
+use App\Models\ApiResponse;
 use Swift_SmtpTransport;
 use Swift_Mailer;
 use DB;
@@ -146,8 +147,9 @@ class UserController extends Controller
      */
     public function regenerateToken(Request $request)
     {
-        $user = User::findOrFail($request->get('user_id'));
-        $token = $this->createAccessToken($user);
+        $account = Account::find($request->get('account_id'));
+        //$user = User::findOrFail($account);
+        $token = $this->createAccessToken($account);
         Log::info('Token Generated.');
         echo json_encode(['token' => $token->plainTextToken]);
     }
@@ -155,11 +157,12 @@ class UserController extends Controller
     /**
      * Create access token to the user
      */
-    public function createAccessToken($user)
+    public function createAccessToken($account)
     {
+        $user = User::findOrFail($account->user_id);
         $token = $user->createToken('WHATSAPP_API');
-        $user->remember_token = $token->plainTextToken;
-        $user->save();
+        $account->api_token = $token->plainTextToken;
+        $account->save();
         return $token;
     }
 
@@ -191,9 +194,15 @@ class UserController extends Controller
         if ($account) {
             $templates = Template::where('account_id', $id)->get();
             $incomingUrls = IncomingUrl::where('account_id', $id)->get();
+            
+            $apiEvents = ApiResponse::where('account_id' , $id)->first();
+            $events = [];
+            if($apiEvents){
+                $events = unserialize( base64_decode( $apiEvents->events ));
+            }
         }
 
-        return Inertia::render('Account/Detail', ['account' => $account, 'templates' => $templates, 'incoming_url' => $incomingUrls]);
+        return Inertia::render('Account/Detail', ['account' => $account, 'templates' => $templates, 'incoming_url' => $incomingUrls, 'events' => $events]);
     }
 
     /**
@@ -202,7 +211,9 @@ class UserController extends Controller
     public function editAccountData($id)
     {
         $account = Account::findOrFail($id);
-        return Inertia::render('Account/Registration', ['account' => $account]);
+        $apiEvents = ApiResponse::where('account_id' , $id)->first();
+        $events = unserialize( base64_decode( $apiEvents->events ));
+        return Inertia::render('Account/Registration', ['account' => $account, 'events' => $events]);
     }
 
     /**
@@ -283,7 +294,7 @@ class UserController extends Controller
         $fields = [
             'company_name', 'company_type', 'website', 'email',
             'estimated_launch_date', 'type_of_integration', 'phone_number', 'display_name',
-            'business_manager_id', 'profile_description', 'oba',
+            'business_manager_id', 'profile_description', 'oba', 'api_token',
         ];
 
 
@@ -297,6 +308,25 @@ class UserController extends Controller
         $account->status = 'New'; // Setting the status as New.
         $account->save();
 
+        // Save Account API data
+        $apiEventsFields = ['call_back_url', 'enqueued', 'failed', 'read', 'sent', 'delivered', 'delete', 'others', 'template', 'account_related_events'];
+        if($account->id){
+            $apiEvents = ApiResponse::where('account_id' , $account->id)->first();
+            if( $apiEvents ){
+                $apiEvents = ApiResponse::findOrFail($apiEvents->id);
+            } else {
+               $apiEvents = new ApiResponse; 
+            }
+            $apiEventsData = [];
+            foreach( $apiEventsFields as $field){
+                 if($request->get($field) ){
+                    $apiEventsData[$field] = $request->get($field);
+                 }
+            }
+            $apiEvents->events = base64_encode( serialize($apiEventsData));
+            $apiEvents->account_id = $account->id;
+            $apiEvents->save();
+        }
         Log::info('Account information saved successfully.');
         return Redirect::route('dashboard');
     }

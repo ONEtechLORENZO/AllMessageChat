@@ -155,7 +155,7 @@ class MessageLogController extends Controller
 
 	$response = MessageResponse::where('message_id', $data['id'])->first();
 	$response->ref_id = $status; 
-	$response->response = $post_data;
+	$response->response = base64_encode( serialize( $post_data ));
 	$response->save();
         Log::info('Save message Log successfully.');
         // Update CRM Record
