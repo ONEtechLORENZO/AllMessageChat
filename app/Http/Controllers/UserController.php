@@ -13,20 +13,30 @@ use Illuminate\Support\Facades\Redirect;
 use App\Models\MailToAddress;
 use App\Models\OutgoingServerConfig;
 use App\Models\IncomingUrl;
-use App\Models\ApiResponse;
-use Swift_SmtpTransport;
 use Swift_Mailer;
 use DB;
 use Illuminate\Support\Facades\Log;
 use Mail;
 use App\Http\Controllers\TemplateController;
-use Illuminate\Support\Facades\Storage;
+use App\Models\WebhookEvent;
 
 class UserController extends Controller
 {
+    public $per_page = 15;
+
+    public $webhook_events = [
+        'enqueued' => ['label' => 'Enqueued', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
+        'failed' => ['label' => 'Failed', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
+        'read' => ['label' => 'Read', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
+        'sent' => ['label' => 'Sent', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
+        'delivered' => ['label' => 'Delivered', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
+        'delete' => ['label' => 'Delete', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
+        'template_events' => ['label' => 'Template events', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
+        'account_related_events' => ['label' => 'Account related events', 'help_text' => 'Return sent messasge enqueue response to callback url'],
+    ];
 
     /**
-     * Show list of accounts
+     * Show list of accounts related to logged in user
      */
     public function dashboard(Request $request)
     {
@@ -38,16 +48,9 @@ class UserController extends Controller
     /**
      * Show User list
      */
-    public function user(Request $request)
+    public function usersListing(Request $request)
     {
-        $user = $request->user();
-        $users = DB::table('users')
-            ->where(function ($query) use ($user) {
-                if ($user->role != 'Admin') {
-                    $query->where('id', $user->id);
-                }
-            })
-            ->get();
+        $users = User::paginate($this->per_page)->withQueryString();
         return Inertia::render('Admin/User/List', ['users' => $users]);
     }
 
@@ -66,7 +69,6 @@ class UserController extends Controller
      */
     public function editUser(Request $request, $id)
     {
-
         $user = User::findOrFail($id);
         $password = $user->password;
         $currentUser = $request->user();
@@ -108,19 +110,6 @@ class UserController extends Controller
         $user->status = $request->get('status');
 
         $user->save();
-        if (!$request->get('id')) {
-            $this->createAccessToken($user);    //Create token new user
-            Mail::send(
-                'Mail.WelcomeMail',
-                [
-                    'user' => $user,
-                    'password' => $password,
-                ],
-                function ($message) use ($user) {
-                    $message->to($user->email, $user->name)->subject('Welcome Mail');
-                }
-            );
-        }
         Log::info('Record saved successfully.');
         return Redirect::route('user');
     }
@@ -148,7 +137,6 @@ class UserController extends Controller
     public function regenerateToken(Request $request)
     {
         $account = Account::find($request->get('account_id'));
-        //$user = User::findOrFail($account);
         $token = $this->createAccessToken($account);
         Log::info('Token Generated.');
         echo json_encode(['token' => $token->plainTextToken]);
@@ -194,15 +182,17 @@ class UserController extends Controller
         if ($account) {
             $templates = Template::where('account_id', $id)->get();
             $incomingUrls = IncomingUrl::where('account_id', $id)->get();
-            
-            $apiEvents = ApiResponse::where('account_id' , $id)->first();
-            $events = [];
-            if($apiEvents){
-                $events = unserialize( base64_decode( $apiEvents->events ));
-            }
         }
 
-        return Inertia::render('Account/Detail', ['account' => $account, 'templates' => $templates, 'incoming_url' => $incomingUrls, 'events' => $events]);
+        $webhookEvents = WebhookEvent::where('account_id', $id)->first();
+
+        return Inertia::render('Account/Detail', [
+            'account' => $account,
+            'templates' => $templates, 
+            'incoming_url' => $incomingUrls, 
+            'webhook_events' => $this->webhook_events,
+            'events' => $webhookEvents ? $webhookEvents : [],
+        ]);
     }
 
     /**
@@ -211,23 +201,12 @@ class UserController extends Controller
     public function editAccountData($id)
     {
         $account = Account::findOrFail($id);
-        $apiEvents = ApiResponse::where('account_id' , $id)->first();
-        $events = ($apiEvents) ? unserialize( base64_decode( $apiEvents->events )) : [];
-        return Inertia::render('Account/Registration', ['account' => $account, 'events' => $events]);
-    }
-
-    /**
-     * Delete account 
-     */
-    public function deleteAccount(Request $request)
-    {
-
-        $accountId = $request->get('id');
-        $user_id = $request->user()->id;
-        Account::destroy($accountId);
-        $accounts = Account::where('user_id', $user_id)->get();
-        echo json_encode(['accounts' => $accounts]);
-        die;
+        $webhook = WebhookEvent::where('account_id', $account->id)->first();
+        return Inertia::render('Account/Registration', [
+            'account' => $account, 
+            'webhook_events' => $this->webhook_events, 
+            'events' => $webhook,
+        ]);
     }
 
     /**
@@ -243,11 +222,10 @@ class UserController extends Controller
      */
     public function storeAccountRegistration(Request $request)
     {
-
         Log::info('Store account information - Start');
         $user_id = $request->user()->id;
-        // Create new account
         if ($request->has('id') && $request->get('id') > 0) {
+            // Update the account information
             $id = $request->get('id');
             $request->validate([
                 'company_name' => 'required|max:255',
@@ -256,20 +234,17 @@ class UserController extends Controller
                 'email' => 'required|max:255|email',
                 'estimated_launch_date' => 'required|date',
                 'type_of_integration' => 'required',
-                'phone_number' => 'required|numeric',
+                'phone_number' => 'required|numeric|unique:accounts,phone_number,' . $request->get('id'),
                 'display_name' => 'required|max:255',
                 'business_manager_id' => 'required|max:255',
                 'profile_description' => 'required|max:139',
                 'oba' => 'required|boolean',
             ]);
-            $existPhnCheck = Account::where('phone_number', $request->get('phone_number'))->where('id', '!=', $id)->first();
-            if ($existPhnCheck) {
-                $request->validate([
-                    'phone_number' => 'required|numeric|unique:accounts',
-                ]);
-            }
+
             $account = Account::findOrFail($id);
-        } else {
+        } 
+        else {
+            // Create new account
             $request->validate([
                 'company_name' => 'required|max:255',
                 'company_type' => 'required',
@@ -284,51 +259,58 @@ class UserController extends Controller
                 'profile_description' => 'required|max:139',
                 'oba' => 'required|boolean',
             ]);
+
             $account = new Account();
 
             // Storing the profile picture
             $path = $request->file('profile_picture')->store('profile_pictures');
             $account->profile_picture = $path;
+            $account->status = 'New'; // Setting the status as New.
         }
 
         $fields = [
             'company_name', 'company_type', 'website', 'email',
             'estimated_launch_date', 'type_of_integration', 'phone_number', 'display_name',
-            'business_manager_id', 'profile_description', 'oba', 'api_token',
+            'business_manager_id', 'profile_description', 'oba'
         ];
-
 
         foreach ($fields as $field_name) {
             $field_value = $request->get($field_name);
             $account->$field_name = $field_value;
         }
+        
         // Setting logged in user id
         $account->user_id = $user_id;
-
-        $account->status = 'New'; // Setting the status as New.
         $account->save();
 
-        // Save Account API data
-        $apiEventsFields = ['call_back_url', 'enqueued', 'failed', 'read', 'sent', 'delivered', 'delete', 'others', 'template', 'account_related_events'];
-        if($account->id){
-            $apiEvents = ApiResponse::where('account_id' , $account->id)->first();
-            if( $apiEvents ){
-                $apiEvents = ApiResponse::findOrFail($apiEvents->id);
-            } else {
-               $apiEvents = new ApiResponse; 
-            }
-            $apiEventsData = [];
-            foreach( $apiEventsFields as $field){
-                 if($request->get($field) ){
-                    $apiEventsData[$field] = $request->get($field);
-                 }
-            }
-            $apiEvents->events = base64_encode( serialize($apiEventsData));
-            $apiEvents->account_id = $account->id;
-            $apiEvents->save();
+        // Handle webhook form
+        $webhook = WebhookEvent::where('account_id', $account->id)->first();
+        if(!$webhook) {
+            $webhook = new WebhookEvent();
+            $webhook->account_id = $account->id;
         }
+        
+        foreach($this->webhook_events as $webhook_event => $event_info) {
+            $webhook->$webhook_event = $request->has($webhook_event) && $request->get($webhook_event) === true ? true : false;
+        }
+        $webhook->callback_url = $request->get('callback_url');
+        $webhook->save();
+
         Log::info('Account information saved successfully.');
         return Redirect::route('dashboard');
+    }
+
+    /**
+     * Delete account 
+     */
+    public function deleteAccount(Request $request)
+    {
+        $accountId = $request->get('id');
+        $user_id = $request->user()->id;
+        Account::destroy($accountId);
+        $accounts = Account::where('user_id', $user_id)->get();
+        echo json_encode(['accounts' => $accounts]);
+        die;
     }
 
     /**
@@ -372,6 +354,7 @@ class UserController extends Controller
             ->where('id', $template_id)
             ->where('account_id', $account_id)
             ->first();
+
         $template->template_name_space = $request->get('template_name_space');
         $template->template_name = $request->get('template_name');
         $template->save();
@@ -387,6 +370,7 @@ class UserController extends Controller
         $request->validate([
             'incoming_url' => 'required',
         ]);
+
         $incomingUrl = new IncomingUrl();
         $incomingUrl->incoming_url = $request->get('incoming_url');
         $incomingUrl->account_id = $account_id;
@@ -395,6 +379,33 @@ class UserController extends Controller
 
         return Redirect::route('account_view', $account_id);
     }
+
+    /**
+     * Delete incoming URL
+     */
+    public function deleteIncomingURL(Request $request, $incoming_url_id)
+    {
+        $flag = false;
+        // Check whether id is related to logged in users account
+        $user_id = $request->user()->id;
+        $accounts = Account::where('user_id', $user_id)->get();
+        $incomingUrl = IncomingUrl::find($incoming_url_id);
+        $account_id = $incomingUrl->account_id;
+        foreach($accounts as $account) {
+            if($account->id == $incomingUrl->account_id) {
+                $incomingUrl->delete();
+                $flag = true;
+                break;
+            }
+        }
+        
+        if(!$flag) {
+            abort(401, 'You are not authorised to view this template');
+        }
+
+        return Redirect::route('account_view', $account_id);
+    }
+
     /**
      * Template's detail view
      */
@@ -406,7 +417,7 @@ class UserController extends Controller
             ->first();
 
         if (!$account) {
-            abort(401, 'You are not authorised to view this');
+            abort(401, 'You are not authorised to view this template');
         }
 
         $template = Template::where('account_id', $account_id)

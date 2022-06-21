@@ -24,14 +24,14 @@ export default function Authenticated({ auth, header, children }) {
                                 <NavLink href={route('dashboard')} active={route().current('dashboard')}>
                                     Dashboard
                                 </NavLink>
-                                {auth.user.role == 'Admin' &&
-                                <NavLink href={route('user')} active={route().current('user')}>
-                                    User
-                                </NavLink>
-                                }
                                 <NavLink href={route('messages')} active={route().current('messages')}>
                                     Message Log
                                 </NavLink>
+                                {auth.user.role == 'Admin' &&
+                                    <NavLink href={route('usersListing')} active={route().current('user')}>
+                                        Users
+                                    </NavLink>
+                                }
                             </div>
                         </div>
 

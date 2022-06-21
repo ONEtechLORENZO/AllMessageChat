@@ -3,18 +3,8 @@ import Authenticated from '@/Layouts/Authenticated';
 import { Head, Link } from '@inertiajs/inertia-react';
 import Moment from 'moment';
 
-export default function Dashboard(props) {
-
-  // Delete Record 
-  function removeUser(id){
-    axios.get("user/delete", {
-      params:{'id': id}
-    })
-    .then(res => {
-      window.location.reload();
-    })
-  }
-
+function Dashboard(props) 
+{
     const listColumn = [
         {label: 'Name'},
         {label: 'Email'},
@@ -23,6 +13,16 @@ export default function Dashboard(props) {
         {label: 'create at'},
         {label: 'action'},
     ];
+
+    function removeUser(id)
+    {
+        axios.get("user/delete", {
+            params:{'id': id}
+        })
+        .then(res => {
+            window.location.reload();
+        })
+    }
 
     return (
         <Authenticated
@@ -72,7 +72,7 @@ export default function Dashboard(props) {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {props.users.map((person) => (
+                        {props.users.data.map((person) => (
                           <tr key={person.name}>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
@@ -132,3 +132,5 @@ export default function Dashboard(props) {
 
     );
 }
+
+export default Dashboard;

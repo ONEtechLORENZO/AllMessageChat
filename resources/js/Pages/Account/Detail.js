@@ -10,9 +10,11 @@ import Input from '@/Components/Forms/Input';
 import Dropdown from '@/Components/Forms/Dropdown';
 import InputError from '@/Components/Forms/InputError';
 import categories, {defaultPristineConfig} from '@/Pages/Constants';
+import { RefreshIcon, TrashIcon } from '@heroicons/react/solid';
+import { FolderAddIcon } from '@heroicons/react/outline';
 
-export default function Detail(props) {
-
+function Detail(props) 
+{
     const fieldInfo = {
         'display_name': {'label': 'Display name'},
         'company_name': {'label': 'Company name'},
@@ -26,28 +28,12 @@ export default function Detail(props) {
         'profile_picture': {'label': 'Profile picture', 'type': 'image'},
         'profile_description': {'label': 'Profile description'},
         'status': {'label': 'Status'},
-        };
-        const api_fields = {
-        'api_token': {'label': 'API Token'},
-        'call_back_url': {'label': 'Callback URL'},
-        'enqueued': {'label': 'Enqueued'},
-        'failed': {'label': 'Failed'},
-        'read': {'label': 'Read'},
-        'sent': {'label': 'Sent'},
-        'delivered': {'label': 'Delivered'},
-        'delete': {'label': 'Delete'},
-        'others': {'label': 'Others'},
-        'template': {'label': 'Template'},
-        'account_related_events': {'label': 'Account'},
-
     };
 
     const [accountModalOpen, setAccountModalOpen ] = useState(false);
     const [incomingUrlModalOpen , setIncomingUrlModalOpen ] = useState(false);
 
-    const [token , setToken ]= useState(props['account']['api_token']);
-    const [spinClass , setSpinClass] = useState([]);
-
+    const [token, setToken]= useState(props['account']['api_token']);
     const cancelButtonRef = useRef(null);
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -56,23 +42,6 @@ export default function Detail(props) {
         languages: '',
         incoming_url: '',
     });
-
-    /**
-     * Update Token
-     */
-    function updateToken(){
-        axios({
-            method: 'post',
-            url: route('regenerate_token'),
-            data: {
-                account_id: props.account.id,
-            }
-        })
-        .then((response) => {
-            setToken(response.data.token);
-            setSpinClass(' ');
-        });
-    }
 
     /**
      * Handle input change
@@ -124,19 +93,55 @@ export default function Detail(props) {
     /**
      * Create new Incoming URL
      */
-     function createNewIncomingUrl(){
+    function createNewIncomingUrl()
+    {
         var pristine = new PristineJS(document.getElementById("new_incoming_url"), defaultPristineConfig);
         let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required]'));
         if(!is_validated) {
             return false;
         }
+
         Inertia.post(route('create_new_incoming_url', props.account.id), data, {
             onSuccess: () => {
                 setIncomingUrlModalOpen(false);
             },
         });
+    }
 
-     }
+    /**
+     * Delete incoming URL
+     * 
+     * @param {integer} id 
+     */
+    function deleteIncomingURL(id) {
+        var confirmation = window.confirm('Are you sure you want to delete this incoming URL?');
+        if(confirmation) {
+            Inertia.post(route('delete_incoming_url', id), {}, {
+                onSuccess: () => {
+                    //
+                },
+            });
+        }
+    }
+    
+    /**
+     * Generate API key
+     */
+    function generateKey() 
+    {
+        if(window.confirm('Are you sure you want to generate a new API token?')) {
+            axios({
+                method: 'post',
+                url: route('regenerate_token'),
+                data: {
+                    account_id: props.account.id,
+                }
+            })
+            .then((response) => {
+                setToken(response.data.token);
+            });
+        }
+    }
 
     return (
         <Authenticated
@@ -147,7 +152,7 @@ export default function Detail(props) {
                     <div className="inline-flex">
                         <Link 
                             href={route('edit_account' , props.account.id)}
-                            class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
+                            className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             Edit
                         </Link>
                     </div>
@@ -185,57 +190,6 @@ export default function Detail(props) {
                         </div>
                     </div>
                     <div className="pb-5 pt-5">
-                        <div className="px-4 py-5 sm:px-6">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900">API Information</h3>
-                            <p className="mt-1 max-w-2xl text-sm text-gray-500"></p>
-                        </div>
-                        <div className="border-t border-gray-200">
-                            <dl>
-                                {Object.keys(api_fields).map((key, index) => {
-                                    let bg_color = 'bg-gray-50';
-                                    if(index % 2 == 0) {
-                                        bg_color = 'bg-white';
-                                    }
-
-                                    return (
-                                        <div key={key} className={`${bg_color} px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
-                                            <dt className="text-sm font-medium text-gray-500">{api_fields[key]['label']}</dt>
-                                            {key == 'api_token' ?
-                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                    {token}
-                                                    <span class="cursor-pointer" title="Regenarate Token">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" onClick={() => {if(window.confirm('Do you want change the user token?')){updateToken()};}} class={"h-5 w-5 " + spinClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                            </svg>
-                                                        </span>
-                                                </dd>
-                                            :<>
-                                            { key == 'call_back_url' ?
-                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                    {props['events'][key]}
-                                                </dd>
-                                            : 
-                                            <>
-                                                {(props['events'][key]) ?
-                                                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                        <input type="checkbox" disabled checked />
-                                                    </dd>
-                                                :
-                                                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                        <input type="checkbox" disabled />
-                                                    </dd>
-                                                }
-                                            </>
-                                            }
-                                            </>
-                                            }
-                                        </div>
-                                    );
-                                })}
-                            </dl>
-                        </div>
-                    </div>
-                    <div className="pb-5 pt-5">
                         <div className="flex justify-between">
                             <div>
                                 <h3 className="text-lg leading-6 font-medium text-gray-900 mt-3"> Incoming URL </h3>
@@ -252,8 +206,9 @@ export default function Detail(props) {
                             {props.incoming_url.map((data) => {
                                 return (
                                     <li key={data.id} className="px-6 py-4">
-                                        <div className="flex">
+                                        <div className="flex justify-between">
                                             <h2> {data.incoming_url} </h2>
+                                            <TrashIcon className='h-6 w-6 text-red-700 cursor-pointer' onClick={() => deleteIncomingURL(data.id)} />
                                         </div>
                                     </li>
                                 );
@@ -300,30 +255,57 @@ export default function Detail(props) {
                         </ul>
                         {!props.templates || props.templates.length == 0 ? 
                             <div className="text-center py-12">
-                                <svg
-                                    className="mx-auto h-12 w-12 text-gray-400"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    aria-hidden="true"
-                                >
-                                    <path
-                                        vectorEffect="non-scaling-stroke"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
-                                    />
-                                </svg>
-                                    <h3 className="mt-2 text-sm font-medium text-gray-900">No templates found</h3>
-                                    <p className="mt-1 text-sm text-gray-500">Get started by creating a new template.</p>
-                                    <div className="mt-6">
-                                        <a onClick={() => setAccountModalOpen(true)} className="cursor-pointer underline text-sm text-indigo-600 hover:text-indigo-900">
-                                            Click here to create new template
-                                        </a>
-                                    </div>
-                              </div>
-                            : ''}
+                                <FolderAddIcon className='mx-auto h-12 w-12 text-gray-400' />
+                                <h3 className="mt-2 text-sm font-medium text-gray-900">No templates found</h3>
+                                <p className="mt-1 text-sm text-gray-500">Get started by creating a new template.</p>
+                                <div className="mt-6">
+                                    <a onClick={() => setAccountModalOpen(true)} className="cursor-pointer underline text-sm text-indigo-600 hover:text-indigo-900">
+                                        Click here to create new template
+                                    </a>
+                                </div>
+                            </div>
+                        : ''}
+                    </div>
+
+                    <div className="pb-5 pt-5">
+                        <div className="px-4 py-5 sm:px-6">
+                            <h3 className="text-lg leading-6 font-medium text-gray-900">API Information</h3>
+                            <p className="mt-1 max-w-2xl text-sm text-gray-500"></p>
+                        </div>
+                        <div className="border-t border-gray-200">
+                            <dl>
+                                <div className={`bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
+                                    <dt className="text-sm font-medium text-gray-500">API key</dt>
+                                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                        {token}
+                                        <span className="cursor-pointer" title="Regenarate Token">
+                                            <RefreshIcon className='h-6 w-6' onClick={() => generateKey()} />
+                                        </span>
+                                    </dd>
+                                </div>
+                                <div className={`bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
+                                    <dt className="text-sm font-medium text-gray-500">Callback URL</dt>
+                                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                        {props.events['callback_url']}
+                                    </dd>
+                                </div>
+                                {Object.keys(props.webhook_events).map((event_name, index) => {
+                                    let bg_color = 'bg-gray-50';
+                                    if(index % 2 == 0) {
+                                        bg_color = 'bg-white';
+                                    }
+
+                                    return (
+                                        <div key={event_name} className={`${bg_color} px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
+                                            <dt className="text-sm font-medium text-gray-500">{props.webhook_events[event_name]['label']}</dt>
+                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                    <input type="checkbox" disabled checked={props.events[event_name]} />
+                                                </dd>
+                                        </div>
+                                    );
+                                })}
+                            </dl>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -522,3 +504,5 @@ export default function Detail(props) {
         </Authenticated>
     );
 }
+
+export default Detail;

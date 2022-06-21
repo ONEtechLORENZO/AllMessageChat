@@ -35,7 +35,6 @@ Route::post('/incoming', [MessageLogController::class, 'messageConfig']);
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
 
-
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
     
     Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('user_profile');
@@ -54,20 +53,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/account/{id}/template/{template_id}', [UserController::class, 'storeTemplate'])->name('store_template');
     Route::get('/account/{id}', [UserController::class, 'showAccount'])->name('account_view');
     Route::delete('/account/delete_account', [UserController::class, 'deleteAccount'])->name('delete_account');
-    Route::post('saveTemplateStatus/account/{acc_id}/template/{tmp_id}', [UserController::class, 'saveTemplateStatus'])->name('template_status_form');
+    Route::post('/saveTemplateStatus/account/{acc_id}/template/{tmp_id}', [UserController::class, 'saveTemplateStatus'])->name('template_status_form');
 
     Route::get('/image/{type}/{id}', [ImageController::class, 'showImage'])->name('show_image');
 
-    // Create new Incoming URL
-    Route::post('account/{id}/incoming_url', [UserController::class, 'createNewIncomingURL'])->name('create_new_incoming_url');
+    // Incoming URL endpoints
+    Route::post('/account/{id}/incoming_url', [UserController::class, 'createNewIncomingURL'])->name('create_new_incoming_url');
+    Route::post('/account/{id}/delete', [UserController::class, 'deleteIncomingURL'])->name('delete_incoming_url');
 });
 
 // Check user is admin
 Route::middleware('auth', IsAdmin::class)->group(function () {
     // Users
-    Route::get('/admin/user', [UserController::class, 'user'])->name('user');
-    Route::get('admin/user/create', [UserController::class, 'createUser'])->name('create_user');
-    Route::get('admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_user');
+    Route::get('/admin/users', [UserController::class, 'usersListing'])->name('usersListing');
+    Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_user');
+    Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_user');
     Route::get('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_user');
     Route::post('/admin/user/registration', [UserController::class, 'storeUserRegistration'])->name('store_user_data');
     Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('user_detail');
