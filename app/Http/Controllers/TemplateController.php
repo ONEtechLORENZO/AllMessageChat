@@ -238,7 +238,6 @@ Log::info(['Template log', $result]);
         $account = Account::where('api_token', $token)->first();
         $response = ['status' => '128', 'message' => 'User permission denied'];
         $postFields = array_keys($_POST);
-dd( $token , $account );
         if($account){
             $account_id = $account->id;
             $status = true;
@@ -279,8 +278,8 @@ dd( $token , $account );
                 $return = (['status' =>  $status, 'status_code' => $statusCode, 'result' => $result, 'message' => $message ]);
             } else {
 
-///                $template = new Template();
-            $template = Template::find(42);
+		  $template = new Template();
+            //$template = Template::find(42);
             
                 $template->name = $request->get('elementName');
                 $template->category = $request->get('category');
@@ -319,7 +318,7 @@ dd( $token , $account );
                 $return = $this->submitTemplate(['account_id' => $account_id, 'template_id' => $template_id, 'data' => $request, 'file' => $attachFilePath]);
             }
         } else {
-            $return = (['status' =>  false, 'status_code' => 400, 'message' => 'Invalid format' ]);
+            $return = json_encode(['status' =>  false, 'status_code' => 400, 'message' => 'Invalid format' ]);
         }
         dd($return);
 
