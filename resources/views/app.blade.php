@@ -13,11 +13,11 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
         <!-- Styles -->
-        <link rel="stylesheet" href="{{ url('css/app.css') }}?v=1.2">
+        <link rel="stylesheet" href="{{ url('css/app.css') }}?v=1.4">
 
         <!-- Scripts -->
         @routes
-        <script src="{{ url('js/app.js') }}?v=1.2" defer></script>
+        <script src="{{ url('js/app.js') }}?v=1.4" defer></script>
     </head>
     <body class="font-sans antialiased">
         @inertia

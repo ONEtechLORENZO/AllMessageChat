@@ -212,7 +212,7 @@ class UserController extends Controller
     {
         $account = Account::findOrFail($id);
         $apiEvents = ApiResponse::where('account_id' , $id)->first();
-        $events = unserialize( base64_decode( $apiEvents->events ));
+        $events = ($apiEvents) ? unserialize( base64_decode( $apiEvents->events )) : [];
         return Inertia::render('Account/Registration', ['account' => $account, 'events' => $events]);
     }
 

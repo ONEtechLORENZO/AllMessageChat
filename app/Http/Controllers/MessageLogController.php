@@ -278,7 +278,7 @@ class MessageLogController extends Controller
 	$response->message_id = $data['result']->messageId;
 	$response->ref_id = 'Queued';
         $response->type = 'Message';
-	$response->response = $data['result'];
+	$response->response = base64_encode( serialize( $data['result'] ));
 	$response->save();
 
         return true;

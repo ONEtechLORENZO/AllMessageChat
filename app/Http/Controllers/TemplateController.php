@@ -238,6 +238,7 @@ Log::info(['Template log', $result]);
         $account = Account::where('api_token', $token)->first();
         $response = ['status' => '128', 'message' => 'User permission denied'];
         $postFields = array_keys($_POST);
+dd( $token , $account );
         if($account){
             $account_id = $account->id;
             $status = true;
@@ -318,7 +319,7 @@ Log::info(['Template log', $result]);
                 $return = $this->submitTemplate(['account_id' => $account_id, 'template_id' => $template_id, 'data' => $request, 'file' => $attachFilePath]);
             }
         } else {
-            $return = (['status' =>  false, 'status_code' => $statusCode, 'result' => $result, 'message' => $message ]);
+            $return = (['status' =>  false, 'status_code' => 400, 'message' => 'Invalid format' ]);
         }
         dd($return);
 
