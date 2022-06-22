@@ -29,7 +29,7 @@ Route::get('/', function () {
     ]);
 });
 
-Route::post('/incoming', [MessageLogController::class, 'messageConfig']);
+Route::post('/incoming', [MessageLogController::class, 'incoming']);
 //Route::get('/incoming-cm', [MessageLogController::class, 'incomingMessageResponse'])->name('incoming_message_response');
 
 // Check user login
@@ -58,8 +58,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/image/{type}/{id}', [ImageController::class, 'showImage'])->name('show_image');
 
     // Incoming URL endpoints
-    Route::post('/account/{id}/incoming_url', [UserController::class, 'createNewIncomingURL'])->name('create_new_incoming_url');
-    Route::post('/account/{id}/delete', [UserController::class, 'deleteIncomingURL'])->name('delete_incoming_url');
+    Route::post('/account/{id}/incoming_url', [UserController::class, 'createWebhookEvent'])->name('create_webhook_event');
+    Route::post('/account/{id}/incoming_url/{webhook_id}', [UserController::class, 'updateWebhookURL'])->name('update_webhook_url');
+    Route::post('/account/{id}/delete', [UserController::class, 'deleteWebhookEvent'])->name('delete_webhook_event');
 });
 
 // Check user is admin

@@ -106,8 +106,9 @@ class MessageLogController extends Controller
     /**
      * Message Configuration
      */
-    public function messageConfig()
+    public function incoming()
     {
+        // Receive data from Gupshup
         $post_data = file_get_contents("php://input");
         $data = json_decode($post_data, true);
 

@@ -10,8 +10,9 @@ import Input from '@/Components/Forms/Input';
 import Dropdown from '@/Components/Forms/Dropdown';
 import InputError from '@/Components/Forms/InputError';
 import categories, {defaultPristineConfig} from '@/Pages/Constants';
-import { RefreshIcon, TrashIcon } from '@heroicons/react/solid';
+import { PencilAltIcon, PencilIcon, TrashIcon } from '@heroicons/react/solid';
 import { FolderAddIcon } from '@heroicons/react/outline';
+import Checkbox from '@/Components/Forms/Checkbox';
 
 function Detail(props) 
 {
@@ -30,10 +31,9 @@ function Detail(props)
         'status': {'label': 'Status'},
     };
 
+    const [webhookData, setWebhookData] = useState({});
     const [accountModalOpen, setAccountModalOpen ] = useState(false);
     const [incomingUrlModalOpen , setIncomingUrlModalOpen ] = useState(false);
-
-    const [token, setToken]= useState(props['account']['api_token']);
     const cancelButtonRef = useRef(null);
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -58,6 +58,20 @@ function Detail(props)
         }
 
         setData(newState);
+    }
+
+    function handleWebhookFormChange(event) {
+        const name = event.target.name;
+        const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+        let newState = Object.assign({}, webhookData);
+        if(event.target.type == 'file' && event.target.files) {
+            newState[name] = event.target.files[0];
+        }
+        else {
+            newState[name] = value;
+        }
+
+        setWebhookData(newState);
     }
 
     /**
@@ -91,9 +105,9 @@ function Detail(props)
     }
 
     /**
-     * Create new Incoming URL
+     * Create/Update Webhook form
      */
-    function createNewIncomingUrl()
+    function processWebhookForm()
     {
         var pristine = new PristineJS(document.getElementById("new_incoming_url"), defaultPristineConfig);
         let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required]'));
@@ -101,7 +115,14 @@ function Detail(props)
             return false;
         }
 
-        Inertia.post(route('create_new_incoming_url', props.account.id), data, {
+        let event_name = 'create_webhook_event';
+        let event_params = {id: props.account.id};
+        if(webhookData.id) {
+            event_name = 'update_webhook_url';
+            event_params = {id: props.account.id, webhook_id: webhookData.id};
+        }
+
+        Inertia.post(route(event_name, event_params), webhookData, {
             onSuccess: () => {
                 setIncomingUrlModalOpen(false);
             },
@@ -113,34 +134,33 @@ function Detail(props)
      * 
      * @param {integer} id 
      */
-    function deleteIncomingURL(id) {
-        var confirmation = window.confirm('Are you sure you want to delete this incoming URL?');
+    function deleteWebhookEvent(id) {
+        var confirmation = window.confirm('Are you sure you want to delete this webhook event?');
         if(confirmation) {
-            Inertia.post(route('delete_incoming_url', id), {}, {
+            Inertia.post(route('delete_webhook_event', id), {}, {
                 onSuccess: () => {
                     //
                 },
             });
         }
     }
-    
+
     /**
-     * Generate API key
+     * Edit webhook
+     * 
+     * @param {integer} id 
      */
-    function generateKey() 
-    {
-        if(window.confirm('Are you sure you want to generate a new API token?')) {
-            axios({
-                method: 'post',
-                url: route('regenerate_token'),
-                data: {
-                    account_id: props.account.id,
-                }
-            })
-            .then((response) => {
-                setToken(response.data.token);
-            });
-        }
+    function editWebhookEvent(data) {
+        setIncomingUrlModalOpen(true);
+        setWebhookData(data);
+    }
+
+    /**
+     * Open webhook form
+     */
+    function openWebhookForm() {
+        setWebhookData({});
+        setIncomingUrlModalOpen(true);
     }
 
     return (
@@ -192,35 +212,6 @@ function Detail(props)
                     <div className="pb-5 pt-5">
                         <div className="flex justify-between">
                             <div>
-                                <h3 className="text-lg leading-6 font-medium text-gray-900 mt-3"> Incoming URL </h3>
-                            </div>
-                            <div>
-                                <button type='button' onClick={() => setIncomingUrlModalOpen(true)} className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                    Add Incoming URL
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="bg-white shadow overflow-hidden rounded-md">
-                        <ul role="list" className="divide-y divide-gray-200">
-                            {props.incoming_url.map((data) => {
-                                return (
-                                    <li key={data.id} className="px-6 py-4">
-                                        <div className="flex justify-between">
-                                            <h2> {data.incoming_url} </h2>
-                                            <TrashIcon className='h-6 w-6 text-red-700 cursor-pointer' onClick={() => deleteIncomingURL(data.id)} />
-                                        </div>
-                                    </li>
-                                );
-                            })}
-                            {props.incoming_url.length == 0 &&
-                                <li className="flex p-5"> No URL added yet. </li>
-                            }
-                        </ul>
-                    </div>
-                    <div className="pb-5 pt-5">
-                        <div className="flex justify-between">
-                            <div>
                                 <h3 className="text-lg leading-6 font-medium text-gray-900 mt-3">Templates</h3>
                             </div>
                             <div>
@@ -268,44 +259,38 @@ function Detail(props)
                     </div>
 
                     <div className="pb-5 pt-5">
-                        <div className="px-4 py-5 sm:px-6">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900">API Information</h3>
-                            <p className="mt-1 max-w-2xl text-sm text-gray-500"></p>
+                        <div className="flex justify-between">
+                            <div>
+                                <h3 className="text-lg leading-6 font-medium text-gray-900 mt-3"> Webhook URLs </h3>
+                            </div>
+                            <div>
+                                <button type='button' onClick={openWebhookForm} className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    Add Webhook URL
+                                </button>
+                            </div>
                         </div>
-                        <div className="border-t border-gray-200">
-                            <dl>
-                                <div className={`bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
-                                    <dt className="text-sm font-medium text-gray-500">API key</dt>
-                                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                        {token}
-                                        <span className="cursor-pointer" title="Regenarate Token">
-                                            <RefreshIcon className='h-6 w-6' onClick={() => generateKey()} />
-                                        </span>
-                                    </dd>
-                                </div>
-                                <div className={`bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
-                                    <dt className="text-sm font-medium text-gray-500">Callback URL</dt>
-                                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                        {props.events['callback_url']}
-                                    </dd>
-                                </div>
-                                {Object.keys(props.webhook_events).map((event_name, index) => {
-                                    let bg_color = 'bg-gray-50';
-                                    if(index % 2 == 0) {
-                                        bg_color = 'bg-white';
-                                    }
+                    </div>
 
-                                    return (
-                                        <div key={event_name} className={`${bg_color} px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
-                                            <dt className="text-sm font-medium text-gray-500">{props.webhook_events[event_name]['label']}</dt>
-                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                    <input type="checkbox" disabled checked={props.events[event_name]} />
-                                                </dd>
+                    <div className="bg-white shadow overflow-hidden rounded-md">
+                        <ul role="list" className="divide-y divide-gray-200">
+                            {props.events.map((data) => {
+                                return (
+                                    <li key={data.id} className="px-6 py-4">
+                                        <div className="flex justify-between">
+                                            <h2> {data.callback_url} </h2>
+                                            <div className='flex gap-3'>
+                                                <PencilAltIcon className='h-6 w-6' onClick={() => editWebhookEvent(data)} />
+                                                <TrashIcon className='h-6 w-6 text-red-700 cursor-pointer' onClick={() => deleteWebhookEvent(data.id)} />
+                                            </div>
                                         </div>
-                                    );
-                                })}
-                            </dl>
-                        </div>
+                                    </li>
+                                );
+                            })}
+
+                            {props.events.length == 0 &&
+                                <li className="flex p-5"> Webhooks not configured yet. </li>
+                            }
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -456,25 +441,49 @@ function Detail(props)
                                 <div>
                                     <div className="">
                                         <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
-                                            Add Incoming URL
+                                            {webhookData.id ? 'Update' : 'Add'} Webhook
                                         </Dialog.Title>
                                         <div className="mt-2">
                                             <p className="text-sm text-gray-500 pt-2 pb-4">
-                                                Create a new WhatsApp call back URL. Each url must have a unique consisting. 
+                                                Create a new WhatsApp Webhook URL to receive notifications about events like sent, failed etc...
                                             </p>
 
                                             <form id="new_incoming_url">
-                                            <div className="grid gap-6">                                                
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="incoming_url" className="block text-sm font-medium text-gray-700">
-                                                        Name
-                                                    </label>
-                                                    <div className="mt-1 flex rounded-md shadow-sm">
-                                                        <Input name='incoming_url' required={true} id='incoming_url' placeholder='Incoming URL' handleChange={handleChange} />
+                                                <div className="space-y-4">                                                
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <label htmlFor="incoming_url" className="block text-sm font-medium text-gray-700">
+                                                            Webhook URL
+                                                        </label>
+                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                            <Input name='callback_url' value={webhookData.callback_url} required={true} id='callback_url' placeholder='Callback URL' handleChange={handleWebhookFormChange} />
+                                                        </div>
                                                     </div>
-                                                    <InputError message={errors.incoming_url} />
+                                                    {Object.keys(props.webhook_events).map((event_name, index) => {
+                                                        let bg_color = 'bg-white';
+                                                        if(index % 2 == 0) {
+                                                            bg_color = 'bg-white';
+                                                        }
+
+                                                        return (
+                                                            <div className="flex items-start">
+                                                                <div className="flex items-center h-5">
+                                                                    <Checkbox
+                                                                        id={event_name}
+                                                                        name={event_name}
+                                                                        handleChange={handleWebhookFormChange}
+                                                                        value={webhookData[event_name]}
+                                                                    />
+                                                                </div>
+                                                                <div className="ml-3 text-sm">
+                                                                    <label htmlFor={event_name} className="font-medium text-gray-700">
+                                                                        {props.webhook_events[event_name]['label']}
+                                                                    </label>
+                                                                    <p className="text-gray-500">{props.webhook_events[event_name]['help_text']}</p>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
-                                            </div>
                                             </form>
                                         </div>
                                     </div>
@@ -483,9 +492,9 @@ function Detail(props)
                                     <button
                                         type="button"
                                         className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
-                                        onClick={() => createNewIncomingUrl()}
+                                        onClick={processWebhookForm}
                                     >
-                                        Create
+                                        {webhookData.id ? 'Update' : 'Create'}
                                     </button>
                                     <button
                                         type="button"

@@ -178,18 +178,16 @@ class UserController extends Controller
             ->where('id', $id)
             ->first();
 
-        $templates = $incomingUrls = [];
-        if ($account) {
-            $templates = Template::where('account_id', $id)->get();
-            $incomingUrls = IncomingUrl::where('account_id', $id)->get();
+        if (!$account) {
+            abort(401, 'You are not authorised to see this record.');
         }
 
-        $webhookEvents = WebhookEvent::where('account_id', $id)->first();
+        $templates = Template::where('account_id', $id)->get();
+        $webhookEvents = WebhookEvent::where('account_id', $id)->get();
 
         return Inertia::render('Account/Detail', [
             'account' => $account,
-            'templates' => $templates, 
-            'incoming_url' => $incomingUrls, 
+            'templates' => $templates,
             'webhook_events' => $this->webhook_events,
             'events' => $webhookEvents ? $webhookEvents : [],
         ]);
@@ -283,19 +281,6 @@ class UserController extends Controller
         $account->user_id = $user_id;
         $account->save();
 
-        // Handle webhook form
-        $webhook = WebhookEvent::where('account_id', $account->id)->first();
-        if(!$webhook) {
-            $webhook = new WebhookEvent();
-            $webhook->account_id = $account->id;
-        }
-        
-        foreach($this->webhook_events as $webhook_event => $event_info) {
-            $webhook->$webhook_event = $request->has($webhook_event) && $request->get($webhook_event) === true ? true : false;
-        }
-        $webhook->callback_url = $request->get('callback_url');
-        $webhook->save();
-
         Log::info('Account information saved successfully.');
         return Redirect::route('dashboard');
     }
@@ -363,44 +348,65 @@ class UserController extends Controller
     }
 
     /**
-     * Create new Incoming URL
+     * Create new webhook event
      */
-    public function createNewIncomingURL(Request $request, $account_id)
+    public function createWebhookEvent(Request $request, $account_id)
     {
         $request->validate([
-            'incoming_url' => 'required',
+            'callback_url' => 'required',
         ]);
 
-        $incomingUrl = new IncomingUrl();
-        $incomingUrl->incoming_url = $request->get('incoming_url');
-        $incomingUrl->account_id = $account_id;
-
-        $incomingUrl->save();
+        $webhook = new WebhookEvent();
+        $webhook->account_id = $account_id;    
+        foreach($this->webhook_events as $webhook_event => $event_info) {
+            $webhook->$webhook_event = $request->has($webhook_event) && ($request->get($webhook_event) === true || $request->get($webhook_event) == 1)  ? true : false;
+        }
+        $webhook->callback_url = $request->get('callback_url');
+        $webhook->save();
 
         return Redirect::route('account_view', $account_id);
     }
 
     /**
-     * Delete incoming URL
+     * Update webhook event
      */
-    public function deleteIncomingURL(Request $request, $incoming_url_id)
+    public function updateWebhookURL(Request $request, $account_id, $webhook_id)
+    {
+        $request->validate([
+            'callback_url' => 'required',
+        ]);
+
+        $webhook = WebhookEvent::find($webhook_id);
+        foreach($this->webhook_events as $webhook_event => $event_info) {
+            $webhook->$webhook_event = $request->has($webhook_event) && ($request->get($webhook_event) === true || $request->get($webhook_event) == 1)  ? true : false;
+        }
+        $webhook->callback_url = $request->get('callback_url');
+        $webhook->save();
+
+        return Redirect::route('account_view', $account_id);
+    }
+
+    /**
+     * Delete webhook event
+     */
+    public function deleteWebhookEvent(Request $request, $webhook_id)
     {
         $flag = false;
         // Check whether id is related to logged in users account
         $user_id = $request->user()->id;
         $accounts = Account::where('user_id', $user_id)->get();
-        $incomingUrl = IncomingUrl::find($incoming_url_id);
-        $account_id = $incomingUrl->account_id;
+        $webhook = WebhookEvent::find($webhook_id);
+        $account_id = $webhook->account_id;
         foreach($accounts as $account) {
-            if($account->id == $incomingUrl->account_id) {
-                $incomingUrl->delete();
+            if($account->id == $webhook->account_id) {
+                $webhook->delete();
                 $flag = true;
                 break;
             }
         }
         
         if(!$flag) {
-            abort(401, 'You are not authorised to view this template');
+            abort(401, 'You are not authorised to delete this event');
         }
 
         return Redirect::route('account_view', $account_id);

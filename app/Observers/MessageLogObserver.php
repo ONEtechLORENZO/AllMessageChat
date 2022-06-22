@@ -9,14 +9,6 @@ use DateTime;
 
 class MessageLogObserver
 {
-/*
-    private $apiKey = config('app.apiKey');
-    private $token = config('app.token');
-    private $origin = config('app.origin');
-    private $platFormId = 'COMMON_API';
-    private $platFormParentId = '19408';
-*/
-
     /**
      * Handle the MessageLog "created" event.
      *
@@ -26,8 +18,8 @@ class MessageLogObserver
     public function created(MessageLog $messageLog)
     {
         Log::info('MessageLogObserver Message Created - '.$messageLog->status);
-       $staus =  $this->sendMessageResponse($messageLog);
-       Log::info('Send message log status - '. $staus);
+        $status =  $this->sendMessageResponse($messageLog);
+        Log::info('Send message log status - '. $status);
     }
 
     /**
@@ -38,12 +30,12 @@ class MessageLogObserver
      */
     public function updated(MessageLog $messageLog)
     {
-        Log::info('MessageLogObserver Message status Update - '.$messageLog->status);
+        Log::info('MessageLogObserver Message status Update - ' . $messageLog->status);
 
         if( $messageLog->status == 'Failed' || $messageLog->status == 'Delivered' ){
 //            $staus = $this->sendMessageResponse($messageLog);
-            Log::info('Send message log status - '. $staus);
-            }
+            Log::info('Send message log status - '. $messageLog->status);
+        }
     }
 
     /**
@@ -84,7 +76,8 @@ class MessageLogObserver
      * 
      * @param \App\Models\MessageLog  $messageLog
      */
-    public function sendMessageResponse($messageLog){
+    public function sendMessageResponse($messageLog)
+    {
         $postData = [];
         if($messageLog){
             $date = new DateTime();
@@ -126,6 +119,5 @@ class MessageLogObserver
             curl_close($curl);
             return $response;
         }
-
     }
 }
