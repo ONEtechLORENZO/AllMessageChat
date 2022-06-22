@@ -1,9 +1,8 @@
 <?php
 
 namespace App\Observers;
-
 use App\Models\MessageLog;
-use App\Models\IncomingUrl;
+use App\Models\WebhookEvent;
 use Illuminate\Support\Facades\Log;
 use DateTime;
 
@@ -72,14 +71,14 @@ class MessageLogObserver
     }
 
     /**
-     * Post message data to CRM
+     * Post data to configured webhook URL
      * 
      * @param \App\Models\MessageLog  $messageLog
      */
     public function sendMessageResponse($messageLog)
     {
         $postData = [];
-        if($messageLog){
+        if($messageLog) {
             $date = new DateTime();
             $postData['reference'] = '';//$messageLog->refId;
             $postData['messageContext'] = $messageLog->content;
@@ -91,13 +90,17 @@ class MessageLogObserver
             $postData['time'] = $date->format('Y-m-d H:i:s');
             $postData['timeUtc'] = $date->format('Y-m-d\TH:i:s');
             $postData['channel'] = 'WhatsApp';
-          
-           Log::info(['Observer data log -', $postData] ); 
-            // Get CRM URL based on account 
-            $callBackUrl = IncomingUrl::where('account_id' , $messageLog->account_id)->first();
-            $curl = curl_init();
-            curl_setopt_array($curl, array(
-                        //      CURLOPT_URL => 'https://demo.blackant.io/hub5/crm/whatsapp-webhook.php?id=624de9b9264142.67637801%20&workflow_id=80&secret_key=fe9bruph',
+
+            Log::info(['Observer data log -', $postData]); 
+            // Get configured webhooks for the account
+            $webhookEvents = WebhookEvent::where('account_id', $messageLog->account_id)->get();
+            foreach($webhookEvents as $webhookEvent) {
+                $callBackUrl = $webhookEvent->callback_url;
+                if($callBackUrl) {
+                    // TODO check event is configured to receive
+                    $curl = curl_init();
+                    curl_setopt_array($curl, array(
+                        // CURLOPT_URL => 'https://demo.blackant.io/hub5/crm/whatsapp-webhook.php?id=624de9b9264142.67637801%20&workflow_id=80&secret_key=fe9bruph',
                         CURLOPT_URL => $callBackUrl->incoming_url,
                         CURLOPT_RETURNTRANSFER => true,
                         CURLOPT_ENCODING => '',
@@ -112,12 +115,13 @@ class MessageLogObserver
                             'operation: login',
                             'username: admin',
                             'accessKey: wpfYKID7sbZGM61'
-                            ),
-                        ));
+                        ),
+                    ));
 
-            $response = curl_exec($curl);
-            curl_close($curl);
-            return $response;
+                    curl_exec($curl);
+                    curl_close($curl);
+                }
+            }
         }
     }
 }

@@ -38,6 +38,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
     
     Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('user_profile');
+    Route::post('/user/regenerate_token', [UserController::class, 'regenerateToken'])->name('regenerate_token');
 
     // Messages
     Route::get('/messages/list', [MessageLogController::class, 'list'])->name('messages');
@@ -72,7 +73,6 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::get('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_user');
     Route::post('/admin/user/registration', [UserController::class, 'storeUserRegistration'])->name('store_user_data');
     Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('user_detail');
-    Route::post('/admin/user/regenerate_token', [UserController::class, 'regenerateToken'])->name('regenerate_token');
     Route::post('/admin/user/change_password/{id}', [UserController::class, 'changePassword'])->name('change_password');
 
     // Settings

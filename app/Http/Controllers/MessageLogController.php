@@ -12,12 +12,10 @@ use App\Models\Account;
 use App\Models\Template;
 use App\Models\Message;
 use Illuminate\Support\Facades\Log;
- use Illuminate\Support\Facades\Http;
 use DateTime;
 
 class MessageLogController extends Controller
 {
-
     /**
      * Message log List view
      */
@@ -104,7 +102,7 @@ class MessageLogController extends Controller
     }
 
     /**
-     * Message Configuration
+     * Handle incoming request coming from Gupshup service
      */
     public function incoming()
     {
@@ -124,12 +122,12 @@ class MessageLogController extends Controller
         Log::info('Incoming response process start.');
     	$eventType = 'Message';
         if($response['type'] == 'template-event'){
-		$eventType = 'Template';
-                log::info(['template response', $data]);
+		    $eventType = 'Template';
+            log::info(['template response', $data]);
             $template = Template::where('template_uid', $data['gsId'])
-            ->first();
+                ->first();
 		
-	$status = $data['status'];
+	        $status = $data['status'];
             if($data['status'] != 'rejected'){
                 $template->status = strtoupper($data['status']);
             } else {
@@ -152,14 +150,13 @@ class MessageLogController extends Controller
                 $messageLog->save();
             }
 			$data['id'] = $data['gsId'];
-	}
+	    }
 
-	$response = MessageResponse::where('message_id', $data['id'])->first();
-	$response->ref_id = $status; 
-	$response->response = base64_encode( serialize( $post_data ));
-	$response->save();
+        $response = MessageResponse::where('message_id', $data['id'])->first();
+        $response->ref_id = $status; 
+        $response->response = base64_encode( serialize( $post_data ));
+        $response->save();
         Log::info('Save message Log successfully.');
-        // Update CRM Record
     }
 
     public function sendMessageResponse($data)

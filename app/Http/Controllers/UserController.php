@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 use Mail;
 use App\Http\Controllers\TemplateController;
 use App\Models\WebhookEvent;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -136,8 +137,8 @@ class UserController extends Controller
      */
     public function regenerateToken(Request $request)
     {
-        $account = Account::find($request->get('account_id'));
-        $token = $this->createAccessToken($account);
+        $user_id = $request->user()->id;
+        $token = $this->createAccessToken($user_id);
         Log::info('Token Generated.');
         echo json_encode(['token' => $token->plainTextToken]);
     }
@@ -145,12 +146,14 @@ class UserController extends Controller
     /**
      * Create access token to the user
      */
-    public function createAccessToken($account)
+    public function createAccessToken($user_id)
     {
-        $user = User::findOrFail($account->user_id);
-        $token = $user->createToken('WHATSAPP_API');
-        $account->api_token = $token->plainTextToken;
-        $account->save();
+        $user = User::findOrFail($user_id);
+        // Delete existing token
+        Auth::user()->tokens->each(function($token) {
+            $token->delete();
+        });
+        $token = $user->createToken('API_TOKEN');
         return $token;
     }
 
