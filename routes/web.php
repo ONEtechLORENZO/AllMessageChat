@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\MessageLogController;
+use App\Http\Controllers\MsgController;
 use App\Http\Middleware\IsAdmin;
 
 /*
@@ -36,11 +37,16 @@ Route::post('/incoming', [MessageLogController::class, 'incoming']);
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
-    
-    Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('user_profile');
-    Route::post('/user/regenerate_token', [UserController::class, 'regenerateToken'])->name('regenerate_token');
 
     // Messages
+    Route::resource('messages', MsgController::class);
+    
+    // Profile
+    Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('user_profile');
+    Route::get('/image/{type}/{id}', [ImageController::class, 'showImage'])->name('show_image');
+    Route::post('/user/regenerate_token', [UserController::class, 'regenerateToken'])->name('regenerate_token');
+
+    // Message Logs
     Route::get('/messages/list', [MessageLogController::class, 'list'])->name('messages');
     Route::get('/messages/destination', [MessageLogController::class, 'destination'])->name('destination');
     Route::post('/messages/search_content', [MessageLogController::class, 'searchContent'])->name('searchContent');
@@ -56,11 +62,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/account/delete_account', [UserController::class, 'deleteAccount'])->name('delete_account');
     Route::post('/saveTemplateStatus/account/{acc_id}/template/{tmp_id}', [UserController::class, 'saveTemplateStatus'])->name('template_status_form');
 
-    Route::get('/image/{type}/{id}', [ImageController::class, 'showImage'])->name('show_image');
-
-    // Incoming URL endpoints
-    Route::post('/account/{id}/incoming_url', [UserController::class, 'createWebhookEvent'])->name('create_webhook_event');
-    Route::post('/account/{id}/incoming_url/{webhook_id}', [UserController::class, 'updateWebhookURL'])->name('update_webhook_url');
+    // Webhook Events
+    Route::post('/account/{id}/webhook_event', [UserController::class, 'createWebhookEvent'])->name('create_webhook_event');
+    Route::post('/account/{id}/webhook_event/{webhook_id}', [UserController::class, 'updateWebhookURL'])->name('update_webhook_url');
     Route::post('/account/{id}/delete', [UserController::class, 'deleteWebhookEvent'])->name('delete_webhook_event');
 });
 
