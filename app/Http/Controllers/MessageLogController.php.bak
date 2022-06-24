@@ -54,11 +54,6 @@ class MessageLogController extends Controller
         ]);
     }
 
-    public function new(Request $request)
-    {
-        return Inertia::render('Messages/New',[]);
-    }
-
     /**
      * Search Keyword  
      */
