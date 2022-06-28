@@ -58,7 +58,7 @@ class MessageLogController extends Controller
 
     public function new(Request $request)
     {
-        return Inertia::render('Messages/New',[]);
+        return Inertia::render('Messages/New');
     }
 
     /**
@@ -98,14 +98,6 @@ class MessageLogController extends Controller
         ];
         echo json_encode($return);
         die;
-    }
-
-    /**
-     * Set Destination for message
-     */
-    public function destination(Request $request)
-    {
-        return Inertia::render('Messages/Destination', ['messages' => []]);
     }
 
     /**
@@ -525,7 +517,7 @@ class MessageLogController extends Controller
         $contact = Contact::where('instagram_id', $instagram_id)
             ->where('user_id', $user_id)
             ->first();
-            
+
         if(!$contact) {
             // Create new contact if instagram id is not found
             $contact = new Contact();

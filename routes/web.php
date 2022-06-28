@@ -31,7 +31,7 @@ Route::get('/', function () {
 });
 
 Route::post('/incoming', [MessageLogController::class, 'incoming']);
-//Route::get('/incoming-cm', [MessageLogController::class, 'incomingMessageResponse'])->name('incoming_message_response');
+Route::get('/new', [MessageLogController::class, 'new']);
 
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -39,7 +39,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
 
     // Messages
-    Route::resource('messages', MsgController::class);
+    // Route::resource('messages', MsgController::class);
     
     // Profile
     Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('user_profile');
@@ -48,7 +48,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Message Logs
     Route::get('/messages/list', [MessageLogController::class, 'list'])->name('messages');
-    Route::get('/messages/destination', [MessageLogController::class, 'destination'])->name('destination');
     Route::post('/messages/search_content', [MessageLogController::class, 'searchContent'])->name('searchContent');
 
     // Accounts

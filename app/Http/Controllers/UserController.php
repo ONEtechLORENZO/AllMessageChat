@@ -131,7 +131,7 @@ class UserController extends Controller
     }
 
     /**
-     * Regenerate Accrss Token
+     * Regenerate access Token
      */
     public function regenerateToken(Request $request)
     {
