@@ -213,7 +213,9 @@ class UserController extends Controller
      */
     public function accountRegistration(Request $request)
     {
-        return Inertia::render('Account/Registration');
+        return Inertia::render('Account/Registration', [
+            'webhook_events' => $this->webhook_events, 
+        ]);
     }
 
     /**

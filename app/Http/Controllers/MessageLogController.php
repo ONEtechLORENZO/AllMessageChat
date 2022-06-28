@@ -7,10 +7,12 @@ use Inertia\Inertia;
 use Auth;
 use App\Models\MessageLog;
 use App\Models\IncomingUrl;
+use App\Models\Msg;
 use App\Models\MessageResponse;
 use App\Models\Account;
 use App\Models\Template;
 use App\Models\Message;
+use App\Models\Contact;
 use Illuminate\Support\Facades\Log;
 use DateTime;
 
@@ -115,7 +117,31 @@ class MessageLogController extends Controller
         $post_data = file_get_contents("php://input");
         $data = json_decode($post_data, true);
 
-        log::info($data);
+        // If call is coming to set the URL
+        if(isset($_GET['botname']) && isset($_GET['channel'])) {
+            parse_str($_GET, $parsed_data);
+            log::info(print_r($parsed_data, true));
+            return true;
+        }
+
+        /**
+         * Calls coming from Instagram are not JSON encoded. 
+         * If post data is available and decoded value is empty, parse the string and check
+         */
+        if($post_data && !$data) {
+            parse_str($post_data, $parsed_data);
+            $parsed_data['account_id'] = $_GET['account_id']; // Setting account ID from the callback
+            log::info($parsed_data);
+            log::info(print_r($_GET, true));
+            if($parsed_data['channel'] == 'instagram') {
+                $this->handleInstagramMessage($parsed_data);
+            }
+            return true;
+        }
+        
+        log::info($post_data);
+        log::info(print_r($data, true));
+
         $response = $data; 
         $data = $data['payload'];
         $data['source'] = $_GET['origin'];
@@ -435,5 +461,79 @@ class MessageLogController extends Controller
             $templates = ($result->templates);
         }
         echo json_encode($templates);
+    }
+
+    /**
+     * Handle instagram message
+     */
+    public function handleInstagramMessage($data)
+    {
+        $bot_name = $data['botname'];
+        $sender_info = json_decode($data['senderobj'], true);
+        $message_info = json_decode($data['messageobj'], true);
+        $message_context = json_decode($data['contextobj'], true);
+
+        // Sender information
+        if($sender_info['channeltype'] == 'instagram') {
+            $sender_id = $sender_info['channelid'];
+        } 
+
+        if($message_info['type'] == 'txt') {
+            $message_content = $message_info['text'];
+            $message_id = $message_info['id'];
+        }
+
+        $account_id = $data['account_id'];
+        $user_id = $this->getUserIdUsingAccountId($account_id);
+
+        // Get Contact information
+        $msgable_id = $this->getInfoUsingInstagramId($sender_id, $user_id);
+        $msgable_type = 'Contact';
+
+        // Create new message
+        $message = new Msg();
+        $message->service_id = $message_id;
+        $message->service = 'instagram';
+        $message->message = $message_content;
+        $message->account_id = $account_id;
+        $message->msgable_id = $msgable_id;
+        $message->msgable_type = $msgable_type;
+        $message->msg_mode = 'incoming';
+        $message->status = 'received';
+        $message->is_delivered = 0;
+        $message->is_read = 0;
+        $message->save();
+    }
+
+    /**
+     * Return user id using account id
+     */
+    public function getUserIdUsingAccountId($account_id)
+    {
+        $account = Account::find($account_id);
+        if($account) {
+            return $account->user_id;
+        }
+        return false;
+    }
+
+    /**
+     * Return record id using instagram ID
+     */
+    public function getInfoUsingInstagramId($instagram_id, $user_id)
+    {
+        $contact = Contact::where('instagram_id', $instagram_id)
+            ->where('user_id', $user_id)
+            ->first();
+            
+        if(!$contact) {
+            // Create new contact if instagram id is not found
+            $contact = new Contact();
+            $contact->instagram_id = $instagram_id;
+            $contact->user_id = $user_id;
+            $contact->save();
+        }
+
+        return $contact->id;
     }
 }

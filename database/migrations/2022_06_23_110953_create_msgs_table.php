@@ -18,11 +18,12 @@ class CreateMsgsTable extends Migration
             $table->string('service_id');
             $table->string('service');
             $table->foreignId('account_id')->constrained('accounts');
+            $table->text('message');
             $table->integer('msgable_id');
             $table->string('msgable_type');
             $table->string('msg_mode');
             $table->foreignId('parent_id')->nullable()->constrained('msgs');
-            $table->string('template_id');
+            $table->string('template_id')->nullable();
             $table->string('status');
             $table->boolean('is_delivered');
             $table->boolean('is_read');
