@@ -238,7 +238,7 @@ export default function New() {
         <Layout>
             {/* Directory list */}
             <div className="flex">
-                <div className="w-full">
+                <div className="w-1/3">
                     <div className="flex justify-between items-center p-3 md:hidden">
                         <div>
                             <svg
@@ -397,7 +397,7 @@ export default function New() {
                         </div>
                     </nav>
                 </div>
-                <div className="w-2/3 hidden">
+                <div className="w-2/3">
                     <div className="flex-1 p:2 sm:p-3 pr-0 justify-between flex flex-col h-screen bg-gray-100">
                         <div className="flex sm:items-center justify-between py-3 border-b-2 border-gray-200">
                             <div className="relative flex items-center space-x-4">

@@ -41,7 +41,7 @@ export default function Layout({ children }) {
 
     return (
         <>
-            <div>
+            <div className="flex">
                 <Transition.Root show={sidebarOpen} as={Fragment}>
                     <Dialog
                         as="div"
@@ -178,7 +178,7 @@ export default function Layout({ children }) {
                 </Transition.Root>
 
                 {/* Static sidebar for desktop */}
-                <div className={`transition-all hidden md:flex ${(showSidebarText) ? 'md:w-64' : 'md:w-auto' } md:flex-col md:fixed md:inset-y-0`}>
+                <div className={`transition-all hidden md:flex ${(showSidebarText) ? 'md:w-64' : 'md:w-auto' } md:flex-col`}>
                     {/* Sidebar component, swap this element with another sidebar if you like */}
                     <div className="flex flex-col flex-grow border-r border-gray-200 pt-5 bg-[#F6FFFD] overflow-y-auto">
                         <div className="flex items-center flex-shrink-0 px-4">
@@ -254,7 +254,7 @@ export default function Layout({ children }) {
                         </div>
                     </div>
                 </div>
-                <div className="md:pl-64 flex flex-col flex-1">
+                <div className="flex flex-col flex-1">
                     <main>{children}</main>
                 </div>
             </div>
