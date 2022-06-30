@@ -18,6 +18,7 @@ function Registration(props) {
         company_type: '',
         website: '',
         email: '',
+        service: '',
         estimated_launch_date: '',
         type_of_integration: '',
         phone_number: '',
@@ -48,6 +49,12 @@ function Registration(props) {
     const integrations = [
         {value: 'Website', label: 'Website'},
         {value: 'Support', label: 'Support'},
+    ];
+
+    const services = [
+        {value: 'whatsapp', label: 'WhatsApp'},
+        {value: 'instagram', label: 'Instagram'},
+        {value: 'facebook', label: 'Facebook'},
     ];
 
     useEffect(() => {
@@ -132,6 +139,23 @@ function Registration(props) {
                                             </div>
                                             <InputError message={errors.company_name} />
                                         </div>
+
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <label htmlFor="type_of_integration" className="block text-sm font-medium text-gray-700">
+                                                Service
+                                            </label>
+                                            <div className="mt-1">
+                                                <Dropdown 
+                                                    required={true} 
+                                                    id="service"
+                                                    name="service"
+                                                    handleChange={handleChange}
+                                                    options={services}
+                                                    value={data.service}
+                                                />
+                                            </div>
+                                            <InputError message={errors.service} />
+                                        </div>
                                     
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="company_type" className="block text-sm font-medium text-gray-700">
@@ -196,12 +220,12 @@ function Registration(props) {
                                             </div>
                                             <InputError message={errors.type_of_integration} />
                                         </div>
-
                                     </div>
                                 </div>
                             </div>
                         </div>      
 
+                        {data.service == 'whatsapp' ?
                         <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
                             <div className="md:grid md:grid-cols-3 md:gap-6">
                                 <div className="md:col-span-1">
@@ -290,78 +314,7 @@ function Registration(props) {
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
-                            <div className="md:grid md:grid-cols-3 md:gap-6">
-                                <div className="md:col-span-1">
-                                    <h3 className="text-lg font-medium leading-6 text-gray-900">API Information</h3>
-                                    <p className="mt-1 text-sm text-gray-500">
-                                        Information will be used to use your whatsapp API call.
-                                    </p>
-                                </div>
-                                <div className="mt-5 md:mt-0 md:col-span-2">
-                                    <div className="grid grid-cols-6 gap-6">
-                                   
-                                        <div className="form-group col-span-6 sm:col-span-4">
-                                            <label htmlFor="api_token" className="block text-sm font-medium text-gray-700">
-                                                API Token
-                                            </label>
-                                            <div className="mt-1 flex rounded-md shadow-sm">
-                                                {data.api_token}
-                                            </div>
-                                            <InputError message={errors.api_token} />
-                                        </div>
-
-                                        <div className="form-group col-span-6 sm:col-span-4">
-                                            <label htmlFor="callback_url" className="block text-sm font-medium text-gray-700">
-                                                Callback URL
-                                            </label>
-                                            <div className="mt-1 flex rounded-md shadow-sm">
-                                                <Input name='callback_url' value={data.callback_url} id='callback_url' placeholder='' handleChange={handleChange} />
-                                            </div>
-                                            <InputError message={errors.callback_url} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
-                            <div className="md:grid md:grid-cols-3 md:gap-6">
-                                <div className="md:col-span-1">
-                                    <h3 className="text-lg font-medium leading-6 text-gray-900">Message Events</h3>
-                                    <p className="mt-1 text-sm text-gray-500">
-                                        Information will be used to which response to reurn on your whatsapp API call.
-                                    </p>
-                                </div>
-                                <div className="mt-5 md:mt-0 md:col-span-2">
-                                    <div className="grid grid-cols-6 gap-6">
-                                        {Object.keys(props.webhook_events).map((event_name) => {
-                                            return (
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <div className="flex items-start">
-                                                        <div className="flex items-center h-5">
-                                                            <Checkbox
-                                                                id={event_name}
-                                                                name={event_name}
-                                                                handleChange={handleChange}
-                                                                value={data[event_name]}
-                                                            />
-                                                        </div>
-                                                        <div className="ml-3 text-sm">
-                                                            <label htmlFor={event_name} className="font-medium text-gray-700">
-                                                                {props.webhook_events[event_name]['label']}
-                                                            </label>
-                                                            <p className="text-gray-500">{props.webhook_events[event_name]['help_text']}</p>
-                                                        </div>
-                                                        <InputError message={errors[event_name]} />
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        : ''}
                     </div>
                     <div className="flex justify-end">
                         <Link 

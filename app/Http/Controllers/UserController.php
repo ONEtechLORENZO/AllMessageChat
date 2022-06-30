@@ -186,8 +186,25 @@ class UserController extends Controller
         $templates = Template::where('account_id', $id)->get();
         $webhookEvents = WebhookEvent::where('account_id', $id)->get();
 
+        $field_info = [
+            'company_name' => ['label' => 'Company name'],
+            'service' => ['label' => 'Service'],
+            'company_type' => ['label' => 'Company type'],
+            'website' => ['label' => 'Website'],
+            'email' => ['label' => 'Email'],
+            'estimated_launch_date' => ['label' => 'Estimated launch date'],
+            'type_of_integration' => ['label' => 'Type of integration'],
+            'display_name' => ['label' => 'Display name', 'show' => ['whatsapp']],
+            'phone_number' => ['label' => 'Phone number', 'show' => ['whatsapp']],
+            'business_manager_id' => ['label' => 'Business manager ID', 'show' => ['whatsapp']],
+            'profile_picture' => ['label' => 'Profile picture', 'type' => 'image', 'show' => ['whatsapp']],
+            'profile_description' => ['label' => 'Profile description', 'show' => ['whatsapp']],
+            'status' => ['label' => 'Status'],
+        ];
+
         return Inertia::render('Account/Detail', [
             'account' => $account,
+            'field_info' => $field_info,
             'templates' => $templates,
             'webhook_events' => $this->webhook_events,
             'events' => $webhookEvents ? $webhookEvents : [],
@@ -223,54 +240,63 @@ class UserController extends Controller
      */
     public function storeAccountRegistration(Request $request)
     {
-        Log::info('Store account information - Start');
         $user_id = $request->user()->id;
+
+        $id = false;
+        $service = $request->get('service');
         if ($request->has('id') && $request->get('id') > 0) {
-            // Update the account information
             $id = $request->get('id');
+        }
+
+        if($service == 'whatsapp') {
+            $phone_validation = 'required|numeric|unique:accounts';
+            if($id) {
+                $phone_validation = 'required|numeric|unique:accounts,phone_number,' . $request->get('id');
+            }
+
             $request->validate([
                 'company_name' => 'required|max:255',
                 'company_type' => 'required',
                 'website' => 'required|max:255',
                 'email' => 'required|max:255|email',
+                'service' => 'required',
                 'estimated_launch_date' => 'required|date',
                 'type_of_integration' => 'required',
-                'phone_number' => 'required|numeric|unique:accounts,phone_number,' . $request->get('id'),
+                'phone_number' => $phone_validation,
                 'display_name' => 'required|max:255',
                 'business_manager_id' => 'required|max:255',
                 'profile_description' => 'required|max:139',
                 'oba' => 'required|boolean',
             ]);
-
-            $account = Account::findOrFail($id);
-        } 
+        }
         else {
-            // Create new account
             $request->validate([
                 'company_name' => 'required|max:255',
                 'company_type' => 'required',
                 'website' => 'required|max:255',
                 'email' => 'required|max:255|email',
+                'service' => 'required',
                 'estimated_launch_date' => 'required|date',
                 'type_of_integration' => 'required',
-                'phone_number' => 'required|numeric|unique:accounts',
-                'display_name' => 'required|max:255',
-                'business_manager_id' => 'required|max:255',
-                'profile_picture' => 'required|image|mimes:jpg,png',
-                'profile_description' => 'required|max:139',
-                'oba' => 'required|boolean',
             ]);
+        }
 
+        if($id) {
+            $account = Account::findOrFail($id);
+        }
+        else {
             $account = new Account();
 
-            // Storing the profile picture
-            $path = $request->file('profile_picture')->store('profile_pictures');
-            $account->profile_picture = $path;
+            if($service == 'whatsapp') {
+                // Storing the profile picture
+                $path = $request->file('profile_picture')->store('profile_pictures');
+                $account->profile_picture = $path;
+            }
             $account->status = 'New'; // Setting the status as New.
         }
 
         $fields = [
-            'company_name', 'company_type', 'website', 'email',
+            'company_name', 'company_type', 'website', 'email', 'service',
             'estimated_launch_date', 'type_of_integration', 'phone_number', 'display_name',
             'business_manager_id', 'profile_description', 'oba'
         ];
@@ -284,7 +310,6 @@ class UserController extends Controller
         $account->user_id = $user_id;
         $account->save();
 
-        Log::info('Account information saved successfully.');
         return Redirect::route('dashboard');
     }
 

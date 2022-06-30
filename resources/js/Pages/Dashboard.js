@@ -82,7 +82,11 @@ export default function Dashboard(props) {
                                     <li key={account.id} className="px-6 py-4">
                                         <div className="flex justify-between">
                                             <div className="flex">
-                                            <h2><Link href={route('account_view', account.id)}>{account.display_name}</Link></h2>
+                                            <h2>
+                                                <Link href={route('account_view', account.id)}>
+                                                    {account.company_name} ({account.service})
+                                                </Link>
+                                            </h2>
                                             <span className={`ml-3 text-sm inline-flex items-center px-2 py-0.5 rounded font-medium ${status_class_names}`}>
                                                 {account.status}
                                             </span>
