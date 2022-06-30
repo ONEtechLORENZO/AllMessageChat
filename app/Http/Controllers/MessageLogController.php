@@ -61,6 +61,11 @@ class MessageLogController extends Controller
         return Inertia::render('Messages/New');
     }
 
+    public function contact(Request $request)
+    {
+        return Inertia::render('Messages/Contact');
+    }
+
     /**
      * Search Keyword  
      */
