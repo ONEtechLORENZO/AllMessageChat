@@ -17,13 +17,14 @@
 
         <!-- Scripts -->
         @routes
-        <script src="{{ url('js/app.js') }}?v=1.2" defer></script>
+
+        <script src="{{ url('js/app.js') }}?v=1.7.1" defer></script>
     </head>
     <body class="font-sans antialiased">
         @inertia
 
         @env ('local')
-            <script src="http://localhost:8080/js/bundle.js"></script>
+            <script src="{{ url('js/bundle.js') }}"></script>
         @endenv
     </body>
 </html>

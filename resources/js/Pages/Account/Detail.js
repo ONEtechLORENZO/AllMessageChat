@@ -16,21 +16,6 @@ import Checkbox from '@/Components/Forms/Checkbox';
 
 function Detail(props) 
 {
-    const fieldInfo = {
-        'display_name': {'label': 'Display name'},
-        'company_name': {'label': 'Company name'},
-        'company_type': {'label': 'Company type'},
-        'website': {'label': 'Website'},
-        'email': {'label': 'Email'},
-        'estimated_launch_date': {'label': 'Estimated launch date'},
-        'type_of_integration': {'label': 'Type of integration'},
-        'phone_number': {'label': 'Phone number'},
-        'business_manager_id': {'label': 'Business manager ID'},
-        'profile_picture': {'label': 'Profile picture', 'type': 'image'},
-        'profile_description': {'label': 'Profile description'},
-        'status': {'label': 'Status'},
-    };
-
     const [webhookData, setWebhookData] = useState({});
     const [accountModalOpen, setAccountModalOpen ] = useState(false);
     const [incomingUrlModalOpen , setIncomingUrlModalOpen ] = useState(false);
@@ -185,20 +170,23 @@ function Detail(props)
                     <div className="bg-white shadow overflow-hidden sm:rounded-lg">
                         <div className="px-4 py-5 sm:px-6">
                             <h3 className="text-lg leading-6 font-medium text-gray-900">Profile Information</h3>
-                            <p className="mt-1 max-w-2xl text-sm text-gray-500">This is what your customers can see on their phone when they contact you via WhatsApp</p>
                         </div>
                         <div className="border-t border-gray-200">
                             <dl>
-                                {Object.keys(fieldInfo).map((key, index) => {
+                                {Object.keys(props.field_info).map((key, index) => {
                                     let bg_color = 'bg-gray-50';
                                     if(index % 2 == 0) {
                                         bg_color = 'bg-white';
                                     }
 
+                                    if(props.field_info[key].show && !props.field_info[key].show.includes(props.account.service)) {
+                                        return;
+                                    }
+
                                     return (
                                         <div key={key} className={`${bg_color} px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
-                                            <dt className="text-sm font-medium text-gray-500">{fieldInfo[key]['label']}</dt>
-                                            {fieldInfo[key]['type'] == 'image' ? 
+                                            <dt className="text-sm font-medium text-gray-500">{props.field_info[key]['label']}</dt>
+                                            {props.field_info[key]['type'] == 'image' ? 
                                                 <img src={`/image/profile/${props['account']['id']}`} alt="Profile picture" className='h-64 w-64' />
                                             : 
                                                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{props['account'][key]}</dd>
@@ -209,54 +197,58 @@ function Detail(props)
                             </dl>
                         </div>
                     </div>
-                    <div className="pb-5 pt-5">
-                        <div className="flex justify-between">
-                            <div>
-                                <h3 className="text-lg leading-6 font-medium text-gray-900 mt-3">Templates</h3>
-                            </div>
-                            <div>
-                                <button type='button' onClick={() => setAccountModalOpen(true)} className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                    Add template
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="bg-white shadow overflow-hidden rounded-md">
-                        <ul role="list" className="divide-y divide-gray-200">
-                            {props.templates.map((data) => {
-                                let status_class_names = 'bg-yellow-100 text-yellow-800';
-                                if((data.status).toLowerCase() == 'approved') {
-                                    status_class_names = 'bg-green-100 text-green-800';
-                                }
-                                else if(data.status == 'rejected' || (data.status).indexOf('REJECTED') != -1 ) {
-                                    status_class_names = 'bg-red-100 text-red-800';
-                                }
-
-                                return (
-                                    <li key={data.id} className="px-6 py-4">
-                                        <div className="flex">
-                                            <h2><Link href={route('template_detail_view', [data.account_id, data.id])}>{data.name}</Link></h2>
-                                            <span className={`ml-3 text-sm inline-flex items-center px-2 py-0.5 rounded font-medium ${status_class_names}`}>
-                                                {(data.status).toUpperCase()}
-                                            </span>
-                                        </div>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                        {!props.templates || props.templates.length == 0 ? 
-                            <div className="text-center py-12">
-                                <FolderAddIcon className='mx-auto h-12 w-12 text-gray-400' />
-                                <h3 className="mt-2 text-sm font-medium text-gray-900">No templates found</h3>
-                                <p className="mt-1 text-sm text-gray-500">Get started by creating a new template.</p>
-                                <div className="mt-6">
-                                    <a onClick={() => setAccountModalOpen(true)} className="cursor-pointer underline text-sm text-indigo-600 hover:text-indigo-900">
-                                        Click here to create new template
-                                    </a>
+                    {props.account.service == 'whatsapp' ?
+                        <>
+                            <div className="pb-5 pt-5">
+                                <div className="flex justify-between">
+                                    <div>
+                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mt-3">Templates</h3>
+                                    </div>
+                                    <div>
+                                        <button type='button' onClick={() => setAccountModalOpen(true)} className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                            Add template
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        : ''}
-                    </div>
+                            <div className="bg-white shadow overflow-hidden rounded-md">
+                                <ul role="list" className="divide-y divide-gray-200">
+                                    {props.templates.map((data) => {
+                                        let status_class_names = 'bg-yellow-100 text-yellow-800';
+                                        if((data.status).toLowerCase() == 'approved') {
+                                            status_class_names = 'bg-green-100 text-green-800';
+                                        }
+                                        else if(data.status == 'rejected' || (data.status).indexOf('REJECTED') != -1 ) {
+                                            status_class_names = 'bg-red-100 text-red-800';
+                                        }
+
+                                        return (
+                                            <li key={data.id} className="px-6 py-4">
+                                                <div className="flex">
+                                                    <h2><Link href={route('template_detail_view', [data.account_id, data.id])}>{data.name}</Link></h2>
+                                                    <span className={`ml-3 text-sm inline-flex items-center px-2 py-0.5 rounded font-medium ${status_class_names}`}>
+                                                        {(data.status).toUpperCase()}
+                                                    </span>
+                                                </div>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                                {!props.templates || props.templates.length == 0 ? 
+                                    <div className="text-center py-12">
+                                        <FolderAddIcon className='mx-auto h-12 w-12 text-gray-400' />
+                                        <h3 className="mt-2 text-sm font-medium text-gray-900">No templates found</h3>
+                                        <p className="mt-1 text-sm text-gray-500">Get started by creating a new template.</p>
+                                        <div className="mt-6">
+                                            <a onClick={() => setAccountModalOpen(true)} className="cursor-pointer underline text-sm text-indigo-600 hover:text-indigo-900">
+                                                Click here to create new template
+                                            </a>
+                                        </div>
+                                    </div>
+                                : ''}
+                            </div>
+                        </>
+                    : ''}
 
                     <div className="pb-5 pt-5">
                         <div className="flex justify-between">

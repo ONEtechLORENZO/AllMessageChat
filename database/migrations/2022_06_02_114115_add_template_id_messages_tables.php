@@ -27,7 +27,7 @@ class AddTemplateIdMessagesTables extends Migration
     public function down()
     {
         Schema::table('templates', function (Blueprint $table) {
-            $table->dropColumn(['templated', 'type']);
+            $table->dropColumn(['template_uid', 'type']);
         });
     }
 }

@@ -23,7 +23,7 @@ class CreateMessageLogsTable extends Migration
             $table->string('direction')->nullable();
             $table->string('sender')->nullable();
             $table->string('country')->nullable();
-            $table->integer('recipient', 20)->nullable();
+            $table->string('recipient')->nullable();
             $table->string('status')->nullable();
 
             $table->timestamps();
