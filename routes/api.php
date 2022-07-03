@@ -22,7 +22,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/vtSendMessage', [MessageLogController::class, 'sendTemplateMessage']);
     } else {
         Route::post('/vtSendMessage', [MessageLogController::class, 'sendMessage']);
-        Route::post('/v1/send-wa-message/{account_id}', [MessageLogController::class, 'sendMessage']);
+        Route::post('/v1/{account_id}/send-wa-message', [MessageLogController::class, 'sendMessage']);
     }
     Route::post('/vtFetchTemplate', [MessageLogController::class, 'getTemplates']);
     // Create template
