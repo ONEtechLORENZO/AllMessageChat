@@ -20,6 +20,7 @@ class CreateMsgsTable extends Migration
             $table->foreignId('account_id')->constrained('accounts');
             $table->text('message');
             $table->integer('msgable_id');
+            $table->integer('receiver_id');
             $table->string('msgable_type');
             $table->string('msg_mode');
             $table->foreignId('parent_id')->nullable()->constrained('msgs');

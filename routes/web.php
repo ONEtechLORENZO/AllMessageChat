@@ -49,7 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Message Logs
     Route::get('/messages/list', [MessageLogController::class, 'list'])->name('messages');
-    Route::post('/messages/search_content', [MessageLogController::class, 'searchContent'])->name('searchContent');
+    Route::post('/messages/search_content', [MessageLogController::class, 'searchContent'])->name('searchContent');    
 
     // Accounts
     Route::get('/account/registration', [UserController::class, 'accountRegistration'])->name('account_registration');
@@ -66,6 +66,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/account/{id}/webhook_event', [UserController::class, 'createWebhookEvent'])->name('create_webhook_event');
     Route::post('/account/{id}/webhook_event/{webhook_id}', [UserController::class, 'updateWebhookURL'])->name('update_webhook_url');
     Route::post('/account/{id}/delete', [UserController::class, 'deleteWebhookEvent'])->name('delete_webhook_event');
+
+    // Conversation Page
+    Route::get('/chat', [MsgController::class, 'ChatList']);
+    Route::post('/getMessages', [MsgController::class, 'getMessageList'])->name('get_message_list');
+    Route::post('/sendMessage', [MsgController::class, 'sendMessage'])->name('send_message_to_contact');
+
 });
 
 // Check user is admin

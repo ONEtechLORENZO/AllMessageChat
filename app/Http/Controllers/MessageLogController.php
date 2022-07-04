@@ -10,6 +10,7 @@ use App\Models\IncomingUrl;
 use App\Models\Msg;
 use App\Models\MessageResponse;
 use App\Models\Account;
+use App\Models\User;
 use App\Models\Template;
 use App\Models\Message;
 use App\Models\Contact;
@@ -55,12 +56,7 @@ class MessageLogController extends Controller
             'limit' => $limit,
         ]);
     }
-
-    public function new(Request $request)
-    {
-        return Inertia::render('Messages/New');
-    }
-
+    
     public function contact(Request $request)
     {
         return Inertia::render('Messages/Contact');
@@ -137,7 +133,8 @@ class MessageLogController extends Controller
         }
         
         log::info($post_data);
-        log::info(print_r($data, true));
+       // return false;
+       // log::info(print_r($data, true));
 
         $response = $data; 
         $data = $data['payload'];
@@ -163,28 +160,51 @@ class MessageLogController extends Controller
             }
             $template->save();
         } else {
+           
             if ( isset($data['sender']) &&  config('app.origin') != $data['sender']['phone']) {
                 $this->incomingMessageResponse($data);
             } else {
+                
+                if(!isset($data['gsId'])){
+                    return true;
+                }
+                $status = 'Queued';
+                $is_delivered = $is_read = 0;
                 $messageLog = MessageLog::where('messageId', $data['gsId'])->first();
                 if (isset($data['type']) && str_contains($data['type'], 'failed')) {
                     $status = 'Failed';
                 } else if(isset($data['type']) && $data['type'] == 'sent'){
-                    $status = 'Delivered';
+                    $status = 'Sent';
                 }
-                    $messageLog->status = $status;
-                //$messageLog->type = $data->messageType;
-                Log::info($messageLog);
+                else if(isset($data['type']) && $data['type'] == 'delivered'){
+                    $status = 'Delivered';
+                    $is_delivered = 1;
+                }
+                else if(isset($data['type']) && $data['type'] == 'read'){
+                    $status = 'Read';
+                    $is_read = 1;
+                }
+                $messageLog->status = $status;
                 $messageLog->save();
-            }
-			$data['id'] = $data['gsId'];
-	    }
 
-        $response = MessageResponse::where('message_id', $data['id'])->first();
-        $response->ref_id = $status; 
-        $response->response = base64_encode( serialize( $post_data ));
-        $response->save();
-        Log::info('Save message Log successfully.');
+                $mesaageData = [
+                    'service_id' =>  $data['gsId'],
+                    'status' => $status,
+                    'is_delivered' => $is_delivered,
+                    'is_read' => $is_read
+                ];
+                $this->updateMessageList($mesaageData);
+                Log::info('Update message successfully.');
+            }
+		//	$data['id'] = $data['gsId'];
+	    }
+        if(isset($data['gsId'])){
+            $response = MessageResponse::where('message_id', $data['gsId'])->first();
+            $response->ref_id = $status; 
+            $response->response = base64_encode( serialize( $post_data ));
+            $response->save();
+            Log::info('Save message Log successfully.') ;
+        }
     }
 
     public function sendMessageResponse($data)
@@ -260,11 +280,36 @@ class MessageLogController extends Controller
             $messageLog->user_id = $user_id;
 //            $messageLog->refId = $data->route->refId;
             $messageLog->messageId = $data['id'];
-            $messageLog->destinations =$data['source'] ;//json_encode(array($data->destination));
+            $messageLog->destinations = $data['source'] ;//json_encode(array($data->destination));
             $messageLog->country = $data['sender']['country_code'];
             $messageLog->account_id = ($accountId) ? $accountId : '' ;
             $messageLog->save();
             Log::info('Incoming messages stored successfully.');
+
+             // Store Data
+            $user_id = $this->getUserIdUsingAccountId($accountId);
+            // Get Contact information
+            $msgable_id = $this->getInfoUsingWhatsAppId($data['sender']['phone'], $user_id, $data['sender']['name']);
+            $receiver_id = $this->getInfoUsingWhatsAppId($data['source'], $user_id);
+            $msgable_type = 'Contact';
+
+            $mesaageData = [
+                'service_id' => $data['id'],
+                'service' => 'whatsapp',
+                'message' => $data['payload']['text'],
+                'account_id' => $accountId,
+                'msgable_id' => $msgable_id,
+                'receiver_id' => $receiver_id,
+                'msgable_type' => $msgable_type,
+                'msg_mode' => 'incoming',
+                'status' => 'received',
+                'is_delivered' => 0,
+                'is_read' => 0
+            ];
+
+            Log::info('store Messages function start.');
+            $this->updateMessageList($mesaageData);
+            Log::info('Messages stored successfully.');
             return true;
         }
     }
@@ -276,9 +321,8 @@ class MessageLogController extends Controller
     {
         $id = Auth::id();
         $accountId = '';
-        if (isset($_POST['account_number'])) {
-            $getAccount = Account::where('phone_number', $_POST['account_number'])->first();
-            $accountId = $getAccount->id;
+        if (isset($_POST['account_id'])) {
+            $accountId = $_POST['account_id'];
         }
 
         Log::info('Store outgoing messages start');
@@ -298,6 +342,30 @@ class MessageLogController extends Controller
         $messageLog->save();
         Log::info('Outgoing messages stored successfully.');
 
+        // Store Data
+        $user_id = $this->getUserIdUsingAccountId($accountId);
+        // Get Contact information
+        $msgable_id = $this->getInfoUsingWhatsAppId($data['source'], $user_id);
+        $receiver_id = $this->getInfoUsingWhatsAppId($data['destination'], $user_id);
+        $msgable_type = 'Contact';
+
+        // Create new message
+        $mesaageData = [
+            'service_id' => $data['result']->messageId,
+            'service' => 'whatsapp',
+            'message' => isset($data['subject']) ? $data['subject'] : '',
+            'account_id' => $accountId,
+            'msgable_id' => $msgable_id,
+            'receiver_id' => $receiver_id,
+            'msgable_type' => $msgable_type,
+            'msg_mode' => 'outgoing',
+            'status' => 'Queued',
+            'is_delivered' => 0,
+            'is_read' => 0
+        ];
+        Log::info('store Messages function start.');
+        $this->updateMessageList($mesaageData);
+        Log::info('Messages stored successfully.');
 
 	// Save response
 	$response = new MessageResponse();
@@ -313,26 +381,38 @@ class MessageLogController extends Controller
     /**
      * Send Messages using API from CRM
      */
-    public function sendMessage(Request $request)
+    public function sendMessage(Request $request, $account_id, $mode = '')
     {
         //$data['authorization'] = config('app.token');
         $data['apiKey'] = config('app.apiKey');
+        $_POST['account_id'] = $account_id;
+        $account = Account::find($account_id);
+        if($mode == ''){
+            if($account){
+                $user = User::find($account->user_id);
+                $token = str_replace('Bearer ', '',$_SERVER['HTTP_AUTHORIZATION']);
+                if($token != $user->api_token){
+                    echo json_encode(['status' => 'failed', 'message' => 'invalid api token']);die;
+                }
+            } else {
+                echo json_encode(['status' => 'failed', 'message' => 'invalid account id']);die;
+            }
+        }
 
         $data['priority'] = 'NORMAL';
-        $data['source'] = $_POST['account_number']; //config('app.origin');
-        $data['destination'] = ($_POST['destination']);
-        $data['subject'] = $_POST['content'];
+        $data['source'] = $account->phone_number; 
+        $data['destination'] = $request->get('destination');
+        $data['subject'] = $request->get('content');
         $data['refId'] = mt_rand(10000000, 99999999);
         $data['srcName'] = config('app.src_name'); 
         
         $content = [
             "type" => "text",
-            "text" => $_POST['content']
+            "text" => $request->get('content')
         ];
         $message = urlencode(json_encode($content));
 
         log::info('Sent text message using GupShup - start');
-
         // Post message to Whatsapp with linkmobility
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -352,8 +432,8 @@ class MessageLogController extends Controller
                     ));
 
         $response = curl_exec($curl);
+       // dd($response);
         curl_close($curl);
-
         if ($response) {
             $result = json_decode($response);
             $data['result'] = $result;
@@ -488,6 +568,20 @@ class MessageLogController extends Controller
         $msgable_type = 'Contact';
 
         // Create new message
+        $mesaageData = [
+            'service_id' => $message_id,
+            'service' => 'instagram',
+            'message' => $message_content,
+            'account_id' => $account_id,
+            'msgable_id' => $msgable_id,
+            'msgable_type' => $msgable_type,
+            'msg_mode' => 'incoming',
+            'status' => 'received',
+            'is_delivered' => 0,
+            'is_read' => 0
+        ];
+        $this->updateMessageList($mesaageData);
+        /*
         $message = new Msg();
         $message->service_id = $message_id;
         $message->service = 'instagram';
@@ -499,6 +593,22 @@ class MessageLogController extends Controller
         $message->status = 'received';
         $message->is_delivered = 0;
         $message->is_read = 0;
+        $message->save();
+        */
+    }
+
+    /**
+     * Save Message 
+     */
+    public function updateMessageList($data)
+    {
+        $message = Msg::where('service_id', $data['service_id'])->first();
+        if(!$message){
+            $message = new Msg();
+        }
+        foreach($data as $field => $value){
+            $message->$field = $value;
+        }
         $message->save();
     }
 
@@ -527,6 +637,27 @@ class MessageLogController extends Controller
             // Create new contact if instagram id is not found
             $contact = new Contact();
             $contact->instagram_id = $instagram_id;
+            $contact->user_id = $user_id;
+            $contact->save();
+        }
+
+        return $contact->id;
+    }
+
+    /**
+     * Return record id using instagram ID
+     */
+    public function getInfoUsingWhatsAppId($phone_number, $user_id , $name = '')
+    {
+        $contact = Contact::where('phone_number', $phone_number)
+            ->where('user_id', $user_id)
+            ->first();
+
+        if(!$contact) {
+            // Create new contact if instagram id is not found
+            $contact = new Contact();
+            $contact->last_name = $name;
+            $contact->phone_number = $phone_number;
             $contact->user_id = $user_id;
             $contact->save();
         }
