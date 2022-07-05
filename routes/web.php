@@ -68,8 +68,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/account/{id}/delete', [UserController::class, 'deleteWebhookEvent'])->name('delete_webhook_event');
 
     // Conversation Page
-    Route::get('/chat', [MsgController::class, 'ChatList']);
-    Route::post('/getMessages', [MsgController::class, 'getMessageList'])->name('get_message_list');
+    Route::get('/chat', [MsgController::class, 'ChatList'])->name('chat_list');
+    Route::get('/getMessages', [MsgController::class, 'getMessageList'])->name('get_message_list');
     Route::post('/sendMessage', [MsgController::class, 'sendMessage'])->name('send_message_to_contact');
 
 });

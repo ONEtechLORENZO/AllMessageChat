@@ -187,13 +187,13 @@ class MessageLogController extends Controller
                 $messageLog->status = $status;
                 $messageLog->save();
 
-                $mesaageData = [
+                $messageData = [
                     'service_id' =>  $data['gsId'],
                     'status' => $status,
                     'is_delivered' => $is_delivered,
                     'is_read' => $is_read
                 ];
-                $this->updateMessageList($mesaageData);
+                $this->updateMessageList($messageData);
                 Log::info('Update message successfully.');
             }
 		//	$data['id'] = $data['gsId'];
@@ -290,16 +290,16 @@ class MessageLogController extends Controller
             $user_id = $this->getUserIdUsingAccountId($accountId);
             // Get Contact information
             $msgable_id = $this->getInfoUsingWhatsAppId($data['sender']['phone'], $user_id, $data['sender']['name']);
-            $receiver_id = $this->getInfoUsingWhatsAppId($data['source'], $user_id);
-            $msgable_type = 'Contact';
+        //    $receiver_id = $this->getInfoUsingWhatsAppId($data['source'], $user_id);
+            $msgable_type = 'App\Models\Contact';
 
-            $mesaageData = [
+            $messageData = [
                 'service_id' => $data['id'],
                 'service' => 'whatsapp',
                 'message' => $data['payload']['text'],
                 'account_id' => $accountId,
                 'msgable_id' => $msgable_id,
-                'receiver_id' => $receiver_id,
+         //       'receiver_id' => $receiver_id,
                 'msgable_type' => $msgable_type,
                 'msg_mode' => 'incoming',
                 'status' => 'received',
@@ -308,7 +308,7 @@ class MessageLogController extends Controller
             ];
 
             Log::info('store Messages function start.');
-            $this->updateMessageList($mesaageData);
+            $this->updateMessageList($messageData);
             Log::info('Messages stored successfully.');
             return true;
         }
@@ -345,18 +345,18 @@ class MessageLogController extends Controller
         // Store Data
         $user_id = $this->getUserIdUsingAccountId($accountId);
         // Get Contact information
-        $msgable_id = $this->getInfoUsingWhatsAppId($data['source'], $user_id);
-        $receiver_id = $this->getInfoUsingWhatsAppId($data['destination'], $user_id);
-        $msgable_type = 'Contact';
+       // $msgable_id = $this->getInfoUsingWhatsAppId($data['source'], $user_id);
+        $msgable_id = $this->getInfoUsingWhatsAppId($data['destination'], $user_id);
+        $msgable_type = 'App\Models\Contact';
 
         // Create new message
-        $mesaageData = [
+        $messageData = [
             'service_id' => $data['result']->messageId,
             'service' => 'whatsapp',
             'message' => isset($data['subject']) ? $data['subject'] : '',
             'account_id' => $accountId,
             'msgable_id' => $msgable_id,
-            'receiver_id' => $receiver_id,
+        //    'receiver_id' => $receiver_id,
             'msgable_type' => $msgable_type,
             'msg_mode' => 'outgoing',
             'status' => 'Queued',
@@ -364,7 +364,7 @@ class MessageLogController extends Controller
             'is_read' => 0
         ];
         Log::info('store Messages function start.');
-        $this->updateMessageList($mesaageData);
+        $this->updateMessageList($messageData);
         Log::info('Messages stored successfully.');
 
 	// Save response
@@ -414,6 +414,7 @@ class MessageLogController extends Controller
 
         log::info('Sent text message using GupShup - start');
         // Post message to Whatsapp with linkmobility
+     //   dd($data);
         $curl = curl_init();
         curl_setopt_array($curl, array(
                     CURLOPT_URL => config('app.api_url'),
@@ -432,7 +433,7 @@ class MessageLogController extends Controller
                     ));
 
         $response = curl_exec($curl);
-       // dd($response);
+    ///    dd($response);
         curl_close($curl);
         if ($response) {
             $result = json_decode($response);
@@ -565,10 +566,10 @@ class MessageLogController extends Controller
 
         // Get Contact information
         $msgable_id = $this->getInfoUsingInstagramId($sender_id, $user_id);
-        $msgable_type = 'Contact';
+        $msgable_type = 'App\Models\Contact';
 
         // Create new message
-        $mesaageData = [
+        $messageData = [
             'service_id' => $message_id,
             'service' => 'instagram',
             'message' => $message_content,
@@ -580,7 +581,7 @@ class MessageLogController extends Controller
             'is_delivered' => 0,
             'is_read' => 0
         ];
-        $this->updateMessageList($mesaageData);
+        $this->updateMessageList($messageData);
         /*
         $message = new Msg();
         $message->service_id = $message_id;

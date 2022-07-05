@@ -1,4 +1,5 @@
 import React ,{ useEffect , useState , Fragment} from 'react';
+import { Head, useForm, Link, InertiaLink } from '@inertiajs/inertia-react';
 import MessageList from "./MessageList";
 import Layout from "./Layout";
 
@@ -17,6 +18,7 @@ import {
     AttachIcon,
     WhatsAppIcon,
     NotifiIcon,
+    InstaIcon,
     SettingIcon,
 } from "./icons";
 
@@ -232,20 +234,33 @@ function classNames(...classes) {
 }
 
 export default function ChatList(props) {
-    const [selectedContact, setSelectedContact] =  useState('');
+    const [selectedContact, setSelectedContact] =  useState(props.selected_contact);
+    const [messages , setMessages] = useState(props.messages);
+    const[containerCategory, setContainerCategory] = useState('whatsapp');
+
     const [chatList , setChatList ]= useState(props.contact_list);
     const [data, setData] = useState({
         destination: '',
-        chennal: 'whatsapp',
-        contact: ''
+        chennal: containerCategory,
+        content: ''
     });
+
+    useEffect(() => {
+        if(selectedContact){
+        //console.log('call get message funnction')
+        //   getMessageList(selectedContact);
+        }
+    },[data]);
 
     // Update select contact
     function updateContactData(contact){
-        setSelectedContact(contact);
+        /*
+       // setSelectedContact(contact);
+        //getMessageList(contact);
         let newState = Object.assign({}, data);
         newState['destination'] = chatList[contact].number;
         setData(newState);
+        */
     }
 
     // Update content 
@@ -253,13 +268,30 @@ export default function ChatList(props) {
         let newState = Object.assign({}, data);
         newState[e.target.name] = e.target.value;
         setData(newState);
-        console.log(data);
     }
-  
+
+    // Return conversation history
+    function getMessageList(contactId){
+        console.log('fetch message list')
+        axios({
+            method: 'get',
+            url: route('get_message_list', {'contact_id': contactId,
+                'category': containerCategory}),
+            data: {
+                contact_id: contactId,
+                category: containerCategory,
+            }
+        })
+        .then( (response) =>{
+            setMessages(response.data.messages);
+        });
+    }
+
     // Send content to selected contact
     function sendMessage(){
         //let data = Object.assign({}, data);
-        //data['destination'] = chatList[selectedContact].name;
+        data['destination'] = chatList[selectedContact].number;
+
         if(data.content){
             axios({
                 method: 'post',
@@ -267,12 +299,12 @@ export default function ChatList(props) {
                 data: data
             })
             .then( (response) =>{
-                console.log(response);
                 if(response.data.status == 'submitted'){
                     let newState = Object.assign({}, data);
                     newState['content'] = '';
                     setData(newState);
                 }
+                return inertia(route('get_message_list', {'contact_id': contactId,'category': containerCategory}));
             });
         }
     }
@@ -406,8 +438,10 @@ export default function ChatList(props) {
                                                 </span>
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <a
-                                                    href="#"
+                                                <Link
+                                                  //  onClick={()=> getMessageList(id)}
+                                                     href={route('chat_list', {'contact_id': id,
+                                                     'category': containerCategory} )}
                                                     className="focus:outline-none"
                                                 >
                                                     {/* Extend touch target to entire panel */}
@@ -428,7 +462,7 @@ export default function ChatList(props) {
                                                     <p className="text-sm text-[#7A7A7A] truncate">
                                                         Text Message Preview
                                                     </p>
-                                                </a>
+                                                </Link>
                                             </div>
                                             <div className="cursor-pointer">
                                                 <DotsVerticalIcon
@@ -461,11 +495,11 @@ export default function ChatList(props) {
                                             </svg>
                                         </span>
                                         <div className="relative">
-                                            <img
-                                                src="https://images.unsplash.com/photo-1549078642-b2ba4bda0cdb?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=3&w=144&h=144"
-                                                alt=""
-                                                className="w-10 h-10 rounded-full"
-                                            />
+                                        <span className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gray-500">
+                                                    <span className="text-3xl font-medium leading-none text-white">
+                                                        {(chatList[selectedContact].name).substring(0,3)}
+                                                    </span>
+                                                </span>
                                         </div>
                                     </div>
                                     <div className="flex flex-col leading-tight">
@@ -531,7 +565,7 @@ export default function ChatList(props) {
                                                                         "block py-2 px-4 text-sm text-gray-700"
                                                                     )}
                                                                 >
-                                                                    {item.name}
+                                                                    {item.name} 
                                                                 </a>
                                                             )}
                                                         </Menu.Item>
@@ -543,7 +577,7 @@ export default function ChatList(props) {
                                 </div>
                             </div>
                             <MessageList 
-                                selectedContact = {selectedContact}
+                                messages = {messages}
                             />
 
                             <div className="border-t-2  border-gray-200 px-4 pt-4 mb-2 sm:mb-0">
@@ -562,6 +596,7 @@ export default function ChatList(props) {
                                             type="text"
                                             onChange={(e) => handleChange(e)}
                                             name="content"
+                                            value={data.content}
                                             placeholder="Write your message!"
                                             className="w-full focus:outline-none border-0 focus:placeholder-gray-400 text-gray-600 placeholder-gray-600 pl-3 bg-white rounded-2xl rounded-br-none py-3"
                                         />
@@ -604,7 +639,44 @@ export default function ChatList(props) {
 
                                     <div className="flex flex-col gap-1 ">
                                         <div className="flex rounded-md bg-white h-7 w-7 justify-center items-center cursor-pointer">
-                                            <WhatsAppIcon />
+                                            
+                                            <Menu as="div" className="ml-3 relative">
+                                            <div>
+                                                <Menu.Button className="max-w-xs  p-2 flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2">
+                                                    {containerCategory == 'whatsapp' ?
+                                                        <WhatsAppIcon />
+                                                    :
+                                                        <InstaIcon />
+                                                    }
+                                                </Menu.Button>
+                                            </div>
+                                            <Transition
+                                                as={Fragment}
+                                                enter="transition ease-out duration-100"
+                                                enterFrom="transform opacity-0 scale-95"
+                                                enterTo="transform opacity-100 scale-100"
+                                                leave="transition ease-in duration-75"
+                                                leaveFrom="transform opacity-100 scale-100"
+                                                leaveTo="transform opacity-0 scale-95"
+                                            >
+                                                <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
+                                                  
+                                                        <Menu.Item >
+                                                            {containerCategory != 'whatsapp' ?
+                                                                //<span onClick={() => getMessageList()} className= "block py-2 px-4 text-sm text-gray-700">
+                                                                <Link href={route('chat_list', {'contact_id': selectedContact, 'category': 'whatsapp'})}> 
+                                                                    <WhatsAppIcon />
+                                                                </Link>
+                                                                :
+                                                                <Link href={route('chat_list', {'contact_id': selectedContact, 'category': 'insta'})} className= "block py-2 px-4 text-sm text-gray-700">
+                                                                    <InstaIcon />                                                               
+                                                                </Link>
+                                                            }
+                                                    </Menu.Item>
+                                                    
+                                                </Menu.Items>
+                                            </Transition>
+                                        </Menu>
                                         </div>
                                         <div className="flex rounded-md bg-white h-7 w-7 justify-center items-center cursor-pointer">
                                             <PlusSmIcon

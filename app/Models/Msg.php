@@ -13,6 +13,12 @@ class Msg extends Model
 
     public $api_url = 'https://api.gupshup.io';
 
+
+    public function msgable()
+    {
+        return $this->morphTo();
+    }
+
     /**
      * Send message to Instagram user
      */

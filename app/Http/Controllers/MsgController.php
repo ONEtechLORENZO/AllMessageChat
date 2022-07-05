@@ -12,6 +12,8 @@ use App\Http\Controllers\MessageLogController;
 
 class MsgController extends Controller
 {
+    public $dateFormat = 'g:i A | M j, Y ';
+
     /**
      * Display a listing of the resource.
      *
@@ -92,10 +94,10 @@ class MsgController extends Controller
     public function ChatList(Request $request)
     {
         $limit = 10;
-        $condition = '';
-        $contactList = [];
-        $user = Auth::user();
-        $contacts = Contact::where('phone_number' , '!=', config('app.origin') )->get();
+        $condition = $selectedContact =  $category = '';
+        $contactList = $messages = [];
+        $user = $request->user();
+        $contacts = Contact::where('user_id', $user->id )->get();
         foreach($contacts as $contact){
             $name = $contact->first_name . ' ' .$contact->last_name;
             $contactList[$contact->id] = [
@@ -104,22 +106,41 @@ class MsgController extends Controller
                 'number' => $contact->phone_number 
             ];
         }
+        
+        if($request->contact_id){
+           
+            $messages = $this->getMessageList($request);
+       //   dd($messages);
+        
+        }
        // dd($contactList);
         return Inertia::render('Messages/ChatList', [
             'contact_list' => $contactList,
+            'messages' => $messages,
+            'selected_contact' => $request->contact_id,
+            'category' => $request->contact_id
+
         ]);
     }
 
     /**
      * Return contact conversation history
      */
-    public function getMessageList(Request $request )
+    public function getMessageList(Request $request)
     {
+        $user = $request->user();
+        $contactId = $request->contact_id;
+        $category = $request->category;
+       
         $messages = [];
-        $contactId =  $request->get('contact_id');
-        $contact = Contact::where('phone_number', config('app.origin'))
+        $account = Account::where('user_id', $user->id)->first();
+        $contact = Contact::find($contactId);
+        
+       // $getMessages = $contact->messages;
+     // dd($contact);
+      /*
+        $contact = Contact::where('phone_number', $account->phone_number)
             ->first();
-        $user_id = $contact->id;
         $getMessages = Msg::where(function ($query) use ($user_id ,$contactId ) {
                 $query->where('msgable_id', '=', $user_id)
                     ->where('receiver_id', '=', $user_id)
@@ -128,15 +149,26 @@ class MsgController extends Controller
             })
             ->orderBy('created_at')
             ->get();
-        foreach($getMessages as $message){
+        $getMessages = Msg::where('account_id', $account->id)
+            ->orWhere('msgable_id',  $contactId)
+            ->orderBy('created_at')
+            ->get();
+                    */
+
+        foreach($contact->messages->where('service', $request->category) as $message){
             $messages[] = [
                 'content' => $message->message,
                 //'date' => $message->created_at, 
-                'date' => date_format( $message->created_at , 'g:i A | M j, Y '),
+                'date' => date_format( $message->created_at , $this->dateFormat),
                 'mode' => $message->msg_mode
             ];
         }
-        echo json_encode(['messages' => $messages]); die;
+      //  dd($messages);
+    // return Inertia::render('Messages/ChatList', [
+    //     'messages' => $messages
+    // ]);
+    // echo json_encode(['messages' => $messages]); die;
+        return ( $messages);
     }
 
     /**
@@ -144,9 +176,10 @@ class MsgController extends Controller
      */
     public function sendMessage(Request $request)
     {
-        $account = Account::where('phone_number', config('app.origin'))->first();
+        $user = $request->user();
+        $account = Account::where('user_id', $user->id)->first();
+    //    $account = Account::where('phone_number', config('app.origin'))->first();
         $messageLog = new MessageLogController();
         $result = $messageLog->sendMessage($request , $account->id, 'direct');
-        dd([$result , $request ]);
     }
 }

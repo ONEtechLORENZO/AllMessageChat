@@ -1,33 +1,13 @@
 import React ,{ useEffect , useState } from 'react';
 
 export default function MessageList(props) {
-    const [messages , setMessages] = useState([]);
-    useEffect(() => {
-        if(props.selectedContact){
-           getMessageList(props.selectedContact);
-        }
-    },[props.selectedContact]);
-
-    function getMessageList(contactId){
-        axios({
-            method: 'post',
-            url: route('get_message_list'),
-            data: {
-                contact_id: contactId
-            }
-        })
-        .then( (response) =>{
-            setMessages(response.data.messages);
-        });
-    }
-  
     return(
         <>
                         <div
                             id="messages"
                             className="flex-col flex-1 justify-end space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch"
                         >
-                            {Object.entries(messages).map(([key, message], j) => (
+                            {Object.entries(props.messages).map(([key, message], j) => (
                                 <>
                                  {message.mode == 'incoming' ?
                                     <div className="chat-message">
