@@ -18,7 +18,7 @@ class CreateTemplatesTable extends Migration
             $table->unsignedBigInteger('account_id');
             $table->string('name');
             $table->string('category');
-            $table->json('languages');
+            $table->longText('languages');
             $table->string('status');
             $table->timestamps();
             $table->foreign('account_id')->references('id')->on('accounts');

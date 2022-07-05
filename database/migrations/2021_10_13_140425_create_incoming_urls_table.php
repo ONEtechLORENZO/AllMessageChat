@@ -17,7 +17,7 @@ class CreateIncomingUrlsTable extends Migration
             $table->id();
             
             $table->unsignedBigInteger('account_id');
-            $table->json('incoming_url');
+            $table->longText('incoming_url');
 
             $table->timestamps();
             $table->foreign('account_id')->references('id')->on('accounts');
