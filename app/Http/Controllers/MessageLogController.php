@@ -299,7 +299,6 @@ class MessageLogController extends Controller
                 'message' => $data['payload']['text'],
                 'account_id' => $accountId,
                 'msgable_id' => $msgable_id,
-         //       'receiver_id' => $receiver_id,
                 'msgable_type' => $msgable_type,
                 'msg_mode' => 'incoming',
                 'status' => 'received',
@@ -582,20 +581,6 @@ class MessageLogController extends Controller
             'is_read' => 0
         ];
         $this->processMessage($messageData);
-        /*
-        $message = new Msg();
-        $message->service_id = $message_id;
-        $message->service = 'instagram';
-        $message->message = $message_content;
-        $message->account_id = $account_id;
-        $message->msgable_id = $msgable_id;
-        $message->msgable_type = $msgable_type;
-        $message->msg_mode = 'incoming';
-        $message->status = 'received';
-        $message->is_delivered = 0;
-        $message->is_read = 0;
-        $message->save();
-        */
     }
 
     /**

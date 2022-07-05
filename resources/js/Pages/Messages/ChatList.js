@@ -71,6 +71,13 @@ export default function ChatList(props) {
         */
     }
 
+    // Send Message when press enter
+    function handleKeyUp(e){
+        if(e.key == 'Enter'){
+            sendMessage();
+        }
+    }
+
     // Update content 
     function handleChange(e){
         let newState = Object.assign({}, data);
@@ -84,7 +91,6 @@ export default function ChatList(props) {
         if(!selectedContact){
             return false;
         }
-        console.log('fetch message list')
         axios({
             method: 'get',
             url: route('get_message_list', {'contact_id': selectedContact,
@@ -101,7 +107,7 @@ export default function ChatList(props) {
         //let data = Object.assign({}, data);
         data['destination'] = chatList[selectedContact].number;
 
-        if(data.content){
+        if(data.content && data.destination ){
             axios({
                 method: 'post',
                 url: route('send_message_to_contact'),
@@ -407,6 +413,7 @@ export default function ChatList(props) {
                                         <input
                                             type="text"
                                             onChange={(e) => handleChange(e)}
+                                            onKeyUp={(e) => handleKeyUp(e)}
                                             name="content"
                                             value={data.content}
                                             placeholder="Write your message!"

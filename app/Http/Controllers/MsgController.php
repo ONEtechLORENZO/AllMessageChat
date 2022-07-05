@@ -139,8 +139,12 @@ class MsgController extends Controller
        
         $messages = [];
         $account = Account::where('user_id', $user->id)->first();
-        $contact = Contact::find($contactId);
-
+        $contact = Contact::where('user_id', $user->id)
+            ->where('id', $contactId)
+            ->first();
+        if(!$contact){
+            return ( $messages);
+        }
         foreach($contact->messages->where('service', $request->category) as $message){
             $messages[] = [
                 'content' => $message->message,
@@ -248,7 +252,6 @@ class MsgController extends Controller
      */
     public function handleMessageResult(Request $request, $accountId , $data)
     {
-       
         $user_id = $this->getUserIdUsingAccountId($accountId);
         $msgable_id = $this->getInfoUsingContactUniqueId($request->destination, $request->chennal, $user_id);
         $msgable_type = 'App\Models\Contact';
@@ -373,7 +376,7 @@ class MsgController extends Controller
         $user_id = $this->getUserIdUsingAccountId($account->id);
         $msgable_type = 'App\Models\Contact';
 
-        if ( isset($data['sender']) &&  config('app.origin') != $data['sender']['phone']) {
+        if ( isset($data['sender']) &&  $_GET['origin'] != $data['sender']['phone']) {
             $msgable_id = $this->getInfoUsingContactUniqueId($data['sender']['phone'], 'whatsapp', $user_id, $data['sender']['name']);
             $messageData = [
                 'service_id' => $data['id'],
