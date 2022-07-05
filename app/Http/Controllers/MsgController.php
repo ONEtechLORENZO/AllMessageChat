@@ -9,10 +9,12 @@ use Auth;
 use App\Models\Account;
 use App\Models\Contact;
 use App\Http\Controllers\MessageLogController;
+use Illuminate\Support\Facades\Log;
 
 class MsgController extends Controller
 {
     public $dateFormat = 'g:i A | M j, Y ';
+    public $limit = 10;
 
     /**
      * Display a listing of the resource.
@@ -93,32 +95,35 @@ class MsgController extends Controller
 
     public function ChatList(Request $request)
     {
-        $limit = 10;
-        $condition = $selectedContact =  $category = '';
+        $limit = $this->limit;
+        $condition = $selectedContact = $category = '';
         $contactList = $messages = [];
         $user = $request->user();
         $contacts = Contact::where('user_id', $user->id )->get();
         foreach($contacts as $contact){
             $name = $contact->first_name . ' ' .$contact->last_name;
+            if($name == ' '){
+                $name = ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id;
+            } 
+            $name = trim($name , ' '); 
+
             $contactList[$contact->id] = [
                 'id' => $contact->id,
-                'name' => ($name != ' ') ? $name : $contact->phone_number ,
-                'number' => $contact->phone_number 
+                'name' => $name,
+                'number' => ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id 
             ];
         }
-        
         if($request->contact_id){
-           
-            $messages = $this->getMessageList($request);
-       //   dd($messages);
-        
+            $selectedContact = $request->contact_id;
+            $category = $request->category;
+            $messages = $this->getMessageList($request);        
         }
-       // dd($contactList);
+
         return Inertia::render('Messages/ChatList', [
             'contact_list' => $contactList,
             'messages' => $messages,
-            'selected_contact' => $request->contact_id,
-            'category' => $request->contact_id
+            'selected_contact' => $selectedContact,
+            'category' => ($category) ? $category : 'whatsapp'
 
         ]);
     }
@@ -135,40 +140,76 @@ class MsgController extends Controller
         $messages = [];
         $account = Account::where('user_id', $user->id)->first();
         $contact = Contact::find($contactId);
-        
-       // $getMessages = $contact->messages;
-     // dd($contact);
-      /*
-        $contact = Contact::where('phone_number', $account->phone_number)
-            ->first();
-        $getMessages = Msg::where(function ($query) use ($user_id ,$contactId ) {
-                $query->where('msgable_id', '=', $user_id)
-                    ->where('receiver_id', '=', $user_id)
-                    ->orWhere('msgable_id', '=', $contactId)
-                    ->orWhere('receiver_id', '=', $contactId);
-            })
-            ->orderBy('created_at')
-            ->get();
-        $getMessages = Msg::where('account_id', $account->id)
-            ->orWhere('msgable_id',  $contactId)
-            ->orderBy('created_at')
-            ->get();
-                    */
 
         foreach($contact->messages->where('service', $request->category) as $message){
             $messages[] = [
                 'content' => $message->message,
-                //'date' => $message->created_at, 
                 'date' => date_format( $message->created_at , $this->dateFormat),
                 'mode' => $message->msg_mode
             ];
         }
-      //  dd($messages);
-    // return Inertia::render('Messages/ChatList', [
-    //     'messages' => $messages
-    // ]);
-    // echo json_encode(['messages' => $messages]); die;
         return ( $messages);
+    }
+
+
+    /**
+     * Handle incoming request coming from Gupshup service
+     */
+    public function incoming()
+    {
+        // Receive data from Gupshup
+        $post_data = file_get_contents("php://input");
+        $response = json_decode($post_data, true);
+        $data = $response['payload'];
+
+        log::info([ 'Incoming message (or) response' => $post_data]);
+
+        // For set callback url
+        if((isset($data['type']) && $data['type'] == 'user-event' )|| (isset($data['phone']) && $data['phone'] == 'callbackSetPhone' )|| ( isset($data['type']) && $data['type'] == 'sandbox-start' )){
+            return true;
+        }
+
+        // If call is coming to set the URL
+        if(isset($_GET['botname']) && isset($_GET['channel'])) {
+            parse_str($_GET, $parsed_data);
+            log::info(print_r($parsed_data, true));
+            return true;
+        }
+
+        /**
+         * Calls coming from Instagram are not JSON encoded. 
+         * If post data is available and decoded value is empty, parse the string and check
+         */
+        if($post_data && !$data) {
+            parse_str($post_data, $parsed_data);
+            $parsed_data['account_id'] = $_GET['account_id']; // Setting account ID from the callback
+            log::info($parsed_data);
+            log::info(print_r($_GET, true));
+            if($parsed_data['channel'] == 'instagram') {
+                $this->handleInstagramMessage($parsed_data);
+            }
+            return true;
+        }
+
+        $eventType = 'Message';
+        if($response['type'] == 'template-event'){
+		    $eventType = 'Template';
+            log::info(['template response', $data]);
+            $template = Template::where('template_uid', $data['gsId'])
+                ->first();
+		
+	        $status = $data['status'];
+            if($data['status'] != 'rejected'){
+                $template->status = strtoupper($data['status']);
+            } else {
+                $template->status = strtoupper($data['status']). ' ( Reason: '.$data['rejectedReason']. ' )';
+            }
+            $template->save();
+        } else {
+            $this->handleWhatsAppMessage( $data);
+        }
+
+
     }
 
     /**
@@ -178,8 +219,204 @@ class MsgController extends Controller
     {
         $user = $request->user();
         $account = Account::where('user_id', $user->id)->first();
-    //    $account = Account::where('phone_number', config('app.origin'))->first();
-        $messageLog = new MessageLogController();
-        $result = $messageLog->sendMessage($request , $account->id, 'direct');
+        $msg = new Msg();
+        if($request->chennal == 'instagram'){
+           
+          //  $response = $msg->sendInstagramMessage($request->content , $request->destination);
+            $response = '';
+            $status = 'Failed';
+            if($response) {
+                $status = 'Send';
+            }
+            
+            $result['status'] = $status;
+            $result['messageId'] = uniqid().'_'.date('ymdhis');
+        } else {
+            $result = $msg->sendWhatsAppMessage($request->content , $request->destination, $account , 'portal');
+            if($result['result']->status == 'submitted'){
+                $result['status'] = 'Queued';
+            }
+           
+            $result['messageId'] = $result['result']->messageId;
+        }
+        $this->handleMessageResult($request, $account->id, $result);
+        echo json_encode($result);
+    }
+
+    /**
+     * Process message result 
+     */
+    public function handleMessageResult(Request $request, $accountId , $data)
+    {
+       
+        $user_id = $this->getUserIdUsingAccountId($accountId);
+        $msgable_id = $this->getInfoUsingContactUniqueId($request->destination, $request->chennal, $user_id);
+        $msgable_type = 'App\Models\Contact';
+        $messageData = [
+            'service_id' => $data['messageId'],
+            'service' => $request->chennal,
+            'message' => $request->content,
+            'account_id' => $accountId,
+            'msgable_id' => $msgable_id,
+            'msgable_type' => $msgable_type,
+            'msg_mode' => 'outgoing',
+            'status' => $data['status'],
+            'is_delivered' => 0,
+            'is_read' => 0
+        ];
+        Log::info('store Messages function start.');
+        $this->processMessage($messageData);
+        Log::info('Messages stored successfully.');
+    }
+
+    /**
+     * Save Message 
+     */
+    public function processMessage($data)
+    {
+        $message = Msg::where('service_id', $data['service_id'])->first();
+        if(!$message){
+            $message = new Msg();
+        }
+        foreach($data as $field => $value){
+            $message->$field = $value;
+        }
+        $message->save();
+    }
+
+    /**
+     * Return record id using instagram ID
+     */
+    public function getInfoUsingContactUniqueId($uniqueId, $type, $user_id , $name = '') 
+    {
+        $phoneNumber = $instagramId = '';
+        $field = ($type == 'whatsapp') ? 'phone_number' : 'instagram_id';
+
+        $contact = Contact::where($field , $uniqueId)
+            ->where('user_id', $user_id)
+            ->first();
+
+        if(!$contact) {
+            // Create new contact if instagram id is not found
+            $contact = new Contact();
+            $contact->last_name = $name;
+            $contact->$field = $uniqueId;
+            $contact->user_id = $user_id;
+            $contact->save();
+        }
+
+        return $contact->id;
+    }
+
+    /**
+     * Return user id using account id
+     */
+    public function getUserIdUsingAccountId($account_id)
+    {
+        $account = Account::find($account_id);
+        if($account) {
+            return $account->user_id;
+        }
+        return false;
+    }
+
+
+    /**
+     * Handle instagram message
+     */
+    public function handleInstagramMessage($data)
+    {
+        $bot_name = $data['botname'];
+        $sender_info = json_decode($data['senderobj'], true);
+        $message_info = json_decode($data['messageobj'], true);
+        $message_context = json_decode($data['contextobj'], true);
+
+        // Sender information
+        if($sender_info['channeltype'] == 'instagram') {
+            $sender_id = $sender_info['channelid'];
+        } 
+
+        if($message_info['type'] == 'txt') {
+            $message_content = $message_info['text'];
+            $message_id = $message_info['id'];
+        }
+
+        $account_id = $data['account_id'];
+        $user_id = $this->getUserIdUsingAccountId($account_id);
+
+        // Get Contact information
+        $msgable_id = $this->getInfoUsingContactUniqueId($sender_id, 'instagram', $user_id);
+        $msgable_type = 'App\Models\Contact';
+
+        // Create new message
+        $messageData = [
+            'service_id' => $message_id,
+            'service' => 'instagram',
+            'message' => $message_content,
+            'account_id' => $account_id,
+            'msgable_id' => $msgable_id,
+            'msgable_type' => $msgable_type,
+            'msg_mode' => 'incoming',
+            'status' => 'received',
+            'is_delivered' => 0,
+            'is_read' => 0
+        ];
+        $this->processMessage($messageData);
+    }
+
+    /**
+     * Handle WhatsApp Message
+     */
+    public function handleWhatsAppMessage($data)
+    {
+        $account = Account::where('phone_number', $_GET['origin'])->first();
+        $user_id = $this->getUserIdUsingAccountId($account->id);
+        $msgable_type = 'App\Models\Contact';
+
+        if ( isset($data['sender']) &&  config('app.origin') != $data['sender']['phone']) {
+            $msgable_id = $this->getInfoUsingContactUniqueId($data['sender']['phone'], 'whatsapp', $user_id, $data['sender']['name']);
+            $messageData = [
+                'service_id' => $data['id'],
+                'service' => 'whatsapp',
+                'message' => $data['payload']['text'],
+                'account_id' => $account->id,
+                'msgable_id' => $msgable_id,
+                'msgable_type' => $msgable_type,
+                'msg_mode' => 'incoming',
+                'status' => 'received',
+                'is_delivered' => 0,
+                'is_read' => 0
+            ];
+        } else {
+            if(!isset($data['gsId'])){
+                return false;
+                
+            }
+            $is_delivered = $is_read = 0;
+            if (isset($data['type']) && str_contains($data['type'], 'failed')) {
+                $status = 'Failed';
+            } else if(isset($data['type']) && $data['type'] == 'sent'){
+                $status = 'Sent';
+            }
+            else if(isset($data['type']) && $data['type'] == 'delivered'){
+                $status = 'Delivered';
+                $is_delivered = 1;
+            }
+            else if(isset($data['type']) && $data['type'] == 'read'){
+                $status = 'Read';
+                $is_read = 1;
+            }
+            $messageData = [
+                'service_id' => $data['gsId'],
+                'status' => $status,
+                'is_delivered' => $is_delivered,
+                'is_read' => $is_read
+            ];
+        }
+        
+        Log::info(['store Messages function start.', $messageData ]);
+        $this->processMessage($messageData);
+        Log::info('Messages stored successfully.');
+        return true;
     }
 }

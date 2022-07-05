@@ -22,200 +22,6 @@ import {
     SettingIcon,
 } from "./icons";
 
-var directory = [
-    {
-        id: 1,
-        name: "Leslie Abbott",
-        role: "Co-Founder / CEO",
-        imageUrl:
-            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-    {
-        id: 2,
-        name: "Hector Adams",
-        role: "VP, Marketing",
-        imageUrl:
-            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-    {
-        id: 3,
-        name: "Blake Alexander",
-        role: "Account Coordinator",
-        imageUrl:
-            "https://images.unsplash.com/photo-1520785643438-5bf77931f493?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-    {
-        id: 4,
-        name: "Fabricio Andrews",
-        role: "Senior Art Director",
-        imageUrl:
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-
-    {
-        id: 5,
-        name: "Angela Beaver",
-        role: "Chief Strategy Officer",
-        imageUrl:
-            "https://images.unsplash.com/photo-1501031170107-cfd33f0cbdcc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-    {
-        id: 6,
-        name: "Yvette Blanchard",
-        role: "Studio Artist",
-        imageUrl:
-            "https://images.unsplash.com/photo-1506980595904-70325b7fdd90?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-    {
-        id: 7,
-        name: "Lawrence Brooks",
-        role: "Content Specialist",
-        imageUrl:
-            "https://images.unsplash.com/photo-1513910367299-bce8d8a0ebf6?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-
-    {
-        id: 8,
-        name: "Jeffrey Clark",
-        role: "Senior Art Director",
-        imageUrl:
-            "https://images.unsplash.com/photo-1517070208541-6ddc4d3efbcb?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-    {
-        id: 9,
-        name: "Kathryn Cooper",
-        role: "Associate Creative Director",
-        imageUrl:
-            "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-
-    {
-        id: 10,
-        name: "Alicia Edwards",
-        role: "Junior Copywriter",
-        imageUrl:
-            "https://images.unsplash.com/photo-1509783236416-c9ad59bae472?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-    {
-        id: 11,
-        name: "Benjamin Emerson",
-        role: "Director, Print Operations",
-        imageUrl:
-            "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-    {
-        id: 12,
-        name: "Jillian Erics",
-        role: "Designer",
-        imageUrl:
-            "https://images.unsplash.com/photo-1504703395950-b89145a5425b?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-    {
-        id: 13,
-        name: "Chelsea Evans",
-        role: "Human Resources Manager",
-        imageUrl:
-            "https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-
-    {
-        id: 14,
-        name: "Michael Gillard",
-        role: "Co-Founder / CTO",
-        imageUrl:
-            "https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-    {
-        id: 15,
-        name: "Dries Giuessepe",
-        role: "Manager, Business Relations",
-        imageUrl:
-            "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-
-    {
-        id: 16,
-        name: "Jenny Harrison",
-        role: "Studio Artist",
-        imageUrl:
-            "https://images.unsplash.com/photo-1507101105822-7472b28e22ac?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-    {
-        id: 17,
-        name: "Lindsay Hatley",
-        role: "Front-end Developer",
-        imageUrl:
-            "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-    {
-        id: 18,
-        name: "Anna Hill",
-        role: "Partner, Creative",
-        imageUrl:
-            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-
-    {
-        id: 19,
-        name: "Courtney Samuels",
-        role: "Designer",
-        imageUrl:
-            "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-    {
-        id: 20,
-        name: "Tom Simpson",
-        role: "Director, Product Development",
-        imageUrl:
-            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-
-    {
-        id: 21,
-        name: "Floyd Thompson",
-        role: "Principal Designer",
-        imageUrl:
-            "https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-    {
-        id: 22,
-        name: "Leonard Timmons",
-        role: "Senior Designer",
-        imageUrl:
-            "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-    {
-        id: 23,
-        name: "Whitney Trudeau",
-        role: "Copywriter",
-        imageUrl:
-            "https://images.unsplash.com/photo-1517365830460-955ce3ccd263?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-
-    {
-        id: 24,
-        name: "Kristin Watson",
-        role: "VP, Human Resources",
-        imageUrl:
-            "https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-    {
-        id: 25,
-        name: "Emily Wilson",
-        role: "VP, User Experience",
-        imageUrl:
-            "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-
-    {
-        id: 26,
-        name: "Emma Young",
-        role: "Senior Front-end Developer",
-        imageUrl:
-            "https://images.unsplash.com/photo-1505840717430-882ce147ef2d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-];
-
 const userNavigation = [
     { name: "Your Profile", href: "#" },
     { name: "Settings", href: "#" },
@@ -236,7 +42,7 @@ function classNames(...classes) {
 export default function ChatList(props) {
     const [selectedContact, setSelectedContact] =  useState(props.selected_contact);
     const [messages , setMessages] = useState(props.messages);
-    const[containerCategory, setContainerCategory] = useState('whatsapp');
+    const[containerCategory, setContainerCategory] = useState(props.category);
 
     const [chatList , setChatList ]= useState(props.contact_list);
     const [data, setData] = useState({
@@ -245,12 +51,14 @@ export default function ChatList(props) {
         content: ''
     });
 
+    const [time, setTime] = useState(Date.now());
+
     useEffect(() => {
-        if(selectedContact){
-        //console.log('call get message funnction')
-        //   getMessageList(selectedContact);
-        }
-    },[data]);
+        const interval = setInterval(() => getMessageList(), 5000);
+        return () => {
+            clearInterval(interval);
+        };
+    }, []);
 
     // Update select contact
     function updateContactData(contact){
@@ -271,19 +79,20 @@ export default function ChatList(props) {
     }
 
     // Return conversation history
-    function getMessageList(contactId){
+    function getMessageList(){
+        
+        if(!selectedContact){
+            return false;
+        }
         console.log('fetch message list')
         axios({
             method: 'get',
-            url: route('get_message_list', {'contact_id': contactId,
-                'category': containerCategory}),
-            data: {
-                contact_id: contactId,
-                category: containerCategory,
-            }
+            url: route('get_message_list', {'contact_id': selectedContact,
+                'category': containerCategory, 'mode': 'ajax'}),
         })
         .then( (response) =>{
-            setMessages(response.data.messages);
+           // console.log(response.data)
+            setMessages(response.data);
         });
     }
 
@@ -299,12 +108,14 @@ export default function ChatList(props) {
                 data: data
             })
             .then( (response) =>{
-                if(response.data.status == 'submitted'){
+              //  console.log(response.data);
+                if(response.data.status == 'Queued'){
                     let newState = Object.assign({}, data);
                     newState['content'] = '';
                     setData(newState);
                 }
-                return inertia(route('get_message_list', {'contact_id': contactId,'category': containerCategory}));
+                getMessageList()
+               // return inertia(route('get_message_list', {'contact_id': contactId,'category': containerCategory}));
             });
         }
     }
@@ -425,15 +236,16 @@ export default function ChatList(props) {
                             <ul
                                 role="list"
                                 className="relative z-0 divide-y divide-gray-100"
-                            >                              
+                            >           
+                                  
                                 {Object.entries(chatList).map(([id, person], j) => (
                                     <li key={id}  onClick={() => updateContactData(id)} >
                                         <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
                                             <div className="w-2.5 h-2.5 self-stretch bg-red-600 rounded-full"></div>
                                             <div className="flex-shrink-0">
                                                 <span className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gray-500">
-                                                    <span className="text-3xl font-medium leading-none text-white">
-                                                        {(person.name).substring(0,3)}
+                                                    <span className="text-2xl font-medium leading-none text-white">
+                                                        {(person.name).substring(0,2)}
                                                     </span>
                                                 </span>
                                             </div>
@@ -450,7 +262,7 @@ export default function ChatList(props) {
                                                         aria-hidden="true"
                                                     />
                                                     <p className="text-sm font-semibold text-[#3D4459]">
-                                                        {person.name ?
+                                                        {person && (person.name) ?
                                                             <>{person.name}</>
                                                             : 
                                                             <>{person.number}</>
@@ -484,7 +296,7 @@ export default function ChatList(props) {
                             <div className="flex sm:items-center justify-between py-3 border-b-2 border-gray-200">
                                 <div className="relative flex items-center space-x-4">
                                     <div className="flex gap-1">
-                                        <span className="text-yellow-500">
+                                        {/* <span className="text-yellow-500">
                                             <svg width={14} height={14}>
                                                 <circle
                                                     cx={6}
@@ -493,11 +305,11 @@ export default function ChatList(props) {
                                                     fill="currentColor"
                                                 />
                                             </svg>
-                                        </span>
+                                        </span> */}
                                         <div className="relative">
                                         <span className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gray-500">
                                                     <span className="text-3xl font-medium leading-none text-white">
-                                                        {(chatList[selectedContact].name).substring(0,3)}
+                                                        {(chatList[selectedContact].name).substring(0,2)}
                                                     </span>
                                                 </span>
                                         </div>
@@ -642,6 +454,7 @@ export default function ChatList(props) {
                                             
                                             <Menu as="div" className="ml-3 relative">
                                             <div>
+                                            
                                                 <Menu.Button className="max-w-xs  p-2 flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2">
                                                     {containerCategory == 'whatsapp' ?
                                                         <WhatsAppIcon />
@@ -668,7 +481,7 @@ export default function ChatList(props) {
                                                                     <WhatsAppIcon />
                                                                 </Link>
                                                                 :
-                                                                <Link href={route('chat_list', {'contact_id': selectedContact, 'category': 'insta'})} className= "block py-2 px-4 text-sm text-gray-700">
+                                                                <Link href={route('chat_list', {'contact_id': selectedContact, 'category': 'instagram'})} className= "block py-2 px-4 text-sm text-gray-700">
                                                                     <InstaIcon />                                                               
                                                                 </Link>
                                                             }

@@ -193,7 +193,7 @@ class MessageLogController extends Controller
                     'is_delivered' => $is_delivered,
                     'is_read' => $is_read
                 ];
-                $this->updateMessageList($messageData);
+                $this->processMessage($messageData);
                 Log::info('Update message successfully.');
             }
 		//	$data['id'] = $data['gsId'];
@@ -308,7 +308,7 @@ class MessageLogController extends Controller
             ];
 
             Log::info('store Messages function start.');
-            $this->updateMessageList($messageData);
+            $this->processMessage($messageData);
             Log::info('Messages stored successfully.');
             return true;
         }
@@ -364,7 +364,7 @@ class MessageLogController extends Controller
             'is_read' => 0
         ];
         Log::info('store Messages function start.');
-        $this->updateMessageList($messageData);
+        $this->processMessage($messageData);
         Log::info('Messages stored successfully.');
 
 	// Save response
@@ -581,7 +581,7 @@ class MessageLogController extends Controller
             'is_delivered' => 0,
             'is_read' => 0
         ];
-        $this->updateMessageList($messageData);
+        $this->processMessage($messageData);
         /*
         $message = new Msg();
         $message->service_id = $message_id;
@@ -601,7 +601,7 @@ class MessageLogController extends Controller
     /**
      * Save Message 
      */
-    public function updateMessageList($data)
+    public function processMessage($data)
     {
         $message = Msg::where('service_id', $data['service_id'])->first();
         if(!$message){
@@ -646,7 +646,7 @@ class MessageLogController extends Controller
     }
 
     /**
-     * Return record id using instagram ID
+     * Return record id using whatsapp number 
      */
     public function getInfoUsingWhatsAppId($phone_number, $user_id , $name = '')
     {

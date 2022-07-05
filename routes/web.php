@@ -30,7 +30,7 @@ Route::get('/', function () {
     ]);
 });
 
-Route::post('/incoming', [MessageLogController::class, 'incoming']);
+Route::post('/incoming', [MsgController::class, 'incoming']);
 Route::get('/new', [MessageLogController::class, 'new']);
 Route::get('/contact', [MessageLogController::class, 'contact']);
 
