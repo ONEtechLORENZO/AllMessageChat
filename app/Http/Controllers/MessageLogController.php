@@ -56,11 +56,6 @@ class MessageLogController extends Controller
             'limit' => $limit,
         ]);
     }
-    
-    public function contact(Request $request)
-    {
-        return Inertia::render('Messages/Contact');
-    }
 
     /**
      * Search Keyword  

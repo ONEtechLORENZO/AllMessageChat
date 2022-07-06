@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use Inertia\Inertia;
+
 use Illuminate\Http\Request;
 
 class ContactController extends Controller
@@ -81,5 +83,31 @@ class ContactController extends Controller
     public function destroy(Contact $contact)
     {
         //
+    }
+
+    /**
+     * List contacts
+     */
+    public function contact(Request $request)
+    {
+        $contactList = [];
+        $user = $request->user();
+        $contacts = Contact::where('user_id', $user->id )->get();
+        foreach($contacts as $contact){
+            $name = $contact->first_name . ' ' .$contact->last_name;
+            $logo = trim($name , ' '); 
+
+            $contactList[$contact->id] = [
+                'logo' => $logo,
+                'id' => $contact->id,
+                'name' => $name,
+                'last_name' => $contact->last_name,
+                'email' => $contact->email,
+                'number' => ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id 
+            ];
+        }
+        return Inertia::render('Messages/Contact', [
+            'contacts' => $contactList
+        ]);
     }
 }

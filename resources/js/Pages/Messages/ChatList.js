@@ -1,7 +1,7 @@
 import React ,{ useEffect , useState , Fragment} from 'react';
 import { Head, useForm, Link, InertiaLink } from '@inertiajs/inertia-react';
 import MessageList from "./MessageList";
-import Layout from "./Layout";
+import Authenticated from "../../Layouts/Authenticated";
 
 import {
     DotsVerticalIcon,
@@ -127,7 +127,7 @@ export default function ChatList(props) {
     }
 
     return (
-        <Layout>
+        <Authenticated>
             <div className="flex">
                 <div className="w-1/3">
                     <div className="flex justify-between items-center p-3 md:hidden">
@@ -513,6 +513,6 @@ export default function ChatList(props) {
                     
                 </div>
             </div>
-        </Layout>
+        </Authenticated>
     );
 }

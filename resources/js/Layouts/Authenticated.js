@@ -22,13 +22,13 @@ import {
 import { SearchIcon } from "@heroicons/react/solid";
 
 const navigation = [
-    { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
-    { name: "Chats", href: "#", icon: UsersIcon, current: false },
-    { name: "Contacts", href: "#", icon: FolderIcon, current: false },
-    { name: "Opportunities", href: "#", icon: CalendarIcon, current: false },
-    { name: "Automations", href: "#", icon: InboxIcon, current: false },
-    { name: "Integrations", href: "#", icon: ChartBarIcon, current: false },
-    { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
+    { name: "Dashboard", href: route('dashboard'), icon: HomeIcon, current: true },
+    { name: "Chats", href: route('chat_list') , icon: UsersIcon, current: false },
+    { name: "Contacts", href: route('contacts'), icon: FolderIcon, current: false },
+    // { name: "Opportunities", href: "#", icon: CalendarIcon, current: false },
+    // { name: "Automations", href: "#", icon: InboxIcon, current: false },
+    // { name: "Integrations", href: "#", icon: ChartBarIcon, current: false },
+    // { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
 ];
 const userNavigation = [
     { name: "Your Profile", href: "#" },
@@ -116,7 +116,7 @@ export default function Authenticated({ auth, header, children }) {
                                 <div className="mt-5 flex-1 h-0 overflow-y-auto">
                                     <nav className="px-2 space-y-1">
                                         {navigation.map((item) => (
-                                            <a
+                                            <Link
                                                 key={item.name}
                                                 href={item.href}
                                                 className={classNames(
@@ -136,7 +136,7 @@ export default function Authenticated({ auth, header, children }) {
                                                     aria-hidden="true"
                                                 />
                                                 {item.name}
-                                            </a>
+                                            </Link>
                                         ))}
                                     </nav>
                                 </div>
@@ -171,7 +171,7 @@ export default function Authenticated({ auth, header, children }) {
                     <div className="mt-2 flex-grow flex flex-col">
                         <nav className="flex-1 px-2 pb-4 space-y-1">
                             {navigation.map((item) => (
-                                <a
+                                <Link
                                     key={item.name}
                                     href={item.href}
                                     className={classNames(
@@ -191,7 +191,7 @@ export default function Authenticated({ auth, header, children }) {
                                         aria-hidden="true"
                                     />
                                     {(showSidebarText) ? item.name : ''}
-                                </a>
+                                </Link>
                             ))}
                         </nav>
                     </div>

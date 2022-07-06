@@ -8,6 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\MessageLogController;
 use App\Http\Controllers\MsgController;
+use App\Http\Controllers\ContactController;
 use App\Http\Middleware\IsAdmin;
 
 /*
@@ -32,7 +33,6 @@ Route::get('/', function () {
 
 Route::post('/incoming', [MsgController::class, 'incoming']);
 Route::get('/new', [MessageLogController::class, 'new']);
-Route::get('/contact', [MessageLogController::class, 'contact']);
 
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -71,6 +71,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/chat', [MsgController::class, 'ChatList'])->name('chat_list');
     Route::get('/getMessages', [MsgController::class, 'getMessageList'])->name('get_message_list');
     Route::post('/sendMessage', [MsgController::class, 'sendMessage'])->name('send_message_to_contact');
+
+    //Contact
+    Route::get('/contact', [ContactController::class, 'contact'])->name('contacts');
 
 });
 
