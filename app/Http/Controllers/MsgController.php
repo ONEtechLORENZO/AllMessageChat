@@ -484,10 +484,10 @@ class MsgController extends Controller
             $user = User::find($account->user_id);
             $token = str_replace('Bearer ', '',$_SERVER['HTTP_AUTHORIZATION']);
             if($token != $user->api_token){
-                echo json_encode(['status' => 'failed', 'message' => 'invalid api token']);die;
+                echo json_encode(['status' => 'failed', 'message' => 'Invalid API token']);die;
             }
         } else {
-            echo json_encode(['status' => 'failed', 'message' => 'invalid account id']);die;
+            echo json_encode(['status' => 'failed', 'message' => 'Invalid account id']);die;
         }
         $msg = new Msg();
         $result = $msg->sendWhatsAppMessage($request->content , $request->destination, $account );

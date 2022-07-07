@@ -85,7 +85,7 @@ class UserController extends Controller
             $user = $request->user();
         }
         
-        $token = $user->remember_token;
+        $token = $user->api_token;
         return Inertia::render('Admin/User/UserDetail', ['user' => $user, 'token' => $token]);
     }
 
@@ -151,12 +151,14 @@ class UserController extends Controller
      */
     public function createAccessToken($user_id)
     {
-        $user = User::findOrFail($user_id);
+	$user = User::findOrFail($user_id);
         // Delete existing token
         Auth::user()->tokens->each(function($token) {
             $token->delete();
         });
         $token = $user->createToken('API_TOKEN');
+        $user->api_token = $token->plainTextToken;
+        $user->save();
         return $token;
     }
 

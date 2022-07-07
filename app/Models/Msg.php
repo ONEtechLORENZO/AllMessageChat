@@ -62,10 +62,8 @@ class Msg extends Model
             'apikey' => config('app.apiKey')
         ];
 
-//dd($url);
         $response = Http::asForm()->withHeaders($headers)->post($url, $post_data);
         $response_body = json_decode($response->body(), true);
-    //  dd($response_body);  
         if ($response_body['status'] != 'error' ) {
             $data = $post_data;
             $data['account_id'] = $account->id;
