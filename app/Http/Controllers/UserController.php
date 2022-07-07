@@ -77,9 +77,14 @@ class UserController extends Controller
     /**
      * Show Detail view
      */
-    public function userDetail($id)
+    public function userDetail(Request $request, $id = '')
     {
-        $user = User::findOrFail($id);
+        if($id){
+            $user = User::findOrFail($id);
+        } else {
+            $user = $request->user();
+        }
+        
         $token = $user->remember_token;
         return Inertia::render('Admin/User/UserDetail', ['user' => $user, 'token' => $token]);
     }
@@ -196,6 +201,7 @@ class UserController extends Controller
             'type_of_integration' => ['label' => 'Type of integration'],
             'display_name' => ['label' => 'Display name', 'show' => ['whatsapp']],
             'phone_number' => ['label' => 'Phone number', 'show' => ['whatsapp']],
+            'src_name' => ['label' => 'Source name', 'show' => ['whatsapp']],
             'business_manager_id' => ['label' => 'Business manager ID', 'show' => ['whatsapp']],
             'profile_picture' => ['label' => 'Profile picture', 'type' => 'image', 'show' => ['whatsapp']],
             'profile_description' => ['label' => 'Profile description', 'show' => ['whatsapp']],
@@ -297,7 +303,7 @@ class UserController extends Controller
 
         $fields = [
             'company_name', 'company_type', 'website', 'email', 'service',
-            'estimated_launch_date', 'type_of_integration', 'phone_number', 'display_name',
+            'estimated_launch_date', 'type_of_integration', 'phone_number', 'src_name', 'display_name',
             'business_manager_id', 'profile_description', 'oba'
         ];
 

@@ -8,6 +8,7 @@ use App\Models\MessageResponse;
 use Illuminate\Support\Facades\Log;
 use App\Models\Account;
 use App\Models\Message;
+use App\Models\User;
 
 class TemplateController extends Controller
 {
@@ -232,12 +233,20 @@ Log::info(['Template log', $result]);
     /** 
      * Create template
      **/
-    function createTemplate(Request $request){
+    function createTemplate(Request $request, $account_id){
         $token = str_replace('Bearer ', '',$_SERVER['HTTP_AUTHORIZATION']);
-        $account = Account::where('api_token', $token)->first();
+        $account = Account::find($account_id);
+        if($account){
+            $user = User::find($account->user_id);
+            $token = str_replace('Bearer ', '',$_SERVER['HTTP_AUTHORIZATION']);
+            if($token != $user->api_token){
+                echo json_encode(['status' => 'failed', 'message' => 'invalid api token']);die;
+            }
+        } else {
+            echo json_encode(['status' => 'failed', 'message' => 'invalid account id']);die;
+        }
         $response = ['status' => '128', 'message' => 'User permission denied'];
         $postFields = array_keys($_POST);
-        dd($account);
         if($account){
             $account_id = $account->id;
             $status = true;

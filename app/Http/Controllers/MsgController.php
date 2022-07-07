@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\Log;
 
 class MsgController extends Controller
 {
-    public $dateFormat = 'g:i A | M j, Y ';
+    public $dateChatView = 'g:i A | M j, Y ';
+    public $dateListView = 'd-m-Y h:m:s ';
     public $limit = 10;
 
     /**
@@ -93,7 +94,59 @@ class MsgController extends Controller
         //
     }
 
+    /**
+     * List message list
+     */
+    public function messageList(Request $request)
+    {
+        $limit = $this->limit;
+        $user = $request->user();
+        $messageList = [];
+        $messages = Msg::select('message', 'accounts.company_name', 'accounts.phone_number as account_number', 'msgs.status', 'contacts.phone_number as contact_number', 'msg_mode', 'msgs.created_at' )
+            ->leftJoin('accounts', 'account_id', 'accounts.id')
+            ->leftJoin('contacts', 'contacts.id', 'msgable_id')
+            ->where('accounts.user_id', $user->id)
+            ->orderBy('msgs.id', 'desc')
+            ->paginate($limit);
 
+        $start = isset($_GET['page']) ? (($_GET['page'] - 1 )* $limit) : 0 ;
+        foreach($messages as $message){
+            if($message->msg_mode == 'incoming'){
+                $sender = $message->contact_number;
+                $destination = $message->account_number;
+            } else {
+                $sender = $message->account_number;
+                $destination = $message->contact_number;
+            }
+            $start ++;
+            $messageList[] = [
+                'id' => $start,
+                'account_name' => $message->company_name,
+                'content' => $message->message,
+                'status' => ucfirst($message->status),
+                'mode' => ucfirst($message->msg_mode),
+                'sender' => $sender,
+                'destination' => $destination,
+                'date' => date_format( $message->created_at , $this->dateListView),
+            ];
+            
+        }
+
+        $totalMessages = $messages->total();
+        $currentPage = (isset($_GET['page'])) ? $_GET['page'] : 1;
+
+        return Inertia::render('Messages/Messages', [
+            'messsage_list' => $messageList,
+            'currentPage' => $currentPage,
+            'totalMessages' => $totalMessages,
+            'limit' => $limit,
+        ]);
+
+    }
+
+    /**
+     * Show chart (Contacts conversation)
+     */
     public function ChatList(Request $request)
     {
         $limit = $this->limit;
@@ -149,7 +202,7 @@ class MsgController extends Controller
         foreach($contact->messages->where('service', $request->category) as $message){
             $messages[] = [
                 'content' => $message->message,
-                'date' => date_format( $message->created_at , $this->dateFormat),
+                'date' => date_format( $message->created_at , $this->dateChatView),
                 'mode' => $message->msg_mode
             ];
         }
@@ -238,11 +291,11 @@ class MsgController extends Controller
             $result['messageId'] = uniqid().'_'.date('ymdhis');
         } else {
             $result = $msg->sendWhatsAppMessage($request->content , $request->destination, $account );
-            if($result['result']->status == 'submitted'){
+            if($result['result']['status'] == 'submitted'){
                 $result['status'] = 'Queued';
             }
            
-            $result['messageId'] = $result['result']->messageId;
+            $result['messageId'] = $result['result']['messageId'];
         }
         $this->handleMessageResult($request, $account->id, $result);
         echo json_encode($result);
@@ -396,17 +449,16 @@ class MsgController extends Controller
                 return false;
             }
             $is_delivered = $is_read = 0;
+            $status = 'Sent';
             if (isset($data['type']) && str_contains($data['type'], 'failed')) {
                 $status = 'Failed';
             } else if(isset($data['type']) && $data['type'] == 'sent'){
                 $status = 'Sent';
             }
             else if(isset($data['type']) && $data['type'] == 'delivered'){
-                $status = 'Delivered';
                 $is_delivered = 1;
             }
             else if(isset($data['type']) && $data['type'] == 'read'){
-                $status = 'Read';
                 $is_read = 1;
             }
             $messageData = [
@@ -440,12 +492,13 @@ class MsgController extends Controller
         }
         $msg = new Msg();
         $result = $msg->sendWhatsAppMessage($request->content , $request->destination, $account );
-        if($result['result']->status == 'submitted'){
+        
+        if($result['result']['status'] == 'submitted'){
             $result['status'] = 'Queued';
         }
-        $result['messageId'] = $result['result']->messageId;
+        $result['messageId'] = $result['result']['messageId'];
         $request->chennal = 'whatsapp';
         $this->handleMessageResult($request, $account->id, $result);
-        echo json_encode($result);
+        echo json_encode($result['result']);
     }
 }

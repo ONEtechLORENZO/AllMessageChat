@@ -22,6 +22,7 @@ function Registration(props) {
         estimated_launch_date: '',
         type_of_integration: '',
         phone_number: '',
+        src_name: '',
         display_name: '',
         business_manager_id: '',
         profile_picture: '',
@@ -244,6 +245,15 @@ function Registration(props) {
                                                 <Input required={true} name='phone_number' value={data.phone_number} id='phone_number' placeholder='' handleChange={handleChange} />
                                             </div>
                                             <InputError message={errors.phone_number} />
+                                        </div>
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <label htmlFor="src_name" className="block text-sm font-medium text-gray-700">
+                                                Source Name
+                                            </label>
+                                            <div className="mt-1 flex rounded-md shadow-sm">
+                                                <Input required={true} name='src_name' value={data.src_name} id='src_name' placeholder='' handleChange={handleChange} />
+                                            </div>
+                                            <InputError message={errors.src_name} />
                                         </div>
 
                                         <div className="form-group col-span-6 sm:col-span-4">

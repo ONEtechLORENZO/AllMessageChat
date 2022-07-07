@@ -72,6 +72,7 @@ export default function Login({ status, canResetPassword }) {
 
                         <span className="ml-2 text-sm text-gray-600">Remember me</span>
                     </label>
+                    
                 </div>
 
                 <div className="flex items-center justify-end mt-4">
@@ -88,6 +89,16 @@ export default function Login({ status, canResetPassword }) {
                         Log in
                     </Button>
                 </div>
+                <div className="flex items-center justify-center mt-4">
+                    <span className='text-sm text-gray-600 mr-2'> Need an account? </span>
+                    <Link
+                        href={route('register')}
+                        className="underline text-sm text-gray-600 hover:text-gray-900"
+                    >
+                        Register
+                    </Link>
+                </div>
+
             </form>
         </Guest>
     );

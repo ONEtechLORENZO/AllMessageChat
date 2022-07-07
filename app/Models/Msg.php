@@ -24,21 +24,49 @@ class Msg extends Model
      */
     public function sendWhatsAppMessage($content, $destination, $account)
     {        
-          $data['account_id'] = $account->id;
-          $data['apiKey'] = config('app.apiKey');
-          $data['priority'] = 'NORMAL';
-          $data['source'] = $account->phone_number; 
-          $data['destination'] = $destination;
-          $data['content'] = $content;
-          $data['refId'] = uniqid();
-          $data['srcName'] = config('app.src_name'); 
-          
-          $content = [
-              "type" => "text",
-              "text" => $content
-          ];
-          $message = urlencode(json_encode($content));
-  
+        $data['account_id'] = $account->id;
+        $data['apiKey'] = config('app.apiKey');
+        $data['priority'] = 'NORMAL';
+        $data['source'] = $account->phone_number; 
+        $data['destination'] =  $destination;
+        $data['content'] = $content;
+        $data['refId'] = uniqid();
+        $data['src.name'] = $account->src_name;
+
+        $content = [
+            "type" => "text",
+            "text" => $content
+        ];
+        $message = (json_encode($content));
+
+        $post_data =[
+            'channel' => 'whatsapp',
+            'source' => $account->phone_number,
+            'destination' => $destination,
+            'message' => $message,
+            'src.name' => $account->src_name,
+            'disablePreview' => null
+        ];
+        $url = config('app.api_url');
+        $headers = [
+            'Accept' => 'application/json',
+            'apikey' =>  $data['apiKey']
+        ];
+
+        $response = Http::asForm()->withHeaders($headers)->post($url, $post_data);
+        $response_body = json_decode($response->body(), true);
+        
+        if ($response_body['status'] != 'error' ) {
+            $result = ($response_body);
+            $data['result'] = $result;
+        } else {
+            echo json_encode($response_body);die;
+        }
+        Log::info('Message send successfully.');
+        return $data;
+
+/*
+ //dd($data);
           log::info('Sent text message using GupShup - start');
           // Post message to Whatsapp with linkmobility
           $curl = curl_init();
@@ -59,6 +87,7 @@ class Msg extends Model
                       ));
   
           $response = curl_exec($curl);
+          dd($response);
           curl_close($curl);
           if ($response) {
               $result = json_decode($response);
@@ -66,7 +95,7 @@ class Msg extends Model
           }
           Log::info('Message send successfully.');
           return $data;
-
+*/
     }
 
     /**

@@ -43,13 +43,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Route::resource('messages', MsgController::class);
     
     // Profile
+    Route::get('/user/profile', [UserController::class, 'userDetail'])->name('profile');
     Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('user_profile');
     Route::get('/image/{type}/{id}', [ImageController::class, 'showImage'])->name('show_image');
     Route::post('/user/regenerate_token', [UserController::class, 'regenerateToken'])->name('regenerate_token');
 
     // Message Logs
     Route::get('/messages/list', [MessageLogController::class, 'list'])->name('messages');
-    Route::post('/messages/search_content', [MessageLogController::class, 'searchContent'])->name('searchContent');    
+    Route::post('/messages/search_content', [MessageLogController::class, 'searchContent'])->name('searchContent');   
+    Route::get('/messages', [MsgController::class, 'messageList'])->name('message_list');
 
     // Accounts
     Route::get('/account/registration', [UserController::class, 'accountRegistration'])->name('account_registration');
