@@ -8,6 +8,7 @@ use Inertia\Inertia;
 use Auth;
 use App\Models\Account;
 use App\Models\Contact;
+use App\Models\Template;
 use App\Http\Controllers\MessageLogController;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
@@ -321,9 +322,7 @@ class MsgController extends Controller
             'is_delivered' => 0,
             'is_read' => 0
         ];
-        Log::info('store Messages function start.');
         $this->processMessage($messageData);
-        Log::info('Messages stored successfully.');
     }
 
     /**

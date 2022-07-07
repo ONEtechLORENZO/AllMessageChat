@@ -20,14 +20,14 @@ use App\Http\Controllers\MsgController;
 Route::middleware(['auth:sanctum'])->group(function () {
     // Message send from CRM
     if( isset($_POST['template']) && $_POST['template'] != ''){
-        Route::post('/vtSendMessage', [MessageLogController::class, 'sendTemplateMessage']);
+      //  Route::post('/vtSendMessage', [MessageLogController::class, 'sendTemplateMessage']);
     } else {
-        Route::post('/vtSendMessage', [MessageLogController::class, 'sendMessage']);
-        Route::post('/v1/{account_id}/send-wa-message', [MsgController::class, 'sendAPIMessage']);
+       // Route::post('/vtSendMessage', [MessageLogController::class, 'sendMessage']);
     }
+    Route::post('/v1/{account_id}/send-wa-message', [MsgController::class, 'sendAPIMessage']);
 
-    Route::post('/vtFetchTemplate', [MessageLogController::class, 'getTemplates']);
-    Route::post('/v1/{account_id}/get-wa-templates', [MessageLogController::class, 'getTemplates']);
+   // Route::post('/vtFetchTemplate', [MessageLogController::class, 'getTemplates']);
+    Route::get('/v1/{account_id}/get-wa-templates', [TemplateController::class, 'getTemplates']);
 
     // Create template
     Route::post('/v1/create-wa-template', [TemplateController::class, 'createTemplate']);

@@ -505,7 +505,7 @@ class MessageLogController extends Controller
             ->leftJoin('messages', 'template_id', 'templates.id')
             ->where('user_id', $user->id)
             ->get();
-    */
+    
 
     $apiUrl = str_replace('msg', 'template/list/', config('app.api_url'));
     $apiUrl .=  config('app.src_name');
@@ -533,6 +533,7 @@ class MessageLogController extends Controller
             $templates = ($result->templates);
         }
         echo json_encode($templates);
+        */
     }
 
     /**

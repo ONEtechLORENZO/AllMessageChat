@@ -9,10 +9,13 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Account;
 use App\Models\Message;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
+
 
 class TemplateController extends Controller
 {
 	public $result = '';
+    public $account_id = '';
     public $textTemplateFields = ['elementName', 'languageCode', 'category', 'header_type', 'vertical', 'body', 'header_text', 'body_footer', 'buttons', 'example'];
     public $attahmentTemplateFields = ['elementName', 'languageCode', 'category', 'header_type', 'vertical', 'body', 'body_footer', 'example'];
 
@@ -62,11 +65,17 @@ class TemplateController extends Controller
                 );
         $getAppList = $this->restApiCall('GET', $endPoint, $header );
         $appList = $getAppList->partnerAppsList;
-        dd($appList);
-        if($appList && isset($appList[0])){
-            $appId = $appList[0]->id;
+
+        $account = Account::find($this->account_id);
+        if($appList){
+            foreach($appList as $app){
+                if($account->src_name == $app->name){
+                    $appId = $app->id;
+                }
+            }
         } 
-	if($appId == '') {
+
+	    if($appId == ''){
                 $this->result = 'App id not generated.';
         }
         return $appId;
@@ -105,17 +114,20 @@ class TemplateController extends Controller
             ->first();
         
         $buttons = [];
-	$buttonArr = $data['data']->buttons;
-	if(!is_array($data['data']->buttons)){
-		$buttonArr = json_decode($data['data']->buttons);		
-	}
+        $buttonArr = $data['data']->buttons;
+        if(!is_array($data['data']->buttons)){
+            $buttonArr = json_decode($data['data']->buttons);		
+        }
 
         foreach($buttonArr as $button){
+            if(!is_array($button)){
+                $button = ((array)$button);
+            }
             $buttonData = [
                 'type' => str_replace(' ', '_',$button['button_type']),
                 'text' => $button['button_text'],
-                'phone_number' => $button['phone_number'],
-                'url' => $button['url'],
+                'phone_number' => isset($button['phone_number']) ? $button['phone_number']: '',
+                'url' => isset($button['url']) ? $button['url'] : '',
             ];
             $buttons[] = (object)$buttonData;
         }
@@ -150,8 +162,8 @@ class TemplateController extends Controller
 		$template->status = $result->message;
 		$return = [ 'status' => $result->status , 'template_status' => $result->message];	
 	}
-	
-Log::info(['Template log', $result]);
+    
+        Log::info(['Template log', $result]);
 	// Save response
         $response = new MessageResponse();
         $response->message_id = $result->template->id;
@@ -245,6 +257,7 @@ Log::info(['Template log', $result]);
         } else {
             echo json_encode(['status' => 'failed', 'message' => 'invalid account id']);die;
         }
+        $this->account_id = $account_id;
         $response = ['status' => '128', 'message' => 'User permission denied'];
         $postFields = array_keys($_POST);
         if($account){
@@ -336,32 +349,15 @@ Log::info(['Template log', $result]);
     /**
      * Return Templates
      */
-    public function getTemplates(Request $request)
+    public function getTemplates(Request $request, $account_id)
     {
-    $apiUrl = str_replace('msg', 'template/list/', config('app.api_url'));
-    $apiUrl .=  config('app.src_name');
-    $templates = '';
-    $curl = curl_init();
-    curl_setopt_array($curl, array(
-            CURLOPT_URL => $apiUrl,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-            CURLOPT_HTTPHEADER => array(
-                'Content-Type: application/x-www-form-urlencoded',
-                'apikey: ' . config('app.apiKey'),
-            ),
-        ));
-        $response = curl_exec($curl);
-        curl_close($curl);
-        if ($response) {
-            $result = json_decode($response);
-            $templates = ($result->templates);
+        $account = Account::find($account_id);
+        if(!$account){
+            abort('401', 'Not found');
         }
-        echo json_encode($templates);
+
+        $template = new Template();
+        $result = $template->fetchTemplates($account->src_name);
+        echo json_encode($result); die;
     }
 }
