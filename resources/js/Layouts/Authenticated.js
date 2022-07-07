@@ -12,6 +12,7 @@ import {
     ChartBarIcon,
     FolderIcon,
     HomeIcon,
+    ChatAlt2Icon,
     InboxIcon,
     MenuAlt2Icon,
     UsersIcon,
@@ -23,8 +24,8 @@ import { SearchIcon } from "@heroicons/react/solid";
 
 const navigation = [
     { name: "Dashboard", href: route('dashboard'), icon: HomeIcon, current: true },
-    { name: "Chats", href: route('chat_list') , icon: UsersIcon, current: false },
-    { name: "Contacts", href: route('contacts'), icon: FolderIcon, current: false },
+    { name: "Chats", href: route('chat_list') , icon: ChatAlt2Icon, current: false },
+    { name: "Contacts", href: route('contacts'), icon: UsersIcon, current: false },
     // { name: "Opportunities", href: "#", icon: CalendarIcon, current: false },
     // { name: "Automations", href: "#", icon: InboxIcon, current: false },
     // { name: "Integrations", href: "#", icon: ChartBarIcon, current: false },
@@ -198,6 +199,13 @@ export default function Authenticated({ auth, header, children }) {
                 </div>
             </div>
             <div className="flex flex-col flex-1">
+                <div>
+                    {header && (
+                        <header className="bg-white shadow">
+                            <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">{header}</div> 
+                        </header>
+                    )}
+                </div>
                 <main>{children}</main>
             </div>
         </div>

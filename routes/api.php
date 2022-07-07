@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\MessageLogController;
+use App\Http\Controllers\MsgController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,11 +23,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/vtSendMessage', [MessageLogController::class, 'sendTemplateMessage']);
     } else {
         Route::post('/vtSendMessage', [MessageLogController::class, 'sendMessage']);
-        Route::post('/v1/{account_id}/send-wa-message', [MessageLogController::class, 'sendMessage']);
+        Route::post('/v1/{account_id}/send-wa-message', [MsgController::class, 'sendAPIMessage']);
     }
+
     Route::post('/vtFetchTemplate', [MessageLogController::class, 'getTemplates']);
+    Route::post('/v1/{account_id}/get-wa-templates', [MessageLogController::class, 'getTemplates']);
+
     // Create template
     Route::post('/v1/create-wa-template', [TemplateController::class, 'createTemplate']);
+    Route::post('/v1/{account_id}/create-wa-template', [TemplateController::class, 'createTemplate']);
 
 });
 

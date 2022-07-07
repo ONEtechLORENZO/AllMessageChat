@@ -291,6 +291,13 @@ export default function ChatList(props) {
                                         </div>
                                     </li>
                                 ))}
+                                {Object.entries(chatList).length == 0 &&
+                                    <li>
+                                        <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
+                                            Conversation not start yet.
+                                        </div>
+                                    </li>
+                                }
                             </ul>
                         </div>
                     </nav>

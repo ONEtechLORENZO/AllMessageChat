@@ -61,6 +61,7 @@ class TemplateController extends Controller
                 );
         $getAppList = $this->restApiCall('GET', $endPoint, $header );
         $appList = $getAppList->partnerAppsList;
+        dd($appList);
         if($appList && isset($appList[0])){
             $appId = $appList[0]->id;
         } 
@@ -231,13 +232,12 @@ Log::info(['Template log', $result]);
     /** 
      * Create template
      **/
-
-
     function createTemplate(Request $request){
         $token = str_replace('Bearer ', '',$_SERVER['HTTP_AUTHORIZATION']);
         $account = Account::where('api_token', $token)->first();
         $response = ['status' => '128', 'message' => 'User permission denied'];
         $postFields = array_keys($_POST);
+        dd($account);
         if($account){
             $account_id = $account->id;
             $status = true;
@@ -315,12 +315,44 @@ Log::info(['Template log', $result]);
                     $file->move($destinationPath,$fileName);
                     $attachFilePath = ['url' => asset('attach_files/'.$fileName), 'path' => $destinationPath.'/'.$fileName];
                 }
+               
                 $return = $this->submitTemplate(['account_id' => $account_id, 'template_id' => $template_id, 'data' => $request, 'file' => $attachFilePath]);
             }
         } else {
             $return = json_encode(['status' =>  false, 'status_code' => 400, 'message' => 'Invalid format' ]);
         }
         dd($return);
+    }
 
+    /**
+     * Return Templates
+     */
+    public function getTemplates(Request $request)
+    {
+    $apiUrl = str_replace('msg', 'template/list/', config('app.api_url'));
+    $apiUrl .=  config('app.src_name');
+    $templates = '';
+    $curl = curl_init();
+    curl_setopt_array($curl, array(
+            CURLOPT_URL => $apiUrl,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/x-www-form-urlencoded',
+                'apikey: ' . config('app.apiKey'),
+            ),
+        ));
+        $response = curl_exec($curl);
+        curl_close($curl);
+        if ($response) {
+            $result = json_decode($response);
+            $templates = ($result->templates);
+        }
+        echo json_encode($templates);
     }
 }

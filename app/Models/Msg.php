@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
-
 use Illuminate\Support\Facades\Http;
 
 class Msg extends Model
@@ -23,20 +22,8 @@ class Msg extends Model
     /**
      * Send message to Instagram user
      */
-    public function sendWhatsAppMessage($content, $destination, $account, $mode)
+    public function sendWhatsAppMessage($content, $destination, $account)
     {        
-          if($mode == ''){
-              if($account){
-                  $user = User::find($account->user_id);
-                  $token = str_replace('Bearer ', '',$_SERVER['HTTP_AUTHORIZATION']);
-                  if($token != $user->api_token){
-                      echo json_encode(['status' => 'failed', 'message' => 'invalid api token']);die;
-                  }
-              } else {
-                  echo json_encode(['status' => 'failed', 'message' => 'invalid account id']);die;
-              }
-          }
-
           $data['account_id'] = $account->id;
           $data['apiKey'] = config('app.apiKey');
           $data['priority'] = 'NORMAL';

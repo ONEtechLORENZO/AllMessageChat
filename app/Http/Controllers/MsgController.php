@@ -9,6 +9,7 @@ use Auth;
 use App\Models\Account;
 use App\Models\Contact;
 use App\Http\Controllers\MessageLogController;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
 class MsgController extends Controller
@@ -236,7 +237,7 @@ class MsgController extends Controller
             $result['status'] = $status;
             $result['messageId'] = uniqid().'_'.date('ymdhis');
         } else {
-            $result = $msg->sendWhatsAppMessage($request->content , $request->destination, $account , 'portal');
+            $result = $msg->sendWhatsAppMessage($request->content , $request->destination, $account );
             if($result['result']->status == 'submitted'){
                 $result['status'] = 'Queued';
             }
@@ -393,7 +394,6 @@ class MsgController extends Controller
         } else {
             if(!isset($data['gsId'])){
                 return false;
-                
             }
             $is_delivered = $is_read = 0;
             if (isset($data['type']) && str_contains($data['type'], 'failed')) {
@@ -421,5 +421,31 @@ class MsgController extends Controller
         $this->processMessage($messageData);
         Log::info('Messages stored successfully.');
         return true;
+    }
+
+    /**
+     * Hand WhatsApp API send message
+     */
+    public function sendAPIMessage(Request $request, $account_id)
+    {
+        $account = Account::find($account_id);
+        if($account) {
+            $user = User::find($account->user_id);
+            $token = str_replace('Bearer ', '',$_SERVER['HTTP_AUTHORIZATION']);
+            if($token != $user->api_token){
+                echo json_encode(['status' => 'failed', 'message' => 'invalid api token']);die;
+            }
+        } else {
+            echo json_encode(['status' => 'failed', 'message' => 'invalid account id']);die;
+        }
+        $msg = new Msg();
+        $result = $msg->sendWhatsAppMessage($request->content , $request->destination, $account );
+        if($result['result']->status == 'submitted'){
+            $result['status'] = 'Queued';
+        }
+        $result['messageId'] = $result['result']->messageId;
+        $request->chennal = 'whatsapp';
+        $this->handleMessageResult($request, $account->id, $result);
+        echo json_encode($result);
     }
 }

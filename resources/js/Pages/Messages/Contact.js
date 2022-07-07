@@ -204,6 +204,13 @@ export default function Contact(props) {
                                                 </td>
                                             </tr>
                                         ))}
+                                        {Object.entries(contacts).length == 0 &&
+                                            <tr><td className = "" colspan="3">
+                                                <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
+                                                    Contact not created yet.
+                                                </div>
+                                            </td></tr>
+                                        }
                                     </tbody>
                                 </table>
                             </div>
