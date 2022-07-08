@@ -498,7 +498,6 @@ class UserController extends Controller
      */
     public function storeTemplate(Request $request, $account_id, $template_id)
     {
-        Log::info('Store template data start');
         $validation_array = [
             'header_type' => 'required',
             'body' => 'max:1024',
@@ -520,10 +519,9 @@ class UserController extends Controller
             abort(401, 'You are not authorised to view this');
         }
         
-        // store Template attachments
+        // Store Template Attachment
         $attachFilePath = '';
         if($request->file('attach_file')) {
-            //$attachFilePath = $request->file('attach_file')->store('attach_files');
             $file = $request->file('attach_file') ;
             $fileName = $file->getClientOriginalName() ;
             $destinationPath = public_path().'/attach_files' ;
@@ -602,11 +600,11 @@ class UserController extends Controller
             ->where('id', $template_id)
             ->first();
 
-
         // Submit template to GupShup
         $tempController = new TemplateController();
+        $tempController->account_id = $account_id;
         $result = $tempController->submitTemplate(['account_id' => $account_id, 'template_id' => $template_id, 'data' => $request, 'file' => $attachFilePath]);
-        Log::info($result);
+        // TODO Show the above template result for user
 
         // Setting language
         $language = $template->languages[0];
@@ -616,6 +614,7 @@ class UserController extends Controller
 
         $message_buttons = MessageButton::where('message_id', $message_id)->get();
 
+        /*
         // Send mail script
         $accFields = [
             'Company Name' => 'company_name', 'Company Type' => 'company_type', 'Company Service Website' =>  'website', 'Technical Point Of Contact' => 'email', 'Estimated Lunch Date' => 'estimated_launch_date', 'Type of Integration' => 'type_of_integration', 'Phone Number' => 'phone_number', 'Display Name' => 'display_name', 'Business Manager Id' => 'business_manager_id'
@@ -660,9 +659,8 @@ class UserController extends Controller
                 );
             }
             Mail::setSwiftMailer($backup);  // Set Mailer Original credential
-        }
+        }*/
 
-        Log::info('Template data saved successfully.');
         return Inertia::render('Account/Template/Detail', [
             'template' => $template,
             'message' => $message,

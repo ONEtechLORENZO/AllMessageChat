@@ -26,6 +26,6 @@ Route::middleware(['auth:sanctum'])->group(function() {
     Route::get('/v1/{account_id}/get-wa-templates', [TemplateController::class, 'getTemplates']);
 
     // Create new template
-    Route::post('/v1/{account_id}/create-wa-template', [TemplateController::class, 'createTemplate']);
+    Route::post('/v1/{account_id}/create-wa-template', [TemplateController::class, 'createWhatsAppTemplateViaAPI']);
 
 });

@@ -11,103 +11,114 @@ use App\Models\Message;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 
-
 class TemplateController extends Controller
 {
 	public $result = '';
-    public $account_id = '';
-    public $textTemplateFields = ['elementName', 'languageCode', 'category', 'header_type', 'vertical', 'body', 'header_text', 'body_footer', 'buttons', 'example'];
-    public $attahmentTemplateFields = ['elementName', 'languageCode', 'category', 'header_type', 'vertical', 'body', 'body_footer', 'example'];
 
+    public $account_id = '';
+
+    public $textTemplateFields = ['elementName', 'languageCode', 'category', 'header_type', 'vertical', 'body', 'header_text', 'body_footer', 'buttons', 'example'];
 
     /**
-     *  Submit Template to GupShup
+     * Submit Template to Gupshup
      **/
-    public function submitTemplate($data){
+    public function submitTemplate($data)
+    {
         $partnerToken = $this->getPartnerToken();
-        $appId = $this->getAppId($partnerToken);
-        $appToken = $this->getAppToken($partnerToken, $appId);
-        if($appToken ) {
-            $this->result = $this->saveTemplate($appToken, $appId, $data); 
+        if(!$partnerToken) {
+            return ['status' => 'failed', 'message' => $this->result];
         }
-        return $this->result;
+
+        $appId = $this->getAppId($partnerToken);
+        if(!$appId) {
+            return ['status' => 'failed', 'message' => $this->result];
+        }
+
+        $appToken = $this->getAppToken($partnerToken, $appId);
+        if($appToken) {
+            $response = $this->applyTemplate($appToken, $appId, $data);
+            return $response;
+        }
+        else {
+            return ['status' => 'failed', 'message' => $this->result];
+        }
     }
 
-    /** 
-     * Return App Token
+    /**
+     * Login and return app token of OneMessage
      */
-    public function getPartnerToken(){
+    public function getPartnerToken()
+    {
         $username = config('app.partner_username');
         $password = config('app.partner_password');
+
         $postFields = "email={$username}&password={$password}";
         $endPoint = 'account/login';
-        $header = array(
-                'Content-Type: application/x-www-form-urlencoded'
-                );
+
+        $header = array('Content-Type: application/x-www-form-urlencoded');
         $getAppToken = $this->restApiCall('POST', $endPoint, $header, $postFields);
         $return = '';
-        if($getAppToken){
+        if($getAppToken) {
             $return = $getAppToken->token;
         } else {
-		$this->result = 'Partner token not generated.';
-	}
+		    $this->result = 'Error occured while generating partner token';
+	    }
         return $return;
     }
 
     /**
-     * Return App Id
+     * Check whether App name is related to the partner account. If so, return App Id
      */
-    public function getAppId($token){
+    public function getAppId($token)
+    {
         $appId = '';
         $endPoint = 'account/api/partnerApps';
-        $header = array(
-                "token: {$token}"
-                );
-        $getAppList = $this->restApiCall('GET', $endPoint, $header );
-        $appList = $getAppList->partnerAppsList;
+        $header = array("token: {$token}");
 
+        $getAppList = $this->restApiCall('GET', $endPoint, $header);
+        $appList = $getAppList->partnerAppsList;
         $account = Account::find($this->account_id);
-        if($appList){
-            foreach($appList as $app){
-                if($account->src_name == $app->name){
+        if($appList) {
+            foreach($appList as $app) {
+                if($account->src_name == $app->name) {
                     $appId = $app->id;
                 }
             }
-        } 
+        }
 
-	    if($appId == ''){
-                $this->result = 'App id not generated.';
+	    if($appId == '') {
+            $this->result = 'Unknown APP Name.';
         }
         return $appId;
     }
     
     /**
-     * Return App token
+     * Return App token using Partner token and App ID
      **/
-    public function getAppToken($token , $id){
+    public function getAppToken($token, $id)
+    {
         $appToken = '';
         $endPoint = "app/{$id}/token";
-        $header = array(
-                "token: {$token}",
-                );
+        $header = array("token: {$token}");
         $getAppToken = $this->restApiCall('GET', $endPoint, $header);
-        if($getAppToken && $getAppToken->status == 'success'){
+        if($getAppToken && $getAppToken->status == 'success') {
             $appToken = $getAppToken->token->token;
         } else {
-                $this->result = 'App token not generated.';
+            $this->result = 'Error occured while generating App token.';
         }
         return $appToken;
     }
 
     /**
-     * Save Template
+     * Apply Template
      **/
-    public function saveTemplate($token , $id, $data ){
+    public function applyTemplate($token, $id, $data)
+    {
         $endPoint = "app/{$id}/templates";
-        $header = array(
-                'Content-Type: application/x-www-form-urlencoded',
-                "token: {$token}",
-                );
+        $header = [
+            'Content-Type: application/x-www-form-urlencoded',
+            "token: {$token}",
+        ];
        
         $template = Template::where('account_id', $data['account_id'])
             ->where('id', $data['template_id'])
@@ -115,56 +126,57 @@ class TemplateController extends Controller
         
         $buttons = [];
         $buttonArr = $data['data']->buttons;
-        if(!is_array($data['data']->buttons)){
+        if(!is_array($data['data']->buttons)) {
             $buttonArr = json_decode($data['data']->buttons);		
         }
 
-        foreach($buttonArr as $button){
-            if(!is_array($button)){
-                $button = ((array)$button);
+        foreach($buttonArr as $button) {
+            if(!is_array($button)) {
+                $button = ((array) $button);
             }
+
             $buttonData = [
-                'type' => str_replace(' ', '_',$button['button_type']),
+                'type' => str_replace(' ', '_', $button['button_type']),
                 'text' => $button['button_text'],
                 'phone_number' => isset($button['phone_number']) ? $button['phone_number']: '',
                 'url' => isset($button['url']) ? $button['url'] : '',
             ];
-            $buttons[] = (object)$buttonData;
+
+            $buttons[] = (object) $buttonData;
         }
 
-        $postData = array(
-                'elementName' => strtolower(str_replace(' ', '_',$template->name)).'_'.mt_rand(1000,9999).'_'.$data['account_id'],
-                'languageCode' => 'en_US',
-                'category' => strtoupper(str_replace(' ', '_',$template->category)),
-                'templateType' => strtoupper($data['data']->header_type),
-                'vertical' => $template->category,
-                'content' => $data['data']->body,
-                'footer' => $data['data']->body_footer,
-                'example' => $data['data']->example,
-                );
+        $postData = [
+            'elementName' => strtolower(str_replace(' ', '_', $template->name)) . '_' . mt_rand(1000,9999) . '_' . $data['account_id'],
+            'languageCode' => 'en_US',
+            'category' => strtoupper(str_replace(' ', '_',$template->category)),
+            'templateType' => strtoupper($data['data']->header_type),
+            'vertical' => $template->category,
+            'content' => $data['data']->body,
+            'footer' => $data['data']->body_footer,
+            'example' => $data['data']->example,
+        ];
 
-        if($data['file']){
-            $uploadFileData = $this->getUploadFile($token , $id, $data['file']);
+        if($data['file']) {
+            $uploadFileData = $this->getUploadFile($token, $id, $data['file']);
             $postData = array_merge($postData, $uploadFileData);
         } else {
             $postData['header'] = $data['data']->header_text;
             $postData['buttons'] = json_encode($buttons);
-        }       
-        $result = $this->restApiCall('POST', $endPoint, $header, http_build_query($postData) );
-        $retrun = [ 'staus' => false ];
-        if($result->status == 'success'){
+        }
+
+        $result = $this->restApiCall('POST', $endPoint, $header, http_build_query($postData));
+        if($result->status == 'success') {
             $template->template_uid = $result->template->id;
             $template->type = $result->template->templateType;
             $template->status = 'SUBMITTED'; //result->template->status;
             $template->save();
-	    $return = [ 'status' => $result->status , 'template_status' => $result->template->status];
-	} else {
-		$template->status = $result->message;
-		$return = [ 'status' => $result->status , 'template_status' => $result->message];	
-	}
+            $return = ['status' => $result->status, 'template_status' => $result->template->status];
+        } else {
+            $template->status = $result->message;
+            $return = ['status' => $result->status, 'template_status' => $result->message];
+        }
     
-        Log::info(['Template log', $result]);
-	// Save response
+        // TODO Why are we storing the message response? We are using Msg model now. Is it needed?
         $response = new MessageResponse();
         $response->message_id = $result->template->id;
         $response->ref_id = 'SUBMITTED';
@@ -172,8 +184,7 @@ class TemplateController extends Controller
         $response->response = base64_encode( serialize($result));
         $response->save();
 
-        return json_encode($result);
-
+        return $return;
     }
 
     /**
@@ -243,107 +254,109 @@ class TemplateController extends Controller
     }
 	
     /** 
-     * Create template
+     * Create WhatsApp template (Function will be triggered from OneMessage API)
      **/
-    function createTemplate(Request $request, $account_id){
-        $token = str_replace('Bearer ', '',$_SERVER['HTTP_AUTHORIZATION']);
+    function createWhatsAppTemplateViaAPI(Request $request, $account_id)
+    {
+        $current_user = $request->user();
         $account = Account::find($account_id);
-        if($account){
-            $user = User::find($account->user_id);
-            $token = str_replace('Bearer ', '',$_SERVER['HTTP_AUTHORIZATION']);
-            if($token != $user->api_token){
-                echo json_encode(['status' => 'failed', 'message' => 'invalid api token']);die;
+        if($account) {
+            // Check whether current user can access this account
+            if($current_user->id != $account->user_id) {
+                return response()->json(['status' => 'failed', 'message' => 'Invalid API token']);
             }
         } else {
-            echo json_encode(['status' => 'failed', 'message' => 'invalid account id']);die;
+            return response()->json(['status' => 'failed', 'message' => 'Invalid account id']);
         }
+        
+        // Setting the account id 
         $this->account_id = $account_id;
-        $response = ['status' => '128', 'message' => 'User permission denied'];
+        // Getting the post keys to validate the POST (Comparing the keys)
         $postFields = array_keys($_POST);
-        if($account){
-            $account_id = $account->id;
-            $status = true;
-            $return = '';
-            if( $request->header_type && strtoupper($request->header_type) == 'TEXT'){
-                foreach($this->textTemplateFields as $field){
-                    //    if( ($request->$field || $field == 'buttons' ) ){
-                    if( in_array($field, $postFields) && ($request->$field || $field == 'buttons' ) ){
-                        if($field == 'elementName'){
-                            // $request->$field = strtolower(str_replace(' ', '_', $request->$field)).'_'.rand ( 1000 , 9999 );
-                        }
-                        if($field == 'category' || $field == 'vertical' || $field == 'header_type'){
-                            //            $request->$field = strtoupper(str_replace(' ', '_', $request->$field));
-                        }
-                        if($field == 'buttons'){
-                            $request->$field = json_decode($request->$field);
-                            if(is_array($request->$field)){
-                                $request->$field = json_encode($request->$field);
-                            } else {
-                                $status = false;
-                                $statusCode = 400;
-                                $message = "{$field} field is not an array";
-                                $result = 'Bad Request';
-                            }
-                        }
-                        $templateData[$field] = $request->$field;
-                    } else {
-                        $status = false;
-                        $statusCode = 400;
-                        $message = "{$field} field is empty";
-                        $result = 'Bad Request';
-                    }
-                }
-            } else {
-
-            }
-            if(!$status){
-                $return = (['status' =>  $status, 'status_code' => $statusCode, 'result' => $result, 'message' => $message ]);
-            } else {
-
-		  $template = new Template();
-            //$template = Template::find(42);
-            
-                $template->name = $request->get('elementName');
-                $template->category = $request->get('category');
-                $template->languages = [$request->get('languageCode')];
-                $template->status = 'DRAFT';
-                $template->account_id = $account_id;
-                $template->save();
-                $template_id = $template->id;
-            
-                $message = new Message();
-                $message->header_type = $request->get('header_type');
-                if ($message->header_type == 'text') {
-                    $message->header_content = $request->get('header_text');
-                } else {
-                    $message->header_content = '';
-                }
-
-                $message->body = $request->get('body');
-                $message->footer_content = $request->get('body_footer');
-                $message->template_id = $template_id;
-                $message->language = $request->get('languageCode');
-                $message->attach_file = isset($attachFilePath['url'])? $attachFilePath['url'] : '';
-                $message->example = $request->get('example');
-                $message->save();
-
-                //$template_id = 42;
-
-                $attachFilePath = '';
-                if($request->file('attach_file')) {
-                    $file = $request->file('attach_file') ;
-                    $fileName = $file->getClientOriginalName() ;
-                    $destinationPath = public_path().'/attach_files' ;
-                    $file->move($destinationPath,$fileName);
-                    $attachFilePath = ['url' => asset('attach_files/'.$fileName), 'path' => $destinationPath.'/'.$fileName];
-                }
-               
-                $return = $this->submitTemplate(['account_id' => $account_id, 'template_id' => $template_id, 'data' => $request, 'file' => $attachFilePath]);
-            }
-        } else {
-            $return = json_encode(['status' =>  false, 'status_code' => 400, 'message' => 'Invalid format' ]);
+        if(count($postFields) == 0) {
+            return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
         }
-        dd($return);
+
+        $return = '';
+        $status = true;
+        // Validate the request
+        if($request->header_type && strtoupper($request->header_type) == 'TEXT') {
+            foreach($this->textTemplateFields as $field) {
+                // Check whether form data fields passed by user are valid fields and it has values. 
+                // Button field can have empty values
+                if(in_array($field, $postFields) 
+                    && ($request->$field || $field == 'buttons')) {
+                    // Process button field
+                    if($field == 'buttons' && $request->$field) {
+                        $request->$field = json_decode($request->$field);
+                        if(is_array($request->$field)) {
+                            $request->$field = json_encode($request->$field);
+                        } else {
+                            $status = false;
+                            $statusCode = 400;
+                            $message = "{$field} field is not an array";
+                            $result = 'Bad Request';
+                            continue;
+                        }
+                    }
+                    $templateData[$field] = $request->$field;
+                } else {
+                    $status = false;
+                    $statusCode = 400;
+                    $message = "{$field} field is empty";
+                    $result = 'Bad Request';
+                    continue;
+                }
+            }
+        }
+        else {
+            return response()->json(['status' => 'failed', 'message' => 'Unknown header type.']);
+        }
+
+        if($status === false) {
+            $return = ['status' => 'failed', 'status_code' => $statusCode, 'result' => $result, 'message' => $message];
+        } else {
+            // Create new DRAFT template
+            $template = new Template();
+            $template->name = $request->get('elementName');
+            $template->category = $request->get('category');
+            $template->languages = [$request->get('languageCode')];
+            $template->status = 'DRAFT';
+            $template->account_id = $account_id;
+            $template->save();
+
+            $template_id = $template->id;
+        
+            // Create new Template Message
+            $message = new Message();
+            $message->header_type = $request->get('header_type');
+            if ($message->header_type == 'text') {
+                $message->header_content = $request->get('header_text');
+            } else {
+                $message->header_content = '';
+            }
+
+            $attachFilePath = '';
+            if($request->file('attach_file')) {
+                $file = $request->file('attach_file');
+                $fileName = $file->getClientOriginalName();
+                $destinationPath = public_path() . '/attach_files';
+                $file->move($destinationPath, $fileName);
+                $attachFilePath = ['url' => asset('attach_files/' . $fileName), 'path' => $destinationPath . '/' . $fileName];
+            }
+
+            $message->body = $request->get('body');
+            $message->footer_content = $request->get('body_footer');
+            $message->template_id = $template_id;
+            $message->language = $request->get('languageCode');
+            $message->attach_file = isset($attachFilePath['url']) ? $attachFilePath['url'] : '';
+            $message->example = $request->get('example');
+            $message->save();
+            
+            $return = $this->submitTemplate(['account_id' => $account_id, 'template_id' => $template_id, 'data' => $request, 'file' => $attachFilePath]);
+        }
+        
+        return response()->json($return);
     }
 
     /**
