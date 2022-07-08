@@ -81,8 +81,7 @@ function classNames(...classes) {
 }
 
 export default function Authenticated({  header, children }) {
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
+    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showSidebarText, setShowSidebarText] = useState(false);
 
@@ -236,8 +235,8 @@ export default function Authenticated({  header, children }) {
                         </div>
                     </div>
                 </div>
-                <div className="flex flex-col flex-1">
-                    <div className=" py-8 px-6 mb-4">
+                <div className="flex flex-col flex-1 bg-[#FBFBFBBF]">
+                    <div className="py-4 px-6">
                         <nav >
                             <div >
                                 <div className="flex justify-between h-16">

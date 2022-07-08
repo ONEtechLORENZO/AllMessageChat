@@ -1869,6 +1869,9 @@ select {
 .font-normal {
 	font-weight: 400;
 }
+.font-bold {
+	font-weight: 700;
+}
 .uppercase {
 	text-transform: uppercase;
 }
@@ -2608,6 +2611,12 @@ select {
 		overflow: hidden;
 	}
 
+	.sm\:truncate {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
 	.sm\:rounded-lg {
 		border-radius: 0.5rem;
 	}
@@ -2717,6 +2726,11 @@ select {
 	.sm\:text-sm {
 		font-size: 0.875rem;
 		line-height: 1.25rem;
+	}
+
+	.sm\:text-3xl {
+		font-size: 1.875rem;
+		line-height: 2.25rem;
 	}
 }
 @media (min-width: 768px) {

@@ -1,28 +1,15 @@
-import { SettingIcon } from "./icons";
-import React ,{ useEffect , useState , Fragment} from 'react';
-import { Head, useForm, Link, InertiaLink } from '@inertiajs/inertia-react';
-import { SearchIcon } from "@heroicons/react/outline";
+import React from 'react';
 import Authenticated from "../../Layouts/Authenticated";
 import Pagination from "../../Components/Pagination";
 
-
-export default function Messages(props) {
-    const fieldList = {
-        'id': 'ID',
-        'content': 'Content',
-        'account_name': 'Account name',
-        'mode': 'Mode',
-        'sender': 'Sender',
-        'destination': 'Destination',
-        'status': 'Status',
-        'date': 'Date'
-    }
-    const[messages, setMessages] = useState(props.messsage_list);
-    const[pageInfo, setPageInfo] = useState(props);
-
+function MessageListing(props) 
+{
     return (
         <Authenticated>
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
+                <div className="flex-1 min-w-0">
+                    <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">Messages</h2>
+                </div>
                 <div className="mt-8 flex flex-col">
                     <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
                         <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
@@ -30,8 +17,9 @@ export default function Messages(props) {
                                 <table className="min-w-full divide-y divide-[#D9D9D9]">
                                     <thead>
                                         <tr>
-                                            {Object.entries(fieldList).map(([name, label], j) => (
+                                            {Object.entries(props.list_view_columns).map(([name, label]) => (
                                                 <th
+                                                    key={name}
                                                     scope="col"
                                                     className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-[#3D4459] sm:pl-6"
                                                 >
@@ -41,11 +29,10 @@ export default function Messages(props) {
                                         </tr>
                                     </thead>
                                     <tbody className=" bg-white">
-                                        {Object.entries(messages).map(([key, message], j) => (
-
+                                        {Object.entries(props.messsage_list).map(([key, message]) => (
                                             <tr key={key}>
-                                                {Object.entries(fieldList).map(([name, label], k) => (
-                                                        <>
+                                                {Object.entries(props.list_view_columns).map(([name, label], k) => (
+                                                    <>
                                                         {name == 'status' ?
                                                             <td className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]">
                                                               
@@ -61,17 +48,19 @@ export default function Messages(props) {
                                                                 {message[name]} 
                                                             </td>
                                                         }
-                                                        </>
+                                                    </>
                                                 ))}
-                                                
                                             </tr>
                                         ))}
-                                        {Object.entries(messages).length == 0 &&
-                                            <tr><td className = "" colspan={Object.entries(fieldList).length} >
-                                                <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
-                                                    Messages not yet created.
-                                                </div>
-                                            </td></tr>
+
+                                        {Object.entries(props.messsage_list).length == 0 &&
+                                            <tr>
+                                                <td colspan={Object.entries(props.list_view_columns).length} >
+                                                    <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
+                                                        No messages sent/received yet for your account(s).
+                                                    </div>
+                                                </td>   
+                                            </tr>
                                         }
                                     </tbody>
                                 </table>
@@ -86,3 +75,5 @@ export default function Messages(props) {
         </Authenticated>
     );
 }
+
+export default MessageListing;

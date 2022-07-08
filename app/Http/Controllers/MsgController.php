@@ -105,8 +105,21 @@ class MsgController extends Controller
         $messageList = [];
         $limit = $this->limit;
         $user = $request->user();
-        $list_view_columns = ['msgs.id', 'msgs.service', 'msgs.status', 'msgs.created_at', 'message', 'accounts.company_name', 'accounts.phone_number as account_phone_number', 'accounts.company_name', 'contacts.phone_number', 'contacts.instagram_id', 'msg_mode'];
-        $messages = Msg::select($list_view_columns)
+
+        // List view columns to show
+        $list_view_columns = [
+            'id' => 'ID',
+            'content' => 'Content',
+            'account_name' => 'Account name',
+            'mode' => 'Mode',
+            'sender' => 'Sender',
+            'destination' => 'Destination',
+            'status' => 'Status',
+            'date' => 'Date'
+        ];
+
+        $query_columns = ['msgs.id', 'msgs.service', 'msgs.status', 'msgs.created_at', 'message', 'accounts.company_name', 'accounts.phone_number as account_phone_number', 'accounts.company_name', 'contacts.phone_number', 'contacts.instagram_id', 'msg_mode'];
+        $messages = Msg::select($query_columns)
             ->join('accounts', 'account_id', 'accounts.id')
             ->join('contacts', 'contacts.id', 'msgable_id')
             ->where('accounts.user_id', $user->id)
@@ -147,12 +160,12 @@ class MsgController extends Controller
 
         return Inertia::render('Messages/Messages', [
             'messsage_list' => $messageList,
+            'list_view_columns' => $list_view_columns,
             'paginator' => [
                 'firstPageUrl' => $messages->url(1),
                 'previousPageUrl' => $messages->previousPageUrl(),
                 'nextPageUrl' => $messages->nextPageUrl(),
-                'lastPageUrl' => $messages->url($messages->lastPage()),
-                
+                'lastPageUrl' => $messages->url($messages->lastPage()),  
                 'total' => $messages->total(),
                 'count' => $messages->count(),
                 'lastPage' => $messages->lastPage(),
