@@ -32,7 +32,6 @@ Route::get('/', function () {
 });
 
 Route::post('/incoming', [MsgController::class, 'incoming']);
-Route::get('/new', [MessageLogController::class, 'new']);
 
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -73,7 +72,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Contact
     Route::get('/contact', [ContactController::class, 'contact'])->name('contacts');
-
 });
 
 // Check user is admin
