@@ -17,30 +17,15 @@ use App\Http\Controllers\MsgController;
 |
 */
 
-Route::middleware(['auth:sanctum'])->group(function () {
-    // Message send from CRM
-    if( isset($_POST['template']) && $_POST['template'] != ''){
-      //  Route::post('/vtSendMessage', [MessageLogController::class, 'sendTemplateMessage']);
-    } else {
-       // Route::post('/vtSendMessage', [MessageLogController::class, 'sendMessage']);
-    }
+Route::middleware(['auth:sanctum'])->group(function() {
+
+    // Send whatsapp message
     Route::post('/v1/{account_id}/send-wa-message', [MsgController::class, 'sendAPIMessage']);
 
-   // Route::post('/vtFetchTemplate', [MessageLogController::class, 'getTemplates']);
+    // Return list of templates
     Route::get('/v1/{account_id}/get-wa-templates', [TemplateController::class, 'getTemplates']);
 
-    // Create template
-    Route::post('/v1/create-wa-template', [TemplateController::class, 'createTemplate']);
+    // Create new template
     Route::post('/v1/{account_id}/create-wa-template', [TemplateController::class, 'createTemplate']);
 
 });
-
-
-
-
-//Route::middleware(['auth', 'verified'])->group(function () {
-Route::get('/sendImageTemplateMessages', [MessageLogController::class, 'sendImageTemplateMessages'])->name('send_message');    
-Route::get('/sendMessages', [MessageLogController::class, 'sendMessage'])->name('send_message');    
-Route::get('/sendMessageResponse', [MessageLogController::class, 'sendMessageResponse'])->name('send_message_response');    
-Route::get('/incomingMessageResponse', [MessageLogController::class, 'incomingMessageResponse'])->name('incoming_message_response');    
-//});

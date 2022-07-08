@@ -351,19 +351,21 @@ class MsgController extends Controller
             'is_delivered' => 0,
             'is_read' => 0
         ];
+
         $this->processMessage($messageData);
     }
 
     /**
-     * Save Message 
+     * Add/Update Message model
      */
     public function processMessage($data)
     {
         $message = Msg::where('service_id', $data['service_id'])->first();
-        if(!$message){
+        if(!$message) {
             $message = new Msg();
         }
-        foreach($data as $field => $value){
+
+        foreach($data as $field => $value) {
             $message->$field = $value;
         }
         $message->save();
@@ -405,7 +407,6 @@ class MsgController extends Controller
         return false;
     }
 
-
     /**
      * Handle instagram message
      */
@@ -432,6 +433,8 @@ class MsgController extends Controller
         // Get Contact information
         $msgable_id = $this->getInfoUsingContactUniqueId($sender_id, 'instagram', $user_id);
         $msgable_type = 'App\Models\Contact';
+        
+        // TODO Need to get instagram profile information when creating new Contact - https://documenter.getpostman.com/view/12788798/UzBtkNQb#b38d5004-215b-41d8-a993-8bf47be3199b
 
         // Create new message
         $messageData = [
@@ -446,6 +449,7 @@ class MsgController extends Controller
             'is_delivered' => 0,
             'is_read' => 0
         ];
+
         $this->processMessage($messageData);
     }
 
@@ -504,29 +508,39 @@ class MsgController extends Controller
     }
 
     /**
-     * Hand WhatsApp API send message
+     * Send WhatsApp message (Function will be called from OneMessage API)
      */
     public function sendAPIMessage(Request $request, $account_id)
     {
+        $current_user = $request->user();
         $account = Account::find($account_id);
         if($account) {
-            $user = User::find($account->user_id);
-            $token = str_replace('Bearer ', '',$_SERVER['HTTP_AUTHORIZATION']);
-            if($token != $user->api_token){
-                echo json_encode(['status' => 'failed', 'message' => 'Invalid API token']);die;
+            // Check whether current user can access this account
+            if($current_user->id != $account->user_id) {
+                return response()->json(['status' => 'failed', 'message' => 'Invalid API token']);
             }
         } else {
-            echo json_encode(['status' => 'failed', 'message' => 'Invalid account id']);die;
+            return response()->json(['status' => 'failed', 'message' => 'Invalid account id']);
         }
+
+        // Validate the request
+        if(!$request->content && !$request->template) {
+            return response()->json(['status' => 'failed', 'message' => 'Content is missing']);
+        }
+
+        if(!$request->destination) {
+            return response()->json(['status' => 'failed', 'message' => 'Destination is missing']);
+        }
+
         $msg = new Msg();
-        $result = $msg->sendWhatsAppMessage($request->content , $request->destination, $account );
-        
-        if($result['result']['status'] == 'submitted'){
+        $result = $msg->sendWhatsAppMessage($request->content, $request->destination, $account);
+        if($result['result']['status'] == 'submitted') {
             $result['status'] = 'Queued';
         }
+
         $result['messageId'] = $result['result']['messageId'];
         $request->chennal = 'whatsapp';
         $this->handleMessageResult($request, $account->id, $result);
-        echo json_encode($result['result']);
+        return response()->json($result['result']);
     }
 }

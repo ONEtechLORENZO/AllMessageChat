@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http;
 
-
 class Template extends Model
 {
     use HasFactory;
@@ -15,9 +14,13 @@ class Template extends Model
         'languages' => 'array',
     ];
 
-    public function fetchTemplates( $sourceName)
+    public function fetchTemplates($sourceName)
     {
-        $url = str_replace( 'msg', 'template/list/'.$sourceName, config('app.api_url'));
+        if(!$sourceName) {
+            return ['status' => 'failed', 'message' => 'App name is missing.'];
+        }
+
+        $url = str_replace('msg', 'template/list/' . $sourceName, config('app.api_url'));
         $headers = [
             'apikey' => config('app.apiKey')
         ];

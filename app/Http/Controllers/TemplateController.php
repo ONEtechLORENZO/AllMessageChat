@@ -351,13 +351,19 @@ class TemplateController extends Controller
      */
     public function getTemplates(Request $request, $account_id)
     {
+        $current_user = $request->user();
         $account = Account::find($account_id);
-        if(!$account){
-            abort('401', 'Not found');
+        if($account) {
+            // Check whether current user can access this account
+            if($current_user->id != $account->user_id) {
+                return response()->json(['status' => 'failed', 'message' => 'Invalid API token']);
+            }
+        } else {
+            return response()->json(['status' => 'failed', 'message' => 'Invalid account id']);
         }
 
         $template = new Template();
         $result = $template->fetchTemplates($account->src_name);
-        echo json_encode($result); die;
+        return response()->json($result);
     }
 }

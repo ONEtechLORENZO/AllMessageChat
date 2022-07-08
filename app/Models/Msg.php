@@ -22,28 +22,30 @@ class Msg extends Model
     }
 
     /**
-     * Send message to Instagram user
+     * Send message to WhatsApp
      */
     public function sendWhatsAppMessage($content, $destination, $account)
     {        
-
         $url = config('app.api_url');
-        $post_data =[
+        $post_data = [
             'channel' => 'whatsapp',
             'source' => $account->phone_number,
             'destination' => $destination,
             'src.name' => $account->src_name,
             'disablePreview' => null
         ];
-        if(isset($_POST['template'])){
+
+        if(isset($_POST['template'])) {
             $template = Message::where('template_id', $_POST['template'])->first();
-            if($template){
+            if($template) {
                 $content = $template->body;
             }
+
             $message = [
                 'id' => $_POST['template'],
                 'params' => []
             ];
+
             $post_data['template'] = (json_encode($message));
 
             $url = str_replace('msg', 'template/msg', $url);
@@ -52,10 +54,9 @@ class Msg extends Model
                 "type" => "text",
                 "text" => $content
             ];
+
             $post_data['message'] = (json_encode($message));
         }
-
-       // $post_data['message'] = (json_encode($message));
         
         $headers = [
             'Accept' => 'application/json',
@@ -64,16 +65,17 @@ class Msg extends Model
 
         $response = Http::asForm()->withHeaders($headers)->post($url, $post_data);
         $response_body = json_decode($response->body(), true);
-        if ($response_body['status'] != 'error' ) {
+        if ($response_body['status'] != 'error') {
             $data = $post_data;
             $data['account_id'] = $account->id;
             $data['content'] = $content;
             $result = ($response_body);
             $data['result'] = $result;
         } else {
-            echo json_encode($response_body);die;
+            // TODO Why are we not returning the response? This function should return response as it is common for all
+            echo json_encode($response_body);
+            die;
         }
-        Log::info('Message send successfully.');
         return $data;
     }
 
