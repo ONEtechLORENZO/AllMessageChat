@@ -63,26 +63,16 @@ const userNavigation = [
     { name: "Sign out", href: "#" },
 ];
 
-const user = {
-    name: 'Tom Cook',
-    role:'user',
-    id: 125,
-    email: 'tom@example.com',
-    imageUrl:
-      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-  }
-
-  const auth = {
-    user: user,
-  }
-
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
 
-export default function Authenticated({  header, children }) {
+export default function Authenticated({ auth, header, children }) 
+{
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+
     const [sidebarOpen, setSidebarOpen] = useState(false);
+
     const [showSidebarText, setShowSidebarText] = useState(false);
 
     return (
@@ -268,9 +258,11 @@ export default function Authenticated({  header, children }) {
                                                             type="button"
                                                             className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                                         >
-                                                            <img className="h-8 w-8 rounded-full mr-2" src={auth.user.imageUrl} alt="" />
-                                                            {auth.user.name}
+                                                            {auth.user.imageUrl ?
+                                                                <img className="h-8 w-8 rounded-full mr-2" src={auth.user.imageUrl} alt="" /> 
+                                                            : ''}
 
+                                                            {auth.user.name}
                                                             <svg
                                                                 className="ml-2 -mr-0.5 h-4 w-4"
                                                                 xmlns="http://www.w3.org/2000/svg"
