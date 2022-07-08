@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', 'OneMessage') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com"> 
@@ -13,12 +13,12 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
         <!-- Styles -->
-        <link rel="stylesheet" href="{{ url('css/app.css') }}?v=1.6">
+        <link rel="stylesheet" href="{{ url('css/app.css') }}?v=1.7.4">
 
         <!-- Scripts -->
         @routes
 
-        <script src="{{ url('js/app.js') }}?v=1.7.3" defer></script>
+        <script src="{{ url('js/app.js') }}?v=1.7.4" defer></script>
     </head>
     <body class="font-sans antialiased">
         @inertia

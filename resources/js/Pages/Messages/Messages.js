@@ -3,6 +3,7 @@ import React ,{ useEffect , useState , Fragment} from 'react';
 import { Head, useForm, Link, InertiaLink } from '@inertiajs/inertia-react';
 import { SearchIcon } from "@heroicons/react/outline";
 import Authenticated from "../../Layouts/Authenticated";
+import Pagination from "../../Components/Pagination";
 
 
 export default function Messages(props) {
@@ -76,65 +77,8 @@ export default function Messages(props) {
                                 </table>
                             </div>
 
-                            {/* Pagination */}
-                            <div class="p-5 text-center" >
-                                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                                <Link
-                                    href= { pageInfo.currentPage != 1 ?
-                                          "messages?page=1" 
-                                        : '#' 
-                                    }    
-                                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-100"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                                    </svg>
-                                </Link>
-                                <Link
-                                    href= { pageInfo.currentPage != 1 ?
-                                         "messages?page=" + (parseInt(pageInfo.currentPage) - 1) 
-                                        : '#'
-                                    }    
-                                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-100"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                  </Link>
-
-                                  <span
-                                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-100"
-                                >
-                                   {((pageInfo.currentPage - 1) * pageInfo.limit) +1 } - {pageInfo.currentPage * pageInfo.limit} of {pageInfo.totalMessages}
-                                  </span>
-
-                                  <Link
-                                    href= {  Math.ceil(pageInfo.totalMessages / pageInfo.limit) != pageInfo.currentPage ?
-                                          "messages?page=" + (parseInt(pageInfo.currentPage) + 1) 
-                                        :  '#' 
-                                    }
-
-                                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-100"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                    </svg>
-                                  </Link>
-                                  <Link
-                                    href= {  Math.ceil(pageInfo.totalMessages / pageInfo.limit) != pageInfo.currentPage ?
-                                          "messages?page=" + Math.ceil(pageInfo.totalMessages / pageInfo.limit)
-                                        : '#' 
-                                    }
-                                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                                    </svg>
-                                  </Link>
-
-                                </nav>
-                            </div>
-
+                            <Pagination paginator={props.paginator} />
+                            
                         </div>
                     </div>
                 </div>

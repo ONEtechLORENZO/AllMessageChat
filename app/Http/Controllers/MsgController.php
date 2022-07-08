@@ -15,9 +15,11 @@ use Illuminate\Support\Facades\Log;
 
 class MsgController extends Controller
 {
-    public $dateChatView = 'g:i A | M j, Y ';
-    public $dateListView = 'd-m-Y h:m:s ';
-    public $limit = 10;
+    public $dateChatView = 'g:i A | M j, Y';
+
+    public $dateListView = 'd-m-Y h:m:s';
+
+    public $limit = 15;
 
     /**
      * Display a listing of the resource.
@@ -96,53 +98,67 @@ class MsgController extends Controller
     }
 
     /**
-     * List message list
+     * Message list view
      */
     public function messageList(Request $request)
     {
+        $messageList = [];
         $limit = $this->limit;
         $user = $request->user();
-        $messageList = [];
-        $messages = Msg::select('message', 'accounts.company_name', 'accounts.phone_number as account_number', 'msgs.status', 'contacts.phone_number as contact_number', 'msg_mode', 'msgs.created_at' )
-            ->leftJoin('accounts', 'account_id', 'accounts.id')
-            ->leftJoin('contacts', 'contacts.id', 'msgable_id')
+        $list_view_columns = ['msgs.id', 'msgs.service', 'msgs.status', 'msgs.created_at', 'message', 'accounts.company_name', 'accounts.phone_number as account_phone_number', 'accounts.company_name', 'contacts.phone_number', 'contacts.instagram_id', 'msg_mode'];
+        $messages = Msg::select($list_view_columns)
+            ->join('accounts', 'account_id', 'accounts.id')
+            ->join('contacts', 'contacts.id', 'msgable_id')
             ->where('accounts.user_id', $user->id)
             ->orderBy('msgs.id', 'desc')
             ->paginate($limit);
 
-        $start = isset($_GET['page']) ? (($_GET['page'] - 1 )* $limit) : 0 ;
-        foreach($messages as $message){
-            if($message->msg_mode == 'incoming'){
-                $sender = $message->contact_number;
-                $destination = $message->account_number;
-            } else {
-                $sender = $message->account_number;
-                $destination = $message->contact_number;
+        foreach($messages as $message) {
+            if($message->service == 'whatsapp') {
+                if($message->msg_mode == 'incoming') {
+                    $sender = $message->phone_number;
+                    $destination = $message->account_phone_number;
+                } else {
+                    $sender = $message->account_phone_number;
+                    $destination = $message->phone_number;
+                }
             }
-            $start ++;
+            else if($message->service == 'instagram') {
+                if($message->msg_mode == 'incoming') {
+                    $sender = $message->instagram_id;
+                    $destination = $message->company_name;
+                } else {
+                    $sender = $message->company_name;
+                    $destination = $message->instagram_id;
+                }
+            }
+
             $messageList[] = [
-                'id' => $start,
+                'id' => $message->id,
                 'account_name' => $message->company_name,
                 'content' => $message->message,
                 'status' => ucfirst($message->status),
                 'mode' => ucfirst($message->msg_mode),
                 'sender' => $sender,
                 'destination' => $destination,
-                'date' => date_format( $message->created_at , $this->dateListView),
+                'date' => date_format($message->created_at, $this->dateListView),
             ];
-            
         }
-
-        $totalMessages = $messages->total();
-        $currentPage = (isset($_GET['page'])) ? $_GET['page'] : 1;
 
         return Inertia::render('Messages/Messages', [
             'messsage_list' => $messageList,
-            'currentPage' => $currentPage,
-            'totalMessages' => $totalMessages,
-            'limit' => $limit,
+            'paginator' => [
+                'firstPageUrl' => $messages->url(1),
+                'previousPageUrl' => $messages->previousPageUrl(),
+                'nextPageUrl' => $messages->nextPageUrl(),
+                'lastPageUrl' => $messages->url($messages->lastPage()),
+                
+                'total' => $messages->total(),
+                'count' => $messages->count(),
+                'lastPage' => $messages->lastPage(),
+                'perPage' => $messages->perPage(),
+            ],
         ]);
-
     }
 
     /**
