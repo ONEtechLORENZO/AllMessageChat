@@ -260,7 +260,6 @@ class MsgController extends Controller
         // If call is coming to set the URL
         if(isset($_GET['botname']) && isset($_GET['channel'])) {
             parse_str($_GET, $parsed_data);
-            log::info(print_r($parsed_data, true));
             return true;
         }
 
@@ -271,8 +270,6 @@ class MsgController extends Controller
         if($post_data && !$data) {
             parse_str($post_data, $parsed_data);
             $parsed_data['account_id'] = $_GET['account_id']; // Setting account ID from the callback
-            log::info($parsed_data);
-            log::info(print_r($_GET, true));
             if($parsed_data['channel'] == 'instagram') {
                 $this->handleInstagramMessage($parsed_data);
             }
@@ -282,17 +279,16 @@ class MsgController extends Controller
         $eventType = 'Message';
         if($response['type'] == 'template-event'){
 		    $eventType = 'Template';
-            log::info(['template response', $data]);
-            $template = Template::where('template_uid', $data['gsId'])
+            $template = Template::where('template_uid', $data['id'])
                 ->first();
-		
-	        $status = $data['status'];
-            if($data['status'] != 'rejected'){
-                $template->status = strtoupper($data['status']);
-            } else {
-                $template->status = strtoupper($data['status']). ' ( Reason: '.$data['rejectedReason']. ' )';
+            if($template){
+                $status = strtoupper($data['status']);
+                if($data['status'] == 'rejected'){
+                    $status = strtoupper($data['status']). ' ( Reason: '.$data['rejectedReason']. ' )';
+                }
+                $template->status = $status;
+                $template->save();
             }
-            $template->save();
         } else {
             $this->handleWhatsAppMessage( $data);
         }

@@ -14,6 +14,30 @@ class Template extends Model
         'languages' => 'array',
     ];
 
+    /**
+     * Submit the request on GupShup
+     * 
+     * @param string $url
+     * @param string $method
+     * @param array $headers
+     * @param array $data 
+     */
+    public function submitData($url, $method, $headers, $data )
+    {
+        if($method == 'POST'){
+            $response = Http::asForm()->withHeaders($headers)->post($url, $data);
+        } else {
+            $response = Http::asForm()->withHeaders($headers)->get($url);
+        }
+        $response_body = json_decode($response->body(), true);
+        return $response_body;
+    }
+
+    /**
+     * Fetch templates based on Account
+     * 
+     * @param string $sourceName
+     */
     public function fetchTemplates($sourceName)
     {
         if(!$sourceName) {

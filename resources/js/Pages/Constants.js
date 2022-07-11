@@ -1,4 +1,5 @@
 export const categories = [
+    /*
     {value: 'Account Update', label: 'Account Update'},
     {value: 'Alert Update', label: 'Alert Update'},
     {value: 'Appointment Update', label: 'Appointment Update'},
@@ -9,6 +10,10 @@ export const categories = [
     {value: 'Shipping Update', label: 'Shipping Update'},
     {value: 'Ticket Update', label: 'Ticket Update'},
     {value: 'Transportation Update', label: 'Transportation Update'},
+    */
+    {value: 'TRANSACTIONAL', label: 'TRANSACTIONAL'},
+    {value: 'MARKETING', label: 'MARKETING'},
+    {value: 'OTP', label: 'OTP'},
 ]
 
 export const company_types = [

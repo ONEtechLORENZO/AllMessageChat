@@ -24,6 +24,10 @@ class TemplateController extends Controller
      **/
     public function submitTemplate($data)
     {
+        if(isset($data['account_id'])){
+            $this->account_id = $data['account_id'];
+        }
+        
         $partnerToken = $this->getPartnerToken();
         if(!$partnerToken) {
             return ['status' => 'failed', 'message' => $this->result];
@@ -52,14 +56,15 @@ class TemplateController extends Controller
         $username = config('app.partner_username');
         $password = config('app.partner_password');
 
-        $postFields = "email={$username}&password={$password}";
+        $postFields = ['email' => $username , 'password' => $password ];
         $endPoint = 'account/login';
 
-        $header = array('Content-Type: application/x-www-form-urlencoded');
-        $getAppToken = $this->restApiCall('POST', $endPoint, $header, $postFields);
+       // $header = array('Content-Type: application/x-www-form-urlencoded');
+        $getAppToken = $this->restApiCall('POST', $endPoint, [], $postFields);
+       
         $return = '';
-        if($getAppToken) {
-            $return = $getAppToken->token;
+        if(isset($getAppToken['token'])) {
+            $return = $getAppToken['token'];
         } else {
 		    $this->result = 'Error occured while generating partner token';
 	    }
@@ -73,20 +78,20 @@ class TemplateController extends Controller
     {
         $appId = '';
         $endPoint = 'account/api/partnerApps';
-        $header = array("token: {$token}");
+        $header = array('token' => $token);
 
         $getAppList = $this->restApiCall('GET', $endPoint, $header);
-        $appList = $getAppList->partnerAppsList;
-        $account = Account::find($this->account_id);
-        if($appList) {
+        if(isset($getAppList['status']) && $getAppList['status'] == 'error'){
+            $this->result = $getAppList['message'];
+        } else if(isset($getAppList['partnerAppsList'])){
+            $appList = $getAppList['partnerAppsList'];
+            $account = Account::find($this->account_id);
             foreach($appList as $app) {
-                if($account->src_name == $app->name) {
-                    $appId = $app->id;
+                if($account->src_name == $app['name']) {
+                    $appId = $app['id'];
                 }
             }
-        }
-
-	    if($appId == '') {
+        } else {
             $this->result = 'Unknown APP Name.';
         }
         return $appId;
@@ -99,10 +104,10 @@ class TemplateController extends Controller
     {
         $appToken = '';
         $endPoint = "app/{$id}/token";
-        $header = array("token: {$token}");
+        $header = array("token" => $token);
         $getAppToken = $this->restApiCall('GET', $endPoint, $header);
-        if($getAppToken && $getAppToken->status == 'success') {
-            $appToken = $getAppToken->token->token;
+        if($getAppToken && $getAppToken['status'] == 'success') {
+            $appToken = $getAppToken['token']['token'];
         } else {
             $this->result = 'Error occured while generating App token.';
         }
@@ -116,8 +121,7 @@ class TemplateController extends Controller
     {
         $endPoint = "app/{$id}/templates";
         $header = [
-            'Content-Type: application/x-www-form-urlencoded',
-            "token: {$token}",
+            "token" => $token,
         ];
        
         $template = Template::where('account_id', $data['account_id'])
@@ -134,23 +138,27 @@ class TemplateController extends Controller
             if(!is_array($button)) {
                 $button = ((array) $button);
             }
-
-            $buttonData = [
-                'type' => str_replace(' ', '_', $button['button_type']),
-                'text' => $button['button_text'],
-                'phone_number' => isset($button['phone_number']) ? $button['phone_number']: '',
-                'url' => isset($button['url']) ? $button['url'] : '',
-            ];
-
-            $buttons[] = (object) $buttonData;
+            if(isset($button['id'])){
+                $buttonData = [
+                    'type' => str_replace(' ', '_', $button['button_type']),
+                    'text' => $button['button_text'],
+                    'phone_number' => isset($button['phone_number']) ? $button['phone_number']: '',
+                    'url' => isset($button['url']) ? $button['url'] : '',
+                ];
+                $buttons[] = (object) $buttonData;
+            }
+        }
+        if(!$buttons){
+           $buttons[] = (object)[];
         }
 
+        // Orignal
         $postData = [
             'elementName' => strtolower(str_replace(' ', '_', $template->name)) . '_' . mt_rand(1000,9999) . '_' . $data['account_id'],
             'languageCode' => 'en_US',
             'category' => strtoupper(str_replace(' ', '_',$template->category)),
             'templateType' => strtoupper($data['data']->header_type),
-            'vertical' => $template->category,
+            'vertical' => strtoupper(str_replace(' ', '_',$template->category)),
             'content' => $data['data']->body,
             'footer' => $data['data']->body_footer,
             'example' => $data['data']->example,
@@ -161,27 +169,30 @@ class TemplateController extends Controller
             $postData = array_merge($postData, $uploadFileData);
         } else {
             $postData['header'] = $data['data']->header_text;
-            $postData['buttons'] = json_encode($buttons);
+            $postData['buttons'] = ($buttons);
         }
-
-        $result = $this->restApiCall('POST', $endPoint, $header, http_build_query($postData));
-        if($result->status == 'success') {
-            $template->template_uid = $result->template->id;
-            $template->type = $result->template->templateType;
+     
+        $result = $this->restApiCall('POST', $endPoint, $header, ($postData));
+        if($result['status'] == 'success') {
+            $template->template_uid = $result['template']['id'];
+            $template->type = $result['template']['templateType'];
             $template->status = 'SUBMITTED'; //result->template->status;
             $template->save();
-            $return = ['status' => $result->status, 'template_status' => $result->template->status];
+            $return = ['status' => $result['status'], 'template_id' => $result['template']['id'], 'template_status' => $result['template']['status']];
         } else {
-            $template->status = $result->message;
-            $return = ['status' => $result->status, 'template_status' => $result->message];
+            $template->status = $result['message'];
+            $template->save();
+            $return = ['status' => $result['status'], 'template_status' => $result['message']];
+            return $return;
         }
-    
+        
         // TODO Why are we storing the message response? We are using Msg model now. Is it needed?
+        // Msg model - Used for store the conversation, not log
         $response = new MessageResponse();
-        $response->message_id = $result->template->id;
+        $response->message_id = $result['template']['id'];
         $response->ref_id = 'SUBMITTED';
         $response->type = 'Template';
-        $response->response = base64_encode( serialize($result));
+        $response->response = base64_encode(serialize($result));
         $response->save();
 
         return $return;
@@ -232,6 +243,12 @@ class TemplateController extends Controller
      */
     public function restApiCall($method, $endPoint, $header = [], $postFields = '' ){
 
+        $template = new Template();
+        $url = config('app.partner_url').$endPoint;
+        $result = $template->submitData($url, $method, $header, $postFields);
+        return ($result);
+        /*
+        dd($result);
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
@@ -251,6 +268,7 @@ class TemplateController extends Controller
 
         curl_close($curl);
         return json_decode($response);
+        */
     }
 	
     /** 
@@ -354,8 +372,8 @@ class TemplateController extends Controller
             $message->save();
             
             $return = $this->submitTemplate(['account_id' => $account_id, 'template_id' => $template_id, 'data' => $request, 'file' => $attachFilePath]);
+            Log::info($return);
         }
-        
         return response()->json($return);
     }
 
