@@ -106,7 +106,7 @@ class ContactController extends Controller
                 'number' => ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id 
             ];
         }
-        return Inertia::render('Messages/Contact', [
+        return Inertia::render('Contacts/Contact', [
             'contacts' => $contactList
         ]);
     }
