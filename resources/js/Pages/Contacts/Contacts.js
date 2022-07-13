@@ -20,7 +20,7 @@ export default function Contacts(props) {
         'first_name': { 'label': 'First Name', 'type': 'text', 'required': false, 'value': '' },
         'last_name': { 'label': 'Last Name', 'type': 'text', 'required': true, 'value': '' } , 
         'email': { 'label': 'Email', 'type': 'email', 'required': true, 'value': '' }, 
-        'phone_number': { 'label': 'Phone number', 'type': 'number', 'required': false, 'value': '' },
+        'phone_number': { 'label': 'Phone number', 'type': 'text', 'required': false, 'value': '' },
         'instagram_id': { 'label': 'Instagram ID', 'type': 'text', 'required': false, 'value': '' }, 
     });
 
@@ -37,14 +37,17 @@ export default function Contacts(props) {
     function handleChange(event) {
         const name = event.target.name;
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-        let newState = Object.assign({}, data);
+        let newData = Object.assign({}, data);
+        let newState = Object.assign({}, contactFields);
         if(event.target.type == 'file' && event.target.files) {
             newState[name] = event.target.files[0];
         }
         else {
-            newState[name] = value;
+            newData[name] = value;
+            newState[name].value = value;
         }
-        setData(newState);
+        setData(newData);
+        setContactFields(newState);
     }
     
     /**
@@ -52,6 +55,7 @@ export default function Contacts(props) {
      */ 
      function handleSelectChange(selected_value, field_info) {
         let values = [];
+        
         let newState = Object.assign({}, data);
         selected_value.map((value) => {
             values.push(value.code);
@@ -96,7 +100,6 @@ export default function Contacts(props) {
             let newState = Object.assign({}, contactFields);
             let newData = Object.assign({}, data);
             {Object.entries(contactFields).map(([name, field]) => {
-                console.log(newState[name]);
                 newState[name].value = response.data.contact[name];
                 newData[name] = response.data.contact[name];
 
@@ -214,13 +217,13 @@ export default function Contacts(props) {
                                                 scope="col"
                                                 className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-[#3D4459] sm:pl-6"
                                             >
-                                                Name
+                                                First Name
                                             </th>
                                             <th
                                                 scope="col"
                                                 className="px-3 py-3.5 text-left text-sm font-semibold text-[#3D4459]"
                                             >
-                                                LastName
+                                                Last Name
                                             </th>
                                             <th
                                                 scope="col"
@@ -234,12 +237,7 @@ export default function Contacts(props) {
                                             >
                                                 Email
                                             </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3.5 text-left text-sm font-semibold text-[#3D4459]"
-                                            >
-                                                List
-                                            </th>
+                                           
                                             <th
                                                 scope="col"
                                                 className="relative py-3.5 pl-3 pr-4 sm:pr-6"
@@ -283,18 +281,7 @@ export default function Contacts(props) {
                                                 <td className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]">
                                                     {person.email}
                                                 </td>
-                                                <td className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]">
-                                                    <div className="flex gap-2">
-                                                        <div className="whitespace-pre-wrap">
-                                                            LeadBusiness,
-                                                            <br /> Onboarding
-                                                        </div>
-                                                        <div className="p-1 bg-[#9BFFF2] rounded self-center text-[#008989] font-semibold">
-                                                            +2
-                                                        </div>
-                                                    </div>
-                                                </td>
-
+                                                
                                                 <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                                     <a
                                                         href="#"

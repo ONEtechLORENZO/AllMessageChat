@@ -129,11 +129,16 @@ class ContactController extends Controller
     {
        
         $user = $request->user();
+        $request->validate([
+            'last_name' => 'required|max:255',
+            'email' => 'required|unique:contacts|max:255',
+        ]);
         if($request->id){
             $contact = Contact::findOrFail($request->id);
         } else {
             $contact = new Contact();
         }
+        
         $contact->first_name = $request->first_name;
         $contact->last_name = $request->last_name;
         $contact->phone_number = $request->phone_number;
@@ -141,8 +146,7 @@ class ContactController extends Controller
         $contact->user_id = $user->id;
         $contact->instagram_id = $request->instagram_id;
         $contact->save();
-        return redirect()->to(route('contact_detail', $contact->id));
-        echo json_encode(['result' => 'success', 'contact' => $contact->id]); die;
+        return redirect(route('contact_detail', $contact->id))->with('status', 'Profile updated!');
     }
 
     /**
