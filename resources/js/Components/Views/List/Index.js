@@ -3,7 +3,7 @@ import React from 'react';
 function ListView(props)
 {
     return (
-        'Inside List view'
+        'List view component'
     );
 }
 

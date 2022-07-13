@@ -25,7 +25,7 @@ import {
 } from "@heroicons/react/outline";
 import { SearchIcon } from "@heroicons/react/solid";
 
-import {NotifiIcon} from '../Pages/Messages/icons'
+import {NotifiIcon} from '../Pages/icons'
 
 const navigation = [
     {

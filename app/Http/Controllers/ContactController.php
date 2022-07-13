@@ -88,7 +88,7 @@ class ContactController extends Controller
     /**
      * List contacts
      */
-    public function contact(Request $request)
+    public function contactList(Request $request)
     {
         $contactList = [];
         $user = $request->user();
@@ -106,8 +106,51 @@ class ContactController extends Controller
                 'number' => ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id 
             ];
         }
-        return Inertia::render('Contacts/Contact', [
+        return Inertia::render('Contacts/Contacts', [
             'contacts' => $contactList
         ]);
+    }
+
+    /**
+     * Show contact detail
+     */
+    public function contactDetail(Request $request, $contact_id)
+    {
+        $contact = Contact::findOrFail($request->id);
+        return Inertia::render('Contacts/Detail', [
+            'contact' => $contact
+        ]);
+    }
+
+    /**
+     * Store contact data
+     */
+    public function storeContact(Request $request)
+    {
+       
+        $user = $request->user();
+        if($request->id){
+            $contact = Contact::findOrFail($request->id);
+        } else {
+            $contact = new Contact();
+        }
+        $contact->first_name = $request->first_name;
+        $contact->last_name = $request->last_name;
+        $contact->phone_number = $request->phone_number;
+        $contact->email = $request->email;
+        $contact->user_id = $user->id;
+        $contact->instagram_id = $request->instagram_id;
+        $contact->save();
+        return redirect()->to(route('contact_detail', $contact->id));
+        echo json_encode(['result' => 'success', 'contact' => $contact->id]); die;
+    }
+
+    /**
+     * Return Contact Detail
+     */
+    public function getContactData(Request $request)
+    {
+        $contact = Contact::findOrFail($request->contact_id);
+        echo json_encode(['contact' => $contact]); die;
     }
 }

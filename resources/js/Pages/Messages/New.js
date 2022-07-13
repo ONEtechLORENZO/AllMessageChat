@@ -18,7 +18,7 @@ import {
     WhatsAppIcon,
     NotifiIcon,
     SettingIcon,
-} from "./icons";
+} from "../icons";
 
 const directory = [
     {

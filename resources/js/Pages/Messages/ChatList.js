@@ -20,7 +20,7 @@ import {
     NotifiIcon,
     InstaIcon,
     SettingIcon,
-} from "./icons";
+} from "../icons";
 
 const userNavigation = [
     { name: "Your Profile", href: "#" },
