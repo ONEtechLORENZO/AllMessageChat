@@ -38,16 +38,16 @@ export default function Contacts(props) {
         const name = event.target.name;
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         let newData = Object.assign({}, data);
-        let newState = Object.assign({}, contactFields);
+      //  let newState = Object.assign({}, contactFields);
         if(event.target.type == 'file' && event.target.files) {
-            newState[name] = event.target.files[0];
+            newData[name] = event.target.files[0];
         }
         else {
             newData[name] = value;
-            newState[name].value = value;
+    //        newState[name].value = value;
         }
         setData(newData);
-        setContactFields(newState);
+    //    setContactFields(newState);
     }
     
     /**
@@ -82,7 +82,6 @@ export default function Contacts(props) {
         Inertia.post(route('store_contact'), data, {
             onSuccess: (response) => {
                 setOpenCreateContactModal(false);
-               
             },
         });
     }
@@ -267,7 +266,13 @@ export default function Contacts(props) {
                                                         </div>
                                                         <div className="ml-4">
                                                             <div className="font-medium text-[#3D4459]">
-                                                                {person.name}
+                                                                <Link
+                                                                    href={route('contact_detail', person.id)}
+                                                                    >
+                                                                        {person.name}
+                                                                    </Link>
+                                                                
+                                                                
                                                             </div>
                                                         </div>
                                                     </div>
@@ -467,13 +472,14 @@ export default function Contacts(props) {
                                     <form id="update_contact">
                                         <div className="grid gap-6">         
                                             {Object.entries(contactFields).map(([name, field]) => {
+                                              
                                                 return (
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor={name} className="block text-sm font-medium text-gray-700">
                                                         {field.label}
                                                     </label>
                                                     <div className="mt-1 flex rounded-md shadow-sm">
-                                                        <Input name={name}  value={ mode =='edit' ? field.value : ''} required={field.required} type={field.type} id={name} placeholder={field.label} handleChange={handleChange} />
+                                                        <Input name={name}  value={data[name]} required={field.required} type={field.type} id={name} placeholder={field.label} handleChange={handleChange} />
                                                     </div>
                                                     <InputError message={errors.name} />
                                                 </div>

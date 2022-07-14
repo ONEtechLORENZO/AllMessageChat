@@ -8,9 +8,10 @@ import InputError from '@/Components/Forms/InputError';
 import PristineJS from 'pristinejs';
 import categories, {defaultPristineConfig} from '@/Pages/Constants';
 import { Inertia } from '@inertiajs/inertia';
-
+import DetailView from "@/Components/Views/Detail/Index";
 
 export default function Detail(props) {
+    /*
     const contactFields = {
         'first_name' : { 'label' : 'First name'},
         'last_name' : { 'label' : 'Last name'} ,
@@ -18,7 +19,8 @@ export default function Detail(props) {
         'phone_number' : { 'label' : 'Phone number'},
         'instagram_id' : { 'label' : 'Instagram ID'}   
     };
-    const [contactEditFields, setContactFields] = useState({
+    */
+    const [contactFields, setContactFields] = useState({
         'id': { 'label': '', 'type': 'hidden', 'required': false, 'value': '' },
         'first_name': { 'label': 'First Name', 'type': 'text', 'required': false, 'value': '' },
         'last_name': { 'label': 'Last Name', 'type': 'text', 'required': true, 'value': '' } , 
@@ -32,11 +34,11 @@ export default function Detail(props) {
         { name: 'Detail', href: '#'  },
         { name: 'Notes', href: '#' },
       ]
-    const[activeTab , setActiveTab] = useState('Detail');
+    
     const [openCreateContactModal, setOpenCreateContactModal ] = useState(false);
     const cancelButtonRef = useRef(null);
     const { data, setData, post, processing, errors, reset } = useForm({});
-
+    const[activeTab , setActiveTab] = useState('Detail');
 
     /**
      * Handle input change
@@ -45,36 +47,36 @@ export default function Detail(props) {
         const name = event.target.name;
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         let newData = Object.assign({}, data);
-        let newState = Object.assign({}, contactFields);
+   //     let newState = Object.assign({}, contactFields);
         if(event.target.type == 'file' && event.target.files) {
             newState[name] = event.target.files[0];
         }
         else {
             newData[name] = value;
-            newState[name].value = value;
+//            newState[name].value = value;
         }
         setData(newData);
         setContactFields(newState);
     }
 
-        /**
+    /**
      * Store contact info
      */
-         function updateContact(){
-            var pristine = new PristineJS(document.getElementById("update_contact"), defaultPristineConfig);
-            let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required]'));
-            if(!is_validated) {
-                return false;
-            }
-    
-            Inertia.post(route('store_contact'), data, {
-                onSuccess: (response) => {
-                 //   console.log(response);
-                    window.location.reload(false);
-                    setOpenCreateContactModal(false);
-                },
-            });
+    function updateContact(){
+        var pristine = new PristineJS(document.getElementById("update_contact"), defaultPristineConfig);
+        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required]'));
+        if(!is_validated) {
+            return false;
         }
+
+        Inertia.post(route('store_contact'), data, {
+            onSuccess: (response) => {
+                //   console.log(response);
+                window.location.reload(false);
+                setOpenCreateContactModal(false);
+            },
+        });
+    }
       
     /**
      * Update contact
@@ -85,45 +87,60 @@ export default function Detail(props) {
             url: route('get_contact_data', {'contact_id': id}),
         })
         .then( (response) =>{
-           
-            let newState = Object.assign({}, contactEditFields);
+            let newState = Object.assign({}, contactFields);
             let newData = Object.assign({}, data);
-            {Object.entries(contactEditFields).map(([name, field]) => {
-                console.log(newState[name]);
-                newState[name].value = response.data.contact[name];
+            {Object.entries(contactFields).map(([name, field]) => {
+            //    console.log(newState[name]);
+            //    newState[name].value = response.data.contact[name];
                 newData[name] = response.data.contact[name];
 
             })};
             setData(newData);
-            setContactFields(newState);
+            //setContactFields(newState);
             setOpenCreateContactModal(true)
         });
     }
 
     return (
         <Authenticated>
+{/* 
+            <DetailView
+                record = {record}
+                module = 'Contacts'
+                updateCotnact = {updateCotnact}
+              //  setActiveTab = {setActiveTab}
+                tabs = {tabs}
+                fields = {contactFields}
+            />
+ */}
+
             <div>
                 <ul className="py-4 space-y-2 sm:px-6 sm:space-y-4 lg:px-8" role="list">
-                    <li class="bg-white px-4 py-6 shadow sm:rounded-lg sm:px-6">
-                        <div class="sm:flex sm:justify-between sm:items-baseline">
-                            <h3 class="text-base font-medium flex">
+                    <li className="bg-white px-4 py-6 shadow sm:rounded-lg sm:px-6">
+                        <div className="sm:flex sm:justify-between sm:items-baseline">
+                            <h3 className="text-base font-medium flex">
                                 <div>
-                                    <span class="text-gray-900 p-3">
+                                    <span className="text-gray-900 p-3">
                                         <span className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-gray-500">
                                             <span className="text-3xl font-medium leading-none text-white">
-                                                {(record.first_name).substring(0,2)}
+                                                {record.first_name ?
+                                                    <> {(record.first_name).substring(0,2)} </>
+                                                :
+                                                    <> {(record.last_name).substring(0,2)} </>
+                                                }
+                                              
                                             </span>
                                         </span>
                                     </span>
                                 </div>
                                 <div>
-                                    <div class="text-gray-600"> {record.first_name} {record.last_name}  </div>
-                                    <div class="text-gray-600"> {record.phone_number} </div>
-                                    <div class="text-gray-600"> {record.email} </div>
+                                    <div className="text-gray-600"> {record.first_name} {record.last_name}  </div>
+                                    <div className="text-gray-600"> {record.phone_number} </div>
+                                    <div className="text-gray-600"> {record.email} </div>
                                 </div>
                                 
                             </h3>
-                            <div class="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
+                            <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
                                 <div>
                                     <button
                                         type="button"
@@ -137,15 +154,15 @@ export default function Detail(props) {
                             </div>
                         </div>
                     </li>
-                    <li class="bg-white px-4 py-6 shadow sm:rounded-lg sm:px-6">
-                        <ul id="tabs" class="inline-flex w-full px-1 pt-2 ">
+                    <li className="bg-white px-4 py-6 shadow sm:rounded-lg sm:px-6">
+                        <ul id="tabs" className="inline-flex w-full px-1 pt-2 ">
                             {Object.entries(tabs).map(([key, tab])=>{
                                 var activeClassName = "px-4 py-2 -mb-px font-semibold text-gray-800 rounded-t opacity-50";
                                 if(activeTab == tab.name){
                                     activeClassName += ' border-b-2 border-blue-400';
                                 }
                                 return(
-                                    <li class={activeClassName} onClick={() => setActiveTab(tab.name)}>
+                                    <li className={activeClassName} onClick={() => setActiveTab(tab.name)}>
                                         <a id="default-tab" href="#{tab.name}"> {tab.name} </a>
                                     </li>
                                 )
@@ -159,7 +176,7 @@ export default function Detail(props) {
                                     hideClass += ' hidden';
                                 }
                                 return(
-                                    <div id={tab.name} class={hideClass}>
+                                    <div id={tab.name} className={hideClass}>
                                         {tab.name == 'Detail' ?
                                             <div>
                                                 {Object.entries(contactFields).map( ([key, field]) => {
@@ -225,14 +242,14 @@ export default function Detail(props) {
 
                                     <form id="update_contact">
                                         <div className="grid gap-6">         
-                                            {Object.entries(contactEditFields).map(([name, field]) => {
+                                            {Object.entries(contactFields).map(([name, field]) => {
                                                 return (
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor={name} className="block text-sm font-medium text-gray-700">
                                                         {field.label}
                                                     </label>
                                                     <div className="mt-1 flex rounded-md shadow-sm">
-                                                        <Input name={name}  value={field.value} required={field.required} type={field.type} id={name} placeholder={field.label} handleChange={handleChange} />
+                                                        <Input name={name}  value={data[name]} required={field.required} type={field.type} id={name} placeholder={field.label} handleChange={handleChange} />
                                                     </div>
                                                     <InputError message={errors.name} />
                                                 </div>

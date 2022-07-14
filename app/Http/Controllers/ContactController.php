@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
+    public $fiedls = [
+        
+    ];
     /**
      * Display a listing of the resource.
      *
@@ -133,7 +136,7 @@ class ContactController extends Controller
             'last_name' => 'required|max:255',
             'email' => 'required|unique:contacts|max:255',
         ]);
-        if($request->id){
+        if($request->id){ 
             $contact = Contact::findOrFail($request->id);
         } else {
             $contact = new Contact();
