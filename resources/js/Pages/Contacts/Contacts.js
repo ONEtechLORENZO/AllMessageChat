@@ -75,7 +75,11 @@ export default function Contacts(props) {
     function createContact(){
         var pristine = new PristineJS(document.getElementById("update_contact"), defaultPristineConfig);
         let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required]'));
+        let newData = Object.assign({}, data);
+            newData['ERROR'] = 'UPDATE';
+            setData(newData);
         if(!is_validated) {
+            
             return false;
         }
 
@@ -271,8 +275,6 @@ export default function Contacts(props) {
                                                                     >
                                                                         {person.name}
                                                                     </Link>
-                                                                
-                                                                
                                                             </div>
                                                         </div>
                                                     </div>

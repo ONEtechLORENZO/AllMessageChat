@@ -71,7 +71,6 @@ export default function Detail(props) {
 
         Inertia.post(route('store_contact'), data, {
             onSuccess: (response) => {
-                //   console.log(response);
                 window.location.reload(false);
                 setOpenCreateContactModal(false);
             },
@@ -180,12 +179,14 @@ export default function Detail(props) {
                                         {tab.name == 'Detail' ?
                                             <div>
                                                 {Object.entries(contactFields).map( ([key, field]) => {
-                                                    return(
-                                                        <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                                            <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
-                                                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"> {record[key]} </dd>
-                                                        </div>
-                                                    )
+                                                    if(key != 'id'){
+                                                        return(
+                                                            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                                <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
+                                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"> {record[key]} </dd>
+                                                            </div>
+                                                        )
+                                                    }
                                                 })}
                                             </div>
                                         :
@@ -243,17 +244,19 @@ export default function Detail(props) {
                                     <form id="update_contact">
                                         <div className="grid gap-6">         
                                             {Object.entries(contactFields).map(([name, field]) => {
-                                                return (
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor={name} className="block text-sm font-medium text-gray-700">
-                                                        {field.label}
-                                                    </label>
-                                                    <div className="mt-1 flex rounded-md shadow-sm">
-                                                        <Input name={name}  value={data[name]} required={field.required} type={field.type} id={name} placeholder={field.label} handleChange={handleChange} />
+                                                
+                                                    return (
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+                                                            {field.label}
+                                                        </label>
+                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                            <Input name={name}  value={data[name]} required={field.required} type={field.type} id={name} placeholder={field.label} handleChange={handleChange} />
+                                                        </div>
+                                                        <InputError message={errors.name} />
                                                     </div>
-                                                    <InputError message={errors.name} />
-                                                </div>
-                                                )
+                                                    )
+                                               
                                             })}                                      
                                         </div>
                                     </form>
