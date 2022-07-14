@@ -1427,6 +1427,9 @@ select {
 	--tw-divide-opacity: 1;
 	border-color: rgba(243, 244, 246, var(--tw-divide-opacity));
 }
+.self-center {
+	align-self: center;
+}
 .self-stretch {
 	align-self: stretch;
 }
@@ -1446,6 +1449,9 @@ select {
 }
 .whitespace-nowrap {
 	white-space: nowrap;
+}
+.whitespace-pre-wrap {
+	white-space: pre-wrap;
 }
 .rounded-md {
 	border-radius: 0.375rem;
@@ -2020,6 +2026,10 @@ select {
 .text-\[\#A31EFF\] {
 	--tw-text-opacity: 1;
 	color: rgba(163, 30, 255, var(--tw-text-opacity));
+}
+.text-\[\#008989\] {
+	--tw-text-opacity: 1;
+	color: rgba(0, 137, 137, var(--tw-text-opacity));
 }
 .text-green-700 {
 	--tw-text-opacity: 1;

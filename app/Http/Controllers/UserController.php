@@ -115,7 +115,7 @@ class UserController extends Controller
 
         $user->save();
         Log::info('Record saved successfully.');
-        return Redirect::route('user');
+        return Redirect::route('usersListing');
     }
 
     /**
