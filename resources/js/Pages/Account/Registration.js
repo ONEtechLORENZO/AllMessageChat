@@ -27,6 +27,7 @@ function Registration(props) {
         business_manager_id: '',
         profile_picture: '',
         profile_description: '',
+        api_partner: false,
         oba: false,
 	    api_token: '',
         callback_url: '',
@@ -133,7 +134,7 @@ function Registration(props) {
                                     <div className="grid grid-cols-6 gap-6">
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="company_name" className="block text-sm font-medium text-gray-700">
-                                                Company Name
+                                                 Name
                                             </label>
                                             <div className="mt-1 flex rounded-md shadow-sm">
                                                 <Input name='company_name' value={data.company_name} required={true} id='company_name' placeholder='Your company name' handleChange={handleChange} />
@@ -157,7 +158,7 @@ function Registration(props) {
                                             </div>
                                             <InputError message={errors.service} />
                                         </div>
-                                    
+{/*                                     
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="company_type" className="block text-sm font-medium text-gray-700">
                                                 Company type
@@ -221,6 +222,7 @@ function Registration(props) {
                                             </div>
                                             <InputError message={errors.type_of_integration} />
                                         </div>
+                                         */}
                                     </div>
                                 </div>
                             </div>
@@ -255,27 +257,35 @@ function Registration(props) {
                                             </div>
                                             <InputError message={errors.src_name} />
                                         </div>
-
                                         <div className="form-group col-span-6 sm:col-span-4">
-                                            <label htmlFor="display_name" className="block text-sm font-medium text-gray-700">
-                                                Display Name
-                                            </label>
-                                            <div className="mt-1 flex rounded-md shadow-sm">
-                                                <Input required={true} name='display_name' value={data.display_name} id='display_name' placeholder='' handleChange={handleChange} />
+                                            <div className="flex items-start">
+                                                <div className="flex items-center h-5">
+                                                    <Checkbox
+                                                        id="api_partner"
+                                                        name="api_partner"
+                                                        handleChange={handleChange}
+                                                        value={data.api_partner}
+                                                    />
+                                                </div>
+                                                <div className="ml-3 text-sm">
+                                                    <label htmlFor="api_partner" className="font-medium text-gray-700">
+                                                        Api partner?
+                                                    </label>
+                                                </div>
+                                                <InputError message={errors.api_partner} />
                                             </div>
-                                            <InputError message={errors.display_name} />
                                         </div>
 
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="business_manager_id" className="block text-sm font-medium text-gray-700">
-                                                Business manager Id
+                                                Facebook BM ID
                                             </label>
                                             <div className="mt-1 flex rounded-md shadow-sm">
                                                 <Input required={true} name='business_manager_id' value={data.business_manager_id} id='business_manager_id' placeholder='' handleChange={handleChange} />
                                             </div>
                                             <InputError message={errors.business_manager_id} />
                                         </div>
-
+{/* 
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="profile_picture" className="block text-sm font-medium text-gray-700">
                                                 Profile picture
@@ -320,6 +330,7 @@ function Registration(props) {
                                                 <InputError message={errors.oba} />
                                             </div>
                                         </div>
+                                         */}
                                     </div>
                                 </div>
                             </div>

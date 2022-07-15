@@ -18,6 +18,11 @@ export default function Dropdown({
             input.current.focus();
         }
     }, []);
+    let requiredFlag = ''; 
+    if(required == true || required == 'true') {
+        requiredFlag = 'required';
+    }
+    required = requiredFlag;
 
     return (
         <select 

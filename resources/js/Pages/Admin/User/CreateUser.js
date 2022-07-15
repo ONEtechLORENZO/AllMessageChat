@@ -10,26 +10,44 @@ import Checkbox from '@/Components/Forms/Checkbox';
 import { Head, useForm, Link } from '@inertiajs/inertia-react';
 import Dropdown from '@/Components/Forms/Dropdown';
 import InputError from '@/Components/Forms/InputError';
-import {defaultPristineConfig} from '@/Pages/Constants';
+import {defaultPristineConfig, currencies} from '@/Pages/Constants';
 import ConfirmPassword from '@/Pages/Auth/ConfirmPassword';
 
-export default function Dashboard(props) {
+export default function CreateUser(props) {
 
-	    const { data, setData, post, processing, errors, reset } = useForm({
-            id: '',    
-            name: '',
-            email: '',
-            password: '',
-            role: '',
-            status: false,
-        });
-
+    const fieldList = {
+        'Personal Information': {
+            'name': {'value': props.user.name, 'label': 'Name', 'type': 'text', 'required': true },
+            'company_name': {'value': props.user.company_name, 'label': 'Company name', 'type': 'text', 'required': false },
+            'email': {'value': props.user.email, 'label': 'Email', 'type': 'email', 'required': true},
+            'phone_number': {'value': props.user.phone_number, 'label': 'Phone number', 'type': 'text', 'required': false },
+            'language': {'value': props.user.language, 'label': 'Language', 'type': 'select', 'required': false , 'options': { 'en': 'English', 'it': 'Italy'}},
+            'currency': {'value': props.user.currency, 'label': 'Currency', 'type': 'select', 'required': false, 'options': currencies },
+            'time_zone': {'value': props.user.time_zone, 'label': 'Time zone', 'type': 'select', 'required': false , 'options': props.time_zone },
+        //    'token': {'value': props.token, 'label': 'Token' , action:'regenarate', 'type': 'text', 'required': false },
+            'status': {'value': (props.user.status == 1) ? 'Active': 'Inactive', 'label': 'Active Status', 'type': 'checkbox', 'required': false },
+        //    'created_at': {'value': formatDate(props.user.created_at), 'label': 'Created At', 'type': 'text', 'required': false },
+        },
+        'Billing Information': {
+            'company_address': {'value': props.user.company_address, 'label': 'Company Address', 'type': 'textarea', 'required': false },
+            'company_country': {'value': props.user.company_country, 'label': 'Company Country', 'type': 'text', 'required': false },
+            'company_vat_id': {'value': props.user.company_vat_id, 'label': 'Company VAT ID', 'type': 'text', 'required': false },
+            'codice_destinatario': {'value': props.user.codice_destinatario, 'label': 'Company Codice Destinatario', 'type': 'text', 'required': false },
+            'admin_email': {'value': props.user.admin_email, 'label': 'Admin email for invoices', 'type': 'email', 'required': false },
+        }
+    };
+	const { data, setData, post, processing, errors, reset } = useForm({});
     useEffect(() => {  
-        if(props.user.id) {
-            let newData = Object.assign({}, props.user);
-            newData['password'] = props.password;
-            setData(newData);
-        }   
+        // Check is admin
+        if(props.user.role == 'Admin' || ( props.user.id == props.currentUser.id)){
+            if(props.user.id) {
+                let newData = Object.assign({}, props.user);
+                newData['password'] = props.password;
+                setData(newData);
+            }  
+        } else {
+            
+        }
     },[]);
 
 	/**
@@ -40,9 +58,23 @@ export default function Dashboard(props) {
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         let newState = Object.assign({}, data);
         newState[name] = value;
-        
+    console.log()    
         setData(newState);
     }
+    /**
+     * Handle select change
+     */ 
+    function handleSelectChange(selected_value, field_info) {
+        let values = [];
+        
+        let newState = Object.assign({}, data);
+        selected_value.map((value) => {
+            values.push(value.code);
+        })
+        newState[field_info.name] = values;
+        setData(newState);
+    }
+
 
     /**
      * Validate the form and submit
@@ -50,11 +82,11 @@ export default function Dashboard(props) {
     function validateAndSubmitForm() 
     {
         var pristine = new PristineJS(document.getElementById("create_user_form"), defaultPristineConfig);
-        let is_validated = pristine.validate();
+        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required="required"], select[data-pristine-required="required"]'));
+
         if(!is_validated) {
             return false;
         }
-
         post(route('store_user_data'));
     }
     const roleOptions = [
@@ -124,7 +156,7 @@ export default function Dashboard(props) {
                 }
                 
                 <Link 
-                    href={route('user')}
+                    href={route('usersListing')}
                         className="ml-3 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
 					>
                     Cancel
@@ -145,6 +177,68 @@ export default function Dashboard(props) {
     	<div className="px-4 py-5 sm:p-6">
     		<form action="#" method="POST" className="container mx-auto px-4 sm:px-6 lg:px-8" id="create_user_form" >
             <input type='hidden' name='id' value={data.id} />
+
+            {Object.entries(fieldList).map(([title, fields]) => {
+                    return(
+                    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4">
+                        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                            <div className="px-4 py-5 sm:px-6">
+                                <h3 className="text-lg leading-6 font-medium text-gray-900">{title}</h3>
+                            </div>
+                            <div className="border-t border-gray-200">
+                                <dl>
+                                    {Object.entries(fields).map(([key, field], index) => {
+
+                                        let error_class = errors[key] == true ? 'is-invalid' : '';
+                                        let bg_color = 'bg-gray-50';
+                                        if(index % 2 == 0) {
+                                            bg_color = 'bg-white';
+                                        }
+                                        var element = '';
+                                        switch(field.type){
+                                            case 'textarea':
+                                                element = <TextArea value={data[key]} name={key} required={field.required} id={key} placeholder='' handleChange={handleChange} />
+                                                break;
+                                            case 'select':
+                                                let select_options = [];
+                                                if(Object.keys(field.options).length){
+                                                    Object.entries(field.options).map(([name, label], index) => {
+                                                        select_options.push({'value': name, 'label': label});
+                                                    })
+                                                }
+                                                
+                                                element = <Dropdown name={key} id={key} value={data[key]} className={`custom-select ${error_class}`} onChange={handleSelectChange} options={select_options} /> ;
+                                                break;    
+                                            case 'checkbox':
+                                                element = <Checkbox name={key} id={key} value={data[key]} className={`custom-select ${error_class}`} handleChange={handleChange} />
+                                                break;
+                                            default :
+                                                element = <Input value={data[key]} type={field.type} name={key} required={field.required} id={key} placeholder='' handleChange={handleChange} />
+                                        }
+                                       
+                                        if( key != 'codice_destinatario' || (key == 'codice_destinatario' && (data.hasOwnProperty('company_country') && data.company_country == 'Italy'))){
+                                        
+                                            return (
+                                                <div key={key} className={`${bg_color} px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <label htmlFor={key} className="block text-sm font-medium text-gray-700">
+                                                            {field.label}
+                                                        </label>
+                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                            {element}
+                                                        </div>
+                                                        <InputError message={errors[key]} />
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
+                                    })}
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                )})}
+{/* 
     		<div className="form-group col-span-6 sm:col-span-4">
     			<label htmlFor="name" className="block text-sm font-medium text-gray-700">
                 	 Name
@@ -154,6 +248,7 @@ export default function Dashboard(props) {
                 </div>
                 <InputError message={errors.name} />
     		</div>
+
     		<div className="form-group col-span-6 sm:col-span-4 mt-5">
     			<label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 	Email
@@ -198,12 +293,13 @@ export default function Dashboard(props) {
                         />
                 </div>
     		</div>
-            }
+            } */}
+
                     </form>
                 </div>                    
                 </div>
 
-                        <Transition.Root show={changePasswordModalOpen} as={Fragment}>
+            <Transition.Root show={changePasswordModalOpen} as={Fragment}>
                 <Dialog as="div" className="fixed z-10 inset-0 overflow-y-auto" initialFocus={cancelButtonRef} onClose={setChangePasswordModalOpen}>
                     <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                         <Transition.Child

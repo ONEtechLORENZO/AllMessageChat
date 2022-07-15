@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Contact;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Redirect;
 
 use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
     public $fiedls = [
-        
+
     ];
     /**
      * Display a listing of the resource.
@@ -132,13 +133,13 @@ class ContactController extends Controller
     {
        
         $user = $request->user();
-        $request->validate([
-            'last_name' => 'required|max:255',
-            'email' => 'required|unique:contacts|max:255',
-        ]);
         if($request->id){ 
             $contact = Contact::findOrFail($request->id);
         } else {
+            $request->validate([
+                'last_name' => 'required|max:255',
+                'email' => 'required|unique:contacts|max:255',
+            ]);
             $contact = new Contact();
         }
         
@@ -149,7 +150,8 @@ class ContactController extends Controller
         $contact->user_id = $user->id;
         $contact->instagram_id = $request->instagram_id;
         $contact->save();
-        return redirect(route('contact_detail', $contact->id))->with('status', 'Profile updated!');
+        return Redirect::route('contact_detail', $contact->id);
+       // return redirect(route('contact_detail', $contact->id))->with('status', 'Profile updated!');
     }
 
     /**

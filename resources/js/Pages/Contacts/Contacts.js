@@ -16,12 +16,12 @@ import { List } from "../../Components/Views/List/Index";
 
 export default function Contacts(props) {
     const [contactFields, setContactFields] = useState({
-        'id': { 'label': '', 'type': 'hidden', 'required': false, 'value': '' },
-        'first_name': { 'label': 'First Name', 'type': 'text', 'required': false, 'value': '' },
-        'last_name': { 'label': 'Last Name', 'type': 'text', 'required': true, 'value': '' } , 
-        'email': { 'label': 'Email', 'type': 'email', 'required': true, 'value': '' }, 
-        'phone_number': { 'label': 'Phone number', 'type': 'text', 'required': false, 'value': '' },
-        'instagram_id': { 'label': 'Instagram ID', 'type': 'text', 'required': false, 'value': '' }, 
+        'id': { 'label': '', 'type': 'hidden', 'required': false },
+        'first_name': { 'label': 'First Name', 'type': 'text', 'required': false },
+        'last_name': { 'label': 'Last Name', 'type': 'text', 'required': true } , 
+        'email': { 'label': 'Email', 'type': 'email', 'required': true }, 
+        'phone_number': { 'label': 'Phone number', 'type': 'text', 'required': false },
+        'instagram_id': { 'label': 'Instagram ID', 'type': 'text', 'required': false }, 
     });
 
     const[contacts, setContacts] = useState(props.contacts);
@@ -73,16 +73,12 @@ export default function Contacts(props) {
      * Store contact info
      */
     function createContact(){
-        var pristine = new PristineJS(document.getElementById("update_contact"), defaultPristineConfig);
-        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required]'));
-        let newData = Object.assign({}, data);
-            newData['ERROR'] = 'UPDATE';
-            setData(newData);
+        var pristine = new PristineJS(document.getElementById("contact_form"), defaultPristineConfig);
+        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required="required"], select[data-pristine-required="required"]'));
+
         if(!is_validated) {
-            
             return false;
         }
-
         Inertia.post(route('store_contact'), data, {
             onSuccess: (response) => {
                 setOpenCreateContactModal(false);
@@ -357,7 +353,7 @@ export default function Contacts(props) {
                                             <p className="text-sm text-gray-500 pt-2 pb-4">
                                                 Display the specific contacts only 
                                             </p> 
-                                            <form id="update_contact">
+                                            <form id="filter_contact" >
                                             <div className="grid gap-6">                                                
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="template_name" className="block text-sm font-medium text-gray-700">
@@ -471,19 +467,42 @@ export default function Contacts(props) {
                                         Display the specific contacts only 
                                     </p>
 
-                                    <form id="update_contact">
+                                    <form id="contact_form">
                                         <div className="grid gap-6">         
                                             {Object.entries(contactFields).map(([name, field]) => {
-                                              
+                                                var element = '';
+                                                switch(field.type){
+                                                    case 'textarea':
+                                                        element = <TextArea value={data[name]} name={name} required={field.required} id={name} placeholder='' handleChange={handleChange} />
+                                                        break;
+                                                    case 'select':
+                                                        let select_options = [];
+                                                        if(Object.keys(field.options).length){
+                                                            Object.entries(field.options).map(([name, label], index) => {
+                                                                select_options.push({'value': name, 'label': label});
+                                                            })
+                                                        }
+                                                        
+                                                        element = <Dropdown name={name} id={name} value={data[name]} className={`custom-select ${error_class}`} onChange={handleSelectChange} options={select_options} /> ;
+                                                        break;    
+                                                    case 'checkbox':
+                                                        element = <Checkbox name={name} id={name} value={data[name]} className={`custom-select ${error_class}`} handleChange={handleChange} />
+                                                        break;
+                                                    default :
+                                                        element = <Input value={data[name]} type={field.type} name={name} required={field.required} id={name} placeholder={field.label} handleChange={handleChange} />
+                                                }
                                                 return (
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor={name} className="block text-sm font-medium text-gray-700">
-                                                        {field.label}
+                                                        {field.label} 
+                                                        {field.required &&
+                                                            <span className="text-sm text-red-700"> *</span>
+                                                        }
                                                     </label>
                                                     <div className="mt-1 flex rounded-md shadow-sm">
-                                                        <Input name={name}  value={data[name]} required={field.required} type={field.type} id={name} placeholder={field.label} handleChange={handleChange} />
+                                                        {element}
                                                     </div>
-                                                    <InputError message={errors.name} />
+                                                    <InputError message={props.errors[name]} />
                                                 </div>
                                                 )
                                             })}                                      

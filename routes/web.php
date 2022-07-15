@@ -41,6 +41,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Profile
     Route::get('/user/profile', [UserController::class, 'userDetail'])->name('profile');
     Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('user_profile');
+    Route::get('/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_profile');
+    Route::post('/user/registration', [UserController::class, 'storeUserRegistration'])->name('store_user_data');
     Route::get('/image/{type}/{id}', [ImageController::class, 'showImage'])->name('show_image');
     Route::post('/user/regenerate_token', [UserController::class, 'regenerateToken'])->name('regenerate_token');
 
@@ -71,8 +73,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/sendMessage', [MsgController::class, 'sendMessage'])->name('send_message_to_contact');
 
     //Contact
-    Route::get('/contact/{id}', [ContactController::class, 'contactDetail'])->name('contact_detail');
     Route::get('/contacts', [ContactController::class, 'contactList'])->name('contacts');
+    Route::get('/contact/{id}', [ContactController::class, 'contactDetail'])->name('contact_detail');
     Route::post('/updateContact', [ContactController::class, 'storeContact'])->name('store_contact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('get_contact_data');
 
@@ -85,7 +87,6 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_user');
     Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_user');
     Route::get('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_user');
-    Route::post('/admin/user/registration', [UserController::class, 'storeUserRegistration'])->name('store_user_data');
     Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('user_detail');
     Route::post('/admin/user/change_password/{id}', [UserController::class, 'changePassword'])->name('change_password');
 

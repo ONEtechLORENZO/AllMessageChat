@@ -20,6 +20,11 @@ export default function Input({
         }
     }, []);
 
+    let requireFlag = ''; 
+    if(required == true || required == 'true') {
+        requireFlag = 'required';
+    }
+
     return (
         <input
             type={type}
@@ -32,8 +37,8 @@ export default function Input({
             }
             ref={input}
             autoComplete={autoComplete}
-            required={required}
-            data-pristine-required={required}
+            required={requireFlag}
+            data-pristine-required={requireFlag}
             placeholder={placeholder}
             onChange={(e) => handleChange(e)}
         />
