@@ -35,12 +35,10 @@ class ContactController extends Controller
         $user = Auth::user();
         $user_id = $request->user()->id;        
         $key = $request->query('search');
+        $contactList = [];
         //for search
         if($key)
         {
-            $limit = 5;
-            $user = Auth::user();
-            $user_id = $request->user()->id; 
             $contact_col=[];
             $contact_cols = ['first_name','last_name','phone_number','email'];
             $contacts = Contact::select('*')
@@ -58,8 +56,7 @@ class ContactController extends Controller
             }   
             foreach($contacts as $contact){
                 $name = $contact->first_name . ' ' .$contact->last_name;
-                $logo = trim($name , ' '); 
-    
+                $logo = trim($name , ' ');     
                 $contactList[$contact->id] = [
                     'logo' => $logo,
                     'id' => $contact->id,
@@ -69,11 +66,9 @@ class ContactController extends Controller
                     'number' => ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id 
                 ];
             }
-            $currentPage = (isset($_GET['page'])) ? $_GET['page'] : 1;
-            return Inertia::render('Contacts/Contacts', [
-                'contacts' => $contactList,
-                'currentPage' => $currentPage,
-                'limit' => $limit
+                return Inertia::render('Contacts/Contacts', [
+                'contacts' => $contactList      
+                
             ]);
 }
 
@@ -156,7 +151,7 @@ class ContactController extends Controller
     /**
      * List contacts
      */
-    public function contactList(Request $request)
+    /*public function contactList(Request $request)
     {
         $contactList = [];
                 $contacts = Contact::where('user_id', $user->id )->get() ;                   
@@ -171,12 +166,13 @@ class ContactController extends Controller
                 'email' => $contact->email,
                 'number' => ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id 
             ];
-        }        
+        }
+        
         return Inertia::render('Contacts/Contacts', [
             'contacts' => $contactList,
             
         ]);
-    }
+    }*/
 
     /**
      * Show contact detail
