@@ -7,6 +7,13 @@ import Authenticated from "../../Layouts/Authenticated";
 
 export default function Contact(props) {
     const[contacts, setContacts] = useState(props.contacts)
+    
+    //const [searchKey , setSearchKey] = useState("");
+    const search = (e) => {  
+   
+        var searchtext=document.getElementById('search').value;  
+        window.location.replace("contactlists?page="+pageInfo.currentPage+"&search="+(searchtext));
+    }
 
     return (
         <Authenticated>
@@ -25,13 +32,23 @@ export default function Contact(props) {
                                 />
                             </div>
                             <input
-                                type="email"
-                                name="email"
-                                id="email"
+                                type="search"
+                                name="search"
+                                id="search"
                                 className="focus:ring-indigo-500 focus:border-primary/50 border-0 block w-full pl-10 sm:text-sm  rounded-md"
                                 placeholder="Search"
                             />
                         </div>
+                         <div>
+                         <button
+                      onClick={(e)=>search(e)}
+                       classname="focus:ring-indigo-500 focus:border-primary/50 border-0 block w-full pl-10 sm:text-sm  rounded-md"
+                    >
+                        <span>
+                        Search
+                        </span>
+                    </button>
+                    </div>
                         <div className="flex items-center text-[#3D4459] gap-2 ml-5">
                             <svg
                                 width={22}

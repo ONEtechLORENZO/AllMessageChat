@@ -72,7 +72,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Contact
     Route::get('/contact/{id}', [ContactController::class, 'contactDetail'])->name('contact_detail');
-    Route::get('/contacts', [ContactController::class, 'contactList'])->name('contacts');
+    Route::get('/contacts', [ContactController::class, 'list'])->name('contacts');
     Route::post('/updateContact', [ContactController::class, 'storeContact'])->name('store_contact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('get_contact_data');
 

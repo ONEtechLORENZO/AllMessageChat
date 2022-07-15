@@ -4,14 +4,79 @@ namespace App\Http\Controllers;
 
 use App\Models\Contact;
 use Inertia\Inertia;
-
 use Illuminate\Http\Request;
+use Auth;
+use App\Models\MessageLog;
+use App\Models\IncomingUrl;
+use App\Models\Msg;
+use App\Models\MessageResponse;
+use App\Models\Account;
+use App\Models\User;
+use App\Models\Template;
+use App\Models\Message;
+use Illuminate\Support\Facades\Log;
+use DateTime;
+use Illuminate\Pagination\Paginator;
+
 
 class ContactController extends Controller
 {
     public $fiedls = [
         
     ];
+
+
+
+
+    //Display list of contacts
+    public function list(Request $request)
+    {
+        $limit = 5;
+        $user = Auth::user();
+        $user_id = $request->user()->id;        
+        $key = $request->query('search');
+        //for search
+        if($key)
+        {
+            $limit = 5;
+            $user = Auth::user();
+            $user_id = $request->user()->id; 
+            $contact_col=[];
+            $contact_cols = ['first_name','last_name','phone_number','email'];
+            $contacts = Contact::select('*')
+                      ->orderBy('id', 'desc')->where('user_id', $user_id)
+                       ->where(function ($query) use ($key,$contact_cols) {    
+                        foreach($contact_cols as $contact_col){         
+                         $query->orWhere($contact_col, 'like', '%' . $key. '%');                            
+            }})
+            ->paginate($limit);        
+        }
+
+        //to dispaly the contacts
+        else{          
+        $contacts = Contact::where('user_id', $user_id)->paginate($limit);       
+            }   
+            foreach($contacts as $contact){
+                $name = $contact->first_name . ' ' .$contact->last_name;
+                $logo = trim($name , ' '); 
+    
+                $contactList[$contact->id] = [
+                    'logo' => $logo,
+                    'id' => $contact->id,
+                    'name' => $name,
+                    'last_name' => $contact->last_name,
+                    'email' => $contact->email,
+                    'number' => ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id 
+                ];
+            }
+            $currentPage = (isset($_GET['page'])) ? $_GET['page'] : 1;
+            return Inertia::render('Contacts/Contacts', [
+                'contacts' => $contactList,
+                'currentPage' => $currentPage,
+                'limit' => $limit
+            ]);
+}
+
     /**
      * Display a listing of the resource.
      *
@@ -94,12 +159,10 @@ class ContactController extends Controller
     public function contactList(Request $request)
     {
         $contactList = [];
-        $user = $request->user();
-        $contacts = Contact::where('user_id', $user->id )->get();
-        foreach($contacts as $contact){
+                $contacts = Contact::where('user_id', $user->id )->get() ;                   
+                 foreach($contacts as $contact){
             $name = $contact->first_name . ' ' .$contact->last_name;
             $logo = trim($name , ' '); 
-
             $contactList[$contact->id] = [
                 'logo' => $logo,
                 'id' => $contact->id,
@@ -108,9 +171,10 @@ class ContactController extends Controller
                 'email' => $contact->email,
                 'number' => ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id 
             ];
-        }
+        }        
         return Inertia::render('Contacts/Contacts', [
-            'contacts' => $contactList
+            'contacts' => $contactList,
+            
         ]);
     }
 
