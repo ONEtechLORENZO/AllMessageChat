@@ -125,9 +125,9 @@ function Registration(props) {
                         <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
                             <div className="md:grid md:grid-cols-3 md:gap-6">
                                 <div className="md:col-span-1">
-                                    <h3 className="text-lg font-medium leading-6 text-gray-900">Company Information</h3>
+                                    <h3 className="text-lg font-medium leading-6 text-gray-900">Account Information</h3>
                                     <p className="mt-1 text-sm text-gray-500">
-                                        Enter your company information. We will be using this information to create your business account
+                                        Enter your account information. We will be using this information to create your business account
                                     </p>
                                 </div>
                                 <div className="mt-5 md:mt-0 md:col-span-2">
@@ -137,7 +137,7 @@ function Registration(props) {
                                                  Name
                                             </label>
                                             <div className="mt-1 flex rounded-md shadow-sm">
-                                                <Input name='company_name' value={data.company_name} required={true} id='company_name' placeholder='Your company name' handleChange={handleChange} />
+                                                <Input name='company_name' value={data.company_name} required={true} id='company_name' placeholder='Your Account name' handleChange={handleChange} />
                                             </div>
                                             <InputError message={errors.company_name} />
                                         </div>

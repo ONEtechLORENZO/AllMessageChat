@@ -5,14 +5,77 @@ namespace App\Http\Controllers;
 use App\Models\Contact;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
-
 use Illuminate\Http\Request;
+use Auth;
+use App\Models\MessageLog;
+use App\Models\IncomingUrl;
+use App\Models\Msg;
+use App\Models\MessageResponse;
+use App\Models\Account;
+use App\Models\User;
+use App\Models\Template;
+use App\Models\Message;
+use Illuminate\Support\Facades\Log;
+use DateTime;
+use Illuminate\Pagination\Paginator;
+
 
 class ContactController extends Controller
 {
-    public $fiedls = [
+    public $limit = 5;
 
-    ];
+    /**
+     * Display a listing of the resource.
+     */
+    public function list(Request $request)
+    {
+        $limit = $this->limit;
+        $user = Auth::user();
+        $user_id = $request->user()->id;        
+        $key = $request->query('search');
+        $contactList = [];
+        if($key) {
+            $contact_cols = ['first_name','last_name','phone_number','email'];
+            $contacts = Contact::orderBy('id', 'desc')
+                        ->where('user_id', $user_id)
+                        ->where(function ($query) use ($key, $contact_cols) {    
+                            foreach($contact_cols as $contact_col) {         
+                                $query->orWhere($contact_col, 'like', '%' . $key. '%');                            
+                            }
+                        })
+                        ->paginate($limit);        
+        } else {          
+            $contacts = Contact::where('user_id', $user_id)->paginate($limit);       
+        }
+
+        foreach($contacts as $contact){
+            $name = $contact->first_name . ' ' .$contact->last_name;
+            $logo = trim($name , ' ');     
+            $contactList[$contact->id] = [
+                'logo' => $logo,
+                'id' => $contact->id,
+                'name' => $name,
+                'last_name' => $contact->last_name,
+                'email' => $contact->email,
+                'number' => ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id 
+            ];
+        }
+            return Inertia::render('Contacts/Contacts', [
+            'contacts' => $contactList,
+            'paginator' => [
+                'firstPageUrl' => $contacts->url(1),
+                'previousPageUrl' => $contacts->previousPageUrl(),
+                'nextPageUrl' => $contacts->nextPageUrl(),
+                'lastPageUrl' => $contacts->url($contacts->lastPage()),  
+                'currentPage' => $contacts->currentPage(),
+                'total' => $contacts->total(),
+                'count' => $contacts->count(),
+                'lastPage' => $contacts->lastPage(),
+                'perPage' => $contacts->perPage(),
+            ],   
+        ]);
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -92,15 +155,13 @@ class ContactController extends Controller
     /**
      * List contacts
      */
-    public function contactList(Request $request)
+    /*public function contactList(Request $request)
     {
         $contactList = [];
-        $user = $request->user();
-        $contacts = Contact::where('user_id', $user->id )->get();
-        foreach($contacts as $contact){
+            $contacts = Contact::where('user_id', $user->id )->get() ;                   
+            foreach($contacts as $contact){
             $name = $contact->first_name . ' ' .$contact->last_name;
             $logo = trim($name , ' '); 
-
             $contactList[$contact->id] = [
                 'logo' => $logo,
                 'id' => $contact->id,
@@ -111,9 +172,10 @@ class ContactController extends Controller
             ];
         }
         return Inertia::render('Contacts/Contacts', [
-            'contacts' => $contactList
+            'contacts' => $contactList,
+            
         ]);
-    }
+    }*/
 
     /**
      * Show contact detail
@@ -134,6 +196,10 @@ class ContactController extends Controller
        
         $user = $request->user();
         if($request->id){ 
+            $request->validate([
+                'last_name' => 'required|max:255',
+                'email' => 'required|max:255',
+            ]);
             $contact = Contact::findOrFail($request->id);
         } else {
             $request->validate([

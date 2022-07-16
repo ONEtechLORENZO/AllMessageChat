@@ -13,6 +13,7 @@ import languages from '@/Pages/languages';
 import PristineJS from 'pristinejs';
 import { Inertia } from '@inertiajs/inertia';
 import { List } from "../../Components/Views/List/Index";
+import Pagination from "@/Components/Pagination";
 
 export default function Contacts(props) {
     const [contactFields, setContactFields] = useState({
@@ -38,18 +39,19 @@ export default function Contacts(props) {
         const name = event.target.name;
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         let newData = Object.assign({}, data);
-      //  let newState = Object.assign({}, contactFields);
         if(event.target.type == 'file' && event.target.files) {
             newData[name] = event.target.files[0];
         }
         else {
             newData[name] = value;
-    //        newState[name].value = value;
         }
         setData(newData);
-    //    setContactFields(newState);
     }
-    
+    //search contact
+    const search = (e) => {  
+        var searchtext=document.getElementById('search').value;  
+        window.location.replace("contacts?"+"search="+(searchtext));
+    }
     /**
      * Handle select change
      */ 
@@ -79,6 +81,7 @@ export default function Contacts(props) {
         if(!is_validated) {
             return false;
         }
+       
         Inertia.post(route('store_contact'), data, {
             onSuccess: (response) => {
                 setOpenCreateContactModal(false);
@@ -95,7 +98,6 @@ export default function Contacts(props) {
             url: route('get_contact_data', {'contact_id': id}),
         })
         .then( (response) =>{
-           
             let newState = Object.assign({}, contactFields);
             let newData = Object.assign({}, data);
             {Object.entries(contactFields).map(([name, field]) => {
@@ -130,13 +132,21 @@ export default function Contacts(props) {
                                 />
                             </div>
                             <input
-                                type="email"
-                                name="email"
-                                id="email"
+                                type="search"
+                                name="search"
+                                id="search"
                                 className="focus:ring-indigo-500 focus:border-primary/50 border-0 block w-full pl-10 sm:text-sm  rounded-md"
                                 placeholder="Search"
                             />
                         </div>
+                        <div>
+                         <button
+                      onClick={(e)=>search(e)}
+                      className="inline-flex items-center justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+                        >                        
+                        Search                        
+                    </button>
+                    </div>
                         <div className="flex items-center text-[#3D4459] gap-2 ml-5">
                             <svg
                                 width={22}
@@ -310,6 +320,7 @@ export default function Contacts(props) {
                                 </table>
                             </div>
                         </div>
+                        <Pagination paginator={props.paginator} />
                     </div>
                 </div>
             </div>

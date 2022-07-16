@@ -10,7 +10,7 @@ import Checkbox from '@/Components/Forms/Checkbox';
 import { Head, useForm, Link } from '@inertiajs/inertia-react';
 import Dropdown from '@/Components/Forms/Dropdown';
 import InputError from '@/Components/Forms/InputError';
-import {defaultPristineConfig, currencies} from '@/Pages/Constants';
+import {defaultPristineConfig, currencies, countries} from '@/Pages/Constants';
 import ConfirmPassword from '@/Pages/Auth/ConfirmPassword';
 
 export default function CreateUser(props) {
@@ -24,13 +24,13 @@ export default function CreateUser(props) {
             'language': {'value': props.user.language, 'label': 'Language', 'type': 'select', 'required': false , 'options': { 'en': 'English', 'it': 'Italy'}},
             'currency': {'value': props.user.currency, 'label': 'Currency', 'type': 'select', 'required': false, 'options': currencies },
             'time_zone': {'value': props.user.time_zone, 'label': 'Time zone', 'type': 'select', 'required': false , 'options': props.time_zone },
-        //    'token': {'value': props.token, 'label': 'Token' , action:'regenarate', 'type': 'text', 'required': false },
+            'token': {'value': props.token, 'label': 'Token' , action:'regenarate', 'type': 'text', 'required': false },
             'status': {'value': (props.user.status == 1) ? 'Active': 'Inactive', 'label': 'Active Status', 'type': 'checkbox', 'required': false },
         //    'created_at': {'value': formatDate(props.user.created_at), 'label': 'Created At', 'type': 'text', 'required': false },
         },
         'Billing Information': {
             'company_address': {'value': props.user.company_address, 'label': 'Company Address', 'type': 'textarea', 'required': false },
-            'company_country': {'value': props.user.company_country, 'label': 'Company Country', 'type': 'text', 'required': false },
+            'company_country': {'value': props.user.company_country, 'label': 'Company Country', 'type': 'select', 'required': false, 'options': countries },
             'company_vat_id': {'value': props.user.company_vat_id, 'label': 'Company VAT ID', 'type': 'text', 'required': false },
             'codice_destinatario': {'value': props.user.codice_destinatario, 'label': 'Company Codice Destinatario', 'type': 'text', 'required': false },
             'admin_email': {'value': props.user.admin_email, 'label': 'Admin email for invoices', 'type': 'email', 'required': false },
@@ -58,21 +58,23 @@ export default function CreateUser(props) {
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         let newState = Object.assign({}, data);
         newState[name] = value;
-    console.log()    
         setData(newState);
     }
     /**
      * Handle select change
      */ 
-    function handleSelectChange(selected_value, field_info) {
+    function handleSelectChange(event) {
         let values = [];
-        
+       // console.log(event.target.value)
+        const name = event.target.name;
+        /*
         let newState = Object.assign({}, data);
         selected_value.map((value) => {
             values.push(value.code);
         })
         newState[field_info.name] = values;
         setData(newState);
+        */
     }
 
 
@@ -83,7 +85,6 @@ export default function CreateUser(props) {
     {
         var pristine = new PristineJS(document.getElementById("create_user_form"), defaultPristineConfig);
         let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required="required"], select[data-pristine-required="required"]'));
-
         if(!is_validated) {
             return false;
         }
@@ -156,7 +157,7 @@ export default function CreateUser(props) {
                 }
                 
                 <Link 
-                    href={route('usersListing')}
+                    href={ props.currentUser.role == 'Admin' ? route('usersListing') : route('user_profile', props.user.id)}
                         className="ml-3 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
 					>
                     Cancel
@@ -188,7 +189,7 @@ export default function CreateUser(props) {
                             <div className="border-t border-gray-200">
                                 <dl>
                                     {Object.entries(fields).map(([key, field], index) => {
-
+                                        let showField = true;
                                         let error_class = errors[key] == true ? 'is-invalid' : '';
                                         let bg_color = 'bg-gray-50';
                                         if(index % 2 == 0) {
@@ -207,7 +208,7 @@ export default function CreateUser(props) {
                                                     })
                                                 }
                                                 
-                                                element = <Dropdown name={key} id={key} value={data[key]} className={`custom-select ${error_class}`} onChange={handleSelectChange} options={select_options} /> ;
+                                                element = <Dropdown name={key} id={key} value={data[key]} className={`custom-select ${error_class}`} handleChange={handleChange} options={select_options} /> ;
                                                 break;    
                                             case 'checkbox':
                                                 element = <Checkbox name={key} id={key} value={data[key]} className={`custom-select ${error_class}`} handleChange={handleChange} />
@@ -215,14 +216,24 @@ export default function CreateUser(props) {
                                             default :
                                                 element = <Input value={data[key]} type={field.type} name={key} required={field.required} id={key} placeholder='' handleChange={handleChange} />
                                         }
-                                       
-                                        if( key != 'codice_destinatario' || (key == 'codice_destinatario' && (data.hasOwnProperty('company_country') && data.company_country == 'Italy'))){
-                                        
+                                        if(key == 'status' && props.currentUser.role != 'Admin'){
+                                            showField = false;
+                                        }
+                                        if(key == 'codice_destinatario' && data.company_country != 'IT'){
+                                            showField = false;
+                                        }
+                                        if(key == 'token'){
+                                            showField = false;
+                                        }
+                                        if(showField){
                                             return (
                                                 <div key={key} className={`${bg_color} px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
                                                     <div className="form-group col-span-6 sm:col-span-4">
                                                         <label htmlFor={key} className="block text-sm font-medium text-gray-700">
                                                             {field.label}
+                                                            {field.required &&
+                                                                <span className="text-sm text-red-700"> *</span>
+                                                            }
                                                         </label>
                                                         <div className="mt-1 flex rounded-md shadow-sm">
                                                             {element}

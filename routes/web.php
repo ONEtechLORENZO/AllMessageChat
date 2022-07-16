@@ -73,7 +73,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/sendMessage', [MsgController::class, 'sendMessage'])->name('send_message_to_contact');
 
     //Contact
-    Route::get('/contacts', [ContactController::class, 'contactList'])->name('contacts');
+    Route::get('/contacts', [ContactController::class, 'list'])->name('contacts');
     Route::get('/contact/{id}', [ContactController::class, 'contactDetail'])->name('contact_detail');
     Route::post('/updateContact', [ContactController::class, 'storeContact'])->name('store_contact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('get_contact_data');

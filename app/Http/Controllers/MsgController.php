@@ -166,6 +166,7 @@ class MsgController extends Controller
                 'previousPageUrl' => $messages->previousPageUrl(),
                 'nextPageUrl' => $messages->nextPageUrl(),
                 'lastPageUrl' => $messages->url($messages->lastPage()),  
+                'currentPage' => $messages->currentPage(),
                 'total' => $messages->total(),
                 'count' => $messages->count(),
                 'lastPage' => $messages->lastPage(),

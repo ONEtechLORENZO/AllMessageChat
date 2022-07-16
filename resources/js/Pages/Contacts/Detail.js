@@ -8,7 +8,7 @@ import InputError from '@/Components/Forms/InputError';
 import PristineJS from 'pristinejs';
 import categories, {defaultPristineConfig} from '@/Pages/Constants';
 import { Inertia } from '@inertiajs/inertia';
-import DetailView from "@/Components/Views/Detail/Index";
+/// import DetailView from "@/Components/Views/Detail/Index";
 
 export default function Detail(props) {
     /*
@@ -64,7 +64,7 @@ export default function Detail(props) {
      */
     function updateContact(){
         var pristine = new PristineJS(document.getElementById("update_contact"), defaultPristineConfig);
-        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required]'));
+        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required="required"], select[data-pristine-required="required"]'));
         if(!is_validated) {
             return false;
         }

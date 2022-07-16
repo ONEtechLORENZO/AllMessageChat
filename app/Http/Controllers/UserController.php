@@ -195,7 +195,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $password = $user->password;
         $currentUser = $request->user();
-        if($user->role == 'Admin' || $user->id == $currentUser->id){
+        if($currentUser->role == 'Admin' || $user->id == $currentUser->id){
             return Inertia::render('Admin/User/CreateUser', [
                     'user' => $user, 
                     'password' => $password, 
@@ -219,7 +219,12 @@ class UserController extends Controller
         }
         
         $token = $user->api_token;
-        return Inertia::render('Admin/User/UserDetail', ['user' => $user, 'token' => $token]);
+        return Inertia::render('Admin/User/UserDetail', [
+                'user' => $user, 
+                'token' => $token,
+                'current_user' => $request->user(),
+                'time_zone' => $this->timezones
+            ]);
     }
 
     /**
@@ -351,20 +356,20 @@ class UserController extends Controller
         $webhookEvents = WebhookEvent::where('account_id', $id)->get();
 
         $field_info = [
-            'company_name' => ['label' => 'Company name'],
+            'company_name' => ['label' => 'Name'],
             'service' => ['label' => 'Service'],
-            'company_type' => ['label' => 'Company type'],
-            'website' => ['label' => 'Website'],
-            'email' => ['label' => 'Email'],
-            'estimated_launch_date' => ['label' => 'Estimated launch date'],
-            'type_of_integration' => ['label' => 'Type of integration'],
-            'display_name' => ['label' => 'Display name', 'show' => ['whatsapp']],
+            // 'company_type' => ['label' => 'Company type'],
+            // 'website' => ['label' => 'Website'],
+            // 'email' => ['label' => 'Email'],
+            // 'estimated_launch_date' => ['label' => 'Estimated launch date'],
+            // 'type_of_integration' => ['label' => 'Type of integration'],
+            // 'display_name' => ['label' => 'Display name', 'show' => ['whatsapp']],
             'phone_number' => ['label' => 'Phone number', 'show' => ['whatsapp']],
             'src_name' => ['label' => 'Source name', 'show' => ['whatsapp']],
             'business_manager_id' => ['label' => 'Business manager ID', 'show' => ['whatsapp']],
-            'profile_picture' => ['label' => 'Profile picture', 'type' => 'image', 'show' => ['whatsapp']],
-            'profile_description' => ['label' => 'Profile description', 'show' => ['whatsapp']],
-            'status' => ['label' => 'Status'],
+            // 'profile_picture' => ['label' => 'Profile picture', 'type' => 'image', 'show' => ['whatsapp']],
+            // 'profile_description' => ['label' => 'Profile description', 'show' => ['whatsapp']],
+            // 'status' => ['label' => 'Status'],
         ];
 
         return Inertia::render('Account/Detail', [
