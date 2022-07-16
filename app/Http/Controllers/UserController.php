@@ -426,28 +426,28 @@ class UserController extends Controller
 
             $request->validate([
                 'company_name' => 'required|max:255',
-                'company_type' => 'required',
-                'website' => 'required|max:255',
-                'email' => 'required|max:255|email',
-                'service' => 'required',
-                'estimated_launch_date' => 'required|date',
-                'type_of_integration' => 'required',
-                'phone_number' => $phone_validation,
-                'display_name' => 'required|max:255',
-                'business_manager_id' => 'required|max:255',
-                'profile_description' => 'required|max:139',
-                'oba' => 'required|boolean',
+                // 'company_type' => 'required',
+                // 'website' => 'required|max:255',
+                // 'email' => 'required|max:255|email',
+                 'service' => 'required',
+                // 'estimated_launch_date' => 'required|date',
+                // 'type_of_integration' => 'required',
+                // 'phone_number' => $phone_validation,
+                // 'display_name' => 'required|max:255',
+                // 'business_manager_id' => 'required|max:255',
+                // 'profile_description' => 'required|max:139',
+                // 'oba' => 'required|boolean',
             ]);
         }
         else {
             $request->validate([
                 'company_name' => 'required|max:255',
-                'company_type' => 'required',
-                'website' => 'required|max:255',
-                'email' => 'required|max:255|email',
-                'service' => 'required',
-                'estimated_launch_date' => 'required|date',
-                'type_of_integration' => 'required',
+                // 'company_type' => 'required',
+                // 'website' => 'required|max:255',
+                // 'email' => 'required|max:255|email',
+                 'service' => 'required',
+                // 'estimated_launch_date' => 'required|date',
+                // 'type_of_integration' => 'required',
             ]);
         }
 
@@ -459,8 +459,8 @@ class UserController extends Controller
 
             if($service == 'whatsapp') {
                 // Storing the profile picture
-                $path = $request->file('profile_picture')->store('profile_pictures');
-                $account->profile_picture = $path;
+            //    $path = $request->file('profile_picture')->store('profile_pictures');
+            //    $account->profile_picture = $path;
             }
             $account->status = 'New'; // Setting the status as New.
         }
@@ -478,6 +478,7 @@ class UserController extends Controller
         
         // Setting logged in user id
         $account->user_id = $user_id;
+        
         $account->save();
 
         return Redirect::route('dashboard');
@@ -490,7 +491,7 @@ class UserController extends Controller
     {
         $accountId = $request->get('id');
         $user_id = $request->user()->id;
-        Account::destroy($accountId);
+        $account = Account::where('id', $accountId)->delete();
         $accounts = Account::where('user_id', $user_id)->get();
         echo json_encode(['accounts' => $accounts]);
         die;

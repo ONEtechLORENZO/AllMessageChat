@@ -22,8 +22,8 @@ export default function Dashboard(props) {
               label: 'Yes',
               onClick: () => {
                 axios({
-                    method: 'delete',
-                    url: route( 'delete_account', accountId),
+                    method: 'post',
+                    url: route( 'delete_account'),
                     data: {
                         id: accountId
                     }

@@ -21,7 +21,6 @@ export default function UserDetail(props) {
             'time_zone': {'value': props.user.time_zone, 'label': 'Time zone', 'type': 'select', 'required': false , 'options': props.time_zone },
             'token': {'value': props.token, 'label': 'Token' , action:'regenarate', 'type': 'text', 'required': false },
             'status': {'value': (props.user.status == 1) ? 'Active': 'Inactive', 'label': 'Active Status', 'type': 'checkbox', 'required': false },
-        //    'created_at': {'value': formatDate(props.user.created_at), 'label': 'Created At', 'type': 'text', 'required': false },
         },
         'Billing Information': {
             'company_address': {'value': props.user.company_address, 'label': 'Company Address', 'type': 'textarea', 'required': false },

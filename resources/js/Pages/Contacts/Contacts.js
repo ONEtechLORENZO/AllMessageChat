@@ -5,7 +5,7 @@ import React, { Fragment, useRef, useState } from "react";
 import Input from '@/Components/Forms/Input';
 import InputError from '@/Components/Forms/InputError';
 import Authenticated from "../../Layouts/Authenticated";
-import { Head, useForm, Link } from '@inertiajs/inertia-react';
+import { useForm, Link } from '@inertiajs/inertia-react';
 import Dropdown from '@/Components/Forms/Dropdown';
 import categories, {defaultPristineConfig} from '@/Pages/Constants';
 import Select from 'react-select';
@@ -481,6 +481,9 @@ export default function Contacts(props) {
                                     <form id="contact_form">
                                         <div className="grid gap-6">         
                                             {Object.entries(contactFields).map(([name, field]) => {
+                                                if(mode == 'create'){
+                                                    data[name] = '';
+                                                }
                                                 var element = '';
                                                 switch(field.type){
                                                     case 'textarea':

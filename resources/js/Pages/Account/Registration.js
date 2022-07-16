@@ -134,7 +134,7 @@ function Registration(props) {
                                     <div className="grid grid-cols-6 gap-6">
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="company_name" className="block text-sm font-medium text-gray-700">
-                                                 Name
+                                                 Name <span className="text-sm text-red-700"> *</span>
                                             </label>
                                             <div className="mt-1 flex rounded-md shadow-sm">
                                                 <Input name='company_name' value={data.company_name} required={true} id='company_name' placeholder='Your Account name' handleChange={handleChange} />
@@ -144,7 +144,7 @@ function Registration(props) {
 
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="type_of_integration" className="block text-sm font-medium text-gray-700">
-                                                Service
+                                                Service <span className="text-sm text-red-700"> *</span>
                                             </label>
                                             <div className="mt-1">
                                                 <Dropdown 
