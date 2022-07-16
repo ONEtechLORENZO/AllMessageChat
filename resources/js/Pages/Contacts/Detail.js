@@ -8,7 +8,7 @@ import InputError from '@/Components/Forms/InputError';
 import PristineJS from 'pristinejs';
 import categories, {defaultPristineConfig} from '@/Pages/Constants';
 import { Inertia } from '@inertiajs/inertia';
-/// import DetailView from "@/Components/Views/Detail/Index";
+import DetailView from "@/Components/Views/Detail/Index";
 
 export default function Detail(props) {
     /*
@@ -102,7 +102,7 @@ export default function Detail(props) {
 
     return (
         <Authenticated>
-{/* 
+
             <DetailView
                 record = {record}
                 module = 'Contacts'
@@ -111,7 +111,7 @@ export default function Detail(props) {
                 tabs = {tabs}
                 fields = {contactFields}
             />
- */}
+ 
 
             <div>
                 <ul className="py-4 space-y-2 sm:px-6 sm:space-y-4 lg:px-8" role="list">

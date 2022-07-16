@@ -481,9 +481,7 @@ export default function Contacts(props) {
                                     <form id="contact_form">
                                         <div className="grid gap-6">         
                                             {Object.entries(contactFields).map(([name, field]) => {
-                                                if(mode == 'create'){
-                                                    data[name] = '';
-                                                }
+                                             
                                                 var element = '';
                                                 switch(field.type){
                                                     case 'textarea':

@@ -17,6 +17,7 @@ class UserObserver
     public function created(User $user)
     {
         $record = $this->insertUserfield($user->id);
+        
         Field::insert($record);
     }
 
