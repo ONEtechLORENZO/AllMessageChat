@@ -189,7 +189,14 @@ function Detail(props)
                                             {props.field_info[key]['type'] == 'image' ? 
                                                 <img src={`/image/profile/${props['account']['id']}`} alt="Profile picture" className='h-64 w-64' />
                                             : 
-                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{props['account'][key]}</dd>
+                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                    {key == 'api_partner' ?
+                                                        <>
+                                                            {props['account'][key] && <> Checked </>}
+                                                        </>
+                                                     : <> {props['account'][key]} </>
+                                                    }
+                                                </dd>
                                             }
                                         </div>
                                     );
