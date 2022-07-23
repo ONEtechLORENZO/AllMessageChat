@@ -6,6 +6,7 @@ use App\Models\Contact;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Http\Request;
+
 use Auth;
 use App\Models\MessageLog;
 use App\Models\IncomingUrl;
@@ -18,7 +19,7 @@ use App\Models\Message;
 use Illuminate\Support\Facades\Log;
 use DateTime;
 use Illuminate\Pagination\Paginator;
-
+use Illuminate\Support\Facades\Input;
 
 class ContactController extends Controller
 {
@@ -29,37 +30,50 @@ class ContactController extends Controller
      */
     public function list(Request $request)
     {
+       
         $limit = $this->limit;
         $user = Auth::user();
         $user_id = $request->user()->id;        
-        $key = $request->query('search');
+        $key = $request->query('search');        
+        $sortfield=$request->query('sortfield');       
+        $sortdir=$request->query('sortdir');
+        if(!$sortfield)
+              $sortfield='first_name';
+        if(!$sortdir)
+              $sortdir='desc';              
         $contactList = [];
         if($key) {
             $contact_cols = ['first_name','last_name','phone_number','email'];
-            $contacts = Contact::orderBy('id', 'desc')
+            $contacts = Contact::orderBy($sortfield, $sortdir)
                         ->where('user_id', $user_id)
                         ->where(function ($query) use ($key, $contact_cols) {    
                             foreach($contact_cols as $contact_col) {         
                                 $query->orWhere($contact_col, 'like', '%' . $key. '%');                            
                             }
-                        })
-                        ->paginate($limit);        
+                        })->paginate($limit);
+                            
         } else {          
-            $contacts = Contact::where('user_id', $user_id)->paginate($limit);       
-        }
-
+            $contacts = Contact::where('user_id', $user->id )->orderBy($sortfield,$sortdir)->paginate($limit);
+          }
         foreach($contacts as $contact){
             $name = $contact->first_name . ' ' .$contact->last_name;
             $logo = trim($name , ' ');     
-            $contactList[$contact->id] = [
+            $contactList[] = [
                 'logo' => $logo,
                 'id' => $contact->id,
                 'name' => $name,
                 'last_name' => $contact->last_name,
-                'email' => $contact->email,
+                'email' => $contact->email,                
                 'number' => ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id 
             ];
-        }
+            
+        }      
+
+            if($request->get('mode') == 'ajax') {
+                 return response()->json(['contacts' => $contactList]);  
+            
+                }
+        
             return Inertia::render('Contacts/Contacts', [
             'contacts' => $contactList,
             'paginator' => [
@@ -72,7 +86,8 @@ class ContactController extends Controller
                 'count' => $contacts->count(),
                 'lastPage' => $contacts->lastPage(),
                 'perPage' => $contacts->perPage(),
-            ],   
+                
+            ],  
         ]);
     }
 
@@ -155,7 +170,7 @@ class ContactController extends Controller
     /**
      * List contacts
      */
-    /*public function contactList(Request $request)
+    public function contactList(Request $request)
     {
         $contactList = [];
             $contacts = Contact::where('user_id', $user->id )->get() ;                   
@@ -175,7 +190,7 @@ class ContactController extends Controller
             'contacts' => $contactList,
             
         ]);
-    }*/
+    }
 
     /**
      * Show contact detail

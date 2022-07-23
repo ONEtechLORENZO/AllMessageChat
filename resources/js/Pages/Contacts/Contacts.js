@@ -1,7 +1,7 @@
 import { SettingIcon } from "../icons";
 import { Dialog, Transition } from '@headlessui/react'
 import { SearchIcon } from "@heroicons/react/outline";
-import React, { Fragment, useRef, useState } from "react";
+import React, { Fragment, useEffect, useRef, useState } from "react";
 import Input from '@/Components/Forms/Input';
 import InputError from '@/Components/Forms/InputError';
 import Authenticated from "../../Layouts/Authenticated";
@@ -14,6 +14,7 @@ import PristineJS from 'pristinejs';
 import { Inertia } from '@inertiajs/inertia';
 import { List } from "../../Components/Views/List/Index";
 import Pagination from "@/Components/Pagination";
+import { objectPosition } from "tailwindcss/defaultTheme";
 
 export default function Contacts(props) {
     const [contactFields, setContactFields] = useState({
@@ -24,6 +25,8 @@ export default function Contacts(props) {
         'phone_number': { 'label': 'Phone number', 'type': 'text', 'required': false },
         'instagram_id': { 'label': 'Instagram ID', 'type': 'text', 'required': false }, 
     });
+    
+    
 
     const[contacts, setContacts] = useState(props.contacts);
     const[mode, setMode] = useState('create');
@@ -31,7 +34,13 @@ export default function Contacts(props) {
     const [openCreateContactModal, setOpenCreateContactModal ] = useState(false);
     const cancelButtonRef = useRef(null);
     const { data, setData, post, processing, errors, reset } = useForm({});
-
+    const[searchtext,setSearchText]=useState('');
+    const[sortDet,setSortDet]=useState({
+        sortdir:'desc',
+        sortfield:'first_name'
+    })
+    
+    
     /**
      * Handle input change
      */ 
@@ -47,13 +56,63 @@ export default function Contacts(props) {
         }
         setData(newData);
     }
-    //search contact
+    /**
+     * Sorting
+     */ 
+    
+    const sort = (field,e) => {        
+        
+        let newState = Object.assign({}, sortDet);        
+        if(newState['sortfield'] == field){
+            newState['sortdir']=newState['sortdir']== "asc" ? "desc" : "asc";  
+                     }
+          else{               
+            newState['sortfield']= field;  
+             newState['sortdir']=newState['sortdir']== "asc" ? "desc" : "asc";              
+              } 
+              const sort_dir=newState['sortdir'];
+              const sort_field=newState['sortfield'];
+              setSortDet(newState);           
+              fetch_sort_det(sort_dir,sort_field)
+         e.preventDefault();
+        }
+
+       function fetch_sort_det(sort_dir,sort_field)
+              {
+             
+               var searchtext=document.getElementById('search').value;
+               let url=route('contacts',{'search':searchtext,'sortdir': sort_dir,'sortfield': sort_field,'mode':'ajax'}) 
+          
+       axios({
+                method: 'get',                
+                 url: url                        
+            })
+            .then( (response) =>{
+               console.log(response.data);               
+               setContacts( response.data.contacts);          
+               
+            });
+            
+    }
+/**
+     * search content
+     */ 
     const search = (e) => {  
-        var searchtext=document.getElementById('search').value;  
-        window.location.replace("contacts?"+"search="+(searchtext));
+       
+        var searchtext=document.getElementById('search').value;
+        let url=route('contacts',{'search':searchtext,'sortdir': props.sortdir,'sortfield': props.sortfield,'mode':'ajax'}) 
+          
+        axios({
+                 method: 'get',                
+                  url: url                        
+             })
+             .then( (response) =>{
+                console.log(response.data);               
+                setContacts( response.data.contacts);      
+             });
     }
     /**
-     * Handle select change
+     * Handle selec
      */ 
      function handleSelectChange(selected_value, field_info) {
         let values = [];
@@ -99,6 +158,7 @@ export default function Contacts(props) {
         })
         .then( (response) =>{
             let newState = Object.assign({}, contactFields);
+            
             let newData = Object.assign({}, data);
             {Object.entries(contactFields).map(([name, field]) => {
                 newState[name].value = response.data.contact[name];
@@ -226,25 +286,35 @@ export default function Contacts(props) {
                                                 scope="col"
                                                 className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-[#3D4459] sm:pl-6"
                                             >
-                                                First Name
+                                                 <a href="#" onClick={(e)=>sort('first_name',e)}>First Name</a>
+                                               
+                                                <span >&uarr;</span>
+                                                <span >&darr;</span>
+                                              
+                                            </th>                                            
+                                            <th
+                                                scope="col"
+                                                className="px-3 py-3.5 text-left text-sm font-semibold text-[#3D4459]"
+                                            >
+                                                 <a href="#" onClick={(e)=>sort('last_name',e)}>Last Name</a> 
+                                                <span >&uarr;</span>
+                                                <span >&darr;</span>
                                             </th>
                                             <th
                                                 scope="col"
                                                 className="px-3 py-3.5 text-left text-sm font-semibold text-[#3D4459]"
                                             >
-                                                Last Name
+                                                <a href="#" onClick={(e)=>sort('phone_number',e)}>Contact Number</a>
+                                                <span >&uarr;</span>
+                                                <span >&darr;</span>
                                             </th>
                                             <th
                                                 scope="col"
                                                 className="px-3 py-3.5 text-left text-sm font-semibold text-[#3D4459]"
                                             >
-                                                Number
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3.5 text-left text-sm font-semibold text-[#3D4459]"
-                                            >
-                                                Email
+                                                  <a href="#" onClick={(e)=>sort('email',e)}>Email</a>
+                                                <span >&uarr;</span>
+                                                <span >&darr;</span>
                                             </th>
                                            
                                             <th
@@ -319,8 +389,13 @@ export default function Contacts(props) {
                                     </tbody>
                                 </table>
                             </div>
+                            <Pagination paginator={props.paginator} />
+                            
+                           
+
+
                         </div>
-                        <Pagination paginator={props.paginator} />
+                       
                     </div>
                 </div>
             </div>
@@ -540,6 +615,7 @@ export default function Contacts(props) {
                             </button>
                         </div>
                     </div>
+
                 </Transition.Child>
                     </div>
                 </Dialog>
