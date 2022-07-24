@@ -106,13 +106,13 @@ export default function Detail(props) {
             <DetailView
                 record = {record}
                 module = 'Contacts'
-                updateCotnact = {updateCotnact}
+                updateRecord = {updateCotnact}
               //  setActiveTab = {setActiveTab}
                 tabs = {tabs}
-                fields = {contactFields}
+                headers = {contactFields}
             />
  
-
+{/* 
             <div>
                 <ul className="py-4 space-y-2 sm:px-6 sm:space-y-4 lg:px-8" role="list">
                     <li className="bg-white px-4 py-6 shadow sm:rounded-lg sm:px-6">
@@ -199,7 +199,7 @@ export default function Detail(props) {
                     </li>
                 </ul>
             </div>
-            
+             */}
 
             {/* Create modal */}
             <Transition.Root show={openCreateContactModal} as={Fragment}>

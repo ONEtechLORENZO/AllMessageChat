@@ -9,6 +9,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\MessageLogController;
 use App\Http\Controllers\MsgController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\FilterController;
 use App\Http\Middleware\IsAdmin;
 
 /*
@@ -77,7 +78,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/contact/{id}', [ContactController::class, 'contactDetail'])->name('contact_detail');
     Route::post('/updateContact', [ContactController::class, 'storeContact'])->name('store_contact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('get_contact_data');
+    Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
 
+    //Filter
+    Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');
 });
 
 // Check user is admin

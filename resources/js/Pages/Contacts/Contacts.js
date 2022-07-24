@@ -12,7 +12,8 @@ import Select from 'react-select';
 import languages from '@/Pages/languages';
 import PristineJS from 'pristinejs';
 import { Inertia } from '@inertiajs/inertia';
-import { List } from "../../Components/Views/List/Index";
+import ListlView from "@/Components/Views/List/Index";
+
 import Pagination from "@/Components/Pagination";
 
 export default function Contacts(props) {
@@ -115,6 +116,18 @@ export default function Contacts(props) {
     return (
         <Authenticated>
            
+            <ListlView
+                headers = {contactFields}
+                records = {contacts}
+                module = 'Contacts'
+                paginator = {props.paginator}
+                filter = {props.filter}
+                filterList = {props.filterList}
+                selectedFilter = {props.selectedFilter}
+                updateRecord = {updateCotnact}
+                openCreateModal = {openCreateModal} 
+            />
+{/* 
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
                 <div className="sm:flex sm:items-center sm:justify-between">
                     <div className="flex gap-3">
@@ -310,7 +323,7 @@ export default function Contacts(props) {
                                             </tr>
                                         ))}
                                         {Object.entries(contacts).length == 0 &&
-                                            <tr><td className = "" colspan="3">
+                                            <tr><td className = "" colSpan="3">
                                                 <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
                                                     Contact not created yet.
                                                 </div>
@@ -323,120 +336,8 @@ export default function Contacts(props) {
                         <Pagination paginator={props.paginator} />
                     </div>
                 </div>
-            </div>
+            </div> */}
 
-            {/* Filter */}
-            <Transition.Root show={openFilterModal} as={Fragment}>
-                <Dialog as="div" className="fixed z-10 inset-0 overflow-y-auto" initialFocus={cancelButtonRef} onClose={setOpenFilterModal}>
-                    <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                        <Transition.Child
-                            as={Fragment}
-                            enter="ease-out duration-300"
-                            enterFrom="opacity-0"
-                            enterTo="opacity-100"
-                            leave="ease-in duration-200"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                        >
-                            <Dialog.Overlay className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-                        </Transition.Child>
-
-                        {/* This element is to trick the browser into centering the modal contents. */}
-                        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
-                            &#8203;
-                        </span>
-                        <Transition.Child
-                            as={Fragment}
-                            enter="ease-out duration-300"
-                            enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                            enterTo="opacity-100 translate-y-0 sm:scale-100"
-                            leave="ease-in duration-200"
-                            leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-                            leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        >
-                            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-                                <div>
-                                    <div className="">
-                                        <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
-                                            Filter Contacts
-                                        </Dialog.Title>
-                                        <div className="mt-2">
-                                            <p className="text-sm text-gray-500 pt-2 pb-4">
-                                                Display the specific contacts only 
-                                            </p> 
-                                            <form id="filter_contact" >
-                                            <div className="grid gap-6">                                                
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="template_name" className="block text-sm font-medium text-gray-700">
-                                                        Name
-                                                    </label>
-                                                    <div className="mt-1 flex rounded-md shadow-sm">
-                                                        <Input name='template_name' required={true} id='template_name' placeholder='Template name' handleChange={handleChange} />
-                                                    </div>
-                                                    <InputError message={errors.template_name} />
-                                                </div>
-
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-                                                        Category
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <Dropdown 
-                                                            required={true} 
-                                                            id="category"
-                                                            name="category"
-                                                            handleChange={handleChange}
-                                                            options={categories}
-                                                            value={data.category}
-                                                        />
-                                                    </div>
-                                                    <InputError message={errors.category} />
-                                                </div>
-
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="languages" className="block text-sm font-medium text-gray-700">
-                                                        Languages
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <Select 
-                                                            options={languages} 
-                                                            isMulti
-                                                            getOptionLabel ={(option) => option.name}
-                                                            getOptionValue ={(option )=> option.code} 
-                                                            required={true}
-                                                            id="languages"
-                                                            name="languages"
-                                                            onChange={handleSelectChange}
-                                                        />
-                                                    </div>
-                                                    <InputError message={errors.languages} />
-                                                </div>
-                                            </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                                    <button
-                                        type="button"
-                                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
-                                        onClick={() => createNewTemplate()}
-                                    >
-                                        Create
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
-                                        onClick={() => setOpenFilterModal(false)}
-                                    >
-                                        Close
-                                    </button>
-                                </div>
-                            </div>
-                        </Transition.Child>
-                    </div>
-                </Dialog>
-            </Transition.Root>
 
             {/* Create modal */}
             <Transition.Root show={openCreateContactModal} as={Fragment}>

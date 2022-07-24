@@ -1,6 +1,5 @@
 import React, { Fragment, useRef, useState } from "react";
-//import { PencilIcon } from "../../../";
-import { PencilIcon } from "@heroicons/react/solid";
+import { PencilIcon } from "../../../Pages/icons";
 
 export default function Index(props) {
     const[record , setRecord] = useState(props.record);
@@ -42,7 +41,7 @@ export default function Index(props) {
                                 <div>
                                     <button
                                         type="button"
-                                        onClick={ () => props.updateCotnact(record.id)}
+                                        onClick={ () => props.updateRecord(record.id)}
                                         className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                     >
                                         <PencilIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
@@ -77,13 +76,15 @@ export default function Index(props) {
                                     <div id={tab.name} className={hideClass}>
                                         {tab.name == 'Detail' ?
                                             <div>
-                                                {Object.entries(fields).map( ([key, field]) => {
-                                                    return(
-                                                        <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                                            <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
-                                                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"> {record[key]} </dd>
-                                                        </div>
-                                                    )
+                                                {Object.entries(props.headers).map( ([key, field]) => {
+                                                    if(key != 'id'){
+                                                        return(
+                                                            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                                <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
+                                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"> {record[key]} </dd>
+                                                            </div>
+                                                        )
+                                                    }
                                                 })}
                                             </div>
                                         :
