@@ -76,8 +76,12 @@ export default function Index(props) {
                                     <div id={tab.name} className={hideClass}>
                                         {tab.name == 'Detail' ?
                                             <div>
-                                                {Object.entries(props.headers).map( ([key, field]) => {
-                                                    if(key != 'id'){
+                                                {Object.entries(props.fields).map( ([key, field]) => {
+                                                    let showField = true;
+                                                    if(key == 'id'){
+                                                        showField = false;
+                                                    }
+                                                    if(showField){ 
                                                         return(
                                                             <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                                                 <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>

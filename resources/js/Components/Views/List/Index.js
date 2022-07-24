@@ -80,8 +80,8 @@ function ListView(props)
             Object.entries(newData).map(([grpConditionIndex, groupConditions], group_index) => {
                 if(grpCondition_index == group_count){
                     Object.entries(groupConditions).map(([condition_index, conditions]) => {
-                        console.log(newData[grpCondition_index][condition_index] , grpConditionIndex, condition_index, groupConditions)
-                        if(newData[grpCondition_index][condition_index]){
+                        console.log(newData[grpCondition_index][condition_index] , grpConditionIndex, condition_index, conditions_count)
+                        if(newData[grpCondition_index][condition_index] && grpConditionIndex == conditions_count){
                             newData[grpCondition_index][condition_index].splice(conditions_count,1);
                         }
                     });
@@ -179,6 +179,7 @@ function ListView(props)
                 <div className="sm:flex sm:items-center sm:justify-between">
                     <div className="flex gap-3">
                         <button 
+                            type='button'
                             onClick={()=> setOpenFilterModal(true)}
                             className="w-10 h-10 bg-white shadow-sm flex items-center justify-center">
                             <SettingIcon 

@@ -366,6 +366,7 @@ class UserController extends Controller
             // 'display_name' => ['label' => 'Display name', 'show' => ['whatsapp']],
             'phone_number' => ['label' => 'Phone number', 'show' => ['whatsapp']],
             'src_name' => ['label' => 'Source name', 'show' => ['whatsapp']],
+            'api_partner' => ['label' => 'API partner', 'show' => ['whatsapp']],
             'business_manager_id' => ['label' => 'Business manager ID', 'show' => ['whatsapp']],
             // 'profile_picture' => ['label' => 'Profile picture', 'type' => 'image', 'show' => ['whatsapp']],
             // 'profile_description' => ['label' => 'Profile description', 'show' => ['whatsapp']],
@@ -464,13 +465,16 @@ class UserController extends Controller
             }
             $account->status = 'New'; // Setting the status as New.
         }
-
+/*
         $fields = [
             'company_name', 'company_type', 'website', 'email', 'service',
             'estimated_launch_date', 'type_of_integration', 'phone_number', 'src_name', 'display_name',
             'business_manager_id', 'profile_description', 'oba'
         ];
-
+*/
+        $fields = [
+            'company_name', 'service', 'phone_number', 'src_name', 'business_manager_id', 'api_partner'
+        ];
         foreach ($fields as $field_name) {
             $field_value = $request->get($field_name);
             $account->$field_name = $field_value;

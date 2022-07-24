@@ -19,6 +19,7 @@
         @routes
 
         <script src="{{ url('js/app.js') }}?v=1.7.2" defer></script>
+
     </head>
     <body class="font-sans antialiased">
         @inertia
