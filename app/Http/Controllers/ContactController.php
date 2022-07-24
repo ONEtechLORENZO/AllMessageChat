@@ -61,11 +61,16 @@ class ContactController extends Controller
         } elseif(isset($_GET['filter']) && $_GET['filter']){
             $searchData = json_decode($_GET['filter']);
             $whereCondition = $this->getWhereFiltetCondition($searchData);
+            
             if(isset($_GET['filter_name']) && $_GET['filter_name']){
                 $selectedFilter = $this->saveFilterConditions($_GET['filter_name'], 'Contacts', $user_id, $searchData);
             }
-            $contacts = Contact::whereRaw($whereCondition)
-                ->where('user_id', $user->id )
+            $contacts = Contact::where(function ($query) use ( $user , $whereCondition) {   
+                    $query->where('user_id', $user->id );
+                    if($whereCondition){
+                        $query->whereRaw($whereCondition);
+                    }
+                })
                 ->orderBy($sortfield,$sortdir)
                 ->paginate($limit); 
         }else {          
@@ -248,6 +253,7 @@ class ContactController extends Controller
     {
         $whereCondition = '';
         $groupCount = 0;
+        $isNullCondition = true;
         
         foreach($searchData as $key => $groupConditions){
             foreach($groupConditions as $groupOperator => $conditions ){
@@ -260,6 +266,7 @@ class ContactController extends Controller
                 
                 foreach($conditions as $key => $condition){
                     if($condition->field_name){
+                        $isNullCondition = false;
                         switch($condition->record_condition){
                             case 'equal':
                                 $whereCondition .= " {$condition->field_name} = '{$condition->condition_value}' ";
@@ -300,7 +307,9 @@ class ContactController extends Controller
                 $whereCondition .=  " ) ";
             }
         }
-       
+        if($isNullCondition){
+            $whereCondition = '';
+        }
         return $whereCondition;
     }
 

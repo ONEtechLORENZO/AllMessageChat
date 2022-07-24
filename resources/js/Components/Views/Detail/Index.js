@@ -76,7 +76,7 @@ export default function Index(props) {
                                     <div id={tab.name} className={hideClass}>
                                         {tab.name == 'Detail' ?
                                             <div>
-                                                {Object.entries(props.fields).map( ([key, field]) => {
+                                                {Object.entries(props.headers).map( ([key, field]) => {
                                                     let showField = true;
                                                     if(key == 'id'){
                                                         showField = false;
