@@ -20,7 +20,6 @@ class CreatePricesTable extends Migration
             $table->float('business_initiated', 8, 4);
             $table->float('message', 8, 4);
             $table->float('media', 8, 4);
-            $table->foreignId('user_id')->constrained('users');
             $table->timestamps();
         });
     }

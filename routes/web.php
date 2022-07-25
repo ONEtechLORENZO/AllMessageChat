@@ -11,6 +11,7 @@ use App\Http\Controllers\MessageLogController;
 use App\Http\Controllers\MsgController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FilterController;
+use App\Http\Controllers\FormController;
 use App\Http\Middleware\IsAdmin;
 
 /*
@@ -83,6 +84,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Filter
     Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');
+
+    Route::get('/fetchModuleFields/{module}', [FormController::class, 'fetchModuleFields'])->name('fetchModuleFields');
 });
 
 // Check user is admin
@@ -103,6 +106,7 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
 
     // Pricing
     Route::get('/admin/pricing', [PriceController::class, 'index'])->name('priceListing');
+    Route::post('/admin/pricing', [PriceController::class, 'store'])->name('storePrice');
 });
 
 

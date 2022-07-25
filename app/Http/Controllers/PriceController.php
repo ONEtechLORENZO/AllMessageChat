@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 use Inertia\Inertia;
-
+use App\Models\Field;
 use App\Models\Price;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\ValidationException;
 
 class PriceController extends Controller
 {
@@ -17,7 +18,6 @@ class PriceController extends Controller
      */
     public function index(Request $request)
     {
-        $user = $request->user();
         // List view columns to show
         $list_view_columns = [
             'country_code' => 'Country',
@@ -27,12 +27,14 @@ class PriceController extends Controller
             'media' => 'Media',
         ];
 
-        $records = Price::where('user_id', $user->id)
-            ->paginate(15);
+        $records = Price::paginate(15);
 
         return Inertia::render('Pricing/List', [
-            'records' => $records,
+            'records' => $records->items(),
             'heading' => 'Price',
+            'create' => true,
+            'export' => false,
+            'import' => false,
             'compact_type' => 'condense',
             'list_view_columns' => $list_view_columns,
             'paginator' => [
@@ -67,7 +69,34 @@ class PriceController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Get fields from the table
+        $fields = Field::where('module_name', 'Price')->get();
+        // Prepare validation param
+        foreach($fields as $field) {
+            if($field['is_mandatory'] === 1) {
+                $validate = 'required';
+            }
+            $validation_params[$field['field_name']] = $validate;
+        }
+
+        // Validate the request
+        $request->validate($validation_params);
+
+        // Check whether country has been added
+        $checkPricingAdded = Price::where('country_code', $request->get('country_code'))->first();
+        if($checkPricingAdded) {
+            throw ValidationException::withMessages(['country_code' => 'Pricing already added for the Country']);
+        }
+
+        // Create new Price record
+        $price = new Price();
+        foreach($fields as $field) {
+            $field_name = $field['field_name'];
+            $price->$field_name = $request->get($field_name);
+        }
+        $price->save();
+
+        return Redirect::route('priceListing');
     }
 
     /**
