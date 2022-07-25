@@ -18,7 +18,7 @@
         <!-- Scripts -->
         @routes
 
-        <script src="{{ url('js/app.js') }}?v=1.7.5" defer></script>
+        <script src="{{ url('js/app.js') }}?v=1.7.1" defer></script>
 
     </head>
     <body class="font-sans antialiased">

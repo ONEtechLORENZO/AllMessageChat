@@ -34,7 +34,7 @@ class ContactController extends Controller
     {
        
         $limit = $this->limit;
-        $searchData = '';
+        $searchData =  $whereCondition = '';
         $selectedFilter = (isset($_GET['filter_id']) && $_GET['filter_id'] )? $_GET['filter_id']: '';
         $filters = [];
         $user = Auth::user();
@@ -58,13 +58,20 @@ class ContactController extends Controller
                             }
                         })
                         ->paginate($limit);        
-        } elseif(isset($_GET['filter']) && $_GET['filter']){
-            $searchData = json_decode($_GET['filter']);
-            $whereCondition = $this->getWhereFiltetCondition($searchData);
-            
-            if(isset($_GET['filter_name']) && $_GET['filter_name']){
-                $selectedFilter = $this->saveFilterConditions($_GET['filter_name'], 'Contacts', $user_id, $searchData);
+        } elseif((isset($_GET['filter']) && $_GET['filter']) || (isset($_GET['filter_id']) && $_GET['filter_id']) ){
+            if(isset($_GET['filter_id']) && $_GET['filter_id']) {
+                $filterId = $_GET['filter_id'];
+                if($filterId != 'All'){
+                    $filter = Filter::find($filterId);
+                    $searchData = unserialize( base64_decode( $filter->condition) );
+                    $whereCondition = $this->getWhereFiltetCondition($searchData);
+                }
+            } else {
+                $searchData = json_decode($_GET['filter']);
+                $whereCondition = $this->getWhereFiltetCondition($searchData);
             }
+            //dd($whereCondition);
+            
             $contacts = Contact::where(function ($query) use ( $user , $whereCondition) {   
                     $query->where('user_id', $user->id );
                     if($whereCondition){
@@ -73,7 +80,7 @@ class ContactController extends Controller
                 })
                 ->orderBy($sortfield,$sortdir)
                 ->paginate($limit); 
-        }else {          
+        } else {          
             $contacts = Contact::where('user_id', $user->id )->orderBy($sortfield,$sortdir)->paginate($limit);    
         }
         $contactList = $this->fieldRecordList($contacts);
@@ -224,7 +231,6 @@ class ContactController extends Controller
         }
         return Inertia::render('Contacts/Contacts', [
             'contacts' => $contactList,
-            
         ]);
     }
 

@@ -1,11 +1,13 @@
 import React, { Fragment, useEffect, useRef, useState } from "react";
-import { SettingIcon, SearchIcon } from "../../../Pages/icons";
+import { SettingIcon, SearchIcon, PencilIcon, DeleteIcon } from "../../../Pages/icons";
 import Pagination from "@/Components/Pagination";
 import { useForm, Link } from '@inertiajs/inertia-react';
 import { Dialog, Transition } from '@headlessui/react'
 import Filter from "./Filter";
 import axios from "axios";
 import { Inertia } from '@inertiajs/inertia';
+import Dropdown from "@/Components/Dropdown";
+
 
 function ListView(props)
 {
@@ -41,6 +43,59 @@ function ListView(props)
     },[]);
 
     /**
+     * Apply Filter condition
+     */
+    function applyFilter(selectedFilter){
+        var url = route('contacts') + '?filter_id='+selectedFilter;
+        Inertia.get(url,  {
+            onSuccess: (response) => {
+                setOpenFilterModal(false);
+            },
+        });
+    }
+
+    /**
+     * Create new Filter
+     */
+    function createFilter(){
+        setFilter([
+            {'AND': [newCondition]}
+        ]);
+        setFilterName('');
+        setSelectedFilter('');
+        setOpenFilterModal(true);
+    }
+    /**
+     * Edit Filter
+     */
+    function editFilter(filter_id){
+        axios({
+            method: 'get',
+            url: route('get_filter_data', {'filter_id': filter_id}),
+        })
+        .then( (response) =>{
+           setFilter(response.data.conditions);
+           setFilterName(response.data.name);
+           setSelectedFilter(filter_id);
+           setOpenFilterModal(true);
+        });
+    }
+
+    /**
+     * DeleteFilter
+     */
+    function deleteFilter(filter_id){
+        if(confirm('Do you want to delete the filter?')){
+            var data = {'filter_id':filter_id };
+            Inertia.post(route('delete_filter'), data, {
+                onSuccess: (response) => {
+                    setOpenCreateContactModal(false);
+                },
+            });
+        }
+    }
+
+    /**
      * Add group condition
      */
     function addCondition(e){
@@ -66,6 +121,21 @@ function ListView(props)
         var groupLength = Object.entries(newFilter).length;
         newFilter[groupLength] = newGroup;
         setFilter(newFilter);
+    }
+
+    /**
+     * Delete Filte Group
+     */
+    function deleteGroup(event){
+        var group_count = event.target.getAttribute('group_index');
+        let newData = Object.assign({}, filter);
+        Object.entries(newData).map(([grpCondition_index, grpConditions]) => {
+            if(grpCondition_index == group_count){
+                console.log(grpCondition_index, newData);
+                delete newData[grpCondition_index]; 
+            }
+        });
+        setFilter(newData);
     }
 
     /**
@@ -107,7 +177,7 @@ function ListView(props)
             if(value){
                 axios({
                     method: 'get',
-                    url: route('get_filter_data', {'selected_filter': value}),
+                    url: route('get_filter_data', {'filter_id': value}),
                 })
                 .then( (response) =>{
                    setFilter(response.data.conditions);
@@ -147,9 +217,7 @@ function ListView(props)
     function searchFilterData(){
         var advancedSearch = JSON.stringify(filter);
         var url = route('contacts') + '?filter='+advancedSearch;
-        if(selectedFilter){
-            url += '&filter_id='+selectedFilter;
-        }
+        
         Inertia.get(url,  {
             onSuccess: (response) => {
                 setOpenCreateContactModal(false);
@@ -162,12 +230,9 @@ function ListView(props)
             newError['filter_name'] = true;
             setErrors(newError);
         } else {
-            var advancedSearch = JSON.stringify(filter);
-            var url = route('contacts') + '?filter='+advancedSearch+'&filter_name='+filterName;
-            if(selectedFilter){
-                url += '&filter_id='+selectedFilter;
-            }
-            Inertia.get(url,  {
+            
+            var data = {'filter': JSON.stringify(filter), 'module_name': 'Contacts', 'filter_name': filterName, 'filter_id':selectedFilter };
+            Inertia.post(route('store_filter'), data, {
                 onSuccess: (response) => {
                     setOpenCreateContactModal(false);
                 },
@@ -179,13 +244,47 @@ function ListView(props)
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
                 <div className="sm:flex sm:items-center sm:justify-between">
                     <div className="flex gap-3">
-                        <button 
+                        {/* <button 
                             type='button'
                             onClick={()=> setOpenFilterModal(true)}
                             className="w-10 h-10 bg-white shadow-sm flex items-center justify-center">
                             <SettingIcon 
                             />
-                        </button>
+                        </button> */}
+                        <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <span className="inline-flex rounded-md">
+                                                        <button
+                                                            type="button"
+                                                            className="w-10 h-10 bg-white shadow-sm flex items-center justify-center"
+                                                        >
+                                                            <SettingIcon />
+                                                        </button>
+                                                    </span>
+                                                </Dropdown.Trigger>
+
+                                                <Dropdown.Content align="" contentClasses="right-4 py-1 bg-white" >
+                                                        
+                                                <ul role="list" className="divide-y divide-gray-200">
+                                                        <li onClick={ ()=> applyFilter('All')} className="px-4 py-2 hover:bg-sky-700 cursor-pointer">
+                                                            All
+                                                        </li>
+                                                    {Object.entries(props.filterList).map(([filter_index, filterData])=>
+                                                        <li  key={filterData['id']} className="px-4 hover:bg-sky-700 py-2 cursor-pointer">
+                                                            <div class="flex">
+                                                                <div className="col-span-2" onClick={ ()=> applyFilter(filterData['id'])}> {filterData['name']} </div>
+                                                                <div className="absolute text-white right-4 p-1 hover:text-gray-900" onClick={() => editFilter(filterData['id']) } >  <PencilIcon className="float-right" /></div> 
+                                                                <div className="absolute text-white right-0 p-1 hover:text-gray-900" onClick={() => deleteFilter(filterData['id']) } >  <DeleteIcon className="float-right" /></div> 
+                                                            </div>
+                                                            
+                                                        </li>
+                                                    )}
+                                                    <li onClick={()=> createFilter()} className="px-4 py-2 hover:bg-sky-700 cursor-pointer">
+                                                        Add New
+                                                    </li>
+                                                </ul>
+                                                </Dropdown.Content>
+                                            </Dropdown>
 
                         <div className="mt-1 relative rounded-md shadow-sm">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -411,6 +510,7 @@ function ListView(props)
                                     addCondition={addCondition}
                                     handleChange={handleChange}
                                     deleteCondition={deleteCondition}
+                                    deleteGroup={deleteGroup}
                                     addGroup={addConditionGroup}
                                     errors={errors}
                                 />
