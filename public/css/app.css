@@ -928,6 +928,10 @@ select {
 	margin-top: 0.5rem;
 	margin-bottom: 0.5rem;
 }
+.mx-10 {
+	margin-left: 2.5rem;
+	margin-right: 2.5rem;
+}
 .ml-3 {
 	margin-left: 0.75rem;
 }
@@ -1200,6 +1204,9 @@ select {
 }
 .w-2\/3 {
 	width: 66.666667%;
+}
+.w-40 {
+	width: 10rem;
 }
 .min-w-0 {
 	min-width: 0px;
@@ -1696,6 +1703,14 @@ select {
 	--tw-bg-opacity: 1;
 	background-color: rgba(31, 41, 55, var(--tw-bg-opacity));
 }
+.bg-red-200 {
+	--tw-bg-opacity: 1;
+	background-color: rgba(254, 202, 202, var(--tw-bg-opacity));
+}
+.bg-gray-700 {
+	--tw-bg-opacity: 1;
+	background-color: rgba(55, 65, 81, var(--tw-bg-opacity));
+}
 .bg-opacity-75 {
 	--tw-bg-opacity: 0.75;
 }
@@ -1726,6 +1741,9 @@ select {
 }
 .p-1 {
 	padding: 0.25rem;
+}
+.p-8 {
+	padding: 2rem;
 }
 .px-4 {
 	padding-left: 1rem;
@@ -2332,6 +2350,10 @@ select {
 	--tw-bg-opacity: 1;
 	background-color: rgba(17, 24, 39, var(--tw-bg-opacity));
 }
+.hover\:bg-gray-800:hover {
+	--tw-bg-opacity: 1;
+	background-color: rgba(31, 41, 55, var(--tw-bg-opacity));
+}
 .hover\:text-gray-500:hover {
 	--tw-text-opacity: 1;
 	color: rgba(107, 114, 128, var(--tw-text-opacity));
@@ -2719,8 +2741,16 @@ select {
 		grid-template-columns: repeat(5, minmax(0, 1fr));
 	}
 
+	.sm\:flex-row {
+		flex-direction: row;
+	}
+
 	.sm\:items-start {
 		align-items: flex-start;
+	}
+
+	.sm\:items-end {
+		align-items: flex-end;
 	}
 
 	.sm\:items-center {
@@ -2751,6 +2781,10 @@ select {
 		gap: 0.75rem;
 	}
 
+	.sm\:gap-0 {
+		gap: 0px;
+	}
+
 	.sm\:space-y-4 > :not([hidden]) ~ :not([hidden]) {
 		--tw-space-y-reverse: 0;
 		margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
@@ -2761,6 +2795,12 @@ select {
 		--tw-space-y-reverse: 0;
 		margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));
 		margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));
+	}
+
+	.sm\:space-y-0 > :not([hidden]) ~ :not([hidden]) {
+		--tw-space-y-reverse: 0;
+		margin-top: calc(0px * calc(1 - var(--tw-space-y-reverse)));
+		margin-bottom: calc(0px * var(--tw-space-y-reverse));
 	}
 
 	.sm\:overflow-hidden {
@@ -2965,12 +3005,24 @@ select {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 	}
 
+	.md\:flex-row {
+		flex-direction: row;
+	}
+
 	.md\:flex-col {
 		flex-direction: column;
 	}
 
+	.md\:justify-start {
+		justify-content: flex-start;
+	}
+
 	.md\:gap-6 {
 		gap: 1.5rem;
+	}
+
+	.md\:gap-0 {
+		gap: 0px;
 	}
 
 	.md\:rounded-lg {
@@ -2983,6 +3035,10 @@ select {
 
 	.md\:border-l {
 		border-left-width: 1px;
+	}
+
+	.md\:p-8 {
+		padding: 2rem;
 	}
 
 	.md\:px-6 {

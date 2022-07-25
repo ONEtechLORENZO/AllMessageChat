@@ -5,6 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PriceController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\MessageLogController;
 use App\Http\Controllers\MsgController;
@@ -101,6 +102,9 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::get('/admin/settings/template_notification', [SettingsController::class, 'toMail'])->name('template_notification');
     Route::post('/admin/settings/saveSMTP', [SettingsController::class, 'saveOutgoingServerData'])->name('store_smtp_data');
     Route::post('/admin/settings/saveToAddress', [SettingsController::class, 'saveToAddressData'])->name('store_toAddress_data');
+
+    // Pricing
+    Route::get('/admin/pricing', [PriceController::class, 'index'])->name('priceListing');
 });
 
 

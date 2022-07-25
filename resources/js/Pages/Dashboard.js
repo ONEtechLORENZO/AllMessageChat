@@ -3,6 +3,7 @@ import Authenticated from '@/Layouts/Authenticated';
 import { Head, Link } from '@inertiajs/inertia-react';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
+import PaymentPage from './PaymentPage';
 
 export default function Dashboard(props) {
     
@@ -135,8 +136,15 @@ export default function Dashboard(props) {
                                     </div>
                               </div>
                             : ''}
+
+                            
                     </div>
+
+                    <div className='clear'></div>
+                    
                 </div>
+
+                <PaymentPage/>
             </div>
         </Authenticated>
     );
