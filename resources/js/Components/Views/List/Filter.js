@@ -33,54 +33,47 @@ function Filter(props)
     return ( 
         <div className="height: 100vh; overscroll-auto">
             
-            <div className="mt-6 sm:mt-5 space-y-6 sm:space-y-5">
-                <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                    <label htmlFor="selected_filter" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-                        Select Filter
-                    </label>
-                    <div className="mt-1 sm:mt-0 sm:col-span-2">
-                        <div className="max-w-lg flex rounded-md shadow-sm">
-                            <select
-                                name="selected_filter"
-                                id="selected_filter"
-                                autoComplete="selected_filter"
-                                value={props.selectedFilter}
-                                onChange={ (e) => props.handleChange(e)}
-                                className="flex-1 block w-full focus:ring-indigo-500 focus:border-indigo-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
-                            >
-                                <option value=''> -- Select -- </option>
-                                {Object.entries(props.filterList).map(([filter_index, filterData])=>
-                                    <option  defaultValue={ props.selectedFilter === filterData['id']} value={filterData['id']}>{filterData['name']} </option>
-                                )}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
             {Object.entries(props.filter).map(([grpCondition_index, grpConditions]) => 
                 <>
                 {Object.entries(grpConditions).map(([grpCondition,conditions ],group_index ) => 
                     <>
                         <div className="relative mt-3 border border-gray-300 rounded-md px-3 py-2 shadow-sm focus-within:ring-1 focus-within:ring-indigo-600 focus-within:border-indigo-600">
                             <fieldset>
-                                {grpCondition_index != 0 &&
-                                    <legend>
-                                        <select
-                                            name="group_condition"
-                                            id="group_condition"
-                                            value={grpCondition}
-                                            group_index={grpCondition_index} 
-                                            onChange={ (e) => props.handleChange(e)}
-                                            className={`mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                                        >
-                                            {Object.entries(logic_operators).map(([key, value]) => {
-                                                return (
-                                                    <option defaultValue={grpCondition === value.value} value={value.value} > {value.value} </option>
-                                                )
-                                            })}
-                                        </select>
+                                    <legend> 
+                                        <div className="flex">
+                                            {grpCondition_index != 0 &&
+                                                <select
+                                                    name="group_condition"
+                                                    id="group_condition"
+                                                    value={grpCondition}
+                                                    group_index={grpCondition_index} 
+                                                    onChange={ (e) => props.handleChange(e)}
+                                                    className={`mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+                                                >
+                                                    {Object.entries(logic_operators).map(([key, value]) => {
+                                                        return (
+                                                            <option defaultValue={grpCondition === value.value} value={value.value} > {value.value} </option>
+                                                        )
+                                                    })}
+                                                </select>
+                                              }
+                                              <div 
+                                                group_index={grpCondition_index} 
+                                                type="button"
+                                                onClick={(e) => props.deleteGroup(e)}
+                                                className="absolute right-0 p-2 mx-2 cursor-pointer text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded">
+                                                <DeleteIcon
+                                                    group_index={grpCondition_index} 
+                                                    type="button"
+                                                    onClick={(e) => props.deleteGroup(e)}
+                                                        className="-ml-0.5 mr-2 h-4 w-4" 
+                                                        aria-hidden="true"
+                                                    /> 
+                                              </div>
+                                        
+                                        </div>
                                     </legend>
-                                }
+                              
                                 {Object.entries(conditions).map(([condition_index, condition]) => 
                                     <>
                                         <div className="grid grid-cols-5 gap-6 sm:grid-cols-5 lg:grid-cols-5">

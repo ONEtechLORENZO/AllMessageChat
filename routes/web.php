@@ -88,6 +88,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Filter
     Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');
+    Route::post('/storeFilter', [FilterController::class, 'storeFilter'])->name('store_filter');
+    Route::post('/deleteFilter', [FilterController::class, 'deleteFilter'])->name('delete_filter');
 
     // Form
     Route::get('/fetchModuleFields/{module}', [FormController::class, 'fetchModuleFields'])->name('fetchModuleFields');
