@@ -16,8 +16,11 @@ use Swift_Mailer;
 use Illuminate\Support\Facades\Log;
 use Mail;
 use App\Http\Controllers\TemplateController;
+use App\Models\Transaction;
+use App\Models\Wallet;
 use App\Models\WebhookEvent;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
@@ -834,5 +837,85 @@ class UserController extends Controller
             'language' => $language,
             'buttons' => $message_buttons,
         ]);
+    }
+
+    /**
+     * Wallet page
+     */
+    public function wallet(Request $request)
+    {
+        $user = $request->user();
+        $wallet = Wallet::where('user_id', $user->id)->first();
+        $balance = 0.00;
+        if($wallet) {
+            $balance = $wallet->balance_amount;
+        }
+
+        $paymentMethods = $user->paymentMethods();
+
+        $stripe_public_key = $_ENV['STRIPE_KEY'];
+
+        return Inertia::render('Wallet/Index', [
+            'name' => $user->name,
+            'balance' => $balance,
+            'paymentMethods' => $paymentMethods,
+            'stripe_public_key' => $stripe_public_key,
+        ]);
+    }
+
+    /**
+     * Charge the user and update the balance
+     */
+    public function charge(Request $request)
+    {
+        $user = $request->user();
+        $amount = $request->get('amount') * 100;
+        try {
+            $params = [
+                'description' => 'OneMessage recharge',
+                'customer' => $user->stripe_id,
+            ];
+
+            $stripeCharge = $user->charge(
+                $amount, $request->get('id'), $params
+            );
+
+            if($stripeCharge->id) {
+                $user_id = $user->id;
+                $wallet = Wallet::where('user_id', $user_id)->first();
+                if(!$wallet) {
+                    $wallet = new Wallet();
+                    $wallet->user_id = $user_id;
+                    $wallet->balance_amount = $amount / 100;
+                }
+                else {
+                    $wallet->balance_amount = $wallet->balance_amount + ($amount / 100);
+                }
+                $wallet->save();
+
+                // New transaction
+                $transaction = new Transaction();
+                $transaction->service = 'Stripe';
+                $transaction->transaction_id = $stripeCharge->id;
+                $transaction->amount = $amount / 100;
+                $transaction->status = 'success';
+                $transaction->user_id = $user_id;
+                $transaction->save();
+            }
+        }
+        catch (\Exception $e) {
+            $transaction = new Transaction();
+            $transaction->service = 'Stripe';
+            $transaction->transaction_id = $stripeCharge->id;
+            $transaction->amount = $amount / 100;
+            $transaction->status = 'failed';
+            $transaction->error_message = $e->getMessage();
+            $transaction->user_id = $user_id;
+            $transaction->save();
+
+            throw ValidationException::withMessages(['amount' => $e->getMessage()]);
+        }
+
+        return response()->json(['status' => true, 'message' => 'Payment successful']);
     }
 }

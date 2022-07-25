@@ -201,14 +201,7 @@ export default function CreateUser(props) {
                                                 element = <TextArea value={data[key]} name={key} required={field.required} id={key} placeholder='' handleChange={handleChange} />
                                                 break;
                                             case 'select':
-                                                let select_options = [];
-                                                if(Object.keys(field.options).length){
-                                                    Object.entries(field.options).map(([name, label], index) => {
-                                                        select_options.push({'value': name, 'label': label});
-                                                    })
-                                                }
-                                                
-                                                element = <Dropdown name={key} id={key} value={data[key]} className={`custom-select ${error_class}`} handleChange={handleChange} options={select_options} /> ;
+                                                element = <Dropdown name={key} id={key} value={data[key]} className={`custom-select ${error_class}`} handleChange={handleChange} options={field.options ? field.options: {}} /> ;
                                                 break;    
                                             case 'checkbox':
                                                 element = <Checkbox name={key} id={key} value={data[key]} className={`custom-select ${error_class}`} handleChange={handleChange} />

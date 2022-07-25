@@ -108,8 +108,6 @@ function Form(props)
         });
     }
 
-    console.log(errors)
-
     return (
         <Transition.Root show={open} as={Fragment}>
             <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => {}} >

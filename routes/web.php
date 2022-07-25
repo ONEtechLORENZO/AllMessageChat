@@ -40,6 +40,10 @@ Route::post('/incoming', [MsgController::class, 'incoming']);
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
+
+    // Wallet
+    Route::get('/wallet', [UserController::class, 'wallet'])->name('wallet');
+    Route::post('/charge', [UserController::class, 'charge'])->name('charge');
     
     // Profile
     Route::get('/user/profile', [UserController::class, 'userDetail'])->name('profile');
@@ -85,6 +89,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //Filter
     Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');
 
+    // Form
     Route::get('/fetchModuleFields/{module}', [FormController::class, 'fetchModuleFields'])->name('fetchModuleFields');
 });
 
