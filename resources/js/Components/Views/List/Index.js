@@ -48,9 +48,8 @@ function ListView(props)
         let newFilter = Object.assign({}, filter);
         Object.entries(newFilter).map(([index, conditionsGroup]) => {
             Object.entries(conditionsGroup).map(([operator, conditions], groupIndex) => {
-                console.log(conditionsGroup, index,grpCount, operator )
                 if(index == grpCount){
-                    var conditionGroupLength = Object.entries(conditionsGroup).length;
+                  //  var conditionGroupLength = Object.entries(conditionsGroup).length;
                     conditionsGroup[operator].push(newCondition);
                 }
             });
@@ -77,12 +76,15 @@ function ListView(props)
         var conditions_count = event.target.getAttribute('condition_index');
         let newData = Object.assign({}, filter);
         Object.entries(newData).map(([grpCondition_index, grpConditions]) => {
-            Object.entries(newData).map(([grpConditionIndex, groupConditions], group_index) => {
+            Object.entries(newData).map(([grpConditionsIndex, groupConditions], group_index) => {
                 if(grpCondition_index == group_count){
                     Object.entries(groupConditions).map(([condition_index, conditions]) => {
-                        console.log(newData[grpCondition_index][condition_index] , grpConditionIndex, condition_index, conditions_count)
-                        if(newData[grpCondition_index][condition_index] && grpConditionIndex == conditions_count){
-                            newData[grpCondition_index][condition_index].splice(conditions_count,1);
+                        if(newData[grpCondition_index][condition_index] && (grpCondition_index == group_count )){
+                            Object.entries(conditions).map(([grpConditionIndex, condition]) => {
+                                if(grpConditionIndex == conditions_count ){
+                                   newData[grpCondition_index][condition_index].splice(conditions_count,1);
+                                }
+                            });
                         }
                     });
                 }
@@ -128,7 +130,6 @@ function ListView(props)
                         if(name == 'group_condition'){
                             grpConditions[value] = grpConditions[grpCondition];
                             delete grpConditions[grpCondition]; 
-                            console.log(grpConditions, newData )
                         }else{ 
                             Object.entries(conditions).map(([condition_index, condition]) => {
                                 if(condition_index == conditions_count){

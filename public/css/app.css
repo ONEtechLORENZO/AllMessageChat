@@ -433,6 +433,11 @@ input::-moz-placeholder, textarea::-moz-placeholder {
   color: #9ca3af;
 }
 
+input:-ms-input-placeholder, textarea:-ms-input-placeholder {
+  opacity: 1;
+  color: #9ca3af;
+}
+
 input::placeholder,
 textarea::placeholder {
   opacity: 1;
@@ -629,6 +634,11 @@ input::-moz-placeholder, textarea::-moz-placeholder {
 	opacity: 1;
 }
 
+input:-ms-input-placeholder, textarea:-ms-input-placeholder {
+	color: #6b7280;
+	opacity: 1;
+}
+
 input::placeholder,textarea::placeholder {
 	color: #6b7280;
 	opacity: 1;
@@ -674,6 +684,7 @@ select {
 	background-origin: border-box;
 	-webkit-user-select: none;
 	   -moz-user-select: none;
+	    -ms-user-select: none;
 	        user-select: none;
 	flex-shrink: 0;
 	height: 1rem;
@@ -896,6 +907,10 @@ select {
 	margin-left: 0.5rem;
 	margin-right: 0.5rem;
 }
+.my-3 {
+	margin-top: 0.75rem;
+	margin-bottom: 0.75rem;
+}
 .my-6 {
 	margin-top: 1.5rem;
 	margin-bottom: 1.5rem;
@@ -903,10 +918,6 @@ select {
 .my-2 {
 	margin-top: 0.5rem;
 	margin-bottom: 0.5rem;
-}
-.my-3 {
-	margin-top: 0.75rem;
-	margin-bottom: 0.75rem;
 }
 .ml-3 {
 	margin-left: 0.75rem;
@@ -1468,9 +1479,6 @@ select {
 }
 .whitespace-nowrap {
 	white-space: nowrap;
-}
-.break-all {
-	word-break: break-all;
 }
 .rounded-md {
 	border-radius: 0.375rem;
@@ -2097,11 +2105,19 @@ select {
 	--tw-placeholder-opacity: 1;
 	color: rgba(107, 114, 128, var(--tw-placeholder-opacity));
 }
+.placeholder-gray-500:-ms-input-placeholder {
+	--tw-placeholder-opacity: 1;
+	color: rgba(107, 114, 128, var(--tw-placeholder-opacity));
+}
 .placeholder-gray-500::placeholder {
 	--tw-placeholder-opacity: 1;
 	color: rgba(107, 114, 128, var(--tw-placeholder-opacity));
 }
 .placeholder-gray-600::-moz-placeholder {
+	--tw-placeholder-opacity: 1;
+	color: rgba(75, 85, 99, var(--tw-placeholder-opacity));
+}
+.placeholder-gray-600:-ms-input-placeholder {
 	--tw-placeholder-opacity: 1;
 	color: rgba(75, 85, 99, var(--tw-placeholder-opacity));
 }
@@ -2400,6 +2416,10 @@ select {
 	--tw-placeholder-opacity: 1;
 	color: rgba(156, 163, 175, var(--tw-placeholder-opacity));
 }
+.focus\:placeholder-gray-400:focus:-ms-input-placeholder {
+	--tw-placeholder-opacity: 1;
+	color: rgba(156, 163, 175, var(--tw-placeholder-opacity));
+}
 .focus\:placeholder-gray-400:focus::placeholder {
 	--tw-placeholder-opacity: 1;
 	color: rgba(156, 163, 175, var(--tw-placeholder-opacity));
@@ -2471,13 +2491,13 @@ select {
 	--tw-bg-opacity: 1;
 	background-color: rgba(17, 24, 39, var(--tw-bg-opacity));
 }
-.active\:bg-indigo-600:active {
-	--tw-bg-opacity: 1;
-	background-color: rgba(79, 70, 229, var(--tw-bg-opacity));
-}
 .active\:bg-gray-600:active {
 	--tw-bg-opacity: 1;
 	background-color: rgba(75, 85, 99, var(--tw-bg-opacity));
+}
+.active\:bg-indigo-600:active {
+	--tw-bg-opacity: 1;
+	background-color: rgba(79, 70, 229, var(--tw-bg-opacity));
 }
 .active\:text-gray-700:active {
 	--tw-text-opacity: 1;
