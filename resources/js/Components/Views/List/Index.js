@@ -1,8 +1,7 @@
-import React, { Fragment, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { SettingIcon, SearchIcon, PencilIcon, DeleteIcon } from "../../../Pages/icons";
 import Pagination from "@/Components/Pagination";
 import { useForm, Link } from '@inertiajs/inertia-react';
-import { Dialog, Transition } from '@headlessui/react'
 import Filter from "./Filter";
 import axios from "axios";
 import { Inertia } from '@inertiajs/inertia';
@@ -126,12 +125,11 @@ function ListView(props)
     /**
      * Delete Filte Group
      */
-    function deleteGroup(event){
-        var group_count = event.target.getAttribute('group_index');
+    function deleteGroup(group_count){
+       /// var group_count = event.target.getAttribute('group_index');
         let newData = Object.assign({}, filter);
         Object.entries(newData).map(([grpCondition_index, grpConditions]) => {
             if(grpCondition_index == group_count){
-                console.log(grpCondition_index, newData);
                 delete newData[grpCondition_index]; 
             }
         });
@@ -141,9 +139,10 @@ function ListView(props)
     /**
      * Delete filter condition
      */
-    function deleteCondition(event){
-        var group_count = event.target.getAttribute('group_index');
-        var conditions_count = event.target.getAttribute('condition_index');
+    function deleteCondition(group_count, conditions_count){
+       // var group_count = event.target.getAttribute('group_index');
+      //  var conditions_count = event.target.getAttribute('condition_index');
+        var is_deleted = false;
         let newData = Object.assign({}, filter);
         Object.entries(newData).map(([grpCondition_index, grpConditions]) => {
             Object.entries(newData).map(([grpConditionsIndex, groupConditions], group_index) => {
@@ -151,8 +150,9 @@ function ListView(props)
                     Object.entries(groupConditions).map(([condition_index, conditions]) => {
                         if(newData[grpCondition_index][condition_index] && (grpCondition_index == group_count )){
                             Object.entries(conditions).map(([grpConditionIndex, condition]) => {
-                                if(grpConditionIndex == conditions_count ){
+                                if((grpConditionIndex == conditions_count) && is_deleted === false ){
                                    newData[grpCondition_index][condition_index].splice(conditions_count,1);
+                                   is_deleted = true;
                                 }
                             });
                         }
@@ -306,10 +306,10 @@ function ListView(props)
                                                         </li>
                                                     {Object.entries(props.filterList).map(([filter_index, filterData])=>
                                                         <li  key={filterData['id']} className="px-4 hover:bg-sky-700 py-2 cursor-pointer">
-                                                            <div class="flex">
-                                                                <div className="col-span-2" onClick={ ()=> applyFilter(filterData['id'])}> {filterData['name']} </div>
-                                                                <div className="absolute text-white right-4 p-1 hover:text-gray-900" onClick={() => editFilter(filterData['id']) } >  <PencilIcon className="float-right" /></div> 
-                                                                <div className="absolute text-white right-0 p-1 hover:text-gray-900" onClick={() => deleteFilter(filterData['id']) } >  <DeleteIcon className="float-right" /></div> 
+                                                            <div class="flex text-white hover:text-gray-900">
+                                                                <div className="col-span-2 text-gray-900" onClick={ ()=> applyFilter(filterData['id'])}> {filterData['name']} </div>
+                                                                <div className="absolute right-4 p-1 mx-2" onClick={() => editFilter(filterData['id']) } >  <PencilIcon className="float-right" /></div> 
+                                                                <div className="absolute right-0 p-1 mx-2" onClick={() => deleteFilter(filterData['id']) } >  <DeleteIcon className="float-right" /></div> 
                                                             </div>
                                                             
                                                         </li>
@@ -445,11 +445,11 @@ function ListView(props)
                                             <tr key={person.id}>
                                                 <td
                                                     scope="col"
-                                                    className="relative w-12 px-6 sm:w-16 sm:px-8"
+                                                    className=" w-12 px-6 sm:w-16 sm:px-8"
                                                 >
                                                     <input
                                                         type="checkbox"
-                                                        className="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/80 sm:left-6"
+                                                        className=" left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/80 sm:left-6"
                                                     />
                                                 </td>
                                                 <td className="whitespace-nowrap py-3 pl-4 pr-3 text-sm sm:pl-6">
@@ -496,7 +496,7 @@ function ListView(props)
                                         ))}
                                         {Object.entries(props.records).length == 0 &&
                                             <tr><td className = "" colSpan="3">
-                                                <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
+                                                <div className=" px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
                                                     {props.module} not created yet.
                                                 </div>
                                             </td></tr>
@@ -516,7 +516,7 @@ function ListView(props)
                 <div
                     className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none"
                 >
-                    <div className="relative w-auto my-6 mx-auto max-w-3xl">
+                    <div className="relative w-auto my-6 mx-auto max-w-5xl">
                     {/*content*/}
                     <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
                         {/*header*/}
