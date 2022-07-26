@@ -4,7 +4,7 @@ import Authenticated from "@/Layouts/Authenticated";
 import Axios from "axios";
 import notie from 'notie';
 import nProgress from 'nprogress';
-import { Link } from "@inertiajs/inertia-react";
+import { Link, Head } from "@inertiajs/inertia-react";
 
 function Wallet(props)
 {
@@ -50,7 +50,12 @@ function Wallet(props)
     }
 
     return (
-        <Authenticated>
+        <Authenticated
+            auth={props.auth}
+            errors={props.errors}
+        >
+            <Head title={'Wallet'} />
+
             <div className="new-dash mt-10 p-3 text-[#3D4459]">
                 <div class="bg-white rounded-md shadow w-full py-8 flex items-center flex-col sm:flex-row">
                     <div className="mx-10">

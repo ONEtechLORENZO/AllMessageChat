@@ -5,7 +5,10 @@ import ListView from '@/Components/Views/List/Index2';
 function List(props)
 {
     return (
-        <Authenticated>
+        <Authenticated
+            auth={props.auth}
+            errors={props.errors}
+        >
 
             <ListView
                 headers={props.list_view_columns}

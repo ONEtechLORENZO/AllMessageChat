@@ -5,7 +5,10 @@ import Pagination from "../../Components/Pagination";
 function MessageListing(props) 
 {
     return (
-        <Authenticated>
+        <Authenticated
+            auth={props.auth}
+            errors={props.errors}
+        >
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
                 <div className="flex-1 min-w-0">
                     <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">{props.translator['Messages']}</h2>

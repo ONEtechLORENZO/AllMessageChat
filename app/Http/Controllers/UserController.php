@@ -1140,4 +1140,12 @@ class UserController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Return user invoices
+     */
+    public function invoices(Request $request)
+    {
+        // 
+    }
 }
