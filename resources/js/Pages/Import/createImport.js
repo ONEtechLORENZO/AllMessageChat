@@ -35,8 +35,7 @@ const Tabs = (props) => {
         }
 
     }, [props]);
-console.log(Onestep)
-console.log(CsvHeader)
+
     function importStep() {
         var pristine = new PristineJS(
             document.getElementById("update_csv"),
@@ -75,10 +74,9 @@ console.log(CsvHeader)
     }
 
     function importfileSave() {
-        console.log(["save:", data]);
         Inertia.post(route("import_save"), data, {
             onSuccess: (response) => {
-                console.log(response);
+                
             },
         });
     }
@@ -176,7 +174,7 @@ console.log(CsvHeader)
                                                                                 htmlFor="file-upload"
                                                                                 className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
                                                                             >
-                                                                                <span>Upload a  CSV file </span>
+                                                                                <span>Upload a CSV file</span>
                                                                                 <Input
                                                                                     name="fileUpload"
                                                                                     required={true}
@@ -259,10 +257,10 @@ console.log(CsvHeader)
                                                     <thead className="bg-gray-50">
                                                         <tr>
                                                             <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6" >
-                                                                One Step message
+                                                                OneMessage Fields
                                                             </th>
                                                             <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6" >
-                                                                Csv Header
+                                                                CSV Headers
                                                             </th>
                                                         </tr>
                                                     </thead>
