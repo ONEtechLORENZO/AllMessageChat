@@ -1032,6 +1032,7 @@ class UserController extends Controller
     public function charge(Request $request)
     {
         $user = $request->user();
+        $user_id = $user->id;
         $amount = $request->get('amount') * 100;
         try {
             $params = [
@@ -1044,7 +1045,6 @@ class UserController extends Controller
             );
 
             if($stripeCharge->id) {
-                $user_id = $user->id;
                 $wallet = Wallet::where('user_id', $user_id)->first();
                 if(!$wallet) {
                     $wallet = new Wallet();
