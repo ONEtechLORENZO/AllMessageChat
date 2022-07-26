@@ -3,10 +3,11 @@ import Pagination from '@/Components/Pagination';
 import Alert from '@/Components/Alert';
 import Button from '@/Components/Forms/Button';
 import Form from '@/Components/Forms/Form';
-import { ChevronDownIcon, ChevronUpIcon, PencilAltIcon, TrashIcon } from '@heroicons/react/solid';
+import { ChevronDownIcon, ChevronUpIcon, PencilAltIcon, TrashIcon, UploadIcon } from '@heroicons/react/solid';
 import { Inertia } from '@inertiajs/inertia';
 import notie from 'notie';
 import Search from './Search';
+import { Link } from '@inertiajs/inertia-react';
 
 function ListView(props)
 {
@@ -62,12 +63,12 @@ function ListView(props)
     }
 
     /**
-     * Sort field
+     * Sort list view column
      * 
      * @param {string} field_name 
      * @param {string} sort_order
      */
-    function sortField(field_name, sort_order)
+    function sortColumn(field_name, sort_order)
     {
         Inertia.get(route('list' + props.module) + '?page='+ props.paginator.currentPage +'&search=' + props.search + '&sort_by=' + field_name + '&sort_order=' + sort_order);
     }
@@ -77,7 +78,7 @@ function ListView(props)
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
                 <div className="flex min-w-0 justify-between">
                     <div className='flex gap-6'>
-                        <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">{props.heading}</h2>
+                        <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">{props.plural}</h2>
                         {props.actions && props.actions.search === true ?
                             <Search 
                                 module={props.module} 
@@ -88,16 +89,40 @@ function ListView(props)
                             />
                         : ''}
                     </div>
-                    {props.actions && props.actions.create === true ?
-                        <>
-                            <Button 
-                                type='button'
-                                onClick={() => setShowForm(true)}
-                            >
-                                Add {props.heading}
-                            </Button>
-                        </>
-                    : ''}
+                    <div className='flex gap-4'>
+                        {props.actions && props.actions.import === true ?
+                            <>
+                                <Link 
+                                    href={route('import')}
+                                    className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
+                                > 
+                                    <UploadIcon className='h-4 w-4' /> Import 
+                                </Link>
+                            </>
+                        : ''}
+
+                        {props.actions && props.actions.create === true ?
+                            <>
+                                {props.add_link ?
+                                    <Link 
+                                        href={props.add_link}
+                                        className='inline-flex items-center px-4 py-2 bg-primary border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest active:bg-gray-900 transition ease-in-out duration-150'
+                                    > 
+                                        {props.add_button_text}
+                                    </Link>
+                                : ''}
+
+                                {!props.add_link ?
+                                    <Button 
+                                        type='button'
+                                        onClick={() => setShowForm(true)}
+                                    >
+                                        {props.add_button_text ? props.add_button_text : `Add ${props.singular}`}
+                                    </Button>
+                                : ''}
+                            </>
+                        : ''}
+                    </div>
                 </div>
                 <div className="mt-2 flex flex-col">
                     <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -122,7 +147,7 @@ function ListView(props)
                                                         scope="col"
                                                         className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-[#3D4459] sm:pl-6"
                                                     >
-                                                        <a href="#" className="group inline-flex" onClick={() => sortField(name, sort_order)}>
+                                                        <a href="#" className="group inline-flex" onClick={() => sortColumn(name, sort_order)}>
                                                             {label}
                                                             <span className={`ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible ` + visibility}>
                                                                 {visibility == '' && props.sort_order == 'asc' ?
@@ -142,13 +167,20 @@ function ListView(props)
                                     <tbody className=" bg-white">
                                         {Object.entries(props.records).map(([key, record]) => (
                                             <tr key={key}>
-                                                {Object.entries(props.headers).map(([name]) => (
-                                                    <>
-                                                        <td key={name} className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]">
-                                                            {record[name]} 
+                                                {Object.entries(props.headers).map((header_info, index) => {
+                                                    let column_value = record[header_info[0]];
+                                                    if(props.actions.detail === true && index === 0) {
+                                                        column_value = <Link href={route('detail' + props.module, {id: record.id})} className='cursor-pointer underline'>
+                                                            {column_value}
+                                                        </Link>;
+                                                    }
+
+                                                    return (
+                                                        <td key={header_info[0]} className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]">
+                                                            {column_value}
                                                         </td>
-                                                    </>
-                                                ))}
+                                                    );
+                                                })}
 
                                                 <td>
                                                     <div className='flex gap-2'>

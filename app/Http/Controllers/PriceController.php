@@ -52,7 +52,8 @@ class PriceController extends Controller
 
         return Inertia::render('Pricing/List', [
             'records' => $records->items(),
-            'heading' => 'Price',
+            'singular' => 'Price',
+            'plural' => 'Prices',
             'module' => 'Price',
             // Actions
             'actions' => [

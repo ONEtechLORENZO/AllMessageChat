@@ -7,14 +7,18 @@ use Illuminate\Http\Request;
 
 class FormController extends Controller
 {
+    /**
+     * Fetch module fields from Field model
+     */
     function fetchModuleFields(Request $request)
-    {
+    {        
         $user = $request->user();
-        if($user->role != 'admin' && $request->route('module') == 'Price') {
+        $module = $request->route('module');
+        if($user->role != 'admin' && $module == 'Price') {
             abort(401);
         }
 
-        $fields = Field::where('module_name', 'Price')->get();
+        $fields = Field::where('module_name', $module)->get();
 
         return response()->json(['fields' => $fields]);
     }

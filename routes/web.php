@@ -46,7 +46,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/wallet', [UserController::class, 'wallet'])->name('wallet');
     Route::post('/charge', [UserController::class, 'charge'])->name('charge');
     Route::get('/user-balance', [UserController::class, 'userBalance'])->name('userBalance');
-    Route::get('/transactions', [UserController::class, 'transactions'])->name('transactions');
+    Route::get('/transactions', [UserController::class, 'transactions'])->name('listTransaction');
     Route::get('/invoices', [UserController::class, 'invoices'])->name('invoices');
     
     // Profile
@@ -99,14 +99,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/fetchModuleFields/{module}', [FormController::class, 'fetchModuleFields'])->name('fetchModuleFields');
 
     // Import
-    Route::get('/import',[ImportController::class, 'importData'])->name('import');
-    Route::get('/import/new',[ImportController::class, 'newImport'])->name('new_import');
-    Route::post('/import/step',[ImportController::class, 'importCSV'])->name('importcsv');
-    Route::post('/import/file',[ImportController::class, 'getRecordFile'])->name('getRecordFile');
-    Route::post('/import/save',[ImportController::class, 'importFileSave'])->name('import_save');
-    Route::get('/import/edit/{id}',[ImportController::class, 'EditImport'])->name('import_edit');
-    Route::get('/import/delete/{id}',[ImportController::class, 'deleteImport'])->name('import_delete');
-
+    Route::get('/import',[ImportController::class, 'index'])->name('listImport');
+    Route::get('/import/create',[ImportController::class, 'create'])->name('new_import');
+    Route::get('/import/detail/{id}',[ImportController::class, 'show'])->name('detailImport');
+    Route::post('/import/save',[ImportController::class, 'store'])->name('import_save');
+    Route::post('/import/file',[ImportController::class, 'handleFileImport'])->name('handleFileImport');
+    Route::delete('/import/{id}', [ImportController::class, 'destroy'])->name('deleteImport');
 });
 
 // Check user is admin
