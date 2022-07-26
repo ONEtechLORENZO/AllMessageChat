@@ -6,6 +6,7 @@ import Form from '@/Components/Forms/Form';
 import { PencilAltIcon, TrashIcon } from '@heroicons/react/solid';
 import { Inertia } from '@inertiajs/inertia';
 import notie from 'notie';
+import Search from './Search';
 
 function ListView(props)
 {
@@ -49,7 +50,7 @@ function ListView(props)
         if(!confirm) {
             return;
         }
-        
+
         Inertia.delete(route('delete' + props.module, {id: record_id}), {}, {
             onSuccess: (response) => {
                 notie.alert({type: 'success', text: 'Record deleted successfully', time: 5});
@@ -64,7 +65,16 @@ function ListView(props)
         <>
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
                 <div className="flex min-w-0 justify-between">
-                    <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">{props.heading}</h2>
+                    <div className='flex gap-6'>
+                        <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">{props.heading}</h2>
+                        {props.actions && props.actions.search === true ?
+                            <Search 
+                                module={props.module} 
+                                search={props.search}
+                                currentPage={props.paginator.currentPage}
+                            />
+                        : ''}
+                    </div>
                     {props.actions && props.actions.create === true ?
                         <>
                             <Button 

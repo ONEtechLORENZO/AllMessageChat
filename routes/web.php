@@ -126,7 +126,7 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::post('/admin/settings/saveToAddress', [SettingsController::class, 'saveToAddressData'])->name('store_toAddress_data');
 
     // Pricing
-    Route::get('/admin/pricing', [PriceController::class, 'index'])->name('priceListing');
+    Route::get('/admin/pricing', [PriceController::class, 'index'])->name('listPrice');
     Route::get('/admin/pricing/edit/{id}', [PriceController::class, 'edit'])->name('editPrice');
     Route::post('/admin/pricing', [PriceController::class, 'store'])->name('storePrice');
     Route::post('/admin/pricing/{id}', [PriceController::class, 'update'])->name('updatePrice');

@@ -11,6 +11,8 @@ use Illuminate\Validation\ValidationException;
 
 class PriceController extends Controller
 {
+    public $limit = 15;
+
     /**
      * Display a listing of the resource.
      *
@@ -27,7 +29,18 @@ class PriceController extends Controller
             'media' => 'Media',
         ];
 
-        $records = Price::paginate(15);
+        $search = $request->has('search') ? $request->get('search') : '';
+
+        if($search) {
+            $records = Price::where(function ($query) use ($search, $list_view_columns) {    
+                            foreach($list_view_columns as $field_name => $field_info) {
+                                $query->orWhere($field_name, 'like', '%' . $search . '%');
+                            }
+                        })->paginate($this->limit);
+        }
+        else {
+            $records = Price::paginate($this->limit);
+        }
 
         return Inertia::render('Pricing/List', [
             'records' => $records->items(),
@@ -39,7 +52,9 @@ class PriceController extends Controller
                 'delete' => true,
                 'export' => false,
                 'import' => false,
+                'search' => true,
             ],
+            'search' => $search,
             'compact_type' => 'condense',
             'list_view_columns' => $list_view_columns,
             'paginator' => [
@@ -101,7 +116,7 @@ class PriceController extends Controller
         }
         $price->save();
 
-        return Redirect::route('priceListing');
+        return Redirect::route('listPrice');
     }
 
     /**
@@ -161,7 +176,7 @@ class PriceController extends Controller
         }
         $price->save();
 
-        return Redirect::route('priceListing');
+        return Redirect::route('listPrice');
     }
 
     /**
@@ -178,6 +193,6 @@ class PriceController extends Controller
         }
 
         $price->delete();
-        return Redirect::route('priceListing');
+        return Redirect::route('listPrice');
     }
 }
