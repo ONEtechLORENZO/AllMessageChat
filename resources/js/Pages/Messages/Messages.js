@@ -8,7 +8,7 @@ function MessageListing(props)
         <Authenticated>
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
                 <div className="flex-1 min-w-0">
-                    <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">Messages</h2>
+                    <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">{props.translator['Messages']}</h2>
                 </div>
                 <div className="mt-8 flex flex-col">
                     <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -57,7 +57,7 @@ function MessageListing(props)
                                             <tr>
                                                 <td colspan={Object.entries(props.list_view_columns).length} >
                                                     <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
-                                                        No messages sent/received yet for your account(s).
+                                                    {props.translator['No Messages yet']}
                                                     </div>
                                                 </td>   
                                             </tr>

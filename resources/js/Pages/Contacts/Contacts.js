@@ -20,10 +20,10 @@ import { objectPosition } from "tailwindcss/defaultTheme";
 export default function Contacts(props) {
     const [contactFields, setContactFields] = useState({
         'id': { 'label': '', 'type': 'hidden', 'required': false },
-        'first_name': { 'label': 'First Name', 'type': 'text', 'required': false },
-        'last_name': { 'label': 'Last Name', 'type': 'text', 'required': true } , 
-        'email': { 'label': 'Email', 'type': 'email', 'required': true }, 
-        'phone_number': { 'label': 'Phone number', 'type': 'text', 'required': false },
+        'first_name': { 'label': (props.translator['First Name']), 'type': 'text', 'required': false },
+        'last_name': { 'label':(props.translator['Last Name']), 'type': 'text', 'required': true } , 
+        'email': { 'label':(props.translator['Email']), 'type': 'email', 'required': true }, 
+        'phone_number': { 'label': (props.translator['Phone number']), 'type': 'text', 'required': false },
         'instagram_id': { 'label': 'Instagram ID', 'type': 'text', 'required': false }, 
     });
     
@@ -187,7 +187,7 @@ export default function Contacts(props) {
                 updateRecord = {updateCotnact}
                 openCreateModal = {openCreateModal} 
             />
-{/* 
+{ /*
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
                 <div className="sm:flex sm:items-center sm:justify-between">
                     <div className="flex gap-3">

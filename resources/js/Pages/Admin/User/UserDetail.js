@@ -13,22 +13,22 @@ export default function UserDetail(props) {
 
     const fieldList = {
         'Personal Information': {
-            'name': {'value': props.user.name, 'label': 'Name', 'type': 'text', 'required': true },
-            'company_name': {'value': props.user.company_name, 'label': 'Company name', 'type': 'text', 'required': false },
-            'email': {'value': props.user.email, 'label': 'Email', 'type': 'email', 'required': true},
-            'phone_number': {'value': props.user.phone_number, 'label': 'Phone number', 'type': 'text', 'required': false },
-            'language': {'value': props.user.language, 'label': 'Language', 'type': 'select', 'required': false , 'options': { 'en': 'English', 'it': 'Italy'}},
-            'currency': {'value': props.user.currency, 'label': 'Currency', 'type': 'select', 'required': false, 'options': currencies },
-            'time_zone': {'value': props.user.time_zone, 'label': 'Time zone', 'type': 'select', 'required': false , 'options': props.time_zone },
-            'token': {'value': props.token, 'label': 'Token' , action:'regenarate', 'type': 'text', 'required': false },
-            'status': {'value': (props.user.status == 1) ? 'Active': 'Inactive', 'label': 'Active Status', 'type': 'checkbox', 'required': false },
+            'name': {'value': props.user.name, 'label': (props.translator['Name']), 'type': 'text', 'required': true },
+            'company_name': {'value': props.user.company_name, 'label': (props.translator['Company name']), 'type': 'text', 'required': false },
+            'email': {'value': props.user.email, 'label': (props.translator['Email']), 'type': 'email', 'required': true},
+            'phone_number': {'value': props.user.phone_number, 'label': (props.translator['Phone number']), 'type': 'text', 'required': false },
+            'language': {'value': props.user.language, 'label':(props.translator['Language']), 'type': 'select', 'required': false , 'options': { 'en': 'English', 'it': 'Italy'}},
+            'currency': {'value': props.user.currency, 'label': (props.translator['Currency']), 'type': 'select', 'required': false, 'options': currencies },
+            'time_zone': {'value': props.user.time_zone, 'label':(props.translator['Time Zone']), 'type': 'select', 'required': false , 'options': props.time_zone },
+            'token': {'value': props.token, 'label': (props.translator['Token']) , action:'regenarate', 'type': 'text', 'required': false },
+            'status': {'value': (props.user.status == 1) ? 'Active': 'Inactive', 'label': (props.translator['Active Status']), 'type': 'checkbox', 'required': false },
         },
         'Billing Information': {
-            'company_address': {'value': props.user.company_address, 'label': 'Company Address', 'type': 'textarea', 'required': false },
-            'company_country': {'value': props.user.company_country, 'label': 'Company Country', 'type': 'select', 'required': false, 'options': countries },
-            'company_vat_id': {'value': props.user.company_vat_id, 'label': 'Company VAT ID', 'type': 'text', 'required': false },
+            'company_address': {'value': props.user.company_address, 'label': (props.translator['Company Address']), 'type': 'textarea', 'required': false },
+            'company_country': {'value': props.user.company_country, 'label': (props.translator['Company Country']), 'type': 'select', 'required': false, 'options': countries },
+            'company_vat_id': {'value': props.user.company_vat_id, 'label': (props.translator['Company VAT ID']), 'type': 'text', 'required': false },
             'codice_destinatario': {'value': props.user.codice_destinatario, 'label': 'Company Codice Destinatario', 'type': 'text', 'required': false },
-            'admin_email': {'value': props.user.admin_email, 'label': 'Admin email for invoices', 'type': 'email', 'required': false },
+            'admin_email': {'value': props.user.admin_email, 'label': (props.translator['Admin email for invoices']), 'type': 'email', 'required': false },
         }
     };
 
@@ -93,7 +93,7 @@ export default function UserDetail(props) {
                 return true;
             }
             return false;
-        }, "The new password and confirm password must match", 2, false);
+        }, (props.translator['The new password and confirm password must match']), 2, false);
  
         Inertia.post(route('change_password', props.user.id), data, {
             onSuccess: () => {
@@ -112,7 +112,7 @@ export default function UserDetail(props) {
             errors={props.errors}
             header={<div className="flex justify-between"> 
                 <div> 
-                    <h2 className="font-semibold text-xl text-gray-800 leading-tight">Users</h2>
+                    <h2 className="font-semibold text-xl text-gray-800 leading-tight">{props.translator['Users']}</h2>
                 </div> 
                 <div className='flex gap-3'>
                     <Link 
@@ -128,19 +128,19 @@ export default function UserDetail(props) {
                             onClick={() => setChangePasswordModalOpen(true)}
                             className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
-                            Change Password
+                            {props.translator['Change Password']}
                         </button>
                     }
                     <Link
                         href={props.user.role == 'Admin' ?  route('edit_user' , [props.user.id]) : route('edit_profile' , [props.user.id])}
-                        className='inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                        className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                     >
-                        Edit User
+                        {props.translator['Edit User']}
                     </Link>
                 </div> 
             </div>}
         >
-        <Head title="User Detail" />
+        <Head title={props.translator['User Detail']} />
 
             <div className="py-12">
                 {Object.entries(fieldList).map(([title, fields]) => {
@@ -148,7 +148,7 @@ export default function UserDetail(props) {
                     <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4">
                         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
                             <div className="px-4 py-5 sm:px-6">
-                                <h3 className="text-lg leading-6 font-medium text-gray-900">{title}</h3>
+                                <h3 className="text-lg leading-6 font-medium text-gray-900">{props.translator[title]}</h3>
                             </div>
                             <div className="border-t border-gray-200">
                                 <dl>
@@ -180,7 +180,7 @@ export default function UserDetail(props) {
                                                         <>
                                                             {token}
                                                             <span class="cursor-pointer" title="Regenarate Token">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" onClick={() => {if(window.confirm('Do you want change the user token?')){updateToken()};}} class={"h-5 w-5 " + spinClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" onClick={() => {if(window.confirm((props.translator['Do you want change the user token?']))){updateToken()};}} class={"h-5 w-5 " + spinClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                                                 </svg>
                                                             </span>
@@ -234,17 +234,17 @@ export default function UserDetail(props) {
                                 <div>
                                     <div className="">
                                         <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
-                                            Change Password
+                                        {props.translator['Change Password']}
                                         </Dialog.Title>
                                         <div className="mt-2">
                                             <form id="user_new_password">
                                             <div className="grid gap-6">                                                
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="new_password" className="block text-sm font-medium text-gray-700">
-                                                        New Password
+                                                    {props.translator['New Password']}
                                                     </label>
                                                     <div className="mt-1 flex rounded-md shadow-sm">
-                                                        <Input type="password" minlength="8" name='new_password' required={true} id='new_password' placeholder='New Password' handleChange={handleChange} />
+                                                        <Input type="password" minlength="8" name='new_password' required={true} id='new_password' placeholder={props.translator['New Password']} handleChange={handleChange} />
                                                     </div>
                                                     <InputError message={errors.incoming_url} />
                                                 </div>
@@ -252,10 +252,10 @@ export default function UserDetail(props) {
                                                 <div className="grid gap-6 mt-3">                                                
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="confirm_password" className="block text-sm font-medium text-gray-700">
-                                                        Confirm Password
+                                                    {props.translator['Confirm Password']}
                                                     </label>
                                                     <div className="mt-1 flex rounded-md shadow-sm">
-                                                        <Input type="password" minlength="8" name='confirm_password' required={true} id='confirm_password' placeholder='Confirm Password' handleChange={handleChange} />
+                                                        <Input type="password" minlength="8" name='confirm_password' required={true} id='confirm_password' placeholder={props.translator['Confirm Password']} handleChange={handleChange} />
                                                     </div>
                                                     <InputError message={errors.incoming_url} />
                                                 </div>
@@ -270,14 +270,14 @@ export default function UserDetail(props) {
                                         className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
                                         onClick={() => createNewPassword()}
                                     >
-                                        Change 
+                                        {props.translator['Change']} 
                                     </button>
                                     <button
                                         type="button"
                                         className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
                                         onClick={() => setChangePasswordModalOpen(false)}
                                     >
-                                        Close
+                                        {props.translator['Close']}
                                     </button>
                                 </div>
                             </div>
