@@ -13,9 +13,9 @@ function ListView(props)
 {
     const newCondition = {
         'field_name': '',
-        'record_condition': '',
+        'record_condition': 'equal',
         'condition_value': '',
-        'condition_operator': ''
+        'condition_operator': 'AND'
     };
     const [records, setRecords] = useState(props.records);
     const [openFilterModal, setOpenFilterModal ] = useState(false);
@@ -89,7 +89,7 @@ function ListView(props)
             var data = {'filter_id':filter_id };
             Inertia.post(route('delete_filter'), data, {
                 onSuccess: (response) => {
-                    setOpenCreateContactModal(false);
+                    setOpenFilterModal(false);
                 },
             });
         }
@@ -215,16 +215,27 @@ function ListView(props)
         
     }
     function searchFilterData(){
+        
+        var is_valid = checkValidate();
+        if(!is_valid){
+            return false;
+        }
+        
         var advancedSearch = JSON.stringify(filter);
         var url = route('contacts') + '?filter='+advancedSearch;
         
         Inertia.get(url,  {
             onSuccess: (response) => {
-                setOpenCreateContactModal(false);
+                setOpenFilterModal(false);
             },
         });
     }
     function saveFilterCondition(){
+        var is_valid = checkValidate();
+        if(!is_valid){
+            return false;
+        }
+
         if(!filterName){
             let newError = Object.assign({}, errors);
             newError['filter_name'] = true;
@@ -234,11 +245,35 @@ function ListView(props)
             var data = {'filter': JSON.stringify(filter), 'module_name': 'Contacts', 'filter_name': filterName, 'filter_id':selectedFilter };
             Inertia.post(route('store_filter'), data, {
                 onSuccess: (response) => {
-                    setOpenCreateContactModal(false);
+                    setOpenFilterModal(false);
                 },
             });
         }
     }
+
+    // Check Validation
+    function checkValidate(){
+        var returnFlag = true;
+        let newError = Object.assign({}, errors);
+        newError['first_name'] = false;
+
+        let newData = Object.assign({}, filter);
+        Object.entries(newData).map(([grpCondition_index, grpConditions]) => {
+            Object.entries(grpConditions).map(([grpCondition, conditions], group_index) => {
+                Object.entries(conditions).map(([condition_index, condition]) => {
+                    if(! condition.field_name){
+                        newError['first_name'] = true;
+                        returnFlag =  false; 
+                    }
+                });
+                
+            });
+        });
+        setErrors(newError);
+
+        return returnFlag;
+    }
+    
     return (
        <>
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
@@ -303,7 +338,7 @@ function ListView(props)
                         </div>
                         <div>
                         <button
-                    onClick={(e)=>search(e)}
+                    onClick={(e)=>props.search(e)}
                     className="inline-flex items-center justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
                         >                        
                         Search                        
@@ -519,6 +554,9 @@ function ListView(props)
                         
                         {/*footer*/}
                         <div className="flex items-center justify-end p-6 border-t border-solid border-slate-200 rounded-b">
+                            {errors.first_name &&
+                                <div className="absolute left-0 mx-2" ><small className="text-red-500"> Please fill the condition </small> </div>
+                            }
                         <button
                             className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
                             type="button"
