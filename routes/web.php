@@ -6,10 +6,13 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImportController;
+use App\Http\Controllers\PriceController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\MessageLogController;
 use App\Http\Controllers\MsgController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\FilterController;
+use App\Http\Controllers\FormController;
 use App\Http\Middleware\IsAdmin;
 
 /*
@@ -38,10 +41,18 @@ Route::post('/incoming', [MsgController::class, 'incoming']);
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
+
+    // Wallet
+    Route::get('/wallet', [UserController::class, 'wallet'])->name('wallet');
+    Route::post('/charge', [UserController::class, 'charge'])->name('charge');
+    Route::get('/user-balance', [UserController::class, 'userBalance'])->name('userBalance');
+    Route::get('/transactions', [UserController::class, 'transactions'])->name('transactions');
     
     // Profile
     Route::get('/user/profile', [UserController::class, 'userDetail'])->name('profile');
     Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('user_profile');
+    Route::get('/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_profile');
+    Route::post('/user/registration', [UserController::class, 'storeUserRegistration'])->name('store_user_data');
     Route::get('/image/{type}/{id}', [ImageController::class, 'showImage'])->name('show_image');
     Route::post('/user/regenerate_token', [UserController::class, 'regenerateToken'])->name('regenerate_token');
 
@@ -58,7 +69,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/account/{id}/template/{template_id}', [UserController::class, 'templateDetailView'])->name('template_detail_view');
     Route::post('/account/{id}/template/{template_id}', [UserController::class, 'storeTemplate'])->name('store_template');
     Route::get('/account/{id}', [UserController::class, 'showAccount'])->name('account_view');
-    Route::delete('/account/delete_account', [UserController::class, 'deleteAccount'])->name('delete_account');
+    Route::post('/account/delete_account', [UserController::class, 'deleteAccount'])->name('delete_account');
     Route::post('/saveTemplateStatus/account/{acc_id}/template/{tmp_id}', [UserController::class, 'saveTemplateStatus'])->name('template_status_form');
 
     // Webhook Events
@@ -72,11 +83,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/sendMessage', [MsgController::class, 'sendMessage'])->name('send_message_to_contact');
 
     //Contact
+    Route::get('/contacts', [ContactController::class, 'list'])->name('contacts');
     Route::get('/contact/{id}', [ContactController::class, 'contactDetail'])->name('contact_detail');
-    Route::get('/contacts', [ContactController::class, 'contactList'])->name('contacts');
     Route::post('/updateContact', [ContactController::class, 'storeContact'])->name('store_contact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('get_contact_data');
+    Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
 
+    //Filter
+    Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');
+    Route::post('/storeFilter', [FilterController::class, 'storeFilter'])->name('store_filter');
+    Route::post('/deleteFilter', [FilterController::class, 'deleteFilter'])->name('delete_filter');
+
+    // Form
+    Route::get('/fetchModuleFields/{module}', [FormController::class, 'fetchModuleFields'])->name('fetchModuleFields');
 });
 
 // Check user is admin
@@ -86,7 +105,6 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_user');
     Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_user');
     Route::get('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_user');
-    Route::post('/admin/user/registration', [UserController::class, 'storeUserRegistration'])->name('store_user_data');
     Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('user_detail');
     Route::post('/admin/user/change_password/{id}', [UserController::class, 'changePassword'])->name('change_password');
 
@@ -95,6 +113,13 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::get('/admin/settings/template_notification', [SettingsController::class, 'toMail'])->name('template_notification');
     Route::post('/admin/settings/saveSMTP', [SettingsController::class, 'saveOutgoingServerData'])->name('store_smtp_data');
     Route::post('/admin/settings/saveToAddress', [SettingsController::class, 'saveToAddressData'])->name('store_toAddress_data');
+
+    // Pricing
+    Route::get('/admin/pricing', [PriceController::class, 'index'])->name('priceListing');
+    Route::get('/admin/pricing/edit/{id}', [PriceController::class, 'edit'])->name('editPrice');
+    Route::post('/admin/pricing', [PriceController::class, 'store'])->name('storePrice');
+    Route::post('/admin/pricing/{id}', [PriceController::class, 'update'])->name('updatePrice');
+    Route::delete('/admin/pricing/{id}', [PriceController::class, 'destroy'])->name('deletePrice');
 });
 
 Route::get('/pricing',function(){

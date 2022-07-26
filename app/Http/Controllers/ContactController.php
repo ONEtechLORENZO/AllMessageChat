@@ -4,14 +4,143 @@ namespace App\Http\Controllers;
 
 use App\Models\Contact;
 use Inertia\Inertia;
-
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Http\Request;
+
+use Auth;
+use App\Models\MessageLog;
+use App\Models\IncomingUrl;
+use App\Models\Msg;
+use App\Models\Filter;
+use App\Models\MessageResponse;
+use App\Models\Account;
+use App\Models\User;
+use App\Models\Template;
+use App\Models\Message;
+use Illuminate\Support\Facades\Log;
+use DateTime;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Input;
 
 class ContactController extends Controller
 {
-    public $fiedls = [
-        
-    ];
+    public $limit = 5;
+    public $contactColumns = ['first_name','last_name','phone_number','email'];
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function list(Request $request)
+    {
+       
+        $limit = $this->limit;
+        $searchData =  $whereCondition = '';
+        $selectedFilter = (isset($_GET['filter_id']) && $_GET['filter_id'] )? $_GET['filter_id']: '';
+        $filters = [];
+        $user = Auth::user();
+        $user_id = $request->user()->id;        
+        $key = $request->query('search');        
+        $sortfield=$request->query('sortfield');       
+        $sortdir=$request->query('sortdir');
+        if(!$sortfield)
+              $sortfield='first_name';
+        if(!$sortdir)
+              $sortdir='desc';              
+        $contactList = [];
+        if($key) {
+
+            $contact_cols = ['first_name','last_name','phone_number','email'];
+            $contacts = Contact::orderBy($sortfield, $sortdir)
+                        ->where('user_id', $user_id)
+                        ->where(function ($query) use ($key, $contact_cols) {    
+                            foreach($contact_cols as $contact_col) {         
+                                $query->orWhere($contact_col, 'like', '%' . $key. '%');                            
+                            }
+                        })
+                        ->paginate($limit);        
+        } elseif((isset($_GET['filter']) && $_GET['filter']) || (isset($_GET['filter_id']) && $_GET['filter_id']) ){
+            if(isset($_GET['filter_id']) && $_GET['filter_id']) {
+                $filterId = $_GET['filter_id'];
+                if($filterId != 'All'){
+                    $filter = Filter::find($filterId);
+                    $searchData = unserialize( base64_decode( $filter->condition) );
+                    $whereCondition = $this->getWhereFiltetCondition($searchData);
+                }
+            } else {
+                $searchData = json_decode($_GET['filter']);
+                $whereCondition = $this->getWhereFiltetCondition($searchData);
+            }
+            //dd($whereCondition);
+            
+            $contacts = Contact::where(function ($query) use ( $user , $whereCondition) {   
+                    $query->where('user_id', $user->id );
+                    if($whereCondition){
+                        $query->whereRaw($whereCondition);
+                    }
+                })
+                ->orderBy($sortfield,$sortdir)
+                ->paginate($limit); 
+        } else {          
+            $contacts = Contact::where('user_id', $user->id )->orderBy($sortfield,$sortdir)->paginate($limit);    
+        }
+        $contactList = $this->fieldRecordList($contacts);
+        $filterList = Filter::where('user_id', $user_id)
+            ->where('module_name', 'Contacts')
+            ->get(); 
+
+        if($request->get('mode') == 'ajax') {
+            return response()->json(['contacts' => $contactList]);  
+        }
+
+        return Inertia::render('Contacts/Contacts', [
+
+            'contacts' => $contactList,
+            'filter' => $searchData,
+            'filterList' => $filterList,
+            'selectedFilter' => $selectedFilter,
+            'paginator' => [
+                'firstPageUrl' => $contacts->url(1),
+                'previousPageUrl' => $contacts->previousPageUrl(),
+                'nextPageUrl' => $contacts->nextPageUrl(),
+                'lastPageUrl' => $contacts->url($contacts->lastPage()),  
+                'currentPage' => $contacts->currentPage(),
+                'total' => $contacts->total(),
+                'count' => $contacts->count(),
+                'lastPage' => $contacts->lastPage(),
+                'perPage' => $contacts->perPage(),
+                
+            ],  
+            'translator' => [
+                'First Name' => __('First Name'),
+                'Last Name' => __('Last Name'),
+                'Email'  => __('Email'),
+                'Phone number'  => __('Phone number'),
+                
+                ]
+        ]);
+    }
+
+    /**
+     * Return list view field Records
+     */
+    public function fieldRecordList($records)
+    {
+        $recordList = [];
+        foreach($records as $record){
+            $name = $record->first_name . ' ' .$record->last_name;
+            $logo = trim($name , ' ');     
+            $recordList[$record->id] = [
+                'logo' => $logo,
+                'id' => $record->id,
+                'name' => $name,
+                'last_name' => $record->last_name,
+                'email' => $record->email,
+                'number' => ($record->phone_number != '') ? $record->phone_number : $record->instagram_id 
+            ];
+        }
+        return $recordList;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -94,12 +223,10 @@ class ContactController extends Controller
     public function contactList(Request $request)
     {
         $contactList = [];
-        $user = $request->user();
-        $contacts = Contact::where('user_id', $user->id )->get();
-        foreach($contacts as $contact){
+            $contacts = Contact::where('user_id', $user->id )->get() ;                   
+            foreach($contacts as $contact){
             $name = $contact->first_name . ' ' .$contact->last_name;
             $logo = trim($name , ' '); 
-
             $contactList[$contact->id] = [
                 'logo' => $logo,
                 'id' => $contact->id,
@@ -110,8 +237,93 @@ class ContactController extends Controller
             ];
         }
         return Inertia::render('Contacts/Contacts', [
-            'contacts' => $contactList
+            'contacts' => $contactList,
         ]);
+    }
+
+    /**
+     * Store filter conditions
+     */
+    public function saveFilterConditions($name, $module, $user, $condition)
+    {
+        if(isset($_GET['filter_id']) && $_GET['filter_id'] ){
+            $filter = Filter::FindOrFail($_GET['filter_id']);
+        } else {
+            $filter = new Filter();
+        }
+        $filter->name = $name;
+        $filter->module_name = $module;
+        $filter->user_id = $user;
+        $filter->condition = base64_encode( serialize( $condition ));
+        $filter->save();
+        return $filter->id;
+    }
+
+    /**
+     * Return filter Contacts list
+     */
+    public function getWhereFiltetCondition($searchData)
+    {
+        $whereCondition = '';
+        $groupCount = 0;
+        $isNullCondition = true;
+        
+        foreach($searchData as $key => $groupConditions){
+            foreach($groupConditions as $groupOperator => $conditions ){
+                $conditionsCount = count($conditions);
+                 if(!$conditionsCount){
+                    continue;
+                 }
+                $whereCondition .=  ($groupCount == 0) ? ' (' : " {$groupOperator} (";
+                $groupCount ++;
+                
+                foreach($conditions as $key => $condition){
+                    if($condition->field_name){
+                        $isNullCondition = false;
+                        switch($condition->record_condition){
+                            case 'equal':
+                                $whereCondition .= " {$condition->field_name} = '{$condition->condition_value}' ";
+                                break;
+                            case 'not_equal':
+                                $whereCondition .= " {$condition->field_name} != '{$condition->condition_value}' ";
+                                break;
+                            case 'is_null':
+                                $whereCondition .= " {$condition->field_name} is null ";
+                                break;
+                            case 'start_with':
+                                $whereCondition .= " {$condition->field_name} like '{$condition->condition_value}%' ";
+                                break;
+                            case 'end_with':
+                                $whereCondition .= " {$condition->field_name} like '%{$condition->condition_value}' ";
+                                break;
+                            case 'contains':
+                                $whereCondition .= " {$condition->field_name} like '%{$condition->condition_value}%' ";
+                                break;
+                            case 'lesser_than':
+                                $whereCondition .= " {$condition->field_name} = '{$condition->condition_value}' ";
+                                break;
+                            case 'lesser_than':
+                                $whereCondition .= " {$condition->field_name} < '{$condition->condition_value}' ";
+                                break;
+                            case 'lesser_than':
+                                $whereCondition .= " {$condition->field_name} > '{$condition->condition_value}' ";
+                                break;
+                        }
+                        if($conditionsCount != ($key+1) ){
+                            $operator = ($condition->condition_operator) ? $condition->condition_operator : 'AND';
+                            if($conditions[$key+1]->field_name){
+                                $whereCondition .= " {$operator} ";
+                            }
+                        }
+                    }
+                }
+                $whereCondition .=  " ) ";
+            }
+        }
+        if($isNullCondition){
+            $whereCondition = '';
+        }
+        return $whereCondition;
     }
 
     /**
@@ -132,13 +344,17 @@ class ContactController extends Controller
     {
        
         $user = $request->user();
-        $request->validate([
-            'last_name' => 'required|max:255',
-            'email' => 'required|unique:contacts|max:255',
-        ]);
         if($request->id){ 
+            $request->validate([
+                'last_name' => 'required|max:255',
+                'email' => 'required|max:255',
+            ]);
             $contact = Contact::findOrFail($request->id);
         } else {
+            $request->validate([
+                'last_name' => 'required|max:255',
+                'email' => 'required|unique:contacts|max:255',
+            ]);
             $contact = new Contact();
         }
         
@@ -149,7 +365,7 @@ class ContactController extends Controller
         $contact->user_id = $user->id;
         $contact->instagram_id = $request->instagram_id;
         $contact->save();
-        return redirect(route('contact_detail', $contact->id))->with('status', 'Profile updated!');
+        return Redirect::route('contact_detail', $contact->id);
     }
 
     /**

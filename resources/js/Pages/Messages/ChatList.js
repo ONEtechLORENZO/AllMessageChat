@@ -22,18 +22,9 @@ import {
     SettingIcon,
 } from "../icons";
 
-const userNavigation = [
-    { name: "Your Profile", href: "#" },
-    { name: "Settings", href: "#" },
-    { name: "Sign out", href: "#" },
-];
 
-const tabs = [
-    { name: "All Chats", href: "#", count: "2", current: false },
-    { name: "Unread", href: "#", count: "", current: false },
-    { name: "Archived", href: "#", count: "", current: true },
-    { name: "Add Column", href: "#", current: false },
-];
+
+
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
@@ -50,6 +41,17 @@ export default function ChatList(props) {
         chennal: containerCategory,
         content: ''
     });
+    const userNavigation = [
+        { name: (props.translator['Your Profile']), href: "#" },
+        { name: (props.translator['Settings']), href: "#" },
+        { name: (props.translator['Sign out']), href: "#" },
+    ];
+    const tabs = [
+        { name: (props.translator['All Chats']), href: "#", count: "2", current: false },
+        { name: (props.translator['Unread']), href: "#", count: "", current: false },
+        { name: (props.translator['Archived']), href: "#", count: "", current: true },
+        { name: (props.translator['Add Column']), href: "#", current: false },
+    ];
 
     const [time, setTime] = useState(Date.now());
 
@@ -196,7 +198,7 @@ export default function ChatList(props) {
                             type="button"
                             className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-[4px] text-white bg-primary hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:bg-primary"
                         >
-                            New Message
+                            {props.translator['New Message']}
                         </button>
                     </div>
                     <div>
@@ -275,7 +277,7 @@ export default function ChatList(props) {
                                                         }
                                                     </p>
                                                     <p className="text-sm text-[#3D4459] truncate">
-                                                        Junior Developer
+                                                    {props.translator['Junior Developer']}
                                                     </p>
                                                     <p className="text-sm text-[#7A7A7A] truncate">
                                                         Text Message Preview
@@ -294,7 +296,7 @@ export default function ChatList(props) {
                                 {Object.entries(chatList).length == 0 &&
                                     <li>
                                         <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
-                                            Conversation not start yet.
+                                            {props.translator['Conversation not start yet.']}
                                         </div>
                                     </li>
                                 }
@@ -334,7 +336,7 @@ export default function ChatList(props) {
                                             </span>
                                         </div>
                                         <span className="text-sm font-normal text-[#3D4459]">
-                                            Junior Developer
+                                        {props.translator['Junior Developer']}
                                         </span>
                                     </div>
                                     <DotsVerticalIcon
@@ -349,7 +351,7 @@ export default function ChatList(props) {
                                             className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                         >
                                             <span className="sr-only">
-                                                View notifications
+                                                {props.translator['View notifications']}
                                             </span>
                                             <NotifiIcon />
                                         </button>

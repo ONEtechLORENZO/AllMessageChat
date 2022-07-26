@@ -27,6 +27,7 @@ function Registration(props) {
         business_manager_id: '',
         profile_picture: '',
         profile_description: '',
+        api_partner: false,
         oba: false,
 	    api_token: '',
         callback_url: '',
@@ -41,15 +42,15 @@ function Registration(props) {
     });
 
     const company_types = [
-        {value: 'Sole Proprietorship', label: 'Sole Proprietorship'},
-        {value: 'Partnership', label: 'Partnership'},
-        {value: 'Limited Liability Company (LLC)', label: 'Limited Liability Company (LLC)'},
-        {value: 'Corporation', label: 'Corporation'},
+        {value: 'Sole Proprietorship', label: (props.translator['Sole Proprietorship'])},
+        {value: 'Partnership', label: (props.translator['Partnership'])},
+        {value: 'Limited Liability Company (LLC)', label: (props.translator['Limited Liability Company (LLC)'])},
+        {value: 'Corporation', label: (props.translator['Corporation'])},
     ];
 
     const integrations = [
-        {value: 'Website', label: 'Website'},
-        {value: 'Support', label: 'Support'},
+        {value: 'Website', label: (props.translator['Website'])},
+        {value: 'Support', label: (props.translator['Support'])},
     ];
 
     const services = [
@@ -113,9 +114,9 @@ function Registration(props) {
         <Authenticated
             auth={props.auth}
             errors={props.errors}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Account Registration</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">{props.translator['Account Registration']}</h2>}
         >
-            <Head title="Account Registration" />
+            <Head title={props.translator['Account Registration']} />
 
             <div className="py-12 px-24">
                 <form className="space-y-6" action="#" method="POST" id="account_registration">
@@ -124,26 +125,26 @@ function Registration(props) {
                         <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
                             <div className="md:grid md:grid-cols-3 md:gap-6">
                                 <div className="md:col-span-1">
-                                    <h3 className="text-lg font-medium leading-6 text-gray-900">Company Information</h3>
+                                <h3 className="text-lg font-medium leading-6 text-gray-900">{props.translator['Account Information']}</h3>
                                     <p className="mt-1 text-sm text-gray-500">
-                                        Enter your company information. We will be using this information to create your business account
+                                    {props.translator['Enter your company information. We will be using this information to create your business account']}
                                     </p>
                                 </div>
                                 <div className="mt-5 md:mt-0 md:col-span-2">
                                     <div className="grid grid-cols-6 gap-6">
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="company_name" className="block text-sm font-medium text-gray-700">
-                                                Company Name
+                                            {props.translator['Name']} <span className="text-sm text-red-700"> *</span>
                                             </label>
                                             <div className="mt-1 flex rounded-md shadow-sm">
-                                                <Input name='company_name' value={data.company_name} required={true} id='company_name' placeholder='Your company name' handleChange={handleChange} />
+                                                <Input name='company_name' value={data.company_name} required={true} id='company_name' placeholder={props.translator['Enter your Account name']} handleChange={handleChange} />
                                             </div>
                                             <InputError message={errors.company_name} />
                                         </div>
 
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="type_of_integration" className="block text-sm font-medium text-gray-700">
-                                                Service
+                                            {props.translator['Service']} <span className="text-sm text-red-700"> *</span>
                                             </label>
                                             <div className="mt-1">
                                                 <Dropdown 
@@ -157,7 +158,7 @@ function Registration(props) {
                                             </div>
                                             <InputError message={errors.service} />
                                         </div>
-                                    
+{/*                                     
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="company_type" className="block text-sm font-medium text-gray-700">
                                                 Company type
@@ -221,6 +222,7 @@ function Registration(props) {
                                             </div>
                                             <InputError message={errors.type_of_integration} />
                                         </div>
+                                         */}
                                     </div>
                                 </div>
                             </div>
@@ -230,16 +232,16 @@ function Registration(props) {
                         <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
                             <div className="md:grid md:grid-cols-3 md:gap-6">
                                 <div className="md:col-span-1">
-                                    <h3 className="text-lg font-medium leading-6 text-gray-900">Whatsapp Information</h3>
+                                    <h3 className="text-lg font-medium leading-6 text-gray-900">{props.translator['Whatsapp Information']}</h3>
                                     <p className="mt-1 text-sm text-gray-500">
-                                        Information will be used to create your whatsapp business account
+                                    {props.translator['Information will be used to create your whatsapp business account']}
                                     </p>
                                 </div>
                                 <div className="mt-5 md:mt-0 md:col-span-2">
                                     <div className="grid grid-cols-6 gap-6">
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700">
-                                                Phone number
+                                            {props.translator['Phone number']}
                                             </label>
                                             <div className="mt-1 flex rounded-md shadow-sm">
                                                 <Input required={true} name='phone_number' value={data.phone_number} id='phone_number' placeholder='' handleChange={handleChange} />
@@ -248,34 +250,42 @@ function Registration(props) {
                                         </div>
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="src_name" className="block text-sm font-medium text-gray-700">
-                                                Source Name
+                                            {props.translator['Source Name']}
                                             </label>
                                             <div className="mt-1 flex rounded-md shadow-sm">
                                                 <Input required={true} name='src_name' value={data.src_name} id='src_name' placeholder='' handleChange={handleChange} />
                                             </div>
                                             <InputError message={errors.src_name} />
                                         </div>
-
                                         <div className="form-group col-span-6 sm:col-span-4">
-                                            <label htmlFor="display_name" className="block text-sm font-medium text-gray-700">
-                                                Display Name
-                                            </label>
-                                            <div className="mt-1 flex rounded-md shadow-sm">
-                                                <Input required={true} name='display_name' value={data.display_name} id='display_name' placeholder='' handleChange={handleChange} />
+                                            <div className="flex items-start">
+                                                <div className="flex items-center h-5">
+                                                    <Checkbox
+                                                        id="api_partner"
+                                                        name="api_partner"
+                                                        handleChange={handleChange}
+                                                        value={data.api_partner}
+                                                    />
+                                                </div>
+                                                <div className="ml-3 text-sm">
+                                                    <label htmlFor="api_partner" className="font-medium text-gray-700">
+                                                        Api partner?
+                                                    </label>
+                                                </div>
+                                                <InputError message={errors.api_partner} />
                                             </div>
-                                            <InputError message={errors.display_name} />
                                         </div>
 
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="business_manager_id" className="block text-sm font-medium text-gray-700">
-                                                Business manager Id
+                                                Facebook BM ID
                                             </label>
                                             <div className="mt-1 flex rounded-md shadow-sm">
                                                 <Input required={true} name='business_manager_id' value={data.business_manager_id} id='business_manager_id' placeholder='' handleChange={handleChange} />
                                             </div>
                                             <InputError message={errors.business_manager_id} />
                                         </div>
-
+{/* 
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="profile_picture" className="block text-sm font-medium text-gray-700">
                                                 Profile picture
@@ -320,6 +330,7 @@ function Registration(props) {
                                                 <InputError message={errors.oba} />
                                             </div>
                                         </div>
+                                         */}
                                     </div>
                                 </div>
                             </div>
@@ -331,14 +342,15 @@ function Registration(props) {
                             href={route('dashboard')}
                             className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
-                            Cancel
+                            {props.translator['Cancel']}
                         </Link>
                         <button
                             type="button"
                             onClick={validateAndSubmitForm}
                             className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
-                            Save
+                            {props.translator['Save']}
+
                         </button>
                     </div>
                 </form>

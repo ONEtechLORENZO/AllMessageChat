@@ -8,7 +8,7 @@ import InputError from '@/Components/Forms/InputError';
 import PristineJS from 'pristinejs';
 import categories, {defaultPristineConfig} from '@/Pages/Constants';
 import { Inertia } from '@inertiajs/inertia';
-/// import DetailView from "@/Components/Views/Detail/Index";
+import DetailView from "@/Components/Views/Detail/Index";
 
 export default function Detail(props) {
     /*
@@ -64,7 +64,7 @@ export default function Detail(props) {
      */
     function updateContact(){
         var pristine = new PristineJS(document.getElementById("update_contact"), defaultPristineConfig);
-        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required]'));
+        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required="required"], select[data-pristine-required="required"]'));
         if(!is_validated) {
             return false;
         }
@@ -102,17 +102,17 @@ export default function Detail(props) {
 
     return (
         <Authenticated>
-{/* 
+
             <DetailView
                 record = {record}
                 module = 'Contacts'
-                updateCotnact = {updateCotnact}
+                updateRecord = {updateCotnact}
               //  setActiveTab = {setActiveTab}
                 tabs = {tabs}
-                fields = {contactFields}
+                headers = {contactFields}
             />
- */}
-
+ 
+{/* 
             <div>
                 <ul className="py-4 space-y-2 sm:px-6 sm:space-y-4 lg:px-8" role="list">
                     <li className="bg-white px-4 py-6 shadow sm:rounded-lg sm:px-6">
@@ -199,7 +199,7 @@ export default function Detail(props) {
                     </li>
                 </ul>
             </div>
-            
+             */}
 
             {/* Create modal */}
             <Transition.Root show={openCreateContactModal} as={Fragment}>
@@ -242,21 +242,42 @@ export default function Detail(props) {
                                     </p>
 
                                     <form id="update_contact">
-                                        <div className="grid gap-6">         
+                                    <div className="grid gap-6">         
                                             {Object.entries(contactFields).map(([name, field]) => {
-                                                
-                                                    return (
-                                                    <div className="form-group col-span-6 sm:col-span-4">
-                                                        <label htmlFor={name} className="block text-sm font-medium text-gray-700">
-                                                            {field.label}
-                                                        </label>
-                                                        <div className="mt-1 flex rounded-md shadow-sm">
-                                                            <Input name={name}  value={data[name]} required={field.required} type={field.type} id={name} placeholder={field.label} handleChange={handleChange} />
-                                                        </div>
-                                                        <InputError message={errors.name} />
+                                                var element = '';
+                                                switch(field.type){
+                                                    case 'textarea':
+                                                        element = <TextArea value={data[name]} name={name} required={field.required} id={name} placeholder='' handleChange={handleChange} />
+                                                        break;
+                                                    case 'select':
+                                                        let select_options = [];
+                                                        if(Object.keys(field.options).length){
+                                                            Object.entries(field.options).map(([name, label], index) => {
+                                                                select_options.push({'value': name, 'label': label});
+                                                            })
+                                                        }
+                                                        element = <Dropdown name={name} id={name} value={data[name]} className={`custom-select ${error_class}`} onChange={handleSelectChange} options={select_options} /> ;
+                                                        break;    
+                                                    case 'checkbox':
+                                                        element = <Checkbox name={name} id={name} value={data[name]} className={`custom-select ${error_class}`} handleChange={handleChange} />
+                                                        break;
+                                                    default :
+                                                        element = <Input value={data[name]} type={field.type} name={name} required={field.required} id={name} placeholder={field.label} handleChange={handleChange} />
+                                                }
+                                                return (
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+                                                        {field.label} 
+                                                        {field.required &&
+                                                            <span className="text-sm text-red-700"> *</span>
+                                                        }
+                                                    </label>
+                                                    <div className="mt-1 flex rounded-md shadow-sm">
+                                                        {element}
                                                     </div>
-                                                    )
-                                               
+                                                    <InputError message={props.errors[name]} />
+                                                </div>
+                                                )
                                             })}                                      
                                         </div>
                                     </form>

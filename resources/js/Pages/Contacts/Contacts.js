@@ -1,28 +1,33 @@
 import { SettingIcon } from "../icons";
 import { Dialog, Transition } from '@headlessui/react'
 import { SearchIcon } from "@heroicons/react/outline";
-import React, { Fragment, useRef, useState } from "react";
+import React, { Fragment, useEffect, useRef, useState } from "react";
 import Input from '@/Components/Forms/Input';
 import InputError from '@/Components/Forms/InputError';
 import Authenticated from "../../Layouts/Authenticated";
-import { Head, useForm, Link } from '@inertiajs/inertia-react';
+import { useForm, Link } from '@inertiajs/inertia-react';
 import Dropdown from '@/Components/Forms/Dropdown';
 import categories, {defaultPristineConfig} from '@/Pages/Constants';
 import Select from 'react-select';
 import languages from '@/Pages/languages';
 import PristineJS from 'pristinejs';
 import { Inertia } from '@inertiajs/inertia';
-import { List } from "../../Components/Views/List/Index";
+import ListlView from "@/Components/Views/List/Index";
+
+import Pagination from "@/Components/Pagination";
+import { objectPosition } from "tailwindcss/defaultTheme";
 
 export default function Contacts(props) {
     const [contactFields, setContactFields] = useState({
-        'id': { 'label': '', 'type': 'hidden', 'required': false, 'value': '' },
-        'first_name': { 'label': 'First Name', 'type': 'text', 'required': false, 'value': '' },
-        'last_name': { 'label': 'Last Name', 'type': 'text', 'required': true, 'value': '' } , 
-        'email': { 'label': 'Email', 'type': 'email', 'required': true, 'value': '' }, 
-        'phone_number': { 'label': 'Phone number', 'type': 'text', 'required': false, 'value': '' },
-        'instagram_id': { 'label': 'Instagram ID', 'type': 'text', 'required': false, 'value': '' }, 
+        'id': { 'label': '', 'type': 'hidden', 'required': false },
+        'first_name': { 'label': (props.translator['First Name']), 'type': 'text', 'required': false },
+        'last_name': { 'label':(props.translator['Last Name']), 'type': 'text', 'required': true } , 
+        'email': { 'label':(props.translator['Email']), 'type': 'email', 'required': true }, 
+        'phone_number': { 'label': (props.translator['Phone number']), 'type': 'text', 'required': false },
+        'instagram_id': { 'label': 'Instagram ID', 'type': 'text', 'required': false }, 
     });
+    
+    
 
     const[contacts, setContacts] = useState(props.contacts);
     const[mode, setMode] = useState('create');
@@ -30,7 +35,13 @@ export default function Contacts(props) {
     const [openCreateContactModal, setOpenCreateContactModal ] = useState(false);
     const cancelButtonRef = useRef(null);
     const { data, setData, post, processing, errors, reset } = useForm({});
-
+    const[searchtext,setSearchText]=useState('');
+    const[sortDet,setSortDet]=useState({
+        sortdir:'desc',
+        sortfield:'first_name'
+    })
+    
+    
     /**
      * Handle input change
      */ 
@@ -38,20 +49,71 @@ export default function Contacts(props) {
         const name = event.target.name;
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         let newData = Object.assign({}, data);
-      //  let newState = Object.assign({}, contactFields);
         if(event.target.type == 'file' && event.target.files) {
             newData[name] = event.target.files[0];
         }
         else {
             newData[name] = value;
-    //        newState[name].value = value;
         }
         setData(newData);
-    //    setContactFields(newState);
     }
-    
     /**
-     * Handle select change
+     * Sorting
+     */ 
+    
+    const sort = (field,e) => {        
+        
+        let newState = Object.assign({}, sortDet);        
+        if(newState['sortfield'] == field){
+            newState['sortdir']=newState['sortdir']== "asc" ? "desc" : "asc";  
+                     }
+          else{               
+            newState['sortfield']= field;  
+             newState['sortdir']=newState['sortdir']== "asc" ? "desc" : "asc";              
+              } 
+              const sort_dir=newState['sortdir'];
+              const sort_field=newState['sortfield'];
+              setSortDet(newState);           
+              fetch_sort_det(sort_dir,sort_field)
+         e.preventDefault();
+        }
+
+       function fetch_sort_det(sort_dir,sort_field)
+              {
+             
+               var searchtext=document.getElementById('search').value;
+               let url=route('contacts',{'search':searchtext,'sortdir': sort_dir,'sortfield': sort_field,'mode':'ajax'}) 
+          
+       axios({
+                method: 'get',                
+                 url: url                        
+            })
+            .then( (response) =>{
+               console.log(response.data);               
+               setContacts( response.data.contacts);          
+               
+            });
+            
+    }
+/**
+     * search content
+     */ 
+    const search = (e) => {  
+       
+        var searchtext=document.getElementById('search').value;
+        let url=route('contacts',{'search':searchtext,'sortdir': props.sortdir,'sortfield': props.sortfield,'mode':'ajax'}) 
+          
+        axios({
+                 method: 'get',                
+                  url: url                        
+             })
+             .then( (response) =>{
+                console.log(response.data);               
+                setContacts( response.data.contacts);      
+             });
+    }
+    /**
+     * Handle selec
      */ 
      function handleSelectChange(selected_value, field_info) {
         let values = [];
@@ -73,14 +135,13 @@ export default function Contacts(props) {
      * Store contact info
      */
     function createContact(){
-        var pristine = new PristineJS(document.getElementById("update_contact"), defaultPristineConfig);
-        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required]'));
+        var pristine = new PristineJS(document.getElementById("contact_form"), defaultPristineConfig);
+        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required="required"], select[data-pristine-required="required"]'));
 
         if(!is_validated) {
-            
             return false;
         }
-
+       
         Inertia.post(route('store_contact'), data, {
             onSuccess: (response) => {
                 setOpenCreateContactModal(false);
@@ -97,8 +158,8 @@ export default function Contacts(props) {
             url: route('get_contact_data', {'contact_id': id}),
         })
         .then( (response) =>{
-           
             let newState = Object.assign({}, contactFields);
+            
             let newData = Object.assign({}, data);
             {Object.entries(contactFields).map(([name, field]) => {
                 newState[name].value = response.data.contact[name];
@@ -115,6 +176,18 @@ export default function Contacts(props) {
     return (
         <Authenticated>
            
+            <ListlView
+                headers = {contactFields}
+                records = {contacts}
+                module = 'Contacts'
+                paginator = {props.paginator}
+                filter = {props.filter}
+                filterList = {props.filterList}
+                selectedFilter = {props.selectedFilter}
+                updateRecord = {updateCotnact}
+                openCreateModal = {openCreateModal} 
+            />
+{ /*
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
                 <div className="sm:flex sm:items-center sm:justify-between">
                     <div className="flex gap-3">
@@ -132,13 +205,21 @@ export default function Contacts(props) {
                                 />
                             </div>
                             <input
-                                type="email"
-                                name="email"
-                                id="email"
+                                type="search"
+                                name="search"
+                                id="search"
                                 className="focus:ring-indigo-500 focus:border-primary/50 border-0 block w-full pl-10 sm:text-sm  rounded-md"
                                 placeholder="Search"
                             />
                         </div>
+                        <div>
+                         <button
+                      onClick={(e)=>search(e)}
+                      className="inline-flex items-center justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+                        >                        
+                        Search                        
+                    </button>
+                    </div>
                         <div className="flex items-center text-[#3D4459] gap-2 ml-5">
                             <svg
                                 width={22}
@@ -218,25 +299,35 @@ export default function Contacts(props) {
                                                 scope="col"
                                                 className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-[#3D4459] sm:pl-6"
                                             >
-                                                First Name
+                                                 <a href="#" onClick={(e)=>sort('first_name',e)}>First Name</a>
+                                               
+                                                <span >&uarr;</span>
+                                                <span >&darr;</span>
+                                              
+                                            </th>                                            
+                                            <th
+                                                scope="col"
+                                                className="px-3 py-3.5 text-left text-sm font-semibold text-[#3D4459]"
+                                            >
+                                                 <a href="#" onClick={(e)=>sort('last_name',e)}>Last Name</a> 
+                                                <span >&uarr;</span>
+                                                <span >&darr;</span>
                                             </th>
                                             <th
                                                 scope="col"
                                                 className="px-3 py-3.5 text-left text-sm font-semibold text-[#3D4459]"
                                             >
-                                                Last Name
+                                                <a href="#" onClick={(e)=>sort('phone_number',e)}>Contact Number</a>
+                                                <span >&uarr;</span>
+                                                <span >&darr;</span>
                                             </th>
                                             <th
                                                 scope="col"
                                                 className="px-3 py-3.5 text-left text-sm font-semibold text-[#3D4459]"
                                             >
-                                                Number
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3.5 text-left text-sm font-semibold text-[#3D4459]"
-                                            >
-                                                Email
+                                                  <a href="#" onClick={(e)=>sort('email',e)}>Email</a>
+                                                <span >&uarr;</span>
+                                                <span >&darr;</span>
                                             </th>
                                            
                                             <th
@@ -302,7 +393,7 @@ export default function Contacts(props) {
                                             </tr>
                                         ))}
                                         {Object.entries(contacts).length == 0 &&
-                                            <tr><td className = "" colspan="3">
+                                            <tr><td className = "" colSpan="3">
                                                 <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
                                                     Contact not created yet.
                                                 </div>
@@ -311,123 +402,17 @@ export default function Contacts(props) {
                                     </tbody>
                                 </table>
                             </div>
+                            <Pagination paginator={props.paginator} />
+                            
+                           
+
+
                         </div>
+                       
                     </div>
                 </div>
-            </div>
+            </div> */}
 
-            {/* Filter */}
-            <Transition.Root show={openFilterModal} as={Fragment}>
-                <Dialog as="div" className="fixed z-10 inset-0 overflow-y-auto" initialFocus={cancelButtonRef} onClose={setOpenFilterModal}>
-                    <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                        <Transition.Child
-                            as={Fragment}
-                            enter="ease-out duration-300"
-                            enterFrom="opacity-0"
-                            enterTo="opacity-100"
-                            leave="ease-in duration-200"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                        >
-                            <Dialog.Overlay className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-                        </Transition.Child>
-
-                        {/* This element is to trick the browser into centering the modal contents. */}
-                        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
-                            &#8203;
-                        </span>
-                        <Transition.Child
-                            as={Fragment}
-                            enter="ease-out duration-300"
-                            enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                            enterTo="opacity-100 translate-y-0 sm:scale-100"
-                            leave="ease-in duration-200"
-                            leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-                            leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        >
-                            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-                                <div>
-                                    <div className="">
-                                        <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
-                                            Filter Contacts
-                                        </Dialog.Title>
-                                        <div className="mt-2">
-                                            <p className="text-sm text-gray-500 pt-2 pb-4">
-                                                Display the specific contacts only 
-                                            </p> 
-                                            <form id="update_contact">
-                                            <div className="grid gap-6">                                                
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="template_name" className="block text-sm font-medium text-gray-700">
-                                                        Name
-                                                    </label>
-                                                    <div className="mt-1 flex rounded-md shadow-sm">
-                                                        <Input name='template_name' required={true} id='template_name' placeholder='Template name' handleChange={handleChange} />
-                                                    </div>
-                                                    <InputError message={errors.template_name} />
-                                                </div>
-
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-                                                        Category
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <Dropdown 
-                                                            required={true} 
-                                                            id="category"
-                                                            name="category"
-                                                            handleChange={handleChange}
-                                                            options={categories}
-                                                            value={data.category}
-                                                        />
-                                                    </div>
-                                                    <InputError message={errors.category} />
-                                                </div>
-
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="languages" className="block text-sm font-medium text-gray-700">
-                                                        Languages
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <Select 
-                                                            options={languages} 
-                                                            isMulti
-                                                            getOptionLabel ={(option) => option.name}
-                                                            getOptionValue ={(option )=> option.code} 
-                                                            required={true}
-                                                            id="languages"
-                                                            name="languages"
-                                                            onChange={handleSelectChange}
-                                                        />
-                                                    </div>
-                                                    <InputError message={errors.languages} />
-                                                </div>
-                                            </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                                    <button
-                                        type="button"
-                                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
-                                        onClick={() => createNewTemplate()}
-                                    >
-                                        Create
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
-                                        onClick={() => setOpenFilterModal(false)}
-                                    >
-                                        Close
-                                    </button>
-                                </div>
-                            </div>
-                        </Transition.Child>
-                    </div>
-                </Dialog>
-            </Transition.Root>
 
             {/* Create modal */}
             <Transition.Root show={openCreateContactModal} as={Fragment}>
@@ -469,19 +454,43 @@ export default function Contacts(props) {
                                         Display the specific contacts only 
                                     </p>
 
-                                    <form id="update_contact">
+                                    <form id="contact_form">
                                         <div className="grid gap-6">         
                                             {Object.entries(contactFields).map(([name, field]) => {
-                                              
+                                             
+                                                var element = '';
+                                                switch(field.type){
+                                                    case 'textarea':
+                                                        element = <TextArea value={data[name]} name={name} required={field.required} id={name} placeholder='' handleChange={handleChange} />
+                                                        break;
+                                                    case 'select':
+                                                        let select_options = [];
+                                                        if(Object.keys(field.options).length){
+                                                            Object.entries(field.options).map(([name, label], index) => {
+                                                                select_options.push({'value': name, 'label': label});
+                                                            })
+                                                        }
+                                                        
+                                                        element = <Dropdown name={name} id={name} value={data[name]} className={`custom-select ${error_class}`} onChange={handleSelectChange} options={select_options} /> ;
+                                                        break;    
+                                                    case 'checkbox':
+                                                        element = <Checkbox name={name} id={name} value={data[name]} className={`custom-select ${error_class}`} handleChange={handleChange} />
+                                                        break;
+                                                    default :
+                                                        element = <Input value={data[name]} type={field.type} name={name} required={field.required} id={name} placeholder={field.label} handleChange={handleChange} />
+                                                }
                                                 return (
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor={name} className="block text-sm font-medium text-gray-700">
-                                                        {field.label}
+                                                        {field.label} 
+                                                        {field.required &&
+                                                            <span className="text-sm text-red-700"> *</span>
+                                                        }
                                                     </label>
                                                     <div className="mt-1 flex rounded-md shadow-sm">
-                                                        <Input name={name}  value={data[name]} required={field.required} type={field.type} id={name} placeholder={field.label} handleChange={handleChange} />
+                                                        {element}
                                                     </div>
-                                                    <InputError message={errors.name} />
+                                                    <InputError message={props.errors[name]} />
                                                 </div>
                                                 )
                                             })}                                      
@@ -507,6 +516,7 @@ export default function Contacts(props) {
                             </button>
                         </div>
                     </div>
+
                 </Transition.Child>
                     </div>
                 </Dialog>

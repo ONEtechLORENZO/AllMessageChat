@@ -21,7 +21,7 @@ class CreateFieldsTable extends Migration
             $table->string('field_type')->nullable();
             $table->boolean('is_mandatory')->nullable();
             $table->boolean('is_custom')->nullable();
-            $table->foreignId('user_id')->constrained('usersListing');
+            $table->foreignId('user_id')->constrained('users');
             $table->timestamps();
         });
     }

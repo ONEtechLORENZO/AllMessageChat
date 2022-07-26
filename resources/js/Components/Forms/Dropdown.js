@@ -31,8 +31,8 @@ export default function Dropdown({
             onChange={(e) => handleChange(e)}
          >
             <option value=''>{emptyOption}</option>
-            {options && options.map((option) => {
-                return <option defaultValue={option.value === value}  key={option.value} value={option.value}>{option.label}</option>;
+            {options && Object.keys(options).map((key) => {
+                return <option key={key} value={key}>{options[key]}</option>;
             })}
         </select>
     );

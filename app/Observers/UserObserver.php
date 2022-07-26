@@ -16,7 +16,11 @@ class UserObserver
      */
     public function created(User $user)
     {
+        // Create user in Stripe
+        $user->createAsStripeCustomer();
+
         $record = $this->insertUserfield($user->id);
+        
         Field::insert($record);
     }
 
@@ -28,7 +32,12 @@ class UserObserver
      */
     public function updated(User $user)
     {
-        //
+        if(!$user->stripe_id) {
+            $user->createAsStripeCustomer();
+        }
+        else {
+            $user->updateStripeCustomer();
+        }
     }
 
     /**

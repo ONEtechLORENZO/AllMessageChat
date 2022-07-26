@@ -120,7 +120,7 @@ function Detail(props)
      * @param {integer} id 
      */
     function deleteWebhookEvent(id) {
-        var confirmation = window.confirm('Are you sure you want to delete this webhook event?');
+        var confirmation = window.confirm((props.translator['Are you sure you want to delete this webhook event?']));
         if(confirmation) {
             Inertia.post(route('delete_webhook_event', id), {}, {
                 onSuccess: () => {
@@ -153,23 +153,23 @@ function Detail(props)
             auth={props.auth}
             errors={props.errors}
             header={<div className="flex justify-between"> 
-                    <div> <h2 className="font-semibold text-xl text-gray-800 leading-tight">Profile Info</h2> </div>
+                    <div> <h2 className="font-semibold text-xl text-gray-800 leading-tight">{props.translator['Profile Info']}</h2> </div>
                     <div className="inline-flex">
                         <Link 
                             href={route('edit_account' , props.account.id)}
                             className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            Edit
+                            {props.translator['Edit']}
                         </Link>
                     </div>
             </div>}
         >
-            <Head title="Profile Info" />
+            <Head title={props.translator['Profile Info']} />
             
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white shadow overflow-hidden sm:rounded-lg">
                         <div className="px-4 py-5 sm:px-6">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900">Profile Information</h3>
+                            <h3 className="text-lg leading-6 font-medium text-gray-900">{props.translator['Profile Information']}</h3>
                         </div>
                         <div className="border-t border-gray-200">
                             <dl>
@@ -189,7 +189,14 @@ function Detail(props)
                                             {props.field_info[key]['type'] == 'image' ? 
                                                 <img src={`/image/profile/${props['account']['id']}`} alt="Profile picture" className='h-64 w-64' />
                                             : 
-                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{props['account'][key]}</dd>
+                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                    {key == 'api_partner' ?
+                                                        <>
+                                                            {props['account'][key] && <> Checked </>}
+                                                        </>
+                                                     : <> {props['account'][key]} </>
+                                                    }
+                                                </dd>
                                             }
                                         </div>
                                     );
@@ -202,11 +209,11 @@ function Detail(props)
                             <div className="pb-5 pt-5">
                                 <div className="flex justify-between">
                                     <div>
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mt-3">Templates</h3>
+                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mt-3">{props.translator['Templates']}</h3>
                                     </div>
                                     <div>
                                         <button type='button' onClick={() => setAccountModalOpen(true)} className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                            Add template
+                                        {props.translator['Add template']}
                                         </button>
                                     </div>
                                 </div>
@@ -237,11 +244,11 @@ function Detail(props)
                                 {!props.templates || props.templates.length == 0 ? 
                                     <div className="text-center py-12">
                                         <FolderAddIcon className='mx-auto h-12 w-12 text-gray-400' />
-                                        <h3 className="mt-2 text-sm font-medium text-gray-900">No templates found</h3>
-                                        <p className="mt-1 text-sm text-gray-500">Get started by creating a new template.</p>
+                                        <h3 className="mt-2 text-sm font-medium text-gray-900">{props.translator['No templates found']}</h3>
+                                        <p className="mt-1 text-sm text-gray-500">{props.translator['Get started by creating a new template.']}</p>
                                         <div className="mt-6">
                                             <a onClick={() => setAccountModalOpen(true)} className="cursor-pointer underline text-sm text-indigo-600 hover:text-indigo-900">
-                                                Click here to create new template
+                                            {props.translator['Click here to create new template']}
                                             </a>
                                         </div>
                                     </div>
@@ -257,7 +264,7 @@ function Detail(props)
                             </div>
                             <div>
                                 <button type='button' onClick={openWebhookForm} className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                    Add Webhook URL
+                                {props.translator['Add Webhook URL']}
                                 </button>
                             </div>
                         </div>
@@ -280,7 +287,7 @@ function Detail(props)
                             })}
 
                             {props.events.length == 0 &&
-                                <li className="flex p-5"> Webhooks not configured yet. </li>
+                                <li className="flex p-5"> {props.translator['Webhooks not configured yet.']} </li>
                             }
                         </ul>
                     </div>
@@ -319,29 +326,28 @@ function Detail(props)
                                 <div>
                                     <div className="">
                                         <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
-                                            Add template
+                                        {props.translator['Add template']}
                                         </Dialog.Title>
                                         <div className="mt-2">
                                             <p className="text-sm text-gray-500 pt-2 pb-4">
-                                                Create a new WhatsApp template. Each template must have a unique name consisting of lowercase alphanumeric characters. 
-                                                Spaces must be replaced with underscores (_). Only WhatsApp templates within the pre-defined categories can be accepted.
+                                            {props.translator['Create a new WhatsApp template. Each template must have a unique name consisting of lowercase alphanumeric characters.Spaces must be replaced with underscores (_). Only WhatsApp templates within the pre-defined categories can be accepted.']}
                                             </p>
 
                                             <form id="new_template">
                                             <div className="grid gap-6">                                                
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="template_name" className="block text-sm font-medium text-gray-700">
-                                                        Name
+                                                    {props.translator['Name']}
                                                     </label>
                                                     <div className="mt-1 flex rounded-md shadow-sm">
-                                                        <Input name='template_name' required={true} id='template_name' placeholder='Template name' handleChange={handleChange} />
+                                                        <Input name='template_name' required={true} id='template_name' placeholder={props.translator['Template name']} handleChange={handleChange} />
                                                     </div>
                                                     <InputError message={errors.template_name} />
                                                 </div>
 
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-                                                        Category
+                                                    {props.translator['Category']}
                                                     </label>
                                                     <div className="mt-1">
                                                         <Dropdown 
@@ -358,7 +364,7 @@ function Detail(props)
 
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="languages" className="block text-sm font-medium text-gray-700">
-                                                        Languages
+                                                    {props.translator['Languages']}
                                                     </label>
                                                     <div className="mt-1">
                                                         <Select 
@@ -385,14 +391,14 @@ function Detail(props)
                                         className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
                                         onClick={() => createNewTemplate()}
                                     >
-                                        Create
+                                        {props.translator['Create']}
                                     </button>
                                     <button
                                         type="button"
                                         className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
                                         onClick={() => setAccountModalOpen(false)}
                                     >
-                                        Close
+                                        {props.translator['Close']}
                                     </button>
                                 </div>
                             </div>
@@ -433,11 +439,11 @@ function Detail(props)
                                 <div>
                                     <div className="">
                                         <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
-                                            {webhookData.id ? 'Update' : 'Add'} Webhook
+                                            {webhookData.id ? (props.translator['Update']) : (props.translator['Add'])} Webhook
                                         </Dialog.Title>
                                         <div className="mt-2">
                                             <p className="text-sm text-gray-500 pt-2 pb-4">
-                                                Create a new WhatsApp Webhook URL to receive notifications about events like sent, failed etc...
+                                                {props.translator['Create a new WhatsApp Webhook URL to receive notifications about events like sent, failed etc...']}
                                             </p>
 
                                             <form id="new_incoming_url">
@@ -447,7 +453,7 @@ function Detail(props)
                                                             Webhook URL
                                                         </label>
                                                         <div className="mt-1 flex rounded-md shadow-sm">
-                                                            <Input name='callback_url' value={webhookData.callback_url} required={true} id='callback_url' placeholder='Callback URL' handleChange={handleWebhookFormChange} />
+                                                            <Input name='callback_url' value={webhookData.callback_url} required={true} id='callback_url' placeholder={props.translator['Callback URL']} handleChange={handleWebhookFormChange} />
                                                         </div>
                                                     </div>
                                                     {Object.keys(props.webhook_events).map((event_name, index) => {
@@ -468,7 +474,7 @@ function Detail(props)
                                                                 </div>
                                                                 <div className="ml-3 text-sm">
                                                                     <label htmlFor={event_name} className="font-medium text-gray-700">
-                                                                        {props.webhook_events[event_name]['label']}
+                                                                     {props.translator[props.webhook_events[event_name] ['label']]}
                                                                     </label>
                                                                     <p className="text-gray-500">{props.webhook_events[event_name]['help_text']}</p>
                                                                 </div>
@@ -486,14 +492,14 @@ function Detail(props)
                                         className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
                                         onClick={processWebhookForm}
                                     >
-                                        {webhookData.id ? 'Update' : 'Create'}
+                                        {webhookData.id ? (props.translator['Update']) : (props.translator['Create'])}
                                     </button>
                                     <button
                                         type="button"
                                         className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
                                         onClick={() => setIncomingUrlModalOpen(false)}
                                     >
-                                        Close
+                                        {props.translator['Close']}
                                     </button>
                                 </div>
                             </div>

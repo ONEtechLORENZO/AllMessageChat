@@ -15,15 +15,15 @@ export default function Dashboard(props) {
         setDeleteAccountId(accountId);
 
         confirmAlert({
-            title: 'Confirm to Delete',
-            message: 'Are you sure to do this.',
+            title: (props.translator['Confirm to Delete']),
+            message: (props.translator['Are you sure to do this?']),
             buttons: [
             {
-              label: 'Yes',
+              label: (props.translator['Yes']),
               onClick: () => {
                 axios({
-                    method: 'delete',
-                    url: route( 'delete_account', accountId),
+                    method: 'post',
+                    url: route( 'delete_account'),
                     data: {
                         id: accountId
                     }
@@ -48,24 +48,24 @@ export default function Dashboard(props) {
             errors={props.errors}
             header={<div className="flex justify-between"> 
                 <div> 
-                    <h2 className="font-semibold text-xl text-gray-800 leading-tight">Dashboard</h2>
+                    <h2 className="font-semibold text-xl text-gray-800 leading-tight">{props.translator['Dashboard']}</h2>
                 </div> 
                 <div>
                 <Link
                     href={route('account_registration')}
                     className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 >
-                    Create new account
+                    {props.translator['Create new account']}
                 </Link>
                 </div> 
             </div>}
         >
-            <Head title="Dashboard" />
+            <Head title={props.translator['Dashboard']} />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="pb-5">
-                        <h3 className="text-lg leading-6 font-medium text-gray-900">Business profiles</h3>
+                        <h3 className="text-lg leading-6 font-medium text-gray-900">{props.translator['Business profiles']}</h3>
                     </div>
                     <div className="bg-white shadow overflow-hidden rounded-md">
                         <ul role="list" className="divide-y divide-gray-200">
@@ -126,16 +126,21 @@ export default function Dashboard(props) {
                                         d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
                                     />
                                 </svg>
-                                    <h3 className="mt-2 text-sm font-medium text-gray-900">No account</h3>
-                                    <p className="mt-1 text-sm text-gray-500">Get started by creating a new account.</p>
+                                    <h3 className="mt-2 text-sm font-medium text-gray-900">{props.translator['No account']}</h3>
+                                    <p className="mt-1 text-sm text-gray-500">{props.translator['Get started by creating a new account.']}</p>
                                     <div className="mt-6">
                                         <Link href={route('account_registration')} className="underline text-sm text-indigo-600 hover:text-indigo-900">
-                                            Click here to create new account
+                                        {props.translator['Click here to create new account']}
                                         </Link>
                                     </div>
                               </div>
                             : ''}
+
+                            
                     </div>
+
+                    <div className='clear'></div>
+                    
                 </div>
             </div>
         </Authenticated>
