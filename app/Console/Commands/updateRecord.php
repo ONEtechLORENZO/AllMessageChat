@@ -41,35 +41,35 @@ class updateRecord extends Command
      * @return int
      */
     public function handle()
-    {      
-        Log::info('CSV_record');
-        $status = 'new';
-        $import = Import::where('status',$status)->first(); 
-        if(!$import){
-            $status = 'Inprogress';
-            $import = Import::where('status',$status)->first();   
+    {
+        $limit = 200;
+        // Look for import with in_progress status
+        $import = Import::where('status', 'in_progress')->first();
+        if(!$import) {
+            // Look for new imports
+            $import = Import::where('status', 'new')->first();   
         }
-        if($import){
+
+        if($import) {
             $record_id = $import->id;
             $offset = $import->offset;
             $file_path = $import->file_path;
             $total_record = $import->total_records;
             $user_id = $import->user_id;
-            $current_date = date('Y-m-d H:i:s');
+            $current_date = gmdate('Y-m-d H:i:s');
             $mapping_value = unserialize(base64_decode($import->mapping));
-            $limit = 10;
 
             $stream = fopen($file_path, 'r');
             $csv = Reader::createFromStream($stream);
             $csv->setDelimiter(',');
             $csv->setHeaderOffset(0);
             
-            //build a statement
+            // Build a statement
             $stmt = Statement::create()
-            ->offset($offset)
-            ->limit($limit);
+                ->offset($offset)
+                ->limit($limit);
             
-            //query your records from the document
+            // Query your records from the document
             $records = $stmt->process($csv);
         
             foreach ($records as $record) {
@@ -77,32 +77,33 @@ class updateRecord extends Command
             }
         
             $field = [];
-            $count = 0;;
-            foreach($data as $index => $header){  
-                $count++;
-                $field[] = ['user_id' => $user_id,'created_at' => $current_date, 'updated_at' => $current_date ];
-                foreach($mapping_value as $name => $label){
-                    if($label){
+            $count = 0;
+            foreach($data as $index => $header) {  
+                $count ++;
+                $field[$index] = ['user_id' => $user_id, 'created_at' => $current_date, 'updated_at' => $current_date];
+                foreach($mapping_value as $name => $label) {
+                    if($label) {
                         $field[$index][$name] = $header[$label];
                     }
                 }
             }
+
             Contact::insert($field);
-            //importedfile count
+            // Next offset
             $nextOffset = $offset + $count; 
 
-            if($total_record == $nextOffset){
-                Import::where('id',$record_id)->update([
-                    'status' => 'Completed',
+            if($total_record == $nextOffset) {
+                Import::where('id', $record_id)->update([
+                    'status' => 'completed',
                     'offset' => $nextOffset,                
                 ]);
-            }else{
-                Import::where('id',$record_id)->update([
-                    'status' => 'Inprogress',
+            }
+            else {
+                Import::where('id', $record_id)->update([
+                    'status' => 'in_progress',
                     'offset' => $nextOffset,                
                 ]);
             }
         }
-        Log::info('record_end');
     }
 }
