@@ -103,6 +103,13 @@ class ContactController extends Controller
                 'perPage' => $contacts->perPage(),
                 
             ],  
+            'translator' => [
+                'First Name' => __('First Name'),
+                'Last Name' => __('Last Name'),
+                'Email'  => __('Email'),
+                'Phone number'  => __('Phone number'),
+                
+                ]
         ]);
     }
 

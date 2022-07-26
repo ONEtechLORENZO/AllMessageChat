@@ -156,7 +156,20 @@ class UserController extends Controller
     {
         $user_id = $request->user()->id;
         $accounts = Account::where('user_id', $user_id)->get();
-        return Inertia::render('Dashboard', ['accounts' => $accounts]);
+        return Inertia::render('Dashboard', [
+            'accounts' => $accounts,
+            'translator' => [
+                    'Dashboard'=>__('Dashboard'),
+                    'Create new account'=>__('Create new account'),
+                    'Business profiles'=>__('Business profiles'),
+                    'No account'=>__('No account'),
+                    'Get started by creating a new account.'=>__('Get started by creating a new account.'),
+                    'Click here to create new account'=>__('Click here to create new account'),
+                    'Confirm to Delete' =>  __('Confirm to Delete'),
+                    'Are you sure to do this?' => __('Are you sure to do this?'),
+                    'Yes' =>__('Yes'),
+                    'No' =>__('No')  ]      
+        ]);
     }
 
     /**
@@ -200,7 +213,27 @@ class UserController extends Controller
                     'user' => $user, 
                     'password' => $password, 
                     'currentUser' => $currentUser,
-                    'time_zone' => $this->timezones
+                    'time_zone' => $this->timezones,
+                    'translator' => [
+                        'Name' => __('Name'),
+                    'Company name' => __('Company name'),
+                    'Email' => __('Email'),
+                    'Phone number' => __('Phone number'),
+                    'Language' => __('Language'),
+                    'Currency' => __('Currency'),
+                    'Active Status' => __('Active Status'),
+                    'Company Address' => __('Company Address'),
+                    'Company Country' => __('Company Country'),
+                    'Company VAT ID' => __('Company VAT ID'),
+                    'Admin email for invoices' => __('Admin email for invoices'),
+                    'Users'  => __('Users'),
+                    'Personal Information' => __('Personal Information'),
+                    'Time Zone' => __('Time Zone'),
+                    'Edit User' => __('Edit User'),
+                    'Save'  => __('Save'),
+                    'Cancel' => __('Cancel')
+
+                    ]
                 ]);
         } else {
             return Redirect(route('dashboard'));
@@ -223,7 +256,37 @@ class UserController extends Controller
                 'user' => $user, 
                 'token' => $token,
                 'current_user' => $request->user(),
-                'time_zone' => $this->timezones
+                'time_zone' => $this->timezones,
+                'translator' => [
+                    'Name' => __('Name'),
+                    'New Password' => __('New Password'),
+                    'Confirm Password' => __('Confirm Password'),
+                    'User Detail'  => __('User Detail'),
+                    'Company name' => __('Company name'),
+                    'Email' => __('Email'),
+                    'Token' => __('Token'),
+                    'Phone number' => __('Phone number'),
+                    'Language' => __('Language'),
+                    'Currency' => __('Currency'),
+                    'Active Status' => __('Active Status'),
+                    'Company Address' => __('Company Address'),
+                    'Company Country' => __('Company Country'),
+                    'Company VAT ID' => __('Company VAT ID'),
+                    'Admin email for invoices' => __('Admin email for invoices'),
+                    'Users'  => __('Users'),
+                    'Personal Information' => __('Personal Information'),
+                    'Edit User' => __('Edit User'),
+                    'Change Password' => __('Change Password'),
+                    'Change' => __('Change'),
+                    'Close' => __('Close'),
+                    'Confirm Password'  => __('Confirm Password'),
+                    'New Password' => __('New Password'),
+                    'Personal Information' => __('Personal Information'),
+                    'Billing Information' => __('Billing Information'),
+                    'The new password and confirm password must match' => __('The new password and confirm password must match'),
+                    'Time Zone' => __('Time Zone'),
+                    'Do you want change the user token?' => __('Do you want change the user token?')
+                ]
             ]);
     }
 
@@ -349,25 +412,27 @@ class UserController extends Controller
             ->first();
 
         if (!$account) {
-            abort(401, 'You are not authorised to see this record.');
+            abort(401, __('You are not authorised to see this record.'));
         }
 
         $templates = Template::where('account_id', $id)->get();
         $webhookEvents = WebhookEvent::where('account_id', $id)->get();
 
         $field_info = [
-            'company_name' => ['label' => 'Name'],
-            'service' => ['label' => 'Service'],
+            'company_name' => ['label' => __('Name')],
+            'service' => ['label' => __('Service')],
             // 'company_type' => ['label' => 'Company type'],
             // 'website' => ['label' => 'Website'],
             // 'email' => ['label' => 'Email'],
             // 'estimated_launch_date' => ['label' => 'Estimated launch date'],
             // 'type_of_integration' => ['label' => 'Type of integration'],
             // 'display_name' => ['label' => 'Display name', 'show' => ['whatsapp']],
-            'phone_number' => ['label' => 'Phone number', 'show' => ['whatsapp']],
-            'src_name' => ['label' => 'Source name', 'show' => ['whatsapp']],
-            'api_partner' => ['label' => 'API partner', 'show' => ['whatsapp']],
-            'business_manager_id' => ['label' => 'Business manager ID', 'show' => ['whatsapp']],
+            'phone_number' => ['label' => __('Phone number'), 'show' => ['whatsapp']],
+            'src_name' => ['label' => __('Source name'), 'show' => ['whatsapp']],
+            'api_partner' => ['label' => __('API partner'), 'show' => ['whatsapp']],
+            'business_manager_id' => ['label' => __('Business manager ID'), 'show' => ['whatsapp']],
+            'Profile' => __('Profile'),
+            'Callback URL' => __('Callback URL')
             // 'profile_picture' => ['label' => 'Profile picture', 'type' => 'image', 'show' => ['whatsapp']],
             // 'profile_description' => ['label' => 'Profile description', 'show' => ['whatsapp']],
             // 'status' => ['label' => 'Status'],
@@ -379,6 +444,43 @@ class UserController extends Controller
             'templates' => $templates,
             'webhook_events' => $this->webhook_events,
             'events' => $webhookEvents ? $webhookEvents : [],
+            'translator' => [
+                'Edit' => __('Edit'),
+                'Are you sure you want to delete this webhook event?'  => __('Are you sure you want to delete this webhook event?'),
+                'Profile Info'  => __('Profile Info'),
+                'Profile Information'  => __('Profile Information'),
+                'Templates'  => __('Templates'),
+                'Add template' => __('Add template'),
+                'No templates found' => __('No templates found'),
+                'Get started by creating a new template.' =>  __('Get started by creating a new template.'),
+                'Click here to create new template' => __('Click here to create new template'),
+                'Add Webhook URL' => __('Add Webhook URL'),
+                'Webhooks not configured yet.' => __('Webhooks not configured yet.'),
+                'Add template'  => __('Add template'),
+                'Create a new WhatsApp template. Each template must have a unique name consisting of lowercase alphanumeric characters.Spaces must be replaced with underscores (_). Only WhatsApp templates within the pre-defined categories can be accepted.' => __('Create a new WhatsApp template. Each template must have a unique name consisting of lowercase alphanumeric characters.Spaces must be replaced with underscores (_). Only WhatsApp templates within the pre-defined categories can be accepted.'),
+                'Name' => __('Name'),
+                'Template name' => __('Template name'),
+                'Category' => __('Category'),
+                'Languages' => __('Languages'),
+                'Create' => __('Create'),
+                'Close'  => __('Close'),
+                'Update' => __('Update'),
+                'Add'    => __('Add'),
+                'Create a new WhatsApp Webhook URL to receive notifications about events like sent, failed etc...'  => __('Create a new WhatsApp Webhook URL to receive notifications about events like sent, failed etc...'),
+                'Enqueued' => __('Enqueued'),
+                'Failed' => __('Failed'),
+                'Read' => __('Read'),
+                'Sent' => __('Sent'),
+                'Delivered' => __('Delivered'),
+                'Delete' => __('Delete'),
+                'Template events' => __('Template events'),
+                'Account related events' => __('Account related events'),
+                'Return sent messasge enqueue response to callback url' => __('Return sent messasge enqueue response to callback url')
+
+
+
+
+            ]
         ]);
     }
 
@@ -393,6 +495,37 @@ class UserController extends Controller
             'account' => $account, 
             'webhook_events' => $this->webhook_events, 
             'events' => $webhook,
+            'translator' => [
+                'Account Registration' => __('Account Registration'),
+                'Account Information' =>  __('Account Information'),
+                'Enter your company information. We will be using this information to create your business account' =>  __('Enter your company information. We will be using this information to create your business account'),
+                'Name' => __('Name'),
+                'Enter your Account name' => __('Enter your Account name'),
+                'Company Name' =>  __('Company Name'),
+                'Enter your company name' =>  __('Enter your company name'),
+                'Service' =>  __('Service'),
+                'Company type' =>  __('Company type'),
+                'Company website' =>  __('Company website'),
+                'Enter your company website' =>  __('Enter your company website'),
+                'Email (Technical point of contact' =>  __('Email (Technical point of contact)'),
+                'Estimated launch date' =>  __('Estimated launch date'),
+                'Type of integration' =>  __('Type of integration'),
+                'Whatsapp Information' =>  __('Whatsapp Information'),
+                'Information will be used to create your whatsapp business account' =>  __('Information will be used to create your whatsapp business account'),
+                'Phone number' =>  __('Phone number'),
+                'Source Name' =>  __('Source Name'),
+                'Display Name' =>  __('Display Name'),
+                'Business manager Id' =>  __('Business manager Id'),
+                'Profile picture' =>  __('Profile picture'),
+                'Profile description' =>  __('Profile description'),
+                'Official business account' =>  __('Official business account'),
+                'Request for Whatsapp official business account (OBA).' =>  __('Request for Whatsapp official business account (OBA).'),
+                'Cancel' =>  __('Cancel'),'Save' =>  __('Save'),
+                'Sole Proprietorship' =>  __('Sole Proprietorship'),
+                'Partnership' =>  __('Partnership'),'Limited Liability Company (LLC)' =>  __('Limited Liability Company (LLC)'),
+                'Corporation' =>  __('Corporation'),'Website' =>  __('Website'),'Support' =>  __('Support')]
+
+
         ]);
     }
 
@@ -403,6 +536,36 @@ class UserController extends Controller
     {
         return Inertia::render('Account/Registration', [
             'webhook_events' => $this->webhook_events, 
+            'translator' => [
+                'Account Registration' => __('Account Registration'),
+                'Account Information' =>  __('Account Information'),
+                'Enter your company information. We will be using this information to create your business account' =>  __('Enter your company information. We will be using this information to create your business account'),
+                'Name' => __('Name'),
+                'Enter your Account name' => __('Enter your Account name'),
+                'Company Name' =>  __('Company Name'),
+                'Enter your company name' =>  __('Enter your company name'),
+                'Service' =>  __('Service'),
+                'Company type' =>  __('Company type'),
+                'Company website' =>  __('Company website'),
+                'Enter your company website' =>  __('Enter your company website'),
+                'Email (Technical point of contact' =>  __('Email (Technical point of contact)'),
+                'Estimated launch date' =>  __('Estimated launch date'),
+                'Type of integration' =>  __('Type of integration'),
+                'Whatsapp Information' =>  __('Whatsapp Information'),
+                'Information will be used to create your whatsapp business account' =>  __('Information will be used to create your whatsapp business account'),
+                'Phone number' =>  __('Phone number'),
+                'Source Name' =>  __('Source Name'),
+                'Display Name' =>  __('Display Name'),
+                'Business manager Id' =>  __('Business manager Id'),
+                'Profile picture' =>  __('Profile picture'),
+                'Profile description' =>  __('Profile description'),
+                'Official business account' =>  __('Official business account'),
+                'Request for Whatsapp official business account (OBA).' =>  __('Request for Whatsapp official business account (OBA).'),
+                'Cancel' =>  __('Cancel'),'Save' =>  __('Save'),
+                'Sole Proprietorship' =>  __('Sole Proprietorship'),
+                'Partnership' =>  __('Partnership'),'Limited Liability Company (LLC)' =>  __('Limited Liability Company (LLC)'),
+                'Corporation' =>  __('Corporation'),'Website' =>  __('Website'),'Support' =>  __('Support')]
+
         ]);
     }
 

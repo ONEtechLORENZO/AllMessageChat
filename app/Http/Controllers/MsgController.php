@@ -108,15 +108,15 @@ class MsgController extends Controller
 
         // List view columns to show
         $list_view_columns = [
-            'id' => 'ID',
-            'content' => 'Content',
-            'account_name' => 'Account name',
-            'mode' => 'Mode',
-            'sender' => 'Sender',
-            'destination' => 'Destination',
-            'status' => 'Status',
-            'date' => 'Date'
-        ];
+            'id' => __('ID'),
+            'content' => __('Content'),
+            'account_name' => __('Account name'),
+            'mode' => __('Mode'),
+            'sender' => __('Sender'),
+            'destination' => __('Destination'),
+            'status' => __('Status'),
+            'date' => __('Date')
+        ]; 
 
         $query_columns = ['msgs.id', 'msgs.service', 'msgs.status', 'msgs.created_at', 'message', 'accounts.company_name', 'accounts.phone_number as account_phone_number', 'accounts.company_name', 'contacts.phone_number', 'contacts.instagram_id', 'msg_mode'];
         $messages = Msg::select($query_columns)
@@ -172,6 +172,11 @@ class MsgController extends Controller
                 'lastPage' => $messages->lastPage(),
                 'perPage' => $messages->perPage(),
             ],
+            'translator' => [
+                'Messages' => __('Messages'),
+                'No Messages yet' => __('No messages sent/received yet for your account(s).')
+                
+            ]
         ]);
     }
 
@@ -208,7 +213,20 @@ class MsgController extends Controller
             'contact_list' => $contactList,
             'messages' => $messages,
             'selected_contact' => $selectedContact,
-            'category' => ($category) ? $category : 'whatsapp'
+            'category' => ($category) ? $category : 'whatsapp',
+            'translator' => [
+                'Your Profile' => __('Your Profile'),
+                'Settings' => __('Settings'),
+                'Sign out' => __('Sign out'),
+                'All Chats' => __('All Chats'),
+                'Unread' => __('Unread'),
+                'Archived' => __('Archived'),
+                'Add Column' => __('Add Column'),
+                'New Message' => __('New Message'),
+                'Conversation not start yet.'  => __('Conversation not start yet.'),
+                'View notifications'  => __('View notifications'),
+                'Junior Developer' => __('Junior Developer')
+            ]
 
         ]);
     }

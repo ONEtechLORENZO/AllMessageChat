@@ -17,23 +17,23 @@ export default function CreateUser(props) {
 
     const fieldList = {
         'Personal Information': {
-            'name': {'value': props.user.name, 'label': 'Name', 'type': 'text', 'required': true },
-            'company_name': {'value': props.user.company_name, 'label': 'Company name', 'type': 'text', 'required': false },
-            'email': {'value': props.user.email, 'label': 'Email', 'type': 'email', 'required': true},
-            'phone_number': {'value': props.user.phone_number, 'label': 'Phone number', 'type': 'text', 'required': false },
-            'language': {'value': props.user.language, 'label': 'Language', 'type': 'select', 'required': false , 'options': { 'en': 'English', 'it': 'Italy'}},
-            'currency': {'value': props.user.currency, 'label': 'Currency', 'type': 'select', 'required': false, 'options': currencies },
-            'time_zone': {'value': props.user.time_zone, 'label': 'Time zone', 'type': 'select', 'required': false , 'options': props.time_zone },
-            'token': {'value': props.token, 'label': 'Token' , action:'regenarate', 'type': 'text', 'required': false },
-            'status': {'value': (props.user.status == 1) ? 'Active': 'Inactive', 'label': 'Active Status', 'type': 'checkbox', 'required': false },
+            'name': {'value': props.user.name, 'label': (props.translator['Name']), 'type': 'text', 'required': true },
+            'company_name': {'value': props.user.company_name, 'label': (props.translator['Company name']), 'type': 'text', 'required': false },
+            'email': {'value': props.user.email, 'label': (props.translator['Email']), 'type': 'email', 'required': true},
+            'phone_number': {'value': props.user.phone_number, 'label': (props.translator['Phone number']), 'type': 'text', 'required': false },
+            'language': {'value': props.user.language, 'label': (props.translator['Language']), 'type': 'select', 'required': false , 'options': { 'en': 'English', 'it': 'Italy'}},
+            'currency': {'value': props.user.currency, 'label': (props.translator['Currency']), 'type': 'select', 'required': false, 'options': currencies },
+            'time_zone': {'value': props.user.time_zone, 'label': (props.translator['Time Zone']), 'type': 'select', 'required': false , 'options': props.time_zone },
+            'token': {'value': props.token, 'label': (props.translator['Token']) , action:'regenarate', 'type': 'text', 'required': false },
+            'status': {'value': (props.user.status == 1) ? 'Active': 'Inactive', 'label': (props.translator['Active Status']), 'type': 'checkbox', 'required': false },
         //    'created_at': {'value': formatDate(props.user.created_at), 'label': 'Created At', 'type': 'text', 'required': false },
         },
         'Billing Information': {
-            'company_address': {'value': props.user.company_address, 'label': 'Company Address', 'type': 'textarea', 'required': false },
-            'company_country': {'value': props.user.company_country, 'label': 'Company Country', 'type': 'select', 'required': false, 'options': countries },
-            'company_vat_id': {'value': props.user.company_vat_id, 'label': 'Company VAT ID', 'type': 'text', 'required': false },
-            'codice_destinatario': {'value': props.user.codice_destinatario, 'label': 'Company Codice Destinatario', 'type': 'text', 'required': false },
-            'admin_email': {'value': props.user.admin_email, 'label': 'Admin email for invoices', 'type': 'email', 'required': false },
+            'company_address': {'value': props.user.company_address, 'label': (props.translator['Company Address']), 'type': 'textarea', 'required': false },
+            'company_country': {'value': props.user.company_country, 'label': (props.translator['Company Country']), 'type': 'select', 'required': false, 'options': countries },
+            'company_vat_id': {'value': props.user.company_vat_id, 'label': (props.translator['Company VAT ID']), 'type': 'text', 'required': false },
+            'codice_destinatario': {'value': props.user.codice_destinatario, 'label': (props.translator['Company Codice Destinatario']), 'type': 'text', 'required': false },
+            'admin_email': {'value': props.user.admin_email, 'label': (props.translator['Admin email for invoices']), 'type': 'email', 'required': false },
         }
     };
 	const { data, setData, post, processing, errors, reset } = useForm({});
@@ -143,7 +143,7 @@ export default function CreateUser(props) {
             errors={props.errors}
             header={<div className="flex justify-between"> 
                 <div> 
-                    <h2 className="font-Seminole text-xl text-gray-800 leading-tight"> {data.id ? "Edit User" : "Create User"} </h2>
+                    <h2 className="font-Seminole text-xl text-gray-800 leading-tight"> {data.id ? (props.translator['Edit User']) : "Create User"} </h2>
                 </div> 
                 <div>
 
@@ -160,14 +160,14 @@ export default function CreateUser(props) {
                     href={ props.currentUser.role == 'Admin' ? route('usersListing') : route('user_profile', props.user.id)}
                         className="ml-3 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
 					>
-                    Cancel
+                    {props.translator['Cancel']}
                 </Link>
                 <button
                     type="button"
                     onClick={validateAndSubmitForm}
                     className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 	>
-                    Save
+                    {props.translator['Save']}
                 </button>
 
                 </div> 
