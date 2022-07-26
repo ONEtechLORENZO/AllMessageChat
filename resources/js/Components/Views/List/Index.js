@@ -365,7 +365,7 @@ function ListView(props)
                     </div>
                     <div className="mt-4 sm:mt-0 sm:ml-16 flex gap-3">
                         <Link
-                            href={route('import')}
+                            href={route('listImport')}
                             className="inline-flex items-center px-2.5 py-1.5 border-0 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]"
                         >
                             <svg
