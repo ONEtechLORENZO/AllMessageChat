@@ -87,7 +87,7 @@ function Filter(props)
                                                     onChange={ (e) => props.handleChange(e)}
                                                     className={`mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
                                                 >
-                                                    <option value=""> -- Select -- </option>
+                                                    
                                                     {Object.entries(props.fields).map(([key, field]) => 
                                                         <option defaultValue={condition.field_name === key} value={key}> {field.label} </option>
                                                     )}
@@ -103,7 +103,6 @@ function Filter(props)
                                                     onChange={ (e) => props.handleChange(e)}
                                                     className={`mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
                                                 >
-                                                    <option value=""> -- Select -- </option>
                                                     {Object.entries(condition_operators.text).map(([name, label]) => 
                                                         <option defaultValue={condition.record_condition === name} value={name}> {label} </option>
                                                     )}
