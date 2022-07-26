@@ -801,6 +801,9 @@ select {
 .pointer-events-none {
 	pointer-events: none;
 }
+.invisible {
+	visibility: hidden;
+}
 .fixed {
 	position: fixed;
 }
@@ -1258,11 +1261,17 @@ select {
 .max-w-lg {
 	max-width: 32rem;
 }
+.max-w-5xl {
+	max-width: 64rem;
+}
 .flex-1 {
 	flex: 1 1 0%;
 }
 .flex-auto {
 	flex: 1 1 auto;
+}
+.flex-none {
+	flex: none;
 }
 .flex-shrink-0 {
 	flex-shrink: 0;
@@ -2704,6 +2713,9 @@ select {
 	--tw-text-opacity: 1;
 	color: rgba(107, 114, 128, var(--tw-text-opacity));
 }
+.group:hover .group-hover\:visible {
+	visibility: visible;
+}
 .group:hover .group-hover\:text-primary {
 	--tw-text-opacity: 1;
 	color: rgba(163, 30, 255, var(--tw-text-opacity));
@@ -2711,6 +2723,9 @@ select {
 .group:hover .group-hover\:text-gray-500 {
 	--tw-text-opacity: 1;
 	color: rgba(107, 114, 128, var(--tw-text-opacity));
+}
+.group:focus .group-focus\:visible {
+	visibility: visible;
 }
 @media (min-width: 640px) {
 

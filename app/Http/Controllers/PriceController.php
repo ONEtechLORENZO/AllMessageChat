@@ -13,6 +13,10 @@ class PriceController extends Controller
 {
     public $limit = 15;
 
+    public $default_sort_by = 'created_at';
+
+    public $default_sort_order = 'desc';
+
     /**
      * Display a listing of the resource.
      *
@@ -29,23 +33,28 @@ class PriceController extends Controller
             'media' => 'Media',
         ];
 
-        $search = $request->has('search') ? $request->get('search') : '';
+        $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
+        $sort_by = $request->has('sort_by') && $request->get('sort_by') ? $request->get('sort_by') : $this->default_sort_by;
+        $sort_order = $request->has('sort_order') && $request->get('sort_order') ? $request->get('sort_order') : $this->default_sort_order;
 
         if($search) {
-            $records = Price::where(function ($query) use ($search, $list_view_columns) {    
+            $records = Price::orderBy($sort_by, $sort_order)
+                        ->where(function ($query) use ($search, $list_view_columns) {    
                             foreach($list_view_columns as $field_name => $field_info) {
                                 $query->orWhere($field_name, 'like', '%' . $search . '%');
                             }
-                        })->paginate($this->limit);
+                        })
+                        ->paginate($this->limit);
         }
         else {
-            $records = Price::paginate($this->limit);
+            $records = Price::orderBy($sort_by, $sort_order)->paginate($this->limit);
         }
 
         return Inertia::render('Pricing/List', [
             'records' => $records->items(),
             'heading' => 'Price',
             'module' => 'Price',
+            // Actions
             'actions' => [
                 'create' => true,
                 'edit' => true,
@@ -57,6 +66,10 @@ class PriceController extends Controller
             'search' => $search,
             'compact_type' => 'condense',
             'list_view_columns' => $list_view_columns,
+            // Sorting
+            'sort_by' => $sort_by,
+            'sort_order' => $sort_order,
+            // Paginator
             'paginator' => [
                 'firstPageUrl' => $records->url(1),
                 'previousPageUrl' => $records->previousPageUrl(),

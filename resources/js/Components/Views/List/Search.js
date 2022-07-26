@@ -16,7 +16,7 @@ function Search(props)
      */
     function triggerSearch()
     {
-        Inertia.get(route('list' + props.module) + '?page='+ props.currentPage +'&search=' + search);
+        Inertia.get(route('list' + props.module) + '?page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order);
     }
 
     return (

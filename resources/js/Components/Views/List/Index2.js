@@ -3,7 +3,7 @@ import Pagination from '@/Components/Pagination';
 import Alert from '@/Components/Alert';
 import Button from '@/Components/Forms/Button';
 import Form from '@/Components/Forms/Form';
-import { PencilAltIcon, TrashIcon } from '@heroicons/react/solid';
+import { ChevronDownIcon, ChevronUpIcon, PencilAltIcon, TrashIcon } from '@heroicons/react/solid';
 import { Inertia } from '@inertiajs/inertia';
 import notie from 'notie';
 import Search from './Search';
@@ -61,6 +61,17 @@ function ListView(props)
         });
     }
 
+    /**
+     * Sort field
+     * 
+     * @param {string} field_name 
+     * @param {string} sort_order
+     */
+    function sortField(field_name, sort_order)
+    {
+        Inertia.get(route('list' + props.module) + '?page='+ props.paginator.currentPage +'&search=' + props.search + '&sort_by=' + field_name + '&sort_order=' + sort_order);
+    }
+
     return (
         <>
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
@@ -72,6 +83,8 @@ function ListView(props)
                                 module={props.module} 
                                 search={props.search}
                                 currentPage={props.paginator.currentPage}
+                                sort_by={props.sort_by}
+                                sort_order={props.sort_order}
                             />
                         : ''}
                     </div>
@@ -93,15 +106,35 @@ function ListView(props)
                                 <table className="min-w-full divide-y divide-[#D9D9D9]">
                                     <thead>
                                         <tr>
-                                            {Object.entries(props.headers).map(([name, label]) => (
-                                                <th
-                                                    key={name}
-                                                    scope="col"
-                                                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-[#3D4459] sm:pl-6"
-                                                >
-                                                    {label}
-                                                </th>
-                                            ))}
+                                            {Object.entries(props.headers).map(([name, label]) => {
+                                                let visibility = 'invisible';
+                                                let sort_order = 'desc';
+                                                if(props.sort_by == name) {
+                                                    visibility = '';
+                                                    if(props.sort_order == 'desc') {
+                                                        sort_order = 'asc';
+                                                    }
+                                                }
+
+                                                return (
+                                                    <th
+                                                        key={name}
+                                                        scope="col"
+                                                        className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-[#3D4459] sm:pl-6"
+                                                    >
+                                                        <a href="#" className="group inline-flex" onClick={() => sortField(name, sort_order)}>
+                                                            {label}
+                                                            <span className={`ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible ` + visibility}>
+                                                                {visibility == '' && props.sort_order == 'asc' ?
+                                                                    <ChevronUpIcon className="h-5 w-5" aria-hidden="true" />
+                                                                :
+                                                                    <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
+                                                                }
+                                                            </span>
+                                                        </a>
+                                                    </th>
+                                                );
+                                            })}
 
                                             <th></th>
                                         </tr>
