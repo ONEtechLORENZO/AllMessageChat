@@ -1,10 +1,52 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import StripeForm from "./StripeForm";
 import Authenticated from "@/Layouts/Authenticated";
+import Axios from "axios";
+import notie from 'notie';
+import nProgress from 'nprogress';
 
 function Wallet(props)
 {
+    const [balance, setBalance] = useState(0);
+
     const [showStripeForm, setShowStripeForm] = useState(false);
+
+    useEffect(() => {
+        setBalance(props.balance);
+    }, [props.balance]);
+
+    /**
+     * Fetch balance
+     */
+    function fetchWalletBalance() {
+        nProgress.start(0.5);
+        nProgress.inc(0.2);
+
+        let endpoint_url = route('userBalance');
+        Axios.get(endpoint_url).then((response) => {
+            nProgress.done(true);
+            if(response.data.status !== false) {
+                setBalance(response.data.balance);
+            }
+            else {
+                notie.alert({type: 'error', text: response.data.message, time: 5});
+            }
+        }).catch((error) => {
+            nProgress.done(true);
+            let error_message = 'Something went wrong';
+            if(error.response) {
+                error_message = error.response.data.message;
+                if(error_message == undefined) {
+                    error_message = error.response.statusText;
+                }
+            }
+            else {
+                error_message = error.message;
+            }
+
+            notie.alert({type: 'error', text: error_message, time: 5});
+        });
+    }
 
     return (
         <Authenticated>
@@ -44,7 +86,7 @@ function Wallet(props)
                                     Available Balance
                                 </h4>
                                 <p className="text-primary font-semibold text-2xl">
-                                    $ {props.balance}
+                                    $ {balance}
                                 </p>
                             </div>
                             <div>
@@ -85,10 +127,10 @@ function Wallet(props)
                                                 strokeLinejoin="round"
                                             />
                                         </svg>
-                                        121
+                                        0
                                     </div>
                                     <div className="text-base font-semibold text-primary">
-                                        $ 12.03
+                                        $ 0
                                     </div>
                                 </div>
                             </div>
@@ -113,10 +155,10 @@ function Wallet(props)
                                                 strokeLinejoin="round"
                                             />
                                         </svg>
-                                        121
+                                        0
                                     </div>
                                     <div className="text-base font-semibold text-primary">
-                                        $ 12.03
+                                        $ 0
                                     </div>
                                 </div>
                             </div>
@@ -141,10 +183,10 @@ function Wallet(props)
                                                 strokeLinejoin="round"
                                             />
                                         </svg>
-                                        121
+                                        0
                                     </div>
                                     <div className="text-base font-semibold text-primary">
-                                        $ 12.03
+                                        $ 0
                                     </div>
                                 </div>
                             </div>
@@ -169,10 +211,10 @@ function Wallet(props)
                                                 strokeLinejoin="round"
                                             />
                                         </svg>
-                                        121
+                                        0
                                     </div>
                                     <div className="text-base font-semibold text-primary">
-                                        $ 12.03
+                                        $ 0
                                     </div>
                                 </div>
                             </div>
@@ -197,10 +239,10 @@ function Wallet(props)
                                                 strokeLinejoin="round"
                                             />
                                         </svg>
-                                        121
+                                        0
                                     </div>
                                     <div className="text-base font-semibold text-primary">
-                                        $ 12.03
+                                        $ 0
                                     </div>
                                 </div>
                             </div>
@@ -226,10 +268,10 @@ function Wallet(props)
                                                 strokeLinejoin="round"
                                             />
                                         </svg>
-                                        121
+                                        0
                                     </div>
                                     <div className="text-base font-semibold text-primary">
-                                        $ 12.03
+                                        $ 0
                                     </div>
                                 </div>
                             </div>
@@ -311,6 +353,7 @@ function Wallet(props)
                 <StripeForm 
                     setShowStripeForm={setShowStripeForm}
                     stripe_public_key={props.stripe_public_key}
+                    fetchWalletBalance={fetchWalletBalance}
                 />
             : ''}
 

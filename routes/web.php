@@ -44,6 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Wallet
     Route::get('/wallet', [UserController::class, 'wallet'])->name('wallet');
     Route::post('/charge', [UserController::class, 'charge'])->name('charge');
+    Route::get('/user-balance', [UserController::class, 'userBalance'])->name('userBalance');
     
     // Profile
     Route::get('/user/profile', [UserController::class, 'userDetail'])->name('profile');

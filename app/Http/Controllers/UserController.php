@@ -906,7 +906,7 @@ class UserController extends Controller
         catch (\Exception $e) {
             $transaction = new Transaction();
             $transaction->service = 'Stripe';
-            $transaction->transaction_id = $stripeCharge->id;
+            $transaction->transaction_id = '-';
             $transaction->amount = $amount / 100;
             $transaction->status = 'failed';
             $transaction->error_message = $e->getMessage();
@@ -917,5 +917,18 @@ class UserController extends Controller
         }
 
         return response()->json(['status' => true, 'message' => 'Payment successful']);
+    }
+
+    /**
+     * Return user balance
+     */
+    public function userBalance(Request $request)
+    {
+        $user_id = $request->user()->id;
+        $balance = Wallet::where('user_id', $user_id)
+                    ->pluck('balance_amount')
+                    ->first();
+
+        return response()->json(['status' => true, 'balance' => $balance]);
     }
 }

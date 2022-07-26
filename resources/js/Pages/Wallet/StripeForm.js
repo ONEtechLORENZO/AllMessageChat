@@ -67,7 +67,7 @@ function StripeForm(props)
                                 <div className='p-4 space-y-4'>
                                     {stripePromise ?
                                         <Elements stripe={stripePromise}>
-                                            <CheckoutForm />
+                                            <CheckoutForm {...props} />
                                         </Elements>
                                     : ''}
                                 </div>
@@ -91,7 +91,7 @@ function StripeForm(props)
     )
 }
 
-const CheckoutForm = () => {
+const CheckoutForm = (props) => {
     const stripe = useStripe();
 
     const elements = useElements();
@@ -106,7 +106,7 @@ const CheckoutForm = () => {
     }
 
     const handleSubmit = async (event) => {
-        
+
         event.preventDefault();
     
         if (!stripe || !elements) {
@@ -147,8 +147,7 @@ const CheckoutForm = () => {
                 if(response.data.status == true || response.data.status == 'true') {
                     notie.alert({type: 'success', text: response.data.message, time: 5});
                     props.setShowStripeForm(false);
-                    console.log('after hide');
-                    // TODO Redirect
+                    props.fetchWalletBalance();
                 }
                 else {
                     notie.alert({type: 'error', text: response.data.message, time: 5});
@@ -194,7 +193,7 @@ const CheckoutForm = () => {
             <CardElement />
             <div className='pt-10'>
                 <button
-                    className="border border-transparent rounded-md w-full px-8 py-4 flex items-center justify-center text-lg leading-6 font-medium text-blue-600 bg-blue-100 hover:bg-blue-200 md:px-10"
+                    className="border border-transparent rounded-md w-full px-8 py-4 flex items-center justify-center text-lg leading-6 font-medium bg-primary text-white md:px-10"
                     disabled={!stripe || loading}
                 >
                     {loading ? 'Loading...' : 'Charge'}
