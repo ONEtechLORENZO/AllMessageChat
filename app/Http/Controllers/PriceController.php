@@ -32,9 +32,14 @@ class PriceController extends Controller
         return Inertia::render('Pricing/List', [
             'records' => $records->items(),
             'heading' => 'Price',
-            'create' => true,
-            'export' => false,
-            'import' => false,
+            'module' => 'Price',
+            'actions' => [
+                'create' => true,
+                'edit' => true,
+                'delete' => true,
+                'export' => false,
+                'import' => false,
+            ],
             'compact_type' => 'condense',
             'list_view_columns' => $list_view_columns,
             'paginator' => [
@@ -118,7 +123,12 @@ class PriceController extends Controller
      */
     public function edit($id)
     {
-        //
+        $record = Price::find($id);
+        if(!$record) {
+            abort(401);
+        }
+
+        return response()->json(['status' => true, 'record' => $record]);
     }
 
     /**
@@ -130,7 +140,28 @@ class PriceController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        // Get fields from the table
+        $fields = Field::where('module_name', 'Price')->get();
+        // Prepare validation param
+        foreach($fields as $field) {
+            if($field['is_mandatory'] === 1) {
+                $validate = 'required';
+            }
+            $validation_params[$field['field_name']] = $validate;
+        }
+
+        // Validate the request
+        $request->validate($validation_params);
+
+        // Check whether country has been added
+        $price = Price::find($id);
+        foreach($fields as $field) {
+            $field_name = $field['field_name'];
+            $price->$field_name = $request->get($field_name);
+        }
+        $price->save();
+
+        return Redirect::route('priceListing');
     }
 
     /**
@@ -141,6 +172,12 @@ class PriceController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $price = Price::find($id);
+        if(!$price) {
+            abort(401);
+        }
+
+        $price->delete();
+        return Redirect::route('priceListing');
     }
 }

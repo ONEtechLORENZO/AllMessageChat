@@ -38,7 +38,43 @@ function Form(props)
 
     useEffect(() => {
         fetchModuleFields();
+        if(props.recordId) {
+            fetchRecord();
+        }
     }, [props]);
+
+    /**
+     * Fetch record
+     */
+    function fetchRecord() {
+        nProgress.start(0.5);
+        nProgress.inc(0.2);
+
+        let endpoint_url = route('editPrice', {'id': props.recordId});
+        Axios.get(endpoint_url).then((response) => {
+            nProgress.done(true);
+            if(response.data.status !== false) {
+                setData(response.data.record);
+            }
+            else {
+                notie.alert({type: 'error', text: response.data.message, time: 5});
+            }
+        }).catch((error) => {
+            nProgress.done(true);
+            let error_message = 'Something went wrong';
+            if(error.response) {
+                error_message = error.response.data.message;
+                if(error_message == undefined) {
+                    error_message = error.response.statusText;
+                }
+            }
+            else {
+                error_message = error.message;
+            }
+
+            notie.alert({type: 'error', text: error_message, time: 5});
+        });
+    }
 
     /**
      * Fetch module fields
@@ -98,9 +134,9 @@ function Form(props)
             return false;
         }
 
-        Inertia.post(route('store' + props.module), data, {
+        Inertia.post(props.recordId ? route('update' + props.module, {id: props.recordId}) : route('store' + props.module), data, {
             onSuccess: (response) => {
-                props.setShowForm(false);
+                props.hideForm();
             },
             onError: (errors) => {
                 setErrors(errors)
@@ -251,7 +287,7 @@ function Form(props)
                                     <button
                                         type="button"
                                         className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                                        onClick={() => props.setShowForm(false)}
+                                        onClick={() => props.hideForm()}
                                         ref={cancelButtonRef}
                                     >
                                         Cancel

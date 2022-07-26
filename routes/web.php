@@ -45,6 +45,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/wallet', [UserController::class, 'wallet'])->name('wallet');
     Route::post('/charge', [UserController::class, 'charge'])->name('charge');
     Route::get('/user-balance', [UserController::class, 'userBalance'])->name('userBalance');
+    Route::get('/transactions', [UserController::class, 'transactions'])->name('transactions');
     
     // Profile
     Route::get('/user/profile', [UserController::class, 'userDetail'])->name('profile');
@@ -114,7 +115,10 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
 
     // Pricing
     Route::get('/admin/pricing', [PriceController::class, 'index'])->name('priceListing');
+    Route::get('/admin/pricing/edit/{id}', [PriceController::class, 'edit'])->name('editPrice');
     Route::post('/admin/pricing', [PriceController::class, 'store'])->name('storePrice');
+    Route::post('/admin/pricing/{id}', [PriceController::class, 'update'])->name('updatePrice');
+    Route::delete('/admin/pricing/{id}', [PriceController::class, 'destroy'])->name('deletePrice');
 });
 
 

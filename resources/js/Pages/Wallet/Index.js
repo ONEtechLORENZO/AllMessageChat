@@ -4,6 +4,7 @@ import Authenticated from "@/Layouts/Authenticated";
 import Axios from "axios";
 import notie from 'notie';
 import nProgress from 'nprogress';
+import { Link } from "@inertiajs/inertia-react";
 
 function Wallet(props)
 {
@@ -326,12 +327,12 @@ function Wallet(props)
                             <h5 className="text-base font-semibold">
                                 See Transations History
                             </h5>
-                            <button
-                                type="button"
+                            <Link 
+                                href={route('transactions')}
                                 className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-700 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bg-gray-800"
                             >
                                 See Details
-                            </button>
+                            </Link>
                         </div>
 
                         <div class="bg-white rounded-md shadow w-full flex justify-between items-center p-4 md:p-8">

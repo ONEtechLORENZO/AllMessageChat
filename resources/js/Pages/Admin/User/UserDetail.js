@@ -6,7 +6,8 @@ import PristineJS from 'pristinejs';
 import Input from '@/Components/Forms/Input';
 import InputError from '@/Components/Forms/InputError';
 
-import {defaultPristineConfig, currencies, countries} from '@/Pages/Constants';
+import { currencies, countries } from '@/Pages/Constants';
+import { BriefcaseIcon } from '@heroicons/react/solid';
 
 export default function UserDetail(props) {
 
@@ -113,21 +114,29 @@ export default function UserDetail(props) {
                 <div> 
                     <h2 className="font-semibold text-xl text-gray-800 leading-tight">Users</h2>
                 </div> 
-                <div>
-                {isChangePassword &&
-                    <button
-                       onClick={() => setChangePasswordModalOpen(true)}
+                <div className='flex gap-3'>
+                    <Link 
+                        href={route('wallet')}
                         className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                        <span className='flex gap-1'>
+                            <BriefcaseIcon className='h-4 w-4' /> Wallet
+                        </span>
+                    </Link>
+                    {isChangePassword &&
+                        <button
+                            onClick={() => setChangePasswordModalOpen(true)}
+                            className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
-                        Change Password
-                    </button>
-                }
-                <Link
-                    href={props.user.role == 'Admin' ?  route('edit_user' , [props.user.id]) : route('edit_profile' , [props.user.id])}
-                    className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-                >
-                    Edit User
-                </Link>
+                            Change Password
+                        </button>
+                    }
+                    <Link
+                        href={props.user.role == 'Admin' ?  route('edit_user' , [props.user.id]) : route('edit_profile' , [props.user.id])}
+                        className='inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                    >
+                        Edit User
+                    </Link>
                 </div> 
             </div>}
         >

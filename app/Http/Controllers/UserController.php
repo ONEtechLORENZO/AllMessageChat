@@ -931,4 +931,50 @@ class UserController extends Controller
 
         return response()->json(['status' => true, 'balance' => $balance]);
     }
+
+    /**
+     * Transactions list view
+     */
+    public function transactions(Request $request)
+    {
+        // List view columns to show
+        $list_view_columns = [
+            'service' => 'Service',
+            'transaction_id' => 'Transaction Id',
+            'amount' => 'Amount',
+            'status' => 'Status',
+            'error_message' => 'Message',
+            'created_at' => 'Created At',
+        ];
+
+        $user_id = $request->user()->id;
+        $records = Transaction::where('user_id', $user_id)
+                    ->paginate(15);
+        
+        return Inertia::render('Wallet/Transactions', [
+            'records' => $records->items(),
+            'module' => 'Transaction',
+            'heading' => 'Transactions',
+            'actions' => [
+                'create' => false,
+                'edit' => false,
+                'delete' => false,
+                'export' => false,
+                'import' => false,
+            ],
+            'compact_type' => 'condense',
+            'list_view_columns' => $list_view_columns,
+            'paginator' => [
+                'firstPageUrl' => $records->url(1),
+                'previousPageUrl' => $records->previousPageUrl(),
+                'nextPageUrl' => $records->nextPageUrl(),
+                'lastPageUrl' => $records->url($records->lastPage()),  
+                'currentPage' => $records->currentPage(),
+                'total' => $records->total(),
+                'count' => $records->count(),
+                'lastPage' => $records->lastPage(),
+                'perPage' => $records->perPage(),
+            ],
+        ]);
+    }
 }
