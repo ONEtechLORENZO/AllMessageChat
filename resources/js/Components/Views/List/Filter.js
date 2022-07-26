@@ -1,8 +1,6 @@
-import React, { Fragment, useRef, useState } from "react";
-import Input from "@/Components/Forms/Input";
-import InputError from "@/Components/Forms/InputError";
-import Dropdown from "@/Components/Forms/Dropdown";
+import React from "react";
 import {AddIcon, DeleteIcon} from "../../../Pages/icons"
+import { TrashIcon } from '@heroicons/react/solid';
 
 function Filter(props)
 {    
@@ -60,15 +58,11 @@ function Filter(props)
                                               <div 
                                                 group_index={grpCondition_index} 
                                                 type="button"
-                                                onClick={(e) => props.deleteGroup(e)}
+                                                onClick={(e) => props.deleteGroup(grpCondition_index)}
                                                 className="absolute right-0 p-2 mx-2 cursor-pointer text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded">
-                                                <DeleteIcon
-                                                    group_index={grpCondition_index} 
-                                                    type="button"
-                                                    onClick={(e) => props.deleteGroup(e)}
-                                                        className="-ml-0.5 mr-2 h-4 w-4" 
-                                                        aria-hidden="true"
-                                                    /> 
+                                                    <TrashIcon 
+                                                        className='h-4 w-4 text-red-600 cursor-pointer' 
+                                                    />
                                               </div>
                                         
                                         </div>
@@ -139,20 +133,16 @@ function Filter(props)
                                             </div>
                                             <div className="w-full flex items-center justify-between p-6 space-x-6">
                                                 <button
-                                                    group_index={grpCondition_index} 
-                                                    condition_index={condition_index}
                                                     type="button"
-                                                    onClick={(e) => props.deleteCondition(e)}
+                                                    onClick={(e) => props.deleteCondition(grpCondition_index, condition_index)}
                                                     className="inline-flex float-right items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-black bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
                                                 >
-                                                    <DeleteIcon 
-                                                    group_index={grpCondition_index} 
-                                                    condition_index={condition_index}
-                                                    type="button"
-                                                    onClick={(e) => props.deleteCondition(e)}
-                                                        className="-ml-0.5 mr-2 h-4 w-4" 
-                                                        aria-hidden="true"
-                                                    /> 
+                                                    <TrashIcon 
+                                                        group_index={grpCondition_index} 
+                                                        condition_index={condition_index}
+                                                        className='h-4 w-4 text-red-600 cursor-pointer' 
+                                                    />
+
                                                 </button>
                                             </div>       
                                         </div>
