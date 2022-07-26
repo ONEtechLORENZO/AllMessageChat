@@ -5,6 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ImportController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\MessageLogController;
 use App\Http\Controllers\MsgController;
@@ -95,6 +96,18 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::post('/admin/settings/saveSMTP', [SettingsController::class, 'saveOutgoingServerData'])->name('store_smtp_data');
     Route::post('/admin/settings/saveToAddress', [SettingsController::class, 'saveToAddressData'])->name('store_toAddress_data');
 });
+
+Route::get('/pricing',function(){
+    return Inertia::render('pricing');
+});
+
+Route::get('/import',[ImportController::class, 'importData'])->name('import');
+Route::get('/import/new',[ImportController::class, 'newImport'])->name('new_import');
+Route::post('/import/step',[ImportController::class, 'importCSV'])->name('importcsv');
+Route::post('/import/file',[ImportController::class, 'getRecordFile'])->name('getRecordFile');
+Route::post('/import/save',[ImportController::class, 'importFileSave'])->name('import_save');
+Route::get('/import/edit/{id}',[ImportController::class, 'EditImport'])->name('import_edit');
+Route::get('/import/delete/{id}',[ImportController::class, 'deleteImport'])->name('import_delete');
 
 
 require __DIR__ . '/auth.php';

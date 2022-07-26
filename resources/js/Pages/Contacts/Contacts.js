@@ -75,9 +75,7 @@ export default function Contacts(props) {
     function createContact(){
         var pristine = new PristineJS(document.getElementById("update_contact"), defaultPristineConfig);
         let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required]'));
-        let newData = Object.assign({}, data);
-            newData['ERROR'] = 'UPDATE';
-            setData(newData);
+
         if(!is_validated) {
             
             return false;
@@ -161,8 +159,8 @@ export default function Contacts(props) {
                         </div>
                     </div>
                     <div className="mt-4 sm:mt-0 sm:ml-16 flex gap-3">
-                        <button
-                            type="button"
+                        <Link
+                             href={ route('import') }
                             className="inline-flex items-center px-2.5 py-1.5 border-0 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]"
                         >
                             <svg
@@ -179,7 +177,7 @@ export default function Contacts(props) {
                                 />
                             </svg>
                             Import
-                        </button>
+                        </Link>
                         <button
                             type="button"
                             className="inline-flex items-center px-2.5 py-1.5 border-0 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]"

@@ -10,6 +10,10 @@ class Contact extends Model
 {
     use HasFactory;
 
+    protected $table = 'contacts';
+
+    protected $fillable = ['first_name', 'last_name', 'email', 'phone_number', 'instagram_id', 'user_id', 'created_at', 'updated_at'];
+
     public function messages()
     {
         return $this->morphMany( Msg::class, 'msgable');
