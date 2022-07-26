@@ -6,11 +6,9 @@ use Illuminate\Http\Request;
 use League\Csv\Statement;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use League\Csv\Reader;
 use App\Models\Import;
-use App\Models\Contact;
 
 class ImportController extends Controller
 {

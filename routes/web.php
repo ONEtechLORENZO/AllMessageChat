@@ -97,6 +97,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Form
     Route::get('/fetchModuleFields/{module}', [FormController::class, 'fetchModuleFields'])->name('fetchModuleFields');
+
+    // Import
+    Route::get('/import',[ImportController::class, 'importData'])->name('import');
+    Route::get('/import/new',[ImportController::class, 'newImport'])->name('new_import');
+    Route::post('/import/step',[ImportController::class, 'importCSV'])->name('importcsv');
+    Route::post('/import/file',[ImportController::class, 'getRecordFile'])->name('getRecordFile');
+    Route::post('/import/save',[ImportController::class, 'importFileSave'])->name('import_save');
+    Route::get('/import/edit/{id}',[ImportController::class, 'EditImport'])->name('import_edit');
+    Route::get('/import/delete/{id}',[ImportController::class, 'deleteImport'])->name('import_delete');
+
 });
 
 // Check user is admin
@@ -122,18 +132,5 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::post('/admin/pricing/{id}', [PriceController::class, 'update'])->name('updatePrice');
     Route::delete('/admin/pricing/{id}', [PriceController::class, 'destroy'])->name('deletePrice');
 });
-
-Route::get('/pricing',function(){
-    return Inertia::render('pricing');
-});
-
-Route::get('/import',[ImportController::class, 'importData'])->name('import');
-Route::get('/import/new',[ImportController::class, 'newImport'])->name('new_import');
-Route::post('/import/step',[ImportController::class, 'importCSV'])->name('importcsv');
-Route::post('/import/file',[ImportController::class, 'getRecordFile'])->name('getRecordFile');
-Route::post('/import/save',[ImportController::class, 'importFileSave'])->name('import_save');
-Route::get('/import/edit/{id}',[ImportController::class, 'EditImport'])->name('import_edit');
-Route::get('/import/delete/{id}',[ImportController::class, 'deleteImport'])->name('import_delete');
-
 
 require __DIR__ . '/auth.php';
