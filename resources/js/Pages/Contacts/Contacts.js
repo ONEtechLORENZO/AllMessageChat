@@ -20,10 +20,10 @@ import { objectPosition } from "tailwindcss/defaultTheme";
 export default function Contacts(props) {
     const [contactFields, setContactFields] = useState({
         'id': { 'label': '', 'type': 'hidden', 'required': false },
-        'first_name': { 'label': (props.translator['First Name']), 'type': 'text', 'required': false },
-        'last_name': { 'label':(props.translator['Last Name']), 'type': 'text', 'required': true } , 
-        'email': { 'label':(props.translator['Email']), 'type': 'email', 'required': true }, 
-        'phone_number': { 'label': (props.translator['Phone number']), 'type': 'text', 'required': false },
+        'first_name': { 'label': 'First Name', 'type': 'text', 'required': false },
+        'last_name': { 'label': 'Last Name', 'type': 'text', 'required': true } , 
+        'email': { 'label': 'Email', 'type': 'email', 'required': true }, 
+        'phone_number': { 'label': 'Phone number', 'type': 'text', 'required': false },
         'instagram_id': { 'label': 'Instagram ID', 'type': 'text', 'required': false }, 
     });
     
@@ -89,7 +89,6 @@ export default function Contacts(props) {
                  url: url                        
             })
             .then( (response) =>{
-               console.log(response.data);               
                setContacts( response.data.contacts);          
                
             });
@@ -99,7 +98,6 @@ export default function Contacts(props) {
      * search content
      */ 
     const search = (e) => {  
-       
         var searchtext=document.getElementById('search').value;
         let url=route('contacts',{'search':searchtext,'sortdir': props.sortdir,'sortfield': props.sortfield,'mode':'ajax'}) 
           
@@ -108,7 +106,6 @@ export default function Contacts(props) {
                   url: url                        
              })
              .then( (response) =>{
-                console.log(response.data);               
                 setContacts( response.data.contacts);      
              });
     }
@@ -175,7 +172,6 @@ export default function Contacts(props) {
 
     return (
         <Authenticated>
-           
             <ListlView
                 headers = {contactFields}
                 records = {contacts}
@@ -186,8 +182,9 @@ export default function Contacts(props) {
                 selectedFilter = {props.selectedFilter}
                 updateRecord = {updateCotnact}
                 openCreateModal = {openCreateModal} 
+                search = {search}
             />
-{ /*
+{/* 
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
                 <div className="sm:flex sm:items-center sm:justify-between">
                     <div className="flex gap-3">
