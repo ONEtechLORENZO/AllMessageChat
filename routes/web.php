@@ -13,6 +13,7 @@ use App\Http\Controllers\MsgController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FilterController;
 use App\Http\Controllers\FormController;
+use App\Http\Controllers\ExportController;
 use App\Http\Middleware\IsAdmin;
 
 /*
@@ -105,6 +106,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/import/save',[ImportController::class, 'store'])->name('import_save');
     Route::post('/import/file',[ImportController::class, 'handleFileImport'])->name('handleFileImport');
     Route::delete('/import/{id}', [ImportController::class, 'destroy'])->name('deleteImport');
+
+    //Export
+    Route::get('/export',[ExportController::class,'exportFile'])->name('export');
 });
 
 // Check user is admin

@@ -12,7 +12,7 @@ import Select from 'react-select';
 import languages from '@/Pages/languages';
 import PristineJS from 'pristinejs';
 import { Inertia } from '@inertiajs/inertia';
-import ListlView from "@/Components/Views/List/Index";
+import ListView from "@/Components/Views/List/Index";
 
 import Pagination from "@/Components/Pagination";
 import { objectPosition } from "tailwindcss/defaultTheme";
@@ -172,7 +172,7 @@ export default function Contacts(props) {
 
     return (
         <Authenticated>
-            <ListlView
+            <ListView
                 headers = {contactFields}
                 records = {contacts}
                 module = 'Contacts'
