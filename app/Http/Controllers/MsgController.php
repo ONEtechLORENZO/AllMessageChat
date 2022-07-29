@@ -213,7 +213,7 @@ class MsgController extends Controller
             'contact_list' => $contactList,
             'messages' => $messages,
             'selected_contact' => $selectedContact,
-            'category' => ($category) ? $category : 'whatsapp',
+            'category' => ($category) ,
             'translator' => [
                 'Your Profile' => __('Your Profile'),
                 'Settings' => __('Settings'),
@@ -238,7 +238,7 @@ class MsgController extends Controller
     {
         $user = $request->user();
         $contactId = $request->contact_id;
-        $category = $request->category;
+        $category = ($request->category == 'all') ?['instagram', 'whatsapp'] : [$request->category] ;
        
         $messages = [];
         $account = Account::where('user_id', $user->id)->first();
@@ -248,11 +248,12 @@ class MsgController extends Controller
         if(!$contact){
             return ( $messages);
         }
-        foreach($contact->messages->where('service', $request->category) as $message){
+        foreach($contact->messages->whereIn('service', $category) as $message){
             $messages[] = [
                 'content' => $message->message,
                 'date' => date_format( $message->created_at , $this->dateChatView),
-                'mode' => $message->msg_mode
+                'mode' => $message->msg_mode,
+                'category' => $message->service,
             ];
         }
         return ( $messages);

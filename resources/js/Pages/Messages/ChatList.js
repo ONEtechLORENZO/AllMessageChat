@@ -2,6 +2,7 @@ import React ,{ useEffect , useState , Fragment} from 'react';
 import { Head, useForm, Link, InertiaLink } from '@inertiajs/inertia-react';
 import MessageList from "./MessageList";
 import Authenticated from "../../Layouts/Authenticated";
+import ApplicationLogo from '@/Components/ApplicationLogo';
 
 import {
     DotsVerticalIcon,
@@ -21,10 +22,6 @@ import {
     InstaIcon,
     SettingIcon,
 } from "../icons";
-
-
-
-
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
@@ -46,6 +43,13 @@ export default function ChatList(props) {
         { name: (props.translator['Settings']), href: "#" },
         { name: (props.translator['Sign out']), href: "#" },
     ];
+
+    const channels = {
+        all : {label: 'All Channel', icon: ApplicationLogo },
+        whatsapp : { label: 'WhatsApp', icon:  WhatsAppIcon },
+        instagram : {label: 'Instagram', icon: InstaIcon }
+    }
+    
     const tabs = [
         { name: (props.translator['All Chats']), href: "#", count: "2", current: false },
         { name: (props.translator['Unread']), href: "#", count: "", current: false },
@@ -75,7 +79,7 @@ export default function ChatList(props) {
 
     // Send Message when press enter
     function handleKeyUp(e){
-        if(e.key == 'Enter'){
+        if(e.key == 'Enter' && containerCategory){
             sendMessage();
         }
     }
@@ -89,7 +93,6 @@ export default function ChatList(props) {
 
     // Return conversation history
     function getMessageList(){
-        
         if(!selectedContact){
             return false;
         }
@@ -99,7 +102,6 @@ export default function ChatList(props) {
                 'category': containerCategory, 'mode': 'ajax'}),
         })
         .then( (response) =>{
-           // console.log(response.data)
             setMessages(response.data);
         });
     }
@@ -108,7 +110,10 @@ export default function ChatList(props) {
     function sendMessage(){
         //let data = Object.assign({}, data);
         data['destination'] = chatList[selectedContact].number;
-
+        if(containerCategory == 'all'){
+            return false;
+        }
+        
         if(data.content && data.destination ){
             axios({
                 method: 'post',
@@ -127,7 +132,7 @@ export default function ChatList(props) {
             });
         }
     }
-
+    const selectedChannel = channels[containerCategory];
     return (
         <Authenticated>
             <div className="flex">
@@ -311,16 +316,6 @@ export default function ChatList(props) {
                             <div className="flex sm:items-center justify-between py-3 border-b-2 border-gray-200">
                                 <div className="relative flex items-center space-x-4">
                                     <div className="flex gap-1">
-                                        {/* <span className="text-yellow-500">
-                                            <svg width={14} height={14}>
-                                                <circle
-                                                    cx={6}
-                                                    cy={6}
-                                                    r={6}
-                                                    fill="currentColor"
-                                                />
-                                            </svg>
-                                        </span> */}
                                         <div className="relative">
                                         <span className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gray-500">
                                                     <span className="text-3xl font-medium leading-none text-white">
@@ -343,6 +338,55 @@ export default function ChatList(props) {
                                         className="h-4 w-4"
                                         aria-hidden="true"
                                     />
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                <Menu as="div" className="ml-3 relative">
+                                            <div>
+                                                <Menu.Button className="max-w-xs ring-1 p-2 flex items-center text-sm rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                    
+                                                    <selectedChannel.icon 
+                                                                        className="p-2 w-12 h-12 fill-current text-gray-500"
+                                                                    />
+                                                    <span className="ml-2">
+                                                        {selectedChannel.label}
+                                                    </span>
+                                                </Menu.Button>
+                                            </div>
+                                            <Transition
+                                                as={Fragment}
+                                                enter="transition ease-out duration-100"
+                                                enterFrom="transform opacity-0 scale-95"
+                                                enterTo="transform opacity-100 scale-100"
+                                                leave="transition ease-in duration-75"
+                                                leaveFrom="transform opacity-100 scale-100"
+                                                leaveTo="transform opacity-0 scale-95"
+                                            >
+                                                <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
+                                                    {Object.entries(channels).map(([name, channel]) => (
+                                                        <Menu.Item key={name}>
+                                                           
+                                                                <div 
+                                                                    className={classNames(
+                                                                        (containerCategory ==  name)
+                                                                            ? "bg-gray-100"
+                                                                            : "",
+                                                                        "p-2 flex"
+                                                                    )}
+                                                                >
+                                                                    <channel.icon 
+                                                                        className="p-2 w-12 h-12 fill-current text-gray-500"
+                                                                    />
+                                                                    <Link href={route('chat_list', {'contact_id': selectedContact, 'category': name})}
+                                                                    className="block py-2 px-4 text-sm text-gray-700 w-full">
+                                                                        {channel.label} 
+                                                                    </Link>
+                                                                </div>
+                                                           
+                                                        </Menu.Item>
+                                                    ))}
+                                                </Menu.Items>
+                                            </Transition>
+                                        </Menu>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                     <div className="ml-4 flex items-center md:ml-6">
@@ -405,6 +449,7 @@ export default function ChatList(props) {
                             </div>
                             <MessageList 
                                 messages = {messages}
+                                containerCategory = {containerCategory}
                             />
 
                             <div className="border-t-2  border-gray-200 px-4 pt-4 mb-2 sm:mb-0">
@@ -451,7 +496,12 @@ export default function ChatList(props) {
                                             <button
                                                 type="button"
                                                 onClick={sendMessage}
-                                                className="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-[#A31EFF] focus:outline-none"
+                                                className={classNames(
+                                                    (containerCategory ==  'all')
+                                                        ? 'text-[#d5aff0]'
+                                                        : 'text-[#A31EFF]',
+                                                        "inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out focus:outline-none"
+                                                )}
                                             >
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -466,47 +516,47 @@ export default function ChatList(props) {
                                     </div>
 
                                     <div className="flex flex-col gap-1 ">
-                                        <div className="flex rounded-md bg-white h-7 w-7 justify-center items-center cursor-pointer">
+                                        {/* <div className="flex rounded-md bg-white h-7 w-7 justify-center items-center cursor-pointer">
                                             
                                             <Menu as="div" className="ml-3 relative">
-                                            <div>
-                                            
-                                                <Menu.Button className="max-w-xs  p-2 flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2">
-                                                    {containerCategory == 'whatsapp' ?
-                                                        <WhatsAppIcon />
-                                                    :
-                                                        <InstaIcon />
-                                                    }
-                                                </Menu.Button>
-                                            </div>
-                                            <Transition
-                                                as={Fragment}
-                                                enter="transition ease-out duration-100"
-                                                enterFrom="transform opacity-0 scale-95"
-                                                enterTo="transform opacity-100 scale-100"
-                                                leave="transition ease-in duration-75"
-                                                leaveFrom="transform opacity-100 scale-100"
-                                                leaveTo="transform opacity-0 scale-95"
-                                            >
-                                                <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
-                                                  
-                                                        <Menu.Item >
-                                                            {containerCategory != 'whatsapp' ?
-                                                                //<span onClick={() => getMessageList()} className= "block py-2 px-4 text-sm text-gray-700">
-                                                                <Link href={route('chat_list', {'contact_id': selectedContact, 'category': 'whatsapp'})}> 
-                                                                    <WhatsAppIcon />
-                                                                </Link>
-                                                                :
-                                                                <Link href={route('chat_list', {'contact_id': selectedContact, 'category': 'instagram'})} className= "block py-2 px-4 text-sm text-gray-700">
-                                                                    <InstaIcon />                                                               
-                                                                </Link>
-                                                            }
-                                                    </Menu.Item>
+                                                <div>
+                                                
+                                                    <Menu.Button className="max-w-xs  p-2 flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2">
+                                                        {containerCategory == 'whatsapp' ?
+                                                            <WhatsAppIcon />
+                                                        :
+                                                            <InstaIcon />
+                                                        }
+                                                    </Menu.Button>
+                                                </div>
+                                                <Transition
+                                                    as={Fragment}
+                                                    enter="transition ease-out duration-100"
+                                                    enterFrom="transform opacity-0 scale-95"
+                                                    enterTo="transform opacity-100 scale-100"
+                                                    leave="transition ease-in duration-75"
+                                                    leaveFrom="transform opacity-100 scale-100"
+                                                    leaveTo="transform opacity-0 scale-95"
+                                                >
+                                                    <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
                                                     
-                                                </Menu.Items>
-                                            </Transition>
-                                        </Menu>
-                                        </div>
+                                                            <Menu.Item >
+                                                                {containerCategory != 'whatsapp' ?
+                                                                    //<span onClick={() => getMessageList()} className= "block py-2 px-4 text-sm text-gray-700">
+                                                                    <Link href={route('chat_list', {'contact_id': selectedContact, 'category': 'whatsapp'})}> 
+                                                                        <WhatsAppIcon />
+                                                                    </Link>
+                                                                    :
+                                                                    <Link href={route('chat_list', {'contact_id': selectedContact, 'category': 'instagram'})} className= "block py-2 px-4 text-sm text-gray-700">
+                                                                        <InstaIcon />                                                               
+                                                                    </Link>
+                                                                }
+                                                        </Menu.Item>
+                                                        
+                                                    </Menu.Items>
+                                                </Transition>
+                                            </Menu>
+                                        </div> */}
                                         <div className="flex rounded-md bg-white h-7 w-7 justify-center items-center cursor-pointer">
                                             <PlusSmIcon
                                                 className="h-6 w-6"
