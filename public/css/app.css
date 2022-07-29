@@ -2201,13 +2201,17 @@ select {
 	--tw-text-opacity: 1;
 	color: rgba(122, 122, 122, var(--tw-text-opacity));
 }
-.text-yellow-500 {
+.text-\[\#d5aff0\] {
 	--tw-text-opacity: 1;
-	color: rgba(245, 158, 11, var(--tw-text-opacity));
+	color: rgba(213, 175, 240, var(--tw-text-opacity));
 }
 .text-\[\#A31EFF\] {
 	--tw-text-opacity: 1;
 	color: rgba(163, 30, 255, var(--tw-text-opacity));
+}
+.text-yellow-500 {
+	--tw-text-opacity: 1;
+	color: rgba(245, 158, 11, var(--tw-text-opacity));
 }
 .text-green-700 {
 	--tw-text-opacity: 1;
@@ -2220,10 +2224,6 @@ select {
 .text-indigo-900 {
 	--tw-text-opacity: 1;
 	color: rgba(49, 46, 129, var(--tw-text-opacity));
-}
-.text-\[\#d5aff0\] {
-	--tw-text-opacity: 1;
-	color: rgba(213, 175, 240, var(--tw-text-opacity));
 }
 .text-opacity-40 {
 	--tw-text-opacity: 0.4;
@@ -2307,11 +2307,6 @@ select {
 .ring-1 {
 	--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
 	--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);
-	box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
-}
-.ring-2 {
-	--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
-	--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
 	box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
 }
 .ring-gray-300 {

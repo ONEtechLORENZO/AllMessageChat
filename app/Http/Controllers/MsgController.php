@@ -213,7 +213,7 @@ class MsgController extends Controller
             'contact_list' => $contactList,
             'messages' => $messages,
             'selected_contact' => $selectedContact,
-            'category' => ($category) ,
+            'category' => ($category) ? $category : 'all',
             'translator' => [
                 'Your Profile' => __('Your Profile'),
                 'Settings' => __('Settings'),
@@ -496,6 +496,11 @@ class MsgController extends Controller
             if(!isset($data['gsId'])){
                 return false;
             }
+            $message = Msg::where('service_id', $data['gsId'])->first();
+            if(!$message){
+                return false;
+            }
+
             $is_delivered = $is_read = 0;
             $status = 'Sent';
             if (isset($data['type']) && str_contains($data['type'], 'failed')) {
