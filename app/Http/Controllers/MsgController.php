@@ -12,6 +12,9 @@ use App\Models\Template;
 use App\Http\Controllers\MessageLogController;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use App\Models\Price;
+use App\Models\Wallet;
+use Illuminate\Support\Facades\DB;
 
 class MsgController extends Controller
 {
@@ -213,7 +216,7 @@ class MsgController extends Controller
             'contact_list' => $contactList,
             'messages' => $messages,
             'selected_contact' => $selectedContact,
-            'category' => ($category) ? $category : 'whatsapp',
+            'category' => ($category) ? $category : 'all',
             'translator' => [
                 'Your Profile' => __('Your Profile'),
                 'Settings' => __('Settings'),
@@ -238,7 +241,7 @@ class MsgController extends Controller
     {
         $user = $request->user();
         $contactId = $request->contact_id;
-        $category = $request->category;
+        $category = ($request->category == 'all') ?['instagram', 'whatsapp'] : [$request->category] ;
        
         $messages = [];
         $account = Account::where('user_id', $user->id)->first();
@@ -248,11 +251,12 @@ class MsgController extends Controller
         if(!$contact){
             return ( $messages);
         }
-        foreach($contact->messages->where('service', $request->category) as $message){
+        foreach($contact->messages->whereIn('service', $category) as $message){
             $messages[] = [
                 'content' => $message->message,
                 'date' => date_format( $message->created_at , $this->dateChatView),
-                'mode' => $message->msg_mode
+                'mode' => $message->msg_mode,
+                'category' => $message->service,
             ];
         }
         return ( $messages);
@@ -295,9 +299,7 @@ class MsgController extends Controller
             return true;
         }
 
-        $eventType = 'Message';
         if($response['type'] == 'template-event'){
-		    $eventType = 'Template';
             $template = Template::where('template_uid', $data['id'])
                 ->first();
             if($template){
@@ -311,8 +313,6 @@ class MsgController extends Controller
         } else {
             $this->handleWhatsAppMessage( $data);
         }
-
-
     }
 
     /**
@@ -495,6 +495,11 @@ class MsgController extends Controller
             if(!isset($data['gsId'])){
                 return false;
             }
+            $message = Msg::where('service_id', $data['gsId'])->first();
+            if(!$message){
+                return false;
+            }
+
             $is_delivered = $is_read = 0;
             $status = 'Sent';
             if (isset($data['type']) && str_contains($data['type'], 'failed')) {
@@ -515,6 +520,16 @@ class MsgController extends Controller
                 'is_read' => $is_read
             ];
         }
+        if(isset($data['pricing'])){
+            $messageData['policy'] = $data['pricing']['category'];
+            $isFirstMessage = $this->checkIsFirstMessage($message);
+            $price = $this->handlePrice($data['destination'], $data['pricing']['category'], $isFirstMessage);
+            if($message->status != 'Sent'){
+                $this->reduceMessageAmount($price, $message->account_id);
+            }
+            $messageData['amount'] = $price;
+        }
+        
         
         Log::info(['store Messages function start.', $messageData ]);
         $this->processMessage($messageData);
@@ -557,5 +572,70 @@ class MsgController extends Controller
         $request->chennal = 'whatsapp';
         $this->handleMessageResult($request, $account->id, $result);
         return response()->json($result['result']);
+    }
+
+    /**
+     * Handle Pricing 
+     * 
+     * @param STRING $nummber
+     * @param STRING $category
+     */
+    public function handlePrice($number , $category, $dateExpried)
+    {
+        $return = '';
+        //TODO Need to get country id for gettting price detail
+        $countryCode = 1; //$this->getCountryCode($number);
+        $price = Price::find($countryCode);
+        if($category == 'UIC'){
+            $return = $price->user_initiated;
+        } else {
+            $return = $price->business_initiated;
+        }
+        if(! $dateExpried){
+            $return = $price->message;
+        }
+        return $return;
+    }
+
+    /**
+     * Reduce message cost on wallet
+     * 
+     * @param FLOAT $price
+     * @param INTEGER $accoount_id
+     */
+    public function reduceMessageAmount($price, $accoount_id)
+    {
+        $user_id = $this->getUserIdUsingAccountId($accoount_id);
+        $wallet = Wallet::where('user_id', $user_id)->first();
+       
+        if($wallet){
+            $balance_amount = ($wallet->balance_amount - $price);
+            DB::transaction(function ()use ($balance_amount, $user_id) {
+                DB::update("update wallets set balance_amount = {$balance_amount} where user_id = {$user_id}");
+            });
+        }
+    }
+
+    /**
+     * Check the first message of the Day
+     * 
+     * @param OBJECT $message
+     */
+    public function checkIsFirstMessage($message)
+    {
+        $return = false;
+        $customer = $message->msgable_id;
+        $lastMessage = Msg::where('id' ,'!=', $message->id)
+            ->where('msgable_id', $customer)
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $lastMessageDate = new \DateTime($lastMessage->created_at);
+        $now = new \DateTime();
+        
+        if($lastMessageDate->diff($now)->days >= 1) {
+            $return = true;
+        }
+        return $return;
     }
 }

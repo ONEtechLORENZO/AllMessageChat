@@ -1,4 +1,8 @@
 import React ,{ useEffect , useState } from 'react';
+import {
+    WhatsAppIcon,
+    InstaIcon,
+} from "../icons";
 
 export default function MessageList(props) {
     return(
@@ -17,9 +21,25 @@ export default function MessageList(props) {
                                                     <span className="inline-block  ">
                                                         {message.content}
                                                     </span>
-                                                    <span className="text-xs text-right block w-full mt-2">
+                                                    <div className='flex w-full'>
+                                                    <span className="text-xs text-left mt-2 mx-2">
+                                                            {props.containerCategory == 'all' &&
+                                                                <>
+                                                                {message.category == 'whatsapp' &&
+                                                                    <WhatsAppIcon />
+                                                                }
+                                                               
+                                                                {message.category == 'instagram' &&
+                                                                    <InstaIcon />
+                                                                } 
+                                                                </>
+                                                                  
+                                                            }  
+                                                    </span>
+                                                    <span className="text-xs text-right  mt-2">
                                                         {message.date} 
                                                     </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -32,9 +52,25 @@ export default function MessageList(props) {
                                                     <span className="inline-block  ">
                                                         {message.content}
                                                     </span>
-                                                    <span className="text-xs text-right block w-full mt-2">
-                                                        {message.date} 
-                                                    </span>
+                                                    <div className='flex w-full'>
+                                                        <span className="text-xs text-left mx-2  mt-2">
+                                                            {props.containerCategory == 'all' &&
+                                                                <>
+                                                                {message.category == 'whatsapp' &&
+                                                                    <WhatsAppIcon />
+                                                                }
+                                                               
+                                                                {message.category == 'instagram' &&
+                                                                    <InstaIcon />
+                                                                } 
+                                                                </>
+                                                                  
+                                                            }
+                                                        </span>
+                                                        <span className="text-xs text-right  mt-2">
+                                                            {message.date} 
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
