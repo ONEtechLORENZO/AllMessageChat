@@ -931,6 +931,10 @@ select {
 	margin-left: 2.5rem;
 	margin-right: 2.5rem;
 }
+.mx-1 {
+	margin-left: 0.25rem;
+	margin-right: 0.25rem;
+}
 .my-3 {
 	margin-top: 0.75rem;
 	margin-bottom: 0.75rem;
@@ -1230,6 +1234,9 @@ select {
 }
 .w-40 {
 	width: 10rem;
+}
+.w-96 {
+	width: 24rem;
 }
 .min-w-full {
 	min-width: 100%;

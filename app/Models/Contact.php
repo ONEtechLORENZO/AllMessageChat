@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Msg;
+use App\Models\Tag;
 
 class Contact extends Model
 {
@@ -17,5 +18,10 @@ class Contact extends Model
     public function messages()
     {
         return $this->morphMany( Msg::class, 'msgable');
+    }
+
+    public function tags()
+    {
+        return $this->morphToMany(Tag::class, 'taggable');
     }
 }

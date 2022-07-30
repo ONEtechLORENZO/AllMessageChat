@@ -11,6 +11,7 @@ use Auth;
 use App\Models\MessageLog;
 use App\Models\IncomingUrl;
 use App\Models\Msg;
+use App\Models\Tag;
 use App\Models\Filter;
 use App\Models\MessageResponse;
 use App\Models\Account;
@@ -24,8 +25,14 @@ use Illuminate\Support\Facades\Input;
 
 class ContactController extends Controller
 {
-    public $limit = 5;
+   // public $limit = 5;
     public $contactColumns = ['first_name','last_name','phone_number','email'];
+
+    public $limit = 15;
+
+    public $default_sort_by = 'created_at';
+
+    public $default_sort_order = 'desc';
 
     /**
      * Display a listing of the resource.
@@ -70,7 +77,6 @@ class ContactController extends Controller
                 $searchData = json_decode($_GET['filter']);
                 $whereCondition = $this->getWhereFiltetCondition($searchData);
             }
-            //dd($whereCondition);
             
             $contacts = Contact::where(function ($query) use ( $user , $whereCondition) {   
                     $query->where('user_id', $user->id );
@@ -91,13 +97,14 @@ class ContactController extends Controller
         if($request->get('mode') == 'ajax') {
             return response()->json(['contacts' => $contactList]);  
         }
-
+      
         return Inertia::render('Contacts/Contacts', [
 
             'contacts' => $contactList,
             'filter' => $searchData,
             'filterList' => $filterList,
             'selectedFilter' => $selectedFilter,
+            
             'paginator' => [
                 'firstPageUrl' => $contacts->url(1),
                 'previousPageUrl' => $contacts->previousPageUrl(),
@@ -146,9 +153,71 @@ class ContactController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $list_view_columns = [
+            'first_name' => 'First Name',
+            'last_name' => 'Last Name',
+            'email' => 'Email',
+            'tag' => 'Tag',
+            'list' => 'List',
+            'phone_number' => 'Phone Number',
+            'instagram_id' => 'Instagram Id'
+        ];
+
+        $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
+        $sort_by = $request->has('sort_by') && $request->get('sort_by') ? $request->get('sort_by') : $this->default_sort_by;
+        $sort_order = $request->has('sort_order') && $request->get('sort_order') ? $request->get('sort_order') : $this->default_sort_order;
+
+        if($search) {
+            $records = Contact::orderBy($sort_by, $sort_order)
+                        ->where(function ($query) use ($search, $list_view_columns) {    
+                            foreach($list_view_columns as $field_name => $field_info) {
+                                $query->orWhere($field_name, 'like', '%' . $search . '%');
+                            }
+                        })
+                        ->paginate($this->limit);
+        }
+        else {
+            $records = Contact::orderBy($sort_by, $sort_order)->paginate($this->limit);
+        }
+
+        $tag_record = $this->tagRecord();
+ 
+        return Inertia::render('Tag/List', [
+            'records' => $records->items(),
+            'tag'=> $tag_record,
+            'singular' => 'Contact',
+            'plural' => 'Contacts',
+            'module' => 'Contact',
+            // Actions
+            'actions' => [
+                'create' => true,
+                'edit' => true,
+                'delete' => true,
+                'export' => false,
+                'import' => false,
+                'search' => true,
+            ],
+            'search' => $search,
+            'compact_type' => 'condense',
+            'list_view_columns' => $list_view_columns,
+            // Sorting
+            'sort_by' => $sort_by,
+            'sort_order' => $sort_order,
+            // Paginator
+            'paginator' => [
+                'firstPageUrl' => $records->url(1),
+                'previousPageUrl' => $records->previousPageUrl(),
+                'nextPageUrl' => $records->nextPageUrl(),
+                'lastPageUrl' => $records->url($records->lastPage()),  
+                'currentPage' => $records->currentPage(),
+                'total' => $records->total(),
+                'count' => $records->count(),
+                'lastPage' => $records->lastPage(),
+                'perPage' => $records->perPage(),
+            ],
+        ]);
     }
 
     /**
@@ -332,8 +401,34 @@ class ContactController extends Controller
     public function contactDetail(Request $request, $contact_id)
     {
         $contact = Contact::findOrFail($request->id);
+        $tags = Tag::all();
+        $tagOptions = [];
+        if($tags){
+           foreach($tags as $tag){
+              $tag_names[] = $tag['name'];
+           } 
+           foreach($tag_names as $name){
+              $tagOptions[] = ['value' => $name , 'label' => $name];
+           }
+        }
+
+        $taggableRecords = $contact->tags;
+        $tagSelectedRecords = [];
+        $tag_records =[];
+        if($taggableRecords){
+            foreach($taggableRecords as $tag){
+                $tag_records[] = $tag['name'];
+            }
+
+            foreach($tag_records as $tag){
+                $tagSelectedRecords[] = ['value' => $tag , 'label' => $tag];
+            }
+        }
+
         return Inertia::render('Contacts/Detail', [
-            'contact' => $contact
+            'contact' => $contact,
+            'tagOptions'=> $tagOptions,
+            'tagData' => $tagSelectedRecords,
         ]);
     }
 
@@ -376,4 +471,20 @@ class ContactController extends Controller
         $contact = Contact::findOrFail($request->contact_id);
         echo json_encode(['contact' => $contact]); die;
     }
+
+    public function tagRecord(){
+
+        $contacts = Contact::all();
+        $tag_record = [];
+        foreach($contacts as $key => $contact){
+            $tag_value = [];
+            foreach($contact->tags as $tag){
+                $tag_value[] = $tag['name'];
+            }
+            $tag_record[] = $tag_value;
+        }
+
+        return $tag_record;
+    }
 }
+
