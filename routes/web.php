@@ -14,6 +14,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FilterController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\TagController;
 use App\Http\Middleware\IsAdmin;
 
 /*
@@ -85,7 +86,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/sendMessage', [MsgController::class, 'sendMessage'])->name('send_message_to_contact');
 
     //Contact
-    Route::get('/contacts', [ContactController::class, 'list'])->name('contacts');
+    Route::get('/contacts', [ContactController::class, 'index'])->name('contacts');
     Route::get('/contact/{id}', [ContactController::class, 'contactDetail'])->name('contact_detail');
     Route::post('/updateContact', [ContactController::class, 'storeContact'])->name('store_contact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('get_contact_data');
@@ -109,6 +110,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Export
     Route::get('/export',[ExportController::class,'exportFile'])->name('export');
+
+    //Tag
+    Route::get('/tag',[TagController::class,'index'])->name('listTag');
+    Route::post('/tag/store',[TagController::class,'store'])->name('tag_save');
 });
 
 // Check user is admin

@@ -10,7 +10,7 @@ function List(props)
             errors={props.errors}
         >
 
-            <ListView
+            <ListView 
                 headers={props.list_view_columns}
                 {...props}
             />

@@ -168,11 +168,21 @@ function ListView(props)
                                         {Object.entries(props.records).map(([key, record]) => (
                                             <tr key={key}>
                                                 {Object.entries(props.headers).map((header_info, index) => {
-                                                    let column_value = record[header_info[0]];
+                                                    let column_value = record[header_info[0]]; 
                                                     if(props.actions.detail === true && index === 0) {
                                                         column_value = <Link href={route('detail' + props.module, {id: record.id})} className='cursor-pointer underline'>
-                                                            {column_value}
+                                                            {column_value} 
                                                         </Link>;
+                                                    }
+                                                    if(props.tag[key] && index === 3){
+                                                        var tagName = '';
+                                                        (props.tag[key]).map((tag, tagIndex) => {
+                                                            tagName += tag;
+                                                            if((props.tag[key]).length > (tagIndex + 1) ){
+                                                                tagName += ', ';
+                                                            }
+                                                        })
+                                                        column_value = tagName;
                                                     }
 
                                                     return (

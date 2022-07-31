@@ -16,6 +16,7 @@ import ListView from "@/Components/Views/List/Index";
 
 import Pagination from "@/Components/Pagination";
 import { objectPosition } from "tailwindcss/defaultTheme";
+import { concat } from "lodash";
 
 export default function Contacts(props) {
     const [contactFields, setContactFields] = useState({
@@ -94,7 +95,7 @@ export default function Contacts(props) {
             });
             
     }
-/**
+    /**
      * search content
      */ 
     const search = (e) => {  
@@ -183,6 +184,7 @@ export default function Contacts(props) {
                 updateRecord = {updateCotnact}
                 openCreateModal = {openCreateModal} 
                 search = {search}
+                tag ={props.data}
             />
 {/* 
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">

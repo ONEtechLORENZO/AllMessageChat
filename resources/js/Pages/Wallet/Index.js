@@ -12,8 +12,11 @@ function Wallet(props)
 
     const [showStripeForm, setShowStripeForm] = useState(false);
 
+    const [messageDeduction , setMessageDeduction] = useState({});
+
     useEffect(() => {
         setBalance(props.balance);
+        setMessageDeduction(props.message_deduction);
     }, [props.balance]);
 
     /**
@@ -133,10 +136,10 @@ function Wallet(props)
                                                 strokeLinejoin="round"
                                             />
                                         </svg>
-                                        0
+                                        {messageDeduction['total_messages'] ? <>{messageDeduction.total_messages}</> : <>0</>}
                                     </div>
                                     <div className="text-base font-semibold text-primary">
-                                        $ 0
+                                        $ {messageDeduction['total_amount'] ? <>{messageDeduction.total_amount}</> : 0 }
                                     </div>
                                 </div>
                             </div>
@@ -161,10 +164,18 @@ function Wallet(props)
                                                 strokeLinejoin="round"
                                             />
                                         </svg>
-                                        0
+                                        {messageDeduction['BIC'] ?
+                                            <>{messageDeduction.BIC.count}</>
+                                            :
+                                            <>0</>
+                                        }
                                     </div>
                                     <div className="text-base font-semibold text-primary">
-                                        $ 0
+                                        $ {messageDeduction['BIC'] ?
+                                            <>{messageDeduction.BIC.amount}</>
+                                            :
+                                            <>0</>
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -189,10 +200,18 @@ function Wallet(props)
                                                 strokeLinejoin="round"
                                             />
                                         </svg>
-                                        0
+                                        {messageDeduction['UIC'] ?
+                                            <>{messageDeduction.UIC.count}</>
+                                            :
+                                            <>0</>
+                                        }
                                     </div>
                                     <div className="text-base font-semibold text-primary">
-                                        $ 0
+                                        $ {messageDeduction['UIC'] ?
+                                            <>{messageDeduction.UIC.amount}</>
+                                            :
+                                            <>0</>
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -245,10 +264,18 @@ function Wallet(props)
                                                 strokeLinejoin="round"
                                             />
                                         </svg>
-                                        0
+                                        {messageDeduction['messages'] ?
+                                            <>{messageDeduction.messages.count}</>
+                                            :
+                                            <>0</>
+                                        }
                                     </div>
                                     <div className="text-base font-semibold text-primary">
-                                        $ 0
+                                        $ {messageDeduction['messages'] ?
+                                            <>{messageDeduction.messages.amount}</>
+                                            :
+                                            <>0</>
+                                        }
                                     </div>
                                 </div>
                             </div>

@@ -205,7 +205,6 @@ class PriceController extends Controller
         if(!$price) {
             abort(401);
         }
-
         $price->delete();
         return Redirect::route('listPrice');
     }

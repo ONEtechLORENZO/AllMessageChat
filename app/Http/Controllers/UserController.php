@@ -18,6 +18,8 @@ use Mail;
 use App\Http\Controllers\TemplateController;
 use App\Models\Transaction;
 use App\Models\Wallet;
+use App\Models\Msg;
+use App\Models\Price;
 use App\Models\WebhookEvent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -1009,11 +1011,15 @@ class UserController extends Controller
     {
         $user = $request->user();
         $wallet = Wallet::where('user_id', $user->id)->first();
+        
         $balance = 0.00;
         if($wallet) {
             $balance = $wallet->balance_amount;
         }
-
+        
+        // Get message amount deduction
+        $messageDeduction = $this->getAmountDeduction($user->id);
+ 
         $paymentMethods = $user->paymentMethods();
 
         $stripe_public_key = $_ENV['STRIPE_KEY'];
@@ -1021,6 +1027,7 @@ class UserController extends Controller
         return Inertia::render('Wallet/Index', [
             'name' => $user->name,
             'balance' => $balance,
+            'message_deduction' => $messageDeduction,
             'paymentMethods' => $paymentMethods,
             'stripe_public_key' => $stripe_public_key,
         ]);
@@ -1170,5 +1177,43 @@ class UserController extends Controller
     public function invoices(Request $request)
     {
         // 
+    }
+
+    /**
+     * Return user amount deduction
+     * 
+     * @param INTEGER $user_id
+     */
+    public function getAmountDeduction($user_id)
+    {
+        //TODO Need to get country id for gettting price detail
+
+        $countryId = 1;
+        $price = Price::find($countryId);
+
+        $messages = Msg::selectRaw(' count(msgs.id) as messages , sum(amount) as total , policy, amount ')
+            ->leftJoin('accounts', 'account_id', 'accounts.id')
+            ->where('user_id', $user_id)
+            ->where('msgs.created_at', '>', now()->subDays(30)->endOfDay())
+            ->whereNotNull('policy')
+            ->groupBy('amount', 'policy')
+            ->get();
+           
+        $return['total_messages'] = 0;
+        $return['total_amount'] = 0;
+        foreach($messages as $message){
+          
+            $return['total_messages'] = $message->messages + $return['total_messages'];
+            $return['total_amount'] = $message->amount + $return['total_amount'];
+           
+            if($price->user_initiated == $message->amount){
+                $return[$message->policy] = ['amount' => number_format($message->total , 4, '.', ''), 'count' => $message->messages];
+            } else if($price->business_initiated == $message->amount) {
+                $return[$message->policy] = ['amount' => number_format($message->total , 4, '.', '') , 'count' => $message->messages];
+            } else {
+                $return['messages'] = ['amount' => number_format($message->total , 4, '.', '') , 'count' => $message->messages];
+            }
+        }
+        return $return; 
     }
 }
