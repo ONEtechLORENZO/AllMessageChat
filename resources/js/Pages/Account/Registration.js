@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect,useState } from 'react';
 import Authenticated from '@/Layouts/Authenticated';
 import Input from '@/Components/Forms/Input';
 import TextArea from '@/Components/Forms/TextArea';
@@ -9,10 +9,16 @@ import { Head, useForm, Link } from '@inertiajs/inertia-react';
 import Dropdown from '@/Components/Forms/Dropdown';
 import InputError from '@/Components/Forms/InputError';
 import {defaultPristineConfig} from '@/Pages/Constants';
+import { Tooltip } from '@material-ui/core';
+import notie from 'notie';
+import { alert, force, confirm, input, select, date, setOptions, hideAlerts } from 'notie'
+
+
+
 
 function Registration(props) {
 
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors,register, reset } = useForm({
         id: '',
         company_name: '',
         company_type: '',
@@ -27,7 +33,8 @@ function Registration(props) {
         business_manager_id: '',
         profile_picture: '',
         profile_description: '',
-        api_partner: false,
+        api_partner_name:'',
+       api_partner: false,
         oba: false,
 	    api_token: '',
         callback_url: '',
@@ -39,26 +46,32 @@ function Registration(props) {
         delete: false,
         template_events: false,
         account_related_events: false,
+        
     });
+    let disp_api='';
+    let disp_terms='';
+    const company_types = {
+        'Sole Proprietorship': (props.translator['Sole Proprietorship']),
+        'Partnership': (props.translator['Partnership']),
+        'Limited Liability Company (LLC)': (props.translator['Limited Liability Company (LLC)']),
+        'Corporation': (props.translator['Corporation'])
+     }
 
-    const company_types = [
-        {value: 'Sole Proprietorship', label: (props.translator['Sole Proprietorship'])},
-        {value: 'Partnership', label: (props.translator['Partnership'])},
-        {value: 'Limited Liability Company (LLC)', label: (props.translator['Limited Liability Company (LLC)'])},
-        {value: 'Corporation', label: (props.translator['Corporation'])},
-    ];
+    const integrations = {
+         'Website': (props.translator['Website']),
+        'Support':(props.translator['Support']),
+    };
 
-    const integrations = [
-        {value: 'Website', label: (props.translator['Website'])},
-        {value: 'Support', label: (props.translator['Support'])},
-    ];
-
-    const services = [
-        {value: 'whatsapp', label: 'WhatsApp'},
-        {value: 'instagram', label: 'Instagram'},
-        {value: 'facebook', label: 'Facebook'},
-    ];
-
+    const services = {
+         'whatsapp': 'WhatsApp',
+         'instagram': 'Instagram',
+        'facebook': 'Facebook',
+    };
+    
+    
+    const [checked, setChecked] = useState(false);  
+      
+  
     useEffect(() => {
         let newData = Object.assign({}, data);
         if (typeof props.account !== 'undefined') {
@@ -77,20 +90,50 @@ function Registration(props) {
         }
         setData(newData);
     },[]);
+        
+            if(data.api_partner==1 ||checked==true)
+            {
+                disp_api=(
+                    <div className="form-group col-span-6 sm:col-span-4">
+                     <label htmlFor="src_name" className="block text-sm font-medium text-gray-700">
+                      API Partner Name
+                       </label>                                                        
+                      <div className="mt-1 flex rounded-md shadow-sm">
+                      <Input required={true} name='api_partner_name' value={data.api_partner_name} id='src_name' placeholder='Please enter api partner name' handleChange={handleChange} />
+                       <InputError message={errors.api_partner_name} />
+                       </div> </div>
+                )
+            }
 
+          
 
     /**
      * Validate the form and submit
      */
     function validateAndSubmitForm() 
-    {
-        var pristine = new PristineJS(document.getElementById("account_registration"), defaultPristineConfig);
-        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required], textarea[data-pristine-required]'));
-
-        if(!is_validated) {
-            return false;
-        }
-        post(route('store_account_registration'));
+    { 
+        if(!data.id){
+       if((document.getElementById("terms_condition").checked)==false)
+        {                          
+           notie.alert({type: 'warning', text: 'Please read and agree to our terms and conditions',position:'top'});
+        }}
+        else{
+            var pristine = new PristineJS(document.getElementById("account_registration"), defaultPristineConfig);
+            let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required], textarea[data-pristine-required]'));
+    
+            if(!is_validated) {
+                return false;
+            }
+            post(route('store_account_registration'));
+    }
+    }
+    function handleapi(event) {
+        const name = event.target.name;
+       setChecked(!checked);      
+       event.target.checked=!checked;
+       data.api_partner=event.target.checked;
+       if(data.api_partner==false)
+       data.api_partner_name='';               
     }
 
     /**
@@ -106,9 +149,9 @@ function Registration(props) {
         else {
             newState[name] = value;
         }
-
         setData(newState);
     }
+    
 
     return (
         <Authenticated
@@ -117,7 +160,6 @@ function Registration(props) {
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">{props.translator['Account Registration']}</h2>}
         >
             <Head title={props.translator['Account Registration']} />
-
             <div className="py-12 px-24">
                 <form className="space-y-6" action="#" method="POST" id="account_registration">
                     <input type="hidden" value={data.id} name="id" />
@@ -152,7 +194,7 @@ function Registration(props) {
                                                     id="service"
                                                     name="service"
                                                     handleChange={handleChange}
-                                                    options={services}
+                                                   options={services}
                                                     value={data.service}
                                                 />
                                             </div>
@@ -239,6 +281,15 @@ function Registration(props) {
                                 </div>
                                 <div className="mt-5 md:mt-0 md:col-span-2">
                                     <div className="grid grid-cols-6 gap-6">
+                                    <div className="form-group col-span-6 sm:col-span-4">
+                                            <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700">
+                                            Display Name
+                                            </label>
+                                            <div className="mt-1 flex rounded-md shadow-sm">
+                                                <Input required={true} name='display_name' value={data.display_name} id='display_name' placeholder='' handleChange={handleChange} />
+                                            </div>
+                                            <InputError message={errors.display_name} />
+                                        </div>
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700">
                                             {props.translator['Phone number']}
@@ -257,25 +308,27 @@ function Registration(props) {
                                             </div>
                                             <InputError message={errors.src_name} />
                                         </div>
+                                        
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <div className="flex items-start">
                                                 <div className="flex items-center h-5">
-                                                    <Checkbox
+                                                <input type="checkbox" 
                                                         id="api_partner"
                                                         name="api_partner"
-                                                        handleChange={handleChange}
-                                                        value={data.api_partner}
-                                                    />
-                                                </div>
-                                                <div className="ml-3 text-sm">
+                                                      //  handleChange={handleChange}
+                                                        checked={data.api_partner}                                                       
+                                                     onChange={handleapi} 
+                                                    />           
+                                                    <div className="ml-3 text-sm">
                                                     <label htmlFor="api_partner" className="font-medium text-gray-700">
                                                         Api partner?
                                                     </label>
+                                                    </div>
+                                                    </div>
+                                                    <InputError message={errors.api_partner} />
                                                 </div>
-                                                <InputError message={errors.api_partner} />
-                                            </div>
-                                        </div>
-
+                                                </div>
+                                                  {disp_api}
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="business_manager_id" className="block text-sm font-medium text-gray-700">
                                                 Facebook BM ID
@@ -337,22 +390,75 @@ function Registration(props) {
                         </div>
                         : ''}
                     </div>
-                    <div className="flex justify-end">
-                        <Link 
-                            href={route('dashboard')}
-                            className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            {props.translator['Cancel']}
-                        </Link>
-                        <button
-                            type="button"
-                            onClick={validateAndSubmitForm}
-                            className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            {props.translator['Save']}
+                    {!data.id ?
+                   <><div className="form-group col-span-6 sm:col-span-4">
+                            <div className="flex items-start">
+                                <div className="flex items-center h-5">
+                                    <input type="checkbox"
 
-                        </button>
-                    </div>
+                                        id="terms_condition"
+                                        name="terms_condition"
+                                        //  handleChange={handleChange}
+                                        // value={data.terms_condition}
+                                        //  onChange={checkboxHandler}
+                                        required={true} />
+                                </div>
+                                <div className="ml-3 text-sm">
+                                    <label htmlFor="terms_condition" title="Click here to read it" className="font-medium text-gray-700">
+                                        <span>  Do you agree with our
+                                            <a style={{ color: '#0000FF', textDecorationLine: 'underline' }} href={"http://www.google.com"} target="_blank" rel="noopener noreferrer">
+                                                terms and conditions?
+                                            </a>
+                                        </span>
+                                    </label>
+                                </div>
+
+                                <InputError message={errors.terms_condition} />
+
+                            </div>
+                        </div><div className="flex justify-end">
+
+
+                                <Link
+                                    href={route('dashboard')}
+
+                                    className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                >
+                                    {props.translator['Cancel']}
+                                </Link>
+
+                                <button
+                                    type="button"
+                                    id="save"
+                                    title="Please accept our terms and conditions to proceed"
+                                    //  disabled={!agree}
+                                    onClick={validateAndSubmitForm}
+                                    className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                >
+                                    {props.translator['Save']}
+                                </button>
+                            </div></>:
+                            <div className="flex justify-end">
+
+
+                                <Link
+                                    href={route('dashboard')}
+
+                                    className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                >
+                                    {props.translator['Cancel']}
+                                </Link>
+
+                                <button
+                                    type="button"
+                                    id="save"
+                                    title=""
+                                    onClick={validateAndSubmitForm}
+                                    className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                >
+                                    {props.translator['Save']}
+                                </button>
+                            </div>}
                 </form>
             </div>
         </Authenticated>

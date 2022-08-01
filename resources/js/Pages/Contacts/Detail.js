@@ -8,6 +8,7 @@ import InputError from '@/Components/Forms/InputError';
 import PristineJS from 'pristinejs';
 import categories, {defaultPristineConfig} from '@/Pages/Constants';
 import { Inertia } from '@inertiajs/inertia';
+import Dropdown from '@/Components/Forms/Dropdown';
 import DetailView from "@/Components/Views/Detail/Index";
 
 export default function Detail(props) {
