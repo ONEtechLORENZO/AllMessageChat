@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Log;
 
 class HandleImport extends Command
 {
+    public $limit = 1000;
+
     /**
      * The name and signature of the console command.
      *
@@ -42,10 +44,11 @@ class HandleImport extends Command
      */
     public function handle()
     {
-        $status = 'new';
+        
+        $status = 'Inprogress';
         $import = Import::where('status',$status)->first(); 
         if(!$import){
-            $status = 'Inprogress';
+            $status = 'new';
             $import = Import::where('status',$status)->first();   
         }
         if($import){
@@ -56,7 +59,6 @@ class HandleImport extends Command
             $user_id = $import->user_id;
             $current_date = date('Y-m-d H:i:s');
             $mapping_value = unserialize(base64_decode($import->mapping));
-            $limit = 10;
 
             $stream = fopen($file_path, 'r');
             $csv = Reader::createFromStream($stream);

@@ -15,6 +15,7 @@ use App\Http\Controllers\FilterController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Middleware\IsAdmin;
 
 /*
@@ -113,7 +114,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Tag
     Route::get('/tag',[TagController::class,'index'])->name('listTag');
-    Route::post('/tag/store',[TagController::class,'store'])->name('tag_save');
+    Route::post('/tag/store',[TagController::class,'store'])->name('storeTag');
+    Route::get('/tag/{id}',[TagController::class,'edit'])->name('editTag');
+    Route::post('/updateTag/{id}',[TagController::class,'update'])->name('updateTag');
+    Route::delete('/deleteTag/{id}',[TagController::class,'destroy'])->name('deleteTag');
+
+    //Category
+    Route::get('/list',[CategoryController::class,'index'])->name('listCategory');
+    Route::post('/list/store',[CategoryController::class,'store'])->name('storeCategory');
+    Route::get('/list/{id}',[CategoryController::class,'edit'])->name('editCategory');
+    Route::post('/updateList/{id}',[CategoryController::class,'update'])->name('updateCategory');
+    Route::delete('/deleteList/{id}',[CategoryController::class,'destroy'])->name('deleteCategory');
+    
 });
 
 // Check user is admin

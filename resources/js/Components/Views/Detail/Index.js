@@ -1,47 +1,55 @@
 import React, { Fragment, useEffect, useRef, useState } from "react";
 import { PencilIcon } from "../../../Pages/icons";
-import Creatable from 'react-select/creatable';
 import { Inertia } from "@inertiajs/inertia";
-
+import ReactSelect from "./ReactSelect";
 
 export default function Index(props) {
     const [record , setRecord] = useState(props.record);
     const [activeTab , setActiveTab] = useState('Detail');
-    const [selectedOption, setSelectedOption] = useState(null);
-    const [openSelectTag, setSelectTag] = useState(false);
+    const [tagSelectedOption, setTagSelectedOption] = useState(null);
+    const [ListSelectedOption, setListSelectedOption] = useState(null);
+    const [tagOption ,setTagOption] = useState();
+    const [listOption, setListOption] = useState();
     const [recordId, setRecordId] = useState();
-    const [options ,setOption] = useState();
+    const [tagOpen, setTagOpen] = useState(false);
+    const [listOpen, setListOpen] = useState(false);
 
     useEffect(() => {
-        if(props.tagOptions){
-            setOption(props.tagOptions)
-        }
-        if(props.tagData){
-            setSelectedOption(props.tagData);
-        }
+        setTagOption(props.tagOptions);
+        setListOption(props.listOptions);
+        setTagSelectedOption(props.tagData);
+        setListSelectedOption(props.listData);
         setRecordId(props.record.id);
       },[props]);
 
-    function openTag() {
-        setSelectTag(true);
-    } 
-
-    function closeTag(){
-        setSelectTag(false);
-    }
-
     function saveTag (){
         var data = {
-            'name': selectedOption ,
-             'id' : recordId
+            'name': tagSelectedOption ,
+             'id' : recordId,
+             'view': 'Detail',
+             'model': 'Tag'
         }
-        Inertia.post(route('tag_save'), data, {
+        Inertia.post(route('storeTag'), data, {
             onSuccess: (response) => {
-                setSelectTag(false);
+                setTagOpen(false);
             },
         });
     }
-   
+
+    function saveList (){
+        var data = {
+            'name': ListSelectedOption ,
+             'id' : recordId,
+             'view': 'Detail',
+             'model':'List'
+        }
+        Inertia.post(route('storeCategory'), data, {
+            onSuccess: (response) => {
+                setListOpen(false);
+            },
+        });
+    }
+   console.log(props)
     return (            
             <div>
                 <ul className="py-4 space-y-2 sm:px-6 sm:space-y-4 lg:px-8" role="list">
@@ -120,7 +128,6 @@ export default function Index(props) {
                                                         showField = false;
                                                     }
                                                     if(key == 'tag'||key == 'list'){
-                                                        select = true;
                                                         showField = false;
                                                     }
                                                     if(showField){ 
@@ -131,60 +138,42 @@ export default function Index(props) {
                                                             </div>
                                                         )
                                                     }
-                                                    if(select){
+                                                    if(key == 'tag'){
                                                         return(
                                                             <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                                                 <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
                                                                 <dd className="flex"> 
-                                                                {openSelectTag?
-                                                                <>
-                                                                    <div className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 w-96" >
-                                                                    <Creatable
-                                                                    isMulti 
-                                                                    value={selectedOption}
-                                                                    defaultValue={selectedOption}
-                                                                    onChange={setSelectedOption}
-                                                                    options={options}
+                                                                    <ReactSelect
+                                                                    value={tagSelectedOption}
+                                                                    defaultValue={tagSelectedOption}
+                                                                    onChange={setTagSelectedOption}
+                                                                    options={tagOption}
+                                                                    setOpen={setTagOpen}
+                                                                    save={saveTag}
+                                                                    openTag={tagOpen}
                                                                     />
-                                                                    </div> 
-                                                                    <div className="inline-flex items-center px-2.5 py-1.5 border-0 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]">
-                                                                       <span >
-                                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" onClick={() => saveTag()}>
-                                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                                                          </svg>
-                                                                       </span>
-                                                                       <span >
-                                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" onClick={() => closeTag(false)}>
-                                                                           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                                                         </svg>
-                                                                       </span>
-                                                                    </div>
-                                                                </>                                                                 
-                                                                :
-                                                                <>
-                                                                {selectedOption && selectedOption.map((tag, key) => {
-                                                                    return(
-                                                                        <div className="mt-1 mx-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                                            {tag.label} 
-                                                                            {selectedOption.length > (key+1) && 
-                                                                                <> , </>
-                                                                            }
-                                                                        </div>
-                                                                    )
-                                                                })}
-                                                                    <div className="inline-flex items-center px-2.5 py-1.5 border-0 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]" onClick={() => openTag()}>
-                                                                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                                                       </svg>
-                                                                    </div>
-                                                                </>
-         
-                                                                 }
-                                                                
                                                                 </dd>
                                                             </div>    
                                                         )   
-                                                    }    
+                                                    }   
+                                                    if(key == 'list'){
+                                                        return(
+                                                            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                                <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
+                                                                <dd className="flex"> 
+                                                                    <ReactSelect
+                                                                    value={ListSelectedOption}
+                                                                    defaultValue={ListSelectedOption}
+                                                                    onChange={setListSelectedOption}
+                                                                    options={listOption}
+                                                                    setOpen={setListOpen}
+                                                                    save={saveList}
+                                                                    openTag={listOpen}
+                                                                    />
+                                                                </dd>
+                                                            </div>    
+                                                        )
+                                                    } 
                                                 })}
                                             </div>
                                         :

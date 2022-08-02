@@ -53,7 +53,7 @@ function ListView(props)
         }
 
         Inertia.delete(route('delete' + props.module, {id: record_id}), {}, {
-            onSuccess: (response) => {
+            onSuccess: (response) => { 
                 notie.alert({type: 'success', text: 'Record deleted successfully', time: 5});
             },
             onError: (errors) => {
@@ -71,6 +71,10 @@ function ListView(props)
     function sortColumn(field_name, sort_order)
     {
         Inertia.get(route('list' + props.module) + '?page='+ props.paginator.currentPage +'&search=' + props.search + '&sort_by=' + field_name + '&sort_order=' + sort_order);
+    }
+
+    if(props.errors.message){
+        notie.alert({type: 'error', text: props.errors.message, time: 5});
     }
 
     return (
@@ -173,13 +177,15 @@ function ListView(props)
                                                         column_value = <Link href={route('detail' + props.module, {id: record.id})} className='cursor-pointer underline'>
                                                             {column_value} 
                                                         </Link>;
-                                                    }
-                                                    if(props.tag[key] && index === 3){
+                                                    } 
+                                                    if(props.tag && (props.tag).length > 0 && header_info[0] == 'tag'){ 
                                                         var tagName = '';
                                                         (props.tag[key]).map((tag, tagIndex) => {
-                                                            tagName += tag;
-                                                            if((props.tag[key]).length > (tagIndex + 1) ){
-                                                                tagName += ', ';
+                                                            if(tagIndex === 0 || tagIndex === 1){ 
+                                                                tagName += tag;
+                                                                if(tagIndex === 0 && (props.tag[key]).length > 1){
+                                                                    tagName += ', ';
+                                                                }
                                                             }
                                                         })
                                                         column_value = tagName;

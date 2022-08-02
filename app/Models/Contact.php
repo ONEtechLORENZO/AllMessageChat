@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Msg;
 use App\Models\Tag;
+use App\Models\Category;
 
 class Contact extends Model
 {
@@ -23,5 +24,10 @@ class Contact extends Model
     public function tags()
     {
         return $this->morphToMany(Tag::class, 'taggable');
+    }
+
+    public function categorys()
+    {
+        return $this->morphToMany(Category::class, 'categorable');
     }
 }
