@@ -431,10 +431,11 @@ class UserController extends Controller
             // 'email' => ['label' => 'Email'],
             // 'estimated_launch_date' => ['label' => 'Estimated launch date'],
             // 'type_of_integration' => ['label' => 'Type of integration'],
-            // 'display_name' => ['label' => 'Display name', 'show' => ['whatsapp']],
+            'display_name' => ['label' => 'Display name', 'show' => ['whatsapp']],
             'phone_number' => ['label' => __('Phone number'), 'show' => ['whatsapp']],
             'src_name' => ['label' => __('Source name'), 'show' => ['whatsapp']],
             'api_partner' => ['label' => __('API partner'), 'show' => ['whatsapp']],
+            'api_partner_name' => ['label' => __('API partner Name'), 'show' => ['whatsapp']],
             'business_manager_id' => ['label' => __('Business manager ID'), 'show' => ['whatsapp']],
             'Profile' => __('Profile'),
             'Callback URL' => __('Callback URL')
@@ -641,7 +642,7 @@ class UserController extends Controller
         ];
 */
         $fields = [
-            'company_name', 'service', 'phone_number', 'src_name', 'business_manager_id', 'api_partner'
+            'company_name', 'service', 'phone_number', 'src_name', 'business_manager_id', 'api_partner','display_name','api_partner_name'
         ];
         foreach ($fields as $field_name) {
             $field_value = $request->get($field_name);
