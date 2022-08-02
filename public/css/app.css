@@ -918,6 +918,10 @@ select {
 	margin-top: -0.5rem;
 	margin-bottom: -0.5rem;
 }
+.mx-1 {
+	margin-left: 0.25rem;
+	margin-right: 0.25rem;
+}
 .-mx-4 {
 	margin-left: -1rem;
 	margin-right: -1rem;
@@ -929,10 +933,6 @@ select {
 .mx-10 {
 	margin-left: 2.5rem;
 	margin-right: 2.5rem;
-}
-.mx-1 {
-	margin-left: 0.25rem;
-	margin-right: 0.25rem;
 }
 .my-6 {
 	margin-top: 1.5rem;
@@ -2239,10 +2239,6 @@ select {
 .text-indigo-900 {
 	--tw-text-opacity: 1;
 	color: rgba(49, 46, 129, var(--tw-text-opacity));
-}
-.text-indigo-300 {
-	--tw-text-opacity: 1;
-	color: rgba(165, 180, 252, var(--tw-text-opacity));
 }
 .text-opacity-40 {
 	--tw-text-opacity: 0.4;

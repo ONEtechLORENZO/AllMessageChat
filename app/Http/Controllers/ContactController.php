@@ -135,6 +135,7 @@ class ContactController extends Controller
             // Actions
             'actions' => [
                 'create' => true,
+                'detail' => true,
                 'edit' => true,
                 'delete' => true,
                 'export' => false,
@@ -406,7 +407,7 @@ class ContactController extends Controller
         $contact->user_id = $user->id;
         $contact->instagram_id = $request->instagram_id;
         $contact->save();
-        return Redirect::route('contact_detail', $contact->id);
+        return Redirect::route('detailContact', $contact->id);
     }
 
     /**

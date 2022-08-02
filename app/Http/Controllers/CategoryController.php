@@ -133,7 +133,7 @@ class CategoryController extends Controller
             //Sync the tag module to taggable table
             $sync = $this->syncHandling($record, $id);
         
-            return Redirect::route('contact_detail', $id);
+            return Redirect::route('detailContact', $id);
         }else{
 
             //Create new category
