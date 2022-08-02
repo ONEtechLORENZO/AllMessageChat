@@ -25,7 +25,7 @@ class FilterController extends Controller
         $filter->condition = base64_encode( serialize( json_decode($request->filter) ));
         $filter->save();
 
-        return Redirect::route('contacts', ['filter_id' => $filter->id]);
+        return Redirect::route('listContact', ['filter_id' => $filter->id]);
     }
 
     /**
@@ -51,6 +51,6 @@ class FilterController extends Controller
     {
         $filter = Filter::find($request->filter_id);
         $filter->delete();
-        return Redirect::route('contacts');
+        return Redirect::route('listContact');
     }
 }

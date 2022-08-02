@@ -8,6 +8,7 @@ import { Inertia } from '@inertiajs/inertia';
 import notie from 'notie';
 import Search from './Search';
 import { Link } from '@inertiajs/inertia-react';
+import Filter from "./Filter2";
 
 function ListView(props)
 {
@@ -88,6 +89,17 @@ function ListView(props)
                                 sort_order={props.sort_order}
                             />
                         : ''}
+
+                        {props.actions && props.actions.filter === true &&
+                            <Filter 
+                                module={props.module} 
+                                filter={props.filter}
+                                currentPage={props.paginator.currentPage}
+                                sort_by={props.sort_by}
+                                sort_order={props.sort_order}
+                            />
+                        }
+
                     </div>
                     <div className='flex gap-4'>
                         {props.actions && props.actions.import === true ?
@@ -174,12 +186,14 @@ function ListView(props)
                                                             {column_value} 
                                                         </Link>;
                                                     }
-                                                    if(props.tag[key] && index === 3){
+                                                    if(props.tag && (props.tag).length > 0 && header_info[0] == 'tag'){ 
                                                         var tagName = '';
                                                         (props.tag[key]).map((tag, tagIndex) => {
-                                                            tagName += tag;
-                                                            if((props.tag[key]).length > (tagIndex + 1) ){
-                                                                tagName += ', ';
+                                                            if(tagIndex === 0 || tagIndex === 1){ 
+                                                                tagName += tag;
+                                                                if(tagIndex === 0 && (props.tag[key]).length > 1){
+                                                                    tagName += ', ';
+                                                                }
                                                             }
                                                         })
                                                         column_value = tagName;

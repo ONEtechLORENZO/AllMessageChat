@@ -71,7 +71,7 @@ export default function Detail(props) {
             return false;
         }
 
-        Inertia.post(route('store_contact'), data, {
+        Inertia.post(route('updateContact', data.id), data, {
             onSuccess: (response) => {
                 window.location.reload(false);
                 setOpenCreateContactModal(false);
@@ -85,7 +85,7 @@ export default function Detail(props) {
      function updateCotnact(id){
         axios({
             method: 'get',
-            url: route('get_contact_data', {'contact_id': id}),
+            url: route('editContact', {'id': id}),
         })
         .then( (response) =>{
             let newState = Object.assign({}, contactFields);
@@ -93,7 +93,7 @@ export default function Detail(props) {
             {Object.entries(contactFields).map(([name, field]) => {
             //    console.log(newState[name]);
             //    newState[name].value = response.data.contact[name];
-                newData[name] = response.data.contact[name];
+                newData[name] = response.data.record[name];
 
             })};
             setData(newData);

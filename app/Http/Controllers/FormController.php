@@ -19,7 +19,6 @@ class FormController extends Controller
         }
 
         $fields = Field::where('module_name', $module)->get();
-
         return response()->json(['fields' => $fields]);
     }
 }

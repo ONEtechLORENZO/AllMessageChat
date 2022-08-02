@@ -83,7 +83,7 @@ export default function Contacts(props) {
               {
              
                var searchtext=document.getElementById('search').value;
-               let url=route('contacts',{'search':searchtext,'sortdir': sort_dir,'sortfield': sort_field,'mode':'ajax'}) 
+               let url=route('listContact',{'search':searchtext,'sortdir': sort_dir,'sortfield': sort_field,'mode':'ajax'}) 
           
        axios({
                 method: 'get',                
@@ -100,7 +100,7 @@ export default function Contacts(props) {
      */ 
     const search = (e) => {  
         var searchtext=document.getElementById('search').value;
-        let url=route('contacts',{'search':searchtext,'sortdir': props.sortdir,'sortfield': props.sortfield,'mode':'ajax'}) 
+        let url=route('listContact',{'search':searchtext,'sortdir': props.sortdir,'sortfield': props.sortfield,'mode':'ajax'}) 
           
         axios({
                  method: 'get',                
@@ -140,7 +140,7 @@ export default function Contacts(props) {
             return false;
         }
        
-        Inertia.post(route('store_contact'), data, {
+        Inertia.post(route('updateContact'), data, {
             onSuccess: (response) => {
                 setOpenCreateContactModal(false);
             },
@@ -153,15 +153,15 @@ export default function Contacts(props) {
     function updateCotnact(id){
         axios({
             method: 'get',
-            url: route('get_contact_data', {'contact_id': id}),
+            url: route('editContact', {'id': id}),
         })
         .then( (response) =>{
             let newState = Object.assign({}, contactFields);
             
             let newData = Object.assign({}, data);
             {Object.entries(contactFields).map(([name, field]) => {
-                newState[name].value = response.data.contact[name];
-                newData[name] = response.data.contact[name];
+                newState[name].value = response.data.record[name];
+                newData[name] = response.data.record[name];
 
             })};
             setMode('edit');

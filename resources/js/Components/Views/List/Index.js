@@ -45,7 +45,7 @@ function ListView(props)
      * Apply Filter condition
      */
     function applyFilter(selectedFilter){
-        var url = route('contacts') + '?filter_id='+selectedFilter;
+        var url = route('listContact') + '?filter_id='+selectedFilter;
         Inertia.get(url,  {
             onSuccess: (response) => {
                 setOpenFilterModal(false);
@@ -212,7 +212,6 @@ function ListView(props)
             });
             setFilter(newData);
         }
-        
     }
     function searchFilterData(){
         
@@ -222,7 +221,7 @@ function ListView(props)
         }
         
         var advancedSearch = JSON.stringify(filter);
-        var url = route('contacts') + '?filter='+advancedSearch;
+        var url = route('listContact') + '?filter='+advancedSearch;
         
         Inertia.get(url,  {
             onSuccess: (response) => {

@@ -522,8 +522,7 @@ class MsgController extends Controller
         }
         if(isset($data['pricing'])){
             $messageData['policy'] = $data['pricing']['category'];
-            $isFirstMessage = $this->checkIsFirstMessage($message);
-            $price = $this->handlePrice($data['destination'], $data['pricing']['category'], $isFirstMessage);
+            $price = $this->handlePrice($data['destination'], $data['pricing']['category'] );
             if($message->status != 'Sent'){
                 $this->reduceMessageAmount($price, $message->account_id);
             }
@@ -580,7 +579,7 @@ class MsgController extends Controller
      * @param STRING $nummber
      * @param STRING $category
      */
-    public function handlePrice($number , $category, $dateExpried)
+    public function handlePrice($number , $category)
     {
         $return = '';
         //TODO Need to get country id for gettting price detail
@@ -588,10 +587,9 @@ class MsgController extends Controller
         $price = Price::find($countryCode);
         if($category == 'UIC'){
             $return = $price->user_initiated;
-        } else {
+        } else if($category == 'BIC'){
             $return = $price->business_initiated;
-        }
-        if(! $dateExpried){
+        } else {
             $return = $price->message;
         }
         return $return;
@@ -605,37 +603,17 @@ class MsgController extends Controller
      */
     public function reduceMessageAmount($price, $accoount_id)
     {
+        DB::beginTransaction();
         $user_id = $this->getUserIdUsingAccountId($accoount_id);
-        $wallet = Wallet::where('user_id', $user_id)->first();
+        $wallet = Wallet::where('user_id', $user_id)->lockForUpdate()->first();
        
         if($wallet){
             $balance_amount = ($wallet->balance_amount - $price);
-            DB::transaction(function ()use ($balance_amount, $user_id) {
-                DB::update("update wallets set balance_amount = {$balance_amount} where user_id = {$user_id}");
-            });
+            $wallet->balance_amount = $balance_amount;
+            $wallet->save();
+            //DB::update("update wallets set balance_amount = {$balance_amount} where user_id = {$user_id}");
         }
+        DB::commit();
     }
 
-    /**
-     * Check the first message of the Day
-     * 
-     * @param OBJECT $message
-     */
-    public function checkIsFirstMessage($message)
-    {
-        $return = false;
-        $customer = $message->msgable_id;
-        $lastMessage = Msg::where('id' ,'!=', $message->id)
-            ->where('msgable_id', $customer)
-            ->orderBy('id', 'desc')
-            ->first();
-
-        $lastMessageDate = new \DateTime($lastMessage->created_at);
-        $now = new \DateTime();
-        
-        if($lastMessageDate->diff($now)->days >= 1) {
-            $return = true;
-        }
-        return $return;
-    }
 }

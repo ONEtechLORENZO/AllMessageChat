@@ -188,4 +188,23 @@ class TagController extends Controller
         
         return $contact->tags()->sync($tag_id);
     }
+
+    /**
+     * Return Tag List based on search
+     */
+    public function getTagList(Request $request)
+    {
+        $tagList = [];
+        $searchKey = '%'.$request->get('key'). '%';
+        $tags = Tag::where('name', 'like', $searchKey)
+            ->where('user_id', $request->user()->id)
+            ->get();
+        foreach($tags as $tag){
+            $tagList[] = [
+                'value' => $tag->id,
+                'label' => $tag->name
+            ];
+        }
+        echo json_encode(['tag_list' => $tagList]); die;
+    }
 }

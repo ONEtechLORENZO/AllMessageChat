@@ -50,7 +50,7 @@ function Form(props)
         nProgress.start(0.5);
         nProgress.inc(0.2);
 
-        let endpoint_url = route('editPrice', {'id': props.recordId});
+        let endpoint_url = route('edit'+ props.module , {'id': props.recordId});
         Axios.get(endpoint_url).then((response) => {
             nProgress.done(true);
             if(response.data.status !== false) {

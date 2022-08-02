@@ -86,10 +86,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/sendMessage', [MsgController::class, 'sendMessage'])->name('send_message_to_contact');
 
     //Contact
-    Route::get('/contacts', [ContactController::class, 'index'])->name('contacts');
+    //Route::get('/contacts', [ContactController::class, 'index'])->name('contacts');
+    Route::get('/contacts', [ContactController::class, 'index'])->name('listContact');
+    Route::delete('/contact/delete/{id}', [ContactController::class, 'deleteContact'])->name('deleteContact');
+
     Route::get('/contact/{id}', [ContactController::class, 'contactDetail'])->name('contact_detail');
-    Route::post('/updateContact', [ContactController::class, 'storeContact'])->name('store_contact');
-    Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('get_contact_data');
+    Route::post('/updateContact/{id}', [ContactController::class, 'storeContact'])->name('updateContact');
+    Route::post('/updateContact', [ContactController::class, 'storeContact'])->name('storeContact');
+    Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
 
     //Filter
@@ -113,7 +117,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Tag
     Route::get('/tag',[TagController::class,'index'])->name('listTag');
+    Route::get('/tag/getTagList',[TagController::class,'getTagList'])->name('get_tag_list');
     Route::post('/tag/store',[TagController::class,'store'])->name('tag_save');
+    
 });
 
 // Check user is admin
