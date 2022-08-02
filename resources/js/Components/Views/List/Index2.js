@@ -77,7 +77,6 @@ function ListView(props)
     if(props.errors.message){
         notie.alert({type: 'error', text: props.errors.message, time: 5});
     }
-
     return (
         <>
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
@@ -202,6 +201,18 @@ function ListView(props)
                                                             }
                                                         })
                                                         column_value = tagName;
+                                                    }
+                                                    if(props.list && (props.list).length > 0 && header_info[0] == 'list'){ 
+                                                        var listName = '';
+                                                        (props.list[key]).map((list, listIndex) => {
+                                                            if(listIndex === 0 || listIndex === 1){ 
+                                                                listName += list;
+                                                                if(listIndex === 0 && (props.list[key]).length > 1){
+                                                                    listName += ', ';
+                                                                }
+                                                            }
+                                                        })
+                                                        column_value = listName;
                                                     }
 
                                                     return (
