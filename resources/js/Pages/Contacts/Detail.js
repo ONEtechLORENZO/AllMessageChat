@@ -115,6 +115,9 @@ export default function Detail(props) {
                 headers = {contactFields}
                 tagData={props.tagData}
                 tagOptions={props.tagOptions}
+                listOptions={props.listOptions}
+                listData={props.listData}
+
             />
  
 {/* 

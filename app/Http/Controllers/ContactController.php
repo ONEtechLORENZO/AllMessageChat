@@ -13,6 +13,7 @@ use App\Models\MessageLog;
 use App\Models\IncomingUrl;
 use App\Models\Msg;
 use App\Models\Tag;
+use App\Models\Category;
 use App\Models\Filter;
 use App\Models\MessageResponse;
 use App\Models\Account;
@@ -62,6 +63,9 @@ class ContactController extends Controller
      */
     public function index(Request $request)
     {
+
+        $user_id = $request->user()->id;
+
         $list_view_columns = [
             'first_name' => 'First Name',
             'last_name' => 'Last Name',
@@ -104,6 +108,7 @@ class ContactController extends Controller
                                 $query->whereRaw($whereCondition);
                             }
                         })
+                        ->where('user_id',$user_id)
                         ->paginate($this->limit);
         } else {
             $records = Contact::where(function ($query) use ($whereCondition) {  
@@ -115,11 +120,14 @@ class ContactController extends Controller
             ->paginate($this->limit);
         }
 
-        $tag_record = $this->tagRecord();
+        $tag_record = $this->tagRecord($user_id);
+        $list_record = $this->ListRecord($user_id);
   
+
         return Inertia::render('Contacts/List', [
             'records' => $records->items(),
             'tag'=> $tag_record,
+            'list'=> $list_record,
             'singular' => 'Contact',
             'plural' => 'Contacts',
             'module' => 'Contact',
@@ -347,22 +355,17 @@ class ContactController extends Controller
     {
         $contact = Contact::findOrFail($request->id);
         $tagOptions = $this->getTagOptionList($request->user()->id);
+        $tagSelectedRecords = $this->getSelectedTag($contact);
+        $ListOptions = $this->getListOption($request->user()->id);
+        $ListSelectRecords = $this->getSelectedList($contact);
 
-        $taggableRecords = $contact->tags;
-        $tagSelectedRecords = [];
-        $tag_records =[];
-        if($taggableRecords){
-            foreach($taggableRecords as $tag){
-                $tag = $tag['name'];
-
-                $tagSelectedRecords[] = ['value' => $tag , 'label' => $tag];
-            }
-        }
-
+       
         return Inertia::render('Contacts/Detail', [
             'contact' => $contact,
             'tagOptions'=> $tagOptions,
             'tagData' => $tagSelectedRecords,
+            'listOptions'=> $ListOptions,
+            'listData' => $ListSelectRecords,
         ]);
     }
 
@@ -405,9 +408,10 @@ class ContactController extends Controller
         echo json_encode(['record' => $contact]); die;
     }
 
-    public function tagRecord(){
-
-        $contacts = Contact::all();
+    public function tagRecord($user_id)
+    {
+        
+        $contacts = Contact::where('user_id',$user_id)->get();
         $tag_record = [];
         foreach($contacts as $key => $contact){
             $tag_value = [];
@@ -418,6 +422,68 @@ class ContactController extends Controller
         }
 
         return $tag_record;
+    }
+
+    public function ListRecord($user_id)
+    {
+        
+        $contacts = Contact::where('user_id',$user_id)->get();
+        $category_record = [];
+        foreach($contacts as $key => $contact){
+            $tag_value = [];
+            foreach($contact->categorys as $category){
+                $category_value[] = $category['name'];
+            }
+            $category_record[] = $category_value;
+        }
+
+        return $category_record;
+    }
+
+    public function getTagOption($user_id){
+        $tags = Tag::where('user_id',$user_id)->get();
+        $tagOptions = [];
+        if($tags){
+           foreach($tags as $tag){
+              $tagOptions[] = ['value' => $tag['name'] , 'label' => $tag['name'] ];
+           }
+        }
+        return $tagOptions;
+    }
+
+    public function getSelectedTag($contact){
+
+        $taggableRecords = $contact->tags;
+        $tagSelectedRecords = [];
+        if($taggableRecords){
+            foreach($taggableRecords as $tag){
+                $tagSelectedRecords[] = ['value' => $tag['name'] , 'label' => $tag['name']];
+            }
+        }
+        return $tagSelectedRecords;
+    }
+
+    public function getListOption($user_id){
+        $categorys = Category::where('user_id',$user_id)->get();
+        $categoryOptions = [];
+        if($categorys){
+           foreach($categorys as $category){
+              $categoryOptions[] = ['value' => $category['name'] , 'label' => $category['name'] ];
+           }
+        }
+        return $categoryOptions;
+    }
+
+    public function getSelectedList($contact){
+
+        $CategorableRecords = $contact->categorys;
+        $ListSelectedRecords = [];
+        if($CategorableRecords){
+            foreach($CategorableRecords as $category){
+                $ListSelectedRecords[] = ['value' => $category['name'] , 'label' => $category['name']];
+            }
+        }
+        return $ListSelectedRecords;
     }
 
     /**

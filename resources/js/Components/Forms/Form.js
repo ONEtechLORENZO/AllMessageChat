@@ -51,6 +51,7 @@ function Form(props)
         nProgress.inc(0.2);
 
         let endpoint_url = route('edit'+ props.module , {'id': props.recordId});
+        
         Axios.get(endpoint_url).then((response) => {
             nProgress.done(true);
             if(response.data.status !== false) {
@@ -129,7 +130,7 @@ function Form(props)
         // Validate the data
         let is_validated = false;
         var pristine = new Pristine(document.getElementById(`form`), defaultConfig);
-        is_validated = pristine.validate();
+        is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required="true"]'));
         if(!is_validated) {
             return false;
         }

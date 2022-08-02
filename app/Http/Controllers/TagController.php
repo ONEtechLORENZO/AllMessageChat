@@ -7,9 +7,11 @@ use App\Http\Requests\StoreTagRequest;
 use App\Http\Requests\UpdateTagRequest;
 use Illuminate\Http\Request;
 use App\Models\Tag;
+use App\Models\Field;
 use App\Models\Contact;
 use App\Models\Taggable;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\ValidationException;
 
 
 class TagController extends Controller
@@ -28,6 +30,8 @@ class TagController extends Controller
      */
     public function index(Request $request)
     {
+        $user_id = $request->user()->id;
+    
         // List view columns to show
         $list_view_columns = [
             'name' => 'Tag',
@@ -45,10 +49,11 @@ class TagController extends Controller
                                 $query->orWhere($field_name, 'like', '%' . $search . '%');
                             }
                         })
+                        ->where('user_id',$user_id)
                         ->paginate($this->limit);
         }
         else {
-            $records = Tag::orderBy($sort_by, $sort_order)->paginate($this->limit);
+            $records = Tag::orderBy($sort_by, $sort_order)->where('user_id',$user_id)->paginate($this->limit);
         }
 
         return Inertia::render('Tag/List', [
@@ -102,31 +107,46 @@ class TagController extends Controller
      * @param  \App\Http\Requests\StoreTagRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
-        
-        $id = $request->id;
-        $data = $request->name;
+    public function store(Request $request, Tag $tag)
+    { 
+
         $user_id = $request->user()->id;
-        $record = [];
-        if($data){
-            foreach($data as $records){
-                foreach($records as $key => $value){
-                    if($key == "__isNew__"){
-                        $tag = new Tag;
-                        $tag->name = $records['label'];
-                        $tag->user_id = $user_id;
-                        $tag->save();
-                    } 
+        $view = $request->get('view');
+
+        if($view == 'Detail'){
+            $id = $request->id;
+            $data = $request->name;
+            $record = [];
+
+            if($data){
+                foreach($data as $records){
+                    foreach($records as $key => $value){
+                        if($key == "__isNew__"){
+                            $tag->name = $records['label'];
+                            $tag->user_id = $user_id;
+                            $tag->save();
+                        } 
+                    }
+                    $record[] = $records['label'];
                 }
-                $record[] = $records['label'];
             }
-        }
-      
-        $sync = $this->syncHandling($record, $id);
-        
-        return Redirect::route('contact_detail', $id);
-               
+            //Sync the tag module to taggable table
+            $sync = $this->syncHandling($record, $id);
+            
+            return Redirect::route('contact_detail', $id);
+        }else{
+
+            //Create new Tag
+            $name = $request->name;
+            $tag->name = $name;
+            if($request->get('description')){
+                $tag->description = $request->get('description');
+            }
+            $tag->user_id = $user_id;
+            $tag->save();
+
+            return Redirect::route('listTag');
+        }            
     }
 
     /**
@@ -146,9 +166,14 @@ class TagController extends Controller
      * @param  \App\Models\Tag  $tag
      * @return \Illuminate\Http\Response
      */
-    public function edit(Tag $tag)
+    public function edit(Tag $tag, $id)
     {
-        //
+        $record = Tag::find($id);
+        if(!$record) {
+            abort(401);
+        }
+
+        return response()->json(['status' => true, 'record' => $record]);
     }
 
     /**
@@ -158,9 +183,44 @@ class TagController extends Controller
      * @param  \App\Models\Tag  $tag
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateTagRequest $request, Tag $tag)
+    public function update(Request $request, $id)
     {
-        //
+        
+        $user_id = $request->user()->id;
+
+         // Get fields from the table
+         $fields = Field::where('module_name', 'Tag')->get();
+         // Prepare validation param
+         foreach($fields as $field) {
+             $validate = '';
+             if($field['is_mandatory'] === 1) {
+                 $validate = 'required';
+             }
+             $validation_params[$field['field_name']] = $validate;
+         }
+
+         // Validate the request
+        $request->validate($validation_params);
+
+        // Check whether tag name has been unique
+        $checkTagName = Tag::where('name', $request->get('name'))
+                        ->where('id', '!=' , $id)
+                        ->where('user_id', $user_id)
+                        ->first();
+                
+        if($checkTagName) {
+            throw ValidationException::withMessages(['message' => 'Name is already exits']);
+        }
+
+         // Create new Tag record
+         $tag = Tag::find($id);
+         foreach($fields as $field) {
+             $field_name = $field['field_name'];
+             $tag->$field_name = $request->get($field_name);
+         }
+         $tag->save();
+
+         return Redirect::route('listTag');
     }
 
     /**
@@ -169,9 +229,15 @@ class TagController extends Controller
      * @param  \App\Models\Tag  $tag
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Tag $tag)
+    public function destroy($id)
     {
-        //
+        $tag = Tag::find($id);
+        if(!$tag) {
+            abort(401);
+        }
+        $tag->delete();
+        $taggable = Taggable::where('tag_id', $id)->delete();
+        return Redirect::route('listTag');
     }
     
     public function syncHandling($data, $id) {
