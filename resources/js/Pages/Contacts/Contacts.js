@@ -359,7 +359,7 @@ export default function Contacts(props) {
                                                         <div className="ml-4">
                                                             <div className="font-medium text-[#3D4459]">
                                                                 <Link
-                                                                    href={route('contact_detail', person.id)}
+                                                                    href={route('detailContact', person.id)}
                                                                     >
                                                                         {person.name}
                                                                     </Link>

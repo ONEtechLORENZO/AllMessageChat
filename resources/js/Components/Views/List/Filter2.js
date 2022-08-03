@@ -19,13 +19,23 @@ function Filter(props)
     };
     const logic_operators = ['AND', 'OR'];
 
-    const tagfield = {
-        'field_label': 'Tag',
-        'field_name': 'tag_relation',
-        'field_type': 'tag',
-        'is_mandatory': 0,
+    const relationFields = [
+        {
+            'field_label': 'Tag',
+            'field_name': 'tag_relation',
+            'field_type': 'tag',
+            'is_mandatory': 0,
+            'options': props.filter.tag_list
+        },
+        {
+            'field_label': 'List',
+            'field_name': 'list_relation',
+            'field_type': 'tag',
+            'is_mandatory': 0,
+            'options': props.filter.category_list
+        }
+    ];
 
-    };
 
     const condition_operators = {
         'text':{
@@ -70,7 +80,7 @@ function Filter(props)
     const [filterName, setFilterName] = useState('');
     const [selectedFilter , setSelectedFilter] = useState(props.filter.selected_filter);
     const [errors, setErrors] = useState({});
-    const [selectedTags, setSelectedTags] = useState([]);
+    const [selectedOptions, setSelectedOptions] = useState({'tag_relation': {} , 'list_relation': {}});
     const [tagOptions, setTagOptions] = useState(props.filter.tag_list);
 
     useEffect(() => {
@@ -123,7 +133,6 @@ function Filter(props)
             nProgress.inc(0.2);
             Inertia.post(route('delete_filter'), data, {
                 onSuccess: (response) => {
-                    console.log(filterList);
                     Object.entries(filterList).map(([filter_index, filterData])=> {
                         if(filterData['id'] == filter){
                             filterList.splice(filter_index,1);
@@ -147,7 +156,6 @@ function Filter(props)
         Object.entries(newFilter).map(([index, conditionsGroup]) => {
             Object.entries(conditionsGroup).map(([operator, conditions], groupIndex) => {
                 if(index == grpCount){
-                  //  var conditionGroupLength = Object.entries(conditionsGroup).length;
                     conditionsGroup[operator].push(newCondition);
                 }
             });
@@ -318,11 +326,11 @@ function Filter(props)
         });
     }
 
-    function handleTagInputChange(selectedOptions, group_count , conditions_count){
-
-        var selectedTags = [];
+    function handleTagInputChange(selectedOptions, group_count , conditions_count, name){
+        
+        var selectedOption = [];
         Object.entries(selectedOptions).map(([key, tag])=> {
-            selectedTags.push(tag.value);
+           (selectedOption).push(tag.value);
         })
         
         let newData = Object.assign({}, filter);
@@ -331,15 +339,14 @@ function Filter(props)
                 Object.entries(grpConditions).map(([grpCondition, conditions], group_index) => {
                     Object.entries(conditions).map(([condition_index, condition]) => {
                         if(condition_index == conditions_count){
-                            newData[grpCondition_index][grpCondition][condition_index]['field_name'] = 'tag_relation';
-                            newData[grpCondition_index][grpCondition][condition_index]['condition_value'] = selectedTags;
+                            newData[grpCondition_index][grpCondition][condition_index]['field_name'] = name;
+                            newData[grpCondition_index][grpCondition][condition_index]['condition_value'] = selectedOption;
                         }
                     });
                 });
             }
         });
         setFilter(newData);
-        setSelectedTags(selectedOptions);
     }
     
     /**
@@ -376,7 +383,7 @@ function Filter(props)
         Axios.get(endpoint_url).then((response) => {
             nProgress.done(true);
             if(response.data.status !== false) {
-                (response.data.fields).push(tagfield);
+                response.data.fields = [...response.data.fields, ...relationFields];
                 setFields(response.data.fields);
             }
             else {
@@ -414,9 +421,9 @@ function Filter(props)
                         </span>
                     </Dropdown.Trigger>
 
-                    <Dropdown.Content align="" contentClasses="right-4 py-1 bg-white">
+                    <Dropdown.Content align="" contentClasses="right-4 py-1 bg-white w-64">
                             
-                    <ul role="list" className="divide-y divide-gray-200">
+                    <ul role="list" className="divide-y divide-gray-200 overflow-y-auto h-64">
                         
                         <li onClick={ ()=> applyFilter('All')} className={"px-4 py-2 hover:bg-sky-700 cursor-pointer "+ (selectedFilter == 'All' && 'bg-gray-100' ) }>
                             All
@@ -424,9 +431,9 @@ function Filter(props)
                         {Object.entries(filterList).map(([filter_index, filterData])=>
                             <li  key={filterData['id']} className={"px-4 py-2 hover:bg-sky-700 cursor-pointer "+ (selectedFilter == filterData['id'] ? 'bg-gray-100' : '' ) }>
                                 <div class="flex text-white hover:text-gray-900">
-                                    <div className="col-span-2 text-gray-900" onClick={()=> applyFilter(filterData['id'])}> {filterData['name']} </div>
-                                    <div className="absolute right-4 p-1 mx-2" onClick={() => editFilter(filterData['id']) } >  <PencilIcon className="float-right" /></div> 
-                                    <div className="absolute right-0 p-1 mx-2" onClick={() => deleteFilter(filterData['id']) } >  <DeleteIcon className="float-right" /></div> 
+                                    <div className="flex-auto w-80 text-gray-900 text-sm" onClick={()=> applyFilter(filterData['id'])}> {filterData['name']} </div>
+                                    <div className=" flex-initial right-3 p-1 ml-1" onClick={() => editFilter(filterData['id']) } >  <PencilIcon className="float-right" /></div> 
+                                    <div className="flex-initial right-0 p-1 ml-1" onClick={() => deleteFilter(filterData['id']) } >  <DeleteIcon className="float-right" /></div> 
                                 </div>
                             </li>
                         )}
@@ -521,20 +528,30 @@ function Filter(props)
                                                                     </legend>
                                                             
                                                                 {Object.entries(conditions).map(([condition_index, condition]) => {
-                                                                    if(condition.field_name == 'tag_relation'){
-                                                                        var selectedTags = [];
-                                                                        Object.entries(tagOptions).map(([key, tag])=> {
-                                                                            if(condition.condition_value == tag.value) {
-                                                                                selectedTags.push(tag);
-                                                                            }
-                                                                        })
-                                                                    }
+                                                                    var selectedOptionValues = {'tag_relation': [] , 'list_relation': []};
+                                                                    var optionValues = {'tag_relation': [] , 'list_relation': []};
                                                                     Object.entries(fields).map(([key, field])=> {
                                                                         if(field.field_name == condition.field_name){
                                                                             condition.field_type = field.field_type
                                                                         }
+                                                                        
+                                                                        if(condition.field_type == 'tag'){
+                                                                            
+                                                                          //  console.log(field.field_name, field,options)
+                                                                            if(field.field_name == condition.field_name) {
+                                                                                optionValues[field.field_name] = field.options;
+                                                                                var selectedValues = [];
+                                                                                Object.entries(field.options).map(([key, tag])=> {
+                                                                                    if(condition.condition_value == tag.value) {
+                                                                                        (selectedValues).push(tag);
+                                                                                    }
+                                                                                })
+                                                                                selectedOptionValues[field.field_name] = selectedValues;
+                                                                                
+                                                                            }
+                                                                        }
                                                                     })
-
+                                                                    
                                                                     return(
                                                                         <>
                                                                             <div className="flex w-full">
@@ -573,7 +590,7 @@ function Filter(props)
                                                                                     <div className="flex-1 flex items-center">
                                                                                         {condition.record_condition != 'is_null' &&
                                                                                             <>
-                                                                                                {condition.field_name != 'tag_relation' ?
+                                                                                                {condition.field_type != 'tag' ?
                                                                                                     <input
                                                                                                         type='text'
                                                                                                         className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
@@ -587,12 +604,12 @@ function Filter(props)
                                                                                                 :
                                                                                                     <CreatableSelect
                                                                                                         isMulti 
-                                                                                                      //  value={selectedTags}
-                                                                                                        defaultValue={selectedTags}
-                                                                                                        onChange={(e) => handleTagInputChange(e, grpCondition_index, condition_index)}
+                                                                                                      //  value={selectedOptions}
+                                                                                                        defaultValue={selectedOptionValues[condition.field_name]}
+                                                                                                        onChange={(e) => handleTagInputChange(e, grpCondition_index, condition_index, condition.field_name)}
                                                                                                     //    loadOptions={loadTagOptions}
-                                                                                                        options={tagOptions} 
-                                                                                                        name="tag_relation"
+                                                                                                        options={optionValues[condition.field_name]} 
+                                                                                                        name={condition.field_name}
                                                                                                         className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
                                                                                                     
                                                                                                     />

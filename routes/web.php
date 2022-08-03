@@ -91,7 +91,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/contacts', [ContactController::class, 'index'])->name('listContact');
     Route::delete('/contact/delete/{id}', [ContactController::class, 'deleteContact'])->name('deleteContact');
 
-    Route::get('/contact/{id}', [ContactController::class, 'contactDetail'])->name('contact_detail');
+    Route::get('/contact/{id}', [ContactController::class, 'contactDetail'])->name('detailContact');
     Route::post('/updateContact/{id}', [ContactController::class, 'storeContact'])->name('updateContact');
     Route::post('/updateContact', [ContactController::class, 'storeContact'])->name('storeContact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');

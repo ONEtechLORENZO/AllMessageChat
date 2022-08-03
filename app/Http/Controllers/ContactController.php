@@ -13,6 +13,7 @@ use App\Models\MessageLog;
 use App\Models\IncomingUrl;
 use App\Models\Msg;
 use App\Models\Tag;
+use App\Models\Taggable;
 use App\Models\Category;
 use App\Models\Filter;
 use App\Models\MessageResponse;
@@ -70,8 +71,8 @@ class ContactController extends Controller
             'first_name' => 'First Name',
             'last_name' => 'Last Name',
             'email' => 'Email',
-            'tag' => 'Tag',
-            'list' => 'List',
+        //    'tag' => 'Tag',
+        //    'list' => 'List',
             'phone_number' => 'Phone Number',
             'instagram_id' => 'Instagram Id'
         ];
@@ -93,8 +94,10 @@ class ContactController extends Controller
         }
         if($filterId && $filterId != 'All'){
             $filter = Filter::find($filterId);
-            $searchData = unserialize( base64_decode($filter->condition) );
-            $whereCondition = $this->getWhereFilterCondition($searchData);
+            if($filter){
+                $searchData = unserialize( base64_decode($filter->condition) );
+                $whereCondition = $this->getWhereFilterCondition($searchData);
+            }
         }
 
         if($search) {
@@ -120,8 +123,8 @@ class ContactController extends Controller
             ->paginate($this->limit);
         }
 
-        $tag_record = $this->tagRecord($user_id);
-        $list_record = $this->ListRecord($user_id);
+        $tag_record = $this->tagRecord($records);
+        $list_record = $this->ListRecord($records);
   
 
         return Inertia::render('Contacts/List', [
@@ -134,6 +137,7 @@ class ContactController extends Controller
             // Actions
             'actions' => [
                 'create' => true,
+                'detail' => true,
                 'edit' => true,
                 'delete' => true,
                 'export' => false,
@@ -292,20 +296,33 @@ class ContactController extends Controller
                 foreach($conditions as $key => $condition){
                     if($condition->field_name){
                         $isNullCondition = false;
-                        if($condition->field_name == 'tag_relation'){
+                        if( isset($condition->field_type) && $condition->field_type == 'tag'){
                             $tagContacts = [];
                             $selectedTag = $condition->condition_value;
-                            $tag = implode(',', $selectedTag);
-                           
-                            $tagType = "AND taggable_type = 'App\Models\Contact' ";
-                            $contactsId = DB::select("select taggable_id from taggables where tag_id in ({$tag})" );
-                           
-                            foreach($contactsId as $contactId){
-                                $tagContacts[] = $contactId->taggable_id;
-                            }
-                            $tagContacts = implode(',', array_unique($tagContacts));
+                            if($selectedTag){
+                                $tag = implode(',', $selectedTag);
+                                
+                                $type = "AND taggable_type = 'App\Models\Contact' ";
+                                if( $condition->field_name == 'tag_relation' ) {
+                                    $contactsId = DB::select("select taggable_id as contact_id from taggables where tag_id in ({$tag})" );
+                                } else {
+                                    $contactsId = DB::select("select categorable_id as contact_id from categorables where category_id in ({$tag})" );
+                                }
                             
-                            $whereCondition .= " contacts.id in ({$tagContacts}) ";
+    //                            $taggable = Taggable::whereIn('tag_id', $tag)->get();
+
+                                foreach($contactsId as $contactId){
+                                    $tagContacts[] = $contactId->contact_id;
+                                }
+                                
+                                if($tagContacts){
+                                    $tagContacts = implode(',', array_unique($tagContacts));
+                                    $whereCondition .= " contacts.id in ({$tagContacts}) ";
+                                }
+                            } else {
+                                $whereCondition .= " contacts.id is not null ";
+                            }
+                          
                         } else {
                             switch($condition->record_condition){
                                 case 'equal':
@@ -396,7 +413,7 @@ class ContactController extends Controller
         $contact->user_id = $user->id;
         $contact->instagram_id = $request->instagram_id;
         $contact->save();
-        return Redirect::route('contact_detail', $contact->id);
+        return Redirect::route('detailContact', $contact->id);
     }
 
     /**
@@ -408,35 +425,31 @@ class ContactController extends Controller
         echo json_encode(['record' => $contact]); die;
     }
 
-    public function tagRecord($user_id)
+    public function tagRecord($contacts)
     {
-        
-        $contacts = Contact::where('user_id',$user_id)->get();
         $tag_record = [];
         foreach($contacts as $key => $contact){
             $tag_value = [];
             foreach($contact->tags as $tag){
+
                 $tag_value[] = $tag['name'];
             }
             $tag_record[] = $tag_value;
         }
-
         return $tag_record;
     }
 
-    public function ListRecord($user_id)
+    public function ListRecord($contacts)
     {
         
-        $contacts = Contact::where('user_id',$user_id)->get();
         $category_record = [];
         foreach($contacts as $key => $contact){
-            $tag_value = [];
+            $category_value = [];
             foreach($contact->categorys as $category){
                 $category_value[] = $category['name'];
             }
             $category_record[] = $category_value;
         }
-
         return $category_record;
     }
 
@@ -499,6 +512,10 @@ class ContactController extends Controller
 
         $tagList = $this->getTagOptionList($user_id);
         $return['tag_list'] = $tagList;
+
+        $categoryList = $this->getCategoryOptionList($user_id);
+        $return['category_list'] = $categoryList;
+
         $return['selected_filter'] = (isset($_GET['filter_id'])) ? $_GET['filter_id'] : 'All'; 
         return $return;
     }
@@ -509,6 +526,7 @@ class ContactController extends Controller
     public function getTagOptionList($user_id)
     {
         $tags = Tag::where('user_id', $user_id)->get();
+        $tagList = [];
         foreach($tags as $tag){
             $tagList[] = [
                 'value' => $tag->id,
@@ -517,6 +535,23 @@ class ContactController extends Controller
         }
         return $tagList;
     }
+
+    /**
+     * Return Category list 
+     */
+    public function getCategoryOptionList($user_id)
+    {
+        $categories = Category::where('user_id', $user_id)->get();
+        $categoryList = [];
+        foreach($categories as $category){
+            $categoryList[] = [
+                'value' => $category->id,
+                'label' => $category->name
+            ];
+        }
+        return $categoryList;
+    }
+
     /**
      * Delete Contact 
      */

@@ -132,14 +132,14 @@ class TagController extends Controller
             }
             //Sync the tag module to taggable table
             $sync = $this->syncHandling($record, $id);
-            
-            return Redirect::route('contact_detail', $id);
-        }else{           
-             
+        
+            return Redirect::route('detailContact', $id);
+        }else{
+
             $request->validate([
                 'name' => 'required|unique:tags|max:255',
             ]);
-      
+            
             //Create new Tag
             $name = $request->name;
  

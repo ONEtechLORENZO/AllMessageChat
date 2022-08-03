@@ -18,7 +18,9 @@ class FormController extends Controller
             abort(401);
         }
 
-        $fields = Field::where('module_name', $module)->get();
+        $fields = Field::where('module_name', $module)
+            ->where('user_id', $request->user()->id)
+            ->get();
         return response()->json(['fields' => $fields]);
     }
 }

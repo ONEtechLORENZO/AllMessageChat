@@ -850,6 +850,9 @@ select {
 .right-4 {
 	right: 1rem;
 }
+.right-3 {
+	right: 0.75rem;
+}
 .z-0 {
 	z-index: 0;
 }
@@ -926,6 +929,10 @@ select {
 	margin-left: -1.25rem;
 	margin-right: -1.25rem;
 }
+.mx-1 {
+	margin-left: 0.25rem;
+	margin-right: 0.25rem;
+}
 .mx-2 {
 	margin-left: 0.5rem;
 	margin-right: 0.5rem;
@@ -933,10 +940,6 @@ select {
 .mx-10 {
 	margin-left: 2.5rem;
 	margin-right: 2.5rem;
-}
-.mx-1 {
-	margin-left: 0.25rem;
-	margin-right: 0.25rem;
 }
 .my-6 {
 	margin-top: 1.5rem;
@@ -1243,6 +1246,9 @@ select {
 .w-28 {
 	width: 7rem;
 }
+.w-80 {
+	width: 20rem;
+}
 .min-w-full {
 	min-width: 100%;
 }
@@ -1281,6 +1287,9 @@ select {
 }
 .flex-auto {
 	flex: 1 1 auto;
+}
+.flex-initial {
+	flex: 0 1 auto;
 }
 .flex-none {
 	flex: none;
@@ -2517,13 +2526,13 @@ select {
 	--tw-bg-opacity: 1;
 	background-color: rgba(163, 30, 255, var(--tw-bg-opacity));
 }
-.hover\:bg-gray-300:hover {
-	--tw-bg-opacity: 1;
-	background-color: rgba(209, 213, 219, var(--tw-bg-opacity));
-}
 .hover\:bg-blue-400:hover {
 	--tw-bg-opacity: 1;
 	background-color: rgba(96, 165, 250, var(--tw-bg-opacity));
+}
+.hover\:bg-gray-300:hover {
+	--tw-bg-opacity: 1;
+	background-color: rgba(209, 213, 219, var(--tw-bg-opacity));
 }
 .hover\:bg-gray-800:hover {
 	--tw-bg-opacity: 1;
@@ -2839,10 +2848,6 @@ select {
 
 	.sm\:ml-6 {
 		margin-left: 1.5rem;
-	}
-
-	.sm\:ml-10 {
-		margin-left: 2.5rem;
 	}
 
 	.sm\:mt-32 {

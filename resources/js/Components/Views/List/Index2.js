@@ -77,7 +77,6 @@ function ListView(props)
     if(props.errors.message){
         notie.alert({type: 'error', text: props.errors.message, time: 5});
     }
-
     return (
         <>
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
@@ -150,12 +149,16 @@ function ListView(props)
                                             {Object.entries(props.headers).map(([name, label]) => {
                                                 let visibility = 'invisible';
                                                 let sort_order = 'desc';
+                                                let sortable = true;
                                                 if(props.sort_by == name) {
                                                     visibility = '';
                                                     if(props.sort_order == 'desc') {
                                                         sort_order = 'asc';
                                                     }
                                                 }
+                                                if(name == 'tag' || name == 'list'){
+                                                    sortable = false;                                       
+                                               }
 
                                                 return (
                                                     <th
@@ -163,14 +166,19 @@ function ListView(props)
                                                         scope="col"
                                                         className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-[#3D4459] sm:pl-6"
                                                     >
-                                                        <a href="#" className="group inline-flex" onClick={() => sortColumn(name, sort_order)}>
+                                                        <a href="#" className="group inline-flex" onClick={() => { sortable ? sortColumn(name, sort_order): ''}}>
                                                             {label}
                                                             <span className={`ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible ` + visibility}>
-                                                                {visibility == '' && props.sort_order == 'asc' ?
-                                                                    <ChevronUpIcon className="h-5 w-5" aria-hidden="true" />
-                                                                :
-                                                                    <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
+                                                                {sortable &&
+                                                                    <>
+                                                                    {visibility == '' && props.sort_order == 'asc' ?
+                                                                        <ChevronUpIcon className="h-5 w-5" aria-hidden="true" />
+                                                                    :
+                                                                        <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
+                                                                    }
+                                                                    </>
                                                                 }
+                                                                
                                                             </span>
                                                         </a>
                                                     </th>
@@ -202,6 +210,18 @@ function ListView(props)
                                                             }
                                                         })
                                                         column_value = tagName;
+                                                    }
+                                                    if(props.list && (props.list).length > 0 && header_info[0] == 'list'){ 
+                                                        var listName = '';
+                                                        (props.list[key]).map((list, listIndex) => {
+                                                            if(listIndex === 0 || listIndex === 1){ 
+                                                                listName += list;
+                                                                if(listIndex === 0 && (props.list[key]).length > 1){
+                                                                    listName += ', ';
+                                                                }
+                                                            }
+                                                        })
+                                                        column_value = listName;
                                                     }
 
                                                     return (
