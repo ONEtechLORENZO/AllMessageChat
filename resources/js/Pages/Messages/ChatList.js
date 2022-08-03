@@ -1,18 +1,18 @@
 import React ,{ useEffect , useState , Fragment} from 'react';
-import { Head, useForm, Link, InertiaLink } from '@inertiajs/inertia-react';
+import { Link } from '@inertiajs/inertia-react';
 import MessageList from "./MessageList";
 import Authenticated from "../../Layouts/Authenticated";
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import Dropdown from "@/Components/Dropdown";
 
 import {
     DotsVerticalIcon,
-    BellIcon,
     PlusSmIcon,
     SearchIcon,
     MenuIcon
 } from "@heroicons/react/outline";
-import { MailIcon } from "@heroicons/react/solid";
-import { Dialog, Menu, Transition } from "@headlessui/react";
+
+import { Menu, Transition } from "@headlessui/react";
 
 import {
     SmileEmoji,
@@ -27,22 +27,18 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
 
-export default function ChatList(props) {
-    const [selectedContact, setSelectedContact] =  useState(props.selected_contact);
-    const [messages , setMessages] = useState(props.messages);
-    const[containerCategory, setContainerCategory] = useState(props.category);
+function ChatList(props) 
+{
+    const [selectedContact, setSelectedContact] = useState(props.selected_contact);
+    const [messages, setMessages] = useState(props.messages);
+    const [containerCategory, setContainerCategory] = useState(props.category);
 
-    const [chatList , setChatList ]= useState(props.contact_list);
+    const [chatList, setChatList] = useState(props.contact_list);
     const [data, setData] = useState({
         destination: '',
         chennal: containerCategory,
         content: ''
     });
-    const userNavigation = [
-        { name: (props.translator['Your Profile']), href: "#" },
-        { name: (props.translator['Settings']), href: "#" },
-        { name: (props.translator['Sign out']), href: "#" },
-    ];
 
     const channels = {
         all : {label: 'All Channel', icon: ApplicationLogo },
@@ -92,10 +88,11 @@ export default function ChatList(props) {
     }
 
     // Return conversation history
-    function getMessageList(){
-        if(!selectedContact){
+    function getMessageList() {
+        if(!selectedContact) {
             return false;
         }
+
         axios({
             method: 'get',
             url: route('get_message_list', {'contact_id': selectedContact,
@@ -132,9 +129,15 @@ export default function ChatList(props) {
             });
         }
     }
+
     const selectedChannel = channels[containerCategory];
+
     return (
-        <Authenticated>
+        <Authenticated 
+            hideHeader={true} 
+            auth={props.auth}
+            errors={props.errors}
+        >
             <div className="flex">
                 <div className="w-1/3">
                     <div className="flex justify-between items-center p-3 md:hidden">
@@ -310,7 +313,7 @@ export default function ChatList(props) {
                     </nav>
                 </div>
                 <div className="w-2/3">
-                        <div className="flex-1 p:2 sm:p-3 pr-0 justify-between flex flex-col h-screen bg-gray-100">
+                    <div className="flex-1 p:2 sm:p-3 pr-0 justify-between flex flex-col h-screen bg-gray-100">
                         {selectedContact &&
                             <>
                             <div className="flex sm:items-center justify-between py-3 border-b-2 border-gray-200">
@@ -400,50 +403,48 @@ export default function ChatList(props) {
                                             <NotifiIcon />
                                         </button>
 
-                                        {/* Profile dropdown */}
-                                        <Menu as="div" className="ml-3 relative">
-                                            <div>
-                                                <Menu.Button className="max-w-xs  p-2 flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                                    <img
-                                                        className="h-8 w-8 rounded-full"
-                                                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                                                        alt=""
-                                                    />
-                                                    <span className="ml-2">
-                                                        Mario Verdi
+                                        <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <span className="inline-flex rounded-md">
+                                                        <button
+                                                            type="button"
+                                                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                                        >
+                                                            {props.auth && props.auth.user && props.auth.user.imageUrl ?
+                                                                <img className="h-8 w-8 rounded-full mr-2" src={props.auth.user.imageUrl} alt="" /> 
+                                                            : ''}
+
+                                                            {props.auth && props.auth.user ? props.auth.user.name : ''}
+                                                            <svg
+                                                                className="ml-2 -mr-0.5 h-4 w-4"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 20 20"
+                                                                fill="currentColor"
+                                                            >
+                                                                <path
+                                                                    fillRule="evenodd"
+                                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                    clipRule="evenodd"
+                                                                />
+                                                            </svg>
+                                                        </button>
                                                     </span>
-                                                </Menu.Button>
-                                            </div>
-                                            <Transition
-                                                as={Fragment}
-                                                enter="transition ease-out duration-100"
-                                                enterFrom="transform opacity-0 scale-95"
-                                                enterTo="transform opacity-100 scale-100"
-                                                leave="transition ease-in duration-75"
-                                                leaveFrom="transform opacity-100 scale-100"
-                                                leaveTo="transform opacity-0 scale-95"
-                                            >
-                                                <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
-                                                    {userNavigation.map((item) => (
-                                                        <Menu.Item key={item.name}>
-                                                            {({ active }) => (
-                                                                <a
-                                                                    href={item.href}
-                                                                    className={classNames(
-                                                                        active
-                                                                            ? "bg-gray-100"
-                                                                            : "",
-                                                                        "block py-2 px-4 text-sm text-gray-700"
-                                                                    )}
-                                                                >
-                                                                    {item.name} 
-                                                                </a>
-                                                            )}
-                                                        </Menu.Item>
-                                                    ))}
-                                                </Menu.Items>
-                                            </Transition>
-                                        </Menu>
+                                                </Dropdown.Trigger>
+
+                                                <Dropdown.Content>
+                                                    <Dropdown.Link href={route('profile')} method="get" as="button">
+                                                    Profile
+                                                    </Dropdown.Link>
+                                                    {props.auth && props.auth.user && props.auth.user.role == 'Admin' &&
+                                                    <Dropdown.Link href={route('settings')} method="get" as="button">
+                                                        Settings
+                                                    </Dropdown.Link>
+                                                    }
+                                                    <Dropdown.Link href={route('logout')} method="post" as="button">
+                                                        Log Out
+                                                    </Dropdown.Link>
+                                                </Dropdown.Content>
+                                            </Dropdown>
                                     </div>
                                 </div>
                             </div>
@@ -474,25 +475,6 @@ export default function ChatList(props) {
                                             className="w-full focus:outline-none border-0 focus:placeholder-gray-400 text-gray-600 placeholder-gray-600 pl-3 bg-white rounded-2xl rounded-br-none py-3"
                                         />
                                         <div className="absolute right-0 items-center inset-y-0 hidden sm:flex">
-                                            {/* <button
-                                            type="button"
-                                            className="inline-flex items-center justify-center rounded-full h-10 w-10 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                                className="h-6 w-6 text-gray-600"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                />
-                                            </svg>
-                                        </button> */}
                                             <button
                                                 type="button"
                                                 onClick={sendMessage}
@@ -516,47 +498,7 @@ export default function ChatList(props) {
                                     </div>
 
                                     <div className="flex flex-col gap-1 ">
-                                        {/* <div className="flex rounded-md bg-white h-7 w-7 justify-center items-center cursor-pointer">
-                                            
-                                            <Menu as="div" className="ml-3 relative">
-                                                <div>
-                                                
-                                                    <Menu.Button className="max-w-xs  p-2 flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2">
-                                                        {containerCategory == 'whatsapp' ?
-                                                            <WhatsAppIcon />
-                                                        :
-                                                            <InstaIcon />
-                                                        }
-                                                    </Menu.Button>
-                                                </div>
-                                                <Transition
-                                                    as={Fragment}
-                                                    enter="transition ease-out duration-100"
-                                                    enterFrom="transform opacity-0 scale-95"
-                                                    enterTo="transform opacity-100 scale-100"
-                                                    leave="transition ease-in duration-75"
-                                                    leaveFrom="transform opacity-100 scale-100"
-                                                    leaveTo="transform opacity-0 scale-95"
-                                                >
-                                                    <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
-                                                    
-                                                            <Menu.Item >
-                                                                {containerCategory != 'whatsapp' ?
-                                                                    //<span onClick={() => getMessageList()} className= "block py-2 px-4 text-sm text-gray-700">
-                                                                    <Link href={route('chat_list', {'contact_id': selectedContact, 'category': 'whatsapp'})}> 
-                                                                        <WhatsAppIcon />
-                                                                    </Link>
-                                                                    :
-                                                                    <Link href={route('chat_list', {'contact_id': selectedContact, 'category': 'instagram'})} className= "block py-2 px-4 text-sm text-gray-700">
-                                                                        <InstaIcon />                                                               
-                                                                    </Link>
-                                                                }
-                                                        </Menu.Item>
-                                                        
-                                                    </Menu.Items>
-                                                </Transition>
-                                            </Menu>
-                                        </div> */}
+                                       
                                         <div className="flex rounded-md bg-white h-7 w-7 justify-center items-center cursor-pointer">
                                             <PlusSmIcon
                                                 className="h-6 w-6"
@@ -568,10 +510,11 @@ export default function ChatList(props) {
                             </div>
                             </>
                         }
-                        </div>
-                    
+                    </div>
                 </div>
             </div>
         </Authenticated>
     );
 }
+
+export default ChatList;
