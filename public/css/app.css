@@ -1803,16 +1803,9 @@ select {
 	--tw-bg-opacity: 1;
 	background-color: rgba(0, 0, 0, var(--tw-bg-opacity));
 }
-<<<<<<< HEAD
 .bg-transparent {
 	background-color: transparent;
 }
-.bg-gray-800 {
-	--tw-bg-opacity: 1;
-	background-color: rgba(31, 41, 55, var(--tw-bg-opacity));
-}
-=======
->>>>>>> d48770a48a2e5d7c79a4ec51195b786631351466
 .bg-opacity-75 {
 	--tw-bg-opacity: 0.75;
 }

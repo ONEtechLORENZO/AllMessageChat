@@ -134,10 +134,15 @@ class TagController extends Controller
             $sync = $this->syncHandling($record, $id);
             
             return Redirect::route('contact_detail', $id);
-        }else{
-
+        }else{           
+             
+            $request->validate([
+                'name' => 'required|unique:tags|max:255',
+            ]);
+      
             //Create new Tag
             $name = $request->name;
+ 
             $tag->name = $name;
             if($request->get('description')){
                 $tag->description = $request->get('description');
@@ -185,7 +190,7 @@ class TagController extends Controller
      */
     public function update(Request $request, $id)
     {
-        
+    
         $user_id = $request->user()->id;
 
          // Get fields from the table
