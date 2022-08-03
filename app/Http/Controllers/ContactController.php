@@ -71,8 +71,8 @@ class ContactController extends Controller
             'first_name' => 'First Name',
             'last_name' => 'Last Name',
             'email' => 'Email',
-        //    'tag' => 'Tag',
-        //    'list' => 'List',
+            'tag' => 'Tag',
+            'list' => 'List',
             'phone_number' => 'Phone Number',
             'instagram_id' => 'Instagram Id'
         ];
@@ -123,14 +123,8 @@ class ContactController extends Controller
             ->paginate($this->limit);
         }
 
-        $tag_record = $this->tagRecord($records);
-        $list_record = $this->ListRecord($records);
-  
-
         return Inertia::render('Contacts/List', [
             'records' => $records->items(),
-            'tag'=> $tag_record,
-            'list'=> $list_record,
             'singular' => 'Contact',
             'plural' => 'Contacts',
             'module' => 'Contact',
@@ -423,34 +417,6 @@ class ContactController extends Controller
     {
         $contact = Contact::findOrFail($request->id);
         echo json_encode(['record' => $contact]); die;
-    }
-
-    public function tagRecord($contacts)
-    {
-        $tag_record = [];
-        foreach($contacts as $key => $contact){
-            $tag_value = [];
-            foreach($contact->tags as $tag){
-
-                $tag_value[] = $tag['name'];
-            }
-            $tag_record[] = $tag_value;
-        }
-        return $tag_record;
-    }
-
-    public function ListRecord($contacts)
-    {
-        
-        $category_record = [];
-        foreach($contacts as $key => $contact){
-            $category_value = [];
-            foreach($contact->categorys as $category){
-                $category_value[] = $category['name'];
-            }
-            $category_record[] = $category_value;
-        }
-        return $category_record;
     }
 
     public function getTagOption($user_id){

@@ -4,7 +4,6 @@ import ListView from '@/Components/Views/List/Index2';
 
 function List(props)
 {
-    console.log(props)
     return (
         <Authenticated
             auth={props.auth}

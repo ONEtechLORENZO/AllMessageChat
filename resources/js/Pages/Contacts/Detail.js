@@ -28,8 +28,8 @@ export default function Detail(props) {
         'email': { 'label': 'Email', 'type': 'email', 'required': true, 'value': '' }, 
         'phone_number': { 'label': 'Phone number', 'type': 'text', 'required': false, 'value': '' },
         'instagram_id': { 'label': 'Instagram ID', 'type': 'text', 'required': false, 'value': '' }, 
-    //    'tag': { 'label': 'Tag', 'type': 'text', 'required': false, 'value': '' },
-    //   'list': { 'label': 'List', 'type': 'text', 'required': false, 'value': '' },
+        'tag': { 'label': 'Tag', 'type': 'text', 'required': false, 'value': '' },
+        'list': { 'label': 'List', 'type': 'text', 'required': false, 'value': '' },
     });
 
     const[record , setRecord] = useState(props.contact);

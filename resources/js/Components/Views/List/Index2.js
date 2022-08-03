@@ -189,39 +189,38 @@ function ListView(props)
                                         </tr>
                                     </thead>
                                     <tbody className=" bg-white">
-                                        {Object.entries(props.records).map(([key, record]) => (
-                                            <tr key={key}>
-                                                {Object.entries(props.headers).map((header_info, index) => {
+                                        {Object.entries(props.records).map(([key, record]) => ( 
+                                            <tr key={key}> 
+                                                {Object.entries(props.headers).map((header_info, index) => { 
                                                     let column_value = record[header_info[0]]; 
                                                     if(props.actions.detail === true && index === 0) {
                                                         column_value = <Link href={route('detail' + props.module, {id: record.id})} className='cursor-pointer underline'>
                                                             {column_value} 
                                                         </Link>;
                                                     } 
-                                                    
-                                                    if(props.tag && (props.tag).length > 0 && header_info[0] == 'tag'){ 
+                                                    if(record.tags && header_info[0] == 'tag'){
                                                         var tagName = '';
-                                                        (props.tag[key]).map((tag, tagIndex) => {
+                                                        (record.tags).map((tag,tagIndex) => {
                                                             if(tagIndex === 0 || tagIndex === 1){ 
-                                                                tagName += tag;
-                                                                if(tagIndex === 0 && (props.tag[key]).length > 1){
+                                                                tagName += tag.name;
+                                                                if(tagIndex === 0 && (record.tags).length > 1){
                                                                     tagName += ', ';
                                                                 }
                                                             }
                                                         })
-                                                        column_value = tagName;
+                                                       column_value = tagName;
                                                     }
-                                                    if(props.list && (props.list).length > 0 && header_info[0] == 'list'){ 
+                                                    if(record.categorys && header_info[0] == 'list'){
                                                         var listName = '';
-                                                        (props.list[key]).map((list, listIndex) => {
+                                                        (record.categorys).map((list,listIndex) => {
                                                             if(listIndex === 0 || listIndex === 1){ 
-                                                                listName += list;
-                                                                if(listIndex === 0 && (props.list[key]).length > 1){
+                                                                listName += list.name;
+                                                                if(listIndex === 0 && (record.categorys).length > 1){
                                                                     listName += ', ';
                                                                 }
                                                             }
                                                         })
-                                                        column_value = listName;
+                                                       column_value = listName;
                                                     }
 
                                                     return (
