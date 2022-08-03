@@ -94,8 +94,10 @@ class ContactController extends Controller
         }
         if($filterId && $filterId != 'All'){
             $filter = Filter::find($filterId);
-            $searchData = unserialize( base64_decode($filter->condition) );
-            $whereCondition = $this->getWhereFilterCondition($searchData);
+            if($filter){
+                $searchData = unserialize( base64_decode($filter->condition) );
+                $whereCondition = $this->getWhereFilterCondition($searchData);
+            }
         }
 
         if($search) {
@@ -297,24 +299,28 @@ class ContactController extends Controller
                         if( isset($condition->field_type) && $condition->field_type == 'tag'){
                             $tagContacts = [];
                             $selectedTag = $condition->condition_value;
-                            $tag = implode(',', $selectedTag);
+                            if($selectedTag){
+                                $tag = implode(',', $selectedTag);
+                                
+                                $type = "AND taggable_type = 'App\Models\Contact' ";
+                                if( $condition->field_name == 'tag_relation' ) {
+                                    $contactsId = DB::select("select taggable_id as contact_id from taggables where tag_id in ({$tag})" );
+                                } else {
+                                    $contactsId = DB::select("select categorable_id as contact_id from categorables where category_id in ({$tag})" );
+                                }
                             
-                            $type = "AND taggable_type = 'App\Models\Contact' ";
-                            if( $condition->field_name == 'tag_relation' ) {
-                                $contactsId = DB::select("select taggable_id as contact_id from taggables where tag_id in ({$tag})" );
-                            } else {
-                                $contactsId = DB::select("select categorable_id as contact_id from categorables where category_id in ({$tag})" );
-                            }
-                           
-//                            $taggable = Taggable::whereIn('tag_id', $tag)->get();
+    //                            $taggable = Taggable::whereIn('tag_id', $tag)->get();
 
-                            foreach($contactsId as $contactId){
-                                $tagContacts[] = $contactId->contact_id;
-                            }
-                            
-                            $tagContacts = implode(',', array_unique($tagContacts));
-                            if($tagContacts){
-                                $whereCondition .= " contacts.id in ({$tagContacts}) ";
+                                foreach($contactsId as $contactId){
+                                    $tagContacts[] = $contactId->contact_id;
+                                }
+                                
+                                if($tagContacts){
+                                    $tagContacts = implode(',', array_unique($tagContacts));
+                                    $whereCondition .= " contacts.id in ({$tagContacts}) ";
+                                }
+                            } else {
+                                $whereCondition .= " contacts.id is not null ";
                             }
                           
                         } else {

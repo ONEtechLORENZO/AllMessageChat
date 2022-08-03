@@ -24,10 +24,10 @@ class FieldSeeder extends Seeder
             ['module_name' => 'Price', 'field_name' => 'message', 'field_label' => 'Message', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
             ['module_name' => 'Price', 'field_name' => 'media', 'field_label' => 'Media', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
         //Tag
-            ['module_name' => 'Tag', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'string', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Tag', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
             ['module_name' => 'Tag', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
         //Category
-            ['module_name' => 'Category', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'string', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Category', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
             ['module_name' => 'Category', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
         ]);
     }
