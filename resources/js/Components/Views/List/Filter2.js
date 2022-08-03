@@ -421,9 +421,9 @@ function Filter(props)
                         </span>
                     </Dropdown.Trigger>
 
-                    <Dropdown.Content align="" contentClasses="right-4 py-1 bg-white">
+                    <Dropdown.Content align="" contentClasses="right-4 py-1 bg-white w-64">
                             
-                    <ul role="list" className="divide-y divide-gray-200">
+                    <ul role="list" className="divide-y divide-gray-200 overflow-y-auto h-64">
                         
                         <li onClick={ ()=> applyFilter('All')} className={"px-4 py-2 hover:bg-sky-700 cursor-pointer "+ (selectedFilter == 'All' && 'bg-gray-100' ) }>
                             All
@@ -431,9 +431,9 @@ function Filter(props)
                         {Object.entries(filterList).map(([filter_index, filterData])=>
                             <li  key={filterData['id']} className={"px-4 py-2 hover:bg-sky-700 cursor-pointer "+ (selectedFilter == filterData['id'] ? 'bg-gray-100' : '' ) }>
                                 <div class="flex text-white hover:text-gray-900">
-                                    <div className="col-span-2 text-gray-900" onClick={()=> applyFilter(filterData['id'])}> {filterData['name']} </div>
-                                    <div className="absolute right-4 p-1 mx-2" onClick={() => editFilter(filterData['id']) } >  <PencilIcon className="float-right" /></div> 
-                                    <div className="absolute right-0 p-1 mx-2" onClick={() => deleteFilter(filterData['id']) } >  <DeleteIcon className="float-right" /></div> 
+                                    <div className="flex-auto w-80 text-gray-900 text-sm" onClick={()=> applyFilter(filterData['id'])}> {filterData['name']} </div>
+                                    <div className=" flex-initial right-3 p-1 ml-1" onClick={() => editFilter(filterData['id']) } >  <PencilIcon className="float-right" /></div> 
+                                    <div className="flex-initial right-0 p-1 ml-1" onClick={() => deleteFilter(filterData['id']) } >  <DeleteIcon className="float-right" /></div> 
                                 </div>
                             </li>
                         )}

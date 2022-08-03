@@ -850,6 +850,9 @@ select {
 .right-4 {
 	right: 1rem;
 }
+.right-3 {
+	right: 0.75rem;
+}
 .z-0 {
 	z-index: 0;
 }
@@ -879,6 +882,9 @@ select {
 }
 .col-span-4 {
 	grid-column: span 4 / span 4;
+}
+.col-span-3 {
+	grid-column: span 3 / span 3;
 }
 .float-right {
 	float: right;
@@ -1240,6 +1246,9 @@ select {
 .w-28 {
 	width: 7rem;
 }
+.w-80 {
+	width: 20rem;
+}
 .min-w-0 {
 	min-width: 0px;
 }
@@ -1281,6 +1290,9 @@ select {
 }
 .flex-none {
 	flex: none;
+}
+.flex-initial {
+	flex: 0 1 auto;
 }
 .flex-shrink-0 {
 	flex-shrink: 0;
@@ -1372,6 +1384,12 @@ select {
 }
 .grid-cols-4 {
 	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.grid-cols-3 {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.grid-cols-5 {
+	grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 .flex-row {
 	flex-direction: row;

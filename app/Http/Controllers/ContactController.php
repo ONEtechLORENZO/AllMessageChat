@@ -71,8 +71,8 @@ class ContactController extends Controller
             'first_name' => 'First Name',
             'last_name' => 'Last Name',
             'email' => 'Email',
-            'tag' => 'Tag',
-            'list' => 'List',
+        //    'tag' => 'Tag',
+        //    'list' => 'List',
             'phone_number' => 'Phone Number',
             'instagram_id' => 'Instagram Id'
         ];
