@@ -186,7 +186,7 @@ class UserController extends Controller
             'name' => [ 'label' => ' Name' , 'type' => 'text'],
             'email' =>  [ 'label' => 'Email' , 'type' => 'text'],
             'role' => [ 'label' => 'Role' , 'type' => 'text'],
-            'status' =>  [ 'label' => 'Status' , 'type' => 'text'],
+            'status' =>  [ 'label' => 'Status' , 'type' => 'checkbox'],
             'created_at' =>  [ 'label' => 'Created at' , 'type' => 'datetime'],
         ];
         $module = new User();

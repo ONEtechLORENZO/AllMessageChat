@@ -249,6 +249,10 @@ function ListView(props)
                                                     if(field.type == 'dropdown'){
                                                         column_value = (fieldOptions[name]) ? fieldOptions[name][column_value] : column_value;
                                                     }
+                                                   
+                                                    if(field.type == 'checkbox' && name == 'status'){
+                                                        column_value = (column_value == 1) ? 'Active' : 'Inactive'
+                                                    }
 
                                                     return (
                                                         <td key={name} className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]">
