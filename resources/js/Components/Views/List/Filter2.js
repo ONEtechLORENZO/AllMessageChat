@@ -289,7 +289,6 @@ function Filter(props)
     }
     function saveFilterCondition(){
         var is_valid = checkValidate();
-        console.log(is_valid)
         if(!is_valid){
             return false;
         }
@@ -299,8 +298,7 @@ function Filter(props)
             newError['filter_name'] = true;
             setErrors(newError);
         } else {
-            
-            var data = {'filter': JSON.stringify(filter), 'module_name': 'Contacts', 'filter_name': filterName, 'filter_id':selectedFilter };
+            var data = {'filter': JSON.stringify(filter), 'module_name': props.module, 'filter_name': filterName, 'filter_id':selectedFilter };
             Inertia.post(route('store_filter'), data, {
                 onSuccess: (response) => {
                     setOpenFilterModal(false);
@@ -421,9 +419,9 @@ function Filter(props)
                         </span>
                     </Dropdown.Trigger>
 
-                    <Dropdown.Content align="" contentClasses="right-4 py-1 bg-white w-64">
+                    <Dropdown.Content align="" contentClasses="right-4 py-1 bg-white w-64 shadow-lg">
                             
-                    <ul role="list" className="divide-y divide-gray-200 overflow-y-auto h-64">
+                    <ul role="list" className="divide-y divide-gray-200 overflow-y-auto m-h-64">
                         
                         <li onClick={ ()=> applyFilter('All')} className={"px-4 py-2 hover:bg-sky-700 cursor-pointer "+ (selectedFilter == 'All' && 'bg-gray-100' ) }>
                             All

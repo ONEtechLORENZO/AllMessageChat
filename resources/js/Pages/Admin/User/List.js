@@ -83,7 +83,7 @@ function Dashboard(props)
                                 </div>
                                 <div className="ml-4">
                                   <div className="text-sm font-medium text-gray-900">
-                                    <Link  href={route('user_detail' , [person.id])} > {person.name} </Link>
+                                    <Link  href={route('detailUser' , [person.id])} > {person.name} </Link>
                                   </div>
                                 </div>
                               </div>

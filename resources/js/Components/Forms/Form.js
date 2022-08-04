@@ -2,7 +2,7 @@ import { Fragment, useEffect, useRef, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import Axios from "axios";
 import notie from 'notie';
-import nProgress from 'nprogress';
+import nProgress, { settings } from 'nprogress';
 import Dropdown from './Dropdown';
 import TextArea from './TextArea';
 import Input from './Input';
@@ -12,6 +12,8 @@ import { useForm } from '@inertiajs/inertia-react';
 import ValidationErrors from '@/Components/ValidationErrors';
 import Checkbox from '../Checkbox';
 import Creatable from 'react-select/creatable';
+import PhoneInput from 'react-phone-number-input'
+
 
 const defaultConfig = {
     // class of the parent element where the error/success class is added
@@ -40,6 +42,8 @@ function Form(props)
     const cancelButtonRef = useRef(null)
 
     const [fields, setFields] = useState([]);
+
+    const[phoneNumber, setPhoneNumber] = useState('');
 
     const [formErrors, setErrors] = useState({});
 
@@ -149,6 +153,15 @@ function Form(props)
     }
 
     /**
+     * Phone number change event
+     */
+    function changePhoneNumber(value , name){
+        let newState = Object.assign({}, data);
+        newState[name] = value;
+        setData(newState);
+    }
+
+    /**
      * Save form
      */
     function saveForm()
@@ -251,6 +264,14 @@ function Form(props)
                                                         value={data[field_info.field_name]}
                                                         handleChange={handleChange}
                                                     />;
+                                                    break;
+                                                case 'phone_number':
+                                                    element = <PhoneInput
+                                                        placeholder="Enter phone numsber"
+                                                        className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                        value={data[field_info.field_name]} 
+                                                        onChange={(value) => changePhoneNumber(value,field_info.field_name )}
+                                                        />
                                                     break;
                                                 case "amount":
                                                     element = <div className="mt-1 relative rounded-md shadow-sm">

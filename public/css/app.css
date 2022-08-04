@@ -1057,11 +1057,11 @@ select {
 .-mt-2 {
 	margin-top: -0.5rem;
 }
-.-mb-px {
-	margin-bottom: -1px;
-}
 .mb-0 {
 	margin-bottom: 0px;
+}
+.-mb-px {
+	margin-bottom: -1px;
 }
 .mb-6 {
 	margin-bottom: 1.5rem;
@@ -1141,9 +1141,6 @@ select {
 .h-64 {
 	height: 16rem;
 }
-.h-14 {
-	height: 3.5rem;
-}
 .h-\[calc\(100vh-158px\)\] {
 	height: calc(100vh - 158px);
 }
@@ -1158,6 +1155,9 @@ select {
 }
 .h-0 {
 	height: 0px;
+}
+.h-14 {
+	height: 3.5rem;
 }
 .max-h-12 {
 	max-height: 3rem;
@@ -1488,11 +1488,6 @@ select {
 	margin-right: calc(0.75rem * var(--tw-space-x-reverse));
 	margin-left: calc(0.75rem * calc(1 - var(--tw-space-x-reverse)));
 }
-.space-y-2 > :not([hidden]) ~ :not([hidden]) {
-	--tw-space-y-reverse: 0;
-	margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
-	margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
-}
 .space-y-8 > :not([hidden]) ~ :not([hidden]) {
 	--tw-space-y-reverse: 0;
 	margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse)));
@@ -1502,6 +1497,11 @@ select {
 	--tw-space-x-reverse: 0;
 	margin-right: calc(0.5rem * var(--tw-space-x-reverse));
 	margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
+}
+.space-y-2 > :not([hidden]) ~ :not([hidden]) {
+	--tw-space-y-reverse: 0;
+	margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
+	margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
 }
 .divide-y > :not([hidden]) ~ :not([hidden]) {
 	--tw-divide-y-reverse: 0;
@@ -1671,10 +1671,6 @@ select {
 	--tw-border-opacity: 1;
 	border-color: rgba(243, 244, 246, var(--tw-border-opacity));
 }
-.border-blue-400 {
-	--tw-border-opacity: 1;
-	border-color: rgba(96, 165, 250, var(--tw-border-opacity));
-}
 .border-indigo-500 {
 	--tw-border-opacity: 1;
 	border-color: rgba(99, 102, 241, var(--tw-border-opacity));
@@ -1686,6 +1682,10 @@ select {
 .border-blue-300 {
 	--tw-border-opacity: 1;
 	border-color: rgba(147, 197, 253, var(--tw-border-opacity));
+}
+.border-blue-400 {
+	--tw-border-opacity: 1;
+	border-color: rgba(96, 165, 250, var(--tw-border-opacity));
 }
 .border-\[\#67e8f9\] {
 	--tw-border-opacity: 1;
@@ -2394,6 +2394,123 @@ select {
 .ease-linear {
 	transition-timing-function: linear;
 }
+/* CSS variables. */
+:root {
+	--PhoneInput-color--focus: #03b2cb;
+	--PhoneInputInternationalIconPhone-opacity: 0.8;
+	--PhoneInputInternationalIconGlobe-opacity: 0.65;
+	--PhoneInputCountrySelect-marginRight: 0.35em;
+	--PhoneInputCountrySelectArrow-width: 0.3em;
+	--PhoneInputCountrySelectArrow-marginLeft: var(--PhoneInputCountrySelect-marginRight);
+	--PhoneInputCountrySelectArrow-borderWidth: 1px;
+	--PhoneInputCountrySelectArrow-opacity: 0.45;
+	--PhoneInputCountrySelectArrow-color: inherit;
+	--PhoneInputCountrySelectArrow-color--focus: var(--PhoneInput-color--focus);
+	--PhoneInputCountrySelectArrow-transform: rotate(45deg);
+	--PhoneInputCountryFlag-aspectRatio: 1.5;
+	--PhoneInputCountryFlag-height: 1em;
+	--PhoneInputCountryFlag-borderWidth: 1px;
+	--PhoneInputCountryFlag-borderColor: rgba(0,0,0,0.5);
+	--PhoneInputCountryFlag-borderColor--focus: var(--PhoneInput-color--focus);
+	--PhoneInputCountryFlag-backgroundColor--loading: rgba(0,0,0,0.1);
+}
+.PhoneInput {
+	/* This is done to stretch the contents of this component. */
+	display: flex;
+	align-items: center;
+}
+.PhoneInputInput {
+	/* The phone number input stretches to fill all empty space */
+	flex: 1;
+	/* The phone number input should shrink
+	   to make room for the extension input */
+	min-width: 0;
+}
+.PhoneInputCountryIcon {
+	width: calc(var(--PhoneInputCountryFlag-height) * var(--PhoneInputCountryFlag-aspectRatio));
+	height: var(--PhoneInputCountryFlag-height);
+}
+.PhoneInputCountryIcon--square {
+	width: var(--PhoneInputCountryFlag-height);
+}
+.PhoneInputCountryIcon--border {
+	/* Removed `background-color` because when an `<img/>` was still loading
+	   it would show a dark gray rectangle. */
+	/* For some reason the `<img/>` is not stretched to 100% width and height
+	   and sometime there can be seen white pixels of the background at top and bottom. */
+	background-color: var(--PhoneInputCountryFlag-backgroundColor--loading);
+	/* Border is added via `box-shadow` because `border` interferes with `width`/`height`. */
+	/* For some reason the `<img/>` is not stretched to 100% width and height
+	   and sometime there can be seen white pixels of the background at top and bottom,
+	   so an additional "inset" border is added. */
+	box-shadow: 0 0 0 var(--PhoneInputCountryFlag-borderWidth) var(--PhoneInputCountryFlag-borderColor),
+		inset 0 0 0 var(--PhoneInputCountryFlag-borderWidth) var(--PhoneInputCountryFlag-borderColor);
+}
+.PhoneInputCountryIconImg {
+	/* Fixes weird vertical space above the flag icon. */
+	/* https://gitlab.com/catamphetamine/react-phone-number-input/-/issues/7#note_348586559 */
+	display: block;
+	/* 3rd party <SVG/> flag icons won't stretch if they have `width` and `height`.
+	   Also, if an <SVG/> icon's aspect ratio was different, it wouldn't fit too. */
+	width: 100%;
+	height: 100%;
+}
+.PhoneInputInternationalIconPhone {
+	opacity: var(--PhoneInputInternationalIconPhone-opacity);
+}
+.PhoneInputInternationalIconGlobe {
+	opacity: var(--PhoneInputInternationalIconGlobe-opacity);
+}
+/* Styling native country `<select/>`. */
+.PhoneInputCountry {
+	position: relative;
+	align-self: stretch;
+	display: flex;
+	align-items: center;
+	margin-right: var(--PhoneInputCountrySelect-marginRight);
+}
+.PhoneInputCountrySelect {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	z-index: 1;
+	border: 0;
+	opacity: 0;
+	cursor: pointer;
+}
+.PhoneInputCountrySelect[disabled],
+.PhoneInputCountrySelect[readonly] {
+	cursor: default;
+}
+.PhoneInputCountrySelectArrow {
+	display: block;
+	content: '';
+	width: var(--PhoneInputCountrySelectArrow-width);
+	height: var(--PhoneInputCountrySelectArrow-width);
+	margin-left: var(--PhoneInputCountrySelectArrow-marginLeft);
+	border-style: solid;
+	border-color: var(--PhoneInputCountrySelectArrow-color);
+	border-top-width: 0;
+	border-bottom-width: var(--PhoneInputCountrySelectArrow-borderWidth);
+	border-left-width: 0;
+	border-right-width: var(--PhoneInputCountrySelectArrow-borderWidth);
+	transform: var(--PhoneInputCountrySelectArrow-transform);
+	opacity: var(--PhoneInputCountrySelectArrow-opacity);
+}
+.PhoneInputCountrySelect:focus + .PhoneInputCountryIcon + .PhoneInputCountrySelectArrow {
+	opacity: 1;
+	color: var(--PhoneInputCountrySelectArrow-color--focus);
+}
+.PhoneInputCountrySelect:focus + .PhoneInputCountryIcon--border {
+	box-shadow: 0 0 0 var(--PhoneInputCountryFlag-borderWidth) var(--PhoneInputCountryFlag-borderColor--focus),
+		inset 0 0 0 var(--PhoneInputCountryFlag-borderWidth) var(--PhoneInputCountryFlag-borderColor--focus);
+}
+.PhoneInputCountrySelect:focus + .PhoneInputCountryIcon .PhoneInputInternationalIconGlobe {
+	opacity: 1;
+	color: var(--PhoneInputCountrySelectArrow-color--focus);
+}
 .last\:mr-0:last-child {
 	margin-right: 0px;
 }
@@ -2483,10 +2600,6 @@ select {
 .hover\:bg-primary\/80:hover {
 	background-color: rgba(163, 30, 255, 0.8);
 }
-.hover\:bg-gray-700:hover {
-	--tw-bg-opacity: 1;
-	background-color: rgba(55, 65, 81, var(--tw-bg-opacity));
-}
 .hover\:bg-primary:hover {
 	--tw-bg-opacity: 1;
 	background-color: rgba(163, 30, 255, var(--tw-bg-opacity));
@@ -2507,6 +2620,13 @@ select {
 	--tw-bg-opacity: 1;
 	background-color: rgba(229, 231, 235, var(--tw-bg-opacity));
 }
+<<<<<<< HEAD
+=======
+.hover\:bg-gray-700:hover {
+	--tw-bg-opacity: 1;
+	background-color: rgba(55, 65, 81, var(--tw-bg-opacity));
+}
+>>>>>>> eccd5a81fa4ac8f1cbd0c99fe9b9e763583822a7
 .hover\:bg-gray-900:hover {
 	--tw-bg-opacity: 1;
 	background-color: rgba(17, 24, 39, var(--tw-bg-opacity));
@@ -2550,6 +2670,18 @@ select {
 .hover\:shadow-lg:hover {
 	--tw-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+.hover\:ring-2:hover {
+	--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+	--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+	box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+}
+.hover\:ring-indigo-500:hover {
+	--tw-ring-opacity: 1;
+	--tw-ring-color: rgba(99, 102, 241, var(--tw-ring-opacity));
+}
+.hover\:ring-offset-2:hover {
+	--tw-ring-offset-width: 2px;
 }
 .focus\:z-10:focus {
 	z-index: 10;
@@ -2992,12 +3124,6 @@ select {
 		gap: 0px;
 	}
 
-	.sm\:space-y-4 > :not([hidden]) ~ :not([hidden]) {
-		--tw-space-y-reverse: 0;
-		margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
-		margin-bottom: calc(1rem * var(--tw-space-y-reverse));
-	}
-
 	.sm\:space-y-5 > :not([hidden]) ~ :not([hidden]) {
 		--tw-space-y-reverse: 0;
 		margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));
@@ -3008,6 +3134,12 @@ select {
 		--tw-space-y-reverse: 0;
 		margin-top: calc(0px * calc(1 - var(--tw-space-y-reverse)));
 		margin-bottom: calc(0px * var(--tw-space-y-reverse));
+	}
+
+	.sm\:space-y-4 > :not([hidden]) ~ :not([hidden]) {
+		--tw-space-y-reverse: 0;
+		margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
+		margin-bottom: calc(1rem * var(--tw-space-y-reverse));
 	}
 
 	.sm\:overflow-hidden {
@@ -3439,4 +3571,3 @@ select {
 		padding-top: 5rem;
 	}
 }
-
