@@ -71,7 +71,7 @@ class ContactController extends Controller
             'email' =>  [ 'label' => 'Email' , 'type' => 'text'],
             'tag' => [ 'label' => 'Tag' , 'type' => 'text'],
             'list' =>  [ 'label' => 'List' , 'type' => 'text'],
-            'phone_number' => [ 'label' => 'Phone number' , 'type' => 'text'],
+            'phone_number' => [ 'label' => 'Phone number' , 'type' => 'phone_number'],
             'instagram_id' =>  [ 'label' => 'Instagram Id' , 'type' => 'text'],
         ];
         $module = new Contact();
