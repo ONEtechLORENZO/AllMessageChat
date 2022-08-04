@@ -10,6 +10,8 @@ import Pristine from "pristinejs";
 import { Inertia } from '@inertiajs/inertia'
 import { useForm } from '@inertiajs/inertia-react';
 import ValidationErrors from '@/Components/ValidationErrors';
+import Checkbox from '../Checkbox';
+import Creatable from 'react-select/creatable';
 
 const defaultConfig = {
     // class of the parent element where the error/success class is added
@@ -24,6 +26,13 @@ const defaultConfig = {
     errorTextClass: 'text-red-500 text-xs pt-1'
 };
 
+ const optionField = {
+    'field_name': 'options',
+    'field_label': 'Options',
+    'field_type': 'selectable',
+    'is_mandatory': 1
+ }
+            
 function Form(props) 
 {
     const [open, setOpen] = useState(true)
@@ -35,6 +44,8 @@ function Form(props)
     const [formErrors, setErrors] = useState({});
 
     const { data, setData, post, processing, errors, reset } = useForm({});
+
+    const [options, setOptions] = useState(null);
 
     useEffect(() => {
         fetchModuleFields();
@@ -87,7 +98,7 @@ function Form(props)
         let endpoint_url = route('fetchModuleFields', {'module': props.module});
         Axios.get(endpoint_url).then((response) => {
             nProgress.done(true);
-            if(response.data.status !== false) {
+            if (response.data.status !== false) {
                 setFields(response.data.fields);
             }
             else {
@@ -114,19 +125,34 @@ function Form(props)
      * Handle Input Change
      */
     const handleChange = (event) => {
-        let newState = Object.assign({}, data);
-
+        let newState = Object.assign({}, data); 
+        if (event.target.name == 'field_type') {
+            EventHandler(event);
+        }
         const field_name = event.target.name;
         const field_value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         newState[field_name] = field_value;
         setData(newState);
     }
 
+    const EventHandler = (event) => { 
+        if (event.target.value == 'dropdown') {
+            fields.push(optionField);
+        } else {
+            fields.map((field,key) => { 
+                if (field.field_type == 'selectable') { 
+                    fields.pop(key); 
+                    setOptions(null);
+                }
+            });
+        }
+    }
+
     /**
      * Save form
      */
     function saveForm()
-    {
+    {    
         // Validate the data
         let is_validated = false;
         var pristine = new Pristine(document.getElementById(`form`), defaultConfig);
@@ -134,7 +160,7 @@ function Form(props)
         if(!is_validated) {
             return false;
         }
-
+        data['options'] = options;
         Inertia.post(props.recordId ? route('update' + props.module, {id: props.recordId}) : route('store' + props.module), data, {
             onSuccess: (response) => {
                 props.hideForm();
@@ -190,8 +216,8 @@ function Form(props)
 
                                 <form id='form'>
                                     <div className='p-4 space-y-4'>
-                                        {fields && fields.map((field_info) => {
-                                            let element = '';
+                                        {fields && fields.map((field_info,index) => { 
+                                            let element = ''; 
                                             // TODO Need to pass the values dynamically
                                             if(field_info.field_name == 'country_code') {
                                                 field_info['options'] = {
@@ -200,16 +226,29 @@ function Form(props)
                                                     'Italia': 'Italia',
                                                 };
                                             }
-
-                                            switch(field_info.field_type) {
+                                            if(field_info.field_name == 'module_name') {
+                                                field_info['options'] = {
+                                                    'Contact': 'Contact'
+                                                };
+                                            }
+                                            if(field_info.field_name == 'field_type') {
+                                                field_info['options'] = {
+                                                    'text': 'Text',
+                                                    'textarea': 'Textarea',
+                                                    'integer': 'Number',
+                                                    'checkbox': 'checkBox',
+                                                    'dropdown': 'Dropdown',
+                                                };
+                                            }
+                                            switch (field_info.field_type) {
                                                 case "text":
-                                                    element = <Input 
+                                                    element = <Input
                                                         required={field_info.is_mandatory === 1 ? true : false}
-                                                        type="text" 
+                                                        type="text"
                                                         className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
                                                         id={field_info.field_name}
                                                         name={field_info.field_name}
-                                                        value={data[field_info.field_name]} 
+                                                        value={data[field_info.field_name]}
                                                         handleChange={handleChange}
                                                     />;
                                                     break;
@@ -218,36 +257,52 @@ function Form(props)
                                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                             <span className="text-gray-500 sm:text-sm">$</span>
                                                         </div>
-                                                        <Input 
+                                                        <Input
                                                             required={field_info.is_mandatory === 1 ? true : false}
-                                                            type="text" 
-                                                            className={`pl-6 mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`} 
+                                                            type="text"
+                                                            className={`pl-6 mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
                                                             id={field_info.field_name}
                                                             name={field_info.field_name}
-                                                            value={data[field_info.field_name]} 
+                                                            value={data[field_info.field_name]}
                                                             handleChange={handleChange}
                                                         />
                                                     </div>
                                                     break;
                                                 case "textarea":
-                                                    element = <TextArea 
+                                                    element = <TextArea
                                                         id={field_info.field_name}
                                                         name={field_info.field_name}
                                                         required={field_info.is_mandatory === 1 ? true : false}
-                                                        rows="2" 
+                                                        rows="2"
                                                         className={`mt-1 max-w-lg shadow-sm block w-full focus:ring-skin-primary focus:border-skin-primary sm:text-sm border border-gray-300 rounded-md`}
-                                                        value={data[field_info.field_name]} 
-                                                        handleChange={handleChange} 
+                                                        value={data[field_info.field_name]}
+                                                        handleChange={handleChange}
                                                     />
                                                     break;
                                                 case 'dropdown':
-                                                    element = <Dropdown 
+                                                    element = <Dropdown
                                                         id={field_info.field_name}
                                                         name={field_info.field_name}
                                                         options={field_info.options ? field_info.options : {}}
                                                         handleChange={handleChange}
                                                         value={data[field_info.field_name]}
                                                         required={field_info.is_mandatory === 1 ? true : false}
+                                                    />
+                                                    break;
+                                                case 'selectable':
+                                                    element = <Creatable
+                                                        isMulti
+                                                        value={options}
+                                                        defaultValue={options}
+                                                        onChange={setOptions}
+                                                    />
+                                                    break;
+                                                case 'checkbox':
+                                                    element = <Checkbox
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        value={field_info.is_mandatory}
+                                                        handleChange={handleChange}
                                                     />
                                                     break;
                                                 case 'default':
@@ -262,7 +317,7 @@ function Form(props)
                                                     />;
                                                     break;
                                             }
-
+                                           
                                             return (
                                                 <div className='form-group' key={field_info.field_name}>
                                                     <label htmlFor={field_info.field_name} className="block text-sm font-medium text-gray-700">

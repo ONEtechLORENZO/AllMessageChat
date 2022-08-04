@@ -15,15 +15,19 @@ class Contact extends Model
     protected $table = 'contacts';
 
     protected $with = [
-         '0' => 'tags', 
-         '1' => 'categorys'
+        '0' => 'tags',
+        '1' => 'categorys'
+    ];
+
+    protected $casts = [
+        'options' => 'array',
     ];
 
     protected $fillable = ['first_name', 'last_name', 'email', 'phone_number', 'instagram_id', 'user_id', 'created_at', 'updated_at'];
 
     public function messages()
     {
-        return $this->morphMany( Msg::class, 'msgable');
+        return $this->morphMany(Msg::class, 'msgable');
     }
 
     public function tags()
@@ -35,5 +39,4 @@ class Contact extends Model
     {
         return $this->morphToMany(Category::class, 'categorable');
     }
-    
 }
