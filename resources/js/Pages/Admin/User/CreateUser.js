@@ -39,15 +39,18 @@ export default function CreateUser(props) {
 	const { data, setData, post, processing, errors, reset } = useForm({});
     useEffect(() => {  
         // Check is admin
-        if(props.user.role == 'Admin' || ( props.user.id == props.currentUser.id)){
+        let newData = Object.assign({}, data);
+
+        if(props.user.role == 'admin' || ( props.user.id == props.currentUser.id)){
             if(props.user.id) {
-                let newData = Object.assign({}, props.user);
+                let newData = Object.assign({}, data);
                 newData['password'] = props.password;
-                setData(newData);
+               
             }  
         } else {
             
         }
+        setData(props.user);
     },[]);
 
 	/**
@@ -84,14 +87,14 @@ export default function CreateUser(props) {
     function validateAndSubmitForm() 
     {
         var pristine = new PristineJS(document.getElementById("create_user_form"), defaultPristineConfig);
-        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required="required"], select[data-pristine-required="required"]'));
+        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required="true"], select[data-pristine-required="true"]'));
         if(!is_validated) {
             return false;
         }
         post(route('store_user_data'));
     }
     const roleOptions = [
-        {value: 'Admin', label: 'Admin'},
+        {value: 'admin', label: 'Admin'},
         {value: 'Customer', label: 'Customer'},
     ];
 
@@ -112,7 +115,6 @@ export default function CreateUser(props) {
         var conf_pass = document.getElementById("confirm_password");
 
         pristine.addValidator(new_pass, function (value ) {
-            console.log(value );
             if (value == pristine.confirm_password) {
                 return true;
             }
@@ -128,7 +130,7 @@ export default function CreateUser(props) {
 
     // Cheack Admin user
     var isAdmin = false;
-    if(  data.role == 'Admin' || props.currentUser.role == 'Admin' ){
+    if(  data.role == 'admin' || props.currentUser.role == 'admin' ){
         isAdmin  = true;
     }
     var isChangePassword = false;
@@ -157,7 +159,7 @@ export default function CreateUser(props) {
                 } */}
                 
                 <Link 
-                    href={ props.currentUser.role == 'Admin' ? route('usersListing') : route('user_profile', props.user.id)}
+                    href={ props.currentUser.role == 'admin' ? route('listUser') : route('user_profile', props.user.id)}
                         className="ml-3 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
 					>
                     {props.translator['Cancel']}
@@ -209,7 +211,7 @@ export default function CreateUser(props) {
                                             default :
                                                 element = <Input value={data[key]} type={field.type} name={key} required={field.required} id={key} placeholder='' handleChange={handleChange} />
                                         }
-                                        if(key == 'status' && props.currentUser.role != 'Admin'){
+                                        if(key == 'status' && props.currentUser.role != 'admin'){
                                             showField = false;
                                         }
                                         if(key == 'codice_destinatario' && data.company_country != 'IT'){

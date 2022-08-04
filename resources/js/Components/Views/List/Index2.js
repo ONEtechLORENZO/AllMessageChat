@@ -9,6 +9,7 @@ import notie from 'notie';
 import Search from './Search';
 import { Link } from '@inertiajs/inertia-react';
 import Filter from "./Filter2";
+import axios from "axios";
 
 function ListView(props)
 {
@@ -17,6 +18,8 @@ function ListView(props)
     const [records, setRecords] = useState([]);
 
     const [recordId, setRecordId] = useState('');
+
+    const [fieldOptions, setFieldOptions ] = useState({});
 
     useEffect(() => {
         setRecords(props.records);
@@ -60,6 +63,21 @@ function ListView(props)
             onError: (errors) => {
                 notie.alert({type: 'error', text: errors.message, time: 5});
             }
+        });
+    }
+
+    /**
+     * Get dropdown field options
+     */
+    function getFieldOptions(name){
+        let newFieldOptions = Object.assign({}, fieldOptions);
+        axios({
+            method: 'get',
+            url: route('get_field_options', {'field_name': name, 'module_name': props.module}),
+        })
+        .then( (response) =>{
+          newFieldOptions[name] = response.data.options;
+          setFieldOptions(newFieldOptions);
         });
     }
 
@@ -146,7 +164,7 @@ function ListView(props)
                                 <table className="min-w-full divide-y divide-[#D9D9D9]">
                                     <thead>
                                         <tr>
-                                            {Object.entries(props.headers).map(([name, label]) => {
+                                            {Object.entries(props.headers).map(([name, field]) => {
                                                 let visibility = 'invisible';
                                                 let sort_order = 'desc';
                                                 let sortable = true;
@@ -158,7 +176,12 @@ function ListView(props)
                                                 }
                                                 if(name == 'tag' || name == 'list'){
                                                     sortable = false;                                       
-                                               }
+                                                }
+                                                if(field.type == 'dropdown'){
+                                                    if(!fieldOptions[name]){
+                                                        getFieldOptions(name);
+                                                    }
+                                                }
 
                                                 return (
                                                     <th
@@ -167,7 +190,7 @@ function ListView(props)
                                                         className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-[#3D4459] sm:pl-6"
                                                     >
                                                         <a href="#" className="group inline-flex" onClick={() => { sortable ? sortColumn(name, sort_order): ''}}>
-                                                            {label}
+                                                            {field.label}
                                                             <span className={`ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible ` + visibility}>
                                                                 {sortable &&
                                                                     <>
@@ -191,14 +214,14 @@ function ListView(props)
                                     <tbody className=" bg-white">
                                         {Object.entries(props.records).map(([key, record]) => ( 
                                             <tr key={key}> 
-                                                {Object.entries(props.headers).map((header_info, index) => { 
-                                                    let column_value = record[header_info[0]]; 
+                                                {Object.entries(props.headers).map(([name, field],index) => { 
+                                                    let column_value = record[name]; 
                                                     if(props.actions.detail === true && index === 0) {
                                                         column_value = <Link href={route('detail' + props.module, {id: record.id})} className='cursor-pointer underline'>
                                                             {column_value} 
                                                         </Link>;
                                                     } 
-                                                    if(record.tags && header_info[0] == 'tag'){
+                                                    if(record.tags && name == 'tag'){
                                                         var tagName = '';
                                                         (record.tags).map((tag,tagIndex) => {
                                                             if(tagIndex === 0 || tagIndex === 1){ 
@@ -210,7 +233,7 @@ function ListView(props)
                                                         })
                                                        column_value = tagName;
                                                     }
-                                                    if(record.categorys && header_info[0] == 'list'){
+                                                    if(record.categorys && name == 'list'){
                                                         var listName = '';
                                                         (record.categorys).map((list,listIndex) => {
                                                             if(listIndex === 0 || listIndex === 1){ 
@@ -223,8 +246,12 @@ function ListView(props)
                                                        column_value = listName;
                                                     }
 
+                                                    if(field.type == 'dropdown'){
+                                                        column_value = (fieldOptions[name]) ? fieldOptions[name][column_value] : column_value;
+                                                    }
+
                                                     return (
-                                                        <td key={header_info[0]} className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]">
+                                                        <td key={name} className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]">
                                                             {column_value}
                                                         </td>
                                                     );

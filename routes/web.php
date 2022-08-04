@@ -104,6 +104,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Form
     Route::get('/fetchModuleFields/{module}', [FormController::class, 'fetchModuleFields'])->name('fetchModuleFields');
+    Route::get('/field/getFieldOptions',[FormController::class,'getFieldOptions'])->name('get_field_options');
 
     // Import
     Route::get('/import',[ImportController::class, 'index'])->name('listImport');
@@ -136,11 +137,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Check user is admin
 Route::middleware('auth', IsAdmin::class)->group(function () {
     // Users
-    Route::get('/admin/users', [UserController::class, 'usersListing'])->name('usersListing');
+    Route::get('/admin/users', [UserController::class, 'usersListing'])->name('listUser');
     Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_user');
     Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_user');
     Route::get('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_user');
-    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('user_detail');
+    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detailUser');
     Route::post('/admin/user/change_password/{id}', [UserController::class, 'changePassword'])->name('change_password');
 
     // Settings

@@ -192,14 +192,6 @@ function Form(props)
                                     <div className='p-4 space-y-4'>
                                         {fields && fields.map((field_info) => {
                                             let element = '';
-                                            // TODO Need to pass the values dynamically
-                                            if(field_info.field_name == 'country_code') {
-                                                field_info['options'] = {
-                                                    'Austria': 'Austria',
-                                                    'Belgio': 'Belgio',
-                                                    'Italia': 'Italia',
-                                                };
-                                            }
 
                                             switch(field_info.field_type) {
                                                 case "text":

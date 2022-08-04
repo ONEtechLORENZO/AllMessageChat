@@ -26,11 +26,11 @@ class PriceController extends Controller
     {
         // List view columns to show
         $list_view_columns = [
-            'country_code' => 'Country',
-            'user_initiated' => 'User Initiated Chat',
-            'business_initiated' => 'Business Initiated Chat',
-            'message' => 'Message',
-            'media' => 'Media',
+            'country_code' => [ 'label' => 'Country' , 'type' => 'dropdown'],
+            'user_initiated' => [ 'label' => 'User Initiated Chat' , 'type' => 'text'],
+            'business_initiated' => [ 'label' => 'Business Initiated Chat' , 'type' => 'text'],
+            'message' =>  [ 'label' => 'Message' , 'type' => 'text'],
+            'media' =>  [ 'label' => 'Media' , 'type' => 'text'],
         ];
 
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';

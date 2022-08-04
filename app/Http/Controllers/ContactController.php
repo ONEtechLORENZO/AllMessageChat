@@ -65,69 +65,23 @@ class ContactController extends Controller
     public function index(Request $request)
     {
 
-        $user_id = $request->user()->id;
-
         $list_view_columns = [
-            'first_name' => 'First Name',
-            'last_name' => 'Last Name',
-            'email' => 'Email',
-            'tag' => 'Tag',
-            'list' => 'List',
-            'phone_number' => 'Phone Number',
-            'instagram_id' => 'Instagram Id'
+            'first_name' => [ 'label' => 'First Name' , 'type' => 'text'],
+            'last_name' =>  [ 'label' => 'Last Name' , 'type' => 'text'],
+            'email' =>  [ 'label' => 'Email' , 'type' => 'text'],
+            'tag' => [ 'label' => 'Tag' , 'type' => 'text'],
+            'list' =>  [ 'label' => 'List' , 'type' => 'text'],
+            'phone_number' => [ 'label' => 'Phone number' , 'type' => 'text'],
+            'instagram_id' =>  [ 'label' => 'Instagram Id' , 'type' => 'text'],
         ];
+        $module = new Contact();
+        $listViewData = $this->listView( $request , $module, $list_view_columns);
 
-        $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
-        $filter = $request->has('filter') && $request->get('filter') ? $request->get('filter') : '';
-        $filterId = $request->has('filter_id') && $request->get('filter_id') ? $request->get('filter_id') : '';
-        $sort_by = $request->has('sort_by') && $request->get('sort_by') ? $request->get('sort_by') : $this->default_sort_by;
-        $sort_order = $request->has('sort_order') && $request->get('sort_order') ? $request->get('sort_order') : $this->default_sort_order;
-        
-        $user_id = $request->user()->id;
-        $filterData = $this->getFilterData($user_id);
-
-        
-        $whereCondition = '';
-        if($filter){
-            $searchData = json_decode($filter);
-            $whereCondition = $this->getWhereFilterCondition($searchData);
-        }
-        if($filterId && $filterId != 'All'){
-            $filter = Filter::find($filterId);
-            if($filter){
-                $searchData = unserialize( base64_decode($filter->condition) );
-                $whereCondition = $this->getWhereFilterCondition($searchData);
-            }
-        }
-
-        if($search) {
-            $records = Contact::orderBy($sort_by, $sort_order)
-                        ->where(function ($query) use ($search, $list_view_columns, $whereCondition) {  
-                            foreach($list_view_columns as $field_name => $field_info) {
-                                if($field_name != 'tag' && $field_name != 'list')
-                                    $query->orWhere($field_name, 'like', '%' . $search . '%');
-                            }
-                            if($whereCondition){
-                                $query->whereRaw($whereCondition);
-                            }
-                        })
-                        ->where('user_id',$user_id)
-                        ->paginate($this->limit);
-        } else {
-            $records = Contact::where(function ($query) use ($whereCondition) {  
-                if($whereCondition){
-                    $query->whereRaw($whereCondition);
-                }
-            })  
-            ->orderBy($sort_by, $sort_order)
-            ->paginate($this->limit);
-        }
-
-        return Inertia::render('Contacts/List', [
-            'records' => $records->items(),
+        $moduleData = [
             'singular' => 'Contact',
             'plural' => 'Contacts',
             'module' => 'Contact',
+
             // Actions
             'actions' => [
                 'create' => true,
@@ -139,26 +93,10 @@ class ContactController extends Controller
                 'search' => true,
                 'filter' => true,
             ],
-            'search' => $search,
-            'filter' => $filterData,
-            'compact_type' => 'condense',
-            'list_view_columns' => $list_view_columns,
-            // Sorting
-            'sort_by' => $sort_by,
-            'sort_order' => $sort_order,
-            // Paginator
-            'paginator' => [
-                'firstPageUrl' => $records->url(1),
-                'previousPageUrl' => $records->previousPageUrl(),
-                'nextPageUrl' => $records->nextPageUrl(),
-                'lastPageUrl' => $records->url($records->lastPage()),  
-                'currentPage' => $records->currentPage(),
-                'total' => $records->total(),
-                'count' => $records->count(),
-                'lastPage' => $records->lastPage(),
-                'perPage' => $records->perPage(),
-            ],
-        ]);
+        ];
+        $data = array_merge($moduleData , $listViewData);
+        return Inertia::render('Contacts/List', $data);
+
     }
 
     /**
@@ -252,114 +190,6 @@ class ContactController extends Controller
     }
 
     /**
-     * Store filter conditions
-     */
-    public function saveFilterConditions($name, $module, $user, $condition)
-    {
-        if(isset($_GET['filter_id']) && $_GET['filter_id'] ){
-            $filter = Filter::FindOrFail($_GET['filter_id']);
-        } else {
-            $filter = new Filter();
-        }
-        $filter->name = $name;
-        $filter->module_name = $module;
-        $filter->user_id = $user;
-        $filter->condition = base64_encode( serialize( $condition ));
-        $filter->save();
-        return $filter->id;
-    }
-
-    /**
-     * Return filter Contacts list
-     */
-    public function getWhereFilterCondition($searchData)
-    {
-        $whereCondition = '';
-        $groupCount = 0;
-        $isNullCondition = true;
-        
-        foreach($searchData as $key => $groupConditions){
-            foreach($groupConditions as $groupOperator => $conditions ){
-                $conditionsCount = count($conditions);
-                 if(!$conditionsCount){
-                    continue;
-                 }
-                $whereCondition .=  ($groupCount == 0) ? ' (' : " {$groupOperator} (";
-                $groupCount ++;
-                
-                foreach($conditions as $key => $condition){
-                    if($condition->field_name){
-                        $isNullCondition = false;
-                        if( isset($condition->field_type) && $condition->field_type == 'tag'){
-                            $tagContacts = [];
-                            $selectedTag = $condition->condition_value;
-                            if($selectedTag){
-                                $tag = implode(',', $selectedTag);
-                                
-                                $type = "AND taggable_type = 'App\Models\Contact' ";
-                                if( $condition->field_name == 'tag_relation' ) {
-                                    $contactsId = DB::select("select taggable_id as contact_id from taggables where tag_id in ({$tag})" );
-                                } else {
-                                    $contactsId = DB::select("select categorable_id as contact_id from categorables where category_id in ({$tag})" );
-                                }
-                            
-    //                            $taggable = Taggable::whereIn('tag_id', $tag)->get();
-
-                                foreach($contactsId as $contactId){
-                                    $tagContacts[] = $contactId->contact_id;
-                                }
-                                
-                                if($tagContacts){
-                                    $tagContacts = implode(',', array_unique($tagContacts));
-                                    $whereCondition .= " contacts.id in ({$tagContacts}) ";
-                                }
-                            } else {
-                                $whereCondition .= " contacts.id is not null ";
-                            }
-                          
-                        } else {
-                            switch($condition->record_condition){
-                                case 'equal':
-                                    $whereCondition .= " {$condition->field_name} = '{$condition->condition_value}' ";
-                                    break;
-                                case 'not_equal':
-                                    $whereCondition .= " {$condition->field_name} != '{$condition->condition_value}' ";
-                                    break;
-                                case 'is_null':
-                                    $whereCondition .= " {$condition->field_name} is null ";
-                                    break;
-                                case 'start_with':
-                                    $whereCondition .= " {$condition->field_name} like '{$condition->condition_value}%' ";
-                                    break;
-                                case 'end_with':
-                                    $whereCondition .= " {$condition->field_name} like '%{$condition->condition_value}' ";
-                                    break;
-                                case 'contains':
-                                    $whereCondition .= " {$condition->field_name} like '%{$condition->condition_value}%' ";
-                                    break;
-                                case 'lesser_than':
-                                    $whereCondition .= " {$condition->field_name} = '{$condition->condition_value}' ";
-                                    break;
-                            }
-                        }
-                        if($conditionsCount != ($key+1) ){
-                            $operator = ($condition->condition_operator) ? $condition->condition_operator : 'AND';
-                            if($conditions[$key+1]->field_name){
-                                $whereCondition .= " {$operator} ";
-                            }
-                        }
-                    }
-                }
-                $whereCondition .=  " ) ";
-            }
-        }
-        if($isNullCondition){
-            $whereCondition = '';
-        }
-        return $whereCondition;
-    }
-
-    /**
      * Show contact detail
      */
     public function contactDetail(Request $request, $contact_id)
@@ -370,7 +200,6 @@ class ContactController extends Controller
         $ListOptions = $this->getListOption($request->user()->id);
         $ListSelectRecords = $this->getSelectedList($contact);
 
-       
         return Inertia::render('Contacts/Detail', [
             'contact' => $contact,
             'tagOptions'=> $tagOptions,
@@ -463,59 +292,6 @@ class ContactController extends Controller
             }
         }
         return $ListSelectedRecords;
-    }
-
-    /**
-     * Return filter Data
-     */
-    public function getFilterData($user_id)
-    {
-        $return = [];
-        $filterList = Filter::where('user_id', $user_id)
-            ->where('module_name', 'Contacts')
-            ->get(); 
-        $return['filter_list'] = $filterList;
-
-        $tagList = $this->getTagOptionList($user_id);
-        $return['tag_list'] = $tagList;
-
-        $categoryList = $this->getCategoryOptionList($user_id);
-        $return['category_list'] = $categoryList;
-
-        $return['selected_filter'] = (isset($_GET['filter_id'])) ? $_GET['filter_id'] : 'All'; 
-        return $return;
-    }
-
-    /**
-     * Return Tag list 
-     */
-    public function getTagOptionList($user_id)
-    {
-        $tags = Tag::where('user_id', $user_id)->get();
-        $tagList = [];
-        foreach($tags as $tag){
-            $tagList[] = [
-                'value' => $tag->id,
-                'label' => $tag->name
-            ];
-        }
-        return $tagList;
-    }
-
-    /**
-     * Return Category list 
-     */
-    public function getCategoryOptionList($user_id)
-    {
-        $categories = Category::where('user_id', $user_id)->get();
-        $categoryList = [];
-        foreach($categories as $category){
-            $categoryList[] = [
-                'value' => $category->id,
-                'label' => $category->name
-            ];
-        }
-        return $categoryList;
     }
 
     /**

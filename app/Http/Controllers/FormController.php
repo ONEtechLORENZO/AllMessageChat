@@ -23,4 +23,20 @@ class FormController extends Controller
             ->get();
         return response()->json(['fields' => $fields]);
     }
+
+    /**
+     * Return module field options
+     */
+    public function getFieldOptions(Request $request)
+    {
+        $moduleName = $request->get('module_name');
+        $fieldName = $request->get('field_name');
+        $options = Field::where([
+                'module_name'=> $moduleName, 
+                'field_name' => $fieldName, 
+                'user_id' => $request->user()->id 
+            ])
+            ->first('options');
+        echo json_encode($options);
+    }
 }
