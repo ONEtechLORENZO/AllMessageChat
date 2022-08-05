@@ -18,7 +18,7 @@ class FieldSeeder extends Seeder
     public function run()
     {
         $current_datetime = gmdate('Y-m-d H:i:s');
-        $countryCodes = $this->getCountryCodeJson(); 
+        $countryCodes = $this->getCountryCodeJson();
 
         $field = new Field();
         $field->module_name = 'Price';
@@ -27,31 +27,34 @@ class FieldSeeder extends Seeder
         $field->field_type = 'dropdown';
         $field->is_mandatory = 1;
         $field->is_custom = 0;
-        $field->user_id = 1; 
+        $field->user_id = 1;
         $field->created_at = $current_datetime;
         $field->updated_at = $current_datetime;
         $field->options = $countryCodes;
         $field->save();
 
-        
+
         DB::table('fields')->insert([
-        
+
             //Price
             ['module_name' => 'Price', 'field_name' => 'user_initiated', 'field_label' => 'User Initiated', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
             ['module_name' => 'Price', 'field_name' => 'business_initiated', 'field_label' => 'Business Initiated', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
             ['module_name' => 'Price', 'field_name' => 'message', 'field_label' => 'Message', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
             ['module_name' => 'Price', 'field_name' => 'media', 'field_label' => 'Media', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-        
+
             //Tag
             ['module_name' => 'Tag', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
             ['module_name' => 'Tag', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-        
             //Category
             ['module_name' => 'Category', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
             ['module_name' => 'Category', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-        
+            //Field
+            ['module_name' => 'Field', 'field_name' => 'module_name', 'field_label' => 'Module Name', 'field_type' => 'dropdown', 'is_mandatory' => 1, 'is_custom' => 1, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Field', 'field_name' => 'field_label', 'field_label' => 'Field Label', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 1, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Field', 'field_name' => 'field_type', 'field_label' => 'Field Type', 'field_type' => 'dropdown', 'is_mandatory' => 1, 'is_custom' => 1, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Field', 'field_name' => 'mandatory', 'field_label' => 'Mandatory', 'field_type' => 'checkbox', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+
         ]);
-        
     }
 
     /**
@@ -59,7 +62,7 @@ class FieldSeeder extends Seeder
      */
     public function getCountryCodeJson()
     {
-        $countryCode = array (
+        $countryCode = array(
             '93' => 'Afghanistan',
             '358' => 'Finland',
             '355' => 'Albania',
@@ -291,5 +294,4 @@ class FieldSeeder extends Seeder
         );
         return $countryCode;
     }
-   
 }

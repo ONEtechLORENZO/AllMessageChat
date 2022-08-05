@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Input;
 
 class ContactController extends Controller
 {
-    public $contactColumns = ['first_name','last_name','phone_number','email'];
+    public $contactColumns = ['first_name', 'last_name', 'phone_number', 'email'];
 
     public $limit = 15;
 
@@ -42,16 +42,16 @@ class ContactController extends Controller
     public function fieldRecordList($records)
     {
         $recordList = [];
-        foreach($records as $record){
-            $name = $record->first_name . ' ' .$record->last_name;
-            $logo = trim($name , ' ');     
+        foreach ($records as $record) {
+            $name = $record->first_name . ' ' . $record->last_name;
+            $logo = trim($name, ' ');
             $recordList[$record->id] = [
                 'logo' => $logo,
                 'id' => $record->id,
                 'name' => $name,
                 'last_name' => $record->last_name,
                 'email' => $record->email,
-                'number' => ($record->phone_number != '') ? $record->phone_number : $record->instagram_id 
+                'number' => ($record->phone_number != '') ? $record->phone_number : $record->instagram_id
             ];
         }
         return $recordList;
@@ -66,16 +66,16 @@ class ContactController extends Controller
     {
 
         $list_view_columns = [
-            'first_name' => [ 'label' => 'First Name' , 'type' => 'text'],
-            'last_name' =>  [ 'label' => 'Last Name' , 'type' => 'text'],
-            'email' =>  [ 'label' => 'Email' , 'type' => 'text'],
-            'tag' => [ 'label' => 'Tag' , 'type' => 'text'],
-            'list' =>  [ 'label' => 'List' , 'type' => 'text'],
-            'phone_number' => [ 'label' => 'Phone number' , 'type' => 'phone_number'],
-            'instagram_id' =>  [ 'label' => 'Instagram Id' , 'type' => 'text'],
+            'first_name' => ['label' => 'First Name', 'type' => 'text'],
+            'last_name' =>  ['label' => 'Last Name', 'type' => 'text'],
+            'email' =>  ['label' => 'Email', 'type' => 'text'],
+            'tag' => ['label' => 'Tag', 'type' => 'text'],
+            'list' =>  ['label' => 'List', 'type' => 'text'],
+            'phone_number' => ['label' => 'Phone number', 'type' => 'phone_number'],
+            'instagram_id' =>  ['label' => 'Instagram Id', 'type' => 'text'],
         ];
         $module = new Contact();
-        $listViewData = $this->listView( $request , $module, $list_view_columns);
+        $listViewData = $this->listView($request, $module, $list_view_columns);
 
         $moduleData = [
             'singular' => 'Contact',
@@ -94,9 +94,8 @@ class ContactController extends Controller
                 'filter' => true,
             ],
         ];
-        $data = array_merge($moduleData , $listViewData);
+        $data = array_merge($moduleData, $listViewData);
         return Inertia::render('Contacts/List', $data);
-
     }
 
     /**
@@ -171,17 +170,17 @@ class ContactController extends Controller
     public function contactList(Request $request)
     {
         $contactList = [];
-            $contacts = Contact::where('user_id', $user->id )->get() ;                   
-            foreach($contacts as $contact){
-            $name = $contact->first_name . ' ' .$contact->last_name;
-            $logo = trim($name , ' '); 
+        $contacts = Contact::where('user_id', $user->id)->get();
+        foreach ($contacts as $contact) {
+            $name = $contact->first_name . ' ' . $contact->last_name;
+            $logo = trim($name, ' ');
             $contactList[$contact->id] = [
                 'logo' => $logo,
                 'id' => $contact->id,
                 'name' => $name,
                 'last_name' => $contact->last_name,
                 'email' => $contact->email,
-                'number' => ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id 
+                'number' => ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id
             ];
         }
         return Inertia::render('Contacts/Contacts', [
@@ -202,9 +201,9 @@ class ContactController extends Controller
 
         return Inertia::render('Contacts/Detail', [
             'contact' => $contact,
-            'tagOptions'=> $tagOptions,
+            'tagOptions' => $tagOptions,
             'tagData' => $tagSelectedRecords,
-            'listOptions'=> $ListOptions,
+            'listOptions' => $ListOptions,
             'listData' => $ListSelectRecords,
         ]);
     }
@@ -215,7 +214,7 @@ class ContactController extends Controller
     public function storeContact(Request $request)
     {
         $user = $request->user();
-        if($request->id){ 
+        if ($request->id) {
             $request->validate([
                 'last_name' => 'required|max:255',
                 'email' => 'required|max:255',
@@ -228,7 +227,7 @@ class ContactController extends Controller
             ]);
             $contact = new Contact();
         }
-       
+        
         $contact->first_name = $request->first_name;
         $contact->last_name = $request->last_name;
         $contact->phone_number = $request->phone_number;
@@ -246,50 +245,55 @@ class ContactController extends Controller
     public function getContactData(Request $request)
     {
         $contact = Contact::findOrFail($request->id);
-        echo json_encode(['record' => $contact]); die;
+        echo json_encode(['record' => $contact]);
+        die;
     }
 
-    public function getTagOption($user_id){
-        $tags = Tag::where('user_id',$user_id)->get();
+    public function getTagOption($user_id)
+    {
+        $tags = Tag::where('user_id', $user_id)->get();
         $tagOptions = [];
-        if($tags){
-           foreach($tags as $tag){
-              $tagOptions[] = ['value' => $tag['name'] , 'label' => $tag['name'] ];
-           }
+        if ($tags) {
+            foreach ($tags as $tag) {
+                $tagOptions[] = ['value' => $tag['name'], 'label' => $tag['name']];
+            }
         }
         return $tagOptions;
     }
 
-    public function getSelectedTag($contact){
+    public function getSelectedTag($contact)
+    {
 
         $taggableRecords = $contact->tags;
         $tagSelectedRecords = [];
-        if($taggableRecords){
-            foreach($taggableRecords as $tag){
-                $tagSelectedRecords[] = ['value' => $tag['name'] , 'label' => $tag['name']];
+        if ($taggableRecords) {
+            foreach ($taggableRecords as $tag) {
+                $tagSelectedRecords[] = ['value' => $tag['name'], 'label' => $tag['name']];
             }
         }
         return $tagSelectedRecords;
     }
 
-    public function getListOption($user_id){
-        $categorys = Category::where('user_id',$user_id)->get();
+    public function getListOption($user_id)
+    {
+        $categorys = Category::where('user_id', $user_id)->get();
         $categoryOptions = [];
-        if($categorys){
-           foreach($categorys as $category){
-              $categoryOptions[] = ['value' => $category['name'] , 'label' => $category['name'] ];
-           }
+        if ($categorys) {
+            foreach ($categorys as $category) {
+                $categoryOptions[] = ['value' => $category['name'], 'label' => $category['name']];
+            }
         }
         return $categoryOptions;
     }
 
-    public function getSelectedList($contact){
+    public function getSelectedList($contact)
+    {
 
         $CategorableRecords = $contact->categorys;
         $ListSelectedRecords = [];
-        if($CategorableRecords){
-            foreach($CategorableRecords as $category){
-                $ListSelectedRecords[] = ['value' => $category['name'] , 'label' => $category['name']];
+        if ($CategorableRecords) {
+            foreach ($CategorableRecords as $category) {
+                $ListSelectedRecords[] = ['value' => $category['name'], 'label' => $category['name']];
             }
         }
         return $ListSelectedRecords;
@@ -298,7 +302,7 @@ class ContactController extends Controller
     /**
      * Delete Contact 
      */
-    public function deleteContact(Request $request , $contactId)
+    public function deleteContact(Request $request, $contactId)
     {
         $contact = Contact::find($contactId);
         $contact->delete();
