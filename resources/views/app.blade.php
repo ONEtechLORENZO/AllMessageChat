@@ -18,7 +18,7 @@
 
         <!-- Scripts -->
         @routes
-        <script src="{{ url('js/app.js') }}?v=1.2.3" defer></script>
+        <script src="{{ url('js/app.js') }}?v=1.3.1" defer></script>
 
 
     </head>

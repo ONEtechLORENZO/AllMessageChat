@@ -234,6 +234,7 @@ function Form(props)
                                     <div className='p-4 space-y-4'>
                                         {fields && fields.map((field_info,index) => { 
                                             let element = ''; 
+                                           
                                             switch (field_info.field_type) {
                                                 case "text":
                                                     element = <Input
@@ -302,10 +303,11 @@ function Form(props)
                                                     />
                                                     break;
                                                 case 'checkbox':
+                                                    
                                                     element = <Checkbox
                                                         id={field_info.field_name}
                                                         name={field_info.field_name}
-                                                        value={field_info.is_mandatory}
+                                                        value={data[field_info.field_name]}
                                                         handleChange={handleChange}
                                                     />
                                                     break;
