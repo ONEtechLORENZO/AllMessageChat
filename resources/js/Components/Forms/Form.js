@@ -10,8 +10,7 @@ import Pristine from "pristinejs";
 import { Inertia } from '@inertiajs/inertia'
 import { useForm } from '@inertiajs/inertia-react';
 import ValidationErrors from '@/Components/ValidationErrors';
-import PhoneInput from 'react-phone-number-input'
-
+import PhoneInput,{ parsePhoneNumber } from 'react-phone-number-input'
 
 const defaultConfig = {
     // class of the parent element where the error/success class is added
@@ -132,6 +131,10 @@ function Form(props)
     function changePhoneNumber(value , name){
         let newState = Object.assign({}, data);
         newState[name] = value;
+        if(value && parsePhoneNumber(value) ){
+            newState['country_code'] = parsePhoneNumber(value).countryCallingCode;
+        }
+       
         setData(newState);
     }
 
@@ -220,6 +223,8 @@ function Form(props)
                                                     break;
                                                 case 'phone_number':
                                                     element = <PhoneInput
+                                                        initialValueFormat="national"
+                                                        withCountryCallingCode
                                                         placeholder="Enter phone numsber"
                                                         className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
                                                         value={data[field_info.field_name]} 

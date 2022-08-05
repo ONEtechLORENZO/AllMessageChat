@@ -228,10 +228,11 @@ class ContactController extends Controller
             ]);
             $contact = new Contact();
         }
-        
+       
         $contact->first_name = $request->first_name;
         $contact->last_name = $request->last_name;
         $contact->phone_number = $request->phone_number;
+        $contact->country_code = $request->country_code;
         $contact->email = $request->email;
         $contact->user_id = $user->id;
         $contact->instagram_id = $request->instagram_id;

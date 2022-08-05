@@ -105,12 +105,11 @@ function ChatList(props)
 
     // Send content to selected contact
     function sendMessage(){
-        //let data = Object.assign({}, data);
-        data['destination'] = chatList[selectedContact].number;
         if(containerCategory == 'all'){
             return false;
         }
-        
+        data['destination'] = (containerCategory == 'whatsapp') ? chatList[selectedContact].number : chatList[selectedContact].insta_id;
+       
         if(data.content && data.destination ){
             axios({
                 method: 'post',
@@ -118,14 +117,12 @@ function ChatList(props)
                 data: data
             })
             .then( (response) =>{
-              //  console.log(response.data);
-                if(response.data.status == 'Queued'){
+                if(response.data.status == 'Queued' || response.data.status == 'Send'){
                     let newState = Object.assign({}, data);
                     newState['content'] = '';
                     setData(newState);
                 }
                 getMessageList()
-               // return inertia(route('get_message_list', {'contact_id': contactId,'category': containerCategory}));
             });
         }
     }

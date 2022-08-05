@@ -27,6 +27,10 @@ class Msg extends Model
     public function sendWhatsAppMessage($content, $destination, $account)
     {        
         $url = config('app.api_url');
+        if(strpos($uniqueId, '+') === true){
+            $destination = str_replace('+', '' , $destination);
+        }
+        
         $post_data = [
             'channel' => 'whatsapp',
             'source' => $account->phone_number,
@@ -54,7 +58,6 @@ class Msg extends Model
                 "type" => "text",
                 "text" => $content
             ];
-
             $post_data['message'] = (json_encode($message));
         }
         
@@ -63,6 +66,7 @@ class Msg extends Model
             'apikey' => config('app.apiKey')
         ];
 
+        log::info(['send_message_info', $post_data]);
         $response = Http::asForm()->withHeaders($headers)->post($url, $post_data);
         $response_body = json_decode($response->body(), true);
         if ($response_body['status'] != 'error') {
@@ -82,10 +86,8 @@ class Msg extends Model
     /**
      * Send message to Instagram user
      */
-    public function sendInstagramMessage($message, $context_id)
-    {
-        $bot_name = 'InstaBlackant';
-        
+    public function sendInstagramMessage($message, $context_id, $bot_name)
+    {        
         $url = $this->api_url . "/sm/api/bot/{$bot_name}/msg";
         $api_key = config('app.apiKey');
         $headers = [
@@ -101,7 +103,7 @@ class Msg extends Model
             ]),
             'message' => $message,
         ];
-        Log::info(['data' => $post_data] );
+        Log::info(['send message data' => $post_data] );
         $response = Http::asForm()->withHeaders($headers)->post($url, $post_data);
         $response_body = json_decode($response->body(), true);
         Log::info( ['response' =>  $response_body]);
@@ -113,4 +115,41 @@ class Msg extends Model
             return false;
         }
     }
+
+    /**
+     * Return Instagra profile info
+     */
+    public function getProfileDetail($channelid)
+    {
+        $endPoint = $this->api_url.'/sm/api/bot/InstaGupshupTesting/fetch_profile?';
+   
+        $param = [
+            'context' => json_encode([
+                'contextid' => $channelid,
+                'channeltype' => 'instagram',
+                "contexttype" => "p2p",
+                "botname" =>  "InstaGupshupTesting"
+            ]),
+            'sender' => json_encode([
+                'channeltype' => 'instagram',
+                'channelid' => $channelid,
+            ])
+        ];
+
+        $endPoint .= http_build_query($param);
+
+        log::info(['url'  => $endPoint]);
+
+        $api_key = config('app.apiKey');
+        $headers = [
+            'apikey' => $api_key,
+        ];
+
+        $response = Http::withHeaders($headers)->get($endPoint);
+        $response_body = json_decode($response->body(), true);
+
+        log::info(['profile_dat'  => $response_body]);
+        return ($response_body);
+    }
+
 }

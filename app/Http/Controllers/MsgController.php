@@ -203,7 +203,8 @@ class MsgController extends Controller
             $contactList[$contact->id] = [
                 'id' => $contact->id,
                 'name' => $name,
-                'number' => ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id 
+                'number' =>  $contact->phone_number,
+                'insta_id' => $contact->instagram_id 
             ];
         }
         if($request->contact_id){
@@ -271,18 +272,18 @@ class MsgController extends Controller
         // Receive data from Gupshup
         $post_data = file_get_contents("php://input");
         $response = json_decode($post_data, true);
-        $data = $response['payload'];
-
         log::info([ 'Incoming message (or) response' => $post_data]);
-
-        // For set callback url
-        if((isset($data['type']) && $data['type'] == 'user-event' )|| (isset($data['phone']) && $data['phone'] == 'callbackSetPhone' )|| ( isset($data['type']) && $data['type'] == 'sandbox-start' )){
-            return true;
-        }
 
         // If call is coming to set the URL
         if(isset($_GET['botname']) && isset($_GET['channel'])) {
             parse_str($_GET, $parsed_data);
+            return true;
+        }
+
+        $data = isset($response['payload']) ? $response['payload'] : [];
+
+        // For set callback url
+        if((isset($data['type']) && $data['type'] == 'user-event' )|| (isset($data['phone']) && $data['phone'] == 'callbackSetPhone' )|| ( isset($data['type']) && $data['type'] == 'sandbox-start' )){
             return true;
         }
 
@@ -323,10 +324,11 @@ class MsgController extends Controller
         $user = $request->user();
         $account = Account::where('user_id', $user->id)->first();
         $msg = new Msg();
+       
         if($request->chennal == 'instagram'){
-           
-          //  $response = $msg->sendInstagramMessage($request->content , $request->destination);
-            $response = '';
+            // TODO Get correct account based on instagram id
+            $account = Account::find(2); 
+            $response = $msg->sendInstagramMessage($request->content , $request->destination, $account->src_name);
             $status = 'Failed';
             if($response) {
                 $status = 'Send';
@@ -393,6 +395,14 @@ class MsgController extends Controller
     {
         $phoneNumber = $instagramId = '';
         $field = ($type == 'whatsapp') ? 'phone_number' : 'instagram_id';
+
+        if(strpos($uniqueId, '+') === false){
+            $uniqueId = ($type == 'whatsapp') ? '+'.$uniqueId : $uniqueId;
+        }
+
+        //$message = new Msg();
+        //$profileDetail = $message->getProfileDetail($uniqueId)
+       // log::info(['out the profileDetail fun', $profileDetail]);
 
         $contact = Contact::where($field , $uniqueId)
             ->where('user_id', $user_id)
@@ -522,7 +532,7 @@ class MsgController extends Controller
         }
         if(isset($data['pricing'])){
             $messageData['policy'] = $data['pricing']['category'];
-            $price = $this->handlePrice($data['destination'], $data['pricing']['category'] );
+            $price = $this->handlePrice($data['destination'], $data['pricing']['category'] ,$user_id);
             if($message->status != 'Sent'){
                 $this->reduceMessageAmount($price, $message->account_id);
             }
@@ -579,12 +589,22 @@ class MsgController extends Controller
      * @param STRING $nummber
      * @param STRING $category
      */
-    public function handlePrice($number , $category)
+    public function handlePrice($number , $category, $user_id)
     {
         $return = '';
-        //TODO Need to get country id for gettting price detail
-        $countryCode = 1; //$this->getCountryCode($number);
-        $price = Price::find($countryCode);
+        $number = '+'.$number ;
+        $price = '';
+        $contact = Contact::where('phone_number' , $number)
+            ->where('user_id', $user_id)
+            ->first();
+        if($contact ){
+            $price = Price::where('country_code' , $contact->country_code)->first();
+        } 
+
+        if(! $price){
+            $price = Price::where('is_default' , 1)->first();
+        }
+
         if($category == 'UIC'){
             $return = $price->user_initiated;
         } else if($category == 'BIC'){
