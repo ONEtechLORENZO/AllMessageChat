@@ -17,9 +17,14 @@ class FormController extends Controller
         if($user->role != 'admin' && $module == 'Price') {
             abort(401);
         }
+        $whereCondition = [
+            'module_name'=> $module, 
+        ];
+        if($module == 'Contact'){
+            $whereCondition['user_id'] = $request->user()->id ;
+        }
 
-        $fields = Field::where('module_name', $module)
-            ->where('user_id', $request->user()->id)
+        $fields = Field::where($whereCondition)
             ->get();
         return response()->json(['fields' => $fields]);
     }
