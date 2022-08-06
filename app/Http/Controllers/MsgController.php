@@ -195,7 +195,7 @@ class MsgController extends Controller
         $contacts = Contact::where('user_id', $user->id )->get();
         $accounts = Account::where('user_id', $user->id )->get();
         foreach($accounts as $account){
-            $accoutList[$account->id] = $account->company_name;
+            $accoutList[$account->id] = $account->company_name."( {$account->service} )";
         }
         foreach($contacts as $contact){
             $name = $contact->first_name . ' ' .$contact->last_name;
@@ -407,9 +407,7 @@ class MsgController extends Controller
         }
 
         //$message = new Msg();
-        //$profileDetail = $message->getProfileDetail($uniqueId)
-       // log::info(['out the profileDetail fun', $profileDetail]);
-
+        //$profileDetail = $message->getProfileDetail($uniqueId);
         $contact = Contact::where($field , $uniqueId)
             ->where('user_id', $user_id)
             ->first();
@@ -461,6 +459,7 @@ class MsgController extends Controller
         $account_id = $data['account_id'];
         $user_id = $this->getUserIdUsingAccountId($account_id);
 
+        log::info(['insta content' => $message_content]);
         // Get Contact information
         $msgable_id = $this->getInfoUsingContactUniqueId($sender_id, 'instagram', $user_id);
         $msgable_type = 'App\Models\Contact';
@@ -641,5 +640,4 @@ class MsgController extends Controller
         }
         DB::commit();
     }
-
 }
