@@ -20,7 +20,7 @@ class Contact extends Model
     ];
 
     protected $casts = [
-        'options' => 'array',
+        'custom' => 'array',
     ];
 
     protected $fillable = ['first_name', 'last_name', 'email', 'phone_number', 'instagram_id', 'user_id', 'created_at', 'updated_at'];

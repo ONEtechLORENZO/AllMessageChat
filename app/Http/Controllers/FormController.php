@@ -31,11 +31,15 @@ class FormController extends Controller
     {
         $moduleName = $request->get('module_name');
         $fieldName = $request->get('field_name');
-        $options = Field::where([
-                'module_name'=> $moduleName, 
-                'field_name' => $fieldName, 
-                'user_id' => $request->user()->id 
-            ])
+        $whereCondition = [
+            'module_name'=> $moduleName, 
+            'field_name' => $fieldName, 
+        ];
+        if($moduleName == 'Contact'){
+            $whereCondition['user_id'] = $request->user()->id ;
+        }
+
+        $options = Field::where($whereCondition)
             ->first('options');
         echo json_encode($options);
     }

@@ -14,7 +14,7 @@ class AddOptionToContactsTable extends Migration
     public function up()
     {
         Schema::table('contacts', function (Blueprint $table) {
-            $table->json('custom')->nullable();
+            $table->LONGTEXT('custom')->nullable();
         });
     }
 
