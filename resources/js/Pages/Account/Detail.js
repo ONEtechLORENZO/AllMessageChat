@@ -182,6 +182,9 @@ function Detail(props)
                                     if(props.field_info[key].show && !props.field_info[key].show.includes(props.account.service)) {
                                         return;
                                     }
+                                    if(!props.field_info[key]['label']){
+                                        return;
+                                    }
 
                                     return (
                                         <div key={key} className={`${bg_color} px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>

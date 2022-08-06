@@ -453,7 +453,7 @@ class UserController extends Controller
             // 'type_of_integration' => ['label' => 'Type of integration'],
             'display_name' => ['label' => 'Display name', 'show' => ['whatsapp']],
             'phone_number' => ['label' => __('Phone number'), 'show' => ['whatsapp']],
-            'src_name' => ['label' => __('Source name'), 'show' => ['whatsapp']],
+            'src_name' => ['label' => __('Source name'), 'show' => ['whatsapp', 'instagram']],
             'api_partner' => ['label' => __('API partner'), 'show' => ['whatsapp']],
             'api_partner_name' => ['label' => __('API partner Name'), 'show' => ['whatsapp']],
             'business_manager_id' => ['label' => __('Business manager ID'), 'show' => ['whatsapp']],
@@ -503,9 +503,6 @@ class UserController extends Controller
                 'Account related events' => __('Account related events'),
                 'Return sent messasge enqueue response to callback url' => __('Return sent messasge enqueue response to callback url')
 
-
-
-
             ]
         ]);
     }
@@ -537,7 +534,9 @@ class UserController extends Controller
                 'Estimated launch date' =>  __('Estimated launch date'),
                 'Type of integration' =>  __('Type of integration'),
                 'Whatsapp Information' =>  __('Whatsapp Information'),
+                'Instagram Information' =>  __('Instagram Information'),
                 'Information will be used to create your whatsapp business account' =>  __('Information will be used to create your whatsapp business account'),
+                'Information will be used to create your instagram business account' =>  __('Information will be used to create your instagram business account'),
                 'Phone number' =>  __('Phone number'),
                 'Source Name' =>  __('Source Name'),
                 'Display Name' =>  __('Display Name'),
@@ -578,7 +577,9 @@ class UserController extends Controller
                 'Estimated launch date' =>  __('Estimated launch date'),
                 'Type of integration' =>  __('Type of integration'),
                 'Whatsapp Information' =>  __('Whatsapp Information'),
+                'Instagram Information' =>  __('Instagram Information'),
                 'Information will be used to create your whatsapp business account' =>  __('Information will be used to create your whatsapp business account'),
+                'Information will be used to create your instagram business account' =>  __('Information will be used to create your instagram business account'),
                 'Phone number' =>  __('Phone number'),
                 'Source Name' =>  __('Source Name'),
                 'Display Name' =>  __('Display Name'),

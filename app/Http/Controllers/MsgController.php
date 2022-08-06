@@ -190,9 +190,13 @@ class MsgController extends Controller
     {
         $limit = $this->limit;
         $condition = $selectedContact = $category = '';
-        $contactList = $messages = [];
+        $contactList = $messages = $accoutList= [];
         $user = $request->user();
         $contacts = Contact::where('user_id', $user->id )->get();
+        $accounts = Account::where('user_id', $user->id )->get();
+        foreach($accounts as $account){
+            $accoutList[$account->id] = $account->company_name;
+        }
         foreach($contacts as $contact){
             $name = $contact->first_name . ' ' .$contact->last_name;
             if($name == ' '){
@@ -215,6 +219,7 @@ class MsgController extends Controller
 
         return Inertia::render('Messages/ChatList', [
             'contact_list' => $contactList,
+            'account_list' => $accoutList,
             'messages' => $messages,
             'selected_contact' => $selectedContact,
             'category' => ($category) ? $category : 'all',
@@ -255,6 +260,7 @@ class MsgController extends Controller
         foreach($contact->messages->whereIn('service', $category) as $message){
             $messages[] = [
                 'content' => $message->message,
+                'status' => $message->status,
                 'date' => date_format( $message->created_at , $this->dateChatView),
                 'mode' => $message->msg_mode,
                 'category' => $message->service,
@@ -322,12 +328,12 @@ class MsgController extends Controller
     public function sendMessage(Request $request)
     {
         $user = $request->user();
-        $account = Account::where('user_id', $user->id)->first();
+        $account = Account::find($request->account_id);
         $msg = new Msg();
        
         if($request->chennal == 'instagram'){
             // TODO Get correct account based on instagram id
-            $account = Account::find(2); 
+            
             $response = $msg->sendInstagramMessage($request->content , $request->destination, $account->src_name);
             $status = 'Failed';
             if($response) {
@@ -619,12 +625,12 @@ class MsgController extends Controller
      * Reduce message cost on wallet
      * 
      * @param FLOAT $price
-     * @param INTEGER $accoount_id
+     * @param INTEGER $account_id
      */
-    public function reduceMessageAmount($price, $accoount_id)
+    public function reduceMessageAmount($price, $account_id)
     {
         DB::beginTransaction();
-        $user_id = $this->getUserIdUsingAccountId($accoount_id);
+        $user_id = $this->getUserIdUsingAccountId($account_id);
         $wallet = Wallet::where('user_id', $user_id)->lockForUpdate()->first();
        
         if($wallet){
