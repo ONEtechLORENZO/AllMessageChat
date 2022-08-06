@@ -12,7 +12,7 @@ import { useForm } from '@inertiajs/inertia-react';
 import ValidationErrors from '@/Components/ValidationErrors';
 import Checkbox from '../Checkbox';
 import Creatable from 'react-select/creatable';
-import PhoneInput from 'react-phone-number-input'
+import PhoneInput, {parsePhoneNumber} from 'react-phone-number-input'
 
 const defaultConfig = {
     // class of the parent element where the error/success class is added
@@ -251,7 +251,7 @@ function Form(props)
                                                     element = <PhoneInput
                                                         initialValueFormat="national"
                                                         withCountryCallingCode
-                                                        placeholder="Enter phone numsber"
+                                                        placeholder="Enter phone number"
                                                         className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
                                                         value={data[field_info.field_name]} 
                                                         onChange={(value) => changePhoneNumber(value,field_info.field_name )}

@@ -107,6 +107,7 @@ class PriceController extends Controller
         $fields = Field::where('module_name', 'Price')->get();
         // Prepare validation param
         foreach($fields as $field) {
+            $validate = '';
             if($field['is_mandatory'] === 1) {
                 $validate = 'required';
             }
