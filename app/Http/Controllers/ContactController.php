@@ -115,10 +115,10 @@ class ContactController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, Contact $contact)
+    public function store(Request $request)
     {
-        $this->saveContact($request, $contact);
-        return Redirect::route('detailContact', $contact->id);
+        $contact_id = $this->saveContact($request);
+        return Redirect::route('detailContact', $contact_id);
     }
 
     /**
@@ -152,8 +152,8 @@ class ContactController extends Controller
      */
     public function update(Request $request)
     {
-        $this->saveContact($request, $contact);
-        return Redirect::route('detailContact', $contact->id);
+        $contact_id = $this->saveContact($request);
+        return Redirect::route('detailContact', $contact_id);
     }
 
     /**
@@ -233,7 +233,6 @@ class ContactController extends Controller
                 'email' => 'required|unique:contacts|max:255',
             ]);
             $contact = new Contact();
-            $contact->user_id = $user->id;
         }
         
          $contact->first_name = $request->first_name;
@@ -241,7 +240,7 @@ class ContactController extends Controller
         $contact->phone_number = $request->phone_number;
         $contact->country_code = $request->country_code;
         $contact->email = $request->email;
-        
+        $contact->user_id = $user->id;
         $contact->instagram_id = $request->instagram_id;
         $contact->save();
         */
@@ -333,7 +332,7 @@ class ContactController extends Controller
         return $header;
     }
 
-    public function saveContact($request, $contact){
+    public function saveContact($request){
 
         if ($request->id) {
             $request->validate([
@@ -375,6 +374,8 @@ class ContactController extends Controller
             $contact->user_id = $request->user()->id;
             $contact->save();
         }
+
+        return $contact->id;
     }
 
 }

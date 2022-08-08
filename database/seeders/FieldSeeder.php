@@ -303,7 +303,6 @@ class FieldSeeder extends Seeder
         $type = array(
             'text' => 'Text',
             'textarea' => 'Textarea',
-            'integer' =>  'Number',
             'checkbox' => 'checkBox',
             'dropdown' => 'Dropdown',
         );
