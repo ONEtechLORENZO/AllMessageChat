@@ -27,7 +27,7 @@ class Msg extends Model
     public function sendWhatsAppMessage($content, $destination, $account)
     {        
         $url = config('app.api_url');
-        if(strpos($uniqueId, '+') === true){
+        if(strpos($destination, '+') === true){
             $destination = str_replace('+', '' , $destination);
         }
         

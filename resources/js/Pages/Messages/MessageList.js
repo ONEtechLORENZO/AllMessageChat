@@ -2,6 +2,7 @@ import React ,{ useEffect , useState } from 'react';
 import {
     WhatsAppIcon,
     InstaIcon,
+    ErrorIcon,
 } from "../icons";
 
 export default function MessageList(props) {
@@ -67,7 +68,10 @@ export default function MessageList(props) {
                                                                   
                                                             }
                                                         </span>
-                                                        <span className="text-xs text-right  mt-2">
+                                                        <span className="text-xs text-right mt-2 flex" >
+                                                            {message.status == 'Failed' &&
+                                                                <ErrorIcon />
+                                                            }
                                                             {message.date} 
                                                         </span>
                                                     </div>

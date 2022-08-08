@@ -17,9 +17,14 @@ class FormController extends Controller
         if($user->role != 'admin' && $module == 'Price') {
             abort(401);
         }
+        $whereCondition = [
+            'module_name'=> $module, 
+        ];
+        if($module == 'Contact'){
+            $whereCondition['user_id'] = $request->user()->id ;
+        }
 
-        $fields = Field::where('module_name', $module)
-            ->where('user_id', $request->user()->id)
+        $fields = Field::where($whereCondition)
             ->get();
         foreach($fields as $field){
             if($field['is_custom'] == '1' && $field['field_type'] == 'dropdown'){
@@ -44,11 +49,15 @@ class FormController extends Controller
     {
         $moduleName = $request->get('module_name');
         $fieldName = $request->get('field_name');
-        $options = Field::where([
-                'module_name'=> $moduleName, 
-                'field_name' => $fieldName, 
-                'user_id' => $request->user()->id 
-            ])
+        $whereCondition = [
+            'module_name'=> $moduleName, 
+            'field_name' => $fieldName, 
+        ];
+        if($moduleName == 'Contact'){
+            $whereCondition['user_id'] = $request->user()->id ;
+        }
+
+        $options = Field::where($whereCondition)
             ->first('options');
         echo json_encode($options);
     }

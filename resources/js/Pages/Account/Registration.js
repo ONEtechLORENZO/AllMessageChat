@@ -428,7 +428,43 @@ function Registration(props) {
                                 </div>
                             </div>
                         ) : (
-                            ""
+                            <>
+                            {data.service == 'instagram' ?
+                            (
+                            <div className='className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6"'>
+                                <div className="md:grid md:grid-cols-3 md:gap-6">
+                                    <div className="md:col-span-1">
+                                        <h3 className="text-lg font-medium leading-6 text-gray-900">
+                                            { props.translator["Instagram Information"]}
+                                        </h3>
+                                        <p className="mt-1 text-sm text-gray-500">
+                                            { props.translator[ "Information will be used to create your instagram business account"]}
+                                        </p>
+                                    </div>
+                                    <div className="mt-5 md:mt-0 md:col-span-2">
+                                        <div className="grid grid-cols-6 gap-6"></div>
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <label htmlFor="src_name" className="block text-sm font-medium text-gray-700" >
+                                                {props.translator["Source Name"]}
+                                            </label>
+                                            <div className="mt-1 flex rounded-md shadow-sm">
+                                                <Input
+                                                    required={true}
+                                                    name="src_name"
+                                                    value={data.src_name}
+                                                    id="src_name"
+                                                    placeholder=""
+                                                    handleChange={handleChange}
+                                                />
+                                            </div>
+                                            <InputError message={errors.src_name} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            ) : ("")
+                            }
+                            </>
                         )}
                     </div>
                     { !data.id && 

@@ -233,6 +233,7 @@ class ContactController extends Controller
                 'email' => 'required|unique:contacts|max:255',
             ]);
             $contact = new Contact();
+            $contact->user_id = $user->id;
         }
         
          $contact->first_name = $request->first_name;
@@ -240,7 +241,7 @@ class ContactController extends Controller
         $contact->phone_number = $request->phone_number;
         $contact->country_code = $request->country_code;
         $contact->email = $request->email;
-        $contact->user_id = $user->id;
+        
         $contact->instagram_id = $request->instagram_id;
         $contact->save();
         */

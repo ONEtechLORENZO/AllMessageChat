@@ -14,7 +14,7 @@ class AddOptionsColumnFieldsTable extends Migration
     public function up()
     {
         Schema::table('fields', function (Blueprint $table) {
-            $table->json('options')->nullable();
+            $table->LONGTEXT('options')->nullable();
         });
     }
 

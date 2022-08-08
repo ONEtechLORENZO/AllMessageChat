@@ -62,15 +62,13 @@ class Controller extends BaseController
                                 if($field_name != 'tag' && $field_name != 'list')
                                     $query->orWhere($field_name, 'like', '%' . $search . '%');
                             }
-                          
                         });
-            $query = ($searchData ) ? $this->getWhereFilterCondition($searchData , $query, $baseTable) : $query;
-            $records = $query->groupBy('id')->paginate($this->limit);
-                       
+            $query = ($searchData) ? $this->getWhereFilterCondition($searchData , $query, $baseTable) : $query;
+            $records = $query->paginate($this->limit);
         } else {
             $query = $module->select( $listFields )->orderBy("{$baseTable}.{$sort_by}", $sort_order);
-            $query = ($searchData ) ? $this->getWhereFilterCondition($searchData , $query , $baseTable) : $query;
-            $records = $query->groupBy('id')->paginate($this->limit);
+            $query = ($searchData) ? $this->getWhereFilterCondition($searchData , $query , $baseTable) : $query;
+            $records = $query->paginate($this->limit);
         }
 
         $return = [
@@ -181,7 +179,7 @@ class Controller extends BaseController
                             $selectedTag = $condition->condition_value;
                                 
                             if( $condition->field_name == 'tag_relation' ) {
-                                $query->leftJoin('taggables', "{$baseTable}.id",'taggable_id');
+                                $query->leftJoin('taggables', "{$baseTable}.id",'taggable_id')->groupBy('id');
                                 if($selectedTag){
                                     $tag = implode(',', $selectedTag);
                                     $whereCondition .= "tag_id in ({$tag}) ";
@@ -189,7 +187,7 @@ class Controller extends BaseController
                                     $whereCondition .= "tag_id is null ";
                                 }
                             } else {
-                                $query->leftJoin('categorables', "{$baseTable}.id", 'categorable_id');
+                                $query->leftJoin('categorables', "{$baseTable}.id", 'categorable_id')->groupBy('id');
                                 if($selectedTag){
                                     $tag = implode(',', $selectedTag);
                                     $whereCondition .= "category_id in ({$tag}) ";

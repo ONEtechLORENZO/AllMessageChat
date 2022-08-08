@@ -136,9 +136,15 @@ class TagController extends Controller
             return Redirect::route('detailContact', $id);
         }else{
 
-            $request->validate([
-                'name' => 'required|unique:tags|max:255',
-            ]);
+            // Check whether tag name has been unique
+            $checkTagName = Tag::where('name', $request->get('name'))
+            ->where('user_id', $user_id)
+            ->first();
+
+            if($checkTagName) {
+            throw ValidationException::withMessages(['message' => 'Name is already exits']);
+            }
+
             
             //Create new Tag
             $name = $request->name;

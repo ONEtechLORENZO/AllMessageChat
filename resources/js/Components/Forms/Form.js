@@ -12,7 +12,7 @@ import { useForm } from '@inertiajs/inertia-react';
 import ValidationErrors from '@/Components/ValidationErrors';
 import Checkbox from '../Checkbox';
 import Creatable from 'react-select/creatable';
-import PhoneInput from 'react-phone-number-input'
+import PhoneInput, {parsePhoneNumber} from 'react-phone-number-input'
 
 const defaultConfig = {
     // class of the parent element where the error/success class is added
