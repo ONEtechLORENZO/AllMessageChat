@@ -20,7 +20,7 @@ use App\Http\Controllers\NoteController;
 use App\Http\Middleware\IsAdmin;
 use App\Models\Contact;
 use App\Models\Note;
-use Barryvdh\DomPDF\Facade\Pdf;
+
 
 /*
 |--------------------------------------------------------------------------
