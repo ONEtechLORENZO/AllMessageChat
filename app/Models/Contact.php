@@ -15,11 +15,20 @@ class Contact extends Model
 
     protected $table = 'contacts';
 
-    protected $fillable = ['first_name', 'last_name', 'email', 'phone_number', 'instagram_id', 'user_id', 'created_at', 'updated_at'];
+    protected $with = [
+        '0' => 'tags',
+        '1' => 'categorys'
+    ];
+
+    protected $casts = [
+        'custom' => 'array',
+    ];
+
+    protected $fillable = ['first_name', 'last_name', 'email', 'phone_number', 'instagram_id', 'user_id', 'created_at', 'updated_at', 'custom', 'country_code'];
 
     public function messages()
     {
-        return $this->morphMany( Msg::class, 'msgable');
+        return $this->morphMany(Msg::class, 'msgable');
     }
 
     public function tags()

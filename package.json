@@ -39,7 +39,8 @@
         "nprogress": "^0.2.0",
         "pristinejs": "^0.1.9",
         "react-confirm-alert": "^2.7.0",
-        "react-js-pagination": "^3.0.3",
+        "react-js-pagination": "^3.0.2",
+        "react-phone-number-input": "^3.2.6",
         "react-select": "^4.3.1",
         "react-toastify": "^8.0.2"
     }

@@ -182,8 +182,35 @@ class UserController extends Controller
      */
     public function usersListing(Request $request)
     {
-        $users = User::paginate($this->per_page)->withQueryString();
-        return Inertia::render('Admin/User/List', ['users' => $users]);
+        $list_view_columns = [
+            'name' => [ 'label' => ' Name' , 'type' => 'text'],
+            'email' =>  [ 'label' => 'Email' , 'type' => 'text'],
+            'role' => [ 'label' => 'Role' , 'type' => 'text'],
+            'status' =>  [ 'label' => 'Status' , 'type' => 'checkbox'],
+            'created_at' =>  [ 'label' => 'Created at' , 'type' => 'datetime'],
+        ];
+        $module = new User();
+        $listViewData = $this->listView( $request , $module, $list_view_columns);
+
+        $moduleData = [
+            'singular' => 'User',
+            'plural' => 'Users',
+            'module' => 'User',
+
+            // Actions
+            'actions' => [
+                'create' => false,
+                'detail' => true,
+                'edit' => true,
+                'delete' => true,
+                'export' => false,
+                'import' => false,
+                'search' => true,
+                'filter' => true,
+            ],
+        ];
+        $data = array_merge($moduleData , $listViewData);
+        return Inertia::render('Admin/User/UserList2', $data);
     }
 
     /**
@@ -194,7 +221,7 @@ class UserController extends Controller
         $currentUser = $request->user();
         $user = new User();
         
-        if($user->role == 'Admin'){
+        if($user->role == 'admin'){
             return Inertia::render('Admin/User/CreateUser', [
                     'user' => $user, 
                     'currentUser' => $currentUser,
@@ -213,7 +240,8 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $password = $user->password;
         $currentUser = $request->user();
-        if($currentUser->role == 'Admin' || $user->id == $currentUser->id){
+        
+        if($currentUser->role == 'admin' || $user->id == $currentUser->id){
             return Inertia::render('Admin/User/CreateUser', [
                     'user' => $user, 
                     'password' => $password, 
@@ -221,23 +249,22 @@ class UserController extends Controller
                     'time_zone' => $this->timezones,
                     'translator' => [
                         'Name' => __('Name'),
-                    'Company name' => __('Company name'),
-                    'Email' => __('Email'),
-                    'Phone number' => __('Phone number'),
-                    'Language' => __('Language'),
-                    'Currency' => __('Currency'),
-                    'Active Status' => __('Active Status'),
-                    'Company Address' => __('Company Address'),
-                    'Company Country' => __('Company Country'),
-                    'Company VAT ID' => __('Company VAT ID'),
-                    'Admin email for invoices' => __('Admin email for invoices'),
-                    'Users'  => __('Users'),
-                    'Personal Information' => __('Personal Information'),
-                    'Time Zone' => __('Time Zone'),
-                    'Edit User' => __('Edit User'),
-                    'Save'  => __('Save'),
-                    'Cancel' => __('Cancel')
-
+                        'Company name' => __('Company name'),
+                        'Email' => __('Email'),
+                        'Phone number' => __('Phone number'),
+                        'Language' => __('Language'),
+                        'Currency' => __('Currency'),
+                        'Active Status' => __('Active Status'),
+                        'Company Address' => __('Company Address'),
+                        'Company Country' => __('Company Country'),
+                        'Company VAT ID' => __('Company VAT ID'),
+                        'Admin email for invoices' => __('Admin email for invoices'),
+                        'Users'  => __('Users'),
+                        'Personal Information' => __('Personal Information'),
+                        'Time Zone' => __('Time Zone'),
+                        'Edit User' => __('Edit User'),
+                        'Save'  => __('Save'),
+                        'Cancel' => __('Cancel')
                     ]
                 ]);
         } else {
@@ -301,7 +328,7 @@ class UserController extends Controller
     public function storeUserRegistration(Request $request)
     {
         Log::info('Save user data process start');
-        if(($request->get('id') == $request->user()->id) ||  $request->user()->role == 'Admin'){
+        if(($request->get('id') == $request->user()->id) ||  $request->user()->role == 'admin'){
            
             if (!$request->get('id')) {
                 $request->validate([
@@ -330,7 +357,7 @@ class UserController extends Controller
             $user->admin_email = $request->get('admin_email');
            
             
-            if( $request->user()->role == 'Admin') {
+            if( $request->user()->role == 'admin') {
                 $user->role = $request->get('role');
                 $user->status = $request->get('status');
             }
@@ -339,13 +366,6 @@ class UserController extends Controller
             Log::info('Record saved successfully.');
         }
         return Redirect::route('user_profile', $user->id);
-        /*
-        if($user->role == 'Admin'){
-        //    return Redirect::route('usersListing');
-        } else {
-            return Redirect::route('user_profile', $user->id);
-        }
-        */
     }
 
     /**
@@ -362,7 +382,7 @@ class UserController extends Controller
         $user->password = bcrypt($request->get('new_password'));
         $user->save();
         Log::info('Password changed successfully.');
-        return Redirect::route('user_detail', $id);
+        return Redirect::route('detailUser', $id);
     }
 
     /**
@@ -433,7 +453,7 @@ class UserController extends Controller
             // 'type_of_integration' => ['label' => 'Type of integration'],
             'display_name' => ['label' => 'Display name', 'show' => ['whatsapp']],
             'phone_number' => ['label' => __('Phone number'), 'show' => ['whatsapp']],
-            'src_name' => ['label' => __('Source name'), 'show' => ['whatsapp']],
+            'src_name' => ['label' => __('Source name'), 'show' => ['whatsapp', 'instagram']],
             'api_partner' => ['label' => __('API partner'), 'show' => ['whatsapp']],
             'api_partner_name' => ['label' => __('API partner Name'), 'show' => ['whatsapp']],
             'business_manager_id' => ['label' => __('Business manager ID'), 'show' => ['whatsapp']],
@@ -483,9 +503,6 @@ class UserController extends Controller
                 'Account related events' => __('Account related events'),
                 'Return sent messasge enqueue response to callback url' => __('Return sent messasge enqueue response to callback url')
 
-
-
-
             ]
         ]);
     }
@@ -517,7 +534,9 @@ class UserController extends Controller
                 'Estimated launch date' =>  __('Estimated launch date'),
                 'Type of integration' =>  __('Type of integration'),
                 'Whatsapp Information' =>  __('Whatsapp Information'),
+                'Instagram Information' =>  __('Instagram Information'),
                 'Information will be used to create your whatsapp business account' =>  __('Information will be used to create your whatsapp business account'),
+                'Information will be used to create your instagram business account' =>  __('Information will be used to create your instagram business account'),
                 'Phone number' =>  __('Phone number'),
                 'Source Name' =>  __('Source Name'),
                 'Display Name' =>  __('Display Name'),
@@ -558,7 +577,9 @@ class UserController extends Controller
                 'Estimated launch date' =>  __('Estimated launch date'),
                 'Type of integration' =>  __('Type of integration'),
                 'Whatsapp Information' =>  __('Whatsapp Information'),
+                'Instagram Information' =>  __('Instagram Information'),
                 'Information will be used to create your whatsapp business account' =>  __('Information will be used to create your whatsapp business account'),
+                'Information will be used to create your instagram business account' =>  __('Information will be used to create your instagram business account'),
                 'Phone number' =>  __('Phone number'),
                 'Source Name' =>  __('Source Name'),
                 'Display Name' =>  __('Display Name'),

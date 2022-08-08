@@ -152,7 +152,7 @@ export default function Authenticated({ auth, header, children, hideHeader })
                                             Message Log
                                         </NavLink>
                                         {auth.user.role == 'Admin' &&
-                                            <NavLink href={route('usersListing')} active={route().current('user')}>
+                                            <NavLink href={route('listUser')} active={route().current('user')}>
                                                 Users
                                             </NavLink>
                                         }

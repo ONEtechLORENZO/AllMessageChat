@@ -132,12 +132,23 @@ class TagController extends Controller
             }
             //Sync the tag module to taggable table
             $sync = $this->syncHandling($record, $id);
-            
+        
             return Redirect::route('detailContact', $id);
         }else{
 
+            // Check whether tag name has been unique
+            $checkTagName = Tag::where('name', $request->get('name'))
+            ->where('user_id', $user_id)
+            ->first();
+
+            if($checkTagName) {
+            throw ValidationException::withMessages(['message' => 'Name is already exits']);
+            }
+
+            
             //Create new Tag
             $name = $request->name;
+ 
             $tag->name = $name;
             if($request->get('description')){
                 $tag->description = $request->get('description');
@@ -185,7 +196,7 @@ class TagController extends Controller
      */
     public function update(Request $request, $id)
     {
-        
+    
         $user_id = $request->user()->id;
 
          // Get fields from the table

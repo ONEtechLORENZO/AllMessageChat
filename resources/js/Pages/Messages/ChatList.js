@@ -39,6 +39,8 @@ function ChatList(props)
         chennal: containerCategory,
         content: ''
     });
+    const [selectedAccount, setSelectedAccount] = useState('');
+    const accountList = props.account_list;
 
     const channels = {
         all : {label: 'All Channel', icon: ApplicationLogo },
@@ -105,27 +107,26 @@ function ChatList(props)
 
     // Send content to selected contact
     function sendMessage(){
-        //let data = Object.assign({}, data);
-        data['destination'] = chatList[selectedContact].number;
         if(containerCategory == 'all'){
             return false;
         }
-        
-        if(data.content && data.destination ){
+        data['destination'] = (containerCategory == 'whatsapp') ? chatList[selectedContact].number : chatList[selectedContact].insta_id;
+        data['account_id'] = selectedAccount;
+
+        if(data.content && data.destination && selectedAccount ){
             axios({
                 method: 'post',
                 url: route('send_message_to_contact'),
                 data: data
             })
             .then( (response) =>{
-              //  console.log(response.data);
-                if(response.data.status == 'Queued'){
+                if(response.data.status == 'Queued' || response.data.status == 'Send'){
                     let newState = Object.assign({}, data);
                     newState['content'] = '';
                     setData(newState);
                 }
+                
                 getMessageList()
-               // return inertia(route('get_message_list', {'contact_id': contactId,'category': containerCategory}));
             });
         }
     }
@@ -343,54 +344,107 @@ function ChatList(props)
                                     />
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                <Menu as="div" className="ml-3 relative">
-                                            <div>
-                                                <Menu.Button className="max-w-xs ring-1 p-2 flex items-center text-sm rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                                    
-                                                    <selectedChannel.icon 
-                                                                        className="p-2 w-12 h-12 fill-current text-gray-500"
-                                                                    />
-                                                    <span className="ml-2">
-                                                        {selectedChannel.label}
+                                    <Menu as="div" className="ml-3 relative">
+                                        <div>
+                                            <Menu.Button className="max-w-xs ring-1 p-2 flex items-center text-sm rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                <div className="ml-2 flex grid-cols-2 ">
+                                                    <span>
+                                                    {selectedAccount ?
+                                                        <>{accountList[selectedAccount]}</>
+                                                        :
+                                                        "Account list"
+                                                    }
                                                     </span>
-                                                </Menu.Button>
-                                            </div>
-                                            <Transition
-                                                as={Fragment}
-                                                enter="transition ease-out duration-100"
-                                                enterFrom="transform opacity-0 scale-95"
-                                                enterTo="transform opacity-100 scale-100"
-                                                leave="transition ease-in duration-75"
-                                                leaveFrom="transform opacity-100 scale-100"
-                                                leaveTo="transform opacity-0 scale-95"
-                                            >
-                                                <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
-                                                    {Object.entries(channels).map(([name, channel]) => (
-                                                        <Menu.Item key={name}>
-                                                           
-                                                                <div 
-                                                                    className={classNames(
-                                                                        (containerCategory ==  name)
-                                                                            ? "bg-gray-100"
-                                                                            : "",
-                                                                        "p-2 flex"
-                                                                    )}
-                                                                >
-                                                                    <channel.icon 
-                                                                        className="p-2 w-12 h-12 fill-current text-gray-500"
-                                                                    />
-                                                                    <Link href={route('chat_list', {'contact_id': selectedContact, 'category': name})}
-                                                                    className="block py-2 px-4 text-sm text-gray-700 w-full">
-                                                                        {channel.label} 
-                                                                    </Link>
-                                                                </div>
-                                                           
-                                                        </Menu.Item>
-                                                    ))}
-                                                </Menu.Items>
-                                            </Transition>
-                                        </Menu>
+                                                    <span className='float-right'>
+                                                        <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                            </Menu.Button>
+                                        </div>
+                                        <Transition
+                                            as={Fragment}
+                                            enter="transition ease-out duration-100"
+                                            enterFrom="transform opacity-0 scale-95"
+                                            enterTo="transform opacity-100 scale-100"
+                                            leave="transition ease-in duration-75"
+                                            leaveFrom="transform opacity-100 scale-100"
+                                            leaveTo="transform opacity-0 scale-95"
+                                        >
+                                            <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
+                                                {Object.entries(accountList).map(([id, name]) => (
+                                                    <Menu.Item key={id}>
+                                                        
+                                                            <div 
+                                                                className={classNames(
+                                                                    (selectedAccount ==  id)
+                                                                        ? "bg-gray-100"
+                                                                        : "",
+                                                                    "p-2 flex"
+                                                                )}
+                                                            >
+
+                                                                <span onClick={ () => setSelectedAccount(id)}
+                                                                className="block px-4 text-sm text-gray-700 w-full cursor-pointer">
+                                                                    {name} 
+                                                                </span>
+                                                            </div>
+                                                        
+                                                    </Menu.Item>
+                                                ))}
+                                            </Menu.Items>
+                                        </Transition>
+                                    </Menu>
                                 </div>
+                                <div className="flex items-center space-x-2">
+                                    <Menu as="div" className="ml-3 relative">
+                                        <div>
+                                            <Menu.Button className="max-w-xs ring-1 p-2 flex items-center text-sm rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                
+                                                <selectedChannel.icon 
+                                                                    className="p-2 w-12 h-12 fill-current text-gray-500"
+                                                                />
+                                                <span className="ml-2">
+                                                    {selectedChannel.label}
+                                                </span>
+                                            </Menu.Button>
+                                        </div>
+                                        <Transition
+                                            as={Fragment}
+                                            enter="transition ease-out duration-100"
+                                            enterFrom="transform opacity-0 scale-95"
+                                            enterTo="transform opacity-100 scale-100"
+                                            leave="transition ease-in duration-75"
+                                            leaveFrom="transform opacity-100 scale-100"
+                                            leaveTo="transform opacity-0 scale-95"
+                                        >
+                                            <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
+                                                {Object.entries(channels).map(([name, channel]) => (
+                                                    <Menu.Item key={name}>
+                                                            <div 
+                                                                className={classNames(
+                                                                    (containerCategory ==  name)
+                                                                        ? "bg-gray-100"
+                                                                        : "",
+                                                                    "p-2 flex"
+                                                                )}
+                                                            >
+                                                                <channel.icon 
+                                                                    className="p-2 w-12 h-12 fill-current text-gray-500"
+                                                                />
+                                                                <Link href={route('chat_list', {'contact_id': selectedContact, 'category': name})}
+                                                                className="block py-2 px-4 text-sm text-gray-700 w-full">
+                                                                    {channel.label} 
+                                                                </Link>
+                                                            </div>
+                                                    </Menu.Item>
+                                                ))}
+                                            </Menu.Items>
+                                        </Transition>
+                                    </Menu>
+                                </div>
+                                
                                 <div className="flex items-center space-x-2">
                                     <div className="ml-4 flex items-center md:ml-6">
                                         <button
@@ -479,7 +533,7 @@ function ChatList(props)
                                                 type="button"
                                                 onClick={sendMessage}
                                                 className={classNames(
-                                                    (containerCategory ==  'all')
+                                                    (containerCategory ==  'all' || !selectedAccount )
                                                         ? 'text-[#d5aff0]'
                                                         : 'text-[#A31EFF]',
                                                         "inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out focus:outline-none"
