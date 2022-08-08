@@ -16,6 +16,7 @@ use App\Http\Controllers\FormController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\NoteController;
 use App\Http\Middleware\IsAdmin;
 
 /*
@@ -86,6 +87,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/getMessages', [MsgController::class, 'getMessageList'])->name('get_message_list');
     Route::post('/sendMessage', [MsgController::class, 'sendMessage'])->name('send_message_to_contact');
 
+
+    //notes
+    Route::get('/notes/{module}/{id}', [NoteController::class, 'list_notes'])->name('listNotes');
+    Route::post('/addnotes/{module}/{id}', [NoteController::class, 'addNotes'])->name('add_Notes');
+   
     //Contact
     //Route::get('/contacts', [ContactController::class, 'index'])->name('contacts');
     Route::get('/contacts', [ContactController::class, 'index'])->name('listContact');

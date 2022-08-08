@@ -2,6 +2,7 @@ import React, { Fragment, useEffect, useRef, useState } from "react";
 import { PencilIcon } from "../../../Pages/icons";
 import { Inertia } from "@inertiajs/inertia";
 import ReactSelect from "./ReactSelect";
+import Notes from '@/Components/Notes';
 
 export default function Index(props) {
     const [record , setRecord] = useState(props.record);
@@ -177,7 +178,11 @@ export default function Index(props) {
                                                 })}
                                             </div>
                                         :
-                                            <> Notes List  </>
+                                        <Notes
+                                        module={props.module}                                                                                
+                                        recordId={props.record.id}                                           
+                                        />
+                                        
                                         }
                                     </div>
                                 )
