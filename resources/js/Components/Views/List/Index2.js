@@ -254,6 +254,10 @@ function ListView(props)
                                                         column_value = (column_value == 1) ? 'Active' : 'Inactive'
                                                     }
 
+                                                    if (field.type == 'checkbox' && name == 'is_mandatory') {
+                                                        column_value = (column_value == 1) ? '1' : '0'
+                                                    }
+
                                                     return (
                                                         <td key={name} className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]">
                                                             {column_value}

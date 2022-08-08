@@ -31,7 +31,8 @@ const defaultConfig = {
     'field_name': 'options',
     'field_label': 'Options',
     'field_type': 'selectable',
-    'is_mandatory': 1
+    'is_mandatory': 1,
+    'is_custom':1
  }
             
 function Form(props) 
@@ -54,7 +55,7 @@ function Form(props)
         fetchModuleFields();
         if(props.recordId) {
             fetchRecord();
-        }
+        }   
     }, [props]);
 
     /**
@@ -129,13 +130,16 @@ function Form(props)
      */
     const handleChange = (event) => {
         let newState = Object.assign({}, data); 
-        if (event.target.name == 'field_type') {
-            EventHandler(event);
+        var isUpdated = CustomData(event.target);  //Custom field data entry
+        if(! isUpdated ){
+            if (event.target.name == 'field_type') {
+                EventHandler(event);
+            }
+            const field_name = event.target.name;
+            const field_value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+            newState[field_name] = field_value;
+            setData(newState);
         }
-        const field_name = event.target.name;
-        const field_value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-        newState[field_name] = field_value;
-        setData(newState);
     }
 
     const EventHandler = (event) => { 
@@ -177,6 +181,7 @@ function Form(props)
             return false;
         }
         data['options'] = options;
+        
         Inertia.post(props.recordId ? route('update' + props.module, {id: props.recordId}) : route('store' + props.module), data, {
             onSuccess: (response) => {
                 props.hideForm();
@@ -187,6 +192,45 @@ function Form(props)
         });
     }
 
+    /**
+     * Added custom dropdown options
+     */
+    function addSelectableField(){
+        var isAdded = false;
+        Object.entries(fields).map(([key, field])=> {
+            if(field.field_type == 'selectable'){
+                isAdded = true;
+            }
+        })
+        if(!isAdded){
+            fields.push(optionField);
+            setOptions(data.options);
+        }
+    }
+
+    function CustomData(event){
+        let newState = Object.assign({}, data); 
+        let value = event.value;
+        let field_name = event.name;
+        var isUpdate = false;
+       
+        var customField = (data.custom)? data.custom : {};
+        Object.entries(fields).map(([key, field])=> {
+            let name = '';
+            if(field.is_custom == '1'){
+                name = field.field_name; 
+                if(name == field_name){
+                    customField[field_name] = value; 
+                    newState['custom'] = customField;
+                    isUpdate = true;;
+                }
+            }  
+        })
+
+        setData(newState);
+        return isUpdate;
+    }
+       
     return (
         <Transition.Root show={open} as={Fragment}>
             <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => {}} >
@@ -234,7 +278,14 @@ function Form(props)
                                     <div className='p-4 space-y-4'>
                                         {fields && fields.map((field_info,index) => { 
                                             let element = ''; 
-                                           
+                                            if(data.is_custom == '1' && data.module_name == 'Contact' && data.field_type == 'dropdown'){
+                                                addSelectableField();
+                                            }
+                                            let field_value = data[field_info.field_name];
+                                            if(data.custom && data.custom[field_info.field_name]){
+                                                field_value = data.custom[field_info.field_name]
+                                            }
+
                                             switch (field_info.field_type) {
                                                 case "text":
                                                     element = <Input
@@ -243,7 +294,7 @@ function Form(props)
                                                         className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
                                                         id={field_info.field_name}
                                                         name={field_info.field_name}
-                                                        value={data[field_info.field_name]}
+                                                        value={field_value}
                                                         handleChange={handleChange}
                                                     />;
                                                     break;
@@ -251,9 +302,9 @@ function Form(props)
                                                     element = <PhoneInput
                                                         initialValueFormat="national"
                                                         withCountryCallingCode
-                                                        placeholder="Enter phone numsber"
+                                                        placeholder="Enter phone number"
                                                         className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
-                                                        value={data[field_info.field_name]} 
+                                                        value={field_value} 
                                                         onChange={(value) => changePhoneNumber(value,field_info.field_name )}
                                                         />
                                                     break;
@@ -268,7 +319,7 @@ function Form(props)
                                                             className={`pl-6 mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
                                                             id={field_info.field_name}
                                                             name={field_info.field_name}
-                                                            value={data[field_info.field_name]}
+                                                            value={field_value}
                                                             handleChange={handleChange}
                                                         />
                                                     </div>
@@ -280,7 +331,7 @@ function Form(props)
                                                         required={field_info.is_mandatory === 1 ? true : false}
                                                         rows="2"
                                                         className={`mt-1 max-w-lg shadow-sm block w-full focus:ring-skin-primary focus:border-skin-primary sm:text-sm border border-gray-300 rounded-md`}
-                                                        value={data[field_info.field_name]}
+                                                        value={field_value}
                                                         handleChange={handleChange}
                                                     />
                                                     break;
@@ -290,7 +341,7 @@ function Form(props)
                                                         name={field_info.field_name}
                                                         options={field_info.options ? field_info.options : {}}
                                                         handleChange={handleChange}
-                                                        value={data[field_info.field_name]}
+                                                        value={field_value}
                                                         required={field_info.is_mandatory === 1 ? true : false}
                                                     />
                                                     break;
@@ -303,11 +354,10 @@ function Form(props)
                                                     />
                                                     break;
                                                 case 'checkbox':
-                                                    
                                                     element = <Checkbox
                                                         id={field_info.field_name}
                                                         name={field_info.field_name}
-                                                        value={data[field_info.field_name]}
+                                                        value={field_value}
                                                         handleChange={handleChange}
                                                     />
                                                     break;
@@ -318,7 +368,7 @@ function Form(props)
                                                         className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
                                                         id={field_info.field_name}
                                                         name={field_info.field_name}
-                                                        value={data[field_info.field_name]} 
+                                                        value={field_value} 
                                                         handleChange={handleChange}
                                                     />;
                                                     break;

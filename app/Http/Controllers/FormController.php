@@ -21,6 +21,19 @@ class FormController extends Controller
         $fields = Field::where('module_name', $module)
             ->where('user_id', $request->user()->id)
             ->get();
+        foreach($fields as $field){
+            if($field['is_custom'] == '1' && $field['field_type'] == 'dropdown'){
+                $option = $field['options'];
+                $options = [];
+                if ($option) {
+                    foreach ($option as $key) {
+                        $options[$key['value']] = $key['value'];
+                    }
+                }
+                $field->options = $options;
+            }  
+        }   
+
         return response()->json(['fields' => $fields]);
     }
 

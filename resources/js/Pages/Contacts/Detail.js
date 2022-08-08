@@ -6,19 +6,19 @@ import Form from '@/Components/Forms/Form';
 
 export default function Detail(props) {
 
-    const contactFields ={
-        'id': { 'label': '', 'type': 'hidden', 'required': false, 'value': '' },
-        'first_name': { 'label': 'First Name', 'type': 'text', 'required': false, 'value': '' },
-        'last_name': { 'label': 'Last Name', 'type': 'text', 'required': true, 'value': '' } , 
-        'email': { 'label': 'Email', 'type': 'email', 'required': true, 'value': '' }, 
-        'phone_number': { 'label': 'Phone number', 'type': 'text', 'required': false, 'value': '' },
-        'instagram_id': { 'label': 'Instagram ID', 'type': 'text', 'required': false, 'value': '' }, 
-        'tag': { 'label': 'Tag', 'type': 'text', 'required': false, 'value': '' },
-        'list': { 'label': 'List', 'type': 'text', 'required': false, 'value': '' },
+    // const contactFields ={
+    //     'id': { 'label': '', 'type': 'hidden', 'required': false, 'value': '' },
+    //     'first_name': { 'label': 'First Name', 'type': 'text', 'required': false, 'value': '' },
+    //     'last_name': { 'label': 'Last Name', 'type': 'text', 'required': true, 'value': '' } , 
+    //     'email': { 'label': 'Email', 'type': 'email', 'required': true, 'value': '' }, 
+    //     'phone_number': { 'label': 'Phone number', 'type': 'text', 'required': false, 'value': '' },
+    //     'instagram_id': { 'label': 'Instagram ID', 'type': 'text', 'required': false, 'value': '' }, 
+    //     'tag': { 'label': 'Tag', 'type': 'text', 'required': false, 'value': '' },
+    //     'list': { 'label': 'List', 'type': 'text', 'required': false, 'value': '' },
 
-        'tag': { 'label': 'Tag', 'type': 'text', 'required': false, 'value': '' },
-        'list': { 'label': 'List', 'type': 'text', 'required': false, 'value': '' }
-    };
+    //     'tag': { 'label': 'Tag', 'type': 'text', 'required': false, 'value': '' },
+    //     'list': { 'label': 'List', 'type': 'text', 'required': false, 'value': '' }
+    // };
     
     //const[record , setRecord] = useState(props.contact);
     const tabs = [
@@ -49,12 +49,11 @@ export default function Detail(props) {
                 module = 'Contact'
                 updateRecord = {showEditForm}
                 tabs = {tabs}
-                headers = {contactFields}
+                headers = {props.headers}
                 tagData={props.tagData}
                 tagOptions={props.tagOptions}
                 listOptions={props.listOptions}
                 listData={props.listData}
-
             />
             
             {showForm ?

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Field;
 use App\Models\Category;
+use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 
@@ -23,9 +24,10 @@ class FieldController extends Controller
     public function index(Request $request)
     {
         $list_view_columns = [
-            'module_name' => 'Module Name',
-            'field_label' => 'Field Label',
-            'is_mandatory' => 'Mandatory',
+            'module_name' => ['label' => 'Module Name', 'type' => 'text'],
+            'field_label' => ['label' => 'Field Label', 'type' => 'text'],
+            'field_type' => ['label' => 'Field Type', 'type' => 'text'],
+            'is_mandatory' => ['label' => 'Mandatory', 'type' => 'checkbox'],
         ];
 
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
@@ -95,14 +97,12 @@ class FieldController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, Field $field)
     {
-        $field_label = $this->cleaner($request->field_label);
-        $field_name = $this->creater($field_label);
-        $options = $this->OptionCreater($request->options);
-        $type = $request->field_type;
-        $mandatory = $request->mandatory;
-        dd($field_label, $field_name, $options, $type, $mandatory, $request);
+        //save fields in table
+        $this->saveField($request, $field);
+
+        return Redirect::route('listField');
     }
 
     /**
@@ -124,7 +124,7 @@ class FieldController extends Controller
      */
     public function edit(Field $field, $id)
     {
-        $record = Category::find($id);
+        $record = Field::find($id);
         if (!$record) {
             abort(401);
         }
@@ -139,9 +139,17 @@ class FieldController extends Controller
      * @param  \App\Models\Field  $field
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Field $field)
+    public function update(Request $request)
     {
-        //
+       
+        if ($request->id) {
+            $field = Field::findOrFail($request->id);
+        } else {
+            $field = new Field();
+        }
+
+        $this->saveField($request, $field);
+        return Redirect::route('listField');
     }
 
     /**
@@ -150,9 +158,14 @@ class FieldController extends Controller
      * @param  \App\Models\Field  $field
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Field $field)
+    public function destroy(Field $field, $id)
     {
-        //
+        $field = Field::find($id);
+        if($field->is_custom){
+           $field->delete();
+        }
+
+        return Redirect::route('listField');
     }
 
     function cleaner($string)
@@ -171,14 +184,23 @@ class FieldController extends Controller
         return $custom;
     }
 
-    function OptionCreater($option)
-    {
-        $options = [];
-        if ($option) {
-            foreach ($option as $key) {
-                $options[] = ['value' => $key['value'], 'label' => $key['label']];
-            }
+    function saveField($request, $field){
+
+        $field_label = $this->cleaner($request->field_label);
+        $field_name = $this->creater($field_label);
+        $options = $request->options;
+
+        $field->module_name = $request->module_name;
+        $field->field_name = $field_name;
+        $field->field_label = $field_label;
+        $field->field_type = $request->field_type;
+        $field->is_mandatory = $request->mandatory;
+        $field->is_custom = 1;
+        $field->user_id = $request->user()->id;
+        if ($options) {
+            $field->options = $options;
         }
-        return $options;
+     
+        $field->save();
     }
 }

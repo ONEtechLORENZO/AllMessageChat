@@ -93,8 +93,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/contact/delete/{id}', [ContactController::class, 'deleteContact'])->name('deleteContact');
 
     Route::get('/contact/{id}', [ContactController::class, 'contactDetail'])->name('detailContact');
-    Route::post('/updateContact/{id}', [ContactController::class, 'storeContact'])->name('updateContact');
-    Route::post('/updateContact', [ContactController::class, 'storeContact'])->name('storeContact');
+    Route::post('/updateContact/{id}', [ContactController::class, 'update'])->name('updateContact');
+    Route::post('/updateContact', [ContactController::class, 'store'])->name('storeContact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
 
@@ -137,6 +137,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/field', [FieldController::class, 'index'])->name('listField');
     Route::get('/field/{id}', [FieldController::class, 'edit'])->name('editField');
     Route::post('/field/store', [FieldController::class, 'store'])->name('storeField');
+    Route::post('/updateField/{id}',[FieldController::class, 'update'])->name('updateField');
+    Route::delete('/deleteField/{id}',[FieldController::class, 'destroy'])->name('deleteField');
 });
 
 // Check user is admin

@@ -18,6 +18,7 @@ use App\Models\Category;
 use App\Models\Filter;
 use App\Models\MessageResponse;
 use App\Models\Account;
+use App\Models\Field;
 use App\Models\User;
 use App\Models\Template;
 use App\Models\Message;
@@ -114,9 +115,10 @@ class ContactController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, Contact $contact)
     {
-        //
+        $this->saveContact($request, $contact);
+        return Redirect::route('detailContact', $contact->id);
     }
 
     /**
@@ -148,9 +150,10 @@ class ContactController extends Controller
      * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Contact $contact)
+    public function update(Request $request)
     {
-        //
+        $this->saveContact($request, $contact);
+        return Redirect::route('detailContact', $contact->id);
     }
 
     /**
@@ -161,7 +164,7 @@ class ContactController extends Controller
      */
     public function destroy(Contact $contact)
     {
-        //
+       //
     }
 
     /**
@@ -198,6 +201,7 @@ class ContactController extends Controller
         $tagSelectedRecords = $this->getSelectedTag($contact);
         $ListOptions = $this->getListOption($request->user()->id);
         $ListSelectRecords = $this->getSelectedList($contact);
+        $headers = $this->getModuleHeader($request->user()->id);
 
         return Inertia::render('Contacts/Detail', [
             'contact' => $contact,
@@ -205,6 +209,8 @@ class ContactController extends Controller
             'tagData' => $tagSelectedRecords,
             'listOptions' => $ListOptions,
             'listData' => $ListSelectRecords,
+            'headers' => $headers,
+
         ]);
     }
 
@@ -213,6 +219,7 @@ class ContactController extends Controller
      */
     public function storeContact(Request $request)
     {
+        /*
         $user = $request->user();
         if ($request->id) {
             $request->validate([
@@ -228,7 +235,7 @@ class ContactController extends Controller
             $contact = new Contact();
         }
         
-        $contact->first_name = $request->first_name;
+         $contact->first_name = $request->first_name;
         $contact->last_name = $request->last_name;
         $contact->phone_number = $request->phone_number;
         $contact->country_code = $request->country_code;
@@ -236,7 +243,8 @@ class ContactController extends Controller
         $contact->user_id = $user->id;
         $contact->instagram_id = $request->instagram_id;
         $contact->save();
-        return Redirect::route('detailContact', $contact->id);
+        */
+  
     }
 
     /**
@@ -308,4 +316,64 @@ class ContactController extends Controller
         $contact->delete();
         return Redirect::route('listContact');
     }
+
+    public function getModuleHeader($user)
+    {
+        $fields = Field::where('module_name', 'Contact')
+            ->where('user_id', $user)
+            ->get(['field_label', 'field_name', 'field_type', 'is_custom']);
+        $header = [];
+        foreach ($fields as $field) {
+            $is_custom = ($field->is_custom) ? 'custom' : 'default';
+            $header[$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type']];
+        }
+        $header['default']['tag'] = ['label' => 'Tag', 'type' => 'text'];
+        $header['default']['list'] = ['label' => 'List', 'type' => 'text'];
+        return $header;
+    }
+
+    public function saveContact($request, $contact){
+
+        if ($request->id) {
+            $request->validate([
+                'last_name' => 'required|max:255',
+                'email' => 'required|max:255',
+            ]);
+            $contact = Contact::findOrFail($request->id);
+        } else {
+            $request->validate([
+                'last_name' => 'required|max:255',
+                'email' => 'required|unique:contacts|max:255',
+            ]);
+            $contact = new Contact();
+        }
+        
+        $fields = Field::where('module_name', 'Contact')
+            ->where('user_id', $request->user()->id)
+            ->get(['field_name', 'is_custom']);
+   
+        if ($fields) {
+            $custom_field = [];
+            foreach ($fields as $record) {
+                $field = $record['field_name'];
+                $custom = $record['is_custom'];
+                if ($request->has($field) && $custom == '0') {
+                    $contact->$field = $request->$field;
+                }
+                if($request->custom){
+                    if ($custom == '1') {
+                        $custom_field[$field] = $request->custom[$field];
+                    }
+                }
+            }
+            if ($custom_field) {
+                $contact->custom = $custom_field;
+            
+            }
+       
+            $contact->user_id = $request->user()->id;
+            $contact->save();
+        }
+    }
+
 }

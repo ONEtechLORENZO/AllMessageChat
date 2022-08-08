@@ -19,24 +19,15 @@ class FieldSeeder extends Seeder
     {
         $current_datetime = gmdate('Y-m-d H:i:s');
         $countryCodes = $this->getCountryCodeJson();
-
-        $field = new Field();
-        $field->module_name = 'Price';
-        $field->field_name = 'country_code';
-        $field->field_label = 'Country';
-        $field->field_type = 'dropdown';
-        $field->is_mandatory = 1;
-        $field->is_custom = 0;
-        $field->user_id = 1;
-        $field->created_at = $current_datetime;
-        $field->updated_at = $current_datetime;
-        $field->options = $countryCodes;
-        $field->save();
-
+        $moduleOptions = $this->getModuleName();
+        $fieldTypes = $this->getFieldType();
+        $this->createFields('Price', 'country_code', 'Country', 'dropdown', '1', $countryCodes);
+        $this->createFields('Field', 'module_name', 'Module Name', 'dropdown', '1', $moduleOptions);
+        $this->createFields('Field', 'field_type', 'Field Type', 'dropdown', '1', $fieldTypes);
 
         DB::table('fields')->insert([
 
-            //Price
+             //Price
             ['module_name' => 'Price', 'field_name' => 'user_initiated', 'field_label' => 'User Initiated', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
             ['module_name' => 'Price', 'field_name' => 'business_initiated', 'field_label' => 'Business Initiated', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
             ['module_name' => 'Price', 'field_name' => 'message', 'field_label' => 'Message', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
@@ -49,9 +40,7 @@ class FieldSeeder extends Seeder
             ['module_name' => 'Category', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
             ['module_name' => 'Category', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
             //Field
-            ['module_name' => 'Field', 'field_name' => 'module_name', 'field_label' => 'Module Name', 'field_type' => 'dropdown', 'is_mandatory' => 1, 'is_custom' => 1, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-            ['module_name' => 'Field', 'field_name' => 'field_label', 'field_label' => 'Field Label', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 1, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-            ['module_name' => 'Field', 'field_name' => 'field_type', 'field_label' => 'Field Type', 'field_type' => 'dropdown', 'is_mandatory' => 1, 'is_custom' => 1, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Field', 'field_name' => 'field_label', 'field_label' => 'Field Label', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
             ['module_name' => 'Field', 'field_name' => 'mandatory', 'field_label' => 'Mandatory', 'field_type' => 'checkbox', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
 
         ]);
@@ -293,5 +282,44 @@ class FieldSeeder extends Seeder
             '263' => 'Zimbabwe',
         );
         return $countryCode;
+    }
+
+    public function getModuleName()
+    {
+        $module = array(
+            'Contact' => 'Contact'
+        );
+        return $module;
+    }
+
+    public function getFieldType()
+    {
+        $type = array(
+            'text' => 'Text',
+            'textarea' => 'Textarea',
+            'integer' =>  'Number',
+            'checkbox' => 'checkBox',
+            'dropdown' => 'Dropdown',
+        );
+        return $type;
+    }
+
+    public function createFields($module, $name, $label, $type, $mandatory, $options)
+    {
+
+        $current_datetime = gmdate('Y-m-d H:i:s');
+
+        $field = new Field();
+        $field->module_name = $module;
+        $field->field_name = $name;
+        $field->field_label = $label;
+        $field->field_type = $type;
+        $field->is_mandatory = $mandatory;
+        $field->is_custom = 0;
+        $field->user_id = 1;
+        $field->created_at = $current_datetime;
+        $field->updated_at = $current_datetime;
+        $field->options = $options;
+        $field->save();
     }
 }
