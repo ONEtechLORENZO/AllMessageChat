@@ -16,8 +16,11 @@ use App\Http\Controllers\FormController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\FieldController;
+use App\Http\Controllers\NoteController;
 use App\Http\Middleware\IsAdmin;
+use App\Models\Contact;
+use App\Models\Note;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +42,8 @@ Route::get('/', function () {
     ]);
 });
 
+
+
 Route::post('/incoming', [MsgController::class, 'incoming']);
 
 // Check user login
@@ -52,7 +57,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/user-balance', [UserController::class, 'userBalance'])->name('userBalance');
     Route::get('/transactions', [UserController::class, 'transactions'])->name('listTransaction');
     Route::get('/invoices', [UserController::class, 'invoices'])->name('invoices');
-
+    
     // Profile
     Route::get('/user/profile', [UserController::class, 'userDetail'])->name('profile');
     Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('user_profile');
@@ -63,7 +68,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Messages
     Route::get('/messages/list', [MessageLogController::class, 'list'])->name('messages');
-    Route::post('/messages/search_content', [MessageLogController::class, 'searchContent'])->name('searchContent');
+    Route::post('/messages/search_content', [MessageLogController::class, 'searchContent'])->name('searchContent');   
     Route::get('/messages', [MsgController::class, 'messageList'])->name('message_list');
 
     // Accounts
@@ -89,12 +94,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Contact
     //Route::get('/contacts', [ContactController::class, 'index'])->name('contacts');
+    Route::get('/notes/{module}/{id}', [NoteController::class, 'list_notes'])->name('listNotes');
+    Route::post('/addnotes/{module}/{id}', [NoteController::class, 'addNotes'])->name('add_Notes');
     Route::get('/contacts', [ContactController::class, 'index'])->name('listContact');
     Route::delete('/contact/delete/{id}', [ContactController::class, 'deleteContact'])->name('deleteContact');
 
     Route::get('/contact/{id}', [ContactController::class, 'contactDetail'])->name('detailContact');
-    Route::post('/updateContact/{id}', [ContactController::class, 'update'])->name('updateContact');
-    Route::post('/updateContact', [ContactController::class, 'store'])->name('storeContact');
+    Route::post('/updateContact/{id}', [ContactController::class, 'storeContact'])->name('updateContact');
+    Route::post('/updateContact', [ContactController::class, 'storeContact'])->name('storeContact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
 
@@ -105,7 +112,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Form
     Route::get('/fetchModuleFields/{module}', [FormController::class, 'fetchModuleFields'])->name('fetchModuleFields');
-    Route::get('/field/getFieldOptions',[FormController::class,'getFieldOptions'])->name('get_field_options');
 
     // Import
     Route::get('/imports', [ImportController::class, 'index'])->name('listImport');
@@ -144,11 +150,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Check user is admin
 Route::middleware('auth', IsAdmin::class)->group(function () {
     // Users
-    Route::get('/admin/users', [UserController::class, 'usersListing'])->name('listUser');
+    Route::get('/admin/users', [UserController::class, 'usersListing'])->name('usersListing');
     Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_user');
     Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_user');
     Route::get('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_user');
-    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detailUser');
+    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('user_detail');
     Route::post('/admin/user/change_password/{id}', [UserController::class, 'changePassword'])->name('change_password');
 
     // Settings

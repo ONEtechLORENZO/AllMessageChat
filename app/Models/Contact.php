@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Msg;
 use App\Models\Tag;
 use App\Models\Category;
+use App\Models\Note;
 
 class Contact extends Model
 {
@@ -38,5 +39,9 @@ class Contact extends Model
     public function categorys()
     {
         return $this->morphToMany(Category::class, 'categorable');
+    }
+    public function notes()
+    {
+        return $this->morphMany(Note::class, 'notable');
     }
 }

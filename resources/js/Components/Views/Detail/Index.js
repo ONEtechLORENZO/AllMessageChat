@@ -2,7 +2,7 @@ import React, { Fragment, useEffect, useRef, useState } from "react";
 import { PencilIcon } from "../../../Pages/icons";
 import { Inertia } from "@inertiajs/inertia";
 import ReactSelect from "./ReactSelect";
-import { Link } from "@inertiajs/inertia-react";
+import Notes from '@/Components/Notes';
 
 export default function Index(props) {
     const [record , setRecord] = useState(props.record);
@@ -18,7 +18,6 @@ export default function Index(props) {
     const [customHeader, setCustomHeader] = useState(props.headers.custom);
 
     useEffect(() => {
-        setRecord(props.record);
         setTagOption(props.tagOptions);
         setListOption(props.listOptions);
         setTagSelectedOption(props.tagData);
@@ -51,7 +50,7 @@ export default function Index(props) {
             },
         });
     }
-
+   console.log(props)
     return (            
             <div>
                 <ul className="py-4 space-y-2 sm:px-6 sm:space-y-4 lg:px-8" role="list">
@@ -74,7 +73,7 @@ export default function Index(props) {
                                 </div>
                                 <div>
                                     
-                                    {props.module == 'Contact' &&
+                                    {props.module == 'Contacts' &&
                                         <>
                                             <div className="text-gray-600"> {record.first_name} {record.last_name}  </div>
                                             <div className="text-gray-600"> {record.phone_number} </div>
@@ -86,12 +85,6 @@ export default function Index(props) {
                             </h3>
                             <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
                                 <div>
-                                    <Link   
-                                        href={route('list'+ props.module)}
-                                       className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-black bg-gray-100 hover:bg-gray-200 focus:outline-none hover:ring-2 hover:ring-offset-2 hover:ring-indigo-500 mr-2"
-                                    >
-                                       Back
-                                   </Link>
                                     <button
                                         type="button"
                                         onClick={ () => props.updateRecord(record.id)}
@@ -206,7 +199,11 @@ export default function Index(props) {
                                                 : ''}
                                             </>
                                         :
-                                            <> Notes List  </>
+                                        <Notes
+                                        module={props.module}                                                                                
+                                        recordId={props.record.id}                                           
+                                        />
+                                        
                                         }
                                     </div>
                                 )
