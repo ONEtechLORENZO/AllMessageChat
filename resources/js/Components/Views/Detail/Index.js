@@ -14,6 +14,8 @@ export default function Index(props) {
     const [recordId, setRecordId] = useState();
     const [tagOpen, setTagOpen] = useState(false);
     const [listOpen, setListOpen] = useState(false);
+    const [defaultHeader , setDefaultHeader] = useState(props.headers.default);
+    const [customHeader, setCustomHeader] = useState(props.headers.custom);
 
     useEffect(() => {
         setTagOption(props.tagOptions);
@@ -28,7 +30,6 @@ export default function Index(props) {
             'name': tagSelectedOption ,
              'id' : recordId,
              'view': 'Detail',
-             'model': 'Tag'
         }
         Inertia.post(route('storeTag'), data, {
             onSuccess: (response) => {
@@ -42,7 +43,6 @@ export default function Index(props) {
             'name': ListSelectedOption ,
              'id' : recordId,
              'view': 'Detail',
-             'model':'List'
         }
         Inertia.post(route('storeCategory'), data, {
             onSuccess: (response) => {
@@ -114,15 +114,16 @@ export default function Index(props) {
 
                         <div id="tab-contents">
                             {Object.entries(props.tabs).map(([key, tab])=>{
-                                var hideClass = "p-4";
+                                var hideClass = "p-4 divide-y";
                                 if(activeTab != tab.name){
                                     hideClass += ' hidden';
                                 }
                                 return(
                                     <div id={tab.name} className={hideClass}>
                                         {tab.name == 'Detail' ?
+                                           <>
                                             <div>
-                                                {Object.entries(props.headers).map( ([key, field], index) => {
+                                                {Object.entries(defaultHeader).map( ([key, field]) => {
                                                     let showField = true;
                                                     let select = false;
                                                     if(key == 'id'){
@@ -177,6 +178,26 @@ export default function Index(props) {
                                                     } 
                                                 })}
                                             </div>
+                                                {customHeader ? 
+                                                    <div className=""> 
+                                                    <div className="px-4 py-2 -mb-px font-semibold text-gray-800 rounded-t opacity-50 ">Custom</div>   
+                                                    {Object.entries(customHeader).map(([key,field]) => { 
+                                                       return(
+                                                           <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                               <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
+                                                               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                                    {(record.custom && record.custom[key]) ?
+                                                                       <>{record.custom[key]}</>
+                                                                       :
+                                                                       <> - </>
+                                                                    }
+                                                               </dd>
+                                                            </div>
+                                                        )
+                                                    }) }
+                                                  </div>
+                                                : ''}
+                                            </>
                                         :
                                         <Notes
                                         module={props.module}                                                                                
