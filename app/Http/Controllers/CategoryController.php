@@ -33,8 +33,8 @@ class CategoryController extends Controller
     
         // List view columns to show
         $list_view_columns = [
-            'name' => 'List',
-            'description' => 'Description',
+            'name' => ['label' => 'List', 'type' => 'text'],
+            'description' =>  ['label' => 'Description', 'type' => 'textarea'],
         ];
 
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
@@ -57,8 +57,8 @@ class CategoryController extends Controller
 
         return Inertia::render('Category/List', [
             'records' => $records->items(),
-            'singular' => 'Category',
-            'plural' => 'Categorys',
+            'singular' => 'List',
+            'plural' => 'Lists',
             'module' => 'Category',
             // Actions
             'actions' => [
@@ -106,7 +106,7 @@ class CategoryController extends Controller
      * @param  \App\Http\Requests\StoreCategoryRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, Category $category)
+    public function store(Request $request)
     {
        
         $user_id = $request->user()->id;
@@ -119,6 +119,7 @@ class CategoryController extends Controller
 
             if($data){
                 foreach($data as $records){
+                    $category = new Category;
                     foreach($records as $key => $value){
                         if($key == "__isNew__"){
                             $category->name = $records['label'];

@@ -108,7 +108,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/field/getFieldOptions',[FormController::class,'getFieldOptions'])->name('get_field_options');
 
     // Import
-    Route::get('/import', [ImportController::class, 'index'])->name('listImport');
+    Route::get('/imports', [ImportController::class, 'index'])->name('listImport');
     Route::get('/import/create', [ImportController::class, 'create'])->name('new_import');
     Route::get('/import/detail/{id}', [ImportController::class, 'show'])->name('detailImport');
     Route::post('/import/save', [ImportController::class, 'store'])->name('import_save');
@@ -116,10 +116,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/import/{id}', [ImportController::class, 'destroy'])->name('deleteImport');
 
     //Export
-    Route::get('/export', [ExportController::class, 'exportFile'])->name('export');
+    Route::get('/exports', [ExportController::class, 'exportFile'])->name('export');
 
     //Tag
-    Route::get('/tag', [TagController::class, 'index'])->name('listTag');
+    Route::get('/tags', [TagController::class, 'index'])->name('listTag');
     Route::get('/tag/getTagList', [TagController::class, 'getTagList'])->name('get_tag_list');
     Route::post('/tag/store', [TagController::class, 'store'])->name('storeTag');
     Route::get('/tag/{id}', [TagController::class, 'edit'])->name('editTag');
@@ -127,14 +127,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/deleteTag/{id}', [TagController::class, 'destroy'])->name('deleteTag');
 
     //Category
-    Route::get('/list', [CategoryController::class, 'index'])->name('listCategory');
+    Route::get('/lists', [CategoryController::class, 'index'])->name('listCategory');
     Route::post('/list/store', [CategoryController::class, 'store'])->name('storeCategory');
     Route::get('/list/{id}', [CategoryController::class, 'edit'])->name('editCategory');
     Route::post('/updateList/{id}', [CategoryController::class, 'update'])->name('updateCategory');
     Route::delete('/deleteList/{id}', [CategoryController::class, 'destroy'])->name('deleteCategory');
 
     //Field
-    Route::get('/field', [FieldController::class, 'index'])->name('listField');
+    Route::get('/fields', [FieldController::class, 'index'])->name('listField');
     Route::get('/field/{id}', [FieldController::class, 'edit'])->name('editField');
     Route::post('/field/store', [FieldController::class, 'store'])->name('storeField');
     Route::post('/updateField/{id}',[FieldController::class, 'update'])->name('updateField');
