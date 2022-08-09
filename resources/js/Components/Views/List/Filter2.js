@@ -570,12 +570,12 @@ function Filter(props)
                                                                                         group_index={grpCondition_index} 
                                                                                         condition_index={condition_index}
                                                                                         id="condition_value"
-                                                                                        value={condition.record_condition}
+                                                                                        value={condition.condition_value}
                                                                                         onChange={ (e) => handleChange(e)}
                                                                                         className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
                                                                                     >
                                                                                         {Object.entries(field.options).map(([name, label]) => 
-                                                                                            <option defaultValue={condition.record_condition === name} value={name}> {label} </option>
+                                                                                            <option defaultValue={condition.condition_value === name} value={name}> {label} </option>
                                                                                         )}
                                                                                     </select>
                                                                                     break;
@@ -585,12 +585,12 @@ function Filter(props)
                                                                                         group_index={grpCondition_index} 
                                                                                         condition_index={condition_index}
                                                                                         id="condition_value"
-                                                                                        value={condition.record_condition}
+                                                                                        value={condition.condition_value}
                                                                                         onChange={ (e) => handleChange(e)}
                                                                                         className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
                                                                                     >
                                                                                         {Object.entries(field.options).map(([name, label]) => 
-                                                                                            <option defaultValue={condition.record_condition === name} value={name}> {label} </option>
+                                                                                            <option defaultValue={condition.condition_value === name} value={name}> {label} </option>
                                                                                         )}
                                                                                     </select>
                                                                                     break;
