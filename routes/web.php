@@ -139,7 +139,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/list/{id}',[CategoryController::class,'edit'])->name('editCategory');
     Route::post('/updateList/{id}',[CategoryController::class,'update'])->name('updateCategory');
     Route::delete('/deleteList/{id}',[CategoryController::class,'destroy'])->name('deleteCategory');
-    
+   
+    //Field
+    Route::get('/fields', [FieldController::class, 'index'])->name('listField');
+    Route::get('/field/{id}', [FieldController::class, 'edit'])->name('editField');
+    Route::post('/field/store', [FieldController::class, 'store'])->name('storeField');
+    Route::post('/updateField/{id}',[FieldController::class, 'update'])->name('updateField');
+    Route::delete('/deleteField/{id}',[FieldController::class, 'destroy'])->name('deleteField');
 });
 
 // Check user is admin
@@ -164,13 +170,6 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::post('/admin/pricing', [PriceController::class, 'store'])->name('storePrice');
     Route::post('/admin/pricing/{id}', [PriceController::class, 'update'])->name('updatePrice');
     Route::delete('/admin/pricing/{id}', [PriceController::class, 'destroy'])->name('deletePrice');
-
-    //Field
-    Route::get('/fields', [FieldController::class, 'index'])->name('listField');
-    Route::get('/field/{id}', [FieldController::class, 'edit'])->name('editField');
-    Route::post('/field/store', [FieldController::class, 'store'])->name('storeField');
-    Route::post('/updateField/{id}',[FieldController::class, 'update'])->name('updateField');
-    Route::delete('/deleteField/{id}',[FieldController::class, 'destroy'])->name('deleteField');
 });
 
 require __DIR__ . '/auth.php';
