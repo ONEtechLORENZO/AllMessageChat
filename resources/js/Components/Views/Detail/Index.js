@@ -50,7 +50,7 @@ export default function Index(props) {
             },
         });
     }
-   console.log(props)
+
     return (            
             <div>
                 <ul className="py-4 space-y-2 sm:px-6 sm:space-y-4 lg:px-8" role="list">
@@ -186,11 +186,17 @@ export default function Index(props) {
                                                            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                                                <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
                                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                                   {field.type == 'checkbox' ?
+                                                                   <>  {record.custom[key] ? 'True': 'False' }</> 
+                                                                   : 
+                                                                   <>
                                                                     {(record.custom && record.custom[key]) ?
-                                                                       <>{record.custom[key]}</>
-                                                                       :
-                                                                       <> - </>
-                                                                    }
+                                                                        <>{record.custom[key]}</>
+                                                                    :
+                                                                         <> - </>
+                                                                   }
+                                                                   </>
+                                                                }
                                                                </dd>
                                                             </div>
                                                         )

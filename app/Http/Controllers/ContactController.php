@@ -351,7 +351,7 @@ class ContactController extends Controller
         $fields = Field::where('module_name', 'Contact')
             ->where('user_id', $request->user()->id)
             ->get(['field_name', 'is_custom']);
-   
+
         if ($fields) {
             $custom_field = [];
             foreach ($fields as $record) {
@@ -360,17 +360,19 @@ class ContactController extends Controller
                 if ($request->has($field) && $custom == '0') {
                     $contact->$field = $request->$field;
                 }
-                if($request->custom){
-                    if ($custom == '1') {
-                        $custom_field[$field] = $request->custom[$field];
+  
+                if($custom == '1'){
+                    if($request->custom){
+                        foreach($request->custom as $key => $value){
+                            $custom_field[$key] = $value;
+                        }
                     }
                 }
             }
             if ($custom_field) {
                 $contact->custom = $custom_field;
-            
             }
-       
+    
             $contact->user_id = $request->user()->id;
             $contact->save();
         }

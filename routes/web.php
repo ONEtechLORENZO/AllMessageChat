@@ -17,6 +17,7 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\NoteController;
+use App\Http\Controllers\FieldController;
 use App\Http\Middleware\IsAdmin;
 use App\Models\Contact;
 use App\Models\Note;
@@ -56,7 +57,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/charge', [UserController::class, 'charge'])->name('charge');
     Route::get('/user-balance', [UserController::class, 'userBalance'])->name('userBalance');
     Route::get('/transactions', [UserController::class, 'transactions'])->name('listTransaction');
-    Route::get('/invoices', [UserController::class, 'invoices'])->name('invoices');
+    Route::get('/invoices/{id}', [UserController::class, 'invoices'])->name('invoices');    
     
     // Profile
     Route::get('/user/profile', [UserController::class, 'userDetail'])->name('profile');
@@ -100,8 +101,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/contact/delete/{id}', [ContactController::class, 'deleteContact'])->name('deleteContact');
 
     Route::get('/contact/{id}', [ContactController::class, 'contactDetail'])->name('detailContact');
-    Route::post('/updateContact/{id}', [ContactController::class, 'storeContact'])->name('updateContact');
-    Route::post('/updateContact', [ContactController::class, 'storeContact'])->name('storeContact');
+    Route::post('/updateContact/{id}', [ContactController::class, 'update'])->name('updateContact');
+    Route::post('/updateContact', [ContactController::class, 'store'])->name('storeContact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
 

@@ -23,6 +23,7 @@ use App\Models\Price;
 use App\Models\WebhookEvent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use PDF;
 
 class UserController extends Controller
 {
@@ -1131,12 +1132,12 @@ class UserController extends Controller
     {
         // List view columns to show
         $list_view_columns = [
-            'service' => 'Service',
-            'transaction_id' => 'Transaction Id',
-            'amount' => 'Amount',
-            'status' => 'Status',
-            'error_message' => 'Message',
-            'created_at' => 'Created At',
+            'service' => [ 'label' => 'Service' , 'type' => 'text'],
+            'transaction_id' => [ 'label' => 'Transaction Id' , 'type' => 'text'],
+            'amount' => [ 'label' => 'Amount' , 'type' => 'text'],
+            'status' => [ 'label' => 'Status' , 'type' => 'text'],
+            'error_message' => [ 'label' => 'Message' , 'type' => 'text'],
+            'created_at' => [ 'label' => 'Created At' , 'type' => 'text']
         ];
 
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
@@ -1172,6 +1173,7 @@ class UserController extends Controller
                 'delete' => false,
                 'export' => false,
                 'import' => false,
+                'download' => true,
             ],
             // Sorting
             'sort_by' => $sort_by,
@@ -1198,7 +1200,18 @@ class UserController extends Controller
      */
     public function invoices(Request $request)
     {
-        // 
+        $invoice = Transaction::find($request->id);
+        if(!$invoice || ($invoice->user_id != $request->user()->id)) {
+            abort(401);
+        }
+
+        $user = User::find($request->user()->id);
+            view()->share('invoice',$invoice);
+            view()->share('user',$user);
+
+            $pdf = PDF::loadView('invoice');
+            $pdf->save(storage_path().'invoice.pdf');
+            return $pdf->download('invoice.pdf');
     }
 
     /**

@@ -176,7 +176,7 @@ function Form(props)
         // Validate the data
         let is_validated = false;
         var pristine = new Pristine(document.getElementById(`form`), defaultConfig);
-        is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required="true"]'));
+        is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required="true"]','textarea[data-pristine-required="true"]'));
         if(!is_validated) {
             return false;
         }
@@ -210,10 +210,10 @@ function Form(props)
 
     function CustomData(event){
         let newState = Object.assign({}, data); 
-        let value = event.value;
+        const value = event.type === 'checkbox' ? event.checked : event.value;
         let field_name = event.name;
         var isUpdate = false;
-       
+
         var customField = (data.custom)? data.custom : {};
         Object.entries(fields).map(([key, field])=> {
             let name = '';
@@ -222,7 +222,7 @@ function Form(props)
                 if(name == field_name){
                     customField[field_name] = value; 
                     newState['custom'] = customField;
-                    isUpdate = true;;
+                    isUpdate = true;
                 }
             }  
         })
@@ -281,21 +281,26 @@ function Form(props)
                                             if(data.is_custom == '1' && data.module_name == 'Contact' && data.field_type == 'dropdown'){
                                                 addSelectableField();
                                             }
-                                            let field_value = data[field_info.field_name];
-                                            if(data.custom && data.custom[field_info.field_name]){
-                                                field_value = data.custom[field_info.field_name]
-                                            }
+                                            var field_value = data[field_info.field_name];
+                                            if(data.custom){
+                                                const custom = data.custom;
+                                                let custom_field = field_info.field_name;
 
+                                                if(custom.hasOwnProperty(custom_field)){
+                                                    field_value  = custom[custom_field];
+                                                }
+                                            }
+                                   
                                             switch (field_info.field_type) {
                                                 case "text":
                                                     element = <Input
-                                                        required={field_info.is_mandatory === 1 ? true : false}
                                                         type="text"
                                                         className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
                                                         id={field_info.field_name}
                                                         name={field_info.field_name}
                                                         value={field_value}
                                                         handleChange={handleChange}
+                                                        required={field_info.is_mandatory === 1 ? true : false}
                                                     />;
                                                     break;
                                                 case 'phone_number':
