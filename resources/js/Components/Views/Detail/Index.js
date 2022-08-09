@@ -74,7 +74,7 @@ export default function Index(props) {
                                 </div>
                                 <div>
                                     
-                                    {props.module == 'Contacts' &&
+                                    {props.module == 'Contact' &&
                                         <>
                                             <div className="text-gray-600"> {record.first_name} {record.last_name}  </div>
                                             <div className="text-gray-600"> {record.phone_number} </div>
@@ -188,7 +188,7 @@ export default function Index(props) {
                                                                <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
                                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                                                                    {field.type == 'checkbox' ?
-                                                                   <>  {record.custom[key] ? 'True': 'False' }</> 
+                                                                   <> { record.custom && record.custom[key] ? 'True': 'False' }</> 
                                                                    : 
                                                                    <>
                                                                     {(record.custom && record.custom[key]) ?

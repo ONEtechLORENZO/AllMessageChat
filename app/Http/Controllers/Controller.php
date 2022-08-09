@@ -188,8 +188,6 @@ class Controller extends BaseController
             }
             
         }
-
-    //  dd($query->get());
         return $query;
     }
 
@@ -264,6 +262,9 @@ class Controller extends BaseController
                         case 'lesser_than':
                             $conditionOperator = ' < ';
                             break;
+                    }
+                    if(!$fieldValue){
+                        $conditionOperator = 'null';
                     }
                     
                 }

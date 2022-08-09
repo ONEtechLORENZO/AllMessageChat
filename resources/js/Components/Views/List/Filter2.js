@@ -77,6 +77,9 @@ function Filter(props)
             'not_equal': 'Not equal',
             'is_null': 'Null',
         },
+        'checkbox': {
+            'equal':  'Equal',
+        },
         'tag': {
             'equal':  'Equal',
         }
@@ -606,7 +609,7 @@ function Filter(props)
                                                                                 case 'checkbox':
                                                                                         valueField = <input
                                                                                             type='checkbox'
-                                                                                            className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                                            className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD]  block rounded-sm sm:text-sm border border-[#67e8f9]"
                                                                                             name="condition_value"
                                                                                             group_index={grpCondition_index} 
                                                                                             condition_index={condition_index}
