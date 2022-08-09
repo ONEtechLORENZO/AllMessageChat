@@ -1,11 +1,11 @@
 import React, { Fragment, useRef, useEffect, useState } from 'react';
 import Authenticated from '@/Layouts/Authenticated';
+import { Inertia } from '@inertiajs/inertia';
 import { Head, Link, useForm } from '@inertiajs/inertia-react';
 import { Dialog, Transition } from '@headlessui/react'
 import PristineJS from 'pristinejs';
 import Input from '@/Components/Forms/Input';
 import InputError from '@/Components/Forms/InputError';
-
 import { currencies, countries } from '@/Pages/Constants';
 import { BriefcaseIcon } from '@heroicons/react/solid';
 
@@ -34,7 +34,8 @@ export default function UserDetail(props) {
 
     const [spinClass , setSpinClass] = useState([]);
     const [token , setToken ]= useState(props.token);
-    const { data, setData, post, processing, errors, reset } = useForm({});
+    const [errors, setErrors] = useState({});
+    const { data, setData, post, processing, reset } = useForm({});
     const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
     const cancelButtonRef = useRef(null);
 
@@ -80,24 +81,13 @@ export default function UserDetail(props) {
      */
      function createNewPassword() {
         var pristine = new PristineJS(document.getElementById("user_new_password"));
-        let is_validated = pristine.validate();
-        if(!is_validated) {
-            return false;
-        }
-        var new_pass = document.getElementById("new_password");
-        var conf_pass = document.getElementById("confirm_password");
 
-        pristine.addValidator(new_pass, function (value ) {
-            console.log(value );
-            if (value == pristine.confirm_password) {
-                return true;
-            }
-            return false;
-        }, (props.translator['The new password and confirm password must match']), 2, false);
  
         Inertia.post(route('change_password', props.user.id), data, {
-            onSuccess: () => {
-                console.log('Password saved successfully')
+            onSuccess: (response) => {
+            },
+            onError: (errors) => {
+                setErrors(errors)
             }
         });
     }
@@ -239,27 +229,38 @@ export default function UserDetail(props) {
                                         <div className="mt-2">
                                             <form id="user_new_password">
                                             <div className="grid gap-6">                                                
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="new_password" className="block text-sm font-medium text-gray-700">
-                                                    {props.translator['New Password']}
-                                                    </label>
-                                                    <div className="mt-1 flex rounded-md shadow-sm">
-                                                        <Input type="password" minlength="8" name='new_password' required={true} id='new_password' placeholder={props.translator['New Password']} handleChange={handleChange} />
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <label htmlFor="current_password" className="block text-sm font-medium text-gray-700">
+                                                            Current Password
+                                                        </label>
+                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                            <Input type="password" minlength="8" name='current_password' required={true} id='current_password' placeholder='Current Password' handleChange={handleChange} />
+                                                        </div>
+                                                        <InputError message={errors.current_password} />
                                                     </div>
-                                                    <InputError message={errors.incoming_url} />
-                                                </div>
                                                 </div>
                                                 <div className="grid gap-6 mt-3">                                                
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="confirm_password" className="block text-sm font-medium text-gray-700">
-                                                    {props.translator['Confirm Password']}
-                                                    </label>
-                                                    <div className="mt-1 flex rounded-md shadow-sm">
-                                                        <Input type="password" minlength="8" name='confirm_password' required={true} id='confirm_password' placeholder={props.translator['Confirm Password']} handleChange={handleChange} />
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <label htmlFor="new_password" className="block text-sm font-medium text-gray-700">
+                                                        {props.translator['New Password']}
+                                                        </label>
+                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                            <Input type="password" minlength="8" name='new_password' required={true} id='new_password' placeholder={props.translator['New Password']} handleChange={handleChange} />
+                                                        </div>
+                                                        <InputError message={errors.new_password} />
                                                     </div>
-                                                    <InputError message={errors.incoming_url} />
                                                 </div>
-                                            </div>
+                                                <div className="grid gap-6 mt-3">                                                
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <label htmlFor="confirm_password" className="block text-sm font-medium text-gray-700">
+                                                        {props.translator['Confirm Password']}
+                                                        </label>
+                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                            <Input type="password" minlength="8" name='confirm_password' required={true} id='confirm_password' placeholder={props.translator['Confirm Password']} handleChange={handleChange} />
+                                                        </div>
+                                                        <InputError message={errors.confirm_password} />
+                                                    </div>
+                                                </div>
                                             </form>
                                         </div>
                                     </div>

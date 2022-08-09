@@ -426,7 +426,7 @@ function Filter(props)
                         <li onClick={ ()=> applyFilter('All')} className={"px-4 py-2 hover:bg-sky-700 cursor-pointer "+ (selectedFilter == 'All' && 'bg-gray-100' ) }>
                             All
                         </li>
-                        {Object.entries(filterList).map(([filter_index, filterData])=>
+                        {Object.entries(props.filter.filter_list).map(([filter_index, filterData])=>
                             <li  key={filterData['id']} className={"px-4 py-2 hover:bg-sky-700 cursor-pointer "+ (selectedFilter == filterData['id'] ? 'bg-gray-100' : '' ) }>
                                 <div class="flex text-white hover:text-gray-900">
                                     <div className="flex-auto w-80 text-gray-900 text-sm" onClick={()=> applyFilter(filterData['id'])}> {filterData['name']} </div>

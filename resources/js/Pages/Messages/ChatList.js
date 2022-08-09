@@ -258,7 +258,7 @@ function ChatList(props)
                                 {Object.entries(chatList).map(([id, person], j) => (
                                     <li key={id}  onClick={() => updateContactData(id)} >
                                         <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
-                                            <div className="w-2.5 h-2.5 self-stretch bg-red-600 rounded-full"></div>
+                                            
                                             <div className="flex-shrink-0">
                                                 <span className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gray-500">
                                                     <span className="text-2xl font-medium leading-none text-white">
@@ -286,10 +286,7 @@ function ChatList(props)
                                                         }
                                                     </p>
                                                     <p className="text-sm text-[#3D4459] truncate">
-                                                    {props.translator['Junior Developer']}
-                                                    </p>
-                                                    <p className="text-sm text-[#7A7A7A] truncate">
-                                                        Text Message Preview
+                                                        {person.number}
                                                     </p>
                                                 </Link>
                                             </div>

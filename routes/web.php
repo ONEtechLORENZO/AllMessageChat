@@ -144,7 +144,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Check user is admin
 Route::middleware('auth', IsAdmin::class)->group(function () {
     // Users
-    Route::get('/admin/users', [UserController::class, 'usersListing'])->name('usersListing');
+    Route::get('/admin/users', [UserController::class, 'usersListing'])->name('listUser');
     Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_user');
     Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_user');
     Route::get('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_user');

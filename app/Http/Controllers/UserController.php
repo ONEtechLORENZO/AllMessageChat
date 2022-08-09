@@ -8,11 +8,13 @@ use App\Models\Message;
 use App\Models\MessageButton;
 use App\Models\Template;
 use Inertia\Inertia;
+use App\Rules\MatchOldPassword;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use App\Models\MailToAddress;
 use App\Models\OutgoingServerConfig;
 use Swift_Mailer;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Mail;
 use App\Http\Controllers\TemplateController;
@@ -373,14 +375,14 @@ class UserController extends Controller
      */
     public function changePassword(Request $request, $id)
     {
-        Log::info('Password change process start');
         $user = User::findOrFail($id);
+      
         $request->validate([
-            'new_password' => 'required|min:8|required_with:confirm_password|same:confirm_password',
-            'confirm_password' => 'required|min::8',
+            'current_password' => ['required', new MatchOldPassword],
+            'new_password' => 'required|min:8',
+            'confirm_password' => 'required|min:8|required_with:confirm_password|same:new_password',
         ]);
-        $user->password = bcrypt($request->get('new_password'));
-        $user->save();
+        $user->update(['password'=> Hash::make($request->new_password)]);
         Log::info('Password changed successfully.');
         return Redirect::route('detailUser', $id);
     }
@@ -1131,12 +1133,12 @@ class UserController extends Controller
     {
         // List view columns to show
         $list_view_columns = [
-            'service' => 'Service',
-            'transaction_id' => 'Transaction Id',
-            'amount' => 'Amount',
-            'status' => 'Status',
-            'error_message' => 'Message',
-            'created_at' => 'Created At',
+            'service' => ['label' => 'Service' , 'type' => 'text'],
+            'transaction_id' => ['label' => 'Transaction Id' , 'type' => 'text'],
+            'amount' => ['label' => 'Amount' , 'type' => 'text'],
+            'status' => ['label' => 'Status' , 'type' => 'text'],
+            'error_message' => ['label' => 'Message' , 'type' => 'text'],
+            'created_at' => ['label' => 'Created At' , 'type' => 'text'],
         ];
 
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';

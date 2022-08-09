@@ -42,7 +42,10 @@ export default function Detail(props) {
         setShowForm(true);
     }
     return (
-        <Authenticated>
+        <Authenticated
+            auth={props.auth}
+            errors={props.errors}
+        >
 
             <DetailView
                 record = {props.contact}
