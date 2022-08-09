@@ -45,7 +45,7 @@ Route::get('/', function () {
 
 
 Route::post('/incoming', [MsgController::class, 'incoming']);
-
+Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
 

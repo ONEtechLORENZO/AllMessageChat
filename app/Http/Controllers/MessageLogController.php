@@ -57,6 +57,11 @@ class MessageLogController extends Controller
         ]);
     }
 
+    public function msglogin(Request $request)
+    {
+        return Inertia::render('Messages/msglogin');
+    }
+
     /**
      * Search Keyword  
      */
