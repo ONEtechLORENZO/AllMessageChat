@@ -18,6 +18,7 @@ export default function Index(props) {
     const [customHeader, setCustomHeader] = useState(props.headers.custom);
 
     useEffect(() => {
+        setRecord(props.record);
         setTagOption(props.tagOptions);
         setListOption(props.listOptions);
         setTagSelectedOption(props.tagData);
@@ -50,7 +51,6 @@ export default function Index(props) {
             },
         });
     }
-   console.log(props)
     return (            
             <div>
                 <ul className="py-4 space-y-2 sm:px-6 sm:space-y-4 lg:px-8" role="list">

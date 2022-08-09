@@ -173,12 +173,13 @@ class Controller extends BaseController
                 $groupCount ++;
                 
                 foreach($conditions as $key => $condition){
-                    if($condition->field_name){
+                    $fieldName = $condition->field_name;
+                    if($fieldName){
                         $isNullCondition = false;
                         if( isset($condition->field_type) && $condition->field_type == 'tag'){
                             $selectedTag = $condition->condition_value;
                                 
-                            if( $condition->field_name == 'tag_relation' ) {
+                            if( $fieldName == 'tag_relation' ) {
                                 $query->leftJoin('taggables', "{$baseTable}.id",'taggable_id')->groupBy('id');
                                 if($selectedTag){
                                     $tag = implode(',', $selectedTag);
@@ -196,27 +197,31 @@ class Controller extends BaseController
                                 }
                             }
                         } else {
+                            if( strpos($fieldName , 'cf_') !== false ){
+                                dd($fieldName);
+                            }
+                        
                             switch($condition->record_condition){
                                 case 'equal':
-                                    $whereCondition .= " {$condition->field_name} = '{$condition->condition_value}' ";
+                                    $whereCondition .= " {$fieldName} = '{$condition->condition_value}' ";
                                     break;
                                 case 'not_equal':
-                                    $whereCondition .= " {$condition->field_name} != '{$condition->condition_value}' ";
+                                    $whereCondition .= " {$fieldName} != '{$condition->condition_value}' ";
                                     break;
                                 case 'is_null':
-                                    $whereCondition .= " {$condition->field_name} is null ";
+                                    $whereCondition .= " {$fieldName} is null ";
                                     break;
                                 case 'start_with':
-                                    $whereCondition .= " {$condition->field_name} like '{$condition->condition_value}%' ";
+                                    $whereCondition .= " {$fieldName} like '{$condition->condition_value}%' ";
                                     break;
                                 case 'end_with':
-                                    $whereCondition .= " {$condition->field_name} like '%{$condition->condition_value}' ";
+                                    $whereCondition .= " {$fieldName} like '%{$condition->condition_value}' ";
                                     break;
                                 case 'contains':
-                                    $whereCondition .= " {$condition->field_name} like '%{$condition->condition_value}%' ";
+                                    $whereCondition .= " {$fieldName} like '%{$condition->condition_value}%' ";
                                     break;
                                 case 'lesser_than':
-                                    $whereCondition .= " {$condition->field_name} = '{$condition->condition_value}' ";
+                                    $whereCondition .= " {$fieldName} = '{$condition->condition_value}' ";
                                     break;
                             }
                         }

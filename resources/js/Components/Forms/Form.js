@@ -263,7 +263,6 @@ function Form(props)
                                         <div className="mt-3 text-center sm:mt-0 sm:text-left">
                                             <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
                                                 {props.recordId ? 'Update' : 'Create'} {props.heading}
-                                                {console.log('update test - ',props )}
                                             </Dialog.Title>
                                         </div>
                                     </div>

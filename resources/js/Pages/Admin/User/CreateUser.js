@@ -26,6 +26,7 @@ export default function CreateUser(props) {
             'time_zone': {'value': props.user.time_zone, 'label': (props.translator['Time Zone']), 'type': 'select', 'required': false , 'options': props.time_zone },
             'token': {'value': props.token, 'label': (props.translator['Token']) , action:'regenarate', 'type': 'text', 'required': false },
             'status': {'value': (props.user.status == 1) ? 'Active': 'Inactive', 'label': (props.translator['Active Status']), 'type': 'checkbox', 'required': false },
+            'role': {'value': props.user.role , 'label': 'Role' , 'type': 'select', 'required': false, 'options': props.roles},
         //    'created_at': {'value': formatDate(props.user.created_at), 'label': 'Created At', 'type': 'text', 'required': false },
         },
         'Billing Information': {
@@ -93,10 +94,6 @@ export default function CreateUser(props) {
         }
         post(route('store_user_data'));
     }
-    const roleOptions = [
-        {value: 'admin', label: 'Admin'},
-        {value: 'Customer', label: 'Customer'},
-    ];
 
     // Password change modal
     const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);

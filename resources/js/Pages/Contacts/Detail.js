@@ -46,7 +46,6 @@ export default function Detail(props) {
             auth={props.auth}
             errors={props.errors}
         >
-
             <DetailView
                 record = {props.contact}
                 module = 'Contact'

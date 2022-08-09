@@ -17,6 +17,7 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\NoteController;
+use App\Http\Controllers\FieldController;
 use App\Http\Middleware\IsAdmin;
 use App\Models\Contact;
 use App\Models\Note;
@@ -100,8 +101,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/contact/delete/{id}', [ContactController::class, 'deleteContact'])->name('deleteContact');
 
     Route::get('/contact/{id}', [ContactController::class, 'contactDetail'])->name('detailContact');
-    Route::post('/updateContact/{id}', [ContactController::class, 'storeContact'])->name('updateContact');
-    Route::post('/updateContact', [ContactController::class, 'storeContact'])->name('storeContact');
+    Route::post('/updateContact/{id}', [ContactController::class, 'update'])->name('updateContact');
+    Route::post('/updateContact', [ContactController::class, 'store'])->name('storeContact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
 
@@ -146,9 +147,9 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     // Users
     Route::get('/admin/users', [UserController::class, 'usersListing'])->name('listUser');
     Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_user');
-    Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_user');
+    Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('editUser');
     Route::get('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_user');
-    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('user_detail');
+    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detailUser');
     Route::post('/admin/user/change_password/{id}', [UserController::class, 'changePassword'])->name('change_password');
 
     // Settings
@@ -163,6 +164,13 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::post('/admin/pricing', [PriceController::class, 'store'])->name('storePrice');
     Route::post('/admin/pricing/{id}', [PriceController::class, 'update'])->name('updatePrice');
     Route::delete('/admin/pricing/{id}', [PriceController::class, 'destroy'])->name('deletePrice');
+
+    //Field
+    Route::get('/fields', [FieldController::class, 'index'])->name('listField');
+    Route::get('/field/{id}', [FieldController::class, 'edit'])->name('editField');
+    Route::post('/field/store', [FieldController::class, 'store'])->name('storeField');
+    Route::post('/updateField/{id}',[FieldController::class, 'update'])->name('updateField');
+    Route::delete('/deleteField/{id}',[FieldController::class, 'destroy'])->name('deleteField');
 });
 
 require __DIR__ . '/auth.php';

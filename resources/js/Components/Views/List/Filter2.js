@@ -423,7 +423,7 @@ function Filter(props)
                             
                     <ul role="list" className="divide-y divide-gray-200 overflow-y-auto m-h-64">
                         
-                        <li onClick={ ()=> applyFilter('All')} className={"px-4 py-2 hover:bg-sky-700 cursor-pointer "+ (selectedFilter == 'All' && 'bg-gray-100' ) }>
+                        <li onClick={ ()=> applyFilter('All')} className={"px-4 py-2 text-gray-900 text-sm hover:bg-sky-700 cursor-pointer "+ (selectedFilter == 'All' && 'bg-gray-100' ) }>
                             All
                         </li>
                         {Object.entries(props.filter.filter_list).map(([filter_index, filterData])=>
@@ -435,7 +435,7 @@ function Filter(props)
                                 </div>
                             </li>
                         )}
-                        <li onClick={()=> createFilter()} className="px-4 py-2 hover:bg-sky-700 cursor-pointer">
+                        <li onClick={()=> createFilter()} className="px-4 py-2 text-gray-900 text-sm hover:bg-sky-700 cursor-pointer">
                             Add New
                         </li>
                     </ul>

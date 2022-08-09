@@ -40,6 +40,10 @@ class UserController extends Controller
         'template_events' => ['label' => 'Template events', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
         'account_related_events' => ['label' => 'Account related events', 'help_text' => 'Return sent messasge enqueue response to callback url'],
     ];
+    public $userRoles = [
+        'regular' => 'Regular',
+        'admin' => 'Admin'
+    ];
     public $timezones = array(
         'Pacific/Midway'       => "(GMT-11:00) Midway Island",
         'US/Samoa'             => "(GMT-11:00) Samoa",
@@ -249,6 +253,7 @@ class UserController extends Controller
                     'password' => $password, 
                     'currentUser' => $currentUser,
                     'time_zone' => $this->timezones,
+                    'roles' => $this->userRoles,
                     'translator' => [
                         'Name' => __('Name'),
                         'Company name' => __('Company name'),
