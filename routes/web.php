@@ -113,6 +113,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Form
     Route::get('/fetchModuleFields/{module}', [FormController::class, 'fetchModuleFields'])->name('fetchModuleFields');
+    Route::get('/field/getFieldOptions',[FormController::class,'getFieldOptions'])->name('get_field_options');
 
     // Import
     Route::get('/import',[ImportController::class, 'index'])->name('listImport');

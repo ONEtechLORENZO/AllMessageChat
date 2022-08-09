@@ -11,7 +11,7 @@ use App\Models\Filter;
 use App\Models\Contact;
 use App\Models\Tag;
 use App\Models\Category;
-
+use DB;
 
 class Controller extends BaseController
 {
@@ -53,8 +53,10 @@ class Controller extends BaseController
 
         $listFields = array_keys($list_view_columns) ;
         $listFields = array_diff( $listFields, ['tag' , 'list'] );
-        $listFields[] = $baseTable.'.id'; 
-      
+        $listFields[] = 'id'; 
+        $listFields = substr_replace($listFields, "{$baseTable}.", 0, 0);
+
+        //DB::enableQueryLog();
         if($search) {
             $query = $module->select( $listFields )->orderBy("{$baseTable}.{$sort_by}", $sort_order)
                         ->where(function ($query) use ($search, $list_view_columns) {  
@@ -64,13 +66,18 @@ class Controller extends BaseController
                             }
                         });
             $query = ($searchData) ? $this->getWhereFilterCondition($searchData , $query, $baseTable) : $query;
-            $records = $query->paginate($this->limit);
         } else {
             $query = $module->select( $listFields )->orderBy("{$baseTable}.{$sort_by}", $sort_order);
-            $query = ($searchData) ? $this->getWhereFilterCondition($searchData , $query , $baseTable) : $query;
-            $records = $query->paginate($this->limit);
-        }
+            
+            $query->leftJoin('taggables', "{$baseTable}.id",'taggable_id')->groupBy("{$baseTable}.id");
+            $query->leftJoin('categorables', "{$baseTable}.id", 'categorable_id')->groupBy("{$baseTable}.id");
 
+            $query = ($searchData) ? $this->getWhereFilterCondition($searchData , $query , $baseTable) : $query;
+        }
+        if($moduleName != 'User'){
+            $query->where('user_id' , $user_id);
+        }
+        $records = $query->paginate($this->limit);
         $return = [
             'records' => $records->items(),
 
@@ -162,84 +169,129 @@ class Controller extends BaseController
         $whereCondition = '';
         $groupCount = 0;
         $isNullCondition = true;
-        
         foreach($searchData as $key => $groupConditions){
             foreach($groupConditions as $groupOperator => $conditions ){
-                $conditionsCount = count($conditions);
-                 if(!$conditionsCount){
-                    continue;
-                 }
-                $whereCondition .=  ($groupCount == 0) ? ' (' : " {$groupOperator} (";
+                $groupOperator =  ($groupCount == 0) ? '' : $groupOperator;
                 $groupCount ++;
+                $obj = $this;
                 
-                foreach($conditions as $key => $condition){
-                    $fieldName = $condition->field_name;
-                    if($fieldName){
-                        $isNullCondition = false;
-                        if( isset($condition->field_type) && $condition->field_type == 'tag'){
-                            $selectedTag = $condition->condition_value;
-                                
-                            if( $fieldName == 'tag_relation' ) {
-                                $query->leftJoin('taggables', "{$baseTable}.id",'taggable_id')->groupBy('id');
-                                if($selectedTag){
-                                    $tag = implode(',', $selectedTag);
-                                    $whereCondition .= "tag_id in ({$tag}) ";
-                                } else {
-                                    $whereCondition .= "tag_id is null ";
-                                }
-                            } else {
-                                $query->leftJoin('categorables', "{$baseTable}.id", 'categorable_id')->groupBy('id');
-                                if($selectedTag){
-                                    $tag = implode(',', $selectedTag);
-                                    $whereCondition .= "category_id in ({$tag}) ";
-                                } else {
-                                    $whereCondition .= "category_id is null ";
-                                }
-                            }
-                        } else {
-                            if( strpos($fieldName , 'cf_') !== false ){
-                                dd($fieldName);
-                            }
-                        
-                            switch($condition->record_condition){
-                                case 'equal':
-                                    $whereCondition .= " {$fieldName} = '{$condition->condition_value}' ";
-                                    break;
-                                case 'not_equal':
-                                    $whereCondition .= " {$fieldName} != '{$condition->condition_value}' ";
-                                    break;
-                                case 'is_null':
-                                    $whereCondition .= " {$fieldName} is null ";
-                                    break;
-                                case 'start_with':
-                                    $whereCondition .= " {$fieldName} like '{$condition->condition_value}%' ";
-                                    break;
-                                case 'end_with':
-                                    $whereCondition .= " {$fieldName} like '%{$condition->condition_value}' ";
-                                    break;
-                                case 'contains':
-                                    $whereCondition .= " {$fieldName} like '%{$condition->condition_value}%' ";
-                                    break;
-                                case 'lesser_than':
-                                    $whereCondition .= " {$fieldName} = '{$condition->condition_value}' ";
-                                    break;
-                            }
-                        }
-                        if($conditionsCount != ($key+1) ){
-                            $operator = ($condition->condition_operator) ? $condition->condition_operator : 'AND';
-                            if($conditions[$key+1]->field_name){
-                                $whereCondition .= " {$operator} ";
-                            }
-                        }
-                    }
+                if($groupOperator == 'AND' || $groupOperator == ''){
+                    $query->where(function($query) use ( $conditions , $baseTable, $obj) {
+                        $query = $obj->setWhereCondition($query , $conditions, $baseTable );
+                    });
+                   
+                } else {
+                    $query->orWhere(function($query) use ( $conditions , $baseTable, $obj) {
+                        $query = $obj->setWhereCondition($query , $conditions , $baseTable );
+                    });
                 }
-                $whereCondition .=  " ) ";
             }
+            
         }
-        if(! $isNullCondition ){
-            $query->whereRaw($whereCondition);
-        }
+
+    //  dd($query->get());
         return $query;
     }
 
+    public function setWhereCondition($query , $conditions , $baseTable )
+    {
+        $whereCondition = '';
+        $conditionsCount = count($conditions);
+        if(!$conditionsCount){
+            return ;
+        }
+        foreach($conditions as $key => $condition){
+            $fieldName = $condition->field_name;
+            $fieldValue = $condition->condition_value;
+
+
+            if($fieldName){
+                $isNullCondition = false;
+                if( isset($condition->field_type) && $condition->field_type == 'tag'){
+                    $selectedTag = $condition->condition_value;
+                        
+                    if( $fieldName == 'tag_relation' ) {
+                        if($selectedTag){
+                            $fieldName = 'tag_id';
+                            $conditionOperator = 'in';
+                            $fieldValue = $selectedTag;
+                        } else {
+                            $fieldName = 'tag_id';
+                            $conditionOperator = 'null';
+                            $fieldValue = "";
+                        }
+                    } else {
+                        if($selectedTag){
+                            $tag = implode(',', $selectedTag);
+                            $fieldName = 'category_id';
+                            $conditionOperator = 'in';
+                            $fieldValue = $selectedTag;
+                        } else {
+                            $fieldName = 'category_id';
+                            $conditionOperator = 'null';
+                            $fieldValue = "";
+                        }
+                    }
+                } else {
+                    $conditionOperator = $condition->record_condition;
+
+                    if( strpos($fieldName , 'cf_') !== false ){
+                        $fieldName = 'custom->'.$fieldName;
+                    }
+                    
+                    switch($condition->record_condition){
+                        case 'equal':
+                            $conditionOperator = '=';
+                            break;
+                        case 'not_equal':
+                            $conditionOperator = '!=';
+                            break;
+                        case 'is_null':
+                            $conditionOperator = 'null';
+                            break;
+                        case 'start_with':
+                            $conditionOperator = 'like';
+                            $fieldValue = " '{$fieldValue}%' ";
+                            break;
+                        case 'end_with':
+                            $conditionOperator = 'like';
+                            $fieldValue = "%{$fieldValue}";
+                            break;
+                        case 'contains':
+                            $conditionOperator = 'like';
+                            $fieldValue = "%{$fieldValue}%";
+                            break;
+                        case 'lesser_than':
+                            $conditionOperator = ' < ';
+                            break;
+                    }
+                    
+                }
+                $operator = '';
+               
+                if($key > 0 ){
+                    $operator = ($conditions[$key-1]) ? $conditions[$key-1]->condition_operator : 'AND';
+                }
+                
+                if($operator == 'AND' || $operator == ''){
+                    if($conditionOperator == 'in'){
+                        $query->whereIn($fieldName , $fieldValue );
+                    } else if($conditionOperator == 'null'){
+                        $query->whereNull($fieldName);
+                    } else {
+                        $query->where($fieldName, $conditionOperator , $fieldValue );
+                    }
+                } else {
+                    if($conditionOperator == 'in'){
+                        $query->orWhereIn($fieldName , $fieldValue );
+                    } else if($conditionOperator == 'null'){
+                        $query->orWhereNull($fieldName);
+                    } else {
+                        $query->orWhere($fieldName, $conditionOperator , $fieldValue );
+                    }
+                }
+            }
+        }
+        return $query;
+    }
 }

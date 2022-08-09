@@ -66,6 +66,17 @@ function Filter(props)
             'not_equal': 'Not equal',
             'is_null': 'Null',
         },
+        'dropdown':{
+            'equal':  'Equal',
+            'not_equal': 'Not equal',
+            'is_null': 'Null',
+        },
+        'phone_number':{
+            'contains': 'Contains',
+            'equal':  'Equal',
+            'not_equal': 'Not equal',
+            'is_null': 'Null',
+        },
         'tag': {
             'equal':  'Equal',
         }
@@ -526,6 +537,7 @@ function Filter(props)
                                                                     </legend>
                                                             
                                                                 {Object.entries(conditions).map(([condition_index, condition]) => {
+                                                                    var valueField = '';
                                                                     var selectedOptionValues = {'tag_relation': [] , 'list_relation': []};
                                                                     var optionValues = {'tag_relation': [] , 'list_relation': []};
                                                                     Object.entries(fields).map(([key, field])=> {
@@ -534,8 +546,6 @@ function Filter(props)
                                                                         }
                                                                         
                                                                         if(condition.field_type == 'tag'){
-                                                                            
-                                                                          //  console.log(field.field_name, field,options)
                                                                             if(field.field_name == condition.field_name) {
                                                                                 optionValues[field.field_name] = field.options;
                                                                                 var selectedValues = [];
@@ -545,11 +555,94 @@ function Filter(props)
                                                                                     }
                                                                                 })
                                                                                 selectedOptionValues[field.field_name] = selectedValues;
-                                                                                
                                                                             }
                                                                         }
+                                                                        
+                                                                        if(field.field_name == condition.field_name){
+                                                                            
+                                                                            switch(condition.field_type){
+                                                                                case 'select' :
+                                                                                    valueField = <select
+                                                                                        name="condition_value"
+                                                                                        group_index={grpCondition_index} 
+                                                                                        condition_index={condition_index}
+                                                                                        id="condition_value"
+                                                                                        value={condition.record_condition}
+                                                                                        onChange={ (e) => handleChange(e)}
+                                                                                        className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                                    >
+                                                                                        {Object.entries(field.options).map(([name, label]) => 
+                                                                                            <option defaultValue={condition.record_condition === name} value={name}> {label} </option>
+                                                                                        )}
+                                                                                    </select>
+                                                                                    break;
+                                                                                case 'dropdown':
+                                                                                    valueField = <select
+                                                                                        name="condition_value"
+                                                                                        group_index={grpCondition_index} 
+                                                                                        condition_index={condition_index}
+                                                                                        id="condition_value"
+                                                                                        value={condition.record_condition}
+                                                                                        onChange={ (e) => handleChange(e)}
+                                                                                        className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                                    >
+                                                                                        {Object.entries(field.options).map(([name, label]) => 
+                                                                                            <option defaultValue={condition.record_condition === name} value={name}> {label} </option>
+                                                                                        )}
+                                                                                    </select>
+                                                                                    break;
+                                                                                case 'text':
+                                                                                    valueField = <input
+                                                                                        type='text'
+                                                                                        className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                                        name="condition_value"
+                                                                                        group_index={grpCondition_index} 
+                                                                                        condition_index={condition_index}
+                                                                                        id= "condition_value"
+                                                                                        onChange={(e) => handleChange(e)}
+                                                                                        value={condition.condition_value}
+                                                                                    />
+                                                                                    break;
+                                                                                case 'checkbox':
+                                                                                        valueField = <input
+                                                                                            type='checkbox'
+                                                                                            className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                                            name="condition_value"
+                                                                                            group_index={grpCondition_index} 
+                                                                                            condition_index={condition_index}
+                                                                                            id= "condition_value"
+                                                                                            onChange={(e) => handleChange(e)}
+                                                                                            value={condition.condition_value}
+                                                                                        />
+                                                                                        break;
+                                                                                case 'textarea':
+                                                                                        valueField = <textarea
+                                                                                            className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                                            name="condition_value"
+                                                                                            group_index={grpCondition_index} 
+                                                                                            condition_index={condition_index}
+                                                                                            id= "condition_value"
+                                                                                            onChange={(e) => handleChange(e)}
+                                                                                            value={condition.condition_value}
+                                                                                        > {condition.condition_value}
+                                                                                        </textarea> 
+                                                                                        break;
+                                                                                default :
+                                                                                    valueField = <input
+                                                                                        type='text'
+                                                                                        className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                                        name="condition_value"
+                                                                                        group_index={grpCondition_index} 
+                                                                                        condition_index={condition_index}
+                                                                                        id= "condition_value"
+                                                                                        onChange={(e) => handleChange(e)}
+                                                                                        value={condition.condition_value}
+                                                                                    />
+
+                                                                            }
+                                                                        }
+
                                                                     })
-                                                                    
                                                                     return(
                                                                         <>
                                                                             <div className="flex w-full">
@@ -586,19 +679,11 @@ function Filter(props)
                                                                                         </select>
                                                                                     </div>
                                                                                     <div className="flex-1 flex items-center">
+                                                                                        
                                                                                         {condition.record_condition != 'is_null' &&
                                                                                             <>
                                                                                                 {condition.field_type != 'tag' ?
-                                                                                                    <input
-                                                                                                        type='text'
-                                                                                                        className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
-                                                                                                        name="condition_value"
-                                                                                                        group_index={grpCondition_index} 
-                                                                                                        condition_index={condition_index}
-                                                                                                        id= "condition_value"
-                                                                                                        onChange={(e) => handleChange(e)}
-                                                                                                        value={condition.condition_value}
-                                                                                                    />
+                                                                                                    <> {valueField} </>
                                                                                                 :
                                                                                                     <CreatableSelect
                                                                                                         isMulti 

@@ -44,6 +44,11 @@ class UserController extends Controller
         'regular' => 'Regular',
         'admin' => 'Admin'
     ];
+    public $categories = [
+        'TRANSACTIONAL' => 'TRANSACTIONAL',
+        'MARKETING' => 'MARKETING',
+        'OTP' => 'OTP'
+    ];
     public $timezones = array(
         'Pacific/Midway'       => "(GMT-11:00) Midway Island",
         'US/Samoa'             => "(GMT-11:00) Samoa",
@@ -202,10 +207,13 @@ class UserController extends Controller
             'singular' => 'User',
             'plural' => 'Users',
             'module' => 'User',
-
+            'add_link' => route('create_user'),
+            'edit_link' => 'editUser',
+            'add_button_text' => 'Add User',
+            
             // Actions
             'actions' => [
-                'create' => false,
+                'create' => true,
                 'detail' => true,
                 'edit' => true,
                 'delete' => true,
@@ -227,11 +235,31 @@ class UserController extends Controller
         $currentUser = $request->user();
         $user = new User();
         
-        if($user->role == 'admin'){
+        if($currentUser->role == 'admin'){
             return Inertia::render('Admin/User/CreateUser', [
                     'user' => $user, 
                     'currentUser' => $currentUser,
-                    'time_zone' => $this->timezones
+                    'time_zone' => $this->timezones,
+                    'roles' => $this->userRoles,
+                    'translator' => [
+                        'Name' => __('Name'),
+                        'Company name' => __('Company name'),
+                        'Email' => __('Email'),
+                        'Phone number' => __('Phone number'),
+                        'Language' => __('Language'),
+                        'Currency' => __('Currency'),
+                        'Active Status' => __('Active Status'),
+                        'Company Address' => __('Company Address'),
+                        'Company Country' => __('Company Country'),
+                        'Company VAT ID' => __('Company VAT ID'),
+                        'Admin email for invoices' => __('Admin email for invoices'),
+                        'Users'  => __('Users'),
+                        'Personal Information' => __('Personal Information'),
+                        'Time Zone' => __('Time Zone'),
+                        'Edit User' => __('Edit User'),
+                        'Save'  => __('Save'),
+                        'Cancel' => __('Cancel')
+                    ]
                 ]);
         } else {
             return Redirect(route('dashboard'));
@@ -476,6 +504,7 @@ class UserController extends Controller
             'field_info' => $field_info,
             'templates' => $templates,
             'webhook_events' => $this->webhook_events,
+            'categories' => $this->categories,
             'events' => $webhookEvents ? $webhookEvents : [],
             'translator' => [
                 'Edit' => __('Edit'),

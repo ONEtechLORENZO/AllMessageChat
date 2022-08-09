@@ -9,7 +9,7 @@ import PristineJS from 'pristinejs';
 import Input from '@/Components/Forms/Input';
 import Dropdown from '@/Components/Forms/Dropdown';
 import InputError from '@/Components/Forms/InputError';
-import categories, {defaultPristineConfig} from '@/Pages/Constants';
+import  {defaultPristineConfig} from '@/Pages/Constants';
 import { PencilAltIcon, PencilIcon, TrashIcon } from '@heroicons/react/solid';
 import { FolderAddIcon } from '@heroicons/react/outline';
 import Checkbox from '@/Components/Forms/Checkbox';
@@ -27,6 +27,8 @@ function Detail(props)
         languages: '',
         incoming_url: '',
     });
+
+    const categories = props.categories;
 
     /**
      * Handle input change
@@ -353,6 +355,7 @@ function Detail(props)
                                                     {props.translator['Category']}
                                                     </label>
                                                     <div className="mt-1">
+                                                        {console.log(categories)}
                                                         <Dropdown 
                                                             required={true} 
                                                             id="category"
