@@ -57,7 +57,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/charge', [UserController::class, 'charge'])->name('charge');
     Route::get('/user-balance', [UserController::class, 'userBalance'])->name('userBalance');
     Route::get('/transactions', [UserController::class, 'transactions'])->name('listTransaction');
-    Route::get('/invoices', [UserController::class, 'invoices'])->name('invoices');
+    Route::get('/invoices/{id}', [UserController::class, 'invoices'])->name('invoices');    
     
     // Profile
     Route::get('/user/profile', [UserController::class, 'userDetail'])->name('profile');
@@ -116,31 +116,38 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/field/getFieldOptions',[FormController::class,'getFieldOptions'])->name('get_field_options');
 
     // Import
-    Route::get('/import',[ImportController::class, 'index'])->name('listImport');
-    Route::get('/import/create',[ImportController::class, 'create'])->name('new_import');
-    Route::get('/import/detail/{id}',[ImportController::class, 'show'])->name('detailImport');
-    Route::post('/import/save',[ImportController::class, 'store'])->name('import_save');
-    Route::post('/import/file',[ImportController::class, 'handleFileImport'])->name('handleFileImport');
+    Route::get('/imports', [ImportController::class, 'index'])->name('listImport');
+    Route::get('/import/create', [ImportController::class, 'create'])->name('new_import');
+    Route::get('/import/detail/{id}', [ImportController::class, 'show'])->name('detailImport');
+    Route::post('/import/save', [ImportController::class, 'store'])->name('import_save');
+    Route::post('/import/file', [ImportController::class, 'handleFileImport'])->name('handleFileImport');
     Route::delete('/import/{id}', [ImportController::class, 'destroy'])->name('deleteImport');
 
     //Export
-    Route::get('/export',[ExportController::class,'exportFile'])->name('export');
+    Route::get('/exports', [ExportController::class, 'exportFile'])->name('export');
 
     //Tag
-    Route::get('/tag',[TagController::class,'index'])->name('listTag');
-    Route::get('/tag/getTagList',[TagController::class,'getTagList'])->name('get_tag_list');
-    Route::post('/tag/store',[TagController::class,'store'])->name('storeTag');
-    Route::get('/tag/{id}',[TagController::class,'edit'])->name('editTag');
-    Route::post('/updateTag/{id}',[TagController::class,'update'])->name('updateTag');
-    Route::delete('/deleteTag/{id}',[TagController::class,'destroy'])->name('deleteTag');
+    Route::get('/tags', [TagController::class, 'index'])->name('listTag');
+    Route::get('/tag/getTagList', [TagController::class, 'getTagList'])->name('get_tag_list');
+    Route::post('/tag/store', [TagController::class, 'store'])->name('storeTag');
+    Route::get('/tag/{id}', [TagController::class, 'edit'])->name('editTag');
+    Route::post('/updateTag/{id}', [TagController::class, 'update'])->name('updateTag');
+    Route::delete('/deleteTag/{id}', [TagController::class, 'destroy'])->name('deleteTag');
 
     //Category
-    Route::get('/list',[CategoryController::class,'index'])->name('listCategory');
-    Route::post('/list/store',[CategoryController::class,'store'])->name('storeCategory');
-    Route::get('/list/{id}',[CategoryController::class,'edit'])->name('editCategory');
-    Route::post('/updateList/{id}',[CategoryController::class,'update'])->name('updateCategory');
-    Route::delete('/deleteList/{id}',[CategoryController::class,'destroy'])->name('deleteCategory');
-    
+    Route::get('/lists', [CategoryController::class, 'index'])->name('listCategory');
+    Route::post('/list/store', [CategoryController::class, 'store'])->name('storeCategory');
+    Route::get('/list/{id}', [CategoryController::class, 'edit'])->name('editCategory');
+    Route::post('/updateList/{id}', [CategoryController::class, 'update'])->name('updateCategory');
+    Route::delete('/deleteList/{id}', [CategoryController::class, 'destroy'])->name('deleteCategory');
+
+
+    //Field
+    Route::get('/fields', [FieldController::class, 'index'])->name('listField');
+    Route::get('/field/{id}', [FieldController::class, 'edit'])->name('editField');
+    Route::post('/field/store', [FieldController::class, 'store'])->name('storeField');
+    Route::post('/updateField/{id}',[FieldController::class, 'update'])->name('updateField');
+    Route::delete('/deleteField/{id}',[FieldController::class, 'destroy'])->name('deleteField');
 });
 
 // Check user is admin
@@ -165,13 +172,6 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::post('/admin/pricing', [PriceController::class, 'store'])->name('storePrice');
     Route::post('/admin/pricing/{id}', [PriceController::class, 'update'])->name('updatePrice');
     Route::delete('/admin/pricing/{id}', [PriceController::class, 'destroy'])->name('deletePrice');
-
-    //Field
-    Route::get('/fields', [FieldController::class, 'index'])->name('listField');
-    Route::get('/field/{id}', [FieldController::class, 'edit'])->name('editField');
-    Route::post('/field/store', [FieldController::class, 'store'])->name('storeField');
-    Route::post('/updateField/{id}',[FieldController::class, 'update'])->name('updateField');
-    Route::delete('/deleteField/{id}',[FieldController::class, 'destroy'])->name('deleteField');
 });
 
 require __DIR__ . '/auth.php';

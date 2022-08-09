@@ -34,8 +34,8 @@ class TagController extends Controller
     
         // List view columns to show
         $list_view_columns = [
-            'name' => 'Tag',
-            'description' => 'Description',
+            'name' => ['label' => 'Tag', 'type' => 'text'],
+            'description' =>  ['label' => 'Description', 'type' => 'textarea'],
         ];
 
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
@@ -107,7 +107,7 @@ class TagController extends Controller
      * @param  \App\Http\Requests\StoreTagRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, Tag $tag)
+    public function store(Request $request)
     { 
 
         $user_id = $request->user()->id;
@@ -120,6 +120,7 @@ class TagController extends Controller
 
             if($data){
                 foreach($data as $records){
+                    $tag = new Tag;
                     foreach($records as $key => $value){
                         if($key == "__isNew__"){
                             $tag->name = $records['label'];
@@ -130,9 +131,10 @@ class TagController extends Controller
                     $record[] = $records['label'];
                 }
             }
+           
             //Sync the tag module to taggable table
             $sync = $this->syncHandling($record, $id);
-        
+         
             return Redirect::route('detailContact', $id);
         }else{
 
@@ -142,10 +144,9 @@ class TagController extends Controller
             ->first();
 
             if($checkTagName) {
-            throw ValidationException::withMessages(['message' => 'Name is already exits']);
+               throw ValidationException::withMessages(['message' => 'Name is already exits']);
             }
 
-            
             //Create new Tag
             $name = $request->name;
  

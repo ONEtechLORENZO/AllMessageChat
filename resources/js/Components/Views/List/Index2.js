@@ -3,7 +3,7 @@ import Pagination from '@/Components/Pagination';
 import Alert from '@/Components/Alert';
 import Button from '@/Components/Forms/Button';
 import Form from '@/Components/Forms/Form';
-import { ChevronDownIcon, ChevronUpIcon, PencilAltIcon, TrashIcon, UploadIcon } from '@heroicons/react/solid';
+import { ChevronDownIcon, ChevronUpIcon, PencilAltIcon, TrashIcon, UploadIcon, DownloadIcon } from '@heroicons/react/solid';
 import { Inertia } from '@inertiajs/inertia';
 import notie from 'notie';
 import Search from './Search';
@@ -95,6 +95,7 @@ function ListView(props)
     if(props.errors.message){
         notie.alert({type: 'error', text: props.errors.message, time: 5});
     }
+   
     return (
         <>
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
@@ -255,7 +256,7 @@ function ListView(props)
                                                     }
 
                                                     if (field.type == 'checkbox' && name == 'is_mandatory') {
-                                                        column_value = (column_value == 1) ? '1' : '0'
+                                                        column_value = (column_value == 1) ? 'Yes' : 'No'
                                                     }
 
                                                     return (
@@ -281,8 +282,11 @@ function ListView(props)
                                                             </>
                                                             
                                                         : ''}
-                                                        {props.actions && props.actions.delete === true ?
+                                                        {(props.actions && props.actions.delete === true) || (record.is_custom == '1') ?
                                                             <TrashIcon className='h-4 w-4 text-red-600 cursor-pointer' onClick={() => deleteRecord(record.id)} />
+                                                        : ''}
+                                                        {props.actions.download === true && record.status === 'success' ? 
+                                                             <a href={route('invoices',record.id)} ><DownloadIcon className='h-4 w-4 cursor-pointer' /></a>
                                                         : ''}
                                                     </div>
                                                 </td>

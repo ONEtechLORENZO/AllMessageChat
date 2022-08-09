@@ -19,11 +19,12 @@ export default function TextArea({
             input.current.focus();
         }
     }, []);
-    let requiredFlag = ''; 
-    if(required == true || required == 'true') {
-        requiredFlag = 'required';
-    }
-    required = requiredFlag;
+
+    // let requiredFlag = ''; 
+    // if(required == true || required == 'true') {
+    //     requiredFlag = 'required';
+    // }
+    // required = requiredFlag;
 
     return (
         <textarea
@@ -33,6 +34,7 @@ export default function TextArea({
             className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md"
             placeholder={placeholder}
             defaultValue={defaultValue}
+            required={required}
             data-pristine-required={required}
             onChange={(e) => handleChange(e)}
             value={value}

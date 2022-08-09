@@ -75,6 +75,7 @@ class ContactController extends Controller
             'phone_number' => ['label' => 'Phone number', 'type' => 'phone_number'],
             'instagram_id' =>  ['label' => 'Instagram Id', 'type' => 'text'],
         ];
+
         $module = new Contact();
         $listViewData = $this->listView($request, $module, $list_view_columns);
 
@@ -82,7 +83,6 @@ class ContactController extends Controller
             'singular' => 'Contact',
             'plural' => 'Contacts',
             'module' => 'Contact',
-
             // Actions
             'actions' => [
                 'create' => true,
@@ -95,6 +95,7 @@ class ContactController extends Controller
                 'filter' => true,
             ],
         ];
+        
         $data = array_merge($moduleData, $listViewData);
         return Inertia::render('Contacts/List', $data);
     }
@@ -351,31 +352,31 @@ class ContactController extends Controller
         $fields = Field::where('module_name', 'Contact')
             ->where('user_id', $request->user()->id)
             ->get(['field_name', 'is_custom']);
-   
-            if ($fields) {
-                $custom_field = [];
-                foreach ($fields as $record) {
-                    $field = $record['field_name'];
-                    $custom = $record['is_custom'];
-                    if ($request->has($field) && $custom == '0') {
-                        $contact->$field = $request->$field;
-                    }
-    
+
+        if ($fields) {
+            $custom_field = [];
+            foreach ($fields as $record) {
+                $field = $record['field_name'];
+                $custom = $record['is_custom'];
+                if ($request->has($field) && $custom == '0') {
+                    $contact->$field = $request->$field;
+                }
+  
+                if($custom == '1'){
                     if($request->custom){
-                        $customData = $request->custom; 
-                        if ($custom == '1') {
-                            $custom_field[$field] = $customData[$field];
+                        foreach($request->custom as $key => $value){
+                            $custom_field[$key] = $value;
                         }
                     }
                 }
-            
-                if ($custom_field) {
-                    $contact->custom = $custom_field;
-                }
-           
-                $contact->user_id = $request->user()->id;
-                $contact->save();
             }
+            if ($custom_field) {
+                $contact->custom = $custom_field;
+            }
+    
+            $contact->user_id = $request->user()->id;
+            $contact->save();
+        }
 
         return $contact->id;
     }

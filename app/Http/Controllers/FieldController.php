@@ -28,6 +28,7 @@ class FieldController extends Controller
             'field_label' => ['label' => 'Field Label', 'type' => 'text'],
             'field_type' => ['label' => 'Field Type', 'type' => 'text'],
             'is_mandatory' => ['label' => 'Mandatory', 'type' => 'checkbox'],
+            'is_custom' => ['label' => 'Custom', 'type' => 'checkbox'],
         ];
 
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
@@ -55,7 +56,7 @@ class FieldController extends Controller
             'actions' => [
                 'create' => true,
                 'edit' => true,
-                'delete' => true,
+                'delete' => false,
                 'export' => false,
                 'import' => false,
                 'search' => true,
@@ -189,12 +190,17 @@ class FieldController extends Controller
         $field_label = $this->cleaner($request->field_label);
         $field_name = $this->creater($field_label);
         $options = $request->options;
+        if($request->has('is_mandatory')){
+            $mandatory = $request->is_mandatory;
+        }else{
+            $mandatory = false;
+        }
 
         $field->module_name = $request->module_name;
         $field->field_name = $field_name;
         $field->field_label = $field_label;
         $field->field_type = $request->field_type;
-        $field->is_mandatory = $request->mandatory;
+        $field->is_mandatory = $mandatory;
         $field->is_custom = 1;
         $field->user_id = $request->user()->id;
         if ($options) {
