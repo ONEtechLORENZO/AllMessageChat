@@ -17,14 +17,17 @@ import {
     InboxIcon,
     MenuAlt2Icon,
     ChatAlt2Icon,
+    CurrencyDollarIcon,
+    IdentificationIcon,
+    TagIcon,
+    ViewListIcon,
+    BriefcaseIcon,
     UsersIcon,
     XIcon,
     ChevronRightIcon,
     ChevronLeftIcon,
     MenuIcon,
-} from "@heroicons/react/outline";
-import { SearchIcon } from "@heroicons/react/solid";
-
+} from "@heroicons/react/outline";                                                                      
 import {NotifiIcon} from '../Pages/icons'
 
 const navigation = [
@@ -40,18 +43,43 @@ const navigation = [
         icon: ChatAltIcon,
         current: false,
     },
-    // {
-    //     name: "Chats",
-    //     href: route("chat_list"),
-    //     icon: ChatAlt2Icon,
-    //     current: false,
-    // },
-    // {
-    //     name: "Contacts",
-    //     href: route("contacts"),
-    //     icon: UsersIcon,
-    //     current: false,
-    // },
+    {
+        name: "Contacts",
+        href: route("listContact"),
+        icon: IdentificationIcon,
+        current: false,
+    },
+    {
+        name: "Tags",
+        href: route("listTag"),
+        icon: TagIcon,
+        current: false,
+    },
+    {
+        name: "Lists",
+        href: route("listCategory"),
+        icon: ViewListIcon,
+        current: false,
+    },
+    {
+        name: "Wallet",
+        href: route("wallet"),
+        icon: BriefcaseIcon,
+        current: false,
+    },
+    {
+        name: "Pricing",
+        href: route("listPrice"),
+        icon: CurrencyDollarIcon,
+        current: false,
+    },
+    {
+        name: "Users",
+        href: route("listUser"),
+        icon: UsersIcon,
+        current: false,
+    },
+
     // { name: "Opportunities", href: "#", icon: CalendarIcon, current: false },
     // { name: "Automations", href: "#", icon: InboxIcon, current: false },
     // { name: "Integrations", href: "#", icon: ChartBarIcon, current: false },
@@ -199,27 +227,35 @@ export default function Authenticated({ auth, header, children, hideHeader })
                         <div className="mt-2 flex-grow flex flex-col">
                             <nav className="flex-1 px-2 pb-4 space-y-1">
                                 {navigation.map((item) => (
-                                    <Link
-                                        key={item.name}
-                                        href={item.href}
-                                        className={classNames(
-                                            item.current
-                                                ? "text-primary"
-                                                : "text-[#3D4459]  hover:text-primary",
-                                            "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
-                                        )}
-                                    >
-                                        <item.icon
+                                    <>
+                                        {(((item.name == 'Pricing' || 
+                                            item.name == 'Users') && 
+                                            auth.user.role == 'admin') 
+                                        || (item.name != 'Pricing' && 
+                                        item.name != 'Users')) &&
+                                        <Link
+                                            key={item.name}
+                                            href={item.href}
                                             className={classNames(
                                                 item.current
                                                     ? "text-primary"
-                                                    : "text-[#3D4459] group-hover:text-primary",
-                                                "mr-3 flex-shrink-0 h-6 w-6"
+                                                    : "text-[#3D4459]  hover:text-primary",
+                                                "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
                                             )}
-                                            aria-hidden="true"
-                                        />
-                                        {showSidebarText ? item.name : ""}
-                                    </Link>
+                                        >
+                                            <item.icon
+                                                className={classNames(
+                                                    item.current
+                                                        ? "text-primary"
+                                                        : "text-[#3D4459] group-hover:text-primary",
+                                                    "mr-3 flex-shrink-0 h-6 w-6"
+                                                )}
+                                                aria-hidden="true"
+                                            />
+                                            {showSidebarText ? item.name : ""}
+                                        </Link>
+                                        }
+                                    </>
                                 ))}
                             </nav>
                         </div>

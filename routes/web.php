@@ -46,7 +46,7 @@ Route::get('/', function () {
 
 
 Route::post('/incoming', [MsgController::class, 'incoming']);
-
+Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -140,6 +140,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/updateList/{id}', [CategoryController::class, 'update'])->name('updateCategory');
     Route::delete('/deleteList/{id}', [CategoryController::class, 'destroy'])->name('deleteCategory');
 
+
     //Field
     Route::get('/fields', [FieldController::class, 'index'])->name('listField');
     Route::get('/field/{id}', [FieldController::class, 'edit'])->name('editField');
@@ -151,11 +152,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Check user is admin
 Route::middleware('auth', IsAdmin::class)->group(function () {
     // Users
-    Route::get('/admin/users', [UserController::class, 'usersListing'])->name('usersListing');
+    Route::get('/admin/users', [UserController::class, 'usersListing'])->name('listUser');
     Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_user');
-    Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_user');
+    Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('editUser');
     Route::get('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_user');
-    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('user_detail');
+    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detailUser');
     Route::post('/admin/user/change_password/{id}', [UserController::class, 'changePassword'])->name('change_password');
 
     // Settings

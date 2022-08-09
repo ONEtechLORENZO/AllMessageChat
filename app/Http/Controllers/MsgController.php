@@ -189,13 +189,22 @@ class MsgController extends Controller
     public function ChatList(Request $request)
     {
         $limit = $this->limit;
-        $condition = $selectedContact = $category = '';
+        $condition = $selectedContact = '';
+        $category = ($request->category) ? $request->category : '';
         $contactList = $messages = $accoutList= [];
         $user = $request->user();
         $contacts = Contact::where('user_id', $user->id )->get();
-        $accounts = Account::where('user_id', $user->id )->get();
+        
+        $accounts = Account::where('user_id', $user->id )
+            ->where(function($query) use ($category) {
+                if($category != 'all' && $category != ''){
+                    $query->where('service' , $category);
+                }
+            })
+            ->get();
+        
         foreach($accounts as $account){
-            $accoutList[$account->id] = $account->company_name."( {$account->service} )";
+            $accoutList[$account->id] = $account->company_name;
         }
         foreach($contacts as $contact){
             $name = $contact->first_name . ' ' .$contact->last_name;
@@ -213,7 +222,6 @@ class MsgController extends Controller
         }
         if($request->contact_id){
             $selectedContact = $request->contact_id;
-            $category = $request->category;
             $messages = $this->getMessageList($request);        
         }
 

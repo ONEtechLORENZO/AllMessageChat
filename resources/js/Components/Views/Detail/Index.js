@@ -18,6 +18,7 @@ export default function Index(props) {
     const [customHeader, setCustomHeader] = useState(props.headers.custom);
 
     useEffect(() => {
+        setRecord(props.record);
         setTagOption(props.tagOptions);
         setListOption(props.listOptions);
         setTagSelectedOption(props.tagData);

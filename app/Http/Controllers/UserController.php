@@ -8,11 +8,13 @@ use App\Models\Message;
 use App\Models\MessageButton;
 use App\Models\Template;
 use Inertia\Inertia;
+use App\Rules\MatchOldPassword;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use App\Models\MailToAddress;
 use App\Models\OutgoingServerConfig;
 use Swift_Mailer;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Mail;
 use App\Http\Controllers\TemplateController;
@@ -38,6 +40,10 @@ class UserController extends Controller
         'delete' => ['label' => 'Delete', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
         'template_events' => ['label' => 'Template events', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
         'account_related_events' => ['label' => 'Account related events', 'help_text' => 'Return sent messasge enqueue response to callback url'],
+    ];
+    public $userRoles = [
+        'regular' => 'Regular',
+        'admin' => 'Admin'
     ];
     public $timezones = array(
         'Pacific/Midway'       => "(GMT-11:00) Midway Island",
@@ -248,6 +254,7 @@ class UserController extends Controller
                     'password' => $password, 
                     'currentUser' => $currentUser,
                     'time_zone' => $this->timezones,
+                    'roles' => $this->userRoles,
                     'translator' => [
                         'Name' => __('Name'),
                         'Company name' => __('Company name'),
@@ -374,14 +381,14 @@ class UserController extends Controller
      */
     public function changePassword(Request $request, $id)
     {
-        Log::info('Password change process start');
         $user = User::findOrFail($id);
+      
         $request->validate([
-            'new_password' => 'required|min:8|required_with:confirm_password|same:confirm_password',
-            'confirm_password' => 'required|min::8',
+            'current_password' => ['required', new MatchOldPassword],
+            'new_password' => 'required|min:8',
+            'confirm_password' => 'required|min:8|required_with:confirm_password|same:new_password',
         ]);
-        $user->password = bcrypt($request->get('new_password'));
-        $user->save();
+        $user->update(['password'=> Hash::make($request->new_password)]);
         Log::info('Password changed successfully.');
         return Redirect::route('detailUser', $id);
     }

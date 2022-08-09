@@ -15,6 +15,7 @@
         <!-- Styles -->
         <link rel="stylesheet" href="{{ url('css/app.css') }}?v=1.7.14">
         <link rel="stylesheet" href="{{ url('css/notie.min.css') }}?v=1.7.14">
+        <link rel="stylesheet" href="{{ url('css/custom.css') }}?v=1.7.14">
 
         <!-- Scripts -->
         @routes

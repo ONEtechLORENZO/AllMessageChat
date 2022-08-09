@@ -19,6 +19,7 @@ export default function TextArea({
             input.current.focus();
         }
     }, []);
+
     // let requiredFlag = ''; 
     // if(required == true || required == 'true') {
     //     requiredFlag = 'required';

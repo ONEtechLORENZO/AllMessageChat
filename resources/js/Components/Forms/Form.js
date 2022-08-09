@@ -177,6 +177,7 @@ function Form(props)
         let is_validated = false;
         var pristine = new Pristine(document.getElementById(`form`), defaultConfig);
         is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required="true"]','textarea[data-pristine-required="true"]'));
+
         if(!is_validated) {
             return false;
         }
@@ -262,7 +263,7 @@ function Form(props)
                                     <div className="sm:flex sm:items-start">
                                         <div className="mt-3 text-center sm:mt-0 sm:text-left">
                                             <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                                                {props.id ? 'Update' : 'Create'} {props.heading}
+                                                {props.recordId ? 'Update' : 'Create'} {props.heading}
                                             </Dialog.Title>
                                         </div>
                                     </div>
@@ -308,10 +309,10 @@ function Form(props)
                                                         initialValueFormat="national"
                                                         withCountryCallingCode
                                                         placeholder="Enter phone number"
-                                                        className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
                                                         value={field_value} 
-                                                        onChange={(value) => changePhoneNumber(value,field_info.field_name )}
-                                                        />
+                                                        onChange={(value) => changePhoneNumber(value,field_info.field_name)}
+                                                        required={field_info.is_mandatory === 1 ? true : false}
+                                                    />
                                                     break;
                                                 case "amount":
                                                     element = <div className="mt-1 relative rounded-md shadow-sm">
@@ -319,13 +320,13 @@ function Form(props)
                                                             <span className="text-gray-500 sm:text-sm">$</span>
                                                         </div>
                                                         <Input
-                                                            required={field_info.is_mandatory === 1 ? true : false}
                                                             type="text"
                                                             className={`pl-6 mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
                                                             id={field_info.field_name}
                                                             name={field_info.field_name}
                                                             value={field_value}
                                                             handleChange={handleChange}
+                                                            required={field_info.is_mandatory === 1 ? true : false}
                                                         />
                                                     </div>
                                                     break;
@@ -368,13 +369,13 @@ function Form(props)
                                                     break;
                                                 case 'default':
                                                     element = <Input 
-                                                        required={field_info.is_mandatory === 1 ? true : false}
                                                         type="text" 
                                                         className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
                                                         id={field_info.field_name}
                                                         name={field_info.field_name}
                                                         value={field_value} 
                                                         handleChange={handleChange}
+                                                        required={field_info.is_mandatory === 1 ? true : false}
                                                     />;
                                                     break;
                                             }
