@@ -83,6 +83,7 @@ class ContactController extends Controller
             'singular' => 'Contact',
             'plural' => 'Contacts',
             'module' => 'Contact',
+            'current_page' => 'Contacts', 
             // Actions
             'actions' => [
                 'create' => true,

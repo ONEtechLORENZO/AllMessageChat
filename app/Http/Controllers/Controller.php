@@ -68,10 +68,10 @@ class Controller extends BaseController
             $query = ($searchData) ? $this->getWhereFilterCondition($searchData , $query, $baseTable) : $query;
         } else {
             $query = $module->select( $listFields )->orderBy("{$baseTable}.{$sort_by}", $sort_order);
-            
-            $query->leftJoin('taggables', "{$baseTable}.id",'taggable_id');
-            $query->leftJoin('categorables', "{$baseTable}.id", 'categorable_id');
-
+            if($moduleName == 'Contact'){
+                $query->leftJoin('taggables', "{$baseTable}.id",'taggable_id');
+                $query->leftJoin('categorables', "{$baseTable}.id", 'categorable_id');
+            }
             $query = ($searchData) ? $this->getWhereFilterCondition($searchData , $query , $baseTable) : $query;
         }
         if($moduleName != 'User'){

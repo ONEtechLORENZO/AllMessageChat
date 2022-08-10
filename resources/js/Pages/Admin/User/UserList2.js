@@ -8,6 +8,7 @@ function List(props)
         <Authenticated
             auth={props.auth}
             errors={props.errors}
+            current_page= {props.current_page}
         >
 
             <ListView

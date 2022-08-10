@@ -55,6 +55,7 @@ class PriceController extends Controller
             'singular' => 'Price',
             'plural' => 'Prices',
             'module' => 'Price',
+            'current_page' => 'Pricing',
             // Actions
             'actions' => [
                 'create' => true,
