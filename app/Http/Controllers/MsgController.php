@@ -111,14 +111,14 @@ class MsgController extends Controller
 
         // List view columns to show
         $list_view_columns = [
-            'id' => ['label' => 'Id', 'type' => 'text'],
-            'content' => ['label' => 'Content', 'type' => 'text'],
-            'account_name' => ['label' => 'Account name', 'type' => 'text'],
-            'mode' =>['label' => 'Mode', 'type' => 'text'],
-            'sender' =>['label' => 'Sender', 'type' => 'text'],
-            'destination' =>['label' => 'Destination', 'type' => 'text'],
-            'status' => ['label' => 'Status', 'type' => 'text'],
-            'date' => ['label' => 'Date', 'type' => 'text'],
+            'id' => ['label' => __('Id'), 'type' => 'text'],
+            'content' => ['label' => __('Content'), 'type' => 'text'],
+            'account_name' => ['label' => __('Account name'), 'type' => 'text'],
+            'mode' =>['label' => __('Mode'), 'type' => 'text'],
+            'sender' =>['label' => __('Sender'), 'type' => 'text'],
+            'destination' =>['label' => __('Destination'), 'type' => 'text'],
+            'status' => ['label' => __('Status'), 'type' => 'text'],
+            'date' => ['label' => __('Date'), 'type' => 'text'],
         ]; 
         
         $query_columns = ['msgs.id', 'msgs.service', 'msgs.status', 'msgs.created_at', 'message', 'accounts.company_name', 'accounts.phone_number as account_phone_number', 'accounts.company_name', 'contacts.phone_number', 'contacts.instagram_id', 'msg_mode'];
@@ -164,8 +164,8 @@ class MsgController extends Controller
         $module = new Msg();
      
         $data = [
-            'singular' => 'Message',
-            'plural' => 'Messages',
+            'singular' => __('Message'),
+            'plural' => __('Messages'),
             'module' => 'Message',
             'current_page' => 'Messages', 
 
@@ -174,7 +174,7 @@ class MsgController extends Controller
             'compact_type' => 'condense',
             'list_view_columns' => $list_view_columns,
 
-
+            
             // Actions
             'actions' => [
                 'create' => false,
@@ -201,7 +201,9 @@ class MsgController extends Controller
             
             'translator' => [
                 'Messages' => __('Messages'),
-                'No Messages yet' => __('No messages sent/received yet for your account(s).')
+                'No Messages yet' => __('No messages sent/received yet for your account(s).'),
+                'Search' => __('Search'),
+                'No records' =>__('No records')
             ]
         ];
         

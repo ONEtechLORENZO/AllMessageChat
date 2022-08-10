@@ -14,6 +14,7 @@ function MessageListing(props)
             <ListView 
                 headers={props.list_view_columns}
                 {...props}
+                translator={props.translator}
             />
 
         </Authenticated>
