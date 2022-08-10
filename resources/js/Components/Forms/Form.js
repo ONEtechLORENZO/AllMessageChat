@@ -231,7 +231,6 @@ function Form(props)
         setData(newState);
         return isUpdate;
     }
-       
     return (
         <Transition.Root show={open} as={Fragment}>
             <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => {}} >
@@ -291,7 +290,6 @@ function Form(props)
                                                     field_value  = custom[custom_field];
                                                 }
                                             }
-                                   
                                             switch (field_info.field_type) {
                                                 case "text":
                                                     element = <Input
