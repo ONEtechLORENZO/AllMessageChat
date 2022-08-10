@@ -138,6 +138,7 @@ function ChatList(props)
             hideHeader={true} 
             auth={props.auth}
             errors={props.errors}
+            current_page = {props.current_page}
         >
             <div className="flex">
                 <div className="w-1/3">

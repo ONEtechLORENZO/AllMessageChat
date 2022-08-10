@@ -111,16 +111,16 @@ class MsgController extends Controller
 
         // List view columns to show
         $list_view_columns = [
-            'id' => __('ID'),
-            'content' => __('Content'),
-            'account_name' => __('Account name'),
-            'mode' => __('Mode'),
-            'sender' => __('Sender'),
-            'destination' => __('Destination'),
-            'status' => __('Status'),
-            'date' => __('Date')
+            'id' => ['label' => 'Id', 'type' => 'text'],
+            'content' => ['label' => 'Content', 'type' => 'text'],
+            'account_name' => ['label' => 'Account name', 'type' => 'text'],
+            'mode' =>['label' => 'Mode', 'type' => 'text'],
+            'sender' =>['label' => 'Sender', 'type' => 'text'],
+            'destination' =>['label' => 'Destination', 'type' => 'text'],
+            'status' => ['label' => 'Status', 'type' => 'text'],
+            'date' => ['label' => 'Date', 'type' => 'text'],
         ]; 
-
+        
         $query_columns = ['msgs.id', 'msgs.service', 'msgs.status', 'msgs.created_at', 'message', 'accounts.company_name', 'accounts.phone_number as account_phone_number', 'accounts.company_name', 'contacts.phone_number', 'contacts.instagram_id', 'msg_mode'];
         $messages = Msg::select($query_columns)
             ->join('accounts', 'account_id', 'accounts.id')
@@ -161,9 +161,58 @@ class MsgController extends Controller
             ];
         }
 
+        $module = new Msg();
+     
+        $data = [
+            'singular' => 'Message',
+            'plural' => 'Messages',
+            'module' => 'Message',
+            'current_page' => 'Messages', 
+
+            'records' => $messageList,
+
+            'compact_type' => 'condense',
+            'list_view_columns' => $list_view_columns,
+
+
+            // Actions
+            'actions' => [
+                'create' => false,
+                'detail' => false,
+                'edit' => false,
+                'delete' => false,
+                'export' => false,
+                'import' => false,
+                'search' => false,
+                'filter' => false,
+            ],
+
+            'paginator' => [
+                'firstPageUrl' => $messages->url(1),
+                'previousPageUrl' => $messages->previousPageUrl(),
+                'nextPageUrl' => $messages->nextPageUrl(),
+                'lastPageUrl' => $messages->url($messages->lastPage()),  
+                'currentPage' => $messages->currentPage(),
+                'total' => $messages->total(),
+                'count' => $messages->count(),
+                'lastPage' => $messages->lastPage(),
+                'perPage' => $messages->perPage(),
+            ],
+            
+            'translator' => [
+                'Messages' => __('Messages'),
+                'No Messages yet' => __('No messages sent/received yet for your account(s).')
+            ]
+        ];
+        
+       
+        return Inertia::render('Messages/Messages', $data);
+
+/*
         return Inertia::render('Messages/Messages', [
             'messsage_list' => $messageList,
             'list_view_columns' => $list_view_columns,
+            'current_page' => 'Messages',
             'paginator' => [
                 'firstPageUrl' => $messages->url(1),
                 'previousPageUrl' => $messages->previousPageUrl(),
@@ -181,6 +230,7 @@ class MsgController extends Controller
                 
             ]
         ]);
+        */
     }
 
     /**
@@ -189,11 +239,18 @@ class MsgController extends Controller
     public function ChatList(Request $request)
     {
         $limit = $this->limit;
+        $contactFields = ['contacts.id' , 'contacts.first_name', 'contacts.last_name', 'contacts.phone_number', 'contacts.instagram_id' ];
         $condition = $selectedContact = '';
         $category = ($request->category) ? $request->category : '';
         $contactList = $messages = $accoutList= [];
         $user = $request->user();
-        $contacts = Contact::where('user_id', $user->id )->get();
+       
+        $contacts = Contact::join('msgs', 'msgable_id', 'contacts.id')
+            ->where('user_id', $user->id )
+            ->orderBy('msgs.id', 'desc')
+            ->groupBy('contacts.id')
+            ->get($contactFields);
+        
         
         $accounts = Account::where('user_id', $user->id )
             ->where(function($query) use ($category) {
@@ -230,6 +287,7 @@ class MsgController extends Controller
             'account_list' => $accoutList,
             'messages' => $messages,
             'selected_contact' => $selectedContact,
+            'current_page' => 'Chat',
             'category' => ($category) ? $category : 'all',
             'translator' => [
                 'Your Profile' => __('Your Profile'),

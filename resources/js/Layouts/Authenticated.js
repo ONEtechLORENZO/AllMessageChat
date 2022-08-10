@@ -99,18 +99,14 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
 
-export default function Authenticated({ auth, header, children, hideHeader }) 
+export default function Authenticated({ auth, header, children, hideHeader , current_page}) 
 {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const [showSidebarText, setShowSidebarText] = useState(false);
-    var selectedTab = '';
-    if(children.props && children.props){
-        selectedTab = children.props.module;
-    }
-console.log(current_page);
+
     return (
         <>
             <div className="flex min-h-screen bg-[#f6f6f6]">
@@ -171,28 +167,10 @@ console.log(current_page);
                                         </div>
                                     </Transition.Child>
                                     <div className="flex-shrink-0 flex items-center px-4">
-                                        {/* <img
-                  className="h-8 w-auto"
-                  src="https://tailwindui.com/img/logos/workflow-logo-indigo-600-mark-gray-800-text.svg"
-                  alt="Workflow"
-                /> */}
-
                                         <ApplicationLogo className="block h-9 w-auto text-gray-500" />
                                     </div>
 
-                                    {/* <div className="hidden space-x-8 sm:-my-px sm:ml-3 sm:flex">
-                                        <NavLink href={route('dashboard')} active={route().current('dashboard')}>
-                                            Dashboard
-                                        </NavLink>
-                                        <NavLink href={route('messages')} active={route().current('messages')}>
-                                            Message Log
-                                        </NavLink>
-                                        {auth.user.role == 'Admin' &&
-                                            <NavLink href={route('listUser')} active={route().current('user')}>
-                                                Users
-                                            </NavLink>
-                                        }
-                                    </div> */}
+                                    
 
                                 </Dialog.Panel>
                             </Transition.Child>
@@ -215,11 +193,7 @@ console.log(current_page);
                     {/* Sidebar component, swap this element with another sidebar if you like */}
                     <div className="flex flex-col flex-grow border-r border-gray-200 pt-5 bg-[#F6FFFD] overflow-y-auto">
                         <div className="flex items-center flex-shrink-0 px-4">
-                            {/* <img
-                            className="h-8 w-auto"
-                            src="https://tailwindui.com/img/logos/workflow-logo-indigo-600-mark-gray-800-text.svg"
-                            alt="Workflow"
-                        /> */}
+                        
                             <ApplicationLogo className="block h-9 w-auto text-gray-500" />
                         </div>
                         <div
@@ -245,7 +219,7 @@ console.log(current_page);
                                             key={item.name}
                                             href={item.href}
                                             className={classNames(
-                                                item.current
+                                                (item.name == current_page)
                                                     ? "text-primary"
                                                     : "text-[#3D4459]  hover:text-primary",
                                                 "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
@@ -253,7 +227,7 @@ console.log(current_page);
                                         >
                                             <item.icon
                                                 className={classNames(
-                                                    item.current
+                                                    (item.name == current_page)
                                                         ? "text-primary"
                                                         : "text-[#3D4459] group-hover:text-primary",
                                                     "mr-3 flex-shrink-0 h-6 w-6"

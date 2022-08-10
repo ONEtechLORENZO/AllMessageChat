@@ -56,6 +56,7 @@ function Wallet(props)
         <Authenticated
             auth={props.auth}
             errors={props.errors}
+            current_page= {props.current_page}
         >
             <Head title={'Wallet'} />
 
