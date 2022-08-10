@@ -43,6 +43,7 @@ class UserController extends Controller
         'account_related_events' => ['label' => 'Account related events', 'help_text' => 'Return sent messasge enqueue response to callback url'],
     ];
     public $userRoles = [
+        'global_admin' => 'Global Admin',
         'regular' => 'Regular',
         'admin' => 'Admin'
     ];
