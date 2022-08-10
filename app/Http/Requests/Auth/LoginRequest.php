@@ -52,7 +52,10 @@ class LoginRequest extends FormRequest
                 'email' => __('auth.failed'),
             ]);
         }
-
+        if(!Auth::user()->status) {
+            Auth::logout();
+            throw ValidationException::withMessages([ __('The account is inactive')]);
+        }
         RateLimiter::clear($this->throttleKey());
     }
 

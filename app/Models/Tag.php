@@ -10,6 +10,8 @@ class Tag extends Model
 {
     use HasFactory;
 
+    protected $fillable = ['name', 'description'];
+
     public function contact()
     {
         return $this->morphToMany(Contact::class, 'taggable');

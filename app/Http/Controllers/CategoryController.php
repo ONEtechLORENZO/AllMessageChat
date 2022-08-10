@@ -137,9 +137,17 @@ class CategoryController extends Controller
             return Redirect::route('detailContact', $id);
         }else{
 
+            $checkTagName = Category::where('name', $request->get('name'))
+            ->where('user_id', $user_id)
+            ->first();
+
+            if($checkTagName) {
+               throw ValidationException::withMessages(['message' => 'Name is already exits']);
+            }
+
             //Create new category
-            $name = $request->name;
-            $category->name = $name;
+            $category = new Category;
+            $category->name = $request->name;
             if($request->get('description')){
                 $category->description = $request->get('description');
             }

@@ -148,9 +148,8 @@ class TagController extends Controller
             }
 
             //Create new Tag
-            $name = $request->name;
- 
-            $tag->name = $name;
+            $tag = new Tag;
+            $tag->name = $request->name;
             if($request->get('description')){
                 $tag->description = $request->get('description');
             }

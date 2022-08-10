@@ -269,7 +269,18 @@ function ListView(props)
                                                 <td>
                                                     <div className='flex gap-2'>
                                                         {props.actions && props.actions.edit === true ?
-                                                            <PencilAltIcon className='h-4 w-4 cursor-pointer' onClick={() => showEditForm(record.id)} />
+                                                            <>
+                                                            {props.edit_link ?
+                                                                <Link 
+                                                                    href={route(props.edit_link, record.id)}
+                                                                > 
+                                                                  <PencilAltIcon className='h-4 w-4 cursor-pointer' />
+                                                                </Link>
+                                                            : 
+                                                                <PencilAltIcon className='h-4 w-4 cursor-pointer' onClick={() => showEditForm(record.id)} />
+                                                            }
+                                                            </>
+                                                            
                                                         : ''}
                                                         {(props.actions && props.actions.delete === true) || (record.is_custom == '1') ?
                                                             <TrashIcon className='h-4 w-4 text-red-600 cursor-pointer' onClick={() => deleteRecord(record.id)} />

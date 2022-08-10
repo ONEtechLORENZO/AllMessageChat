@@ -358,7 +358,7 @@ class ContactController extends Controller
             foreach ($fields as $record) {
                 $field = $record['field_name'];
                 $custom = $record['is_custom'];
-                if ($request->has($field) && $custom == '0') {
+                if ($request->has($field) && ($custom == '0' || !$custom)) {
                     $contact->$field = $request->$field;
                 }
   
