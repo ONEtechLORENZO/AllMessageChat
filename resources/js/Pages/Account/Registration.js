@@ -273,7 +273,7 @@ function Registration(props) {
                                         <div className="grid grid-cols-6 gap-6">
                                             <div className="form-group col-span-6 sm:col-span-4">
                                                 <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700" >
-                                                    Display Name
+                                                { props.translator["Display Name"]}
                                                 </label>
                                                 <div className="mt-1 flex rounded-md shadow-sm">
                                                     <Input
@@ -342,7 +342,7 @@ function Registration(props) {
                                             {data.api_partner &&
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="api_partner_name" className="block text-sm font-medium text-gray-700" >
-                                                        API partner name
+                                                    { props.translator["API partner Name"]}
                                                     </label>
                                                     <div className="mt-1 flex rounded-md shadow-sm">
                                                         <Input
@@ -484,9 +484,9 @@ function Registration(props) {
                                 <div className="ml-3 text-sm">
                                     <label htmlFor="terms_condition" title="Click here to read it" className="font-medium text-gray-700" >
                                         <span> 
-                                            Do you agree with our  
+                                        { props.translator["Do you agree with our"]} 
                                             <a href="http://www.google.com" target="_blank" className='text-indigo-600 mx-1'>
-                                                terms and conditions?
+                                            { props.translator["terms and conditions?"]}
                                             </a>
                                         </span>
                                     </label>

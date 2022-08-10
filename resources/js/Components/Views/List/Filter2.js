@@ -21,14 +21,14 @@ function Filter(props)
 
     const relationFields = [
         {
-            'field_label': 'Tag',
+            'field_label': props.translator.Tag,
             'field_name': 'tag_relation',
             'field_type': 'tag',
             'is_mandatory': 0,
             'options': props.filter.tag_list
         },
         {
-            'field_label': 'List',
+            'field_label': props.translator.List,
             'field_name': 'list_relation',
             'field_type': 'tag',
             'is_mandatory': 0,
@@ -39,50 +39,52 @@ function Filter(props)
 
     const condition_operators = {
         'text':{
-            'equal':  'Equal',
-            'contains': 'Contains',
-            'is_null': 'Null',
-            'not_equal': 'Not equal',
-            'start_with': 'Start with',
-            'end_with': 'End with',
+            'equal':  props.translator['Equal'],
+            'contains': props.translator['Contains'],
+            'is_null': props.translator['Null'],
+            'not_equal':props.translator['Not equal'],
+            'start_with': props.translator['Start with'],
+            'end_with': props.translator['End with']
         },
         'string':{
-            'equal':  'Equal',
-            'contains': 'Contains',
-            'is_null': 'Null',
-            'not_equal': 'Not equal',
-            'start_with': 'Start with',
-            'end_with': 'End with',
+            'equal':  props.translator['Equal'],
+            'contains': props.translator['Contains'],
+            'is_null': props.translator['Null'],
+            'not_equal': props.translator['Not equal'],
+            'start_with': props.translator['Start with'],
+            'end_with': props.translator['End with'],
         },
         'date':{
-            'equal':  'Equal',
-            'not_equal': 'Not equal',
-            'is_null': 'Null',
-            'lesser_than': 'Lesser than',
-            'greater_than': 'Greater than'
+            'equal':  props.translator['Equal'],
+            'not_equal': props.translator['Not equal'],
+            'is_null': props.translator['Null'],
+            'lesser_than': props.translator['Lesser than'],
+            'greater_than': props.translator['Greater than']
         },
         'select':{
-            'equal':  'Equal',
-            'not_equal': 'Not equal',
-            'is_null': 'Null',
+            'equal':  props.translator['Equal'],
+            'not_equal': props.translator['Not equal'],
+            'is_null': props.translator['Null'],
         },
+       
         'dropdown':{
-            'equal':  'Equal',
-            'not_equal': 'Not equal',
-            'is_null': 'Null',
+            'equal':  props.translator['Equal'],
+            'not_equal': props.translator['Not equal'],
+            'is_null': props.translator['Null'],
         },
         'phone_number':{
-            'contains': 'Contains',
-            'equal':  'Equal',
-            'not_equal': 'Not equal',
-            'is_null': 'Null',
+            'contains': props.translator['Contains'],
+            'equal':  props.translator['Equal'],
+            'not_equal': props.translator['Not equal'],
+            'is_null': props.translator['Null'],
         },
         'checkbox': {
-            'equal':  'Equal',
+            'equal':  props.translator['Equal'],
         },
         'tag': {
-            'equal':  'Equal',
+            'equal':  props.translator['Equal'],
         }
+       
     };
     const [filter, setFilter] = useState([
         {'AND': [newCondition]}
@@ -192,7 +194,7 @@ function Filter(props)
      * Delete Filte Group
      */
     function deleteGroup(group_count){
-        if(confirm('Do you want to delete group?')){
+        if(confirm(props.translator['Do you want to delete group?'])){
             let newData = Object.assign({}, filter);
             delete newData[group_count]; 
             setFilter(newData);
@@ -439,7 +441,7 @@ function Filter(props)
                     <ul role="list" className="divide-y divide-gray-200 overflow-y-auto m-h-64">
                         
                         <li onClick={ ()=> applyFilter('All')} className={"px-4 py-2 text-gray-900 text-sm hover:bg-sky-700 cursor-pointer "+ (selectedFilter == 'All' && 'bg-gray-100' ) }>
-                            All
+                        {props.translator['All']}
                         </li>
                         {Object.entries(props.filter.filter_list).map(([filter_index, filterData])=>
                             <li  key={filterData['id']} className={"px-4 py-2 hover:bg-sky-700 cursor-pointer "+ (selectedFilter == filterData['id'] ? 'bg-gray-100' : '' ) }>
@@ -451,7 +453,7 @@ function Filter(props)
                             </li>
                         )}
                         <li onClick={()=> createFilter()} className="px-4 py-2 text-gray-900 text-sm hover:bg-sky-700 cursor-pointer">
-                            Add New
+                        {props.translator['Add New']}
                         </li>
                     </ul>
                     </Dropdown.Content>
@@ -467,7 +469,7 @@ function Filter(props)
                             <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
                                 <div className="flex items-start justify-between p-5 border-b border-solid border-slate-200 rounded-t">
                                     <h3 className="text-3xl font-semibold">
-                                        Search filter
+                                        {props.translator['Search Filter']}
                                     </h3>
                                     <button
                                         type="button"
@@ -478,7 +480,7 @@ function Filter(props)
                                             <path d="M4.5.5v3.4c0 .56 0 .84.109 1.054a1 1 0 0 0 .437.437C5.26 5.5 5.54 5.5 6.1 5.5h6.8c.56 0 .84 0 1.054-.109a1 1 0 0 0 .437-.437c.109-.214.109-.494.109-1.054V1.5m0 17v-6.4c0-.56 0-.84-.109-1.054a1 1 0 0 0-.437-.437c-.214-.109-.494-.109-1.054-.109H6.1c-.56 0-.84 0-1.054.109a1 1 0 0 0-.437.437C4.5 11.26 4.5 11.54 4.5 12.1v6.4m14-11.675V13.7c0 1.68 0 2.52-.327 3.162a3 3 0 0 1-1.311 1.311c-.642.327-1.482.327-3.162.327H5.3c-1.68 0-2.52 0-3.162-.327a3 3 0 0 1-1.311-1.311C.5 16.22.5 15.38.5 13.7V5.3c0-1.68 0-2.52.327-3.162A3 3 0 0 1 2.138.827C2.78.5 3.62.5 5.3.5h6.875c.489 0 .733 0 .963.055.204.05.4.13.579.24.201.123.374.296.72.642l3.126 3.126c.346.346.519.519.642.72.11.18.19.374.24.579.055.23.055.474.055.963Z" stroke="#fff" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
 
-                                        Save Filter
+                                        {props.translator['Save Filter']}
                                     </button>                        
                                 </div>
                                 {/*body*/}
@@ -752,7 +754,7 @@ function Filter(props)
                                                                             onClick={(e) => addCondition(e)}
                                                                             className="-ml-0.5 mr-2 h-4 w-4" 
                                                                             aria-hidden="true" />
-                                                                        Add New Contidion
+                                                                        {props.translator['Add New Condition']}
                                                                     </button>
                                                                 </div>
                                                                         
@@ -773,14 +775,14 @@ function Filter(props)
                                                         onClick={addConditionGroup}
                                                         className="-ml-0.5 mr-2 h-4 w-4" 
                                                         aria-hidden="true" />
-                                                    Add Group
+                                                    {props.translator['Add Group']}
                                                 </button>
                                             </div>
                                             <br />
                                             <div className="mt-6 sm:mt-5 space-y-6 sm:space-y-5 clear-both">
                                                 <div className="sm:grid sm:grid-cols-4 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                                                     <label htmlFor="filter_name" className="block text-sm text-right font-medium text-gray-700 sm:mt-px sm:pt-2">
-                                                        Filter name
+                                                    {props.translator['Filter name']}
                                                     </label>
                                                     <div className="mt-1 sm:mt-0 sm:col-span-3">
                                                         <div className="max-w-lg flex rounded-sm shadow-sm">
@@ -796,7 +798,7 @@ function Filter(props)
                                                         </div>
                                                         <div>
                                                             {errors.filter_name &&
-                                                                <small className="text-red-500"> Please fill the name </small>
+                                                                <small className="text-red-500"> {props.translator['Please fill the name']} </small>
                                                             }
                                                         </div>
                                                     </div>
@@ -819,7 +821,7 @@ function Filter(props)
                                         type="button"
                                         onClick={() => setOpenFilterModal(false)}
                                     >
-                                        Close
+                                        {props.translator['Close']}
                                     </button>
                                     
                                     <button
@@ -827,7 +829,7 @@ function Filter(props)
                                         type="button"
                                         onClick={() => searchFilterData()}
                                     >
-                                        Search Filter
+                                        {props.translator['Search Filter']}
                                     </button>
                                 </div>
                             </div>

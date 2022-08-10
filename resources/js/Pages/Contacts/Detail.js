@@ -22,8 +22,8 @@ export default function Detail(props) {
     
     //const[record , setRecord] = useState(props.contact);
     const tabs = [
-        { name: 'Detail', href: '#'  },
-        { name: 'Notes', href: '#' },
+        { label:(props.translator['Detail']),name: 'Detail', href: '#'  },
+        { label:(props.translator['Notes']),name: 'Notes', href: '#' },
       ];
 
     const [showForm, setShowForm] = useState(false);
@@ -56,6 +56,7 @@ export default function Detail(props) {
                 tagOptions={props.tagOptions}
                 listOptions={props.listOptions}
                 listData={props.listData}
+                translator={props.translator}
             />
             
             {showForm ?

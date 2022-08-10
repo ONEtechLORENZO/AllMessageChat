@@ -15,7 +15,7 @@ export default function Notes(props) {
   const [data, setData] = useState({
        noteText: ''
 });
-  
+const [trans,setTrans]=useState([]);
 
   useEffect(() => {    
     if(props.recordId) {
@@ -31,6 +31,8 @@ function fetchNote(){
     if(response.data.status !== false) {
     setName(response.data.name); 
     setNotes(response.data.note_List);
+    setTrans(response.data.translator);
+
 }else {
   notie.alert({type: 'error', text: response.data.message, time: 5});
 }
@@ -86,7 +88,7 @@ return(
                           alue={data.noteText}
                           required={true}
                           handleChange={handleChange}
-                          placeholder="Enter your new note here..."
+                          placeholder={trans['Enter your new note here']}
                           className="w-full focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-2xl  py-3 sm:text-sm border-gray-300 "
                          />
                         <button
@@ -94,7 +96,7 @@ return(
                             id="add_note"
                             onClick={addNote}
                             className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >Add a new note</button>
+                        >{trans['Add a new note']}</button>
       </div>     
       </div> 
                 <div></div>

@@ -30,6 +30,7 @@ use PDF;
 class UserController extends Controller
 {
     public $per_page = 15;
+  
 
     public $webhook_events = [
         'enqueued' => ['label' => 'Enqueued', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
@@ -488,7 +489,7 @@ class UserController extends Controller
             // 'email' => ['label' => 'Email'],
             // 'estimated_launch_date' => ['label' => 'Estimated launch date'],
             // 'type_of_integration' => ['label' => 'Type of integration'],
-            'display_name' => ['label' => 'Display name', 'show' => ['whatsapp']],
+            'display_name' => ['label' => __('Display name'), 'show' => ['whatsapp']],
             'phone_number' => ['label' => __('Phone number'), 'show' => ['whatsapp']],
             'src_name' => ['label' => __('Source name'), 'show' => ['whatsapp', 'instagram']],
             'api_partner' => ['label' => __('API partner'), 'show' => ['whatsapp']],
@@ -578,6 +579,7 @@ class UserController extends Controller
                 'Phone number' =>  __('Phone number'),
                 'Source Name' =>  __('Source Name'),
                 'Display Name' =>  __('Display Name'),
+                'API partner Name' => __('API partner Name'),
                 'Business manager Id' =>  __('Business manager Id'),
                 'Profile picture' =>  __('Profile picture'),
                 'Profile description' =>  __('Profile description'),
@@ -621,6 +623,8 @@ class UserController extends Controller
                 'Phone number' =>  __('Phone number'),
                 'Source Name' =>  __('Source Name'),
                 'Display Name' =>  __('Display Name'),
+                'API partner Name' => __('API partner Name'),
+                'Do you agree with our' =>__('Do you agree with our'),'terms and conditions?' => __('terms and conditions?'),
                 'Business manager Id' =>  __('Business manager Id'),
                 'Profile picture' =>  __('Profile picture'),
                 'Profile description' =>  __('Profile description'),
@@ -1170,12 +1174,12 @@ class UserController extends Controller
     {
         // List view columns to show
         $list_view_columns = [
-            'service' => [ 'label' => 'Service' , 'type' => 'text'],
-            'transaction_id' => [ 'label' => 'Transaction Id' , 'type' => 'text'],
-            'amount' => [ 'label' => 'Amount' , 'type' => 'text'],
-            'status' => [ 'label' => 'Status' , 'type' => 'text'],
-            'error_message' => [ 'label' => 'Message' , 'type' => 'text'],
-            'created_at' => [ 'label' => 'Created At' , 'type' => 'text']
+            'service' => [ 'label' => __('Service') , 'type' => 'text'],
+            'transaction_id' => [ 'label' => __('Transaction Id') , 'type' => 'text'],
+            'amount' => [ 'label' => __('Amount') , 'type' => 'text'],
+            'status' => [ 'label' => __('Status') , 'type' => 'text'],
+            'error_message' => [ 'label' => __('Message') , 'type' => 'text'],
+            'created_at' => [ 'label' => __('Created At') , 'type' => 'text']
         ];
 
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
@@ -1201,8 +1205,8 @@ class UserController extends Controller
         
         return Inertia::render('Wallet/Transactions', [
             'records' => $records->items(),
-            'singular' => 'Transaction',
-            'plural' => 'Transactions',
+            'singular' => __('Transaction'),
+            'plural' => __('Transactions'),
             'module' => 'Transaction',
             'search' => $search,
             'actions' => [
@@ -1218,6 +1222,12 @@ class UserController extends Controller
             'sort_order' => $sort_order,
             'compact_type' => 'condense',
             'list_view_columns' => $list_view_columns,
+            'translator' => [
+                'No records' =>__('No records'),
+                'Search' =>__('Search'),
+                'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?')
+
+            ],
             // Paginator
             'paginator' => [
                 'firstPageUrl' => $records->url(1),

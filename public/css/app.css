@@ -1469,11 +1469,6 @@ select {
 	margin-right: calc(-1px * var(--tw-space-x-reverse));
 	margin-left: calc(-1px * calc(1 - var(--tw-space-x-reverse)));
 }
-.space-x-8 > :not([hidden]) ~ :not([hidden]) {
-	--tw-space-x-reverse: 0;
-	margin-right: calc(2rem * var(--tw-space-x-reverse));
-	margin-left: calc(2rem * calc(1 - var(--tw-space-x-reverse)));
-}
 .space-y-1 > :not([hidden]) ~ :not([hidden]) {
 	--tw-space-y-reverse: 0;
 	margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));
@@ -2945,11 +2940,6 @@ select {
 		grid-column-start: 1;
 	}
 
-	.sm\:-my-px {
-		margin-top: -1px;
-		margin-bottom: -1px;
-	}
-
 	.sm\:mx-auto {
 		margin-left: auto;
 		margin-right: auto;
@@ -2969,16 +2959,16 @@ select {
 		margin-left: 0px;
 	}
 
-	.sm\:ml-3 {
-		margin-left: 0.75rem;
-	}
-
 	.sm\:ml-6 {
 		margin-left: 1.5rem;
 	}
 
 	.sm\:mt-0 {
 		margin-top: 0px;
+	}
+
+	.sm\:ml-3 {
+		margin-left: 0.75rem;
 	}
 
 	.sm\:mt-12 {
