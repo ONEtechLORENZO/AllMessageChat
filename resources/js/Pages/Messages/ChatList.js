@@ -43,7 +43,7 @@ function ChatList(props)
     const accountList = props.account_list;
 
     const channels = {
-        all : {label: 'All Channel', icon: ApplicationLogo },
+        all : {label: props.translator['All Channel'], icon: ApplicationLogo },
         whatsapp : { label: 'WhatsApp', icon:  WhatsAppIcon },
         instagram : {label: 'Instagram', icon: InstaIcon }
     }
@@ -349,7 +349,7 @@ function ChatList(props)
                                                     {selectedAccount ?
                                                         <>{accountList[selectedAccount]}</>
                                                         :
-                                                        "Account list"
+                                                        props.translator['Account list']
                                                     }
                                                     </span>
                                                     <span className='float-right'>
@@ -522,7 +522,7 @@ function ChatList(props)
                                             onKeyUp={(e) => handleKeyUp(e)}
                                             name="content"
                                             value={data.content}
-                                            placeholder="Write your message!"
+                                            placeholder={props.translator['Write your message!']}
                                             className="w-full focus:outline-none border-0 focus:placeholder-gray-400 text-gray-600 placeholder-gray-600 pl-3 bg-white rounded-2xl rounded-br-none py-3"
                                         />
                                         <div className="absolute right-0 items-center inset-y-0 hidden sm:flex">

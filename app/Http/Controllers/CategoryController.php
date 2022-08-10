@@ -33,8 +33,8 @@ class CategoryController extends Controller
     
         // List view columns to show
         $list_view_columns = [
-            'name' => ['label' => 'List', 'type' => 'text'],
-            'description' =>  ['label' => 'Description', 'type' => 'textarea'],
+            'name' => ['label' => __('List'), 'type' => 'text'],
+            'description' =>  ['label' => __('Description'), 'type' => 'textarea'],
         ];
 
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
@@ -57,8 +57,8 @@ class CategoryController extends Controller
 
         return Inertia::render('Category/List', [
             'records' => $records->items(),
-            'singular' => 'List',
-            'plural' => 'Lists',
+            'singular' => __('List'),
+            'plural' => __('Lists'),
             'module' => 'Category',
             // Actions
             'actions' => [
@@ -68,6 +68,11 @@ class CategoryController extends Controller
                 'export' => false,
                 'import' => false,
                 'search' => true,
+            ],
+            'translator' => [
+                'No records' =>__('No records'),
+                'Search' =>__('Search'),
+                'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?'),
             ],
             'search' => $search,
             'compact_type' => 'condense',

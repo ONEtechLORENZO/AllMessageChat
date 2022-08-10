@@ -31,7 +31,7 @@ class NoteController extends Controller
                 'date' => date_format($note->created_at,$this->dateListView)                     
             ];
         }       
-  return response()->json(['note_List' => $note_List,'name'=>$name]); 
+  return response()->json(['note_List' => $note_List,'name'=>$name,'translator' =>['Add a new note'=>__('Add a new note'),'Enter your new note here' => __('Enter your new note here')]]); 
     
     }
 

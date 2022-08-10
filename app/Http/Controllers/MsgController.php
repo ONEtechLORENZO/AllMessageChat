@@ -242,7 +242,10 @@ class MsgController extends Controller
                 'New Message' => __('New Message'),
                 'Conversation not start yet.'  => __('Conversation not start yet.'),
                 'View notifications'  => __('View notifications'),
-                'Junior Developer' => __('Junior Developer')
+                'Junior Developer' => __('Junior Developer'),
+                'All Channel' => __('All Channel'),
+                'Account list' => __('Account list'),
+                'Write your message!' => __('Write your message!')
             ]
 
         ]);

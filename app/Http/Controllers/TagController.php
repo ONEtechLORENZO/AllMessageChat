@@ -34,8 +34,8 @@ class TagController extends Controller
     
         // List view columns to show
         $list_view_columns = [
-            'name' => ['label' => 'Tag', 'type' => 'text'],
-            'description' =>  ['label' => 'Description', 'type' => 'textarea'],
+            'name' => ['label' => __('Tag'), 'type' => 'text'],
+            'description' =>  ['label' => __('Description'), 'type' => 'textarea'],
         ];
 
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
@@ -58,8 +58,8 @@ class TagController extends Controller
 
         return Inertia::render('Tag/List', [
             'records' => $records->items(),
-            'singular' => 'Tag',
-            'plural' => 'Tags',
+            'singular' => __('Tag'),
+            'plural' => __('Tags'),
             'module' => 'Tag',
             // Actions
             'actions' => [
@@ -69,6 +69,11 @@ class TagController extends Controller
                 'export' => false,
                 'import' => false,
                 'search' => true,
+            ],
+            'translator' => [
+                'Search' => __('Search'),
+                'No records' =>__('No records')
+                
             ],
             'search' => $search,
             'compact_type' => 'condense',

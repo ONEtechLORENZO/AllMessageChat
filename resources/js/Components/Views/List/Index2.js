@@ -51,7 +51,7 @@ function ListView(props)
      */
     function deleteRecord(record_id)
     {
-        let confirm = window.confirm('Are you sure you want to delete the record?');
+        let confirm = window.confirm(props.translator['Are you sure you want to delete the record?']);
         if(!confirm) {
             return;
         }
@@ -109,6 +109,7 @@ function ListView(props)
                                 currentPage={props.paginator.currentPage}
                                 sort_by={props.sort_by}
                                 sort_order={props.sort_order}
+                                translator={props.translator}
                             />
                         : ''}
 
@@ -119,6 +120,7 @@ function ListView(props)
                                 currentPage={props.paginator.currentPage}
                                 sort_by={props.sort_by}
                                 sort_order={props.sort_order}
+                                translator={props.translator}
                             />
                         }
 
@@ -297,7 +299,7 @@ function ListView(props)
                             </div>
 
                             {Object.entries(records).length == 0 ?         
-                                <Alert type='info' message='No records' hideClose={true} />
+                                <Alert type='info' message= {props.translator['No records']} hideClose={true} />
                             : ''}
 
                             <Pagination paginator={props.paginator} />
@@ -313,6 +315,7 @@ function ListView(props)
                     heading={props.heading}
                     hideForm={hideForm}
                     recordId={recordId}
+                    translator={props.translator}
                 />
             : ''}
         </>
