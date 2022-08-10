@@ -69,14 +69,15 @@ class Controller extends BaseController
         } else {
             $query = $module->select( $listFields )->orderBy("{$baseTable}.{$sort_by}", $sort_order);
             
-            $query->leftJoin('taggables', "{$baseTable}.id",'taggable_id')->groupBy("{$baseTable}.id");
-            $query->leftJoin('categorables', "{$baseTable}.id", 'categorable_id')->groupBy("{$baseTable}.id");
+            $query->leftJoin('taggables', "{$baseTable}.id",'taggable_id');
+            $query->leftJoin('categorables', "{$baseTable}.id", 'categorable_id');
 
             $query = ($searchData) ? $this->getWhereFilterCondition($searchData , $query , $baseTable) : $query;
         }
         if($moduleName != 'User'){
             $query->where('user_id' , $user_id);
         }
+        $query->groupBy("{$baseTable}.id");
         $records = $query->paginate($this->limit);
         $return = [
             'records' => $records->items(),
