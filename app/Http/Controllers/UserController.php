@@ -320,7 +320,6 @@ class UserController extends Controller
         } else {
             $user = $request->user();
         }
-        
         $token = $user->api_token;
         return Inertia::render('Admin/User/UserDetail', [
                 'user' => $user, 
@@ -370,7 +369,7 @@ class UserController extends Controller
            
             if (!$request->get('id')) {
                 $request->validate([
-                    'name' => 'required|max:255',
+                    'last_name' => 'required|max:255',
                     'email' => 'required|unique:users|max:255',
                 //    'role' => 'required|max:255'
                 ]);
@@ -381,7 +380,8 @@ class UserController extends Controller
                 $user = User::findOrFail($request->get('id'));
             }
 
-            $user->name = $request->get('name');
+            $user->first_name = $request->get('first_name');
+            $user->last_name = $request->get('last_name');
             $user->email = $request->get('email');
             $user->company_name = $request->get('company_name');
             $user->phone_number = $request->get('phone_number');
