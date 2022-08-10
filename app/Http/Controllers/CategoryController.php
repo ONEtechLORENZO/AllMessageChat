@@ -60,6 +60,7 @@ class CategoryController extends Controller
             'singular' => __('List'),
             'plural' => __('Lists'),
             'module' => 'Category',
+            'current_page' => 'Lists',
             // Actions
             'actions' => [
                 'create' => true,

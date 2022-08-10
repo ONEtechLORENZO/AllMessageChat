@@ -46,6 +46,7 @@ export default function Dashboard(props) {
         <Authenticated
             auth={props.auth}
             errors={props.errors}
+            current_page='Dashboard' 
             header={<div className="flex justify-between"> 
                 <div> 
                     <h2 className="font-semibold text-xl text-gray-800 leading-tight">{props.translator['Dashboard']}</h2>

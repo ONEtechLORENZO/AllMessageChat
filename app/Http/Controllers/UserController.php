@@ -212,7 +212,7 @@ class UserController extends Controller
             'add_link' => route('create_user'),
             'edit_link' => 'editUser',
             'add_button_text' => 'Add User',
-            
+            'current_page' => 'Users',
             // Actions
             'actions' => [
                 'create' => true,
@@ -1085,7 +1085,7 @@ class UserController extends Controller
  
         $paymentMethods = $user->paymentMethods();
 
-        $stripe_public_key = $_ENV['STRIPE_KEY'];
+        $stripe_public_key = env('STRIPE_KEY');
 
         return Inertia::render('Wallet/Index', [
             'name' => $user->name,
@@ -1093,6 +1093,7 @@ class UserController extends Controller
             'message_deduction' => $messageDeduction,
             'paymentMethods' => $paymentMethods,
             'stripe_public_key' => $stripe_public_key,
+            'current_page' => 'Wallet',
         ]);
     }
 

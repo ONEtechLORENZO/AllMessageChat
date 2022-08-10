@@ -61,6 +61,7 @@ class TagController extends Controller
             'singular' => __('Tag'),
             'plural' => __('Tags'),
             'module' => 'Tag',
+            'current_page' => 'Tags',
             // Actions
             'actions' => [
                 'create' => true,

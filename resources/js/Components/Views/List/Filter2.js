@@ -274,6 +274,7 @@ function Filter(props)
                                         var optionElement = event.target.childNodes[index]
                                         var field_type =  optionElement.getAttribute('field_type');
                                         newData[grpCondition_index][grpCondition][condition_index]['field_type'] = field_type;
+                                        newData[grpCondition_index][grpCondition][condition_index]['condition_value'] = '';
                                     }
                                 }
                             });

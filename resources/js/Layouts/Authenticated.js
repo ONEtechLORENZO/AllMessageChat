@@ -35,49 +35,53 @@ const navigation = [
         name: "Dashboard",
         href: route("dashboard"),
         icon: HomeIcon,
-        current: true,
     },
     {
         name: "Messages",
         href: route("message_list"),
         icon: ChatAltIcon,
-        current: false,
     },
     {
         name: "Contacts",
         href: route("listContact"),
         icon: IdentificationIcon,
-        current: false,
+        
+    },
+    {
+        name: "Chat",
+        href: route("chat_list"),
+        icon: ChatAlt2Icon,
+        
     },
     {
         name: "Tags",
         href: route("listTag"),
         icon: TagIcon,
-        current: false,
+        
     },
     {
         name: "Lists",
         href: route("listCategory"),
         icon: ViewListIcon,
-        current: false,
+        
     },
     {
         name: "Wallet",
         href: route("wallet"),
         icon: BriefcaseIcon,
-        current: false,
+        
     },
     {
         name: "Pricing",
         href: route("listPrice"),
         icon: CurrencyDollarIcon,
-        current: false,
+        
     },
     {
         name: "Users",
         href: route("listUser"),
         icon: UsersIcon,
-        current: false,
+        
     },
 
     // { name: "Opportunities", href: "#", icon: CalendarIcon, current: false },
@@ -95,7 +99,7 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
 
-export default function Authenticated({ auth, header, children, hideHeader }) 
+export default function Authenticated({ auth, header, children, hideHeader , current_page}) 
 {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
@@ -163,28 +167,10 @@ export default function Authenticated({ auth, header, children, hideHeader })
                                         </div>
                                     </Transition.Child>
                                     <div className="flex-shrink-0 flex items-center px-4">
-                                        {/* <img
-                  className="h-8 w-auto"
-                  src="https://tailwindui.com/img/logos/workflow-logo-indigo-600-mark-gray-800-text.svg"
-                  alt="Workflow"
-                /> */}
-
                                         <ApplicationLogo className="block h-9 w-auto text-gray-500" />
                                     </div>
 
-                                    {/* <div className="hidden space-x-8 sm:-my-px sm:ml-3 sm:flex">
-                                        <NavLink href={route('dashboard')} active={route().current('dashboard')}>
-                                            Dashboard
-                                        </NavLink>
-                                        <NavLink href={route('messages')} active={route().current('messages')}>
-                                            Message Log
-                                        </NavLink>
-                                        {auth.user.role == 'Admin' &&
-                                            <NavLink href={route('listUser')} active={route().current('user')}>
-                                                Users
-                                            </NavLink>
-                                        }
-                                    </div> */}
+                                    
 
                                 </Dialog.Panel>
                             </Transition.Child>
@@ -207,11 +193,7 @@ export default function Authenticated({ auth, header, children, hideHeader })
                     {/* Sidebar component, swap this element with another sidebar if you like */}
                     <div className="flex flex-col flex-grow border-r border-gray-200 pt-5 bg-[#F6FFFD] overflow-y-auto">
                         <div className="flex items-center flex-shrink-0 px-4">
-                            {/* <img
-                            className="h-8 w-auto"
-                            src="https://tailwindui.com/img/logos/workflow-logo-indigo-600-mark-gray-800-text.svg"
-                            alt="Workflow"
-                        /> */}
+                        
                             <ApplicationLogo className="block h-9 w-auto text-gray-500" />
                         </div>
                         <div
@@ -237,7 +219,7 @@ export default function Authenticated({ auth, header, children, hideHeader })
                                             key={item.name}
                                             href={item.href}
                                             className={classNames(
-                                                item.current
+                                                (item.name == current_page)
                                                     ? "text-primary"
                                                     : "text-[#3D4459]  hover:text-primary",
                                                 "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
@@ -245,7 +227,7 @@ export default function Authenticated({ auth, header, children, hideHeader })
                                         >
                                             <item.icon
                                                 className={classNames(
-                                                    item.current
+                                                    (item.name == current_page)
                                                         ? "text-primary"
                                                         : "text-[#3D4459] group-hover:text-primary",
                                                     "mr-3 flex-shrink-0 h-6 w-6"

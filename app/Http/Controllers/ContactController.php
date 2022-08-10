@@ -67,13 +67,13 @@ class ContactController extends Controller
     {
 
         $list_view_columns = [
-            'first_name' => ['label' => __('First Name'), 'type' => 'text'],
-            'last_name' =>  ['label' => __('Last Name'), 'type' => 'text'],
+            'first_name' => ['label' => 'First Name', 'type' => 'text'],
+            'last_name' =>  ['label' => 'Last Name', 'type' => 'text'],
             'email' =>  ['label' => 'Email', 'type' => 'text'],
-            'tag' => ['label' => __('Tag'), 'type' => 'text'],
-            'list' =>  ['label' => __('List'), 'type' => 'text'],
-            'phone_number' => ['label' => __('Phone number'), 'type' => 'phone_number'],
-            'instagram_id' =>  ['label' => __('Instagram Id'), 'type' => 'text'],
+            'tag' => ['label' => 'Tag', 'type' => 'text'],
+            'list' =>  ['label' => 'List', 'type' => 'text'],
+            'phone_number' => ['label' => 'Phone number', 'type' => 'phone_number'],
+            'instagram_id' =>  ['label' => 'Instagram Id', 'type' => 'text'],
         ];
 
         $module = new Contact();
@@ -83,13 +83,25 @@ class ContactController extends Controller
             'singular' => __('Contact'),
             'plural' => __('Contacts'),
             'module' => 'Contact',
+            'current_page' => 'Contacts', 
+            // Actions
+            'actions' => [
+                'create' => true,
+                'detail' => true,
+                'edit' => true,
+                'delete' => true,
+                'export' => false,
+                'import' => false,
+                'search' => true,
+                'filter' => true,
+            ],
             'translator' => [
                 'Edit' => __('Edit'),
                 'Search' => __('Search'),
                 'Search filter' => __('Search filter'),
                 'Save Filter' => __('Save Filter'),
-                'All' => __('All'),
                 'Add' => __('Add'),
+                'All' => __('All'),
                 'Add New' => __('Add New'),
                 'Close' =>__('Close'),
                 'Search Filter' => __('Search Filter'),
@@ -109,21 +121,7 @@ class ContactController extends Controller
                 'Greater than' =>__('Greater than'),
                 'Not equal' => __('Not equal'),
                 'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?'),
-                'No records' =>__('No records'),
-                'Do you want to delete group?' => __('Do you want to delete group?'),
-                'Do you want to delete the filter?' => __('Do you want to delete the filter?'),
-                'Please fill the name' => __('Please fill the name')
-            ],
-            // Actions
-            'actions' => [
-                'create' => true,
-                'detail' => true,
-                'edit' => true,
-                'delete' => true,
-                'export' => false,
-                'import' => false,
-                'search' => true,
-                'filter' => true,
+                'No records' =>__('No records')
             ],
         ];
         
@@ -242,11 +240,6 @@ class ContactController extends Controller
             'listOptions' => $ListOptions,
             'listData' => $ListSelectRecords,
             'headers' => $headers,
-            'translator' => [
-                'Detail' => __('Detail'),
-                'Notes' => __('Notes'),
-                'Edit'  =>__('Edit')
-                ]
 
         ]);
     }
@@ -364,8 +357,8 @@ class ContactController extends Controller
             $is_custom = ($field->is_custom) ? 'custom' : 'default';
             $header[$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type']];
         }
-        $header['default']['tag'] = ['label' => __('Tag'), 'type' => 'text'];
-        $header['default']['list'] = ['label' => __('List'), 'type' => 'text'];
+        $header['default']['tag'] = ['label' => 'Tag', 'type' => 'text'];
+        $header['default']['list'] = ['label' => 'List', 'type' => 'text'];
         return $header;
     }
 
