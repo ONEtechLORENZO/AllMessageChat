@@ -67,12 +67,12 @@ class ContactController extends Controller
     {
 
         $list_view_columns = [
-            'first_name' => ['label' => 'First Name', 'type' => 'text'],
-            'last_name' =>  ['label' => 'Last Name', 'type' => 'text'],
-            'email' =>  ['label' => 'Email', 'type' => 'text'],
-            'tag' => ['label' => 'Tag', 'type' => 'text'],
-            'list' =>  ['label' => 'List', 'type' => 'text'],
-            'phone_number' => ['label' => 'Phone number', 'type' => 'phone_number'],
+            'first_name' => ['label' => __('First Name'), 'type' => 'text'],
+            'last_name' =>  ['label' => __('Last Name'), 'type' => 'text'],
+            'email' =>  ['label' => __('Email'), 'type' => 'text'],
+            'tag' => ['label' => __('Tag'), 'type' => 'text'],
+            'list' =>  ['label' => __('List'), 'type' => 'text'],
+            'phone_number' => ['label' => __('Phone number'), 'type' => 'phone_number'],
             'instagram_id' =>  ['label' => 'Instagram Id', 'type' => 'text'],
         ];
 
@@ -240,6 +240,11 @@ class ContactController extends Controller
             'listOptions' => $ListOptions,
             'listData' => $ListSelectRecords,
             'headers' => $headers,
+            'translator' => [
+                'Detail' => __('Detail'),
+                'Notes' => __('Notes'),
+                'Edit'  =>__('Edit')
+                ]
 
         ]);
     }
@@ -357,8 +362,8 @@ class ContactController extends Controller
             $is_custom = ($field->is_custom) ? 'custom' : 'default';
             $header[$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type']];
         }
-        $header['default']['tag'] = ['label' => 'Tag', 'type' => 'text'];
-        $header['default']['list'] = ['label' => 'List', 'type' => 'text'];
+        $header['default']['tag'] = ['label' => __('Tag'), 'type' => 'text'];
+        $header['default']['list'] = ['label' => __('List'), 'type' => 'text'];
         return $header;
     }
 
