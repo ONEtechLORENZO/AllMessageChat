@@ -35,49 +35,53 @@ const navigation = [
         name: "Dashboard",
         href: route("dashboard"),
         icon: HomeIcon,
-        current: true,
     },
     {
         name: "Messages",
         href: route("message_list"),
         icon: ChatAltIcon,
-        current: false,
     },
     {
         name: "Contacts",
         href: route("listContact"),
         icon: IdentificationIcon,
-        current: false,
+        
+    },
+    {
+        name: "Chat",
+        href: route("chat_list"),
+        icon: ChatAlt2Icon,
+        
     },
     {
         name: "Tags",
         href: route("listTag"),
         icon: TagIcon,
-        current: false,
+        
     },
     {
         name: "Lists",
         href: route("listCategory"),
         icon: ViewListIcon,
-        current: false,
+        
     },
     {
         name: "Wallet",
         href: route("wallet"),
         icon: BriefcaseIcon,
-        current: false,
+        
     },
     {
         name: "Pricing",
         href: route("listPrice"),
         icon: CurrencyDollarIcon,
-        current: false,
+        
     },
     {
         name: "Users",
         href: route("listUser"),
         icon: UsersIcon,
-        current: false,
+        
     },
 
     // { name: "Opportunities", href: "#", icon: CalendarIcon, current: false },
@@ -102,7 +106,11 @@ export default function Authenticated({ auth, header, children, hideHeader })
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const [showSidebarText, setShowSidebarText] = useState(false);
-
+    var selectedTab = '';
+    if(children.props && children.props){
+        selectedTab = children.props.module;
+    }
+console.log(current_page);
     return (
         <>
             <div className="flex min-h-screen bg-[#f6f6f6]">
