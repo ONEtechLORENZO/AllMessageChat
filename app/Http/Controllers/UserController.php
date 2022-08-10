@@ -1217,7 +1217,7 @@ class UserController extends Controller
             view()->share('user',$user);
 
             $pdf = PDF::loadView('invoice');
-            $pdf->save(storage_path().'invoice.pdf');
+          //$pdf->save(storage_path() . '/invoice');
             return $pdf->download('invoice.pdf');
     }
 
