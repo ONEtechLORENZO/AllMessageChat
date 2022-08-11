@@ -176,11 +176,17 @@ function Form(props)
         // Validate the data
         let is_validated = false;
         var pristine = new Pristine(document.getElementById(`form`), defaultConfig);
-        is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required="true"]','textarea[data-pristine-required="true"]'));
+        is_validated = pristine.validate(
+            document.querySelectorAll(
+                 'input[data-pristine-required="true"], input[data-pristine-required="required"]',
+                 'textarea[data-pristine-required="true"], textarea[data-pristine-required="required"]',
+                 )
+            );
 
         if(!is_validated) {
             return false;
         }
+
         data['options'] = options;
         
         Inertia.post(props.recordId ? route('update' + props.module, {id: props.recordId}) : route('store' + props.module), data, {

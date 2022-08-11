@@ -84,7 +84,7 @@ const Tabs = (props) => {
     return (
         <>
             <Authenticated
-                auth={props.auth}
+                auth={props.data.auth}
                 errors={props.errors}
             >
                 <div className="flex flex-wrap">

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Import;
 use App\Models\Contact;
+use App\Models\Field;
 use League\Csv\Reader;
 use League\Csv\Statement;
 use Illuminate\Support\Facades\Log;
@@ -43,11 +44,13 @@ class HandleImport extends Command
      * @return int
      */
     public function handle()
-    {
-        
+    {   
+       
+        // Look for import with in_progress status
         $status = 'Inprogress';
         $import = Import::where('status',$status)->first(); 
         if(!$import){
+            // Look for new imports
             $status = 'new';
             $import = Import::where('status',$status)->first();   
         }
@@ -65,28 +68,46 @@ class HandleImport extends Command
             $csv->setDelimiter(',');
             $csv->setHeaderOffset(0);
             
-            //build a statement
+            //Build a statement
             $stmt = Statement::create()
             ->offset($offset)
-            ->limit($limit);
-            
-            //query your records from the document
-            $records = $stmt->process($csv);
-        
-            $field = [];
+            ->limit($this->limit);
+           
+            //Query your records from the document
+            $csvRecords = $stmt->process($csv);
+
+            $fields = Field::where('module_name', 'Contact')
+                    ->where('user_id', $user_id)
+                    ->where('is_custom', 1)
+                    ->get(['field_name']);
+
+            $customFields = []; 
+            foreach($fields as $field){
+                $customFields[] = $field->field_name;
+            }
+
+            $records = [];
             $count = 0;
-            foreach ($records as $index =>  $record) {
+            foreach ($csvRecords as $index =>  $csvRecord) {
                 $count++;
-                $field[$index] = ['user_id' => $user_id,'created_at' => $current_date, 'updated_at' => $current_date ];
+                $records[$index] = ['user_id' => $user_id,'created_at' => $current_date, 'updated_at' => $current_date ];
+                $customRecord = [];
                 foreach($mapping_value as $name => $label){
                     if($label){
-                        $field[$index][$name] = $record[$label];
+                        if(in_array($name , $customFields)){
+                            $customRecord[$name] = $csvRecord[$label];
+                        } else {
+                            $records[$index][$name] = $csvRecord[$label];
+                        }
                     }
                 }
+                if($customRecord){
+                    $records[$index]['custom'] = json_encode($customRecord);
+                }
             }
-        
-            Contact::insert($field);
-            //importedfile count
+         
+            Contact::insert($records);
+            // Next offset
             $nextOffset = $offset + $count; 
 
             if($total_record == $nextOffset || $count == 0){

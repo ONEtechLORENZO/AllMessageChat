@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use League\Csv\Reader;
 use App\Models\Import;
 
+
 class ImportController extends Controller
 {
     public $limit = 15;
@@ -128,6 +129,7 @@ class ImportController extends Controller
      */
     public function handleFileImport(Request $request) 
     {
+    
         $module_name = 'Contact';
         $user_id = $request->user()->id;
         $fields = Field::where('module_name', $module_name)
@@ -179,6 +181,7 @@ class ImportController extends Controller
      */
     public function store(Request $request)
     {    
+       
         $user_id = $request->user()->id;
         $status = $request->status;
         if($status == 'draft') {
@@ -202,7 +205,7 @@ class ImportController extends Controller
         foreach($field as $key => $value) {
             $mapping_value[$value['field_name']] = $request->get($value['field_name']);
         }
-
+       
         $mapping_field = base64_encode(serialize($mapping_value));
  
         Import::where('id', $record_id)
@@ -223,6 +226,7 @@ class ImportController extends Controller
      */
     public function show(Request $request, $id)
     {
+     
         $user_id = $request->user()->id;
         $import = Import::where('user_id', $user_id)
                     ->where('id', $id)
