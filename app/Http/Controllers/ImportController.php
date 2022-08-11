@@ -56,11 +56,11 @@ class ImportController extends Controller
 
         return Inertia::render('Import/List', [
             'records' => $records->items(),
-            'singular' => 'Import',
-            'plural' => 'Imports',
+            'singular' => __('Import'),
+            'plural' => __('Imports'),
             'module' => 'Import',
             'add_link' => route('new_import'),
-            'add_button_text' => 'New Import',
+            'add_button_text' => __('New Import'),
             // Actions
             'actions' => [
                 'create' => true,
@@ -70,6 +70,11 @@ class ImportController extends Controller
                 'export' => false,
                 'import' => false,
                 'search' => true,
+            ],
+            'translator' => [
+                'No records' =>__('No records'),
+                'Search' =>__('Search'),
+                'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?'),
             ],
             'search' => $search,
             'list_view_columns' => $list_view_columns,
@@ -98,7 +103,20 @@ class ImportController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Import/Form');
+        return Inertia::render('Import/Form',['translator' => [
+            
+            'STEP 1' =>__('STEP 1'),
+            'STEP 2' =>__('STEP 2'),            
+            'Import' => __('Import'),
+            'Mapping' =>__('Mapping'),
+            'Name' => __('Name'),
+            'Upload a CSV file' => __('Upload a CSV file'),
+            'Cancel' => __('Cancel'),
+            'Next'=> __('Next'),
+            'No records' =>__('No records')
+
+
+            ]]);
     }
 
     /**

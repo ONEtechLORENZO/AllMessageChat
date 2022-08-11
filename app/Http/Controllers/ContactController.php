@@ -67,12 +67,12 @@ class ContactController extends Controller
     {
 
         $list_view_columns = [
-            'first_name' => ['label' => 'First Name', 'type' => 'text'],
-            'last_name' =>  ['label' => 'Last Name', 'type' => 'text'],
-            'email' =>  ['label' => 'Email', 'type' => 'text'],
-            'tag' => ['label' => 'Tag', 'type' => 'text'],
-            'list' =>  ['label' => 'List', 'type' => 'text'],
-            'phone_number' => ['label' => 'Phone number', 'type' => 'phone_number'],
+            'first_name' => ['label' => __('First Name'), 'type' => 'text'],
+            'last_name' =>  ['label' => __('Last Name'), 'type' => 'text'],
+            'email' =>  ['label' => __('Email'), 'type' => 'text'],
+            'tag' => ['label' => __('Tag'), 'type' => 'text'],
+            'list' =>  ['label' => __('List'), 'type' => 'text'],
+            'phone_number' => ['label' => __('Phone number'), 'type' => 'phone_number'],
             'instagram_id' =>  ['label' => 'Instagram Id', 'type' => 'text'],
         ];
 
@@ -80,8 +80,8 @@ class ContactController extends Controller
         $listViewData = $this->listView($request, $module, $list_view_columns);
 
         $moduleData = [
-            'singular' => 'Contact',
-            'plural' => 'Contacts',
+            'singular' => __('Contact'),
+            'plural' => __('Contacts'),
             'module' => 'Contact',
             'current_page' => 'Contacts', 
             // Actions
@@ -94,6 +94,34 @@ class ContactController extends Controller
                 'import' => false,
                 'search' => true,
                 'filter' => true,
+            ],
+            'translator' => [
+                'Edit' => __('Edit'),
+                'Search' => __('Search'),
+                'Search filter' => __('Search filter'),
+                'Save Filter' => __('Save Filter'),
+                'Add' => __('Add'),
+                'All' => __('All'),
+                'Add New' => __('Add New'),
+                'Close' =>__('Close'),
+                'Search Filter' => __('Search Filter'),
+                'Add New Condition' => __('Add New Condition'),
+                'Add Group' => __('Add Group'),
+                'Filter name' => __('Filter name'),
+                'AND' => __('AND'),
+                'OR' => __('OR'),
+                'Tag' =>__('Tag'),
+                'List' => __('List'),
+                'Equal' => __('Equal'),
+                'Contains' => __('Contains'),
+                'Null' => __('Null'),
+                'Start with' => __('Start with'),
+                'End with' => __('End with'),
+                'Lesser than' => __('Lesser than'),
+                'Greater than' =>__('Greater than'),
+                'Not equal' => __('Not equal'),
+                'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?'),
+                'No records' =>__('No records')
             ],
         ];
         
@@ -212,6 +240,11 @@ class ContactController extends Controller
             'listOptions' => $ListOptions,
             'listData' => $ListSelectRecords,
             'headers' => $headers,
+            'translator' => [
+                'Detail' => __('Detail'),
+                'Notes' => __('Notes'),
+                'Edit'  =>__('Edit')
+                ]
 
         ]);
     }
@@ -329,8 +362,8 @@ class ContactController extends Controller
             $is_custom = ($field->is_custom) ? 'custom' : 'default';
             $header[$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type']];
         }
-        $header['default']['tag'] = ['label' => 'Tag', 'type' => 'text'];
-        $header['default']['list'] = ['label' => 'List', 'type' => 'text'];
+        $header['default']['tag'] = ['label' => __('Tag'), 'type' => 'text'];
+        $header['default']['list'] = ['label' => __('List'), 'type' => 'text'];
         return $header;
     }
 

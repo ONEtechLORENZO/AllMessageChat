@@ -10,8 +10,8 @@ export default function Dashboard(props) {
     const[ accounts , setAccountList] = useState(props.accounts);
 
     // Delete Account
-    function deleteAccount(event){
-        var accountId = event.target.dataset.account_id;
+    function deleteAccount(accountId){
+       
         setDeleteAccountId(accountId);
 
         confirmAlert({
@@ -95,8 +95,7 @@ export default function Dashboard(props) {
                                             
                                             <div className='inline-flex'>
                                                   <button
-                                                      onClick={(e) => deleteAccount(e)}
-                                                      data-account_id={account.id}
+                                                      onClick={(e) => deleteAccount(account.id)}
                                                       type="button"
                                                       className="inline-flex items-center px-4 py-1 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                                                       >

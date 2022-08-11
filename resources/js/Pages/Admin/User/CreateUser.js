@@ -17,7 +17,8 @@ export default function CreateUser(props) {
 
     const fieldList = {
         'Personal Information': {
-            'name': {'value': props.user.name, 'label': (props.translator['Name']), 'type': 'text', 'required': true },
+            'first_name': {'value': props.user.first_name, 'label': 'First Name', 'type': 'text', 'required': false },
+            'last_name': {'value': props.user.last_name, 'label': 'Last Name', 'type': 'text', 'required': true },
             'company_name': {'value': props.user.company_name, 'label': (props.translator['Company name']), 'type': 'text', 'required': false },
             'email': {'value': props.user.email, 'label': (props.translator['Email']), 'type': 'email', 'required': true},
             'phone_number': {'value': props.user.phone_number, 'label': (props.translator['Phone number']), 'type': 'text', 'required': false },
