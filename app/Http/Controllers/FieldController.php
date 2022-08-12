@@ -31,24 +31,9 @@ class FieldController extends Controller
             'is_custom' => ['label' => 'Custom', 'type' => 'checkbox'],
         ];
 
-        $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
-        $sort_by = $request->has('sort_by') && $request->get('sort_by') ? $request->get('sort_by') : $this->default_sort_by;
-        $sort_order = $request->has('sort_order') && $request->get('sort_order') ? $request->get('sort_order') : $this->default_sort_order;
-
-        if ($search) {
-            $records = Field::orderBy($sort_by, $sort_order)
-                ->where(function ($query) use ($search, $list_view_columns) {
-                    foreach ($list_view_columns as $field_name => $field_info) {
-                        $query->orWhere($field_name, 'like', '%' . $search . '%');
-                    }
-                })
-                ->paginate($this->limit);
-        } else {
-            $records = Field::orderBy($sort_by, $sort_order)->paginate($this->limit);
-        }
-
-        return Inertia::render('Field/List', [
-            'records' => $records->items(),
+        $module = new Field();
+        $listViewData = $this->listView( $request , $module, $list_view_columns);
+        $moduleData = [
             'singular' => 'Field',
             'plural' => 'Fields',
             'module' => 'Field',
@@ -61,25 +46,11 @@ class FieldController extends Controller
                 'import' => false,
                 'search' => true,
             ],
-            'search' => $search,
-            'compact_type' => 'condense',
-            'list_view_columns' => $list_view_columns,
-            // Sorting
-            'sort_by' => $sort_by,
-            'sort_order' => $sort_order,
-            // Paginator
-            'paginator' => [
-                'firstPageUrl' => $records->url(1),
-                'previousPageUrl' => $records->previousPageUrl(),
-                'nextPageUrl' => $records->nextPageUrl(),
-                'lastPageUrl' => $records->url($records->lastPage()),
-                'currentPage' => $records->currentPage(),
-                'total' => $records->total(),
-                'count' => $records->count(),
-                'lastPage' => $records->lastPage(),
-                'perPage' => $records->perPage(),
-            ],
-        ]);
+        ];
+
+        $data = array_merge($moduleData , $listViewData);
+        return Inertia::render('Field/List', $data);
+
     }
 
     /**

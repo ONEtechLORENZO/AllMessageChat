@@ -6,16 +6,22 @@ import Label from '@/Components/Label';
 import ValidationErrors from '@/Components/ValidationErrors';
 import { Head, Link, useForm } from '@inertiajs/inertia-react';
 
-export default function Register() {
+export default function Register(props) {
     const { data, setData, post, processing, errors, reset } = useForm({
         first_name: '',
         last_name: '',
         email: '',
         password: '',
         password_confirmation: '',
+        company: ''
     });
 
     useEffect(() => {
+        let newData = Object.assign({}, data);
+        newData['email'] = props.email;
+        newData['company'] = props.company;
+        setData(newData);
+
         return () => {
             reset('password', 'password_confirmation');
         };
