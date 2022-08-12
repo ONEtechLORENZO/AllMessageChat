@@ -58,7 +58,7 @@ function Wallet(props)
             errors={props.errors}
             current_page= {props.current_page}
         >
-            <Head title={'Wallet'} />
+            <Head title={props.translator['Wallet']} />
 
             <div className="new-dash mt-10 p-3 text-[#3D4459]">
                 <div class="bg-white rounded-md shadow w-full py-8 flex items-center flex-col sm:flex-row">
@@ -79,11 +79,11 @@ function Wallet(props)
                         </svg>
                     </div>
                     <div className="text-[#3D4459] space-y-2">
-                        <h2 className="text-lg font-semibold">Hi {props.name}!</h2>
-                        <p className="text-sm">Welcome to your Wallet</p>
+                        <h2 className="text-lg font-semibold">{props.translator['Hi']} {props.name}!</h2>
+                        <p className="text-sm">{props.translator['Welcome to your Wallet']}</p>
                         <p className="text-sm">
-                            Here you can see your payments, change your pay mathod
-                            and get your invoices.
+                            {props.translator['Here you can see your payments, change your payment method and get your invoices.']}
+                           
                         </p>
                     </div>
                 </div>
@@ -93,7 +93,7 @@ function Wallet(props)
                         <div class="bg-white rounded-md shadow w-full flex p-8 sm:items-end justify-between flex-col sm:flex-row gap-4 sm:gap-0">
                             <div className="space-y-6">
                                 <h4 className="font-semibold text-base">
-                                    Available Balance
+                                    {props.translator['Available Balance']}
                                 </h4>
                                 <p className="text-primary font-semibold text-2xl">
                                     $ {balance}
@@ -105,21 +105,21 @@ function Wallet(props)
                                     className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bg-primary/80"
                                     onClick={() => setShowStripeForm(true)}
                                 >
-                                    Add Balance
+                                    {props.translator['Add Balance']}
                                 </button>
                             </div>
                         </div>
 
                         <h4 class="mt-3">
                             <span className="font-semibold text-base">
-                                This Month
+                                {props.translator['This Month']}
                             </span>
                         </h4>
 
                         <div class="grid grid-cols-2 gap-4 mt-4">
                             <div class="bg-white rounded-md shadow w-full space-y-6 p-4 md:p-8 flex flex-col justify-center md:justify-start">
                                 <span className="font-semibold text-base">
-                                    Total Spent
+                                    {props.translator['Total Spent']}
                                 </span>
                                 <div className="flex justify-between flex-col md:flex-row gap-3 md:gap-0">
                                     <div className="flex gap-1">
@@ -147,7 +147,7 @@ function Wallet(props)
 
                             <div class="bg-white rounded-md shadow w-full space-y-6 p-4 md:p-8 flex flex-col justify-center md:justify-start">
                                 <span className="font-semibold text-base">
-                                    Business Initiated Chat
+                                    {props.translator['Business Initiated Chat']}
                                 </span>
                                 <div className="flex justify-between flex-col md:flex-row gap-3 md:gap-0">
                                     <div className="flex gap-1">
@@ -183,7 +183,7 @@ function Wallet(props)
 
                             <div class="bg-white rounded-md shadow w-full space-y-6 p-4 md:p-8 flex flex-col justify-center md:justify-start">
                                 <span className="font-semibold text-base">
-                                    User Initiated Chat
+                                    {props.translator['User Initiated Chat']}
                                 </span>
                                 <div className="flex justify-between flex-col md:flex-row gap-3 md:gap-0">
                                     <div className="flex gap-1">
@@ -219,7 +219,7 @@ function Wallet(props)
 
                             <div class="bg-white rounded-md shadow w-full space-y-6 p-4 md:p-8 flex flex-col justify-center md:justify-start">
                                 <span className="font-semibold text-base">
-                                    Free Entry Point chats
+                                    {props.translator['Free Entry Point Chats']}
                                 </span>
                                 <div className="flex justify-between flex-col md:flex-row gap-3 md:gap-0">
                                     <div className="flex gap-1">
@@ -247,7 +247,7 @@ function Wallet(props)
 
                             <div class="bg-white rounded-md shadow w-full space-y-6 p-4 md:p-8 flex flex-col justify-center md:justify-start">
                                 <span className="font-semibold text-base">
-                                    Messages
+                                    {props.translator['Messages']}
                                 </span>
                                 <div className="flex justify-between flex-col md:flex-row gap-3 md:gap-0">
                                     <div className="flex gap-1">
@@ -315,7 +315,7 @@ function Wallet(props)
                     <div class="space-y-4 mt-4 sm:mt-0">
                         <div class="bg-white rounded-md shadow w-full p-4 md:p-8">
                             <span className="font-semibold text-base">
-                                Your Payment Method
+                                {props.translator['Your Payment Method']}
                             </span>
 
                             <div className="payment-list mt-4 space-y-6">
@@ -351,32 +351,32 @@ function Wallet(props)
                                     type="button"
                                     className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bg-primary/80"
                                 >
-                                    Add a Payment Method
+                                    {props.translator['Add a Payment Method']}
                                 </button>
                             </div>
                         </div>
 
                         <div class="bg-white rounded-md shadow w-full flex justify-between items-center p-4 md:p-8">
                             <h5 className="text-base font-semibold">
-                                See Transations History
+                            {props.translator['See Transactions History']}
                             </h5>
                             <Link 
                                 href={route('listTransaction')}
                                 className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-700 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bg-gray-800"
                             >
-                                See Details
+                                {props.translator['See Details']}
                             </Link>
                         </div>
 
                         <div class="bg-white rounded-md shadow w-full flex justify-between items-center p-4 md:p-8">
                             <h5 className="text-base font-semibold">
-                                Download your VAT Invoices
+                            {props.translator['Download your VAT Invoices']}
                             </h5>
                             <button
                                 type="button"
                                 className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-700 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bg-gray-800"
                             >
-                                Go to Invoices
+                                {props.translator['Go to Invoices']}
                             </button>
                         </div>
                     </div>
@@ -388,6 +388,7 @@ function Wallet(props)
                     setShowStripeForm={setShowStripeForm}
                     stripe_public_key={props.stripe_public_key}
                     fetchWalletBalance={fetchWalletBalance}
+                    translator={props.translator}
                 />
             : ''}
 

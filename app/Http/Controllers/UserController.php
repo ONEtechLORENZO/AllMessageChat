@@ -1095,6 +1095,28 @@ class UserController extends Controller
             'paymentMethods' => $paymentMethods,
             'stripe_public_key' => $stripe_public_key,
             'current_page' => 'Wallet',
+            'translator' => [
+                'Wallet' => __('Wallet'),
+                'Hi' => __('Hi'),
+                'Welcome to your Wallet' => __('Welcome to your Wallet'),
+                'Here you can see your payments, change your payment method and get your invoices.' => __('Here you can see your payments, change your payment method and get your invoices.'),
+                'Available Balance' => __('Available Balance'),
+                'Add Balance' => __('Add Balance'),
+                'This Month' => __('This Month'),
+                'Total Spent' => __('Total Spent'),
+                'Business Initiated Chat' => __('Business Initiated Chat'),
+                'User Initiated Chat' => __('User Initiated Chat'),
+                'Free Entry Point Chats' => __('Free Entry Point Chats'),
+                'Messages' => __('Messages'),
+                'Your Payment Method' => __('Your Payment Method'),
+                'Add a Payment Method' => __('Add a Payment Method'),
+                'See Transactions History' => __('See Transactions History'),
+                'See Details' => __('See Details'),
+                'Download your VAT Invoices' => __('Download your VAT Invoices'),'Go to Invoices'=>__('Go to Invoices'),
+                'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount')
+                
+                
+            ]
         ]);
     }
 

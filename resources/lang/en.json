@@ -159,6 +159,7 @@
 "Save Filter":"Save Filter",
 "Add New":"Add New",
 "All":"All",
+"Lists":"Elenchi",
 "Search Filter":"Search Filter",
 "Add New Condition":"Add New Condition",
 "Add Group":"Add Group",
@@ -193,7 +194,29 @@
 "No records":"No records",
 "Do you want to delete group?":"Do you want to delete group?",
 "Do you want to delete the filter?":"Do you want to delete the filter?",
-"Please fill the name":"Please fill the name"
+"Please fill the name":"Please fill the name",
+"Hi":"Hi",
+"Welcome to your Wallet":"Welcome to your Wallet",
+"Here you can see your payments, change your payment method and get your invoices.":"Here you can see your payments, change your payment method and get your invoices.",
+"Available Balance":"Available Balance",
+"Add Balance":"Add Balance",
+"This Month":"This Month",
+"Total Spent":"Total Spent",
+"Business Initiated Chat":"Business Initiated Chat",
+"User Initiated Chat":"User Initiated Chat",
+"Free Entry Point Chats":"Free Entry Point Chats",
+"Your Payment Method":"Your Payment Method",
+"Add a Payment Method":"Add a Payment Method",
+"See Transactions History":"See Transations History",
+"See Details":"See Details",
+"Download your VAT Invoices":"Download your VAT Invoices",
+"Go to Invoices":"Go to Invoices",
+"Recharge your account":"Recharge your account",
+"Enter the amount":"Enter the amount"
+
+
+
+
 
 
 
