@@ -77,7 +77,9 @@ class Controller extends BaseController
         if($moduleName != 'User' && $moduleName != 'Company' ){
     //        $query->where('user_id' , $user_id);
         }
-        
+        if($moduleName == 'Field'){
+            $query->where('module_name','Contact');
+        }
         $query->groupBy("{$baseTable}.id");
         $records = $query->paginate($this->limit);
         $return = [
