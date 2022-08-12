@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use App\Models\Company;
 use App\Models\UserInvite;
 use Inertia\Inertia;
+use Cache;
 use Mail;
 use DB;
 
@@ -181,5 +182,15 @@ class CompanyController extends Controller
             }
         }
         echo json_encode(['result' => 'success']); die;
+    }
+
+    /**
+     * Set Base company to the user data
+     */
+    public function setBaseCompany(Request $request)
+    {
+        $companyId = $request->company_id;
+        Cache::put('selected_company' , $companyId);
+        return redirect('/dashboard'); 
     }
 }

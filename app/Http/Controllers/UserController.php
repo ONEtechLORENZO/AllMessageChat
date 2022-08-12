@@ -178,8 +178,8 @@ class UserController extends Controller
         $user_id = $user->id;
         $companies = $user->company;
         $selectCompany = false;
-        $selectedComapny = (Cache::has('selected_company')) ? Cache::get('selected_company') : '';
-        if((count($companies) > 1) && !$selectedComapny){
+        $selectedCompany = (Cache::has('selected_company')) ? Cache::get('selected_company') : '';
+        if((count($companies) > 1) && !$selectedCompany){
             $selectCompany = true;
         } elseif(isset($companies[0]) ) {
             Cache::put('selected_company', $companies[0]->id );

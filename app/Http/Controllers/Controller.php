@@ -11,6 +11,7 @@ use App\Models\Filter;
 use App\Models\Contact;
 use App\Models\Tag;
 use App\Models\Category;
+use Cache;
 use DB;
 
 class Controller extends BaseController
@@ -37,7 +38,8 @@ class Controller extends BaseController
         $sort_by = $request->has('sort_by') && $request->get('sort_by') ? $request->get('sort_by') : $this->default_sort_by;
         $sort_order = $request->has('sort_order') && $request->get('sort_order') ? $request->get('sort_order') : $this->default_sort_order;
         
-        $user_id = $request->user()->id;
+        $user = $request->user();
+        $user_id = $user->id;
         $filterData = $this->getFiltersInfo($user_id , $moduleName);
        
         $searchData = '';
@@ -76,6 +78,11 @@ class Controller extends BaseController
         }
         if($moduleName != 'User' && $moduleName != 'Company' ){
     //        $query->where('user_id' , $user_id);
+        }
+        if($moduleName == 'User' && $user->role == 'admin'){
+            $companyId = Cache::get('selected_company');
+            $query->join('company_user', 'user_id', 'users.id')
+                ->where('company_id' , $companyId);
         }
         
         $query->groupBy("{$baseTable}.id");
