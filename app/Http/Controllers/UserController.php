@@ -26,6 +26,7 @@ use App\Models\WebhookEvent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use PDF;
+use Cache;
 
 class UserController extends Controller
 {
@@ -173,10 +174,22 @@ class UserController extends Controller
      */
     public function dashboard(Request $request)
     {
-        $user_id = $request->user()->id;
+        $user = $request->user();
+        $user_id = $user->id;
+        $companies = $user->company;
+        $selectCompany = false;
+        $selectedComapny = (Cache::has('selected_company')) ? Cache::get('selected_company') : '';
+        if((count($companies) > 1) && !$selectedComapny){
+            $selectCompany = true;
+        } elseif(isset($companies[0]) ) {
+            Cache::put('selected_company', $companies[0]->id );
+        }
+      
         $accounts = Account::where('user_id', $user_id)->get();
         return Inertia::render('Dashboard', [
             'accounts' => $accounts,
+            'selectCompany' => $selectCompany,
+            'companies' => $companies,
             'translator' => [
                     'Dashboard'=>__('Dashboard'),
                     'Create new account'=>__('Create new account'),
@@ -223,7 +236,13 @@ class UserController extends Controller
                 'export' => false,
                 'import' => false,
                 'search' => true,
-                'filter' => true,
+                'filter' => false,
+                'invite_user' => true,
+            ],
+            'translator' => [
+                'No records' =>__('No records'),
+                'Search' =>__('Search'),
+                'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?')
             ],
         ];
         $data = array_merge($moduleData , $listViewData);

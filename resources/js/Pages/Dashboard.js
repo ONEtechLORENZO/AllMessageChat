@@ -2,12 +2,14 @@ import React,{useState} from 'react';
 import Authenticated from '@/Layouts/Authenticated';
 import { Head, Link } from '@inertiajs/inertia-react';
 import { confirmAlert } from 'react-confirm-alert';
+import SelectCompany from './Company/SelectCompany';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 
 export default function Dashboard(props) {
     
     const[ deleteAccoutId , setDeleteAccountId] = useState('');
     const[ accounts , setAccountList] = useState(props.accounts);
+    const[selectCompany , setSelectCompany] = useState(props.selectCompany);
 
     // Delete Account
     function deleteAccount(accountId){
@@ -143,6 +145,13 @@ export default function Dashboard(props) {
                     
                 </div>
             </div>
+
+            {/* Select company */}
+            {selectCompany &&
+                <SelectCompany 
+                    {...props}
+                />
+            }
         </Authenticated>
     );
 }

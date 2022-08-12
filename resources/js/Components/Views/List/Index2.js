@@ -3,7 +3,7 @@ import Pagination from '@/Components/Pagination';
 import Alert from '@/Components/Alert';
 import Button from '@/Components/Forms/Button';
 import Form from '@/Components/Forms/Form';
-import { ChevronDownIcon, ChevronUpIcon, PencilAltIcon, TrashIcon, UploadIcon, DownloadIcon } from '@heroicons/react/solid';
+import { ChevronDownIcon, ChevronUpIcon, UserAddIcon, PencilAltIcon, TrashIcon, UploadIcon, DownloadIcon } from '@heroicons/react/solid';
 import { Inertia } from '@inertiajs/inertia';
 import notie from 'notie';
 import Search from './Search';
@@ -126,6 +126,17 @@ function ListView(props)
 
                     </div>
                     <div className='flex gap-4'>
+                        {props.actions && props.actions.invite_user === true ?
+                            <>
+                                <button 
+                                    type = 'button'
+                                    onClick={() => props.setInviteUser(true) }
+                                    className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
+                                > 
+                                    <UserAddIcon className='h-4 w-4 mr-1' /> Invite Users 
+                                </button>
+                            </>
+                        : ''}
                         {props.actions && props.actions.import === true ?
                             <>
                                 <Link 

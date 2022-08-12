@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Authenticated from "../../../Layouts/Authenticated";
 import ListView from '@/Components/Views/List/Index2';
+import InviteUser from './InviteUsers';
 
 function List(props)
 {
+    const[ inviteUser, setInviteUser] = useState(false);
+
     return (
         <Authenticated
             auth={props.auth}
@@ -13,9 +16,16 @@ function List(props)
 
             <ListView
                 headers={props.list_view_columns}
+                setInviteUser={setInviteUser}
                 {...props}
             />
             
+            {inviteUser &&
+                <InviteUser 
+                    setInviteUser={setInviteUser}
+                />
+            }
+
         </Authenticated>
     )
 }

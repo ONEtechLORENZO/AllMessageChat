@@ -47,8 +47,12 @@ class PriceController extends Controller
                         ->paginate($this->limit);
         }
         else {
-            $records = Price::orderBy($sort_by, $sort_order)->paginate($this->limit);
+        $records = Price::orderBy($sort_by, $sort_order)->paginate($this->limit);
         }
+
+        $module = new Price();
+        $listViewData = $this->listView($request, $module, $list_view_columns);
+            /*
 
         return Inertia::render('Pricing/List', [
             'records' => $records->items(),
@@ -84,6 +88,29 @@ class PriceController extends Controller
                 'perPage' => $records->perPage(),
             ],
         ]);
+            */
+
+        $moduleData = [
+            'singular' => 'Price',
+            'plural' => 'Prices',
+            'module' => 'Price',
+            'current_page' => 'Pricing',
+            // Actions
+            'actions' => [
+                'create' => true,
+                'detail' => false,
+                'edit' => true,
+                'delete' => true,
+                'export' => false,
+                'import' => false,
+                'search' => true,
+                'filter' => true,
+            ],
+            
+        ];
+        
+        $data = array_merge($moduleData, $listViewData);
+        return Inertia::render('Pricing/List', $data);
     }
 
     /**

@@ -18,6 +18,8 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\FieldController;
+use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\UserInviteController;
 use App\Http\Middleware\IsAdmin;
 use App\Models\Contact;
 use App\Models\Note;
@@ -43,7 +45,9 @@ Route::get('/', function () {
     ]);
 });
 
-
+// Invite User
+Route::get('/user-invite', [UserInviteController::class, 'relateUser']);
+Route::get('/invitedUserRelation', [UserInviteController::class, 'relateUser']);
 
 Route::post('/incoming', [MsgController::class, 'incoming']);
 Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
@@ -106,6 +110,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
 
+    //Company
+    Route::get('/companies', [CompanyController::class, 'index'])->name('listCompany');
+    Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');
+    Route::get('/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
+    Route::get('/company/edit/{id}', [CompanyController::class, 'edit'])->name('editCompany');
+    Route::post('/company/update/{id}', [CompanyController::class, 'store'])->name('updateCompany');
+    Route::delete('/company/delete/{id}', [CompanyController::class, 'destroy'])->name('deleteCompany');
+    Route::post('/company/sendInvitation', [CompanyController::class, 'sendInvitation'])->name('send_invite_link');
+
+
     //Filter
     Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');
     Route::post('/storeFilter', [FilterController::class, 'storeFilter'])->name('store_filter');
@@ -156,7 +170,7 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::get('/admin/users', [UserController::class, 'usersListing'])->name('listUser');
     Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_user');
     Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('editUser');
-    Route::get('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_user');
+    Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('deleteUser');
     Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detailUser');
     Route::post('/admin/user/change_password/{id}', [UserController::class, 'changePassword'])->name('change_password');
 

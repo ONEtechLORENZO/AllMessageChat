@@ -74,9 +74,10 @@ class Controller extends BaseController
             }
             $query = ($searchData) ? $this->getWhereFilterCondition($searchData , $query , $baseTable) : $query;
         }
-        if($moduleName != 'User'){
-            $query->where('user_id' , $user_id);
+        if($moduleName != 'User' && $moduleName != 'Company' ){
+    //        $query->where('user_id' , $user_id);
         }
+        
         $query->groupBy("{$baseTable}.id");
         $records = $query->paginate($this->limit);
         $return = [
@@ -102,6 +103,34 @@ class Controller extends BaseController
                 'count' => $records->count(),
                 'lastPage' => $records->lastPage(),
                 'perPage' => $records->perPage(),
+            ],
+            'translator' => [
+                'Edit' => __('Edit'),
+                'Search' => __('Search'),
+                'Search filter' => __('Search filter'),
+                'Save Filter' => __('Save Filter'),
+                'Add' => __('Add'),
+                'All' => __('All'),
+                'Add New' => __('Add New'),
+                'Close' =>__('Close'),
+                'Search Filter' => __('Search Filter'),
+                'Add New Condition' => __('Add New Condition'),
+                'Add Group' => __('Add Group'),
+                'Filter name' => __('Filter name'),
+                'AND' => __('AND'),
+                'OR' => __('OR'),
+                'Tag' =>__('Tag'),
+                'List' => __('List'),
+                'Equal' => __('Equal'),
+                'Contains' => __('Contains'),
+                'Null' => __('Null'),
+                'Start with' => __('Start with'),
+                'End with' => __('End with'),
+                'Lesser than' => __('Lesser than'),
+                'Greater than' =>__('Greater than'),
+                'Not equal' => __('Not equal'),
+                'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?'),
+                'No records' =>__('No records')
             ],
         ];
        

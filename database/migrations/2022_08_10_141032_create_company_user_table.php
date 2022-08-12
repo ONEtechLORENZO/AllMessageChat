@@ -14,12 +14,8 @@ class CreateCompanyUserTable extends Migration
     public function up()
     {
         Schema::create('company_user', function (Blueprint $table) {
-            $table->id();
-
             $table->integer('user_id')->nullable();
             $table->integer('company_id')->nullable();
-
-            $table->timestamps();
         });
     }
 
