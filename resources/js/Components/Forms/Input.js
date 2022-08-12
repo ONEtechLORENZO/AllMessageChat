@@ -11,6 +11,7 @@ export default function Input({
     isFocused,
     handleChange,
     placeholder,
+    readOnly
 }) {
     const input = useRef();
 
@@ -35,6 +36,7 @@ export default function Input({
             data-pristine-required={required}
             placeholder={placeholder}
             onChange={(e) => handleChange(e)}
+            readOnly={readOnly}
         />
     );
 }

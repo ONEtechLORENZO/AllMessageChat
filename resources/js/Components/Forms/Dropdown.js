@@ -9,7 +9,8 @@ export default function Dropdown({
     isFocused,
     handleChange,
     emptyOption='Select',
-    value=''
+    value='',
+    readOnly
 }) {
     const input = useRef();
 
@@ -28,6 +29,7 @@ export default function Dropdown({
             required={required}
             ref={input}
             onChange={(e) => handleChange(e)}
+            disabled={readOnly}
          >
             <option value=''>{emptyOption}</option>
             {options && Object.keys(options).map((key) => {

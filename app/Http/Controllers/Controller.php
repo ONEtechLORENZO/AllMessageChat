@@ -85,6 +85,10 @@ class Controller extends BaseController
                 ->where('company_id' , $companyId);
         }
         
+        if($moduleName == 'Field'){
+            $query->where('module_name','Contact');
+        }
+
         $query->groupBy("{$baseTable}.id");
         $records = $query->paginate($this->limit);
         $return = [

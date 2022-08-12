@@ -71,8 +71,9 @@ class FieldController extends Controller
      */
     public function store(Request $request, Field $field)
     {
+        $status = 'new';
         //save fields in table
-        $this->saveField($request, $field);
+        $this->saveField($request, $field, $status);
 
         return Redirect::route('listField');
     }
@@ -117,10 +118,11 @@ class FieldController extends Controller
         if ($request->id) {
             $field = Field::findOrFail($request->id);
         } else {
-            $field = new Field();
+           about(401);
         }
 
-        $this->saveField($request, $field);
+        $status = 'edit';
+        $this->saveField($request, $field, $status);
         return Redirect::route('listField');
     }
 
@@ -156,10 +158,16 @@ class FieldController extends Controller
         return $custom;
     }
 
-    function saveField($request, $field){
+    function saveField($request, $field, $status){
 
-        $field_label = $this->cleaner($request->field_label);
-        $field_name = $this->creater($field_label);
+        if($status == 'edit'){
+            $field_label = $this->cleaner($request->field_label);
+            $field_name = $request->field_name;
+        }else{
+            $field_label = $this->cleaner($request->field_label);
+            $field_name = $this->creater($field_label);
+        }
+
         $options = $request->options;
         if($request->has('is_mandatory')){
             $mandatory = $request->is_mandatory;
@@ -177,7 +185,7 @@ class FieldController extends Controller
         if ($options) {
             $field->options = $options;
         }
-     
+   
         $field->save();
     }
 }

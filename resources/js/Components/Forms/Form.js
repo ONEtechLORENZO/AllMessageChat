@@ -237,6 +237,7 @@ function Form(props)
         setData(newState);
         return isUpdate;
     }
+  
     return (
         <Transition.Root show={open} as={Fragment}>
             <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => {}} >
@@ -284,6 +285,7 @@ function Form(props)
                                     <div className='p-4 space-y-4'>
                                         {fields && fields.map((field_info,index) => { 
                                             let element = ''; 
+                                            let readOnly = true;
                                             if(data.is_custom == '1' && data.module_name == 'Contact' && data.field_type == 'dropdown'){
                                                 addSelectableField();
                                             }
@@ -296,6 +298,9 @@ function Form(props)
                                                     field_value  = custom[custom_field];
                                                 }
                                             }
+                                            if(field_info.readonly_on_edit == 'true' && data.id){
+                                                readOnly = false;
+                                            }
                                             switch (field_info.field_type) {
                                                 case "text":
                                                     element = <Input
@@ -306,6 +311,7 @@ function Form(props)
                                                         value={field_value}
                                                         handleChange={handleChange}
                                                         required={field_info.is_mandatory === 1 ? true : false}
+                                                        readOnly={(readOnly) ? '' : 'disabled'}
                                                     />;
                                                     break;
                                                 case 'phone_number':
@@ -353,6 +359,7 @@ function Form(props)
                                                         handleChange={handleChange}
                                                         value={field_value}
                                                         required={field_info.is_mandatory === 1 ? true : false}
+                                                        readOnly={(readOnly) ? '' : 'disabled'}
                                                     />
                                                     break;
                                                 case 'selectable':
@@ -380,6 +387,7 @@ function Form(props)
                                                         value={field_value} 
                                                         handleChange={handleChange}
                                                         required={field_info.is_mandatory === 1 ? true : false}
+                                                        readOnly={(readOnly) ? '' : 'disabled'}
                                                     />;
                                                     break;
                                             }
