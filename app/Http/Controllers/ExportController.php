@@ -16,40 +16,45 @@ class ExportController extends Controller
             'user_id' => $user_id,
             'module_name' => 'Contact'
         ];
-        $fields = Field::where($where_conditon)->get(['field_name','field_label']);
-        
+        $fields = Field::where($where_conditon)->get(['field_name','field_label','is_custom']);
+   
         if($fields){
-            $field_name = [];
+            $fieldList = [];
             $csvHeader = [];
             foreach($fields as $index => $field){
-                $field_name[] = $field['field_name'];
-                $csvHeader[] = $field['field_label']; 
+                $csvHeader[] = $field['field_label'];
+                $fieldList[$field['field_name']] = ['label' => $field['field_label'], 'is_custom' => $field['is_custom']];
             }
+
+            $contact_records = Contact::all();
     
-            $contact_records = Contact::all($field_name);
-    
-            $this->generateCSVfile($csvHeader, $contact_records, $field_name);
+            $this->generateCSVfile($csvHeader, $contact_records, $fieldList);
         }
     }
 
-    public function generateCSVfile($header, $record, $fields){
+    public function generateCSVfile($header, $records, $fields){
 
        $fileName = 'Contact';
-       $records = [];
-         foreach($record as $index => $contact){
+       $csvRecords = [];
+         foreach($records as $index => $record){
             $csvRecord = [];
-              foreach($fields as $name){
-                 $csvRecord[] = $contact[$name]; 
+              foreach($fields as $name => $field){
+                if($field['is_custom']){
+                    $csvRecord[] = ($record['custom'] && isset($record['custom'][$name])) ? $record['custom'][$name] : '';
+                } else {
+                    $csvRecord[] = $record[$name]; 
                 }
-            $records[] = $csvRecord;
+            }
+            $csvRecords[] = $csvRecord;
         }
+  
         $csv = Writer::createFromString();
 
         //insert the header
         $csv->insertOne($header);
 
         //insert all the records
-        $csv->insertAll($records);
+        $csv->insertAll($csvRecords);
 
         //export the csv file
         return $csv->output($fileName.'.csv');

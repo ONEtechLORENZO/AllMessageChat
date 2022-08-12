@@ -354,7 +354,7 @@ class ContactController extends Controller
             ]);
             $contact = new Contact();
         }
-        
+     
         $fields = Field::where('module_name', 'Contact')
             ->where('user_id', $request->user()->id)
             ->get(['field_name', 'is_custom']);
@@ -379,7 +379,7 @@ class ContactController extends Controller
             if ($custom_field) {
                 $contact->custom = $custom_field;
             }
-    
+  
             $contact->user_id = $request->user()->id;
             $contact->save();
         }

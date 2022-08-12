@@ -32,7 +32,7 @@ export default function Input({
             }
             ref={input}
             autoComplete={autoComplete}
-            required={required}
+            data-pristine-required={required}
             placeholder={placeholder}
             onChange={(e) => handleChange(e)}
         />
