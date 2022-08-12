@@ -52,8 +52,7 @@ function StripeForm(props)
                                     <div className="sm:flex sm:items-start">
                                         <div className="mt-3 text-center sm:mt-0 sm:text-left">
                                             <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                                                Recharge your account
-                                            </Dialog.Title>
+                                            {props.translator['Recharge your account']}                                            </Dialog.Title>
                                         </div>
                                     </div>
                                 </div>
@@ -79,7 +78,7 @@ function StripeForm(props)
                                         onClick={() => props.setShowStripeForm(false)}
                                         ref={cancelButtonRef}
                                     >
-                                        Cancel
+                                        {props.translator['Cancel']}
                                     </button>
                                 </div>
                             </Dialog.Panel>
@@ -175,7 +174,7 @@ const CheckoutForm = (props) => {
         <form onSubmit={handleSubmit}>
             <div className='form-group py-4 pb-6'>
                 <label htmlFor='amount' className="block text-sm font-medium text-gray-700">
-                    Enter the amount <span className='text-red-600'>*</span>
+                    {props.translator['Enter the amount']} <span className='text-red-600'>*</span>
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
