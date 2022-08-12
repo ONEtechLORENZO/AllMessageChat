@@ -193,6 +193,24 @@
 "No records":"Nessuna registrazione",
 "Do you want to delete group?":"Vuoi eliminare il gruppo?",
 "Do you want to delete the filter?":"Vuoi eliminare il filtro?",
-"Please fill the name":"Si prega di inserire il nome"
-
+"Please fill the name":"Si prega di inserire il nome",
+"Lists":"Lists",
+"Hi":"Ciao",
+"Welcome to your Wallet":"Benvenuto nel tuo Portafoglio",
+"Here you can see your payments, change your payment method and get your invoices.":"Qui puoi vedere i tuoi pagamenti, modificare il metodo di pagamento e ricevere le fatture.",
+"Available Balance":"saldo disponibile",
+"Add Balance":"Aggiungi equilibrio",
+"This Month":"Questo mese",
+"Total Spent":"Spesa totale",
+"Business Initiated Chat":"Chat avviata dall'attività",
+"User Initiated Chat":"Chat avviata dall'utente",
+"Free Entry Point Chats":"Chat gratuite del punto di ingresso",
+"Your Payment Method":"Il tuo metodo di pagamento",
+"Add a Payment Method":"Aggiungi un metodo di pagamento",
+"See Transactions History":"Vedi Cronologia transazioni",
+"See Details":"Guarda i detagli",
+"Download your VAT Invoices":"Scarica le tue fatture IVA",
+"Go to Invoices":"Vai a Fatture",
+"Recharge your account":"Ricarica il tuo account",
+"Enter the amount":"Inserisci l'importo"
 }
