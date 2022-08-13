@@ -4,6 +4,7 @@ import { Inertia } from '@inertiajs/inertia';
 import { Head, Link, useForm } from '@inertiajs/inertia-react';
 import { Dialog, Transition } from '@headlessui/react'
 import PristineJS from 'pristinejs';
+import notie from 'notie';
 import Input from '@/Components/Forms/Input';
 import InputError from '@/Components/Forms/InputError';
 import { currencies, countries } from '@/Pages/Constants';
@@ -82,10 +83,10 @@ export default function UserDetail(props) {
      */
      function createNewPassword() {
         var pristine = new PristineJS(document.getElementById("user_new_password"));
-
- 
         Inertia.post(route('change_password', props.user.id), data, {
             onSuccess: (response) => {
+                setChangePasswordModalOpen(false);
+                notie.alert({type: 'success', text: 'Password changed successfully', time: 5});
             },
             onError: (errors) => {
                 setErrors(errors)
@@ -93,7 +94,7 @@ export default function UserDetail(props) {
         });
     }
     var isChangePassword = false;
-    if (props.user.id == props.current_user.id) {
+    if ((props.user.id == props.current_user.id) || (props.user.role != 'regular')) {
         isChangePassword = true;
     }
 
@@ -229,17 +230,21 @@ export default function UserDetail(props) {
                                         </Dialog.Title>
                                         <div className="mt-2">
                                             <form id="user_new_password">
-                                            <div className="grid gap-6">                                                
-                                                    <div className="form-group col-span-6 sm:col-span-4">
-                                                        <label htmlFor="current_password" className="block text-sm font-medium text-gray-700">
-                                                            Current Password
-                                                        </label>
-                                                        <div className="mt-1 flex rounded-md shadow-sm">
-                                                            <Input type="password" minlength="8" name='current_password' required={true} id='current_password' placeholder='Current Password' handleChange={handleChange} />
+                                            
+                                                    {(props.user.role == 'regualar') || (props.user.id == props.current_user.id) &&
+                                                        <div className="grid gap-6"> 
+                                                            <div className="form-group col-span-6 sm:col-span-4">
+                                                                <label htmlFor="current_password" className="block text-sm font-medium text-gray-700">
+                                                                    Current Password
+                                                                </label>
+                                                                <div className="mt-1 flex rounded-md shadow-sm">
+                                                                    <Input type="password" minlength="8" name='current_password' required={true} id='current_password' placeholder='Current Password' handleChange={handleChange} />
+                                                                </div>
+                                                                <InputError message={errors.current_password} />
+                                                            </div>
                                                         </div>
-                                                        <InputError message={errors.current_password} />
-                                                    </div>
-                                                </div>
+                                                    }                                               
+                                                    
                                                 <div className="grid gap-6 mt-3">                                                
                                                     <div className="form-group col-span-6 sm:col-span-4">
                                                         <label htmlFor="new_password" className="block text-sm font-medium text-gray-700">

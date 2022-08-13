@@ -70,6 +70,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/user/registration', [UserController::class, 'storeUserRegistration'])->name('store_user_data');
     Route::get('/image/{type}/{id}', [ImageController::class, 'showImage'])->name('show_image');
     Route::post('/user/regenerate_token', [UserController::class, 'regenerateToken'])->name('regenerate_token');
+    Route::post('/admin/user/change_password/{id}', [UserController::class, 'changePassword'])->name('change_password');
+
 
     // Messages
     Route::get('/messages/list', [MessageLogController::class, 'list'])->name('messages');
@@ -120,7 +122,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/company/sendInvitation', [CompanyController::class, 'sendInvitation'])->name('send_invite_link');
     Route::post('/company/setBaseCompany', [CompanyController::class, 'setBaseCompany'])->name('setBaseCompany');
 
-
     //Filter
     Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');
     Route::post('/storeFilter', [FilterController::class, 'storeFilter'])->name('store_filter');
@@ -163,6 +164,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/field/store', [FieldController::class, 'store'])->name('storeField');
     Route::post('/updateField/{id}',[FieldController::class, 'update'])->name('updateField');
     Route::delete('/deleteField/{id}',[FieldController::class, 'destroy'])->name('deleteField');
+
+    
 });
 
 // Check user is admin
@@ -173,7 +176,6 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('editUser');
     Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('deleteUser');
     Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detailUser');
-    Route::post('/admin/user/change_password/{id}', [UserController::class, 'changePassword'])->name('change_password');
 
     // Settings
     Route::get('/admin/settings/outgoing_server', [SettingsController::class, 'settings'])->name('settings');
