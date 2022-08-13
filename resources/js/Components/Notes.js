@@ -1,8 +1,8 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import Axios from "axios";
 import notie from 'notie';
-import Input from '@/Components/Forms/Input';
-import InputError from '@/Components/Forms/InputError';
+import TextArea from '@/Components/Forms/TextArea';
+
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
@@ -68,7 +68,7 @@ function addNote(){
           data: data
       })
       .then( (response) =>{
-              setData({notetext: ''})
+              setData({notetext:''})
               fetchNote();
       }).catch(function (error) {
         console.log(error);
@@ -82,21 +82,26 @@ return(
  
   <div>
        <div className="mt-1 flex rounded-md shadow-sm">
-                         <Input
-                          type="text"                                           
+        
+                         <TextArea
+                          id="noteText"                                           
                           name="noteText"
-                          alue={data.noteText}
+                          rows={5}
+                          cols={5}
+                          value={data.noteText}
                           required={true}
                           handleChange={handleChange}
                           placeholder={trans['Enter your new note here']}
                           className="w-full focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-2xl  py-3 sm:text-sm border-gray-300 "
                          />
+                         <div>
                         <button
                             type="button"
                             id="add_note"
                             onClick={addNote}
                             className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >{trans['Add a new note']}</button>
+                        </div>
       </div>     
       </div> 
                 <div></div>
