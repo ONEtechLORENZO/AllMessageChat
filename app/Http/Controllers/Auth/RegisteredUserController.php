@@ -24,14 +24,14 @@ class RegisteredUserController extends Controller
      */
     public function create()
     {
-        $uuid = $_GET['unique_id'];
+        $uuid = isset($_GET['unique_id']) ? $_GET['unique_id'] : '';
+
         $invitation = UserInvite::where('unique_id' , $uuid)->first();
-        $email = $company = '';
+        $email = '';
         if($invitation){
             $email = $invitation->email;
-            $company = $invitation->company_id;
         }
-        return Inertia::render('Auth/Register', ['email' => $email , 'company' => $company]);
+        return Inertia::render('Auth/Register', ['email' => $email , 'uuid' => $uuid]);
     }
 
     /**
@@ -64,19 +64,18 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
         
-        if ($request->company) {
-            DB::table('company_user')->insert([
-                'user_id' => $user->id,
-                'company_id' => $request->company
-            ]);
-            $invitation = UserInvite::where('user_id' , $user->id)
-                ->where('company_id', $request->company)
-                ->first();
-            $uuid = $invitation->unique_id;
-            $url = '/user-invite?unique_id='.$uuid;
-            return redirect($url); 
+        if ($request->uuid) {
+            $invitation = UserInvite::where('unique_id' , $request->uuid)->first();
+            
+            if( $invitation ){
+                DB::table('company_user')->insert([
+                    'user_id' => $user->id,
+                    'company_id' => $invitation->company_id
+                ]);
+                $url = '/user-invite?unique_id='.$request->uuid;
+                return redirect($url); 
+            }
         }
-
         return redirect(RouteServiceProvider::HOME);
     }
 }

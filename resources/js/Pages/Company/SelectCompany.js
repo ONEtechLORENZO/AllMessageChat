@@ -16,7 +16,13 @@ function SelectCompany(props)
      * Save selected company to parent account
      */
     function saveSelectedCompany(id){
-        
+        var data = { 'company_id': id};
+        Inertia.post(route('setBaseCompany'), data, {
+            onSuccess: (response) => {
+                console.log(response);
+            },
+        });
+
     }
 
     return (
@@ -61,7 +67,7 @@ function SelectCompany(props)
                                         <div class="flex justify-center">
                                             <ul class="bg-white rounded-lg border border-gray-200 w-full text-gray-900">
                                                 {Object.entries(props.companies).map(([key ,company]) =>
-                                                    <li onClick={() => saveSelectedCompany(company.id) } class="px-6 py-2 border-b border-gray-200 w-full rounded-t-lg">{company.name} {console.log(company)} </li>
+                                                    <li onClick={() => saveSelectedCompany(company.id) } class="cursor-pointer px-6 py-2 border-b border-gray-200 w-full rounded-t-lg">{company.name} {console.log(company)} </li>
                                                 )}
                                             </ul>
                                         </div>

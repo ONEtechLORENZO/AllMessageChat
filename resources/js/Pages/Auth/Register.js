@@ -13,13 +13,13 @@ export default function Register(props) {
         email: '',
         password: '',
         password_confirmation: '',
-        company: ''
+        uuid: ''
     });
 
     useEffect(() => {
         let newData = Object.assign({}, data);
         newData['email'] = props.email;
-        newData['company'] = props.company;
+        newData['uuid'] = props.uuid;
         setData(newData);
 
         return () => {

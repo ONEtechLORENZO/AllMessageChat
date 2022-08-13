@@ -9,7 +9,6 @@ export default function Dashboard(props) {
     
     const[ deleteAccoutId , setDeleteAccountId] = useState('');
     const[ accounts , setAccountList] = useState(props.accounts);
-    const[selectCompany , setSelectCompany] = useState(props.selectCompany);
 
     // Delete Account
     function deleteAccount(accountId){
@@ -147,7 +146,7 @@ export default function Dashboard(props) {
             </div>
 
             {/* Select company */}
-            {selectCompany &&
+            {props.selectCompany &&
                 <SelectCompany 
                     {...props}
                 />
