@@ -18,9 +18,9 @@ class UserObserver
     {
         // Create user in Stripe
         $user->createAsStripeCustomer();
-//dd($user);
-
-        $record = $this->insertUserfield($user->id , 1 );
+        $company_id = $_REQUEST['company_id'];
+       
+        $record = $this->insertUserfield($user->id , $company_id );
         
         Field::insert($record);
     }

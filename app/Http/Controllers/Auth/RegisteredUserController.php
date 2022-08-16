@@ -57,6 +57,7 @@ class RegisteredUserController extends Controller
             $company = Company::create([
                 'name' => $request->company_name
             ]);
+            $_REQUEST['company_id'] = $company->id;
         }
 
         $user = User::create([
@@ -68,8 +69,12 @@ class RegisteredUserController extends Controller
             'status' => true,
             'password' => Hash::make($request->password),
         ]);
+
         if($company){
-            $user->company_id = $company->id;
+            DB::table('company_user')->insert([
+                'user_id' => $user->id,
+                'company_id' => $company->id
+            ]);
         }
 
         event(new Registered($user));
