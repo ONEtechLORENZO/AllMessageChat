@@ -18,6 +18,7 @@ class CreateFiltersTable extends Migration
             $table->string('name')->nullable();
             $table->string('module_name')->nullable();
             $table->integer('user_id')->nullable();
+            $table->foreignId('company_id')->constrained('companies');            
             $table->longText('condition')->nullable();
             $table->timestamps();
         });

@@ -2,7 +2,6 @@ import React,{useState} from 'react';
 import Authenticated from '@/Layouts/Authenticated';
 import { Head, Link } from '@inertiajs/inertia-react';
 import { confirmAlert } from 'react-confirm-alert';
-import SelectCompany from './Company/SelectCompany';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 
 export default function Dashboard(props) {
@@ -145,12 +144,6 @@ export default function Dashboard(props) {
                 </div>
             </div>
 
-            {/* Select company */}
-            {props.selectCompany &&
-                <SelectCompany 
-                    {...props}
-                />
-            }
         </Authenticated>
     );
 }
