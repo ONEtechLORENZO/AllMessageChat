@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use App\Models\UserInvite;
+use App\Models\Company;
 use Inertia\Inertia;
 use DB;
 
@@ -50,7 +51,14 @@ class RegisteredUserController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
-        
+
+        // Create Company
+        if (!$request->uuid && $request->company_name ) {
+            $company = Company::create([
+                'name' => $request->company_name
+            ]);
+        }
+
         $user = User::create([
             'name' => $request->first_name . ' ' .$request->last_name,
             'first_name' => $request->first_name,
@@ -60,6 +68,9 @@ class RegisteredUserController extends Controller
             'status' => true,
             'password' => Hash::make($request->password),
         ]);
+        if($company){
+            $user->company_id = $company->id;
+        }
 
         event(new Registered($user));
 
