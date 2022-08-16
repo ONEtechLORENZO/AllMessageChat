@@ -334,18 +334,21 @@ class UserController extends Controller
     public function userDetail(Request $request, $id = '')
     {
         if($id){
-            $query = User::where('id' ,$id);
-            if( $request->user()->role == 'admin'){
+            
+            if( $request->user()->role != 'regular'){
+                $query = User::where('id' ,$id);
                 $companyId = Cache::get('selected_company');
                 $query->join('company_user' ,'user_id', 'users.id');
                 $query->where('company_id' , $companyId);
+                $user = $query->first();
             }
-            $user = $query->first();
+            
         } else {
             $user = $request->user();
         }
+  
         if(! $user){
-            about(401);
+            abort(401, __('You are not authorised to see this record.'));
         }
 
         $token = $user->api_token;

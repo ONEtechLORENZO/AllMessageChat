@@ -60,15 +60,9 @@ class RegisteredUserController extends Controller
             ]);
             $company_id = $company->id;
         }
-        if ($request->uuid){
-            $invitation = UserInvite::where('unique_id' , $request->uuid)->first();
-            $company_id = $invitation->company_id;
-        }
-        $_REQUEST['company_id'] = $company_id;
-        Cache::put('selected_company', $company_id );
         
-
-        $user = User::create([
+        
+        $userData = [
             'name' => $request->first_name . ' ' .$request->last_name,
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -76,7 +70,16 @@ class RegisteredUserController extends Controller
             'role' => 'admin',
             'status' => true,
             'password' => Hash::make($request->password),
-        ]);
+        ];
+        if ($request->uuid){
+            $invitation = UserInvite::where('unique_id' , $request->uuid)->first();
+            $company_id = $invitation->company_id;
+            $userData['role'] = 'regular';
+        } 
+        $_REQUEST['company_id'] = $company_id;
+        Cache::put('selected_company', $company_id );
+
+        $user = User::create($userData);
 
         if($company_id){
             DB::table('company_user')->insert([
