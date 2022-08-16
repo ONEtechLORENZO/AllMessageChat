@@ -22,6 +22,7 @@ class CreateAccountsTable extends Migration
             $table->string('business_manager_id')->nullable();
             $table->string('status');
             $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('company_id')->constrained('companies');            
             $table->timestamps();
         });
     }

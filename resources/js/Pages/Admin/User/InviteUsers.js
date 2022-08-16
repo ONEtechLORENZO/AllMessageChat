@@ -37,7 +37,7 @@ function InviteUser(props)
                 if(response.data.result == 'success'){
                     nProgress.done();
                     props.setInviteUser(false);
-                    notie.alert({type: 'success', text: 'Invitation send successfully', time: 5});
+                    notie.alert({type: 'success', text: 'Invitation sent successfully', time: 5});
                 }
             });
         } 

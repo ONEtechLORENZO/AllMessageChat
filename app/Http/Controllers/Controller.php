@@ -79,15 +79,16 @@ class Controller extends BaseController
         if($moduleName != 'User' && $moduleName != 'Company' ){
     //        $query->where('user_id' , $user_id);
         }
-        
-        if( $user->role != 'reqular'){
-            $companyId = Cache::get('selected_company');
-            if($moduleName == 'User'){
-                $query->join('company_user' ,'user_id', 'users.id');
+        if( $moduleName != 'Price'){
+            if( $user->role != 'reqular'){
+                $companyId = Cache::get('selected_company');
+                if($moduleName == 'User'){
+                    $query->join('company_user' ,'user_id', 'users.id');
+                }
+                $query->where('company_id' , $companyId);
+            } else if($user->role == 'regular'){
+                $query->where('user_id', $user_id)->get();
             }
-            $query->where('company_id' , $companyId);
-        } else if($user->role == 'regular' && $moduleName != 'Price'){
-            $query->where('user_id', $user_id)->get();
         }
         
         if($moduleName == 'Field'){

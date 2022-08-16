@@ -45,7 +45,7 @@ class UserController extends Controller
         'account_related_events' => ['label' => 'Account related events', 'help_text' => 'Return sent messasge enqueue response to callback url'],
     ];
     public $userRoles = [
-        'global_admin' => 'Global Admin',
+    //    'global_admin' => 'Global Admin',
         'regular' => 'Regular',
         'admin' => 'Admin'
     ];
@@ -179,14 +179,13 @@ class UserController extends Controller
         $user_id = $user->id;
         $companyId = Cache::get('selected_company');
 
-        $accounts = Account::select('company_name', 'service', 'accounts.id', 'accounts.status');
+        $query = Account::select('company_name', 'service', 'accounts.id', 'accounts.status');
         if($user->role == 'admin'){
-            $accounts->join('company_user', 'company_user.user_id', 'accounts.user_id')
-                ->where('company_id' , $companyId);
+            $query->where('company_id' , $companyId);
         } else if($user->role = 'regular'){
-            $accounts->where('user_id', $user_id)->get();
+            $query->where('user_id', $user_id)->get();
         }
-        $accounts = $accounts->get();
+        $accounts = $query->get();
 
         return Inertia::render('Dashboard', [
             'accounts' => $accounts,
@@ -335,10 +334,20 @@ class UserController extends Controller
     public function userDetail(Request $request, $id = '')
     {
         if($id){
-            $user = User::findOrFail($id);
+            $query = User::where('id' ,$id);
+            if( $request->user()->role == 'admin'){
+                $companyId = Cache::get('selected_company');
+                $query->join('company_user' ,'user_id', 'users.id');
+                $query->where('company_id' , $companyId);
+            }
+            $user = $query->first();
         } else {
             $user = $request->user();
         }
+        if(! $user){
+            about(401);
+        }
+
         $token = $user->api_token;
         return Inertia::render('Admin/User/UserDetail', [
                 'user' => $user, 
@@ -733,7 +742,7 @@ class UserController extends Controller
         
         // Setting logged in user id
         $account->user_id = $user_id;
-       // $account->company_id = Cache::get('selected_company');
+        $account->company_id = Cache::get('selected_company');
         
         $account->save();
 
