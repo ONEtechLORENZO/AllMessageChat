@@ -45,23 +45,24 @@ const navigation = [
         href: route("listContact"),
         icon: IdentificationIcon,
         
-    },
-    {
-        name: "Chat",
-        href: route("chat_list"),
-        icon: ChatAlt2Icon,
-        
-    },
+    },    
     {
         name: "Tags",
         href: route("listTag"),
         icon: TagIcon,
+        
         
     },
     {
         name: "Lists",
         href: route("listCategory"),
         icon: ViewListIcon,
+        
+    },
+    {
+        name: "Chat",
+        href: route("chat_list"),
+        icon: ChatAlt2Icon,
         
     },
     {
@@ -220,10 +221,12 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                             key={item.name}
                                             href={item.href}
                                             className={classNames(
+                                                (item.name == 'Tags' ||item.name == 'Lists')?  "text-[#3D4459]  hover:text-primary pl-6":
                                                 (item.name == current_page)
-                                                    ? "text-primary"
-                                                    : "text-[#3D4459]  hover:text-primary",
-                                                "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+                                                    ? "text-primary"                                                    
+                                                    :"text-[#3D4459]  hover:text-primary",
+                                                     "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+
                                             )}
                                         >
                                             <item.icon
@@ -232,10 +235,11 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                         ? "text-primary"
                                                         : "text-[#3D4459] group-hover:text-primary",
                                                     "mr-3 flex-shrink-0 h-6 w-6"
+                                                    
                                                 )}
                                                 aria-hidden="true"
                                             />
-                                            {showSidebarText ? item.name : ""}
+                                            {showSidebarText ? item.name: ""}
                                         </Link>
                                         }
                                     </>
