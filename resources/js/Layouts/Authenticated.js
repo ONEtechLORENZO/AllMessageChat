@@ -214,7 +214,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                     <>
                                         {(((item.name == 'Pricing' || 
                                             item.name == 'Users') && 
-                                            auth.user.role == 'admin') 
+                                            auth.user.role != 'regular') 
                                         || (item.name != 'Pricing' && 
                                         item.name != 'Users')) &&
                                         <Link

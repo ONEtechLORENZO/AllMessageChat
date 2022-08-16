@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use PDF;
 use Cache;
+use DB;
 
 class UserController extends Controller
 {
@@ -256,7 +257,7 @@ class UserController extends Controller
         $currentUser = $request->user();
         $user = new User();
         
-        if($currentUser->role == 'admin'){
+        if($currentUser->role != 'regular'){
             return Inertia::render('Admin/User/CreateUser', [
                     'user' => $user, 
                     'currentUser' => $currentUser,
@@ -296,7 +297,7 @@ class UserController extends Controller
         $password = $user->password;
         $currentUser = $request->user();
         
-        if($currentUser->role == 'admin' || $user->id == $currentUser->id){
+        if($currentUser->role != 'regular' || $user->id == $currentUser->id){
             return Inertia::render('Admin/User/CreateUser', [
                     'user' => $user, 
                     'password' => $password, 
@@ -383,7 +384,7 @@ class UserController extends Controller
     public function storeUserRegistration(Request $request)
     {
         Log::info('Save user data process start');
-        if(($request->get('id') == $request->user()->id) ||  $request->user()->role == 'admin'){
+        if(($request->get('id') == $request->user()->id) ||  $request->user()->role != 'regular'){
            
             if (!$request->get('id')) {
                 $request->validate([
@@ -400,6 +401,7 @@ class UserController extends Controller
 
             $user->first_name = $request->get('first_name');
             $user->last_name = $request->get('last_name');
+            $user->name =  $request->get('first_name') . ' ' .$request->get('last_name');
             $user->email = $request->get('email');
             $user->company_name = $request->get('company_name');
             $user->phone_number = $request->get('phone_number');
@@ -411,17 +413,28 @@ class UserController extends Controller
             $user->company_vat_id = $request->get('company_vat_id');
             $user->codice_destinatario = $request->get('codice_destinatario');
             $user->admin_email = $request->get('admin_email');
-           
-            
-            if( $request->user()->role == 'admin') {
-                $user->role = $request->get('role');
+
+            if( $request->user()->role != 'regular') {
+                $user->role = ($request->get('role')) ? $request->get('role') : 'regular';
                 $user->status = $request->get('status');
             }
-        
+
+            $company = Cache::get('selected_company');
+            $_REQUEST['company_id'] = $company;
+            
             $user->save();
+            $user_id = $user->id;
+            if (!$request->get('id') && $company) {
+                DB::table('company_user')->insert([
+                    'user_id' => $user_id,
+                    'company_id' => $company
+                ]);
+            }
             Log::info('Record saved successfully.');
+            return Redirect::route('user_profile', $user_id);
         }
-        return Redirect::route('user_profile', $user->id);
+        
+        return Redirect::route('dashboard');
     }
 
     /**
@@ -686,28 +699,13 @@ class UserController extends Controller
 
             $request->validate([
                 'company_name' => 'required|max:255',
-                // 'company_type' => 'required',
-                // 'website' => 'required|max:255',
-                // 'email' => 'required|max:255|email',
-                 'service' => 'required',
-                // 'estimated_launch_date' => 'required|date',
-                // 'type_of_integration' => 'required',
-                // 'phone_number' => $phone_validation,
-                // 'display_name' => 'required|max:255',
-                // 'business_manager_id' => 'required|max:255',
-                // 'profile_description' => 'required|max:139',
-                // 'oba' => 'required|boolean',
+                'service' => 'required'
             ]);
         }
         else {
             $request->validate([
                 'company_name' => 'required|max:255',
-                // 'company_type' => 'required',
-                // 'website' => 'required|max:255',
-                // 'email' => 'required|max:255|email',
-                 'service' => 'required',
-                // 'estimated_launch_date' => 'required|date',
-                // 'type_of_integration' => 'required',
+                'service' => 'required',
             ]);
         }
 
@@ -724,13 +722,7 @@ class UserController extends Controller
             }
             $account->status = 'New'; // Setting the status as New.
         }
-/*
-        $fields = [
-            'company_name', 'company_type', 'website', 'email', 'service',
-            'estimated_launch_date', 'type_of_integration', 'phone_number', 'src_name', 'display_name',
-            'business_manager_id', 'profile_description', 'oba'
-        ];
-*/
+
         $fields = [
             'company_name', 'service', 'phone_number', 'src_name', 'business_manager_id', 'api_partner','display_name','api_partner_name'
         ];
@@ -741,6 +733,7 @@ class UserController extends Controller
         
         // Setting logged in user id
         $account->user_id = $user_id;
+       // $account->company_id = Cache::get('selected_company');
         
         $account->save();
 
@@ -1184,6 +1177,7 @@ class UserController extends Controller
                 $transaction->amount = $amount / 100;
                 $transaction->status = 'success';
                 $transaction->user_id = $user_id;
+                $transaction->company_id = Cache::get('selected_company');
                 $transaction->save();
             }
         }
@@ -1195,6 +1189,7 @@ class UserController extends Controller
             $transaction->status = 'failed';
             $transaction->error_message = $e->getMessage();
             $transaction->user_id = $user_id;
+            $transaction->company_id = Cache::get('selected_company');
             $transaction->save();
 
             throw ValidationException::withMessages(['amount' => $e->getMessage()]);

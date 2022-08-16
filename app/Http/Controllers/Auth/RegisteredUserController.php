@@ -13,6 +13,7 @@ use Illuminate\Validation\Rules;
 use App\Models\UserInvite;
 use App\Models\Company;
 use Inertia\Inertia;
+use Cache;
 use DB;
 
 
@@ -53,12 +54,19 @@ class RegisteredUserController extends Controller
         ]);
 
         // Create Company
-        if (!$request->uuid && $request->company_name ) {
+        if ( $request->company_name ) {
             $company = Company::create([
                 'name' => $request->company_name
             ]);
-            $_REQUEST['company_id'] = $company->id;
+            $company_id = $company->id;
         }
+        if ($request->uuid){
+            $invitation = UserInvite::where('unique_id' , $request->uuid)->first();
+            $company_id = $invitation->company_id;
+        }
+        $_REQUEST['company_id'] = $company_id;
+        Cache::put('selected_company', $company_id );
+        
 
         $user = User::create([
             'name' => $request->first_name . ' ' .$request->last_name,
@@ -70,10 +78,10 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        if($company){
+        if($company_id){
             DB::table('company_user')->insert([
                 'user_id' => $user->id,
-                'company_id' => $company->id
+                'company_id' => $company_id
             ]);
         }
 

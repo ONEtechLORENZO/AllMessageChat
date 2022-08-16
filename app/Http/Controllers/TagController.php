@@ -7,6 +7,7 @@ use App\Http\Requests\StoreTagRequest;
 use App\Http\Requests\UpdateTagRequest;
 use Illuminate\Http\Request;
 use App\Models\Tag;
+use Cache;
 use App\Models\Field;
 use App\Models\Contact;
 use App\Models\Taggable;
@@ -30,7 +31,8 @@ class TagController extends Controller
      */
     public function index(Request $request)
     {
-        $user_id = $request->user()->id;
+        $user = $request->user();
+        $user_id = $user->id;
     
         // List view columns to show
         $list_view_columns = [
@@ -43,18 +45,26 @@ class TagController extends Controller
         $sort_order = $request->has('sort_order') && $request->get('sort_order') ? $request->get('sort_order') : $this->default_sort_order;
 
         if($search) {
-            $records = Tag::orderBy($sort_by, $sort_order)
+            $query = Tag::orderBy($sort_by, $sort_order)
                         ->where(function ($query) use ($search, $list_view_columns) {    
                             foreach($list_view_columns as $field_name => $field_info) {
                                 $query->orWhere($field_name, 'like', '%' . $search . '%');
                             }
-                        })
-                        ->where('user_id',$user_id)
-                        ->paginate($this->limit);
+                        });
         }
         else {
-            $records = Tag::orderBy($sort_by, $sort_order)->where('user_id',$user_id)->paginate($this->limit);
+            $query = Tag::orderBy($sort_by, $sort_order);
         }
+
+        if( $user->role != 'reqular'){
+            $companyId = Cache::get('selected_company');
+            
+            $query->where('company_id' , $companyId);
+        } else if($user->role = 'regular' ){
+            $query->where('user_id', $user_id)->get();
+        }
+        //$query->where('user_id',$user_id);
+        $records = $query->paginate($this->limit);
 
         return Inertia::render('Tag/List', [
             'records' => $records->items(),
@@ -131,6 +141,8 @@ class TagController extends Controller
                         if($key == "__isNew__"){
                             $tag->name = $records['label'];
                             $tag->user_id = $user_id;
+                            $tag->company_id = Cache::get('selected_company');
+
                             $tag->save();
                         } 
                     }
@@ -160,6 +172,7 @@ class TagController extends Controller
                 $tag->description = $request->get('description');
             }
             $tag->user_id = $user_id;
+            $tag->company_id = Cache::get('selected_company');
             $tag->save();
 
             return Redirect::route('listTag');

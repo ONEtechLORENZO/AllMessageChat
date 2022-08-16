@@ -94,7 +94,7 @@ export default function UserDetail(props) {
         });
     }
     var isChangePassword = false;
-    if ((props.user.id == props.current_user.id) || (props.user.role != 'regular')) {
+    if ((props.user.id == props.current_user.id) || (props.current_user.role != 'regular')) {
         isChangePassword = true;
     }
 
