@@ -90,6 +90,9 @@ function SelectCompany(props)
                                                             class="cursor-pointer px-6 py-2 border-b border-gray-200 w-full rounded-t-lg"
                                                             >
                                                                 {company.name}
+                                                                {company.id == selectedCompany &&
+                                                                    <span class="bg-green-100 ml-2 p-1 rounded">Active</span>
+                                                                }
                                                         </li>
                                                     )}
                                                 </ul>
