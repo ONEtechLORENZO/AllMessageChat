@@ -21,6 +21,7 @@ class CreateContactsTable extends Migration
             $table->string('phone_number')->nullable();
             $table->string('instagram_id')->nullable();
             $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('company_id')->constrained('companies');            
             $table->timestamps();
         });
     }

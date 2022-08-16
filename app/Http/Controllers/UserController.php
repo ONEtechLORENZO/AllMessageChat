@@ -176,20 +176,19 @@ class UserController extends Controller
     {
         $user = $request->user();
         $user_id = $user->id;
-        $companies = $user->company;
-        $selectCompany = false;
-        $selectedCompany = (Cache::has('selected_company')) ? Cache::get('selected_company') : '';
-        if((count($companies) > 1) && !$selectedCompany){
-            $selectCompany = true;
-        } elseif(isset($companies[0]) ) {
-            Cache::put('selected_company', $companies[0]->id );
+        $companyId = Cache::get('selected_company');
+
+        $accounts = Account::select('company_name', 'service', 'accounts.id', 'accounts.status');
+        if($user->role == 'admin'){
+            $accounts->join('company_user', 'company_user.user_id', 'accounts.user_id')
+                ->where('company_id' , $companyId);
+        } else if($user->role = 'regular'){
+            $accounts->where('user_id', $user_id)->get();
         }
-      
-        $accounts = Account::where('user_id', $user_id)->get();
+        $accounts = $accounts->get();
+
         return Inertia::render('Dashboard', [
             'accounts' => $accounts,
-            'selectCompany' => $selectCompany,
-            'companies' => $companies,
             'translator' => [
                     'Dashboard'=>__('Dashboard'),
                     'Create new account'=>__('Create new account'),
@@ -1348,5 +1347,24 @@ class UserController extends Controller
             }
         }
         return $return; 
+    }
+
+    /**
+     * Return selected company name
+     */
+    public function getSelectedCompany(Request $request)
+    {
+        $user = $request->user();
+        $companies = $user->company;
+        $selectedCompany = false;
+        $selectedCompany = (Cache::has('selected_company')) ? Cache::get('selected_company') : '';
+        if( ($companies && !$selectedCompany) && count($companies) == 1 && isset($companies[0]) ) {
+            $selectedCompany = $companies[0]->id;
+            Cache::put('selected_company', $companies[0]->id );
+        }
+        echo json_encode([
+            'selected_company' => $selectedCompany,
+            'companies' => $companies
+        ]);
     }
 }

@@ -168,13 +168,10 @@ class MsgController extends Controller
             'plural' => __('Messages'),
             'module' => 'Message',
             'current_page' => 'Messages', 
-
             'records' => $messageList,
-
             'compact_type' => 'condense',
             'list_view_columns' => $list_view_columns,
 
-            
             // Actions
             'actions' => [
                 'create' => false,
@@ -203,36 +200,12 @@ class MsgController extends Controller
                 'Messages' => __('Messages'),
                 'No Messages yet' => __('No messages sent/received yet for your account(s).'),
                 'Search' => __('Search'),
-                'No records' =>__('No records')
+                'No records' => __('No records')
             ]
         ];
         
        
         return Inertia::render('Messages/Messages', $data);
-
-/*
-        return Inertia::render('Messages/Messages', [
-            'messsage_list' => $messageList,
-            'list_view_columns' => $list_view_columns,
-            'current_page' => 'Messages',
-            'paginator' => [
-                'firstPageUrl' => $messages->url(1),
-                'previousPageUrl' => $messages->previousPageUrl(),
-                'nextPageUrl' => $messages->nextPageUrl(),
-                'lastPageUrl' => $messages->url($messages->lastPage()),  
-                'currentPage' => $messages->currentPage(),
-                'total' => $messages->total(),
-                'count' => $messages->count(),
-                'lastPage' => $messages->lastPage(),
-                'perPage' => $messages->perPage(),
-            ],
-            'translator' => [
-                'Messages' => __('Messages'),
-                'No Messages yet' => __('No messages sent/received yet for your account(s).')
-                
-            ]
-        ]);
-        */
     }
 
     /**

@@ -1,12 +1,10 @@
 import React, { useState, Fragment } from "react";
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
-import NavLink from "@/Components/NavLink";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link } from "@inertiajs/inertia-react";
 // import { Disclosure, Menu, Transition } from '@headlessui/react'
-
-import { Dialog, Menu, Transition, Disclosure } from "@headlessui/react";
+import { Dialog, Transition } from "@headlessui/react";
 import {
     BellIcon,
     CalendarIcon,
@@ -29,6 +27,7 @@ import {
     MenuIcon,
 } from "@heroicons/react/outline";                                                                      
 import {NotifiIcon} from '../Pages/icons'
+import SelectCompany from "@/Pages/Company/SelectCompany";
 
 const navigation = [
     {
@@ -107,6 +106,8 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const [showSidebarText, setShowSidebarText] = useState(false);
+
+    const [selectCompanyModal, setSelectedCompany] = useState(false);
 
     return (
         <>
@@ -291,10 +292,15 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                     <Dropdown.Link href={route('profile')} method="get" as="button">
                                                     Profile
                                                     </Dropdown.Link>
-                                                    {auth && auth.user && auth.user.role == 'Admin' &&
-                                                    <Dropdown.Link href={route('settings')} method="get" as="button">
-                                                        Settings
-                                                    </Dropdown.Link>
+                                                    {auth && auth.user && auth.user.role == 'admin' &&
+                                                    <>
+                                                        <Dropdown.Link href={route('settings')} method="get" as="button">
+                                                            Settings
+                                                        </Dropdown.Link>
+                                                        <button className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" onClick={() => setSelectedCompany(true)} as="button">
+                                                            Switch company
+                                                        </button>
+                                                    </>
                                                     }
                                                     <Dropdown.Link href={route('logout')} method="post" as="button">
                                                         Log Out
@@ -361,6 +367,13 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                     <main>{children}</main>
                 </div>
             </div>
+
+            {/* Select company */}
+            <SelectCompany
+                openModal = {selectCompanyModal}
+                setSelectedCompany = {setSelectedCompany}
+            />
+
         </>
     );
 }

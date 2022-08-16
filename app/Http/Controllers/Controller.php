@@ -83,6 +83,8 @@ class Controller extends BaseController
             $companyId = Cache::get('selected_company');
             $query->join('company_user', 'user_id', 'users.id')
                 ->where('company_id' , $companyId);
+        } else if($user->role = 'regular'){
+            $query->where('user_id', $user_id)->get();
         }
         
         if($moduleName == 'Field'){
