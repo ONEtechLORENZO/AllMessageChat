@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 
 use Auth;
 use DB;
+use Cache;
 use App\Models\MessageLog;
 use App\Models\IncomingUrl;
 use App\Models\Msg;
@@ -381,6 +382,8 @@ class ContactController extends Controller
             }
   
             $contact->user_id = $request->user()->id;
+            $contact->company_id = Cache::get('selected_company');
+
             $contact->save();
         }
 

@@ -10,6 +10,7 @@ export default function Register(props) {
     const { data, setData, post, processing, errors, reset } = useForm({
         first_name: '',
         last_name: '',
+        company_name: '',
         email: '',
         password: '',
         password_confirmation: '',
@@ -72,8 +73,21 @@ export default function Register(props) {
                         required
                     />
                 </div>
-                
-
+                {!props.uuid &&
+                    <div className="mt-4">
+                        <Label forInput="company_name" value="Company Name" />
+                        <Input
+                            type="text"
+                            name="company_name"
+                            value={data.company_name}
+                            className="mt-1 block w-full"
+                            autoComplete="company_name"
+                            isFocused={true}
+                            handleChange={onHandleChange}
+                            required
+                        />
+                    </div>
+                }
                 <div className="mt-4">
                     <Label forInput="email" value="Email" />
 

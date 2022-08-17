@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Cache;
 
 class LoginRequest extends FormRequest
 {
@@ -55,6 +56,14 @@ class LoginRequest extends FormRequest
         if(!Auth::user()->status) {
             Auth::logout();
             throw ValidationException::withMessages([ __('The account is inactive')]);
+        }
+        $user = Auth::user();
+        $companies = $user->company;
+        $selectedCompany = false;
+        $selectedCompany = (Cache::has('selected_company')) ? Cache::get('selected_company') : '';
+        if( ($companies && !$selectedCompany) && count($companies) == 1 && isset($companies[0]) ) {
+            $selectedCompany = $companies[0]->id;
+            Cache::put('selected_company', $companies[0]->id );
         }
         RateLimiter::clear($this->throttleKey());
     }

@@ -30,31 +30,31 @@ class FieldSeeder extends Seeder
         DB::table('fields')->insert([
             
              //Price
-            ['module_name' => 'Price', 'field_name' => 'user_initiated', 'field_label' => 'User Initiated', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-            ['module_name' => 'Price', 'field_name' => 'business_initiated', 'field_label' => 'Business Initiated', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-            ['module_name' => 'Price', 'field_name' => 'message', 'field_label' => 'Message', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-            ['module_name' => 'Price', 'field_name' => 'media', 'field_label' => 'Media', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-            ['module_name' => 'Price', 'field_name' => 'is_default', 'field_label' => 'Is default?', 'field_type' => 'checkbox', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Price', 'field_name' => 'user_initiated', 'field_label' => 'User Initiated', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Price', 'field_name' => 'business_initiated', 'field_label' => 'Business Initiated', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Price', 'field_name' => 'message', 'field_label' => 'Message', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Price', 'field_name' => 'media', 'field_label' => 'Media', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Price', 'field_name' => 'is_default', 'field_label' => 'Is default?', 'field_type' => 'checkbox', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime],
 
             //Tag
-            ['module_name' => 'Tag', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-            ['module_name' => 'Tag', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Tag', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Tag', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime],
             
             //Category
-            ['module_name' => 'Category', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-            ['module_name' => 'Category', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Category', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Category', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime],
             
             //Field
-            ['module_name' => 'Field', 'field_name' => 'field_label', 'field_label' => 'Field Label', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-            ['module_name' => 'Field', 'field_name' => 'is_mandatory', 'field_label' => 'Mandatory', 'field_type' => 'checkbox', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Field', 'field_name' => 'field_label', 'field_label' => 'Field Label', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Field', 'field_name' => 'is_mandatory', 'field_label' => 'Mandatory', 'field_type' => 'checkbox', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime],
 
             //Company
-            ['module_name' => 'Company', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-            ['module_name' => 'Company', 'field_name' => 'address_line_1', 'field_label' => 'Address Line 1', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-            ['module_name' => 'Company', 'field_name' => 'address_line_2', 'field_label' => 'Address Line 2', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-            ['module_name' => 'Company', 'field_name' => 'city', 'field_label' => 'City', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-            ['module_name' => 'Company', 'field_name' => 'state', 'field_label' => 'State', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-            ['module_name' => 'Company', 'field_name' => 'country', 'field_label' => 'Country', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Company', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Company', 'field_name' => 'address_line_1', 'field_label' => 'Address Line 1', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Company', 'field_name' => 'address_line_2', 'field_label' => 'Address Line 2', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Company', 'field_name' => 'city', 'field_label' => 'City', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Company', 'field_name' => 'state', 'field_label' => 'State', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['module_name' => 'Company', 'field_name' => 'country', 'field_label' => 'Country', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime],
 
 
         ]);
@@ -331,6 +331,7 @@ class FieldSeeder extends Seeder
         $field->is_mandatory = $mandatory;
         $field->is_custom = 0;
         $field->user_id = 1;
+        $field->company_id = 1;
         $field->created_at = $current_datetime;
         $field->updated_at = $current_datetime;
         $field->options = $options;

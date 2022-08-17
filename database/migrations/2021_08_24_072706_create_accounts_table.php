@@ -16,20 +16,13 @@ class CreateAccountsTable extends Migration
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
             $table->string('company_name');
-            $table->string('company_type')->nullable();
-            $table->string('website')->nullable();
-            $table->string('email')->nullable();
-            $table->date('estimated_launch_date')->nullable();
-            $table->string('type_of_integration')->nullable();
             $table->string('service');
             $table->string('phone_number')->nullable();
             $table->string('display_name')->nullable();
             $table->string('business_manager_id')->nullable();
-            $table->string('profile_picture')->nullable();
-            $table->string('profile_description')->nullable();
-            $table->boolean('oba');
             $table->string('status');
             $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('company_id')->constrained('companies');            
             $table->timestamps();
         });
     }

@@ -11,10 +11,11 @@ class FormController extends Controller
      * Fetch module fields from Field model
      */
     function fetchModuleFields(Request $request)
-    {        
+    {     
+       
         $user = $request->user();
         $module = $request->route('module');
-        if($user->role != 'admin' && $module == 'Price') {
+        if($user->role == 'regular' && $module == 'Price') {
             abort(401);
         }
         $whereCondition = [
@@ -26,6 +27,7 @@ class FormController extends Controller
 
         $fields = Field::where($whereCondition)
             ->get();
+         
         foreach($fields as $field){
             if($field['is_custom'] == '1' && $field['field_type'] == 'dropdown'){
                 $option = $field['options'];

@@ -24,8 +24,6 @@ use App\Http\Controllers\UserInviteController;
 use App\Http\Middleware\IsAdmin;
 use App\Models\Contact;
 use App\Models\Note;
-
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -38,6 +36,7 @@ use App\Models\Note;
 */
 
 Route::get('/', function () {
+    Cache::forget('selected_company');
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
@@ -56,6 +55,7 @@ Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
+    Route::get('/getCompanyId', [UserController::class, 'getSelectedCompany'])->name('get_selected_company');
 
     // Wallet
     Route::get('/wallet', [UserController::class, 'wallet'])->name('wallet');

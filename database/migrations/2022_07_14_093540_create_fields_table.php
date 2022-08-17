@@ -22,6 +22,7 @@ class CreateFieldsTable extends Migration
             $table->boolean('is_mandatory')->nullable();
             $table->boolean('is_custom')->nullable();
             $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('company_id')->constrained('companies');            
             $table->timestamps();
         });
     }

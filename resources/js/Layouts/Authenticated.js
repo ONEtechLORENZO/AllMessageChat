@@ -1,12 +1,10 @@
 import React, { useState, Fragment } from "react";
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
-import NavLink from "@/Components/NavLink";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link } from "@inertiajs/inertia-react";
 // import { Disclosure, Menu, Transition } from '@headlessui/react'
-
-import { Dialog, Menu, Transition, Disclosure } from "@headlessui/react";
+import { Dialog, Transition } from "@headlessui/react";
 import {
     BellIcon,
     CalendarIcon,
@@ -29,6 +27,7 @@ import {
     MenuIcon,
 } from "@heroicons/react/outline";                                                                      
 import {NotifiIcon} from '../Pages/icons'
+import SelectCompany from "@/Pages/Company/SelectCompany";
 
 const navigation = [
     {
@@ -46,23 +45,24 @@ const navigation = [
         href: route("listContact"),
         icon: IdentificationIcon,
         
-    },
-    {
-        name: "Chat",
-        href: route("chat_list"),
-        icon: ChatAlt2Icon,
-        
-    },
+    },    
     {
         name: "Tags",
         href: route("listTag"),
         icon: TagIcon,
+        
         
     },
     {
         name: "Lists",
         href: route("listCategory"),
         icon: ViewListIcon,
+        
+    },
+    {
+        name: "Chat",
+        href: route("chat_list"),
+        icon: ChatAlt2Icon,
         
     },
     {
@@ -106,6 +106,8 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const [showSidebarText, setShowSidebarText] = useState(false);
+
+    const [selectCompanyModal, setSelectedCompany] = useState(false);
 
     return (
         <>
@@ -212,17 +214,19 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                     <>
                                         {(((item.name == 'Pricing' || 
                                             item.name == 'Users') && 
-                                            auth.user.role == 'admin') 
+                                            auth.user.role != 'regular') 
                                         || (item.name != 'Pricing' && 
                                         item.name != 'Users')) &&
                                         <Link
                                             key={item.name}
                                             href={item.href}
                                             className={classNames(
+                                                (item.name == 'Tags' ||item.name == 'Lists')?  "text-[#3D4459]  hover:text-primary pl-6":
                                                 (item.name == current_page)
-                                                    ? "text-primary"
-                                                    : "text-[#3D4459]  hover:text-primary",
-                                                "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+                                                    ? "text-primary"                                                    
+                                                    :"text-[#3D4459]  hover:text-primary",
+                                                     "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+
                                             )}
                                         >
                                             <item.icon
@@ -231,10 +235,11 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                         ? "text-primary"
                                                         : "text-[#3D4459] group-hover:text-primary",
                                                     "mr-3 flex-shrink-0 h-6 w-6"
+                                                    
                                                 )}
                                                 aria-hidden="true"
                                             />
-                                            {showSidebarText ? item.name : ""}
+                                            {showSidebarText ? item.name: ""}
                                         </Link>
                                         }
                                     </>
@@ -287,10 +292,15 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                     <Dropdown.Link href={route('profile')} method="get" as="button">
                                                     Profile
                                                     </Dropdown.Link>
-                                                    {auth && auth.user && auth.user.role == 'Admin' &&
-                                                    <Dropdown.Link href={route('settings')} method="get" as="button">
-                                                        Settings
-                                                    </Dropdown.Link>
+                                                    {auth && auth.user && auth.user.role == 'admin' &&
+                                                    <>
+                                                        {/* <Dropdown.Link href={route('settings')} method="get" as="button">
+                                                            Settings
+                                                        </Dropdown.Link> */}
+                                                        <button className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" onClick={() => setSelectedCompany(true)} as="button">
+                                                            Switch company
+                                                        </button>
+                                                    </>
                                                     }
                                                     <Dropdown.Link href={route('logout')} method="post" as="button">
                                                         Log Out
@@ -357,6 +367,13 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                     <main>{children}</main>
                 </div>
             </div>
+
+            {/* Select company */}
+            <SelectCompany
+                openModal = {selectCompanyModal}
+                setSelectedCompany = {setSelectedCompany}
+            />
+
         </>
     );
 }

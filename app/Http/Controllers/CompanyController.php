@@ -191,6 +191,6 @@ class CompanyController extends Controller
     {
         $companyId = $request->company_id;
         Cache::put('selected_company' , $companyId);
-        return redirect('/dashboard'); 
+        return Redirect::to(url()->previous());
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Filter;
 use Illuminate\Support\Facades\Redirect;
+use Cache;
 
 class FilterController extends Controller
 {
@@ -22,6 +23,7 @@ class FilterController extends Controller
         $filter->name = $request->filter_name;
         $filter->module_name = $request->module_name;
         $filter->user_id = $request->user()->id;
+        $filter->company_id = Cache::get('selected_company');
         $filter->condition = base64_encode( serialize( json_decode($request->filter) ));
         $filter->save();
 

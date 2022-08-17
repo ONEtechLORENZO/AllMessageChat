@@ -78,7 +78,7 @@ class CampignController extends Controller
 
         $module = new Campign();
         $listViewData = $this->listView($request, $module, $list_view_columns);
-      //  dd($listViewData);
+    
         return Inertia::render('Campign/Form',['translator' => $listViewData['translator'], 'filter' => $listViewData['filter']]);        
     }
 

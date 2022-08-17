@@ -128,9 +128,10 @@ export default function CreateUser(props) {
 
     // Cheack Admin user
     var isAdmin = false;
-    if(  data.role == 'admin' || props.currentUser.role == 'admin' ){
+    if(  data.role != 'regular' || props.currentUser.role != 'regular' ){
         isAdmin  = true;
     }
+   
     var isChangePassword = false;
     if (data.id == props.currentUser.id) {
         isChangePassword = true;
@@ -157,7 +158,7 @@ export default function CreateUser(props) {
                 } */}
                 
                 <Link 
-                    href={ props.currentUser.role == 'admin' ? route('listUser') : route('user_profile', props.user.id)}
+                    href={ props.currentUser.role != 'regular' ? route('listUser') : route('user_profile', props.user.id)}
                         className="ml-3 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
 					>
                     {props.translator['Cancel']}
