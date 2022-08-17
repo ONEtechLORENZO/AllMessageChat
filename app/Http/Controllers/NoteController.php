@@ -19,8 +19,9 @@ class NoteController extends Controller
     public function list_notes(Request $request, $module, $id)
     {                
         $contact = Contact::findOrFail($id); 
+        $user = User::findorFail($contact->user_id);
         $note_List = [];
-        $name = $contact->first_name . ' ' .$contact->last_name;
+        $name = $user->name;
         foreach ($contact->notes as $note) 
         {       
             $note_id=$note->id;
