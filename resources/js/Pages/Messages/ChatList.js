@@ -4,6 +4,7 @@ import MessageList from "./MessageList";
 import Authenticated from "../../Layouts/Authenticated";
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from "@/Components/Dropdown";
+import ContactSelection from '@/Components/ContactSelection';
 
 import {
     DotsVerticalIcon,
@@ -32,7 +33,7 @@ function ChatList(props)
     const [selectedContact, setSelectedContact] = useState(props.selected_contact);
     const [messages, setMessages] = useState(props.messages);
     const [containerCategory, setContainerCategory] = useState(props.category);
-
+    const [showForm, setShowForm] = useState(false);
     const [chatList, setChatList] = useState(props.contact_list);
     const [data, setData] = useState({
         destination: '',
@@ -207,6 +208,7 @@ function ChatList(props)
                         <button
                             type="button"
                             className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-[4px] text-white bg-primary hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:bg-primary"
+                            onClick={() => setShowForm(true)}
                         >
                             {props.translator['New Message']}
                         </button>
@@ -565,6 +567,9 @@ function ChatList(props)
                     </div>
                 </div>
             </div>
+            {showForm ?
+                <ContactSelection/>
+            : ''}
         </Authenticated>
     );
 }

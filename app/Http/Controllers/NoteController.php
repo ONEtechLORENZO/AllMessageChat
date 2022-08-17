@@ -17,8 +17,7 @@ class NoteController extends Controller
      */
     public $dateListView = 'd-m-Y h:m:s';
     public function list_notes(Request $request, $module, $id)
-    {
-        $user_id = ($request->user()->id);           
+    {                
         $contact = Contact::findOrFail($id); 
         $note_List = [];
         $name = $contact->first_name . ' ' .$contact->last_name;
@@ -42,10 +41,10 @@ class NoteController extends Controller
      */
     public function addNotes(Request $request, $module, $id)    
     {               
-        print_r($request->all()); 
         $contact = Contact::findOrFail($id);        
         $note=new Note;
         $note->user_id = $contact->user_id;
+        $note->company_id = $contact->company_id;
         $note->note=$request->get('noteText');
         $contact->notes()->save($note); 
     }

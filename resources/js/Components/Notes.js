@@ -68,7 +68,7 @@ function addNote(){
           data: data
       })
       .then( (response) =>{
-              setData({notetext:''})
+              setData({notetext:""})
               fetchNote();
       }).catch(function (error) {
         console.log(error);
@@ -81,7 +81,7 @@ return(
   <div className="bg-white">
  
   <div>
-       <div className="mt-1 flex rounded-md shadow-sm">
+       <div className="mt-1 flex rounded-md shadow-sm my-8">
         
                          <TextArea
                           id="noteText"                                           
@@ -92,7 +92,7 @@ return(
                           required={true}
                           handleChange={handleChange}
                           placeholder={trans['Enter your new note here']}
-                          className="w-full focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-2xl  py-3 sm:text-sm border-gray-300 "
+                          className="w-full focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-2xl  py-3 sm:text-sm border-gray-300"
                          />
                          <div>
                         <button
@@ -110,13 +110,13 @@ return(
       
       <h2 className="sr-only">Notes</h2>      
   
-      <div className="-my-10">
+      <div className="my-8 pt-3">
             
       {notes.map((note, index) => {
         return (
-          <div key={index} className="flex text-sm text-gray-500 space-x-4">
+          <div key={index} className="flex text-sm text-gray-500 space-x-4 pb-4">
            
-            <div className={classNames(index === 0 ? '' : 'border-t border-gray-200', 'flex-1 py-10')}>
+            <div className={classNames(index === 0 ? '' : 'border-t border-gray-200 pt-3', 'flex-1')}>
               <h3 className="font-medium text-gray-900">{name}</h3>
               <p>
                 <time >{note.date}</time>
