@@ -7,6 +7,7 @@ use App\Models\Category;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+use Cache;
 
 class FieldController extends Controller
 {
@@ -182,6 +183,7 @@ class FieldController extends Controller
         $field->is_mandatory = $mandatory;
         $field->is_custom = 1;
         $field->user_id = $request->user()->id;
+        $field->company_id = Cache::get('selected_company');
         if ($options) {
             $field->options = $options;
         }

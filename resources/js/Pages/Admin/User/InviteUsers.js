@@ -10,6 +10,7 @@ import Creatable from 'react-select/creatable';
 function InviteUser(props) 
 {
     const [open, setOpen] = useState(true)
+    const [issueFlag, setIssueFlag] = useState(false)
     const [emails, setEmails] = useState(null);
     const cancelButtonRef = useRef(null)
 
@@ -17,16 +18,38 @@ function InviteUser(props)
      * Send invite link
      */
     function sendInviteLink(){
-        nProgress.start(0.5);
-        nProgress.inc(0.2);
-        Axios.post(route('send_invite_link'),{email: emails}).then((response) => {
-            console.log(response.data.result);
-            if(response.data.result == 'success'){
-                nProgress.done();
-                props.setInviteUser(false);
-                notie.alert({type: 'success', text: 'Invitation send successfully', time: 5});
+        
+       
+       var issue = false;
+        Object.entries(emails).map(([key, email])=>{
+            var isValid = isEmail(email.value);
+            console.log([email.value , isValid])
+            if(!isValid){
+                issue = true;
             }
-        });
+        })
+        setIssueFlag(issue);
+        if(issue !== true){
+            nProgress.start(0.5);
+            nProgress.inc(0.2);
+            Axios.post(route('send_invite_link'),{email: emails}).then((response) => {
+                
+                if(response.data.result == 'success'){
+                    nProgress.done();
+                    props.setInviteUser(false);
+                    notie.alert({type: 'success', text: 'Invitation sent successfully', time: 5});
+                }
+            });
+        } 
+    }
+
+    function isEmail(val) {
+        let regEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        if(!regEmail.test(val)){
+            return false;
+        } else {
+            return true;
+        }
     }
 
     return (
@@ -99,6 +122,9 @@ function InviteUser(props)
                                     >
                                         Cancel
                                     </button>
+                                    {issueFlag &&
+                                        <span className='text-sm text-red-500'> <small>  Please enter valid email </small> </span>
+                                    }
                                 </div>
                             </Dialog.Panel>
                         </Transition.Child>

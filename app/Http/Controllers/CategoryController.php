@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
-
+use Cache;
 use Inertia\Inertia;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
@@ -29,7 +29,8 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
-        $user_id = $request->user()->id;
+        $user = $request->user();
+        $user_id = $user->id;
     
         // List view columns to show
         $list_view_columns = [
@@ -42,18 +43,26 @@ class CategoryController extends Controller
         $sort_order = $request->has('sort_order') && $request->get('sort_order') ? $request->get('sort_order') : $this->default_sort_order;
 
         if($search) {
-            $records = Category::orderBy($sort_by, $sort_order)
+            $query = Category::orderBy($sort_by, $sort_order)
                         ->where(function ($query) use ($search, $list_view_columns) {    
                             foreach($list_view_columns as $field_name => $field_info) {
                                 $query->orWhere($field_name, 'like', '%' . $search . '%');
                             }
-                        })
-                        ->where('user_id',$user_id)
-                        ->paginate($this->limit);
+                        });
+                     
         }
         else {
-            $records = Category::orderBy($sort_by, $sort_order)->where('user_id',$user_id)->paginate($this->limit);
+            $query = Category::orderBy($sort_by, $sort_order);
         }
+        if( $user->role == 'admin'){
+            $companyId = Cache::get('selected_company');
+            
+            $query->where('company_id' , $companyId);
+        } else if($user->role = 'regular' ){
+            $query->where('user_id', $user_id)->get();
+        }
+        //$query->where('user_id',$user_id);
+        $records = $query->paginate($this->limit);
 
         return Inertia::render('Category/List', [
             'records' => $records->items(),
@@ -130,6 +139,8 @@ class CategoryController extends Controller
                         if($key == "__isNew__"){
                             $category->name = $records['label'];
                             $category->user_id = $user_id;
+                            $category->company_id = Cache::get('selected_company');
+                            
                             $category->save();
                         } 
                     }
@@ -158,6 +169,8 @@ class CategoryController extends Controller
                 $category->description = $request->get('description');
             }
             $category->user_id = $user_id;
+            $category->company_id = Cache::get('selected_company');
+
             $category->save();
 
             return Redirect::route('listCategory');

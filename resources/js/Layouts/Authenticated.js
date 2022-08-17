@@ -214,7 +214,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                     <>
                                         {(((item.name == 'Pricing' || 
                                             item.name == 'Users') && 
-                                            auth.user.role == 'admin') 
+                                            auth.user.role != 'regular') 
                                         || (item.name != 'Pricing' && 
                                         item.name != 'Users')) &&
                                         <Link
@@ -294,9 +294,9 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                     </Dropdown.Link>
                                                     {auth && auth.user && auth.user.role == 'admin' &&
                                                     <>
-                                                        <Dropdown.Link href={route('settings')} method="get" as="button">
+                                                        {/* <Dropdown.Link href={route('settings')} method="get" as="button">
                                                             Settings
-                                                        </Dropdown.Link>
+                                                        </Dropdown.Link> */}
                                                         <button className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" onClick={() => setSelectedCompany(true)} as="button">
                                                             Switch company
                                                         </button>
