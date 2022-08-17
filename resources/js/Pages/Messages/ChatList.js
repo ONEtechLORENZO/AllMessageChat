@@ -4,7 +4,7 @@ import MessageList from "./MessageList";
 import Authenticated from "../../Layouts/Authenticated";
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from "@/Components/Dropdown";
-import ContactSelection from '@/Components/ContactSelection';
+// import ContactSelection from '@/Components/ContactSelection';
 
 import {
     DotsVerticalIcon,

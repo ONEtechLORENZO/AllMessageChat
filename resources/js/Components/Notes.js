@@ -27,7 +27,6 @@ const [trans,setTrans]=useState([]);
 function fetchNote(){
   let endpoint_url = route('listNotes',{'module':props.module,'id':props.recordId});   
   Axios.get(endpoint_url).then((response) => { 
-    console.log(response.data);
     if(response.data.status !== false) {
     setName(response.data.name); 
     setNotes(response.data.note_List);
@@ -70,8 +69,6 @@ function addNote(){
       .then( (response) =>{
               setData({notetext:""})
               fetchNote();
-      }).catch(function (error) {
-        console.log(error);
       });
   }
 }
