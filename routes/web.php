@@ -19,6 +19,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\FieldController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CampignController;
 use App\Http\Controllers\UserInviteController;
 use App\Http\Middleware\IsAdmin;
 use App\Models\Contact;
@@ -165,7 +166,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/updateField/{id}',[FieldController::class, 'update'])->name('updateField');
     Route::delete('/deleteField/{id}',[FieldController::class, 'destroy'])->name('deleteField');
 
-    
+    //Campign
+    Route::get('/campigns',[CampignController::class, 'index'])->name('listCampign');
+    Route::get('/campign/store',[Campigncontroller::class, 'store'])->name('storeCampign');
 });
 
 // Check user is admin
