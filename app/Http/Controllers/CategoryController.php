@@ -55,7 +55,7 @@ class CategoryController extends Controller
             $query = Category::orderBy($sort_by, $sort_order);
         }
         if( $user->role == 'admin'){
-            $companyId = Cache::get('selected_company');
+            $companyId = Cache::get('selected_company_'. $user->id );
             
             $query->where('company_id' , $companyId);
         } else if($user->role = 'regular' ){
@@ -139,7 +139,7 @@ class CategoryController extends Controller
                         if($key == "__isNew__"){
                             $category->name = $records['label'];
                             $category->user_id = $user_id;
-                            $category->company_id = Cache::get('selected_company');
+                            $category->company_id = Cache::get('selected_company_'. $user_id);
                             
                             $category->save();
                         } 
@@ -169,7 +169,7 @@ class CategoryController extends Controller
                 $category->description = $request->get('description');
             }
             $category->user_id = $user_id;
-            $category->company_id = Cache::get('selected_company');
+            $category->company_id = Cache::get('selected_company_'. $user_id);
 
             $category->save();
 

@@ -57,7 +57,7 @@ class TagController extends Controller
         }
 
         if( $user->role != 'reqular'){
-            $companyId = Cache::get('selected_company');
+            $companyId = Cache::get('selected_company_'. $user->id);
             
             $query->where('company_id' , $companyId);
         } else if($user->role = 'regular' ){
@@ -141,7 +141,7 @@ class TagController extends Controller
                         if($key == "__isNew__"){
                             $tag->name = $records['label'];
                             $tag->user_id = $user_id;
-                            $tag->company_id = Cache::get('selected_company');
+                            $tag->company_id = Cache::get('selected_company_' . $user_id);
 
                             $tag->save();
                         } 
@@ -172,7 +172,7 @@ class TagController extends Controller
                 $tag->description = $request->get('description');
             }
             $tag->user_id = $user_id;
-            $tag->company_id = Cache::get('selected_company');
+            $tag->company_id = Cache::get('selected_company_'.$user_id);
             $tag->save();
 
             return Redirect::route('listTag');

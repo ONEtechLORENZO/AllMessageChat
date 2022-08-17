@@ -35,7 +35,7 @@ use App\Models\Note;
 */
 
 Route::get('/', function () {
-    Cache::forget('selected_company');
+    //Cache::forget('selected_company');
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),

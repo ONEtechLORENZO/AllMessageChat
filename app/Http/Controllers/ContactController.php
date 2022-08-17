@@ -382,7 +382,7 @@ class ContactController extends Controller
             }
   
             $contact->user_id = $request->user()->id;
-            $contact->company_id = Cache::get('selected_company');
+            $contact->company_id = Cache::get('selected_company_'. $request->user()->id);
 
             $contact->save();
         }

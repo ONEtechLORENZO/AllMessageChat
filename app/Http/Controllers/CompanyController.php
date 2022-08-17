@@ -190,7 +190,7 @@ class CompanyController extends Controller
     public function setBaseCompany(Request $request)
     {
         $companyId = $request->company_id;
-        Cache::put('selected_company' , $companyId);
+        Cache::put('selected_company_'. $request->user()->id  , $companyId);
         return Redirect::to(url()->previous());
     }
 }

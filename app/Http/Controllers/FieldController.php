@@ -183,7 +183,7 @@ class FieldController extends Controller
         $field->is_mandatory = $mandatory;
         $field->is_custom = 1;
         $field->user_id = $request->user()->id;
-        $field->company_id = Cache::get('selected_company');
+        $field->company_id = Cache::get('selected_company_'. $request->user()->id);
         if ($options) {
             $field->options = $options;
         }

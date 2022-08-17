@@ -77,7 +77,6 @@ class RegisteredUserController extends Controller
             $userData['role'] = 'regular';
         } 
         $_REQUEST['company_id'] = $company_id;
-        Cache::put('selected_company', $company_id );
 
         $user = User::create($userData);
 

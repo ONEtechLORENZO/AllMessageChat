@@ -23,7 +23,7 @@ class FilterController extends Controller
         $filter->name = $request->filter_name;
         $filter->module_name = $request->module_name;
         $filter->user_id = $request->user()->id;
-        $filter->company_id = Cache::get('selected_company');
+        $filter->company_id = Cache::get('selected_company_'. $request->user()->id);
         $filter->condition = base64_encode( serialize( json_decode($request->filter) ));
         $filter->save();
 

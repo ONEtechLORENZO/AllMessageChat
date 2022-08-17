@@ -60,10 +60,10 @@ class LoginRequest extends FormRequest
         $user = Auth::user();
         $companies = $user->company;
         $selectedCompany = false;
-        $selectedCompany = (Cache::has('selected_company')) ? Cache::get('selected_company') : '';
+        $selectedCompany = (Cache::has('selected_company_'. $user->id)) ? Cache::get('selected_company_'. $user->id) : '';
         if( ($companies && !$selectedCompany) && count($companies) == 1 && isset($companies[0]) ) {
             $selectedCompany = $companies[0]->id;
-            Cache::put('selected_company', $companies[0]->id );
+            Cache::put('selected_company_'. $user->id, $companies[0]->id );
         }
         RateLimiter::clear($this->throttleKey());
     }

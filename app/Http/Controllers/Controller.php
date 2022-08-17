@@ -81,7 +81,7 @@ class Controller extends BaseController
         }
         if( $moduleName != 'Price' && $moduleName != 'Company'){
             if( $user->role != 'reqular'){
-                $companyId = Cache::get('selected_company');
+                $companyId = Cache::get('selected_company_'. $user->id);
                 if($moduleName == 'User'){
                     $query->join('company_user' ,'user_id', 'users.id');
                 }

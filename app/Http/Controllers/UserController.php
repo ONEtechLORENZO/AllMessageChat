@@ -177,13 +177,14 @@ class UserController extends Controller
     {
         $user = $request->user();
         $user_id = $user->id;
-        $companyId = Cache::get('selected_company');
+        $companyId = Cache::get('selected_company_'. $user->id);
 
         $query = Account::select('company_name', 'service', 'accounts.id', 'accounts.status');
         if($user->role == 'admin'){
             $query->where('company_id' , $companyId);
         } else if($user->role = 'regular'){
-            $query->where('user_id', $user_id)->get();
+            //$query->where('user_id', $user_id)->get();
+            $query->where('company_id' , $companyId);
         }
         $accounts = $query->get();
 
@@ -337,7 +338,7 @@ class UserController extends Controller
             
             if( $request->user()->role != 'regular'){
                 $query = User::where('id' ,$id);
-                $companyId = Cache::get('selected_company');
+                $companyId = Cache::get('selected_company_'. $request->user()->id);
                 $query->join('company_user' ,'user_id', 'users.id');
                 $query->where('company_id' , $companyId);
                 $user = $query->first();
@@ -431,7 +432,7 @@ class UserController extends Controller
                 $user->status = $request->get('status');
             }
 
-            $company = Cache::get('selected_company');
+            $company = Cache::get('selected_company_'. $request->user()->id);
             $_REQUEST['company_id'] = $company;
             
             $user->save();
@@ -745,7 +746,7 @@ class UserController extends Controller
         
         // Setting logged in user id
         $account->user_id = $user_id;
-        $account->company_id = Cache::get('selected_company');
+        $account->company_id = Cache::get('selected_company_'. $user_id);
         
         $account->save();
 
@@ -1118,7 +1119,7 @@ class UserController extends Controller
  
         $paymentMethods = $user->paymentMethods();
 
-        $stripe_public_key = env('STRIPE_KEY');
+        $stripe_public_key = config('stripe.stripe_key');
 
         return Inertia::render('Wallet/Index', [
             'name' => $user->name,
@@ -1189,7 +1190,7 @@ class UserController extends Controller
                 $transaction->amount = $amount / 100;
                 $transaction->status = 'success';
                 $transaction->user_id = $user_id;
-                $transaction->company_id = Cache::get('selected_company');
+                $transaction->company_id = Cache::get('selected_company_'. $user_id);
                 $transaction->save();
             }
         }
@@ -1201,7 +1202,7 @@ class UserController extends Controller
             $transaction->status = 'failed';
             $transaction->error_message = $e->getMessage();
             $transaction->user_id = $user_id;
-            $transaction->company_id = Cache::get('selected_company');
+            $transaction->company_id = Cache::get('selected_company_'.$user_id);
             $transaction->save();
 
             throw ValidationException::withMessages(['amount' => $e->getMessage()]);
@@ -1364,10 +1365,10 @@ class UserController extends Controller
         $user = $request->user();
         $companies = $user->company;
         $selectedCompany = false;
-        $selectedCompany = (Cache::has('selected_company')) ? Cache::get('selected_company') : '';
+        $selectedCompany = (Cache::has('selected_company_'. $user->id)) ? Cache::get('selected_company_'. $user->id ) : '';
         if( ($companies && !$selectedCompany) && count($companies) == 1 && isset($companies[0]) ) {
             $selectedCompany = $companies[0]->id;
-            Cache::put('selected_company', $companies[0]->id );
+            Cache::put('selected_company_'. $user->id, $companies[0]->id );
         }
         echo json_encode([
             'selected_company' => $selectedCompany,
