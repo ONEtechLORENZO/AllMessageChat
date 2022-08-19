@@ -169,19 +169,26 @@ class FieldController extends Controller
             $field_name = $this->creater($field_label);
         }
 
-        $options = $request->options;
         if($request->has('is_mandatory')){
             $mandatory = $request->is_mandatory;
         }else{
             $mandatory = false;
         }
 
+        if($request->has('is_custom')){
+            $custom = $request->is_custom;
+        }else{
+            $custom = 1;
+        }
+
+        $options = $request->options; //get options fields
+
         $field->module_name = $request->module_name;
         $field->field_name = $field_name;
         $field->field_label = $field_label;
         $field->field_type = $request->field_type;
         $field->is_mandatory = $mandatory;
-        $field->is_custom = 1;
+        $field->is_custom = $custom;
         $field->user_id = $request->user()->id;
         $field->company_id = Cache::get('selected_company_'. $request->user()->id);
         if ($options) {

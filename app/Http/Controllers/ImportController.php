@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use League\Csv\Reader;
 use App\Models\Import;
-
+use Cache;
 
 class ImportController extends Controller
 {
@@ -30,10 +30,10 @@ class ImportController extends Controller
 
         // List view columns to show
         $list_view_columns = [
-            'name' => 'Name',
-            'module_name' => 'Module Name',
-            'status' => 'Status',
-            'created_at' => 'Created At',
+            'name' => ['label' => __('Name'), 'type' => 'text'],
+            'module_name' =>  ['label' => __('Module Name'), 'type' => 'text'],
+            'status' =>  ['label' => __('status'), 'type' => 'text'],
+            'created_at' => ['label' => __('Created At'), 'type' => 'text'],
         ];
 
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
@@ -147,11 +147,13 @@ class ImportController extends Controller
      */
     public function handleFileImport(Request $request) 
     {
-    
+
         $module_name = 'Contact';
         $user_id = $request->user()->id;
+        $company_id = Cache::get('selected_company_'.$user_id);
         $fields = Field::where('module_name', $module_name)
             ->where('user_id', $user_id)
+            ->where('company_id', $company_id)
             ->get();
 
         // Store the file
@@ -184,6 +186,7 @@ class ImportController extends Controller
         $import->error_message = '';
         $import->offset = 0;
         $import->user_id = $user_id;
+        $import->company_id = $company_id;
         $import->save();
 
         $id = $import->id;
