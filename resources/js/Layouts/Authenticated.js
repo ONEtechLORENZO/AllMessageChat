@@ -214,7 +214,8 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                     <>
                                         {(((item.name == 'Pricing' || 
                                             item.name == 'Users') && 
-                                            auth.user.role != 'regular') 
+                                           // auth.user.role != 'regular') 
+                                           (auth.user.role == 'globaladmin' || auth.user.role != 'admin') )
                                         || (item.name != 'Pricing' && 
                                         item.name != 'Users')) &&
                                         <Link
@@ -292,7 +293,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                     <Dropdown.Link href={route('profile')} method="get" as="button">
                                                     Profile
                                                     </Dropdown.Link>
-                                                    {auth && auth.user && auth.user.role == 'admin' &&
+                                                    {auth && auth.user && (auth.user.role == 'admin' || auth.user.role == 'globaladmin') &&
                                                     <>
                                                         {/* <Dropdown.Link href={route('settings')} method="get" as="button">
                                                             Settings

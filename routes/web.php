@@ -22,6 +22,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CampignController;
 use App\Http\Controllers\UserInviteController;
 use App\Http\Middleware\IsAdmin;
+use App\Http\Middleware\IsGlobalAdmin;
 use App\Models\Contact;
 use App\Models\Note;
 /*
@@ -90,6 +91,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/account/delete_account', [UserController::class, 'deleteAccount'])->name('delete_account');
     Route::post('/saveTemplateStatus/account/{acc_id}/template/{tmp_id}', [UserController::class, 'saveTemplateStatus'])->name('template_status_form');
 
+    
+
     // Webhook Events
     Route::post('/account/{id}/webhook_event', [UserController::class, 'createWebhookEvent'])->name('create_webhook_event');
     Route::post('/account/{id}/webhook_event/{webhook_id}', [UserController::class, 'updateWebhookURL'])->name('update_webhook_url');
@@ -157,7 +160,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/list/{id}', [CategoryController::class, 'edit'])->name('editCategory');
     Route::post('/updateList/{id}', [CategoryController::class, 'update'])->name('updateCategory');
     Route::delete('/deleteList/{id}', [CategoryController::class, 'destroy'])->name('deleteCategory');
-
+    
 
     //Field
     Route::get('/fields', [FieldController::class, 'index'])->name('listField');
@@ -170,15 +173,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/campigns',[CampignController::class, 'index'])->name('listCampign');
     Route::get('/campign/store',[Campigncontroller::class, 'store'])->name('storeCampign');
 });
-
-// Check user is admin
 Route::middleware('auth', IsAdmin::class)->group(function () {
+//users
+    
+Route::get('/users', [UserController::class, 'usersListing'])->name('show_Users');
+Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_user');
+Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('editUser');
+Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('deleteUser');
+Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detailUser');
+});
+
+// Check user is globaladmin
+Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     // Users
     Route::get('/admin/users', [UserController::class, 'usersListing'])->name('listUser');
-    Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_user');
-    Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('editUser');
-    Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('deleteUser');
-    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detailUser');
+    
 
     // Settings
     Route::get('/admin/settings/outgoing_server', [SettingsController::class, 'settings'])->name('settings');
