@@ -3,6 +3,7 @@ import { PencilIcon } from "../../../Pages/icons";
 import { Inertia } from "@inertiajs/inertia";
 import ReactSelect from "./ReactSelect";
 import Notes from '@/Components/Notes';
+import { Head,Link } from "@inertiajs/inertia-react";
 
 export default function Index(props) {
     const [record , setRecord] = useState(props.record);
@@ -54,6 +55,7 @@ export default function Index(props) {
 
     return (            
             <div>
+                <Head title={props.module}/>
                 <ul className="py-4 space-y-2 sm:px-6 sm:space-y-4 lg:px-8" role="list">
                     <li className="bg-white px-4 py-6 shadow sm:rounded-lg sm:px-6">
                         <div className="sm:flex sm:justify-between sm:items-baseline">
