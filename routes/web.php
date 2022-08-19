@@ -177,16 +177,20 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
 //users
     
 Route::get('/users', [UserController::class, 'usersListing'])->name('show_Users');
-Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_user');
-Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('editUser');
-Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('deleteUser');
-Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detailUser');
+Route::get('/user/create', [UserController::class, 'createUser'])->name('create_user');
+Route::get('/user/edit/{id}', [UserController::class, 'editUser'])->name('editUser');
+Route::delete('/user/delete', [UserController::class, 'deleteUser'])->name('deleteUser');
+Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('detailUser');
 });
 
 // Check user is globaladmin
 Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     // Users
     Route::get('/admin/users', [UserController::class, 'usersListing'])->name('listUser');
+    Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_global_user');
+    Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_global_User');
+    Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_global_User');
+    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detail_global_User');
     
 
     // Settings

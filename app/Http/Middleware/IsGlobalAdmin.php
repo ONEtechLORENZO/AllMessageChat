@@ -17,13 +17,11 @@ class IsGlobalAdmin
      */
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::user() && Auth::user()->role == 'globaladmin') {
+        if (Auth::user() && Auth::user()->role == 'global_admin') {
             return $next($request);
         }
 
-        else{
-            return redirect->with('status','Access Denied ! as you are not an globaladmin');
-            }
+        return redirect('/');
         
     }
 }
