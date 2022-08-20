@@ -60,7 +60,7 @@ function Wallet(props)
         >
             <Head title={props.translator['Wallet']} />
 
-            <div className="new-dash mt-10 p-3 text-[#3D4459]">
+            <div className="px-4 sm:px-6 lg:px-8 text-[#3D4459]">
                 <div class="bg-white rounded-md shadow w-full py-8 flex items-center flex-col sm:flex-row">
                     <div className="mx-10">
                         <svg

@@ -25,7 +25,7 @@ function List(props)
             current_page={props.current_page}
         >
                             <nav
-                                className="mt-2 -mb-px flex space-x-8 gap-2 pl-2"
+                                className="px-4 sm:px-6 flex space-x-8 gap-2"
                                 aria-label="Tabs"
                             >
                                {tabs.map((tab) => (

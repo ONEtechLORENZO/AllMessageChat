@@ -30,13 +30,8 @@ const navigation = [
         name: "Contacts",
         href: route("listContact"),
         icon: IdentificationIcon,
-<<<<<<< HEAD
-        
-    },
-=======
         show: ['all'],
     },    
->>>>>>> fa7c4837f1277d91a51d6112092b21b0b75c4135
     {
         name: "Chat",
         href: route("chat_list"),
@@ -187,10 +182,6 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                             key={item.name}
                                             href={item.href}
                                             className={classNames(
-<<<<<<< HEAD
-                                               // (item.name == 'Tags' ||item.name == 'Lists')?  "text-[#3D4459]  hover:text-primary pl-6":
-=======
->>>>>>> fa7c4837f1277d91a51d6112092b21b0b75c4135
                                                 (item.name == current_page)
                                                     ? "text-primary"                                                    
                                                     :"text-[#3D4459]  hover:text-primary",
