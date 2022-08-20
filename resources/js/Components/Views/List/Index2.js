@@ -7,7 +7,7 @@ import { ChevronDownIcon, ChevronUpIcon, UserAddIcon, PencilAltIcon, TrashIcon, 
 import { Inertia } from '@inertiajs/inertia';
 import notie from 'notie';
 import Search from './Search';
-import { Link } from '@inertiajs/inertia-react';
+import { Head,Link } from '@inertiajs/inertia-react';
 import Filter from "./Filter2";
 import axios from "axios";
 
@@ -100,6 +100,7 @@ function ListView(props)
         <>
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
                 <div className="flex min-w-0 justify-between">
+                <Head title={props.module} />
                     <div className='flex gap-6'>
                         <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">{props.plural}</h2>
                         {props.actions && props.actions.search === true ?

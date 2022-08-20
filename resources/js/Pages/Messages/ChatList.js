@@ -1,5 +1,5 @@
 import React ,{ useEffect , useState , Fragment} from 'react';
-import { Link } from '@inertiajs/inertia-react';
+import {Head, Link } from '@inertiajs/inertia-react';
 import MessageList from "./MessageList";
 import Authenticated from "../../Layouts/Authenticated";
 import ApplicationLogo from '@/Components/ApplicationLogo';
@@ -213,6 +213,7 @@ function ChatList(props)
             errors={props.errors}
             current_page = {props.current_page}
         >
+            <Head title='Chat' />
             <div className="flex">
                 <div className="w-1/3">
                     <div className="flex justify-between items-center p-3 md:hidden">

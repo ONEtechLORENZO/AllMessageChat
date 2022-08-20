@@ -60,6 +60,7 @@ class HandleImport extends Command
             $file_path = $import->file_path;
             $total_record = $import->total_records;
             $user_id = $import->user_id;
+            $company_id = $import->company_id;
             $current_date = date('Y-m-d H:i:s');
             $mapping_value = unserialize(base64_decode($import->mapping));
 
@@ -90,7 +91,7 @@ class HandleImport extends Command
             $count = 0;
             foreach ($csvRecords as $index =>  $csvRecord) {
                 $count++;
-                $records[$index] = ['user_id' => $user_id,'created_at' => $current_date, 'updated_at' => $current_date ];
+                $records[$index] = ['user_id' => $user_id,'created_at' => $current_date, 'updated_at' => $current_date, 'company_id' => $company_id ];
                 $customRecord = [];
                 foreach($mapping_value as $name => $label){
                     if($label){

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Authenticated from "@/Layouts/Authenticated";
-import { Link } from "@inertiajs/inertia-react";
+import { Head,Link } from "@inertiajs/inertia-react";
 import { Inertia } from "@inertiajs/inertia";
 import { useForm } from "@inertiajs/inertia-react";
 import PristineJS from "pristinejs";
@@ -87,6 +87,7 @@ const Tabs = (props) => {
                 auth={props.data.auth}
                 errors={props.errors}
             >
+                <Head title='New Import' />
                 <div className="flex flex-wrap">
                     <div className="w-full">
                         <ul
