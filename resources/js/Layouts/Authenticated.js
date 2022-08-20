@@ -45,19 +45,6 @@ const navigation = [
         href: route("listContact"),
         icon: IdentificationIcon,
         
-    },    
-    {
-        name: "Tags",
-        href: route("listTag"),
-        icon: TagIcon,
-        
-        
-    },
-    {
-        name: "Lists",
-        href: route("listCategory"),
-        icon: ViewListIcon,
-        
     },
     {
         name: "Chat",
@@ -222,7 +209,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                             key={item.name}
                                             href={item.href}
                                             className={classNames(
-                                                (item.name == 'Tags' ||item.name == 'Lists')?  "text-[#3D4459]  hover:text-primary pl-6":
+                                               // (item.name == 'Tags' ||item.name == 'Lists')?  "text-[#3D4459]  hover:text-primary pl-6":
                                                 (item.name == current_page)
                                                     ? "text-primary"                                                    
                                                     :"text-[#3D4459]  hover:text-primary",

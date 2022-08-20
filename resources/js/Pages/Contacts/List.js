@@ -1,21 +1,65 @@
 import React from 'react';
 import Authenticated from "../../Layouts/Authenticated";
 import ListView from '@/Components/Views/List/Index2';
+import CategoryList from '../../Pages/Category/List';
+import TagList from '../../Pages/Tag/List';
+//import { Link } from 'heroicons-react';
+import { Link } from "@inertiajs/inertia-react";
+function classNames(...classes) {
+    return classes.filter(Boolean).join(" ");
+}
 
 function List(props)
 {
+
+    const tabs = [
+        { label:'Contacts',name: 'Contacts', href: '#',current: true },
+        { label:'Lists',name: 'Lists', href: route("listCategory"),current: false},
+        { label:'Tags',name: 'Tags', href: route("listTag"),current: false }
+        
+      ];
     return (
         <Authenticated
             auth={props.auth}
             errors={props.errors}
             current_page={props.current_page}
         >
+                            <nav
+                                className="mt-2 -mb-px flex space-x-8 gap-2 pl-2"
+                                aria-label="Tabs"
+                            >
+                               {tabs.map((tab) => (
+                                <>
+                                    {                                       
+                                    <Link
+                                        key={tab.name}
+                                        href={tab.href}
+                                        className={classNames(
+                                            tab.current
+                                                ? "border-purple-500 text-primary"
+                                                : "border-transparent text-gray-500 text-[#3D4459] hover:text-primary hover:border-purple-500",
+                                            "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base  my-6"
+                                        )}
+                                    >
+                                        {tab.name}  
+                                    </Link>}
+                                 </>))} 
+                                 </nav>
+                                 {tabs.map((tab) => (
+                                <>
+                                    {
+                                     tab.name=='Contacts'?
+                                        <ListView
+                                    headers={props.list_view_columns}
+                                    {...props}
+                                    translator={props.translator}
+                                /> :""
+                                 }  </>))}
+                           
+                        
+                    
 
-            <ListView
-                headers={props.list_view_columns}
-                {...props}
-                translator={props.translator}
-            />
+            
             
         </Authenticated>
     )
