@@ -3,30 +3,20 @@ import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link } from "@inertiajs/inertia-react";
-// import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Dialog, Transition } from "@headlessui/react";
 import {
-    BellIcon,
-    CalendarIcon,
-    ChartBarIcon,
-    FolderIcon,
     HomeIcon,
     ChatAltIcon,
-    InboxIcon,
-    MenuAlt2Icon,
     ChatAlt2Icon,
-    CurrencyDollarIcon,
     IdentificationIcon,
-    TagIcon,
-    ViewListIcon,
     BriefcaseIcon,
     UsersIcon,
     XIcon,
     ChevronRightIcon,
     ChevronLeftIcon,
-    MenuIcon,
+    ServerIcon,
 } from "@heroicons/react/outline";                                                                      
-import {NotifiIcon} from '../Pages/icons'
+import { NotifiIcon } from '../Pages/icons'
 import SelectCompany from "@/Pages/Company/SelectCompany";
 
 const navigation = [
@@ -34,65 +24,44 @@ const navigation = [
         name: "Dashboard",
         href: route("dashboard"),
         icon: HomeIcon,
-    },
-    {
-        name: "Messages",
-        href: route("message_list"),
-        icon: ChatAltIcon,
+        show: ['all'],
     },
     {
         name: "Contacts",
         href: route("listContact"),
         icon: IdentificationIcon,
-        
+        show: ['all'],
     },    
-    {
-        name: "Tags",
-        href: route("listTag"),
-        icon: TagIcon,
-        
-        
-    },
-    {
-        name: "Lists",
-        href: route("listCategory"),
-        icon: ViewListIcon,
-        
-    },
     {
         name: "Chat",
         href: route("chat_list"),
         icon: ChatAlt2Icon,
-        
+        show: ['all'],
+    },
+    {
+        name: "Messages",
+        href: route("message_list"),
+        icon: ChatAltIcon,
+        show: ['all'],
     },
     {
         name: "Wallet",
         href: route("wallet"),
         icon: BriefcaseIcon,
-        
+        show: ['all'],
     },
     {
-        name: "Pricing",
-        href: route("listPrice"),
-        icon: CurrencyDollarIcon,
-        
+        name: "Fields",
+        href: route("listField"),
+        icon: ServerIcon,
+        show: ['admin'],
     },
     {
         name: "Users",
         href: route("listUser"),
         icon: UsersIcon,
-        
+        show: ['admin'],
     },
-
-    // { name: "Opportunities", href: "#", icon: CalendarIcon, current: false },
-    // { name: "Automations", href: "#", icon: InboxIcon, current: false },
-    // { name: "Integrations", href: "#", icon: ChartBarIcon, current: false },
-    // { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
-];
-const userNavigation = [
-    { name: "Your Profile", href: "#" },
-    { name: "Settings", href: "#" },
-    { name: "Sign out", href: "#" },
 ];
 
 function classNames(...classes) {
@@ -171,11 +140,9 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                     <div className="flex-shrink-0 flex items-center px-4">
                                         <ApplicationLogo className="block h-9 w-auto text-gray-500" />
                                     </div>
-
-                                    
-
                                 </Dialog.Panel>
                             </Transition.Child>
+
                             <div
                                 className="flex-shrink-0 w-14"
                                 aria-hidden="true"
@@ -195,39 +162,30 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                     {/* Sidebar component, swap this element with another sidebar if you like */}
                     <div className="flex flex-col flex-grow border-r border-gray-200 pt-5 bg-[#F6FFFD] overflow-y-auto">
                         <div className="flex items-center flex-shrink-0 px-4">
-                        
                             <ApplicationLogo className="block h-9 w-auto text-gray-500" />
                         </div>
                         <div
                             className="mt-4 mx-4 h-7 w-7 bg-white flex justify-center items-center shadow-sm text-[#3D4459] cursor-pointer"
                             onClick={() => setShowSidebarText(!showSidebarText)}
                         >
-                            {showSidebarText ? (
-                                <ChevronRightIcon />
-                            ) : (
-                                <ChevronLeftIcon />
-                            )}
+                            {showSidebarText ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                         </div>
                         <div className="mt-2 flex-grow flex flex-col">
                             <nav className="flex-1 px-2 pb-4 space-y-1">
-                                {navigation.map((item) => (
-                                    <>
-                                        {(((item.name == 'Pricing' || 
-                                            item.name == 'Users') && 
-                                           // auth.user.role != 'regular') 
-                                           (auth.user.role == 'global_admin' || auth.user.role != 'admin') )
-                                        || (item.name != 'Pricing' && 
-                                        item.name != 'Users')) &&
+                                {navigation.map((item) => {
+                                    if(item.show != 'all' && !item.show.includes(auth.user.role)) {
+                                        return;
+                                    }
+
+                                    return (
                                         <Link
                                             key={item.name}
                                             href={item.href}
                                             className={classNames(
-                                                (item.name == 'Tags' ||item.name == 'Lists')?  "text-[#3D4459]  hover:text-primary pl-6":
                                                 (item.name == current_page)
                                                     ? "text-primary"                                                    
                                                     :"text-[#3D4459]  hover:text-primary",
                                                      "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
-
                                             )}
                                         >
                                             <item.icon
@@ -242,9 +200,8 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                             />
                                             {showSidebarText ? item.name: ""}
                                         </Link>
-                                        }
-                                    </>
-                                ))}
+                                    );
+                                })}
                             </nav>
                         </div>
                     </div>
@@ -291,18 +248,19 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
 
                                                 <Dropdown.Content>
                                                     <Dropdown.Link href={route('profile')} method="get" as="button">
-                                                    Profile
+                                                        Profile
                                                     </Dropdown.Link>
-                                                    {auth && auth.user && (auth.user.role == 'admin' || auth.user.role == 'global_admin') &&
-                                                    <>
-                                                        {/* <Dropdown.Link href={route('settings')} method="get" as="button">
+
+                                                    <button className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" onClick={() => setSelectedCompany(true)} as="button">
+                                                        Switch company
+                                                    </button>
+
+                                                    {auth && auth.user && auth.user.role == 'global_admin' ?
+                                                        <Dropdown.Link href={route('settings')} method="get" as="button">
                                                             Settings
-                                                        </Dropdown.Link> */}
-                                                        <button className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" onClick={() => setSelectedCompany(true)} as="button">
-                                                            Switch company
-                                                        </button>
-                                                    </>
-                                                    }
+                                                        </Dropdown.Link>
+                                                    : ''}
+
                                                     <Dropdown.Link href={route('logout')} method="post" as="button">
                                                         Log Out
                                                     </Dropdown.Link>
@@ -365,14 +323,15 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                             <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">{header}</div>
                         </header>
                     )}
+
                     <main>{children}</main>
                 </div>
             </div>
 
             {/* Select company */}
             <SelectCompany
-                openModal = {selectCompanyModal}
-                setSelectedCompany = {setSelectedCompany}
+                openModal={selectCompanyModal}
+                setSelectedCompany={setSelectedCompany}
             />
 
         </>
