@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Price;
 use App\Models\Wallet;
 use App\Models\Filter;
+use Cache;
 use App\Models\ChatListContact;
 use Illuminate\Support\Facades\DB;
 
@@ -222,6 +223,8 @@ class MsgController extends Controller
         $contactList = $messages = $accoutList= [];
         $user = $request->user();
 
+        $companyId = Cache::get('selected_company_'. $user->id);
+
         if($request->contact_id){
             $selectedContact = $request->contact_id;
             $contactChaneel = ChatListContact::where('user_id', $user->id)->where('contact_id' , $selectedContact )->first();
@@ -241,7 +244,7 @@ class MsgController extends Controller
         }
 
         $recordData = $this->getChatContactList($request);
-        $filterData = $this->getFiltersInfo($user->id , 'Contact', true);
+        $filterData = $this->getFiltersInfo($companyId, $user->id, 'Contact', true);
 
         $translator = [
             'Your Profile' => __('Your Profile'),

@@ -1364,21 +1364,25 @@ class UserController extends Controller
     }
 
     /**
-     * Return selected company name
+     * Return companies related to User and selected company name
      */
     public function getSelectedCompany(Request $request)
     {
         $user = $request->user();
+        // Get companies related to the User
         $companies = $user->company;
-        $selectedCompany = false;
-        $selectedCompany = (Cache::has('selected_company_'. $user->id)) ? Cache::get('selected_company_'. $user->id ) : '';
-        if( ($companies && !$selectedCompany) && count($companies) == 1 && isset($companies[0]) ) {
+
+        $selectedCompany = Cache::has('selected_company_' . $user->id) ? Cache::get('selected_company_' . $user->id) : '';
+        // If user has single company related to him, set the company as default
+        if($companies && !$selectedCompany && count($companies) == 1) {
             $selectedCompany = $companies[0]->id;
-            Cache::put('selected_company_'. $user->id, $companies[0]->id );
+            Cache::put('selected_company_' . $user->id, $companies[0]->id);
         }
-        echo json_encode([
+
+        return response()->json([
+            'success' => true,
             'selected_company' => $selectedCompany,
             'companies' => $companies
-        ]);
+        ], 200);
     }
 }
