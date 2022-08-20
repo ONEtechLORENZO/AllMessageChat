@@ -7,26 +7,10 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Http\Request;
 
-use Auth;
-use DB;
 use Cache;
-use App\Models\MessageLog;
-use App\Models\IncomingUrl;
-use App\Models\Msg;
 use App\Models\Tag;
-use App\Models\Taggable;
 use App\Models\Category;
-use App\Models\Filter;
-use App\Models\MessageResponse;
-use App\Models\Account;
 use App\Models\Field;
-use App\Models\User;
-use App\Models\Template;
-use App\Models\Message;
-use Illuminate\Support\Facades\Log;
-use DateTime;
-use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Input;
 
 class ContactController extends Controller
 {

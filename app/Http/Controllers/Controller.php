@@ -46,6 +46,10 @@ class Controller extends BaseController
 
         // Get company selected by the user.
         $companyId = Cache::get('selected_company_'. $user->id);
+        // If user is not related to any company, abort the below process
+        if(!$companyId) {
+            abort(403);
+        }
 
         $filterData = $this->getFiltersInfo($companyId, $user_id, $moduleName, false);
        
@@ -89,7 +93,7 @@ class Controller extends BaseController
             }
         }
 
-        $query = ($searchData) ? $this->getWhereFilterCondition($searchData, $query, $baseTable) : $query;
+        $query = ($searchData) ? $this->prepareQuery($searchData, $query, $baseTable) : $query;
 
         if($moduleName != 'Price' && $moduleName != 'Company') {
             // For tenancy
@@ -104,7 +108,7 @@ class Controller extends BaseController
             }
         }
 
-        if($moduleName == 'Company') {
+        if($moduleName == 'Company' && $user->role != 'global_admin') {
             $query->join('company_user' ,'company_id', 'companies.id');
             $query->where('company_user.user_id', $user_id);
         }
@@ -206,25 +210,26 @@ class Controller extends BaseController
     }
 
     /**
-     * Prepare filter
+     * Prepare Query based on Search data
      */
-    public function getWhereFilterCondition($searchData, $query, $baseTable)
+    public function prepareQuery($searchData, $query, $baseTable)
     {
         $groupCount = 0;
         foreach($searchData as $key => $groupConditions) {
             foreach($groupConditions as $groupOperator => $conditions) {
+                $controller = $this;
+                // Setting the group operator
                 $groupOperator = ($groupCount == 0) ? '' : $groupOperator;
                 $groupCount ++;
-                $obj = $this;
                 
                 if($groupOperator == 'AND' || $groupOperator == '') {
-                    $query->where(function($query) use ($conditions, $baseTable, $obj) {
-                        $query = $obj->setWhereCondition($query, $conditions, $baseTable);
+                    $query->where(function($query) use ($conditions, $baseTable, $controller) {
+                        $query = $controller->setConditions($query, $conditions, $baseTable);
                     });   
                 } 
                 else {
-                    $query->orWhere(function($query) use ($conditions, $baseTable, $obj) {
-                        $query = $obj->setWhereCondition($query, $conditions, $baseTable);
+                    $query->orWhere(function($query) use ($conditions, $baseTable, $controller) {
+                        $query = $controller->setConditions($query, $conditions, $baseTable);
                     });
                 }
             }
@@ -232,25 +237,25 @@ class Controller extends BaseController
         return $query;
     }
 
-    public function setWhereCondition($query , $conditions , $baseTable )
+    /**
+     * Setting conditions
+     */
+    public function setConditions($query, $conditions, $baseTable)
     {
-        $whereCondition = '';
         $conditionsCount = count($conditions);
-        if(!$conditionsCount){
-            return ;
+        if(!$conditionsCount) {
+            return;
         }
-        foreach($conditions as $key => $condition){
+
+        foreach($conditions as $key => $condition) {
             $fieldName = $condition->field_name;
             $fieldValue = $condition->condition_value;
-
-
-            if($fieldName){
-                $isNullCondition = false;
-                if( isset($condition->field_type) && $condition->field_type == 'tag'){
+            if($fieldName) {
+                // For Tag and List module
+                if(isset($condition->field_type) && $condition->field_type == 'tag') {
                     $selectedTag = $condition->condition_value;
-                        
-                    if( $fieldName == 'tag_relation' ) {
-                        if($selectedTag){
+                    if( $fieldName == 'tag_relation' ) { // Tag
+                        if($selectedTag) {
                             $fieldName = 'tag_id';
                             $conditionOperator = 'in';
                             $fieldValue = $selectedTag;
@@ -259,9 +264,8 @@ class Controller extends BaseController
                             $conditionOperator = 'null';
                             $fieldValue = "";
                         }
-                    } else {
-                        if($selectedTag){
-                            $tag = implode(',', $selectedTag);
+                    } else { // List
+                        if($selectedTag) {
                             $fieldName = 'category_id';
                             $conditionOperator = 'in';
                             $fieldValue = $selectedTag;
@@ -271,14 +275,15 @@ class Controller extends BaseController
                             $fieldValue = "";
                         }
                     }
-                } else {
+                } 
+                else {
                     $conditionOperator = $condition->record_condition;
-
-                    if( strpos($fieldName , 'cf_') !== false ){
+                    // Check whether field is custom field
+                    if( strpos($fieldName , 'cf_') !== false ) {
                         $fieldName = 'custom->'.$fieldName;
                     }
                     
-                    switch($condition->record_condition){
+                    switch($condition->record_condition) {
                         case 'equal':
                             $conditionOperator = '=';
                             break;
@@ -304,32 +309,32 @@ class Controller extends BaseController
                             $conditionOperator = ' < ';
                             break;
                     }
-                    if(!$fieldValue){
+
+                    if(!$fieldValue) {
                         $conditionOperator = 'null';
                     }
-                    
                 }
+
                 $operator = '';
-               
-                if($key > 0 ){
-                    $operator = ($conditions[$key-1]) ? $conditions[$key-1]->condition_operator : 'AND';
+                if($key > 0) {
+                    $operator = ($conditions[$key - 1]) ? $conditions[$key - 1]->condition_operator : 'AND';
                 }
                 
-                if($operator == 'AND' || $operator == ''){
-                    if($conditionOperator == 'in'){
-                        $query->whereIn($fieldName , $fieldValue );
-                    } else if($conditionOperator == 'null'){
+                if($operator == 'AND' || $operator == '') {
+                    if($conditionOperator == 'in') {
+                        $query->whereIn($fieldName, $fieldValue);
+                    } else if($conditionOperator == 'null') {
                         $query->whereNull($fieldName);
                     } else {
-                        $query->where($fieldName, $conditionOperator , $fieldValue );
+                        $query->where($fieldName, $conditionOperator, $fieldValue);
                     }
                 } else {
-                    if($conditionOperator == 'in'){
-                        $query->orWhereIn($fieldName , $fieldValue );
-                    } else if($conditionOperator == 'null'){
+                    if($conditionOperator == 'in') {
+                        $query->orWhereIn($fieldName, $fieldValue);
+                    } else if($conditionOperator == 'null') {
                         $query->orWhereNull($fieldName);
                     } else {
-                        $query->orWhere($fieldName, $conditionOperator , $fieldValue );
+                        $query->orWhere($fieldName, $conditionOperator, $fieldValue);
                     }
                 }
             }
