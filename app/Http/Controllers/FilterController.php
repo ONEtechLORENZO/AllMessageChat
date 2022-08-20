@@ -25,9 +25,14 @@ class FilterController extends Controller
         $filter->user_id = $request->user()->id;
         $filter->company_id = Cache::get('selected_company_'. $request->user()->id);
         $filter->condition = base64_encode( serialize( json_decode($request->filter) ));
+        $filter->is_chat = ($request->is_chat) ?  true : false;
         $filter->save();
 
-        return Redirect::route('listContact', ['filter_id' => $filter->id]);
+        if($request->is_chat){
+            return Redirect::route('chat_list', ['filter_id' => $filter->id]);
+        } else {
+            return Redirect::route('listContact', ['filter_id' => $filter->id]);
+        }
     }
 
     /**

@@ -36,7 +36,6 @@ function Filter(props)
         }
     ];
 
-
     const condition_operators = {
         'text':{
             'equal':  props.translator['Equal'],
@@ -105,7 +104,12 @@ function Filter(props)
 
     // Apply filter data
     function applyFilter( filter ){
-        var url = route('listContact') + '?filter_id='+filter;
+        if(props.is_chat){
+            var url = route('chat_list') + '?filter_id='+filter;
+        } else {
+            var url = route('listContact') + '?filter_id='+filter;
+        }
+        
         Inertia.get(url,  {
             onSuccess: (response) => {
                 setOpenFilterModal(false);
@@ -296,9 +300,13 @@ function Filter(props)
         }
         
         var advancedSearch = JSON.stringify(filter);
-        var url = route('listContact') + '?filter='+advancedSearch;
+        if(props.is_chat){
+            var url = route('chat_list') + '?filter='+advancedSearch +'&is_chat='+ props.is_chat;
+        } else {
+            var url = route('list'+ props.module) + '?filter='+advancedSearch ;
+        }
         
-        Inertia.get(url,  {
+        Inertia.get(url, {
             onSuccess: (response) => {
                 setOpenFilterModal(false);
             },
@@ -316,6 +324,10 @@ function Filter(props)
             setErrors(newError);
         } else {
             var data = {'filter': JSON.stringify(filter), 'module_name': props.module, 'filter_name': filterName, 'filter_id':selectedFilter };
+            if(props.is_chat){
+                data['is_chat'] = props.is_chat;
+            }
+           
             Inertia.post(route('store_filter'), data, {
                 onSuccess: (response) => {
                     setOpenFilterModal(false);
@@ -443,7 +455,7 @@ function Filter(props)
                         <li onClick={ ()=> applyFilter('All')} className={"px-4 py-2 text-gray-900 text-sm hover:bg-sky-700 cursor-pointer "+ (selectedFilter == 'All' && 'bg-gray-100' ) }>
                         {props.translator['All']}
                         </li>
-                        {Object.entries(props.filter.filter_list).map(([filter_index, filterData])=>
+                        {props.filter && Object.entries(props.filter.filter_list).map(([filter_index, filterData])=>
                             <li  key={filterData['id']} className={"px-4 py-2 hover:bg-sky-700 cursor-pointer "+ (selectedFilter == filterData['id'] ? 'bg-gray-100' : '' ) }>
                                 <div class="flex text-white hover:text-gray-900">
                                     <div className="flex-auto w-80 text-gray-900 text-sm" onClick={()=> applyFilter(filterData['id'])}> {filterData['name']} </div>

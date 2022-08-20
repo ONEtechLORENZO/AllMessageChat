@@ -125,34 +125,7 @@ class Controller extends BaseController
                 'lastPage' => $records->lastPage(),
                 'perPage' => $records->perPage(),
             ],
-            'translator' => [
-                'Edit' => __('Edit'),
-                'Search' => __('Search'),
-                'Search filter' => __('Search filter'),
-                'Save Filter' => __('Save Filter'),
-                'Add' => __('Add'),
-                'All' => __('All'),
-                'Add New' => __('Add New'),
-                'Close' =>__('Close'),
-                'Search Filter' => __('Search Filter'),
-                'Add New Condition' => __('Add New Condition'),
-                'Add Group' => __('Add Group'),
-                'Filter name' => __('Filter name'),
-                'AND' => __('AND'),
-                'OR' => __('OR'),
-                'Tag' =>__('Tag'),
-                'List' => __('List'),
-                'Equal' => __('Equal'),
-                'Contains' => __('Contains'),
-                'Null' => __('Null'),
-                'Start with' => __('Start with'),
-                'End with' => __('End with'),
-                'Lesser than' => __('Lesser than'),
-                'Greater than' =>__('Greater than'),
-                'Not equal' => __('Not equal'),
-                'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?'),
-                'No records' =>__('No records')
-            ],
+            'translator' => $this->getTranslations(),
         ];
        
         return $return;
@@ -161,13 +134,17 @@ class Controller extends BaseController
     /**
      * Return filter Data
      */
-    public function getFiltersInfo($user_id, $moduleName)
+    public function getFiltersInfo($user_id, $moduleName, $is_chat = '')
     {
         $return = [];
         // Filter list
-        $return['filter_list'] = Filter::where('user_id', $user_id)
-            ->where('module_name', $moduleName)
-            ->get(); 
+        $query = Filter::where('user_id', $user_id)
+            ->where('module_name', $moduleName);
+        if($is_chat){
+            $query->where('is_chat', true);
+        }
+        $return['filter_list'] = $query->get(); 
+        
         
         // Tag list
         $return['tag_list'] = $this->getTagOptionList($user_id);
@@ -345,5 +322,41 @@ class Controller extends BaseController
             }
         }
         return $query;
+    }
+
+    /**
+     * Return translator
+     */
+    public function getTranslations()
+    {
+        $translator = [
+            'Edit' => __('Edit'),
+            'Search' => __('Search'),
+            'Search filter' => __('Search filter'),
+            'Save Filter' => __('Save Filter'),
+            'Add' => __('Add'),
+            'All' => __('All'),
+            'Add New' => __('Add New'),
+            'Close' =>__('Close'),
+            'Search Filter' => __('Search Filter'),
+            'Add New Condition' => __('Add New Condition'),
+            'Add Group' => __('Add Group'),
+            'Filter name' => __('Filter name'),
+            'AND' => __('AND'),
+            'OR' => __('OR'),
+            'Tag' =>__('Tag'),
+            'List' => __('List'),
+            'Equal' => __('Equal'),
+            'Contains' => __('Contains'),
+            'Null' => __('Null'),
+            'Start with' => __('Start with'),
+            'End with' => __('End with'),
+            'Lesser than' => __('Lesser than'),
+            'Greater than' =>__('Greater than'),
+            'Not equal' => __('Not equal'),
+            'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?'),
+            'No records' =>__('No records')
+        ];
+        return $translator;
     }
 }

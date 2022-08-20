@@ -14,6 +14,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use App\Models\Price;
 use App\Models\Wallet;
+use App\Models\Filter;
+use App\Models\ChatListContact;
 use Illuminate\Support\Facades\DB;
 
 class MsgController extends Controller
@@ -219,14 +221,13 @@ class MsgController extends Controller
         $category = ($request->category) ? $request->category : '';
         $contactList = $messages = $accoutList= [];
         $user = $request->user();
-       
-        $contacts = Contact::join('msgs', 'msgable_id', 'contacts.id')
-            ->where('user_id', $user->id )
-            ->orderBy('msgs.id', 'desc')
-            ->groupBy('contacts.id')
-            ->get($contactFields);
-        
-        
+
+        if($request->contact_id){
+            $selectedContact = $request->contact_id;
+            $contactChaneel = ChatListContact::where('user_id', $user->id)->where('contact_id' , $selectedContact )->first();
+            $category = $contactChaneel->channel;
+            $messages = $this->getMessageList($request);        
+        }
         $accounts = Account::where('user_id', $user->id )
             ->where(function($query) use ($category) {
                 if($category != 'all' && $category != ''){
@@ -238,50 +239,114 @@ class MsgController extends Controller
         foreach($accounts as $account){
             $accoutList[$account->id] = $account->company_name;
         }
-        foreach($contacts as $contact){
-            $name = $contact->first_name . ' ' .$contact->last_name;
-            if($name == ' '){
-                $name = ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id;
-            } 
-            $name = trim($name , ' '); 
 
-            $contactList[$contact->id] = [
-                'id' => $contact->id,
-                'name' => $name,
-                'number' =>  $contact->phone_number,
-                'insta_id' => $contact->instagram_id 
-            ];
-        }
-        if($request->contact_id){
-            $selectedContact = $request->contact_id;
-            $messages = $this->getMessageList($request);        
-        }
+        $recordData = $this->getChatContactList($request);
+        $filterData = $this->getFiltersInfo($user->id , 'Contact', true);
 
-        return Inertia::render('Messages/ChatList', [
+        $translator = [
+            'Your Profile' => __('Your Profile'),
+            'Settings' => __('Settings'),
+            'Sign out' => __('Sign out'),
+            'All Chats' => __('All Chats'),
+            'Unread' => __('Unread'),
+            'Archived' => __('Archived'),
+            'Add Column' => __('Add Column'),
+            'New Message' => __('New Message'),
+            'Conversation not start yet.'  => __('Conversation not start yet.'),
+            'View notifications'  => __('View notifications'),
+            'Junior Developer' => __('Junior Developer'),
+            'All Channel' => __('All Channel'),
+            'Account list' => __('Account list'),
+            'Write your message!' => __('Write your message!')
+        ];
+        $translator = array_merge( $translator, $this->getTranslations());
+    
+        $data = [
             'contact_list' => $contactList,
             'account_list' => $accoutList,
             'messages' => $messages,
             'selected_contact' => $selectedContact,
             'current_page' => 'Chat',
             'category' => ($category) ? $category : 'all',
-            'translator' => [
-                'Your Profile' => __('Your Profile'),
-                'Settings' => __('Settings'),
-                'Sign out' => __('Sign out'),
-                'All Chats' => __('All Chats'),
-                'Unread' => __('Unread'),
-                'Archived' => __('Archived'),
-                'Add Column' => __('Add Column'),
-                'New Message' => __('New Message'),
-                'Conversation not start yet.'  => __('Conversation not start yet.'),
-                'View notifications'  => __('View notifications'),
-                'Junior Developer' => __('Junior Developer'),
-                'All Channel' => __('All Channel'),
-                'Account list' => __('Account list'),
-                'Write your message!' => __('Write your message!')
-            ]
+            'translator' => $translator,
+            'filter' => $filterData,
+        ];
+        $data = array_merge($data, $recordData);
+        return Inertia::render('Messages/ChatList', $data);
+    }
 
-        ]);
+    /**
+     * Return chat contact list
+     */
+    public function getChatContactList($request)
+    {
+        $user = $request->user();
+        $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
+        $filter = $request->has('filter') && $request->get('filter') ? $request->get('filter') : '';
+        $filterId = $request->has('filter_id') && $request->get('filter_id') ? $request->get('filter_id') : '';
+        $searchData = ($filter)? json_decode($filter) : '';
+        $query = ChatListContact::where('chat_list_contacts.user_id', $user->id );
+        
+        if($filterId && $filterId != 'All'){
+            $filter = Filter::find($filterId);
+            if($filter){
+                $searchData = unserialize( base64_decode($filter->condition) );
+            }
+        }
+
+        if($searchData){
+            $query->join('contacts', 'contact_id', 'contacts.id');
+            $query = $this->getWhereFilterCondition($searchData , $query, 'contacts');
+        }
+
+        if($search){
+            $list_view_columns = ['first_name', 'last_name', 'phone_number', 'instagram_id', 'email'];
+            $query->join('contacts', 'contact_id', 'contacts.id');
+            $query->where(function ($query) use ($search, $list_view_columns) {  
+                foreach($list_view_columns as $field_name) {
+                    if($field_name != 'tag' && $field_name != 'list')
+                        $query->orWhere($field_name, 'like', '%' . $search . '%');
+                }
+            });
+        }
+        $mode = (isset($_GET['mode'])) ? ($_GET['mode']) : '';
+        if($mode && $mode == 'archived'){
+            $query->where('is_archive' , true);
+        } else {
+            $query->where(function ($query)  {  
+                $query->whereNull('is_archive')->orWhere('is_archive' , 0);
+            });
+        }
+      //  dd($query);
+        $chatListContact = $query->get();
+
+        $contactList = [];
+        foreach($chatListContact as $contactId){
+            $contact = Contact::find($contactId->contact_id);
+            if($contact){
+                $name = $contact->first_name . ' ' .$contact->last_name;
+                if($name == ' '){
+                    $name = ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id;
+                } 
+                $name = trim($name , ' '); 
+
+                $contactList[$contact->id] = [
+                    'id' => $contact->id,
+                    'name' => $name,
+                    'number' =>  $contact->phone_number,
+                    'insta_id' => $contact->instagram_id,
+                    'channel' => $contactId->channel, 
+                ];
+            }
+        }
+        $data = [
+            'contact_list' => $contactList,
+            'filter_id' => $filterId,
+            'search' => $search,
+            'mode' => $mode,
+        ];
+    
+        return $data;
     }
 
     /**
@@ -291,8 +356,10 @@ class MsgController extends Controller
     {
         $user = $request->user();
         $contactId = $request->contact_id;
+        // Update Channel
+        $this->updateChatChannel($user->id , $contactId, $request->category); 
         $category = ($request->category == 'all') ?['instagram', 'whatsapp'] : [$request->category] ;
-       
+        
         $messages = [];
         $account = Account::where('user_id', $user->id)->first();
         $contact = Contact::where('user_id', $user->id)
@@ -313,6 +380,17 @@ class MsgController extends Controller
         return ( $messages);
     }
 
+    /**
+     * Update chat Channel
+     */
+    public function updateChatChannel($user_id , $cotnact_id, $channel)
+    {
+        $contact = ChatListContact::where('user_id', $user_id)->where('contact_id' , $cotnact_id )->first();
+        if($contact){
+            $contact->channel = $channel;
+        }
+        $contact->save();
+    }
 
     /**
      * Handle incoming request coming from Gupshup service

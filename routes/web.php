@@ -21,6 +21,7 @@ use App\Http\Controllers\FieldController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CampignController;
 use App\Http\Controllers\UserInviteController;
+use App\Http\Controllers\ChatListContactController;
 use App\Http\Middleware\IsAdmin;
 use App\Models\Contact;
 use App\Models\Note;
@@ -99,6 +100,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/chat', [MsgController::class, 'ChatList'])->name('chat_list');
     Route::get('/getMessages', [MsgController::class, 'getMessageList'])->name('get_message_list');
     Route::post('/sendMessage', [MsgController::class, 'sendMessage'])->name('send_message_to_contact');
+    Route::post('/setArchivedContact', [ChatListContactController::class, 'setArchivedContact'])->name('set_archive');
+    Route::get('/getUserContacts', [ChatListContactController::class, 'getUserContacts'])->name('get_user_contacts_list');
+    Route::post('/store/userChartContacts', [ChatListContactController::class, 'storeUserChatContact'])->name('store_user_contact_list');
 
     //Contact
     //Route::get('/contacts', [ContactController::class, 'index'])->name('contacts');

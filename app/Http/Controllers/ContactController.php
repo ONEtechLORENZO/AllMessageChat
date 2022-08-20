@@ -120,8 +120,13 @@ class ContactController extends Controller
      */
     public function store(Request $request)
     {
+        
         $contact_id = $this->saveContact($request);
-        return Redirect::route('detailContact', $contact_id);
+        if($request->is_chat){
+            return Redirect::route('chat_list');
+        } else {
+            return Redirect::route('detailContact', $contact_id);
+        }
     }
 
     /**
