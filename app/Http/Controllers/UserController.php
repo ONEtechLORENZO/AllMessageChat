@@ -416,7 +416,6 @@ class UserController extends Controller
             $user->last_name = $request->get('last_name');
             $user->name =  $request->get('first_name') . ' ' .$request->get('last_name');
             $user->email = $request->get('email');
-            $user->company_name = $request->get('company_name');
             $user->phone_number = $request->get('phone_number');
             $user->language = $request->get('language');
             $user->currency = $request->get('currency');
@@ -444,7 +443,14 @@ class UserController extends Controller
                 ]);
             }
             Log::info('Record saved successfully.');
-            return Redirect::route('user_profile', $user_id);
+            
+            if($request->user()->role != 'regular'){
+                return Redirect::route('detail_global_User', $user_id);
+            } else {
+                return Redirect::route('profile');
+            }
+            
+            
         }
         
         return Redirect::route('dashboard');

@@ -17,6 +17,7 @@ import {
     ChatAlt2Icon,
     CurrencyDollarIcon,
     IdentificationIcon,
+    OfficeBuildingIcon,
     TagIcon,
     ViewListIcon,
     BriefcaseIcon,
@@ -64,6 +65,11 @@ const navigation = [
         href: route("chat_list"),
         icon: ChatAlt2Icon,
         
+    },{
+        name: "Company",
+        href: route("listCompany"),
+        icon: OfficeBuildingIcon,
+        
     },
     {
         name: "Wallet",
@@ -79,7 +85,7 @@ const navigation = [
     },
     {
         name: "Users",
-        href: route("listUser"),
+        href: route("show_Users"),
         icon: UsersIcon,
         
     },
@@ -212,12 +218,14 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                             <nav className="flex-1 px-2 pb-4 space-y-1">
                                 {navigation.map((item) => (
                                     <>
-                                        {(((item.name == 'Pricing' || 
-                                            item.name == 'Users') && 
+                                        {((  (item.name == 'Pricing' && auth.user.role == 'global_admin' ) ||  
+                                            (item.name == 'Users' && auth.user.role != 'regular' )||
+                                            (item.name == 'Company' && auth.user.role != 'regular' )) ||
+                                            (item.name != 'Pricing' && item.name != 'Users' && item.name != 'Company')
                                            // auth.user.role != 'regular') 
-                                           (auth.user.role == 'global_admin' || auth.user.role != 'admin') )
-                                        || (item.name != 'Pricing' && 
-                                        item.name != 'Users')) &&
+                                          // (auth.user.role == 'global_admin' || auth.user.role != 'admin') )
+                                       
+                                         ) &&
                                         <Link
                                             key={item.name}
                                             href={item.href}

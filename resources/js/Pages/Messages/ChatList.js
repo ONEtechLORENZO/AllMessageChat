@@ -40,7 +40,7 @@ function ChatList(props)
     const [chatList, setChatList] = useState(props.contact_list);
     const [data, setData] = useState({
         destination: '',
-        chennal: containerCategory,
+        channel: containerCategory,
         content: ''
     });
     const [selectedAccount, setSelectedAccount] = useState('');
@@ -99,6 +99,9 @@ function ChatList(props)
         var url = route('chat_list', {'contact_id': contact, 'category': channel});
         if(props.filter_id){
             url = url + '&filter_id='+props.filter_id;
+        }
+        if(current_tab){
+            url += '&mode='+ current_tab;
         }
         Inertia.get(url, {
             onSuccess: (response) => {
@@ -166,6 +169,9 @@ function ChatList(props)
             var url = route('chat_list', {'search': searchKey});
             if(props.filter_id){
                 url = url + '&filter_id='+props.filter_id;
+            }
+            if(current_tab){
+                url += '&mode='+ current_tab;
             }
             Inertia.get(url, {
                 onSuccess: (response) => {
@@ -320,7 +326,7 @@ function ChatList(props)
                                                     "hidden ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block"
                                                 )}
                                             >
-                                                {tab.count}
+                                                {Object.entries(chatList).length}
                                             </span>
                                         ) : null}
                                     </a>
