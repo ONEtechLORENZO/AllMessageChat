@@ -238,7 +238,7 @@ class Controller extends BaseController
     }
 
     /**
-     * Setting conditions
+     * Set conditions based on the params
      */
     public function setConditions($query, $conditions, $baseTable)
     {
@@ -295,7 +295,7 @@ class Controller extends BaseController
                             break;
                         case 'start_with':
                             $conditionOperator = 'like';
-                            $fieldValue = " '{$fieldValue}%' ";
+                            $fieldValue = "{$fieldValue}%";
                             break;
                         case 'end_with':
                             $conditionOperator = 'like';
@@ -308,8 +308,17 @@ class Controller extends BaseController
                         case 'lesser_than':
                             $conditionOperator = ' < ';
                             break;
+                        default:
+                            $conditionOperator = '';
+                            break;
                     }
 
+                    // Skip if condition operator doesn't match with our defaults
+                    if(!$conditionOperator) {
+                        continue;
+                    }
+
+                    // If user doesn't enter any value, need to check whether it is null
                     if(!$fieldValue) {
                         $conditionOperator = 'null';
                     }
