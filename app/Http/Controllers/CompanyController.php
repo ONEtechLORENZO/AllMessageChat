@@ -96,7 +96,7 @@ class CompanyController extends Controller
                 'company_id' => $company->id
             ]);
         }
-        return Redirect::route('listCompany');
+        return Redirect::route('detailCompany', $company->id );
     }
 
     /**

@@ -129,7 +129,7 @@ function OrderFieldsGroup(props){
                                                 </div>
                                                 {selectedModule &&
                                                     <div className='flex mt-3 border-2'>
-                                                        <div class="flex-1 m-1">
+                                                        <div class="flex-1 m-1 overflow-auto max-h-80">
                                                             <FieldSort
                                                                 groups={groups}
                                                                 fields={fields}
