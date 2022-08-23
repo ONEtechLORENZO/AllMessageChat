@@ -111,13 +111,13 @@ function OrderFieldsGroup(props){
 
                                 <form id=''>
                                     <div className='p-4 space-y-4'>
-                                        <div class="flex justify-center">
+                                        <div class="">
                                             <div>
-                                                <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
+                                                <div class="sm:gap-4">
                                                     <label for="selected_module" class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
                                                         Select Module
                                                     </label>
-                                                    <div class="mt-1 sm:mt-0 sm:col-span-2">
+                                                    <div class="mt-1 sm:mt-0 w-1/4">
                                                         <Dropdown
                                                             id={'selected_module'}
                                                             name={'selected_module'}
@@ -128,8 +128,8 @@ function OrderFieldsGroup(props){
                                                     </div>
                                                 </div>
                                                 {selectedModule &&
-                                                    <div className='flex mt-3 border-2'>
-                                                        <div class="flex-1 m-1 overflow-auto max-h-80">
+                                                    <div className='flex mt-3'>
+                                                        <div class="flex-1 m-1 overflow-auto w-full max-h-80">
                                                             <FieldSort
                                                                 groups={groups}
                                                                 fields={fields}
