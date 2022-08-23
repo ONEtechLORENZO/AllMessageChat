@@ -452,10 +452,11 @@ class UserController extends Controller
             $user->save();
             $user_id = $user->id;
             if (!$request->get('id') && $company) {
-                DB::table('company_user')->insert([
-                    'user_id' => $user_id,
-                    'company_id' => $company
-                ]);
+                $user->company()->syncWithoutDetaching([$company]);
+                // DB::table('company_user')->insert([
+                //     'user_id' => $user_id,
+                //     'company_id' => $company
+                // ]);
             }
             Log::info('Record saved successfully.');
             
