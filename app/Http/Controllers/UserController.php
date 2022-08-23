@@ -11,12 +11,8 @@ use Inertia\Inertia;
 use App\Rules\MatchOldPassword;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
-use App\Models\MailToAddress;
-use App\Models\OutgoingServerConfig;
-use Swift_Mailer;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Mail;
 use App\Http\Controllers\TemplateController;
 use App\Models\Transaction;
 use App\Models\Wallet;
@@ -32,7 +28,6 @@ use DB;
 class UserController extends Controller
 {
     public $per_page = 15;
-  
 
     public $webhook_events = [
         'enqueued' => ['label' => 'Enqueued', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
@@ -44,16 +39,19 @@ class UserController extends Controller
         'template_events' => ['label' => 'Template events', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
         'account_related_events' => ['label' => 'Account related events', 'help_text' => 'Return sent messasge enqueue response to callback url'],
     ];
+
     public $userRoles = [
-    //    'global_admin' => 'Global Admin',
+        'global_admin' => 'Global Admin',
         'regular' => 'Regular',
         'admin' => 'Admin'
     ];
+
     public $categories = [
         'TRANSACTIONAL' => 'TRANSACTIONAL',
         'MARKETING' => 'MARKETING',
         'OTP' => 'OTP'
     ];
+
     public $timezones = array(
         'Pacific/Midway'       => "(GMT-11:00) Midway Island",
         'US/Samoa'             => "(GMT-11:00) Samoa",
@@ -169,7 +167,6 @@ class UserController extends Controller
         'Pacific/Fiji'         => "(GMT+12:00) Fiji",
     );
     
-
     /**
      * Show list of accounts related to logged in user
      */
@@ -177,30 +174,29 @@ class UserController extends Controller
     {
         $user = $request->user();
         $user_id = $user->id;
-        $companyId = Cache::get('selected_company_'. $user->id);
+        $companyId = Cache::get('selected_company_' . $user_id);
 
         $query = Account::select('company_name', 'service', 'accounts.id', 'accounts.status');
-        if($user->role == 'admin'){
-            $query->where('company_id' , $companyId);
-        } else if($user->role = 'regular'){
-            //$query->where('user_id', $user_id)->get();
-            $query->where('company_id' , $companyId);
+        if($user->role != 'global_admin') {
+            $query->where('company_id', $companyId);
         }
+
         $accounts = $query->get();
 
         return Inertia::render('Dashboard', [
             'accounts' => $accounts,
             'translator' => [
-                    'Dashboard'=>__('Dashboard'),
-                    'Create new account'=>__('Create new account'),
-                    'Business profiles'=>__('Business profiles'),
-                    'No account'=>__('No account'),
-                    'Get started by creating a new account.'=>__('Get started by creating a new account.'),
-                    'Click here to create new account'=>__('Click here to create new account'),
-                    'Confirm to Delete' =>  __('Confirm to Delete'),
-                    'Are you sure to do this?' => __('Are you sure to do this?'),
-                    'Yes' =>__('Yes'),
-                    'No' =>__('No')  ]      
+                'Dashboard'=>__('Dashboard'),
+                'Create new account'=>__('Create new account'),
+                'Business profiles'=>__('Business profiles'),
+                'No account'=>__('No account'),
+                'Get started by creating a new account.'=>__('Get started by creating a new account.'),
+                'Click here to create new account'=>__('Click here to create new account'),
+                'Confirm to Delete' =>  __('Confirm to Delete'),
+                'Are you sure to do this?' => __('Are you sure to do this?'),
+                'Yes' =>__('Yes'),
+                'No' =>__('No'),  
+            ],      
         ]);
     }
 
@@ -216,8 +212,10 @@ class UserController extends Controller
             'status' =>  [ 'label' => 'Status' , 'type' => 'checkbox'],
             'created_at' =>  [ 'label' => 'Created at' , 'type' => 'datetime'],
         ];
+
         $module = new User();
-        $listViewData = $this->listView( $request , $module, $list_view_columns);
+
+        $listViewData = $this->listView($request, $module, $list_view_columns);
 
         $moduleData = [
             'singular' => 'User',
@@ -245,24 +243,26 @@ class UserController extends Controller
                 'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?')
             ],
         ];
-        $data = array_merge($moduleData , $listViewData);
+
+        $data = array_merge($moduleData, $listViewData);
         return Inertia::render('Admin/User/UserList2', $data);
     }
 
     /**
-     * Create User
+     * Show User Form (Create View)
      */
     public function createUser(Request $request)
     {
-        $currentUser = $request->user();
         $user = new User();
+        $currentUser = $request->user();
+        $user_roles = $this->getRoles($currentUser);
         
-        if($currentUser->role != 'regular'){
+        if($currentUser->role != 'regular') {
             return Inertia::render('Admin/User/CreateUser', [
                     'user' => $user, 
                     'currentUser' => $currentUser,
                     'time_zone' => $this->timezones,
-                    'roles' => $this->userRoles,
+                    'roles' => $user_roles,
                     'translator' => [
                         'Name' => __('Name'),
                         'Company name' => __('Company name'),
@@ -289,13 +289,28 @@ class UserController extends Controller
     }
 
     /**
-     * Edit User
+     * Show User Form (Edit View)
      */
     public function editUser(Request $request, $id)
     {
-        $user = User::findOrFail($id);
-        $password = $user->password;
         $currentUser = $request->user();
+        // Check whether user has access to edit the record.
+        $user = User::where('id', $id);
+        $companies = $user->company;
+        $flag = false;
+        $selectedCompany = Cache::has('selected_company_' . $currentUser->id) ? Cache::get('selected_company_' . $currentUser->id) : '';
+        foreach($companies as $company) {
+            if($company->id == $selectedCompany) {
+                $flag = true;
+            }
+        }
+
+        if($flag === false) {
+            abort(401);
+        }
+
+        $password = $user->password;
+        $user_roles = $this->getRoles($currentUser);
         
         if($currentUser->role != 'regular' || $user->id == $currentUser->id){
             return Inertia::render('Admin/User/CreateUser', [
@@ -303,7 +318,7 @@ class UserController extends Controller
                     'password' => $password, 
                     'currentUser' => $currentUser,
                     'time_zone' => $this->timezones,
-                    'roles' => $this->userRoles,
+                    'roles' => $user_roles,
                     'translator' => [
                         'Name' => __('Name'),
                         'Company name' => __('Company name'),
@@ -1384,5 +1399,17 @@ class UserController extends Controller
             'selected_company' => $selectedCompany,
             'companies' => $companies
         ], 200);
+    }
+
+    /**
+     * Return role list based on the current user role
+     */
+    public function getRoles($user)
+    {
+        $user_roles = $this->userRoles;
+        if($user->role != 'global_admin') {
+            unset($user_roles['global_admin']);
+        }
+        return $user_roles;
     }
 }
