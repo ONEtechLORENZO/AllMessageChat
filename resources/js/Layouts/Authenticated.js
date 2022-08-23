@@ -9,6 +9,9 @@ import {
     ChatAltIcon,
     ChatAlt2Icon,
     IdentificationIcon,
+    OfficeBuildingIcon,
+    TagIcon,
+    ViewListIcon,
     BriefcaseIcon,
     UsersIcon,
     XIcon,
@@ -37,6 +40,12 @@ const navigation = [
         href: route("chat_list"),
         icon: ChatAlt2Icon,
         show: ['all'],
+        
+    },{
+        name: "Company",
+        href: route("listCompany"),
+        icon: OfficeBuildingIcon,
+        show: ['admin'],
     },
     {
         name: "Messages",
@@ -58,7 +67,7 @@ const navigation = [
     },
     {
         name: "Users",
-        href: route("listUser"),
+        href: route("show_Users"),
         icon: UsersIcon,
         show: ['admin'],
     },
@@ -172,11 +181,11 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                         </div>
                         <div className="mt-2 flex-grow flex flex-col">
                             <nav className="flex-1 px-2 pb-4 space-y-1">
+
                                 {navigation.map((item) => {
                                     if(item.show != 'all' && !item.show.includes(auth.user.role)) {
                                         return;
                                     }
-
                                     return (
                                         <Link
                                             key={item.name}

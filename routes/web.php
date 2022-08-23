@@ -112,16 +112,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
 
-    //Company
-    Route::get('/companies', [CompanyController::class, 'index'])->name('listCompany');
-    Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');
-    Route::get('/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
-    Route::get('/company/edit/{id}', [CompanyController::class, 'edit'])->name('editCompany');
-    Route::post('/company/update/{id}', [CompanyController::class, 'store'])->name('updateCompany');
-    Route::delete('/company/delete/{id}', [CompanyController::class, 'destroy'])->name('deleteCompany');
-    Route::post('/company/sendInvitation', [CompanyController::class, 'sendInvitation'])->name('send_invite_link');
-    Route::post('/company/setBaseCompany', [CompanyController::class, 'setBaseCompany'])->name('setBaseCompany');
-
+  
     //Filter
     Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');
     Route::post('/storeFilter', [FilterController::class, 'storeFilter'])->name('store_filter');
@@ -171,12 +162,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Check user is admin
 Route::middleware('auth', IsAdmin::class)->group(function () {
-    // Users
-    Route::get('/users', [UserController::class, 'usersListing'])->name('listUser');
+    
+    //users
+    Route::get('/users', [UserController::class, 'usersListing'])->name('show_Users');
     Route::get('/user/create', [UserController::class, 'createUser'])->name('create_user');
     Route::get('/user/edit/{id}', [UserController::class, 'editUser'])->name('editUser');
     Route::delete('/user/delete', [UserController::class, 'deleteUser'])->name('deleteUser');
     Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('detailUser');
+
+    //Company
+    Route::get('/companies', [CompanyController::class, 'index'])->name('listCompany');
+    Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');
+    Route::get('/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
+    Route::get('/company/edit/{id}', [CompanyController::class, 'edit'])->name('editCompany');
+    Route::post('/company/update/{id}', [CompanyController::class, 'store'])->name('updateCompany');
+    Route::delete('/company/delete/{id}', [CompanyController::class, 'destroy'])->name('deleteCompany');
+    Route::post('/company/sendInvitation', [CompanyController::class, 'sendInvitation'])->name('send_invite_link');
+    Route::post('/company/setBaseCompany', [CompanyController::class, 'setBaseCompany'])->name('setBaseCompany');
+
 });
 
 // Check user is global admin

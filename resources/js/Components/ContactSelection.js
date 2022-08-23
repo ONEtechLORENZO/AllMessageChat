@@ -95,7 +95,7 @@ export default function ContactSelection(props) {
                                             <div>
                                                     <CreatableSelect
                                                         isMulti
-                                                        value={selectedContact}
+                                                    //    value={selectedContact}
                                                         options={contactList}
                                                         onChange={setSelectedContact}
                                                     />

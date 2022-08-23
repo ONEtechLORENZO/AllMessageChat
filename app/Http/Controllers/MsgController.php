@@ -228,7 +228,7 @@ class MsgController extends Controller
         if($request->contact_id){
             $selectedContact = $request->contact_id;
             $contactChaneel = ChatListContact::where('user_id', $user->id)->where('contact_id' , $selectedContact )->first();
-            $category = $contactChaneel->channel;
+            $category = ($request->category) ? $request->category : $contactChaneel->channel;
             $messages = $this->getMessageList($request);        
         }
         $accounts = Account::where('user_id', $user->id )
@@ -312,7 +312,7 @@ class MsgController extends Controller
                 }
             });
         }
-        $mode = (isset($_GET['mode'])) ? ($_GET['mode']) : '';
+        $mode = (isset($_GET['mode'])) ? ($_GET['mode']) : 'all';
         if($mode && $mode == 'archived'){
             $query->where('is_archive' , true);
         } else {
@@ -456,7 +456,7 @@ class MsgController extends Controller
         $account = Account::find($request->account_id);
         $msg = new Msg();
        
-        if($request->chennal == 'instagram'){
+        if($request->channel == 'instagram'){
             // TODO Get correct account based on instagram id
             
             $response = $msg->sendInstagramMessage($request->content , $request->destination, $account->src_name);
@@ -485,11 +485,11 @@ class MsgController extends Controller
     public function handleMessageResult(Request $request, $accountId , $data)
     {
         $user_id = $this->getUserIdUsingAccountId($accountId);
-        $msgable_id = $this->getInfoUsingContactUniqueId($request->destination, $request->chennal, $user_id);
+        $msgable_id = $this->getInfoUsingContactUniqueId($request->destination, $request->channel, $user_id);
         $msgable_type = 'App\Models\Contact';
         $messageData = [
             'service_id' => $data['messageId'],
-            'service' => $request->chennal,
+            'service' => $request->channel,
             'message' => $request->content,
             'account_id' => $accountId,
             'msgable_id' => $msgable_id,
@@ -708,7 +708,7 @@ class MsgController extends Controller
         }
 
         $result['messageId'] = $result['result']['messageId'];
-        $request->chennal = 'whatsapp';
+        $request->channel = 'whatsapp';
         $this->handleMessageResult($request, $account->id, $result);
         return response()->json($result['result']);
     }

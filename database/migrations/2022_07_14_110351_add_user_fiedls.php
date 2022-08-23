@@ -14,7 +14,6 @@ class AddUserFiedls extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('company_name')->nullable();
             $table->string('phone_number')->nullable();
             $table->string('language')->nullable();
             $table->string('currency')->nullable();
@@ -36,7 +35,7 @@ class AddUserFiedls extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumns(['company_name', 'phone_number', 'language', 'currency']);
+            $table->dropColumns([ 'phone_number', 'language', 'currency']);
             $table->dropColumns(['time_zone', 'company_address', 'company_country', 'company_vat_id']);
             $table->dropColumns(['codice_destinatario', 'admin_email']);
         });
