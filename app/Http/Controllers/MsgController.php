@@ -252,7 +252,7 @@ class MsgController extends Controller
             'Sign out' => __('Sign out'),
             'All Chats' => __('All Chats'),
             'Unread' => __('Unread'),
-            'Archived' => __('Archived'),
+            'Archive' => __('Archive'),
             'Add Column' => __('Add Column'),
             'New Message' => __('New Message'),
             'Conversation not start yet.'  => __('Conversation not start yet.'),
@@ -299,7 +299,7 @@ class MsgController extends Controller
 
         if($searchData){
             $query->join('contacts', 'contact_id', 'contacts.id');
-            $query = $this->getWhereFilterCondition($searchData , $query, 'contacts');
+            $query = $this->prepareQuery($searchData , $query, 'contacts');
         }
 
         if($search){

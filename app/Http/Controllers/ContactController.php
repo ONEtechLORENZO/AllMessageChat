@@ -193,7 +193,8 @@ class ContactController extends Controller
         $tagSelectedRecords = $this->getSelectedTag($contact);
         $ListOptions = $this->getListOption($request->user()->id);
         $ListSelectRecords = $this->getSelectedList($contact);
-        $headers = $this->getModuleHeader($request->user()->id);
+        $companyId = Cache::get('selected_company_'. $request->user()->id);
+        $headers = $this->getModuleHeader($companyId , 'Contact');
 
         return Inertia::render('Contacts/Detail', [
             'contact' => $contact,
@@ -314,20 +315,7 @@ class ContactController extends Controller
         return Redirect::route('listContact');
     }
 
-    public function getModuleHeader($user)
-    {
-        $fields = Field::where('module_name', 'Contact')
-            ->where('user_id', $user)
-            ->get(['field_label', 'field_name', 'field_type', 'is_custom']);
-        $header = [];
-        foreach ($fields as $field) {
-            $is_custom = ($field->is_custom) ? 'custom' : 'default';
-            $header[$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type']];
-        }
-        $header['default']['tag'] = ['label' => __('Tag'), 'type' => 'text'];
-        $header['default']['list'] = ['label' => __('List'), 'type' => 'text'];
-        return $header;
-    }
+    
 
     public function saveContact($request){
 

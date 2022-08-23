@@ -21,6 +21,7 @@ use App\Http\Controllers\FieldController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CampignController;
 use App\Http\Controllers\UserInviteController;
+use App\Http\Controllers\FieldGroupController;
 use App\Http\Controllers\ChatListContactController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsGlobalAdmin;
@@ -167,6 +168,11 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::delete('/user/delete', [UserController::class, 'deleteUser'])->name('deleteUser');
     Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('detailUser');
 
+    // Field Group
+    Route::post('/storeFieldGroup', [FieldGroupController::class, 'store'])->name('storeFieldGroup');
+    Route::get('/getFieldsGroup', [FieldGroupController::class, 'getFieldsGroup'])->name('get_fields_group');
+    Route::post('/storeFieldOrder', [FieldGroupController::class, 'storeFieldOrder'])->name('store_field_order');
+    
     //Company
     Route::get('/companies', [CompanyController::class, 'index'])->name('listCompany');
     Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');

@@ -10,6 +10,8 @@ use Illuminate\Routing\Controller as BaseController;
 use App\Models\Filter;
 use App\Models\Tag;
 use App\Models\Category;
+use App\Models\Field;
+use App\Models\FieldGroup;
 use Cache;
 
 class Controller extends BaseController
@@ -163,6 +165,11 @@ class Controller extends BaseController
 
         if($is_chat) {
             $query->where('is_chat', true);
+        } else {
+            $query->where(function($query){
+                $query->whereNull('is_chat')
+                    ->orWhere('is_chat' , false);
+            });
         }
 
         $return['filter_list'] = $query->get(); 
@@ -349,6 +356,47 @@ class Controller extends BaseController
             }
         }
         return $query;
+    }
+
+    /** 
+     * Return module header list
+     */
+    public function getModuleHeader($company_id, $module)
+    {
+        $groupList = $this->getGroupList($company_id, $module);
+        $fields = Field::where('module_name', $module)
+            ->where('company_id', $company_id)
+            ->orderBy('sequence', 'asc')
+            ->get(['field_label', 'field_name', 'field_type', 'is_custom', 'field_group']);
+        $header = [];
+        foreach ($fields as $field) {           
+            $is_custom = ($field->field_group) ? $groupList[$field->field_group] : 'default';
+            if($field->field_group){
+                $header['custom'][$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type']];
+            } else {
+                $header[$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type']];
+            }
+        }
+        $header['default']['tag'] = ['label' => __('Tag'), 'type' => 'text'];
+        $header['default']['list'] = ['label' => __('List'), 'type' => 'text'];
+       
+        return $header;
+    }
+
+
+    /**
+     * Return group list
+     */
+    public function getGroupList($companyId, $module)
+    {
+        // $userId = $request->user()->id;
+        // $companyId = Cache::get('selected_company_'.$userId);
+        $list = FieldGroup::where(['company_id' => $companyId, 'module_name' => $module ])->get();
+        $groupList = [];
+        foreach($list as $group){
+            $groupList[$group->id] = $group->name;
+        }
+        return $groupList;
     }
 
     /**

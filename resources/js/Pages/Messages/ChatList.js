@@ -44,7 +44,6 @@ function ChatList(props)
         content: ''
     });
     const [selectedAccount, setSelectedAccount] = useState('');
-    const accountList = props.account_list;
     const [searchKey , setSearchKey] = useState(props.search);
     const channels = {
         all : {label: props.translator['All Channel'], icon: ApplicationLogo },
@@ -54,18 +53,19 @@ function ChatList(props)
     const[ current_tab, setCurrentTabId ] = useState(props.mode);
     const tabs = [
         { name: (props.translator['All Chats']), id:'all', href: "#", count: "2", current: false },
-        { name: (props.translator['Unread']), id:'un_read', href: "#", count: "", current: false },
-        { name: (props.translator['Archived']), id:'archived', href: "#", count: "", current: false },
+        { name: (props.translator['Unread']), id:'unread', href: "#", count: "", current: false },
+        { name: (props.translator['Archive']), id:'archived', href: "#", count: "", current: false },
     ];
 
     const [time, setTime] = useState(Date.now());
+    const accountList = props.account_list;
 
     useEffect(() => {
         const interval = setInterval(() => getMessageList(), 5000);
         return () => {
             clearInterval(interval);
         };
-    }, []);
+    }, [chatList]);
 
     // Update select contact
     function updateContactData(contact){
@@ -326,7 +326,7 @@ function ChatList(props)
                                                     "hidden ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block"
                                                 )}
                                             >
-                                                {Object.entries(chatList).length}
+                                                {Object.entries(props.contact_list).length}
                                             </span>
                                         ) : null}
                                     </a>
@@ -344,7 +344,7 @@ function ChatList(props)
                                 className="relative z-0 divide-y divide-gray-100"
                             >           
                                   
-                                {Object.entries(chatList).map(([id, person], j) => (
+                                {Object.entries(props.contact_list).map(([id, person], j) => (
                                     <li key={id}   >
                                         <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
                                             
@@ -366,14 +366,14 @@ function ChatList(props)
                                                         className="absolute inset-0"
                                                         aria-hidden="true"
                                                     />
-                                                    <p className="text-sm font-semibold text-[#3D4459]">
+                                                    <p className="text-sm font-semibold text-[#3D4459] flex items-start">
                                                         {person && (person.name) ?
                                                             <>{person.name}</>
                                                             : 
                                                             <>{person.number}</>
                                                         }
                                                     </p>
-                                                    <p className="text-sm text-[#3D4459] truncate">
+                                                    <p className="text-sm text-[#3D4459] truncate flex items-start">
                                                         {person.number}
                                                     </p>
                                                 </button>
@@ -399,7 +399,7 @@ function ChatList(props)
                                                     <ul role="list" className="divide-y divide-gray-200 overflow-y-auto m-h-64">
                                                         
                                                         <li onClick={() => setArchived(person.id)} className={"px-4 py-2 text-gray-900 text-sm hover:bg-sky-700 cursor-pointer " }>
-                                                            {current_tab == 'archived' ? <> Unarchived </> : <>Archived</> } 
+                                                            {current_tab == 'archived' ? <> Unarchive </> : <>Archive</> } 
                                                         </li>
                                                     </ul>
                                                     </Dropdown.Content>

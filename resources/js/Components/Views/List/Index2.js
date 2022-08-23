@@ -100,7 +100,7 @@ function ListView(props)
         <>
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
                 <div className="flex min-w-0 justify-between">
-                <Head title={props.module} />
+                    <Head title={props.module} />
                     <div className='flex gap-6'>
                         <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">{props.plural}</h2>
                         {props.actions && props.actions.search === true ?
@@ -135,6 +135,28 @@ function ListView(props)
                                     className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
                                 > 
                                     <UserAddIcon className='h-4 w-4 mr-1' /> Invite Users 
+                                </button>
+                            </>
+                        : ''}
+                        {props.actions && props.actions.field_group === true ?
+                            <>
+                                <button 
+                                    type = 'button'
+                                    onClick={() => props.setFieldGroup(true) }
+                                    className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
+                                > 
+                                    Add Field Group 
+                                </button>
+                            </>
+                        : ''}
+                        {props.actions && props.actions.order_field === true ?
+                            <>
+                                <button 
+                                    type = 'button'
+                                    onClick={() => props.setOrderFields(true) }
+                                    className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
+                                > 
+                                    Order fields 
                                 </button>
                             </>
                         : ''}

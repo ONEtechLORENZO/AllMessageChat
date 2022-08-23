@@ -96,7 +96,7 @@ class CompanyController extends Controller
                 'company_id' => $company->id
             ]);
         }
-        return Redirect::route('listCompany');
+        return Redirect::route('detailCompany', $company->id );
     }
 
     /**
@@ -105,10 +105,28 @@ class CompanyController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
+        $user = $request->user();
         $company = Company::find($id);
+        $users = $company->user;
+       // dd($users);
+        $companyId = Cache::get('selected_company_'. $user->id);
+        $headers = $this->getModuleHeader($companyId , 'Company');
 
+        $data = [
+            'record' => $company,
+            'users' => $users,
+            'headers' => $headers,
+            'translator' => [
+                'Detail' => __('Detail'),
+                'Notes' => __('Notes'),
+                'Edit'  =>__('Edit')
+                ]
+
+        ];
+        return Inertia::render('Company/Detail', $data);
+       
     }
 
     /**
