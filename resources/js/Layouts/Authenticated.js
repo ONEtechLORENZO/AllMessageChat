@@ -10,8 +10,6 @@ import {
     ChatAlt2Icon,
     IdentificationIcon,
     OfficeBuildingIcon,
-    TagIcon,
-    ViewListIcon,
     BriefcaseIcon,
     UsersIcon,
     XIcon,
@@ -21,6 +19,7 @@ import {
 } from "@heroicons/react/outline";                                                                      
 import { NotifiIcon } from '../Pages/icons'
 import SelectCompany from "@/Pages/Company/SelectCompany";
+import { CurrencyDollarIcon } from "@heroicons/react/solid";
 
 const navigation = [
     {
@@ -63,13 +62,26 @@ const navigation = [
         name: "Fields",
         href: route("listField"),
         icon: ServerIcon,
-        show: ['admin'],
+        show: ['admin', 'global_admin'],
     },
     {
         name: "Users",
         href: route("show_Users"),
         icon: UsersIcon,
         show: ['admin'],
+    },
+];
+
+const globalAdminLinks = [
+    {
+        name: "Pricing",
+        href: route("listPrice"),
+        icon: CurrencyDollarIcon,
+    },
+    {
+        name: "Users",
+        href: route("list_global_user"),
+        icon: UsersIcon,
     },
 ];
 
@@ -181,7 +193,6 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                         </div>
                         <div className="mt-2 flex-grow flex flex-col">
                             <nav className="flex-1 px-2 pb-4 space-y-1">
-
                                 {navigation.map((item) => {
                                     if(item.show != 'all' && !item.show.includes(auth.user.role)) {
                                         return;
@@ -213,6 +224,38 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                 })}
                             </nav>
                         </div>
+                        {auth.user.role == 'global_admin' ?
+                            <div className="flex-shrink-0 flex">
+                                <nav className="flex-1 px-2 pb-4 space-y-1">
+                                    {globalAdminLinks.map((item) => {
+                                        return (
+                                            <Link
+                                                key={item.name}
+                                                href={item.href}
+                                                className={classNames(
+                                                    (item.name == current_page)
+                                                        ? "text-primary"                                                    
+                                                        :"text-[#3D4459]  hover:text-primary",
+                                                        "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+                                                )}
+                                            >
+                                                <item.icon
+                                                    className={classNames(
+                                                        (item.name == current_page)
+                                                            ? "text-primary"
+                                                            : "text-[#3D4459] group-hover:text-primary",
+                                                        "mr-3 flex-shrink-0 h-6 w-6"
+                                                        
+                                                    )}
+                                                    aria-hidden="true"
+                                                />
+                                                {showSidebarText ? item.name: ""}
+                                            </Link>
+                                        );
+                                    })}
+                                </nav>
+                            </div>
+                        : ''}
                     </div>
                 </div>
                 <div className="flex flex-col flex-1 bg-[#FBFBFBBF]">
