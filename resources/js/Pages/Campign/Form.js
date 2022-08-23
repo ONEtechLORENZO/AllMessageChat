@@ -1,86 +1,145 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "@inertiajs/inertia-react";
-import { CheckIcon } from '@heroicons/react/solid';
-import Filter from "@/Components/Views/List/Filter2";
 import Authenticated from "@/Layouts/Authenticated";
-
-const steps = [
-  { name: 'Step 1', href: '#', status: 'complete' },
-  { name: 'Step 2', href: '#', status: 'current' },
-  { name: 'Step 3', href: '#', status: 'upcoming' },
-  { name: 'Step 4', href: '#', status: 'upcoming' },
-  { name: 'Step 5', href: '#', status: 'upcoming' },
-]
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
+import { Inertia } from "@inertiajs/inertia";
+import Navigator from "./Navigator";
+import Information from "./Step1";
+import ContactFilter from "./Step2";
+import Content from "./Step3";
+import Schedule from "./Step4";
 
 export default function Campign(props) {
-  const [openTab, setOpenTab] = useState(1);
+  const [openTab, setOpenTab] = useState();
+  const [data, setData] = useState([]);
+  const [status, setStatus] = useState();
+  const [schedule, setSchedule] = useState(false);
+  const [conditions, setConditons] = useState();
+  const [recordCount, setRecordCount] = useState(null);
+  const [isfilter, setIsfilter] = useState(false);
+  
+  useEffect(() => {
+    setOpenTab(props.campign.current_page);
+    setData(props.campign);
+    setStatus(props.status);
+    setRecordCount(props.count);
+  },[props]);
+
+  const handleChange = (event) => {
+      let newState = Object.assign({}, data);
+      const name = event.target.name;
+      const value = event.target.value;
+      if(name == 'scheduled_at' && value == 'now'){
+        setSchedule(false);
+      }
+      newState[name] = value;
+      setData(newState);
+  }
+
+  function saveCampign(){
+
+    let CheckCondition = checkValidation(data, openTab, isfilter, conditions);
+   
+    if(!CheckCondition){
+      return false;
+    }
+    data['conditions'] = conditions;
+    data['tab'] = openTab;
+
+    Inertia.post(route('storeCampign'), data, {
+        onSuccess: (response) => {
+          
+        },
+        onError: (errors) => {
+            setErrors(errors)
+        }
+      });
+   } 
+   
+   /**
+    * 
+    * @param check if we select the filter
+    * @returns 
+    */
+   function checkfilterCondition(conditions){
+      if(conditions){
+        let length = Object.entries(conditions).length;
+        if(length == 0){
+          return false;
+        }
+      }else{
+        return false;
+      }
+      return true;
+   }
+
+   /**
+    * 
+    * @param Date validation
+    * @returns 
+    */
+   function checkDate(data){
+      if(data.scheduled_at){
+        const getDate = new Date(data.scheduled_at);
+        const currentDate = new Date();
+
+        let scheduleDate = getDate.valueOf();
+        let nowDate = currentDate.valueOf();
+    
+        if(nowDate >= scheduleDate){
+          return false;
+        }
+      }
+        return true;
+   }
+
+   function checkValidation(data, openTab, isfilter, conditions){
+
+      if(openTab == '2'){
+        if(isfilter){
+          let ifCheckFilter = checkfilterCondition(conditions);
+          if(!ifCheckFilter){
+            return false;
+          }
+        }else{
+          return false;
+        }
+      }
+      
+      if((!data.service || data.service == '') && openTab == 3){
+        return false;
+      }
+
+      if((!data.scheduled_at || data.scheduled_at == '') && openTab == 4){
+        return false;
+      }
+
+      if((!data.account_id || data.account_id == '') && openTab == 4){
+        return false;
+      }
+
+      if(data.scheduled_at != 'now'){
+        let ifValideDate = checkDate(data);
+        if(!ifValideDate){
+          return false;
+        }
+      }
+
+      return true;
+   }
 
   return (
+
     <Authenticated
       auth={props.auth}
       errors={props.errors}
       current_page = {props.current_page}
     >
      <div className="bg-white overflow-hidden shadow rounded-lg divide-y divide-gray-200">
-      <div className="px-4 py-5 sm:px-6">
-        <nav aria-label="Progress">
-        <ol role="list" className="flex items-center">
-          {steps.map((step, stepIdx) => ( 
-            <li key={step.name} className={classNames(stepIdx !== steps.length - 1 ? 'pr-8 sm:pr-20' : '', 'relative')}>
-              {step.status === 'complete' ? (
-                <>
-                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div className="h-0.5 w-full bg-indigo-600" />
-                  </div>
-                  <a
-                    href="#"
-                    className="relative w-8 h-8 flex items-center justify-center bg-indigo-600 rounded-full hover:bg-indigo-900"
-                  >
-                    <CheckIcon className="w-5 h-5 text-white" aria-hidden="true" />
-                    <span className="sr-only">{step.name}</span>
-                  </a>
-                </>
-              ) : step.status === 'current' ? (
-                <>
-                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div className="h-0.5 w-full bg-gray-200" />
-                  </div>
-                  <a
-                    href="#"
-                    className="relative w-8 h-8 flex items-center justify-center bg-white border-2 border-indigo-600 rounded-full"
-                    aria-current="step"
-                  >
-                    <span className="h-2.5 w-2.5 bg-indigo-600 rounded-full" aria-hidden="true" />
-                    <span className="sr-only">{step.name}</span>
-        
-                  </a>
-                </>
-              ) : (
-                <>
-                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div className="h-0.5 w-full bg-gray-200" />
-                  </div>
-                  <a
-                    href="#"
-                    className="group relative w-8 h-8 flex items-center justify-center bg-white border-2 border-gray-300 rounded-full hover:border-gray-400"
-                  >
-                    <span
-                      className="h-2.5 w-2.5 bg-transparent rounded-full group-hover:bg-gray-300"
-                      aria-hidden="true"
-                    />
-                    <span className="sr-only">{step.name}</span>
-                  </a>
-                </>
-              )}
-            </li>
-          ))}
-          </ol>
-        </nav>
-      </div>
+       <div className=" w-full">
+           <Navigator
+            current_page={openTab}
+            status={props.status}
+          />
+       </div>
       <div className="px-4 py-5 sm:p-6">
       <div className="flex flex-wrap">
         <div className="w-full">
@@ -89,85 +148,65 @@ export default function Campign(props) {
             <div className="tab-content tab-space">
               <div
                   className={
-                      openTab === 1 ? "block" : "hidden"
+                      openTab == 1 ? "block" : "hidden"
                   }
                   id="link1"
               >
-        <div className="overflow-hidden shadow rounded-lg divide-y divide-gray-200 w-1/2 content-center m-20 -mt-8">
-          <div className="px-4 py-5 sm:px-6 bg-green-200">
-              Information
-          </div>
-        <div className="px-4 py-5 sm:p-6">
-         <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Name
-            </label>
-            <div className="mt-1">
-                <input
-                  type="text"
-                  name="campign_name"
-                  id="name"
-                  className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                  placeholder=""
-                />
-            </div>
-         </div>
-         <div>
-          <div className="pt-5">
-            <div className="flex justify-end">
-                <Link
-                    href={route("listImport")}
-                    className="bg-indigo-600 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                    Add
-                </Link>
-             </div>
-            </div>
-          </div>
-        </div>
-      </div>
+                   <Information
+                    data={data}
+                    handleChange={handleChange}
+                    saveCampign={saveCampign}
+                   />
               </div>
               <div
                   className={
-                      openTab === 2 ? "block" : "hidden"
+                      openTab == 2 ? "block" : "hidden"
                   }
                   id="link2"
               >
-              step 2 
-             
-              <div className="bg-gray-50 overflow-hidden rounded-lg justify-center items-center ">
-                <div className="px-4 py-5 sm:p-6">
-                <div className="bg-white overflow-hidden shadow rounded-lg">
-                    <div className="px-4 py-5 sm:p-6">
-                    <Filter
-                      translator={props.translator}
-                      filter={props.filter}
-                      module={'Contact'}
-                    />
-                    </div>
-                    <div className="bg-gray-50 px-4 py-4 sm:px-6">
-                      Contact
-                    </div>
-                  </div>
-                </div>
-              </div>
+                <ContactFilter 
+                  filters={props}
+                  data={data}
+                  handleChange={handleChange}
+                  saveCampign={saveCampign}
+                  previous={setOpenTab}
+                  setConditons={setConditons}
+                  setRecordCount={setRecordCount}
+                  recordCount={recordCount}
+                  isfilter={setIsfilter}
+                />
           
               </div>
               <div
                   className={
-                      openTab === 3 ? "block" : "hidden"
+                      openTab == 3 ? "block" : "hidden"
                   }
                   id="link2"
               >
-              step 3 
+                 <Content 
+                   data={data}
+                   handleChange={handleChange}
+                   saveCampign={saveCampign}
+                   previous={setOpenTab}
+                 />
               </div>
               <div
                   className={
-                      openTab === 4 ? "block" : "hidden"
+                      openTab == 4 ? "block" : "hidden"
                   }
                   id="link2"
               >
-              step 4 
+                <Schedule 
+                  data={data}
+                  schedule={setSchedule}
+                  scheduleOpen={schedule}
+                  previous={setOpenTab}
+                  handleChange={handleChange}
+                  saveCampign={saveCampign}
+                  status={status}
+                  records={recordCount}
+                  companyName={props.companyName}
+                />
               </div>
                     </div>
                 </div>

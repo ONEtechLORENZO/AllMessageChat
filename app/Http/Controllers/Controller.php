@@ -37,7 +37,8 @@ class Controller extends BaseController
         $filterId = $request->has('filter_id') && $request->get('filter_id') ? $request->get('filter_id') : '';
         $sort_by = $request->has('sort_by') && $request->get('sort_by') ? $request->get('sort_by') : $this->default_sort_by;
         $sort_order = $request->has('sort_order') && $request->get('sort_order') ? $request->get('sort_order') : $this->default_sort_order;
-        
+        $from = $request->has('from') && $request->get('from') ? $request->get('from') : '';
+
         $user = $request->user();
         $user_id = $user->id;
         $filterData = $this->getFiltersInfo($user_id , $moduleName);
@@ -100,7 +101,14 @@ class Controller extends BaseController
         }
 
         $query->groupBy("{$baseTable}.id");
+        
+        if($from == 'campignfilter'){
+            $records = $query->paginate();
+            $recordCount = $records->total();
+            return $recordCount;
+        }
         $records = $query->paginate($this->limit);
+       
         $return = [
             'records' => $records->items(),
 
@@ -125,36 +133,9 @@ class Controller extends BaseController
                 'lastPage' => $records->lastPage(),
                 'perPage' => $records->perPage(),
             ],
-            'translator' => [
-                'Edit' => __('Edit'),
-                'Search' => __('Search'),
-                'Search filter' => __('Search filter'),
-                'Save Filter' => __('Save Filter'),
-                'Add' => __('Add'),
-                'All' => __('All'),
-                'Add New' => __('Add New'),
-                'Close' =>__('Close'),
-                'Search Filter' => __('Search Filter'),
-                'Add New Condition' => __('Add New Condition'),
-                'Add Group' => __('Add Group'),
-                'Filter name' => __('Filter name'),
-                'AND' => __('AND'),
-                'OR' => __('OR'),
-                'Tag' =>__('Tag'),
-                'List' => __('List'),
-                'Equal' => __('Equal'),
-                'Contains' => __('Contains'),
-                'Null' => __('Null'),
-                'Start with' => __('Start with'),
-                'End with' => __('End with'),
-                'Lesser than' => __('Lesser than'),
-                'Greater than' =>__('Greater than'),
-                'Not equal' => __('Not equal'),
-                'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?'),
-                'No records' =>__('No records')
-            ],
+            'translator' => $this->translator(),
         ];
-       
+     
         return $return;
     }
 
@@ -345,5 +326,72 @@ class Controller extends BaseController
             }
         }
         return $query;
+    }
+
+    public function translator() {
+        $translator =   [
+            'Edit' => __('Edit'),
+            'Search' => __('Search'),
+            'Search filter' => __('Search filter'),
+            'Save Filter' => __('Save Filter'),
+            'Add' => __('Add'),
+            'All' => __('All'),
+            'Add New' => __('Add New'),
+            'Close' =>__('Close'),
+            'Search Filter' => __('Search Filter'),
+            'Add New Condition' => __('Add New Condition'),
+            'Add Group' => __('Add Group'),
+            'Filter name' => __('Filter name'),
+            'AND' => __('AND'),
+            'OR' => __('OR'),
+            'Tag' =>__('Tag'),
+            'List' => __('List'),
+            'Equal' => __('Equal'),
+            'Contains' => __('Contains'),
+            'Null' => __('Null'),
+            'Start with' => __('Start with'),
+            'End with' => __('End with'),
+            'Lesser than' => __('Lesser than'),
+            'Greater than' =>__('Greater than'),
+            'Not equal' => __('Not equal'),
+            'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?'),
+            'No records' =>__('No records')
+        ];
+        return $translator;
+    }
+
+    public function getContactRecords($module, $fields, $searchData, $limit, $offset){
+        
+        $baseTable = $module->getTable();
+        $moduleName = class_basename($module);
+        $sort_by = 'created_at';
+        $sort_order = 'asc';
+        
+        $listFields = array_keys($fields) ;
+        $listFields = array_diff( $listFields, ['tag' , 'list'] );
+        $listFields[] = 'id'; 
+        $listFields = substr_replace($listFields, "{$baseTable}.", 0, 0);
+
+        $query = $module->select( $listFields )
+                        ->orderBy("{$baseTable}.{$sort_by}", $sort_order);                
+
+        if($moduleName == 'Contact'){
+            $query->leftJoin('taggables', "{$baseTable}.id",'taggable_id');
+            $query->leftJoin('categorables', "{$baseTable}.id", 'categorable_id');
+        }
+
+        $query = $this->getWhereFilterCondition($searchData , $query , $baseTable);
+        
+        if($limit){
+            $query->offset($offset)
+                   ->limit($limit);
+                   
+            return $query->get();      
+        }
+       
+        $records = $query->paginate();
+  
+        return $records->items();
+
     }
 }
