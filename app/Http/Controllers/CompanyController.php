@@ -110,7 +110,7 @@ class CompanyController extends Controller
         $user = $request->user();
         $company = Company::find($id);
         $users = $company->user;
-       // dd($users);
+     
         $companyId = Cache::get('selected_company_'. $user->id);
         $headers = $this->getModuleHeader($companyId , 'Company');
 
