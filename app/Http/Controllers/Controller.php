@@ -120,6 +120,9 @@ class Controller extends BaseController
             $query->where('module_name', 'Contact');
         }
 
+        // To skip the duplicates
+        $query->groupBy("{$baseTable}.id");
+
         // Fetch the data
         $records = $query->paginate($this->limit);
 

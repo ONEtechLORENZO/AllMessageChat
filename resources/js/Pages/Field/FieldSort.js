@@ -105,21 +105,22 @@ function FieldSort(props)
 
     return (
         <div>
-            <div style={{ display: "flex" }}>
-                   
+            <div className="flex gap-2">
                 <DragDropContext onDragEnd={onDragEnd}>
                 {state.map((el, ind) => (
                     <Droppable key={ind} droppableId={`${ind}`}>
                     {(provided, snapshot) => (
                         <div
-                        className="border-2 ba-group-container"
-                        group_id={(groupList[ind])? groupList[ind] : ''}
-                        ref={provided.innerRef}
-                        style={getListStyle(snapshot.isDraggingOver)}
-                        {...provided.droppableProps}
+                            className="gap-4 ba-group-container flex-1 p-2"
+                            group_id={(groupList[ind])? groupList[ind] : ''}
+                            ref={provided.innerRef}
+                            style={getListStyle(snapshot.isDraggingOver)}
+                            {...provided.droppableProps}
                         >
                             {props.groups &&
-                                <div className="p-2 bg-gray-100" > {props.groups[groupList[ind]]} </div>
+                                <h2 className="text-lg font-bold leading-7 text-gray-900 sm:tracking-tight sm:truncate">
+                                    {props.groups[groupList[ind]]}
+                                </h2>
                             }   
                         {el.map((item, index) => (
                             <Draggable
