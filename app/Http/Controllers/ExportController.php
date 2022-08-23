@@ -6,12 +6,14 @@ use Illuminate\Http\Request;
 use App\Models\Field;
 use App\Models\Contact;
 use League\Csv\Writer;
+use Cache;
 
 class ExportController extends Controller
 {
     public function exportFile(Request $request){
         
         $user_id = $request->user()->id;
+        $company_id = Cache::get('selected_company_'. $user_id);
         $where_conditon = [
             'user_id' => $user_id,
             'module_name' => 'Contact'
@@ -26,7 +28,7 @@ class ExportController extends Controller
                 $fieldList[$field['field_name']] = ['label' => $field['field_label'], 'is_custom' => $field['is_custom']];
             }
 
-            $contact_records = Contact::all();
+            $contact_records = Contact::where('company_id' , $company_id)->get();
     
             $this->generateCSVfile($csvHeader, $contact_records, $fieldList);
         }

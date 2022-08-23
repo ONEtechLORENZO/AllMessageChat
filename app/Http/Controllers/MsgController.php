@@ -320,7 +320,7 @@ class MsgController extends Controller
                 $query->whereNull('is_archive')->orWhere('is_archive' , 0);
             });
         }
-        $query->orderBy('updated_at', 'desc');
+        $query->orderBy('chat_list_contacts.updated_at', 'desc');
       
         $chatListContact = $query->get();
 
