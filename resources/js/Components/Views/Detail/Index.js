@@ -1,5 +1,5 @@
 import React, { Fragment, useEffect, useRef, useState } from "react";
-import { PencilIcon } from "../../../Pages/icons";
+import { PencilIcon, UserIcon } from "../../../Pages/icons";
 import { Inertia } from "@inertiajs/inertia";
 import ReactSelect from "./ReactSelect";
 import Notes from '@/Components/Notes';
@@ -64,10 +64,10 @@ export default function Index(props) {
                                     <span className="text-gray-900 p-3">
                                         <span className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-gray-500">
                                             <span className="text-3xl font-medium leading-none text-white">
-                                                {record.first_name ?
+                                                {(props.module == 'Contact')  ?
                                                     <> {(record.first_name).substring(0,2)} </>
                                                 :
-                                                    <> {(record.last_name).substring(0,2)} </>
+                                                    <> {(record.name).substring(0,2)} </>
                                                 }
                                               
                                             </span>
@@ -76,11 +76,15 @@ export default function Index(props) {
                                 </div>
                                 <div>
                                     
-                                    {props.module == 'Contact' &&
+                                    {props.module == 'Contact' ?
                                         <>
                                             <div className="text-gray-600"> {record.first_name} {record.last_name}  </div>
                                             <div className="text-gray-600"> {record.phone_number} </div>
                                             <div className="text-gray-600"> {record.email} </div>
+                                        </>
+                                        :
+                                        <>
+                                            <div className="text-gray-600"> {record.name}  </div>
                                         </>
                                     }
                                 </div>
@@ -123,9 +127,11 @@ export default function Index(props) {
                                 }
                                 return(
                                     <div id={tab.name} className={hideClass}>
-                                        {tab.name == 'Detail' ?
+                                        {tab.name == 'Detail' &&
                                            <>
-                                            <div>
+                                            <div className="">
+                                                <div className="px-4 py-2 -mb-px font-semibold text-gray-900 rounded-t opacity-70 divide-y"> General </div>  
+
                                                 {Object.entries(defaultHeader).map( ([key, field]) => {
                                                     let showField = true;
                                                     let select = false;
@@ -181,39 +187,58 @@ export default function Index(props) {
                                                     } 
                                                 })}
                                             </div>
-                                                {customHeader ? 
-                                                    <div className=""> 
-                                                    <div className="px-4 py-2 -mb-px font-semibold text-gray-800 rounded-t opacity-50 ">Custom</div>   
-                                                    {Object.entries(customHeader).map(([key,field]) => { 
-                                                       return(
-                                                           <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                                               <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
-                                                               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                                   {field.type == 'checkbox' ?
-                                                                   <> { record.custom && record.custom[key] ? 'True': 'False' }</> 
-                                                                   : 
-                                                                   <>
-                                                                    {(record.custom && record.custom[key]) ?
-                                                                        <>{record.custom[key]}</>
-                                                                    :
-                                                                         <> - </>
-                                                                   }
-                                                                   </>
-                                                                }
-                                                               </dd>
-                                                            </div>
-                                                        )
-                                                    }) }
+                                                {customHeader &&
+                                                    <div className="divide-y"> 
+                                                   
+                                                        {Object.entries(customHeader).map(([group,fields]) => { 
+                                                            return(
+                                                                <div>
+                                                                <div className="px-4 py-2 -mb-px font-semibold text-gray-800 rounded-t opacity-70 ">{group}</div>  
+                                                                {Object.entries(fields).map(([key,field]) => { 
+                                                                    return(
+                                                                        <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                                            <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
+                                                                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                                                {field.type == 'checkbox' ?
+                                                                                <> { record.custom && record.custom[key] ? 'True': 'False' }</> 
+                                                                                : 
+                                                                                <>
+                                                                                    {(record.custom && record.custom[key]) ?
+                                                                                        <>{record.custom[key]}</>
+                                                                                    :
+                                                                                        <> - </>
+                                                                                }
+                                                                                </>
+                                                                                }
+                                                                            </dd>
+                                                                        </div>
+                                                                    )
+                                                                }) }
+                                                                </div>
+                                                            )
+                                                        }) }
                                                   </div>
-                                                : ''}
+                                                }
                                             </>
-                                        :
-                                        <Notes
-                                        module={props.module}                                                                                
-                                        recordId={props.record.id} 
-                                                                                  
-                                        />
-                                        
+                                        }
+                                        {tab.name == 'Notes' &&
+                                                <Notes
+                                                    module={props.module}                                                                                
+                                                    recordId={props.record.id} 
+                                                />
+                                        }
+                                        {tab.name == 'Users' &&
+                                            <>
+                                            
+                                               <ul role="list" className="divide-y divide-gray-200">
+                                                    {Object.entries(props.users).map(([key, user]) => (
+                                                        <li key={''} className="py-4 flex border-2 m-1 border-gray-100 p-4">
+                                                            <span><UserIcon /> </span> 
+                                                            <span className="ml-3">{user.name}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </>
                                         }
                                     </div>
                                 )

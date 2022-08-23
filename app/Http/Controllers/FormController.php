@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Field;
+use App\Models\FieldGroup;
 use Illuminate\Http\Request;
+use Cache;
 
 class FormController extends Controller
 {
@@ -22,20 +24,34 @@ class FormController extends Controller
             'module_name'=> $module, 
         ];
         if($module == 'Contact'){
-            $whereCondition['user_id'] = $request->user()->id ;
+            $whereCondition['user_id'] = $user->id ;
+        }
+
+        if($module == 'Field'){
+            $userId = $user->id;
+            $companyId = Cache::get('selected_company_'.$userId);
+            $fieldGroupList = FieldGroup::where('company_id' , $companyId)->get();
+            $fieldGroupOptions = [];
+            foreach($fieldGroupList as $fieldGroup){
+                $fieldGroupOptions[$fieldGroup->id] = $fieldGroup->name;
+            }
         }
 
         $fields = Field::where($whereCondition)
             ->get();
          
         foreach($fields as $field){
-            if($field['is_custom'] == '1' && $field['field_type'] == 'dropdown'){
+            if(($field['is_custom'] == '1' && $field['field_type'] == 'dropdown') || $field['field_name'] == 'field_group' ){
                 $option = $field['options'];
                 $options = [];
                 if ($option) {
                     foreach ($option as $key) {
                         $options[$key['value']] = $key['value'];
                     }
+                }
+               
+                if($field['field_name'] == 'field_group'){
+                    $options = $fieldGroupOptions;
                 }
                 $field->options = $options;
             }  

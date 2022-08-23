@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Field;
+use App\Models\FieldGroup;
 use App\Models\Category;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
@@ -30,14 +31,24 @@ class FieldController extends Controller
             'field_type' => ['label' => 'Field Type', 'type' => 'text'],
             'is_mandatory' => ['label' => 'Mandatory', 'type' => 'checkbox'],
             'is_custom' => ['label' => 'Custom', 'type' => 'checkbox'],
+        //    'field_group' => ['label' => 'Field group', 'type' => 'text'],
         ];
 
+    //    $userId = $request->user()->id;
+    //    $companyId = Cache::get('selected_company_'.$userId);
+    //    $groupList = $this->getGroupList($companyId);
+    
         $module = new Field();
         $listViewData = $this->listView( $request , $module, $list_view_columns);
+        $moduleList = ['Contact'=> 'Contacts'];
+
         $moduleData = [
             'singular' => 'Field',
             'plural' => 'Fields',
             'module' => 'Field',
+        //    'group_list' => $groupList,
+            'module_list' => $moduleList,
+
             // Actions
             'actions' => [
                 'create' => true,
@@ -46,6 +57,8 @@ class FieldController extends Controller
                 'export' => false,
                 'import' => false,
                 'search' => true,
+                'field_group' => true,  
+                'order_field' => true, 
             ],
         ];
 
@@ -189,6 +202,7 @@ class FieldController extends Controller
         $field->field_type = $request->field_type;
         $field->is_mandatory = $mandatory;
         $field->is_custom = $custom;
+        $field->field_group = $request->field_group;
         $field->user_id = $request->user()->id;
         $field->company_id = Cache::get('selected_company_'. $request->user()->id);
         if ($options) {

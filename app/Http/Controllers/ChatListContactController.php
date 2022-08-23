@@ -37,8 +37,9 @@ class ChatListContactController extends Controller
         foreach($records as $record){
             if( in_array($record->id , $contactIdList) ){
                 $selectedContacts[] = ['label' => $record->first_name. ' '. $record->last_name, 'value' => $record->id ];
-            } 
-            $contacts[] = ['label' => $record->first_name. ' '. $record->last_name, 'value' => $record->id ];
+            } else {
+                $contacts[] = ['label' => $record->first_name. ' '. $record->last_name, 'value' => $record->id ];
+            }
         }
 
         echo json_encode(['records' => $contacts, 'selected_records' => $selectedContacts ]); die;
