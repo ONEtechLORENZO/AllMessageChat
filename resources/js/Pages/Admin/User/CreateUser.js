@@ -10,6 +10,7 @@ import Checkbox from '@/Components/Forms/Checkbox';
 import { Head, useForm, Link } from '@inertiajs/inertia-react';
 import Dropdown from '@/Components/Forms/Dropdown';
 import InputError from '@/Components/Forms/InputError';
+import PhoneInput, {parsePhoneNumber} from 'react-phone-number-input'
 import {defaultPristineConfig, currencies, countries} from '@/Pages/Constants';
 import ConfirmPassword from '@/Pages/Auth/ConfirmPassword';
 
@@ -19,9 +20,8 @@ export default function CreateUser(props) {
         'Personal Information': {
             'first_name': {'value': props.user.first_name, 'label': 'First Name', 'type': 'text', 'required': false },
             'last_name': {'value': props.user.last_name, 'label': 'Last Name', 'type': 'text', 'required': true },
-            'company_name': {'value': props.user.company_name, 'label': (props.translator['Company name']), 'type': 'text', 'required': false },
             'email': {'value': props.user.email, 'label': (props.translator['Email']), 'type': 'email', 'required': true},
-            'phone_number': {'value': props.user.phone_number, 'label': (props.translator['Phone number']), 'type': 'text', 'required': false },
+            'phone_number': {'value': props.user.phone_number, 'label': (props.translator['Phone number']), 'type': 'phone_number', 'required': false },
             'language': {'value': props.user.language, 'label': (props.translator['Language']), 'type': 'select', 'required': false , 'options': { 'en': 'English', 'it': 'Italy'}},
             'currency': {'value': props.user.currency, 'label': (props.translator['Currency']), 'type': 'select', 'required': false, 'options': currencies },
             'time_zone': {'value': props.user.time_zone, 'label': (props.translator['Time Zone']), 'type': 'select', 'required': false , 'options': props.time_zone },
@@ -63,6 +63,16 @@ export default function CreateUser(props) {
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         let newState = Object.assign({}, data);
         newState[name] = value;
+        setData(newState);
+    }
+//handle phone_number change
+    function changePhoneNumber(value , name){
+        let newState = Object.assign({}, data);
+        newState[name] = value;        
+        if(value && parsePhoneNumber(value) ){
+            newState['phone_number'] = value;
+        }
+       
         setData(newState);
     }
     /**
@@ -158,7 +168,7 @@ export default function CreateUser(props) {
                 } */}
                 
                 <Link 
-                    href={ props.currentUser.role != 'regular' ? route('listUser') : route('user_profile', props.user.id)}
+                    href={ props.currentUser.role != 'regular' ? route('list_global_user') : route('user_profile', props.user.id)}
                         className="ml-3 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
 					>
                     {props.translator['Cancel']}
@@ -207,6 +217,21 @@ export default function CreateUser(props) {
                                             case 'checkbox':
                                                 element = <Checkbox name={key} id={key} value={data[key]} className={`custom-select ${error_class}`} handleChange={handleChange} />
                                                 break;
+                                                case 'phone_number':
+                                                element = <>
+                                                    <div>
+                                                     <PhoneInput
+                                                        name={key}
+                                                        id={key}
+                                                       // withCountryCallingCode                                                        
+                                                        placeholder="Enter phone number"                                                 
+                                                        value={data.id&&data[key]}                                                       
+                                                        onChange={(value) => changePhoneNumber(value,key)}
+                                                        required={true}
+                                                    />
+                                                </div></>
+
+                                                break;    
                                             default :
                                                 element = <Input value={data[key]} type={field.type} name={key} required={field.required} id={key} placeholder='' handleChange={handleChange} />
                                         }

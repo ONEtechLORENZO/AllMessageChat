@@ -21,9 +21,12 @@ use App\Http\Controllers\FieldController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CampignController;
 use App\Http\Controllers\UserInviteController;
+use App\Http\Controllers\FieldGroupController;
+use App\Http\Controllers\ChatListContactController;
 use App\Http\Middleware\IsAdmin;
-use App\Models\Contact;
-use App\Models\Note;
+use App\Http\Middleware\IsGlobalAdmin;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -35,14 +38,8 @@ use App\Models\Note;
 |
 */
 
-Route::get('/', function () {
-    //Cache::forget('selected_company');
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+Route::middleware('guest')->group(function () {
+    Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('login');
 });
 
 // Invite User
@@ -51,6 +48,7 @@ Route::get('/invitedUserRelation', [UserInviteController::class, 'relateUser']);
 
 Route::post('/incoming', [MsgController::class, 'incoming']);
 Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
+
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -65,14 +63,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/invoices/{id}', [UserController::class, 'invoices'])->name('invoices');    
     
     // Profile
-    Route::get('/user/profile', [UserController::class, 'userDetail'])->name('profile');
-    Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('user_profile');
-    Route::get('/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_profile');
+    Route::get('/user/profile', [UserController::class, 'profile'])->name('profile');
     Route::post('/user/registration', [UserController::class, 'storeUserRegistration'])->name('store_user_data');
     Route::get('/image/{type}/{id}', [ImageController::class, 'showImage'])->name('show_image');
     Route::post('/user/regenerate_token', [UserController::class, 'regenerateToken'])->name('regenerate_token');
-    Route::post('/admin/user/change_password/{id}', [UserController::class, 'changePassword'])->name('change_password');
-
+    Route::post('/user/change_password/{id}', [UserController::class, 'changePassword'])->name('change_password');
 
     // Messages
     Route::get('/messages/list', [MessageLogController::class, 'list'])->name('messages');
@@ -99,6 +94,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/chat', [MsgController::class, 'ChatList'])->name('chat_list');
     Route::get('/getMessages', [MsgController::class, 'getMessageList'])->name('get_message_list');
     Route::post('/sendMessage', [MsgController::class, 'sendMessage'])->name('send_message_to_contact');
+    Route::post('/setArchivedContact', [ChatListContactController::class, 'setArchivedContact'])->name('set_archive');
+    Route::get('/getUserContacts', [ChatListContactController::class, 'getUserContacts'])->name('get_user_contacts_list');
+    Route::post('/store/userChartContacts', [ChatListContactController::class, 'storeUserChatContact'])->name('store_user_contact_list');
 
     //Contact
     //Route::get('/contacts', [ContactController::class, 'index'])->name('contacts');
@@ -112,18 +110,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/updateContact', [ContactController::class, 'store'])->name('storeContact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
-
-    //Company
-    Route::get('/companies', [CompanyController::class, 'index'])->name('listCompany');
-    Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');
-    Route::get('/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
-    Route::get('/company/edit/{id}', [CompanyController::class, 'edit'])->name('editCompany');
-    Route::post('/company/update/{id}', [CompanyController::class, 'store'])->name('updateCompany');
-    Route::delete('/company/delete/{id}', [CompanyController::class, 'destroy'])->name('deleteCompany');
-    Route::post('/company/sendInvitation', [CompanyController::class, 'sendInvitation'])->name('send_invite_link');
-    Route::post('/company/setBaseCompany', [CompanyController::class, 'setBaseCompany'])->name('setBaseCompany');
-
-    //Filter
+  
+    // Filter
     Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');
     Route::post('/storeFilter', [FilterController::class, 'storeFilter'])->name('store_filter');
     Route::post('/deleteFilter', [FilterController::class, 'deleteFilter'])->name('delete_filter');
@@ -158,7 +146,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/updateList/{id}', [CategoryController::class, 'update'])->name('updateCategory');
     Route::delete('/deleteList/{id}', [CategoryController::class, 'destroy'])->name('deleteCategory');
 
-
     //Field
     Route::get('/fields', [FieldController::class, 'index'])->name('listField');
     Route::get('/field/{id}', [FieldController::class, 'edit'])->name('editField');
@@ -177,12 +164,39 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Check user is admin
 Route::middleware('auth', IsAdmin::class)->group(function () {
+    
+    //users
+    Route::get('/users', [UserController::class, 'usersListing'])->name('show_Users');
+    Route::get('/user/create', [UserController::class, 'createUser'])->name('create_user');
+    Route::get('/user/edit/{id}', [UserController::class, 'editUser'])->name('editUser');
+    Route::delete('/user/delete', [UserController::class, 'deleteUser'])->name('deleteUser');
+    Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('detailUser');
+
+    // Field Group
+    Route::post('/storeFieldGroup', [FieldGroupController::class, 'store'])->name('storeFieldGroup');
+    Route::get('/getFieldsGroup', [FieldGroupController::class, 'getFieldsGroup'])->name('get_fields_group');
+    Route::post('/storeFieldOrder', [FieldGroupController::class, 'storeFieldOrder'])->name('store_field_order');
+    
+    //Company
+    Route::get('/companies', [CompanyController::class, 'index'])->name('listCompany');
+    Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');
+    Route::get('/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
+    Route::get('/company/edit/{id}', [CompanyController::class, 'edit'])->name('editCompany');
+    Route::post('/company/update/{id}', [CompanyController::class, 'store'])->name('updateCompany');
+    Route::delete('/company/delete/{id}', [CompanyController::class, 'destroy'])->name('deleteCompany');
+    Route::post('/company/sendInvitation', [CompanyController::class, 'sendInvitation'])->name('send_invite_link');
+    Route::post('/company/setBaseCompany', [CompanyController::class, 'setBaseCompany'])->name('setBaseCompany');
+
+});
+
+// Check user is global admin
+Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     // Users
-    Route::get('/admin/users', [UserController::class, 'usersListing'])->name('listUser');
-    Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_user');
-    Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('editUser');
-    Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('deleteUser');
-    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detailUser');
+    Route::get('/admin/users', [UserController::class, 'usersListing'])->name('list_global_user');
+    Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_global_user');
+    Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_global_user');
+    Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_global_user');
+    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detail_global_user');
 
     // Settings
     Route::get('/admin/settings/outgoing_server', [SettingsController::class, 'settings'])->name('settings');

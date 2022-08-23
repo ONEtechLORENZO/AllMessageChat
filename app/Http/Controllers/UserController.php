@@ -11,12 +11,8 @@ use Inertia\Inertia;
 use App\Rules\MatchOldPassword;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
-use App\Models\MailToAddress;
-use App\Models\OutgoingServerConfig;
-use Swift_Mailer;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Mail;
 use App\Http\Controllers\TemplateController;
 use App\Models\Transaction;
 use App\Models\Wallet;
@@ -32,7 +28,6 @@ use DB;
 class UserController extends Controller
 {
     public $per_page = 15;
-  
 
     public $webhook_events = [
         'enqueued' => ['label' => 'Enqueued', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
@@ -44,16 +39,19 @@ class UserController extends Controller
         'template_events' => ['label' => 'Template events', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
         'account_related_events' => ['label' => 'Account related events', 'help_text' => 'Return sent messasge enqueue response to callback url'],
     ];
+
     public $userRoles = [
-    //    'global_admin' => 'Global Admin',
+        'global_admin' => 'Global Admin',
         'regular' => 'Regular',
         'admin' => 'Admin'
     ];
+
     public $categories = [
         'TRANSACTIONAL' => 'TRANSACTIONAL',
         'MARKETING' => 'MARKETING',
         'OTP' => 'OTP'
     ];
+
     public $timezones = array(
         'Pacific/Midway'       => "(GMT-11:00) Midway Island",
         'US/Samoa'             => "(GMT-11:00) Samoa",
@@ -169,7 +167,6 @@ class UserController extends Controller
         'Pacific/Fiji'         => "(GMT+12:00) Fiji",
     );
     
-
     /**
      * Show list of accounts related to logged in user
      */
@@ -177,30 +174,29 @@ class UserController extends Controller
     {
         $user = $request->user();
         $user_id = $user->id;
-        $companyId = Cache::get('selected_company_'. $user->id);
+        $companyId = Cache::get('selected_company_' . $user_id);
 
         $query = Account::select('company_name', 'service', 'accounts.id', 'accounts.status');
-        if($user->role == 'admin'){
-            $query->where('company_id' , $companyId);
-        } else if($user->role = 'regular'){
-            //$query->where('user_id', $user_id)->get();
-            $query->where('company_id' , $companyId);
+        if($user->role != 'global_admin') {
+            $query->where('company_id', $companyId);
         }
+
         $accounts = $query->get();
 
         return Inertia::render('Dashboard', [
             'accounts' => $accounts,
             'translator' => [
-                    'Dashboard'=>__('Dashboard'),
-                    'Create new account'=>__('Create new account'),
-                    'Business profiles'=>__('Business profiles'),
-                    'No account'=>__('No account'),
-                    'Get started by creating a new account.'=>__('Get started by creating a new account.'),
-                    'Click here to create new account'=>__('Click here to create new account'),
-                    'Confirm to Delete' =>  __('Confirm to Delete'),
-                    'Are you sure to do this?' => __('Are you sure to do this?'),
-                    'Yes' =>__('Yes'),
-                    'No' =>__('No')  ]      
+                'Dashboard'=>__('Dashboard'),
+                'Create new account'=>__('Create new account'),
+                'Business profiles'=>__('Business profiles'),
+                'No account'=>__('No account'),
+                'Get started by creating a new account.'=>__('Get started by creating a new account.'),
+                'Click here to create new account'=>__('Click here to create new account'),
+                'Confirm to Delete' =>  __('Confirm to Delete'),
+                'Are you sure to do this?' => __('Are you sure to do this?'),
+                'Yes' =>__('Yes'),
+                'No' =>__('No'),  
+            ],      
         ]);
     }
 
@@ -216,8 +212,10 @@ class UserController extends Controller
             'status' =>  [ 'label' => 'Status' , 'type' => 'checkbox'],
             'created_at' =>  [ 'label' => 'Created at' , 'type' => 'datetime'],
         ];
+
         $module = new User();
-        $listViewData = $this->listView( $request , $module, $list_view_columns);
+
+        $listViewData = $this->listView($request, $module, $list_view_columns);
 
         $moduleData = [
             'singular' => 'User',
@@ -245,24 +243,26 @@ class UserController extends Controller
                 'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?')
             ],
         ];
-        $data = array_merge($moduleData , $listViewData);
+
+        $data = array_merge($moduleData, $listViewData);
         return Inertia::render('Admin/User/UserList2', $data);
     }
 
     /**
-     * Create User
+     * Show User Form (Create View)
      */
     public function createUser(Request $request)
     {
-        $currentUser = $request->user();
         $user = new User();
+        $currentUser = $request->user();
+        $user_roles = $this->getRoles($currentUser);
         
-        if($currentUser->role != 'regular'){
+        if($currentUser->role != 'regular') {
             return Inertia::render('Admin/User/CreateUser', [
                     'user' => $user, 
                     'currentUser' => $currentUser,
                     'time_zone' => $this->timezones,
-                    'roles' => $this->userRoles,
+                    'roles' => $user_roles,
                     'translator' => [
                         'Name' => __('Name'),
                         'Company name' => __('Company name'),
@@ -289,21 +289,28 @@ class UserController extends Controller
     }
 
     /**
-     * Edit User
+     * Show User Form (Edit View)
      */
     public function editUser(Request $request, $id)
     {
-        $user = User::findOrFail($id);
-        $password = $user->password;
         $currentUser = $request->user();
+        $flag = $this->checkPermission($currentUser, $id);
         
-        if($currentUser->role != 'regular' || $user->id == $currentUser->id){
+        if($flag === false) {
+            abort(401);
+        }
+
+        $user = User::find($id);
+        $password = $user->password;
+        $user_roles = $this->getRoles($currentUser);
+        
+        if($currentUser->role != 'regular' || $user->id == $currentUser->id) {
             return Inertia::render('Admin/User/CreateUser', [
                     'user' => $user, 
                     'password' => $password, 
                     'currentUser' => $currentUser,
                     'time_zone' => $this->timezones,
-                    'roles' => $this->userRoles,
+                    'roles' => $user_roles,
                     'translator' => [
                         'Name' => __('Name'),
                         'Company name' => __('Company name'),
@@ -334,26 +341,19 @@ class UserController extends Controller
      */
     public function userDetail(Request $request, $id = '')
     {
-        if($id){
-            
-            if( $request->user()->role != 'regular'){
-                $query = User::where('id' ,$id);
-                $companyId = Cache::get('selected_company_'. $request->user()->id);
-                $query->join('company_user' ,'user_id', 'users.id');
-                $query->where('company_id' , $companyId);
-                $user = $query->first();
-            }
-            
-        } else {
-            $user = $request->user();
-        }
-  
-        if(! $user){
-            abort(401, __('You are not authorised to see this record.'));
+        // Check whether user has permission to view the record.
+        $currentUser = $request->user();
+        $flag = $this->checkPermission($currentUser, $id);
+        
+        if($flag === false) {
+            abort(401);
         }
 
+        $user = User::find($id);
+
         $token = $user->api_token;
-        return Inertia::render('Admin/User/UserDetail', [
+        if($currentUser->role != 'regular' || $user->id == $currentUser->id) {
+            return Inertia::render('Admin/User/UserDetail', [
                 'user' => $user, 
                 'token' => $token,
                 'current_user' => $request->user(),
@@ -389,6 +389,67 @@ class UserController extends Controller
                     'Do you want change the user token?' => __('Do you want change the user token?')
                 ]
             ]);
+        } else {
+            return Redirect(route('dashboard'));
+        }
+    }
+
+    /**
+     * Profile
+     */
+    public function profile(Request $request)
+    {
+        // Check whether user has permission to view the record.
+        $currentUser = $request->user();
+        $flag = $this->checkPermission($currentUser, $currentUser->id);
+        
+        if($flag === false) {
+            abort(401);
+        }
+
+        $user = User::find($currentUser->id);
+
+        $token = $user->api_token;
+        if($user->id == $currentUser->id) {
+            return Inertia::render('Admin/User/UserDetail', [
+                'user' => $user, 
+                'token' => $token,
+                'current_user' => $request->user(),
+                'time_zone' => $this->timezones,
+                'translator' => [
+                    'Name' => __('Name'),
+                    'New Password' => __('New Password'),
+                    'Confirm Password' => __('Confirm Password'),
+                    'User Detail'  => __('User Detail'),
+                    'Company name' => __('Company name'),
+                    'Email' => __('Email'),
+                    'Token' => __('Token'),
+                    'Phone number' => __('Phone number'),
+                    'Language' => __('Language'),
+                    'Currency' => __('Currency'),
+                    'Active Status' => __('Active Status'),
+                    'Company Address' => __('Company Address'),
+                    'Company Country' => __('Company Country'),
+                    'Company VAT ID' => __('Company VAT ID'),
+                    'Admin email for invoices' => __('Admin email for invoices'),
+                    'Users'  => __('Users'),
+                    'Personal Information' => __('Personal Information'),
+                    'Edit User' => __('Edit User'),
+                    'Change Password' => __('Change Password'),
+                    'Change' => __('Change'),
+                    'Close' => __('Close'),
+                    'Confirm Password'  => __('Confirm Password'),
+                    'New Password' => __('New Password'),
+                    'Personal Information' => __('Personal Information'),
+                    'Billing Information' => __('Billing Information'),
+                    'The new password and confirm password must match' => __('The new password and confirm password must match'),
+                    'Time Zone' => __('Time Zone'),
+                    'Do you want change the user token?' => __('Do you want change the user token?')
+                ]
+            ]);
+        } else {
+            return Redirect(route('dashboard'));
+        }
     }
 
     /**
@@ -396,27 +457,32 @@ class UserController extends Controller
      */
     public function storeUserRegistration(Request $request)
     {
-        Log::info('Save user data process start');
-        if(($request->get('id') == $request->user()->id) ||  $request->user()->role != 'regular'){
-           
+        $currentUser = $request->user();
+        $companyId = Cache::get('selected_company_'. $currentUser->id);
+        // Check whether user has permission to create/update the user
+        if(($request->get('id') == $currentUser->id) || $request->user()->role != 'regular') {
             if (!$request->get('id')) {
                 $request->validate([
                     'last_name' => 'required|max:255',
                     'email' => 'required|unique:users|max:255',
-                //    'role' => 'required|max:255'
                 ]);
+
                 $user = new User();
                 $password = bin2hex(openssl_random_pseudo_bytes(8));
                 $user->password = bcrypt($password);
             } else {
-                $user = User::findOrFail($request->get('id'));
+                $flag = $this->checkPermission($currentUser, $request->get('id'));
+                if($flag === false) {
+                    abort(401);
+                }
+        
+                $user = User::find($request->get('id'));
             }
 
             $user->first_name = $request->get('first_name');
             $user->last_name = $request->get('last_name');
             $user->name =  $request->get('first_name') . ' ' .$request->get('last_name');
             $user->email = $request->get('email');
-            $user->company_name = $request->get('company_name');
             $user->phone_number = $request->get('phone_number');
             $user->language = $request->get('language');
             $user->currency = $request->get('currency');
@@ -427,38 +493,56 @@ class UserController extends Controller
             $user->codice_destinatario = $request->get('codice_destinatario');
             $user->admin_email = $request->get('admin_email');
 
-            if( $request->user()->role != 'regular') {
-                $user->role = ($request->get('role')) ? $request->get('role') : 'regular';
+            // Only admin and global admin can able to set the user role
+            if($currentUser->role == 'admin' || $currentUser->role == 'global_admin') {
+                $tmpRole = $request->get('role');
+                // Admin user can't set user as global_admin
+                if($currentUser->role == 'admin') {
+                    if($tmpRole == 'global_admin') {
+                        $tmpRole = 'admin';
+                    }
+                }
+
+                $user->role = $tmpRole ? $tmpRole : 'regular';
                 $user->status = $request->get('status');
             }
 
-            $company = Cache::get('selected_company_'. $request->user()->id);
-            $_REQUEST['company_id'] = $company;
+            $_REQUEST['company_id'] = $companyId;
             
             $user->save();
+
             $user_id = $user->id;
-            if (!$request->get('id') && $company) {
-                DB::table('company_user')->insert([
-                    'user_id' => $user_id,
-                    'company_id' => $company
-                ]);
+
+            // Attached the company
+            $user->company()->syncWithoutDetaching([$companyId]);
+            
+            if($currentUser->role == 'global_admin') {
+                return Redirect::route('detail_global_user', $user_id);
             }
-            Log::info('Record saved successfully.');
-            return Redirect::route('user_profile', $user_id);
+            else if($currentUser->role == 'admin') {
+                return Redirect::route('detailUser', $user_id);
+            }
+            else {
+                return Redirect::route('profile');
+            }
         }
         
         return Redirect::route('dashboard');
     }
 
     /**
-     * Change user login password
+     * Change user password
      */
     public function changePassword(Request $request, $id)
     {
-        $user = User::findOrFail($id);
         $currentUser = $request->user();
-       
-        if($currentUser->id == $user->id ){
+        $flag = $this->checkPermission($currentUser, $id);
+        if($flag === false) {
+            abort(401);
+        }
+
+        $user = User::find($id);
+        if($currentUser->id == $user->id) { // User updating his/her own password. So we need to match the old password.
             $request->validate([
                 'current_password' => ['required', new MatchOldPassword],
                 'new_password' => 'required|min:8',
@@ -471,9 +555,16 @@ class UserController extends Controller
             ]);
         }
 
-        $user->update(['password'=> Hash::make($request->new_password)]);
-        Log::info('Password changed successfully.');
-        return Redirect::route('detailUser', $id);
+        $user->update(['password' => Hash::make($request->new_password)]);
+        if($currentUser->role == 'global_admin') {
+            return Redirect::route('detail_global_user', $id);
+        }
+        else if($currentUser->role == 'admin') {
+            return Redirect::route('detailUser', $id);
+        }
+        else {
+            return Redirect::route('profile');
+        }
     }
 
     /**
@@ -1358,21 +1449,70 @@ class UserController extends Controller
     }
 
     /**
-     * Return selected company name
+     * Return companies related to User and selected company name
      */
     public function getSelectedCompany(Request $request)
     {
         $user = $request->user();
+        // Get companies related to the User
         $companies = $user->company;
-        $selectedCompany = false;
-        $selectedCompany = (Cache::has('selected_company_'. $user->id)) ? Cache::get('selected_company_'. $user->id ) : '';
-        if( ($companies && !$selectedCompany) && count($companies) == 1 && isset($companies[0]) ) {
+
+        $selectedCompany = Cache::has('selected_company_' . $user->id) ? Cache::get('selected_company_' . $user->id) : '';
+        // If user has single company related to him, set the company as default
+        if($companies && !$selectedCompany && count($companies) == 1) {
             $selectedCompany = $companies[0]->id;
-            Cache::put('selected_company_'. $user->id, $companies[0]->id );
+            Cache::put('selected_company_' . $user->id, $companies[0]->id);
         }
-        echo json_encode([
+
+        return response()->json([
+            'success' => true,
             'selected_company' => $selectedCompany,
             'companies' => $companies
-        ]);
+        ], 200);
+    }
+
+    /**
+     * Return role list based on the current user role
+     */
+    public function getRoles($user)
+    {
+        $user_roles = $this->userRoles;
+        if($user->role != 'global_admin') {
+            unset($user_roles['global_admin']);
+        }
+        return $user_roles;
+    }
+
+    /**
+     * Check whether user has permission to access the record
+     */
+    public function checkPermission($currentUser, $user_id)
+    {
+        if(!$user_id) {
+            return false;
+        }
+
+        // If user is trying to access his own record, allow
+        if($currentUser->id == $user_id) {
+            return true;
+        }
+
+        $user = User::where('id', $user_id)->first();
+        $companies = $user->company;
+
+        $flag = false;
+        if($currentUser->role == 'global_admin') {
+            $flag = true;
+        }
+        else {
+            $selectedCompany = Cache::has('selected_company_' . $currentUser->id) ? Cache::get('selected_company_' . $currentUser->id) : '';
+            foreach($companies as $company) {
+                if($company->id == $selectedCompany) {
+                    $flag = true;
+                    break;
+                }
+            }
+        }
+        return $flag;
     }
 }

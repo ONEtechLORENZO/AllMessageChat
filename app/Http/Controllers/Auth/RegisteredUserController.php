@@ -81,10 +81,7 @@ class RegisteredUserController extends Controller
         $user = User::create($userData);
 
         if($company_id){
-            DB::table('company_user')->insert([
-                'user_id' => $user->id,
-                'company_id' => $company_id
-            ]);
+            $user->company()->syncWithoutDetaching([$company_id]);
         }
 
         event(new Registered($user));
@@ -95,10 +92,7 @@ class RegisteredUserController extends Controller
             $invitation = UserInvite::where('unique_id' , $request->uuid)->first();
             
             if( $invitation ){
-                DB::table('company_user')->insert([
-                    'user_id' => $user->id,
-                    'company_id' => $invitation->company_id
-                ]);
+                $user->company()->syncWithoutDetaching([$company_id]);
                 $url = '/user-invite?unique_id='.$request->uuid;
                 return redirect($url); 
             }

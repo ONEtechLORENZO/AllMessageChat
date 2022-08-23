@@ -7,26 +7,10 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Http\Request;
 
-use Auth;
-use DB;
 use Cache;
-use App\Models\MessageLog;
-use App\Models\IncomingUrl;
-use App\Models\Msg;
 use App\Models\Tag;
-use App\Models\Taggable;
 use App\Models\Category;
-use App\Models\Filter;
-use App\Models\MessageResponse;
-use App\Models\Account;
 use App\Models\Field;
-use App\Models\User;
-use App\Models\Template;
-use App\Models\Message;
-use Illuminate\Support\Facades\Log;
-use DateTime;
-use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Input;
 
 class ContactController extends Controller
 {
@@ -66,7 +50,6 @@ class ContactController extends Controller
      */
     public function index(Request $request)
     {
-
         $list_view_columns = [
             'first_name' => ['label' => __('First Name'), 'type' => 'text'],
             'last_name' =>  ['label' => __('Last Name'), 'type' => 'text'],
@@ -121,7 +104,11 @@ class ContactController extends Controller
     public function store(Request $request)
     {
         $contact_id = $this->saveContact($request);
-        return Redirect::route('detailContact', $contact_id);
+        if($request->is_chat) {
+            return Redirect::route('chat_list');
+        } else {
+            return Redirect::route('detailContact', $contact_id);
+        }
     }
 
     /**
@@ -204,7 +191,8 @@ class ContactController extends Controller
         $tagSelectedRecords = $this->getSelectedTag($contact);
         $ListOptions = $this->getListOption($request->user()->id);
         $ListSelectRecords = $this->getSelectedList($contact);
-        $headers = $this->getModuleHeader($request->user()->id);
+        $companyId = Cache::get('selected_company_'. $request->user()->id);
+        $headers = $this->getModuleHeader($companyId , 'Contact');
 
         return Inertia::render('Contacts/Detail', [
             'contact' => $contact,
@@ -325,20 +313,7 @@ class ContactController extends Controller
         return Redirect::route('listContact');
     }
 
-    public function getModuleHeader($user)
-    {
-        $fields = Field::where('module_name', 'Contact')
-            ->where('user_id', $user)
-            ->get(['field_label', 'field_name', 'field_type', 'is_custom']);
-        $header = [];
-        foreach ($fields as $field) {
-            $is_custom = ($field->is_custom) ? 'custom' : 'default';
-            $header[$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type']];
-        }
-        $header['default']['tag'] = ['label' => __('Tag'), 'type' => 'text'];
-        $header['default']['list'] = ['label' => __('List'), 'type' => 'text'];
-        return $header;
-    }
+    
 
     public function saveContact($request){
 

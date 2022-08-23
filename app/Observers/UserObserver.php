@@ -18,11 +18,15 @@ class UserObserver
     {
         // Create user in Stripe
         $user->createAsStripeCustomer();
+
         $company_id = $_REQUEST['company_id'];
        
-        $record = $this->insertUserfield($user->id , $company_id );
-        
-        Field::insert($record);
+        // Check whether field entries are already added for this company
+        $isAdded = Field::where('company_id', $company_id)->first();
+        if(!$isAdded) {
+            $fields = $this->insertUserfield($user->id, $company_id);
+            Field::insert($fields);
+        }
     }
 
     /**
@@ -74,8 +78,11 @@ class UserObserver
         //
     }
 
-    public function insertUserfield($user_id , $company_id){
-        $field = [
+    /**
+     * Preparing field array for insertion
+     */
+    public function insertUserfield($user_id, $company_id) {
+        $fields = [
             [
                'module_name' => 'Contact','field_name' => 'first_name','field_label' => 'First Name','field_type' => 'text','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false'
             ],
@@ -91,8 +98,11 @@ class UserObserver
             [
                'module_name' => 'Contact','field_name' => 'instagram_id','field_label' => 'Instagram id','field_type' => 'text','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false'
             ],
+            [
+                'module_name' => 'Contact','field_name' => 'status','field_label' => 'Subscribe?','field_type' => 'checkbox','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false'
+            ],
        ];
 
-       return $field;
+       return $fields;
     }
 }

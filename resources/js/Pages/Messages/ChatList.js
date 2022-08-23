@@ -1,10 +1,13 @@
 import React ,{ useEffect , useState , Fragment} from 'react';
-import { Link } from '@inertiajs/inertia-react';
+import {Head, Link } from '@inertiajs/inertia-react';
 import MessageList from "./MessageList";
 import Authenticated from "../../Layouts/Authenticated";
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from "@/Components/Dropdown";
-// import ContactSelection from '@/Components/ContactSelection';
+import ContactSelection from '@/Components/ContactSelection';
+import notie from 'notie';
+import Filter from '@/Components/Views/List/Filter2';
+import { Inertia } from '@inertiajs/inertia';
 
 import {
     DotsVerticalIcon,
@@ -37,33 +40,32 @@ function ChatList(props)
     const [chatList, setChatList] = useState(props.contact_list);
     const [data, setData] = useState({
         destination: '',
-        chennal: containerCategory,
+        channel: containerCategory,
         content: ''
     });
     const [selectedAccount, setSelectedAccount] = useState('');
-    const accountList = props.account_list;
-
+    const [searchKey , setSearchKey] = useState(props.search);
     const channels = {
         all : {label: props.translator['All Channel'], icon: ApplicationLogo },
         whatsapp : { label: 'WhatsApp', icon:  WhatsAppIcon },
         instagram : {label: 'Instagram', icon: InstaIcon }
     }
-    
+    const[ current_tab, setCurrentTabId ] = useState(props.mode);
     const tabs = [
-        { name: (props.translator['All Chats']), href: "#", count: "2", current: false },
-        { name: (props.translator['Unread']), href: "#", count: "", current: false },
-        { name: (props.translator['Archived']), href: "#", count: "", current: true },
-        { name: (props.translator['Add Column']), href: "#", current: false },
+        { name: (props.translator['All Chats']), id:'all', href: "#", count: "2", current: false },
+        { name: (props.translator['Unread']), id:'unread', href: "#", count: "", current: false },
+        { name: (props.translator['Archive']), id:'archived', href: "#", count: "", current: false },
     ];
 
     const [time, setTime] = useState(Date.now());
+    const accountList = props.account_list;
 
     useEffect(() => {
         const interval = setInterval(() => getMessageList(), 5000);
         return () => {
             clearInterval(interval);
         };
-    }, []);
+    }, [chatList]);
 
     // Update select contact
     function updateContactData(contact){
@@ -90,26 +92,100 @@ function ChatList(props)
         setData(newState);
     }
 
+    function getContactMessage(contact, channel){
+        setSelectedContact(contact);
+        setContainerCategory(channel);
+
+        var url = route('chat_list', {'contact_id': contact, 'category': channel});
+        if(props.filter_id){
+            url = url + '&filter_id='+props.filter_id;
+        }
+        if(current_tab){
+            url += '&mode='+ current_tab;
+        }
+        Inertia.get(url, {
+            onSuccess: (response) => {
+                console.log(response);
+            },
+        });
+    }
+
+    function setCurrentTab(tab){
+        setCurrentTabId(tab);
+        var url = route('chat_list', {'mode': tab});
+
+        Inertia.get(url, {
+            onSuccess: (response) => {
+                console.log(response);
+            },
+        });
+    }
+
+    function selectContactCategory(name){
+
+        var url = route('chat_list', {'contact_id': selectedContact, 'category': name});
+        if(props.filter_id){
+            url = url + '&filter_id='+props.filter_id;
+        }
+        Inertia.get(url, {
+            onSuccess: (response) => {
+                console.log(response);
+            },
+        });
+    }
+
     // Return conversation history
     function getMessageList() {
         if(!selectedContact) {
             return false;
         }
+        var url = route('get_message_list', {'contact_id': selectedContact, 'category': containerCategory, 'mode': 'ajax'});
 
         axios({
             method: 'get',
-            url: route('get_message_list', {'contact_id': selectedContact,
-                'category': containerCategory, 'mode': 'ajax'}),
+            url: url,
         })
         .then( (response) =>{
             setMessages(response.data);
         });
     }
 
+    function setArchived(contact){
+        var url = route('set_archive');
+        var data = {'contact_id': contact};
+        Inertia.post(url, data,  {
+            onSuccess: (response) => {
+                
+                setChatList(response.props.contact_list);
+            },
+        });
+    }
+
+    /**
+     * search contacts based on key
+     */
+    function handleSearchContact(e){
+        if (e.key === 'Enter') {
+            var url = route('chat_list', {'search': searchKey});
+            if(props.filter_id){
+                url = url + '&filter_id='+props.filter_id;
+            }
+            if(current_tab){
+                url += '&mode='+ current_tab;
+            }
+            Inertia.get(url, {
+                onSuccess: (response) => {
+                    console.log(response);
+                },
+            });
+        }
+    }
+
     // Send content to selected contact
     function sendMessage(){
-        if(containerCategory == 'all'){
-            return false;
+        
+        if(containerCategory == 'all' || !selectedAccount){
+            notie.alert({type: 'warning', text: 'Please select the correct account & channel ', time: 5});
         }
         data['destination'] = (containerCategory == 'whatsapp') ? chatList[selectedContact].number : chatList[selectedContact].insta_id;
         data['account_id'] = selectedAccount;
@@ -132,7 +208,9 @@ function ChatList(props)
         }
     }
 
-    const selectedChannel = channels[containerCategory];
+    
+    var category = (containerCategory) ? containerCategory : 'all';
+    const selectedChannel = channels[category] ;
 
     return (
         <Authenticated 
@@ -141,6 +219,7 @@ function ChatList(props)
             errors={props.errors}
             current_page = {props.current_page}
         >
+            <Head title='Chat' />
             <div className="flex">
                 <div className="w-1/3">
                     <div className="flex justify-between items-center p-3 md:hidden">
@@ -188,7 +267,12 @@ function ChatList(props)
                     </div>
                     <div className="flex justify-between p-4">
                         <div className="w-10 h-10 bg-white shadow-sm flex items-center justify-center">
-                            <SettingIcon />
+                            <Filter
+                                module='Contact'
+                                filter={props.filter}
+                                translator={props.translator}
+                                is_chat={true}
+                            />
                         </div>
                         <div className="mt-1 relative rounded-md shadow-sm">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -198,11 +282,12 @@ function ChatList(props)
                                 />
                             </div>
                             <input
-                                type="email"
-                                name="email"
-                                id="email"
+                                type="text"
+                                value={searchKey}
+                                onChange={(e) => setSearchKey(e.target.value)}
+                                onKeyPress={(e) => handleSearchContact(e)}
                                 className="focus:ring-indigo-500 focus:border-indigo-500 border-0 block w-full pl-10 sm:text-sm  rounded-md"
-                                placeholder="you@example.com"
+                                placeholder="search"
                             />
                         </div>
                         <button
@@ -222,25 +307,26 @@ function ChatList(props)
                                 {tabs.map((tab) => (
                                     <a
                                         key={tab.name}
-                                        href={tab.href}
+                                      //  href={tab.href}
+                                        onClick={() => setCurrentTab(tab.id)}
                                         className={classNames(
-                                            tab.current
+                                            (tab.id == current_tab)
                                                 ? "border-purple-500 text-primary"
                                                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200",
-                                            "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base"
+                                            "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base cursor-pointer"
                                         )}
                                     >
                                         {tab.name}
                                         {tab.count ? (
                                             <span
                                                 className={classNames(
-                                                    tab.current
+                                                    (tab.id == current_tab)
                                                         ? "bg-purple-100 text-primary"
                                                         : "bg-gray-100 text-gray-900",
                                                     "hidden ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block"
                                                 )}
                                             >
-                                                {tab.count}
+                                                {Object.entries(props.contact_list).length}
                                             </span>
                                         ) : null}
                                     </a>
@@ -258,8 +344,8 @@ function ChatList(props)
                                 className="relative z-0 divide-y divide-gray-100"
                             >           
                                   
-                                {Object.entries(chatList).map(([id, person], j) => (
-                                    <li key={id}  onClick={() => updateContactData(id)} >
+                                {Object.entries(props.contact_list).map(([id, person], j) => (
+                                    <li key={id}   >
                                         <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
                                             
                                             <div className="flex-shrink-0">
@@ -270,10 +356,9 @@ function ChatList(props)
                                                 </span>
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <Link
-                                                  //  onClick={()=> getMessageList(id)}
-                                                     href={route('chat_list', {'contact_id': id,
-                                                     'category': containerCategory} )}
+                                                <button
+                                                    type='button'
+                                                    onClick={()=> getContactMessage(id, person.channel)}
                                                     className="focus:outline-none"
                                                 >
                                                     {/* Extend touch target to entire panel */}
@@ -281,23 +366,45 @@ function ChatList(props)
                                                         className="absolute inset-0"
                                                         aria-hidden="true"
                                                     />
-                                                    <p className="text-sm font-semibold text-[#3D4459]">
+                                                    <p className="text-sm font-semibold text-[#3D4459] flex items-start">
                                                         {person && (person.name) ?
                                                             <>{person.name}</>
                                                             : 
                                                             <>{person.number}</>
                                                         }
                                                     </p>
-                                                    <p className="text-sm text-[#3D4459] truncate">
+                                                    <p className="text-sm text-[#3D4459] truncate flex items-start">
                                                         {person.number}
                                                     </p>
-                                                </Link>
+                                                </button>
                                             </div>
-                                            <div className="cursor-pointer">
-                                                <DotsVerticalIcon
-                                                    className="h-4 w-4"
-                                                    aria-hidden="true"
-                                                />
+                                            <div 
+                                                className="cursor-pointer" 
+                                                ype='button' 
+                                              //  onClick={() => getcategoryContacts()}
+                                              >
+                                                <Dropdown >
+                                                    <Dropdown.Trigger>
+                                                        <span className="inline-flex rounded-md">
+                                                            <button
+                                                                type="button"
+                                                            >
+                                                                <DotsVerticalIcon className="h-4 w-4" />
+                                                            </button>
+                                                        </span>
+                                                    </Dropdown.Trigger>
+
+                                                    <Dropdown.Content align="right" contentClasses="py-1 bg-white w-64 shadow-lg">
+                                                            
+                                                    <ul role="list" className="divide-y divide-gray-200 overflow-y-auto m-h-64">
+                                                        
+                                                        <li onClick={() => setArchived(person.id)} className={"px-4 py-2 text-gray-900 text-sm hover:bg-sky-700 cursor-pointer " }>
+                                                            {current_tab == 'archived' ? <> Unarchive </> : <>Archive</> } 
+                                                        </li>
+                                                    </ul>
+                                                    </Dropdown.Content>
+                                                </Dropdown>
+
                                             </div>
                                         </div>
                                     </li>
@@ -384,7 +491,6 @@ function ChatList(props)
                                                                     "p-2 flex"
                                                                 )}
                                                             >
-
                                                                 <span onClick={ () => setSelectedAccount(id)}
                                                                 className="block px-4 text-sm text-gray-700 w-full cursor-pointer">
                                                                     {name} 
@@ -433,10 +539,12 @@ function ChatList(props)
                                                                 <channel.icon 
                                                                     className="p-2 w-12 h-12 fill-current text-gray-500"
                                                                 />
-                                                                <Link href={route('chat_list', {'contact_id': selectedContact, 'category': name})}
-                                                                className="block py-2 px-4 text-sm text-gray-700 w-full">
+                                                                <button
+                                                                    onClick={() => selectContactCategory(name)}
+                                                                    type={'button'}
+                                                                    className="block py-2 px-4 text-sm text-gray-700 w-full">
                                                                     {channel.label} 
-                                                                </Link>
+                                                                </button>
                                                             </div>
                                                     </Menu.Item>
                                                 ))}
@@ -568,7 +676,9 @@ function ChatList(props)
                 </div>
             </div>
             {showForm ?
-                <ContactSelection/>
+                <ContactSelection
+                    setShowForm={setShowForm}
+                />
             : ''}
         </Authenticated>
     );

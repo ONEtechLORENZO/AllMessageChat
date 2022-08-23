@@ -188,10 +188,14 @@ function Form(props)
         }
 
         data['options'] = options;
+        data['is_chat'] = (props.is_chat) ? props.is_chat : '';
         
         Inertia.post(props.recordId ? route('update' + props.module, {id: props.recordId}) : route('store' + props.module), data, {
             onSuccess: (response) => {
                 props.hideForm();
+                if(props.is_chat){
+                    props.getUserContacts();
+                }
             },
             onError: (errors) => {
                 setErrors(errors)
@@ -357,6 +361,7 @@ function Form(props)
                                                         name={field_info.field_name}
                                                         options={field_info.options ? field_info.options : {}}
                                                         handleChange={handleChange}
+                                                        emptyOption={field_info.field_name == 'field_group' ? 'Generel' : ''}
                                                         value={field_value}
                                                         required={field_info.is_mandatory === 1 ? true : false}
                                                         readOnly={(readOnly) ? '' : 'disabled'}
