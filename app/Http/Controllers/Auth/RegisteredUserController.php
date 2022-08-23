@@ -81,10 +81,11 @@ class RegisteredUserController extends Controller
         $user = User::create($userData);
 
         if($company_id){
-            DB::table('company_user')->insert([
-                'user_id' => $user->id,
-                'company_id' => $company_id
-            ]);
+            $user->company()->syncWithoutDetaching([$company_id]);
+            // DB::table('company_user')->insert([
+            //     'user_id' => $user->id,
+            //     'company_id' => $company_id
+            // ]);
         }
 
         event(new Registered($user));

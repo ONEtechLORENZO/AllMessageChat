@@ -110,7 +110,13 @@ class CompanyController extends Controller
         $user = $request->user();
         $company = Company::find($id);
         $users = $company->user;
-       // dd($users);
+
+        // Check user can access the record
+        $access = $this->checkPermissin($id, $user);
+        if(!$access){
+            abort('401');
+        }
+
         $companyId = Cache::get('selected_company_'. $user->id);
         $headers = $this->getModuleHeader($companyId , 'Company');
 
@@ -210,5 +216,22 @@ class CompanyController extends Controller
         $companyId = $request->company_id;
         Cache::put('selected_company_'. $request->user()->id  , $companyId);
         return Redirect::to(url()->previous());
+    }
+
+
+    /**
+     * Check permission to user can access the record
+     */
+    public function checkPermissin( $recordId , $user)
+    {
+        $companyId = Cache::get('selected_company_'.$user->id);
+        $userCompanies = $user->company;
+        $return = false; 
+        foreach($userCompanies as $company){
+            if($company->id == $recordId ){
+                $return = true;
+            }
+        }
+        return $return;
     }
 }

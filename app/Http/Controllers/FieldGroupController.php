@@ -112,6 +112,8 @@ class FieldGroupController extends Controller
                     'company_id' => $companyId
                 ]
             )
+            ->orderBy('sequence', 'asc')
+            ->groupBy('field_name')
             ->get();
         $fieldList = [];
         foreach($fields as $field){
