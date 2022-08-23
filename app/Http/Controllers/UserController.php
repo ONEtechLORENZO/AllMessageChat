@@ -294,25 +294,17 @@ class UserController extends Controller
     public function editUser(Request $request, $id)
     {
         $currentUser = $request->user();
-        // Check whether user has access to edit the record.
-        $user = User::where('id', $id);
-        $companies = $user->company;
-        $flag = false;
-        $selectedCompany = Cache::has('selected_company_' . $currentUser->id) ? Cache::get('selected_company_' . $currentUser->id) : '';
-        foreach($companies as $company) {
-            if($company->id == $selectedCompany) {
-                $flag = true;
-            }
-        }
-
+        $flag = $this->checkPermission($currentUser, $id);
+        
         if($flag === false) {
             abort(401);
         }
 
+        $user = User::find($id);
         $password = $user->password;
         $user_roles = $this->getRoles($currentUser);
         
-        if($currentUser->role != 'regular' || $user->id == $currentUser->id){
+        if($currentUser->role != 'regular' || $user->id == $currentUser->id) {
             return Inertia::render('Admin/User/CreateUser', [
                     'user' => $user, 
                     'password' => $password, 
@@ -349,26 +341,19 @@ class UserController extends Controller
      */
     public function userDetail(Request $request, $id = '')
     {
-        if($id){
-            
-            if( $request->user()->role != 'regular'){
-                $query = User::where('id' ,$id);
-                $companyId = Cache::get('selected_company_'. $request->user()->id);
-                $query->join('company_user' ,'user_id', 'users.id');
-                $query->where('company_id' , $companyId);
-                $user = $query->first();
-            }
-            
-        } else {
-            $user = $request->user();
-        }
-  
-        if(! $user){
-            abort(401, __('You are not authorised to see this record.'));
+        // Check whether user has permission to view the record.
+        $currentUser = $request->user();
+        $flag = $this->checkPermission($currentUser, $id);
+        
+        if($flag === false) {
+            abort(401);
         }
 
+        $user = User::find($id);
+
         $token = $user->api_token;
-        return Inertia::render('Admin/User/UserDetail', [
+        if($currentUser->role != 'regular' || $user->id == $currentUser->id) {
+            return Inertia::render('Admin/User/UserDetail', [
                 'user' => $user, 
                 'token' => $token,
                 'current_user' => $request->user(),
@@ -404,6 +389,67 @@ class UserController extends Controller
                     'Do you want change the user token?' => __('Do you want change the user token?')
                 ]
             ]);
+        } else {
+            return Redirect(route('dashboard'));
+        }
+    }
+
+    /**
+     * Profile
+     */
+    public function profile(Request $request)
+    {
+        // Check whether user has permission to view the record.
+        $currentUser = $request->user();
+        $flag = $this->checkPermission($currentUser, $currentUser->id);
+        
+        if($flag === false) {
+            abort(401);
+        }
+
+        $user = User::find($currentUser->id);
+
+        $token = $user->api_token;
+        if($user->id == $currentUser->id) {
+            return Inertia::render('Admin/User/UserDetail', [
+                'user' => $user, 
+                'token' => $token,
+                'current_user' => $request->user(),
+                'time_zone' => $this->timezones,
+                'translator' => [
+                    'Name' => __('Name'),
+                    'New Password' => __('New Password'),
+                    'Confirm Password' => __('Confirm Password'),
+                    'User Detail'  => __('User Detail'),
+                    'Company name' => __('Company name'),
+                    'Email' => __('Email'),
+                    'Token' => __('Token'),
+                    'Phone number' => __('Phone number'),
+                    'Language' => __('Language'),
+                    'Currency' => __('Currency'),
+                    'Active Status' => __('Active Status'),
+                    'Company Address' => __('Company Address'),
+                    'Company Country' => __('Company Country'),
+                    'Company VAT ID' => __('Company VAT ID'),
+                    'Admin email for invoices' => __('Admin email for invoices'),
+                    'Users'  => __('Users'),
+                    'Personal Information' => __('Personal Information'),
+                    'Edit User' => __('Edit User'),
+                    'Change Password' => __('Change Password'),
+                    'Change' => __('Change'),
+                    'Close' => __('Close'),
+                    'Confirm Password'  => __('Confirm Password'),
+                    'New Password' => __('New Password'),
+                    'Personal Information' => __('Personal Information'),
+                    'Billing Information' => __('Billing Information'),
+                    'The new password and confirm password must match' => __('The new password and confirm password must match'),
+                    'Time Zone' => __('Time Zone'),
+                    'Do you want change the user token?' => __('Do you want change the user token?')
+                ]
+            ]);
+        } else {
+            return Redirect(route('dashboard'));
+        }
     }
 
     /**
@@ -411,20 +457,26 @@ class UserController extends Controller
      */
     public function storeUserRegistration(Request $request)
     {
-        Log::info('Save user data process start');
-        if(($request->get('id') == $request->user()->id) ||  $request->user()->role != 'regular'){
-           
+        $currentUser = $request->user();
+        $companyId = Cache::get('selected_company_'. $currentUser->id);
+        // Check whether user has permission to create/update the user
+        if(($request->get('id') == $currentUser->id) || $request->user()->role != 'regular') {
             if (!$request->get('id')) {
                 $request->validate([
                     'last_name' => 'required|max:255',
                     'email' => 'required|unique:users|max:255',
-                //    'role' => 'required|max:255'
                 ]);
+
                 $user = new User();
                 $password = bin2hex(openssl_random_pseudo_bytes(8));
                 $user->password = bcrypt($password);
             } else {
-                $user = User::findOrFail($request->get('id'));
+                $flag = $this->checkPermission($currentUser, $request->get('id'));
+                if($flag === false) {
+                    abort(401);
+                }
+        
+                $user = User::find($request->get('id'));
             }
 
             $user->first_name = $request->get('first_name');
@@ -441,45 +493,56 @@ class UserController extends Controller
             $user->codice_destinatario = $request->get('codice_destinatario');
             $user->admin_email = $request->get('admin_email');
 
-            if( $request->user()->role != 'regular') {
-                $user->role = ($request->get('role')) ? $request->get('role') : 'regular';
+            // Only admin and global admin can able to set the user role
+            if($currentUser->role == 'admin' || $currentUser->role == 'global_admin') {
+                $tmpRole = $request->get('role');
+                // Admin user can't set user as global_admin
+                if($currentUser->role == 'admin') {
+                    if($tmpRole == 'global_admin') {
+                        $tmpRole = 'admin';
+                    }
+                }
+
+                $user->role = $tmpRole ? $tmpRole : 'regular';
                 $user->status = $request->get('status');
             }
 
-            $company = Cache::get('selected_company_'. $request->user()->id);
-            $_REQUEST['company_id'] = $company;
+            $_REQUEST['company_id'] = $companyId;
             
             $user->save();
+
             $user_id = $user->id;
-            if (!$request->get('id') && $company) {
-                DB::table('company_user')->insert([
-                    'user_id' => $user_id,
-                    'company_id' => $company
-                ]);
-            }
-            Log::info('Record saved successfully.');
+
+            // Attached the company
+            $user->company()->syncWithoutDetaching([$companyId]);
             
-            if($request->user()->role != 'regular'){
-                return Redirect::route('detail_global_User', $user_id);
-            } else {
+            if($currentUser->role == 'global_admin') {
+                return Redirect::route('detail_global_user', $user_id);
+            }
+            else if($currentUser->role == 'admin') {
+                return Redirect::route('detailUser', $user_id);
+            }
+            else {
                 return Redirect::route('profile');
             }
-            
-            
         }
         
         return Redirect::route('dashboard');
     }
 
     /**
-     * Change user login password
+     * Change user password
      */
     public function changePassword(Request $request, $id)
     {
-        $user = User::findOrFail($id);
         $currentUser = $request->user();
-       
-        if($currentUser->id == $user->id ){
+        $flag = $this->checkPermission($currentUser, $id);
+        if($flag === false) {
+            abort(401);
+        }
+
+        $user = User::find($id);
+        if($currentUser->id == $user->id) { // User updating his/her own password. So we need to match the old password.
             $request->validate([
                 'current_password' => ['required', new MatchOldPassword],
                 'new_password' => 'required|min:8',
@@ -492,9 +555,16 @@ class UserController extends Controller
             ]);
         }
 
-        $user->update(['password'=> Hash::make($request->new_password)]);
-        Log::info('Password changed successfully.');
-        return Redirect::route('detailUser', $id);
+        $user->update(['password' => Hash::make($request->new_password)]);
+        if($currentUser->role == 'global_admin') {
+            return Redirect::route('detail_global_user', $id);
+        }
+        else if($currentUser->role == 'admin') {
+            return Redirect::route('detailUser', $id);
+        }
+        else {
+            return Redirect::route('profile');
+        }
     }
 
     /**
@@ -1411,5 +1481,38 @@ class UserController extends Controller
             unset($user_roles['global_admin']);
         }
         return $user_roles;
+    }
+
+    /**
+     * Check whether user has permission to access the record
+     */
+    public function checkPermission($currentUser, $user_id)
+    {
+        if(!$user_id) {
+            return false;
+        }
+
+        // If user is trying to access his own record, allow
+        if($currentUser->id == $user_id) {
+            return true;
+        }
+
+        $user = User::where('id', $user_id)->first();
+        $companies = $user->company;
+
+        $flag = false;
+        if($currentUser->role == 'global_admin') {
+            $flag = true;
+        }
+        else {
+            $selectedCompany = Cache::has('selected_company_' . $currentUser->id) ? Cache::get('selected_company_' . $currentUser->id) : '';
+            foreach($companies as $company) {
+                if($company->id == $selectedCompany) {
+                    $flag = true;
+                    break;
+                }
+            }
+        }
+        return $flag;
     }
 }

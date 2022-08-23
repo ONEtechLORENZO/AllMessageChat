@@ -62,13 +62,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/invoices/{id}', [UserController::class, 'invoices'])->name('invoices');    
     
     // Profile
-    Route::get('/user/profile', [UserController::class, 'userDetail'])->name('profile');
-    Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('user_profile');
-    Route::get('/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_profile');
+    Route::get('/user/profile', [UserController::class, 'profile'])->name('profile');
     Route::post('/user/registration', [UserController::class, 'storeUserRegistration'])->name('store_user_data');
     Route::get('/image/{type}/{id}', [ImageController::class, 'showImage'])->name('show_image');
     Route::post('/user/regenerate_token', [UserController::class, 'regenerateToken'])->name('regenerate_token');
-    Route::post('/admin/user/change_password/{id}', [UserController::class, 'changePassword'])->name('change_password');
+    Route::post('/user/change_password/{id}', [UserController::class, 'changePassword'])->name('change_password');
 
     // Messages
     Route::get('/messages/list', [MessageLogController::class, 'list'])->name('messages');
@@ -111,9 +109,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/updateContact', [ContactController::class, 'store'])->name('storeContact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
-
   
-    //Filter
+    // Filter
     Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');
     Route::post('/storeFilter', [FilterController::class, 'storeFilter'])->name('store_filter');
     Route::post('/deleteFilter', [FilterController::class, 'deleteFilter'])->name('delete_filter');
@@ -187,9 +184,9 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     // Users
     Route::get('/admin/users', [UserController::class, 'usersListing'])->name('list_global_user');
     Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_global_user');
-    Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_global_User');
-    Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_global_User');
-    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detail_global_User');
+    Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_global_user');
+    Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_global_user');
+    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detail_global_user');
 
     // Settings
     Route::get('/admin/settings/outgoing_server', [SettingsController::class, 'settings'])->name('settings');

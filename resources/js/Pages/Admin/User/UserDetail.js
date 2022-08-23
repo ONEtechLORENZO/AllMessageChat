@@ -50,20 +50,9 @@ export default function UserDetail(props) {
         newState[name] = value;
         setData(newState);
     }
-    
-    function formatDate(date) {
-        var monthArray=['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-		var date = new Date(date);               
-		var d = date.getDate();
-		var day = (d <= 9 ? '0' + d : d)
-		var month = monthArray[date.getMonth()];
-		var year = date.getFullYear();
-        var dateFormat = month + ' ' + day + ', ' + year;
-        return dateFormat;
-    }
 
     // Update Token
-    function updateToken(){
+    function updateToken() {
         axios({
             method: 'post',
             url: route('regenerate_token'),
@@ -92,6 +81,7 @@ export default function UserDetail(props) {
             }
         });
     }
+    
     var isChangePassword = false;
     if ((props.user.id == props.current_user.id) || (props.current_user.role != 'regular')) {
         isChangePassword = true;
@@ -123,7 +113,7 @@ export default function UserDetail(props) {
                         </button>
                     }
                     <Link
-                        href={props.user.role == 'admin' ?  route('editUser' , [props.user.id]) : route('edit_profile' , [props.user.id])}
+                        href={props.current_user.role == 'global_admin' ? route('edit_global_user', [props.user.id]) : route('editUser', [props.user.id])}
                         className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                     >
                         {props.translator['Edit User']}
@@ -150,11 +140,11 @@ export default function UserDetail(props) {
                                             bg_color = 'bg-white';
                                         }
                                         
-                                        if(key == 'status' && props.current_user.role != 'Admin'){
+                                        if(key == 'status' && props.current_user.role == 'regular') {
                                             showField = false;
                                         }
                                         
-                                        if(key == 'codice_destinatario' && fields.company_country.value != 'Italy'){
+                                        if(key == 'codice_destinatario' && fields.company_country.value != 'Italy') {
                                             showField = false;
                                         }
 
@@ -291,8 +281,6 @@ export default function UserDetail(props) {
                     </div>
                 </Dialog>
             </Transition.Root>
-
-
         </Authenticated>
     );
 }
