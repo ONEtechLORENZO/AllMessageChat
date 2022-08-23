@@ -50,7 +50,6 @@ class ContactController extends Controller
      */
     public function index(Request $request)
     {
-
         $list_view_columns = [
             'first_name' => ['label' => __('First Name'), 'type' => 'text'],
             'last_name' =>  ['label' => __('Last Name'), 'type' => 'text'],
@@ -104,9 +103,8 @@ class ContactController extends Controller
      */
     public function store(Request $request)
     {
-        
         $contact_id = $this->saveContact($request);
-        if($request->is_chat){
+        if($request->is_chat) {
             return Redirect::route('chat_list');
         } else {
             return Redirect::route('detailContact', $contact_id);
