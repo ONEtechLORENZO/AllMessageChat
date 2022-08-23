@@ -118,8 +118,8 @@ class CompanyController extends Controller
         }
 
         $companyId = Cache::get('selected_company_'. $user->id);
-        $headers = $this->getModuleHeader($companyId , 'Company');
-
+        $headers = $this->getModuleHeader(1 , 'Company');
+        
         $data = [
             'record' => $company,
             'users' => $users,
