@@ -95,7 +95,7 @@ function Schedule(props){
                     <h3 className="text-lg leading-6 font-medium text-gray-900">Schedule</h3>
                 </div>
                 <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-                {props.status == 'new' ? 
+                {props.status != 'draft' ? 
                 <>
                  <dl className="sm:divide-y sm:divide-gray-200">
                      <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -153,7 +153,7 @@ function Schedule(props){
                 </div>
             </div>
         </div>
-        {props.status == 'new' ? 
+        {props.status != 'draft' ? 
         <>
          <div className="flex m-10 justify-end">
             <a

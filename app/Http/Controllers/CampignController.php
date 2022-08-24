@@ -81,8 +81,8 @@ class CampignController extends Controller
         
         $user_id = $request->user()->id;
         $company_id = Cache::get('selected_company_'.$user_id);
-        $translator = Controller::translator();
-        $filter = Controller::getFiltersInfo($user_id,'Campign');
+        $translator = Controller::getTranslations();
+        $filter = Controller::getFiltersInfo($company_id, $user_id, 'Campign', '');
         $count = '';
         $companyName = [];
 
@@ -198,8 +198,8 @@ class CampignController extends Controller
         }
 
         $user_id = $request->user()->id;
-        $translator = Controller::translator();
-        $filter = Controller::getFiltersInfo($user_id,'Campign');
+        $translator = Controller::getTranslations();
+        $filter = Controller::getFiltersInfo($company_id, $user_id, 'Campign', '');
     
         return Inertia::render('Campign/Form',[
             'translator' => $translator, 

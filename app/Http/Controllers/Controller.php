@@ -470,7 +470,7 @@ class Controller extends BaseController
             $query->leftJoin('categorables', "{$baseTable}.id", 'categorable_id');
         }
 
-        $query = $this->getWhereFilterCondition($searchData , $query , $baseTable);
+        $query = $this->prepareQuery($searchData , $query , $baseTable);
         
         if($limit){
             $query->offset($offset)

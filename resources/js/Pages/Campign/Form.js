@@ -115,6 +115,10 @@ export default function Campign(props) {
       if((!data.account_id || data.account_id == '') && openTab == 4){
         return false;
       }
+      
+      if((!data.action || data.action == '') && openTab == 3){
+        return false;
+      }
 
       if(data.scheduled_at != 'now'){
         let ifValideDate = checkDate(data);
