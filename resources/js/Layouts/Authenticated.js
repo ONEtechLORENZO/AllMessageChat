@@ -13,6 +13,7 @@ import {
     BriefcaseIcon,
     UsersIcon,
     XIcon,
+    SpeakerphoneIcon,
     ChevronRightIcon,
     ChevronLeftIcon,
     ServerIcon,
@@ -50,6 +51,12 @@ const navigation = [
         name: "Messages",
         href: route("message_list"),
         icon: ChatAltIcon,
+        show: ['all'],
+    },
+    {
+        name: "Campaigns",
+        href: route("listCampign"),
+        icon: SpeakerphoneIcon,
         show: ['all'],
     },
     {

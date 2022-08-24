@@ -538,12 +538,22 @@ class MsgController extends Controller
             ->where('user_id', $user_id)
             ->first();
 
+        // Get Company id based on user
+        $user = User::find($user_id);
+        $company = $user->company;
+        $companyId = 1;     // Raw
+        if($company){
+            $companyId = $company[0]->id;
+        }
+        
+
         if(!$contact) {
             // Create new contact if instagram id is not found
             $contact = new Contact();
             $contact->last_name = $name;
             $contact->$field = $uniqueId;
             $contact->user_id = $user_id;
+            $contact->company_id = $companyId;
             $contact->save();
         }
 
