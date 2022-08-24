@@ -61,11 +61,12 @@ function ChatList(props)
     const accountList = props.account_list;
 
     useEffect(() => {
+        setChatList(props.contact_list);
         const interval = setInterval(() => getMessageList(), 5000);
         return () => {
             clearInterval(interval);
         };
-    }, [chatList]);
+    }, [props]);
 
     // Update select contact
     function updateContactData(contact){
