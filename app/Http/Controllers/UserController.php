@@ -603,8 +603,8 @@ class UserController extends Controller
         $user = User::find($id);
 
         if ($user->delete()) {
-            Log::info('User deleted.');
-            return response()->json(['success' => true, 'url' => '/admin/user', 'success' => 'Record deleted'], 200);
+            Log::info('User deleted.');            
+            return Redirect::route('show_Users');
         }
     }
 

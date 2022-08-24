@@ -267,7 +267,7 @@ function ChatList(props)
                         </div>
                     </div>
                     <div className="flex justify-between p-4">
-                        <div className="w-10 h-10 bg-white shadow-sm flex items-center justify-center">
+                        <div className="w-10 h-10 bg-white shadow-sm flex items-center justify-center z-10 ">
                             <Filter
                                 module='Contact'
                                 filter={props.filter}
