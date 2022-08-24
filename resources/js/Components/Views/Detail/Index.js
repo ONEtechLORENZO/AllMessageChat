@@ -17,6 +17,7 @@ export default function Index(props) {
     const [listOpen, setListOpen] = useState(false);
     const [defaultHeader , setDefaultHeader] = useState(props.headers.default);
     const [customHeader, setCustomHeader] = useState(props.headers.custom);
+    const [fieldOptions, setFieldOptions ] = useState({});
 
     useEffect(() => {
         setRecord(props.record);
@@ -52,6 +53,21 @@ export default function Index(props) {
             },
         });
     }
+
+    /**
+     * Get dropdown field options
+     */
+         function getFieldOptions(name){
+            let newFieldOptions = Object.assign({}, fieldOptions);
+            axios({
+                method: 'get',
+                url: route('get_field_options', {'field_name': name, 'module_name': props.module}),
+            })
+            .then( (response) =>{
+              newFieldOptions[name] = response.data.options;
+              setFieldOptions(newFieldOptions);
+            });
+        }
 
     return (            
             <div>
@@ -133,6 +149,7 @@ export default function Index(props) {
                                                 <div className="px-4 py-2 -mb-px font-semibold text-gray-900 rounded-t opacity-70 divide-y"> General </div>  
 
                                                 {Object.entries(defaultHeader).map( ([key, field]) => {
+                                                    var field_name = key;
                                                     let showField = true;
                                                     let select = false;
                                                     if(key == 'id'){
@@ -141,11 +158,21 @@ export default function Index(props) {
                                                     if(key == 'tag'||key == 'list'){
                                                         showField = false;
                                                     }
+                                                    var value = record[key];
+                                                    if(field.type == 'dropdown'){
+                                                        if(!fieldOptions[field_name]){
+                                                            getFieldOptions(field_name);
+                                                        }
+                                                        if(record.hasOwnProperty(key)){
+                                                            value = (fieldOptions[field_name]) ? fieldOptions[field_name][value] : value;
+                                                        }
+                                                    }
+                                                   
                                                     if(showField){ 
                                                         return(
                                                             <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                                                 <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
-                                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"> {record[key]} </dd>
+                                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"> {value} </dd>
                                                             </div>
                                                         )
                                                     }
