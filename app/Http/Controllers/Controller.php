@@ -42,7 +42,8 @@ class Controller extends BaseController
         // Sorting
         $sort_by = $request->has('sort_by') && $request->get('sort_by') ? $request->get('sort_by') : $this->default_sort_by;
         $sort_order = $request->has('sort_order') && $request->get('sort_order') ? $request->get('sort_order') : $this->default_sort_order;
-        
+        $from = $request->has('from') && $request->get('from') ? $request->get('from') : '';
+
         $user = $request->user();
         $user_id = $user->id;
 
@@ -122,6 +123,13 @@ class Controller extends BaseController
 
         // To skip the duplicates
         $query->groupBy("{$baseTable}.id");
+        
+        if($from == 'campignfilter'){
+            $records = $query->paginate();
+            $recordCount = $records->total();
+            return $recordCount;
+        }
+        $records = $query->paginate($this->limit);
 
         // Fetch the data
         $records = $query->paginate($this->limit);
@@ -150,9 +158,11 @@ class Controller extends BaseController
                 'lastPage' => $records->lastPage(),
                 'perPage' => $records->perPage(),
             ],
+
             'translator' => $this->getTranslations(),
+
         ];
-       
+     
         return $return;
     }
 
@@ -439,4 +449,40 @@ class Controller extends BaseController
         ];
         return $translator;
     }
+
+    public function getContactRecords($module, $fields, $searchData, $limit, $offset){
+        
+        $baseTable = $module->getTable();
+        $moduleName = class_basename($module);
+        $sort_by = 'created_at';
+        $sort_order = 'asc';
+        
+        $listFields = array_keys($fields) ;
+        $listFields = array_diff( $listFields, ['tag' , 'list'] );
+        $listFields[] = 'id'; 
+        $listFields = substr_replace($listFields, "{$baseTable}.", 0, 0);
+
+        $query = $module->select( $listFields )
+                        ->orderBy("{$baseTable}.{$sort_by}", $sort_order);                
+
+        if($moduleName == 'Contact'){
+            $query->leftJoin('taggables', "{$baseTable}.id",'taggable_id');
+            $query->leftJoin('categorables', "{$baseTable}.id", 'categorable_id');
+        }
+
+        $query = $this->getWhereFilterCondition($searchData , $query , $baseTable);
+        
+        if($limit){
+            $query->offset($offset)
+                   ->limit($limit);
+                   
+            return $query->get();      
+        }
+       
+        $records = $query->paginate();
+  
+        return $records->items();
+
+    }
+
 }

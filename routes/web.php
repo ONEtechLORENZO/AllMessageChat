@@ -154,8 +154,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/deleteField/{id}',[FieldController::class, 'destroy'])->name('deleteField');
 
     //Campign
-    Route::get('/campigns',[CampignController::class, 'index'])->name('listCampign');
-    Route::get('/campign/store',[Campigncontroller::class, 'store'])->name('storeCampign');
+    Route::get('/campaigns',[CampignController::class, 'index'])->name('listCampign');
+    Route::post('/campaign/store',[Campigncontroller::class, 'store'])->name('storeCampign');
+    Route::get('/campaign/detail/{id}',[CampignController::class, 'show'])->name('detailCampign');
+    Route::post('/campaign/schedule',[CampignController::class,'CampignSchedule'])->name('CampignSchedule');
+    Route::get('/campaign/search',[CampignController::class, 'searchRecords'])->name('searchfilter');
+    Route::delete('/deleteCampaign/{id}',[CampignController::class, 'destroy'])->name('deleteCampign');
 });
 
 // Check user is admin

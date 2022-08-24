@@ -4,7 +4,15 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use App\Models\Campign;
+use App\Models\Contact;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Redirect;
+use Cache;
+use App\Models\Taggable;
+use App\Models\Msg;
+use App\Http\Controllers\MsgController;
+use App\Models\Account;
 
 class CampignController extends Controller
 {
@@ -26,15 +34,15 @@ class CampignController extends Controller
         $listViewData = $this->listView($request, $module, $list_view_columns);
 
         $moduleData = [
-            'singular' => __('Campign'),
-            'plural' => __('Campigns'),
+            'singular' => __('Campaign'),
+            'plural' => __('Campaigns'),
             'module' => 'Campign',
-            'current_page' => 'Campigns', 
+            'current_page' => 'Campaigns', 
             // Actions
             'actions' => [
                 'create' => true,
-                'detail' => false,
-                'edit' => true,
+                'detail' => true,
+                'edit' => false,
                 'delete' => true,
                 'export' => false,
                 'import' => false,
@@ -63,23 +71,90 @@ class CampignController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, Campign $campign)
-    {
-        // if($request){
-        //     $request->validate([
-        //         'name' => 'required'
-        //     ]);
-        // }
+    public function store(Request $request, Campign $campaign)
+    { 
+        if($request){
+            $request->validate([
+                'name' => 'required'
+            ]);
+        }
+        
+        $user_id = $request->user()->id;
+        $company_id = Cache::get('selected_company_'.$user_id);
+        $translator = Controller::translator();
+        $filter = Controller::getFiltersInfo($user_id,'Campign');
+        $count = '';
+        $companyName = [];
 
-        // $campign->name = $request->name;
-        // $campign->status = 'draft';
-        // $campign->save();
-        $list_view_columns = [ ];
+        if($request->id){
+ 
+            $campaign = Campign::findOrFail($request->id);
+            $currentPage = $request->tab;
+                 
+            if($request->name){
+                $campaign->name = $request->name;
+                $campaign->service = $request->service;
+                $campaign->action = $request->action;
+            }
+            if($request->conditions){
+                $conditions = json_encode($request->conditions);
+                $campaign->conditions = $conditions;
+            }
+            if($campaign->service){
+                $accounts = Account::where('company_id',$company_id)
+                            ->where('service',$campaign->service)          
+                            ->get();
 
-        $module = new Campign();
-        $listViewData = $this->listView($request, $module, $list_view_columns);
-    
-        return Inertia::render('Campign/Form',['translator' => $listViewData['translator'], 'filter' => $listViewData['filter']]);        
+                foreach($accounts as $account){
+                    $companyName[$account->id] = $account->company_name;
+                }
+            }
+            if($request->scheduled_at){
+                $scheduledTime = $request->scheduled_at;
+                if($scheduledTime == 'now'){
+                    $currentDate = gmdate('Y-m-d h:i:s');
+                    $campaign->scheduled_at = $currentDate;
+                }else{
+                    $campaign->scheduled_at = $scheduledTime;
+                } 
+            }
+        
+            if($currentPage == 4){
+                $campaign->account_id = $request->account_id;
+                $campaign->offset = 0;
+                $campaign->current_page = $currentPage;
+                $campaign->status = 'new';
+                $campaign->save();
+
+                return Redirect::route('listCampign');
+            }
+
+            $campaign->current_page = $currentPage + 1;
+            $campaign->save();
+
+            if($campaign->conditions){
+                $searchData = json_decode($campaign->conditions);
+                $contacts = $this->getTotalContact($searchData);
+                $count = count($contacts);
+                $campaign->conditions = $searchData;
+            }
+
+        }else{
+            $campaign->name = $request->name;
+            $campaign->status = 'draft';
+            $campaign->company_id = $company_id;
+            $campaign->current_page = 1;
+            $campaign->save();
+        }
+
+        return Inertia::render('Campign/Form',[
+            'translator' => $translator, 
+            'filter' => $filter,
+            'campign' => $campaign,
+            'status' => $campaign->status,
+            'count' => $count,
+            'companyName' => $companyName
+        ]); 
     }
 
     /**
@@ -88,9 +163,52 @@ class CampignController extends Controller
      * @param  \App\Models\Campign  $campign
      * @return \Illuminate\Http\Response
      */
-    public function show(Campign $campign)
+    public function show(Request $request, $id)
     {
-        //
+        $user_id = $request->user()->id;
+        $company_id = Cache::get('selected_company_'.$user_id);
+        $campign = Campign::where('id',$request->id)
+                   ->where('company_id', $company_id)
+                   ->first();
+         
+        if(!$campign){
+            about(401);
+        } 
+        
+        $count = '';
+        $companyName = [];
+        $status = $campign->status;
+        $conditions = $campign->conditions;
+   
+        if($conditions){
+            $searchData = json_decode($conditions);
+            $campign->conditions = $searchData;
+            $contacts = $this->getTotalContact($searchData);
+            $count = count($contacts);
+        };
+      
+        if($campign->service){
+            $accounts = Account::where('company_id',$company_id)
+                        ->where('service',$campign->service)          
+                        ->get();
+
+            foreach($accounts as $account){
+                  $companyName[$account->id] = $account->company_name;
+            }
+        }
+
+        $user_id = $request->user()->id;
+        $translator = Controller::translator();
+        $filter = Controller::getFiltersInfo($user_id,'Campign');
+    
+        return Inertia::render('Campign/Form',[
+            'translator' => $translator, 
+            'filter' => $filter, 
+            'campign' => $campign, 
+            'status' => $status,
+            'count' => $count, 
+            'companyName' => $companyName
+        ]);
     }
 
     /**
@@ -99,8 +217,8 @@ class CampignController extends Controller
      * @param  \App\Models\Campign  $campign
      * @return \Illuminate\Http\Response
      */
-    public function edit(Campign $campign)
-    {
+    public function edit(Request $request,$id)
+    {     
         //
     }
 
@@ -122,8 +240,36 @@ class CampignController extends Controller
      * @param  \App\Models\Campign  $campign
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Campign $campign)
+    public function destroy(Request $request, $id)
     {
-        //
+        $campign = Campign::find($id);
+        $campign->delete();
+        return Redirect::route('listCampign');
+    }
+
+    public function searchRecords(Request $request){
+
+        $list_view_columns = [];
+        $module = new Contact();
+        $listViewData = $this->listView($request, $module, $list_view_columns);
+
+        echo $listViewData;
+    } 
+
+    public function getTotalContact($searchData){
+
+        $module = new Contact(); 
+
+        $fields = [
+            'first_name' => ['label' => __('First Name'), 'type' => 'text'],
+            'last_name' =>  ['label' => __('Last Name'), 'type' => 'text'],
+            'email' =>  ['label' => __('Email'), 'type' => 'text'],
+            'phone_number' => ['label' => __('Phone number'), 'type' => 'phone_number'],
+            'instagram_id' =>  ['label' => 'Instagram Id', 'type' => 'text'],
+        ];       
+        
+        $contacts = $this->getContactRecords($module, $fields, $searchData, '', '');
+        
+        return $contacts;
     }
 }
