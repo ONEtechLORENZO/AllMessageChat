@@ -10,6 +10,7 @@ import Search from './Search';
 import { Head,Link } from '@inertiajs/inertia-react';
 import Filter from "./Filter2";
 import axios from "axios";
+import ListTable from './ListTable';
 
 function ListView(props)
 {
@@ -205,6 +206,7 @@ function ListView(props)
                 <div className="mt-2 flex flex-col">
                     <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
                         <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+{/*                             
                             <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg my-4">
                                 <table className="min-w-full divide-y divide-[#D9D9D9]">
                                     <thead>
@@ -213,7 +215,7 @@ function ListView(props)
                                                 let visibility = 'invisible';
                                                 let sort_order = 'desc';
                                                 let sortable = true;
-                                                if(props.sort_by == name) {
+                                                if(props.sort_by && props.sort_by == name) {
                                                     visibility = '';
                                                     if(props.sort_order == 'desc') {
                                                         sort_order = 'asc';
@@ -252,7 +254,6 @@ function ListView(props)
                                                     </th>
                                                 );
                                             })}
-
                                             <th></th>
                                         </tr>
                                     </thead>
@@ -339,6 +340,12 @@ function ListView(props)
                                     </tbody>
                                 </table>
                             </div>
+                             */}
+                            <ListTable 
+                                headers={props.headers}
+                                records={props.records}
+                                {...props}
+                            />
 
                             {Object.entries(records).length == 0 ?         
                                 <Alert type='info' message= {props.translator['No records']} hideClose={true} />

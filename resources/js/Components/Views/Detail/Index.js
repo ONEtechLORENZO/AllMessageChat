@@ -4,6 +4,7 @@ import { Inertia } from "@inertiajs/inertia";
 import ReactSelect from "./ReactSelect";
 import Notes from '@/Components/Notes';
 import { Head,Link } from "@inertiajs/inertia-react";
+import SubPanels from "./SubPanels";
 
 export default function Index(props) {
     const [record , setRecord] = useState(props.record);
@@ -265,6 +266,18 @@ export default function Index(props) {
                                                         </li>
                                                     ))}
                                                 </ul>
+                                            </>
+                                        }
+                                        {tab.name == 'Contact' &&
+                                            <>
+                                                <SubPanels 
+                                                    module={tab.name}
+                                                    headers={props.sub_headers}
+                                                    records={props.related_records} 
+                                                    actions={props.actions}
+                                                    paginator={props.pagination}
+                                                 
+                                                />
                                             </>
                                         }
                                     </div>

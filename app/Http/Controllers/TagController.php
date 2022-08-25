@@ -75,6 +75,7 @@ class TagController extends Controller
             // Actions
             'actions' => [
                 'create' => true,
+                'detail' => true,
                 'edit' => true,
                 'delete' => true,
                 'export' => false,
@@ -185,9 +186,42 @@ class TagController extends Controller
      * @param  \App\Models\Tag  $tag
      * @return \Illuminate\Http\Response
      */
-    public function show(Tag $tag)
+    public function show(Request $request)
     {
-        //
+        $id = $request->id;
+        $user = $request->user();
+        $companyId = Cache::get('selected_company_'. $user->id);
+
+        $query = Tag::where('id', $id);
+        $query->where('company_id', $companyId );
+        $record = $query->first();
+
+        $headers = $this->getModuleHeader(1 , 'Tag');
+        if(!$record){
+            abort('401');
+        }
+
+        // Get Sub module data
+        $supModule = new Contact();
+        $query = $supModule->join('taggables', 'taggable_id', 'contacts.id')
+            ->where('tag_id', $id);
+           
+        $subPanelData = $this->getSubPanelRecords($supModule, $query);        
+
+        $data = [
+            'record' => $record,
+            'headers' => $headers,
+
+            'translator' => [
+                'Detail' => __('Detail'),
+                'Notes' => __('Notes'),
+                'Edit'  =>__('Edit')
+            ],
+            
+        ];
+        $data = array_merge($data , $subPanelData);
+        return Inertia::render('Tag/Detail', $data);
+
     }
 
     /**
