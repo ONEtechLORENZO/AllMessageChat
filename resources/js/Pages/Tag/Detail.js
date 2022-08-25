@@ -40,6 +40,7 @@ function Detail(props){
                 translator={props.translator}
                 actions={props.sub_panbel_actions}
                 pagination={props.sub_panel_pagination}
+                current_tab = {props.current_tab}
                
             />
             

@@ -204,7 +204,7 @@ class CategoryController extends Controller
         $query = $supModule->join('categorables', 'categorable_id', 'contacts.id')
             ->where('category_id', $id);
            
-        $subPanelData = $this->getSubPanelRecords($supModule, $query);        
+        $subPanelData = $this->getSubPanelRecords('Category', $supModule, $query);        
 
         $data = [
             'record' => $record,

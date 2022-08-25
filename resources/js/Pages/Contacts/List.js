@@ -16,7 +16,6 @@ function List(props)
         { label:'Contacts',name: 'Contacts', href: '#',current: true },
         { label:'Lists',name: 'Lists', href: route("listCategory"),current: false},
         { label:'Tags',name: 'Tags', href: route("listTag"),current: false }
-        
       ];
     return (
         <Authenticated
@@ -24,43 +23,37 @@ function List(props)
             errors={props.errors}
             current_page={props.current_page}
         >
-                            <nav
-                                className="px-4 sm:px-6 flex space-x-8 gap-2"
-                                aria-label="Tabs"
-                            >
-                               {tabs.map((tab) => (
-                                <>
-                                    {                                       
-                                    <Link
-                                        key={tab.name}
-                                        href={tab.href}
-                                        className={classNames(
-                                            tab.current
-                                                ? "border-purple-500 text-primary"
-                                                : "border-transparent text-gray-500 text-[#3D4459] hover:text-primary hover:border-purple-500",
-                                            "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base  my-6"
-                                        )}
-                                    >
-                                        {tab.name}  
-                                    </Link>}
-                                 </>))} 
-                                 </nav>
-                                 {tabs.map((tab) => (
-                                <>
-                                    {
-                                     tab.name=='Contacts'?
-                                        <ListView
-                                    headers={props.list_view_columns}
-                                    {...props}
-                                    translator={props.translator}
-                                /> :""
-                                 }  </>))}
+                <nav
+                    className="px-4 sm:px-6 flex space-x-8 gap-2"
+                    aria-label="Tabs"
+                >
+                    {tabs.map((tab) => (
+                        <Link
+                            key={tab.name}
+                            href={tab.href}
+                            className={classNames(
+                                tab.current
+                                    ? "border-purple-500 text-primary"
+                                    : "border-transparent text-gray-500 text-[#3D4459] hover:text-primary hover:border-purple-500",
+                                "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base  my-6"
+                            )}
+                        >
+                            {tab.name}  
+                        </Link>
+                    ))} 
+                </nav>
+                {tabs.map((tab) => (
+                    <>
+                        {tab.name=='Contacts' &&
+                            <ListView
+                                headers={props.list_view_columns}
+                                {...props}
+                                translator={props.translator}
+                            /> 
+                        }
+                    </>
+                ))}
                            
-                        
-                    
-
-            
-            
         </Authenticated>
     )
 }

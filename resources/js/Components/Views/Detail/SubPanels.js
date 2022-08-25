@@ -19,9 +19,11 @@ console.log(props);
                                 actions={props.actions}
                             />
                             {Object.entries(props.records).length == 0 ?         
-                                <Alert type='info' message= {'No records related'} hideClose={true} />
-                            : ''}
-                            <Pagination paginator={props.paginator} />
+                                <Alert type='info' message= {'No record related yet.'} hideClose={true} />
+                            : 
+                                <Pagination paginator={props.paginator} />
+                            }
+                            
                             
                 </div>
             </div>

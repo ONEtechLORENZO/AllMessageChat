@@ -27,6 +27,7 @@ export default function Index(props) {
         setTagSelectedOption(props.tagData);
         setListSelectedOption(props.listData);
         setRecordId(props.record.id);
+        setActiveTab(props.current_tab);
       },[props]);
 
     function saveTag (){
@@ -130,7 +131,7 @@ export default function Index(props) {
                                 }
                                 return(
                                     <li className={activeClassName} onClick={() => setActiveTab(tab.name)}>
-                                        <a id="default-tab" href="#{tab.name}"> {tab.label} </a>
+                                        <a id="default-tab" href={"#"+tab.name}> {tab.label} </a>
                                     </li>
                                 )
                             })}

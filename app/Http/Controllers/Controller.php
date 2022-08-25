@@ -498,7 +498,7 @@ class Controller extends BaseController
     /**
      * Get SubPanel Records
      */
-    public function getSubPanelRecords($module, $query)
+    public function getSubPanelRecords( $parent, $module, $query)
     {
         $headers = $module->getListViewFields();
         $baseTable = $module->getTable();
@@ -509,11 +509,21 @@ class Controller extends BaseController
         unset($headers['tag']);
         unset($headers['list']);
 
-       // dd(($records->url(1)));
-        
+        // Set custom url for Paginate
+        $parentId = $_GET['id'];
+        $url = route('detail'. $parent). '?id=' . $_GET['id'];
+        $records->withPath($url);
+
+        $currentTab = 'Detail';
+        if(isset($_GET['page'])){
+            $moduleName = class_basename($module);
+            $currentTab = $moduleName;
+        }
+       
         $return = [
             'related_records' => $records->items(),
             'related_records_header' => $headers,
+            'current_tab' => $currentTab,
 
             // Paginator
             'sub_panel_pagination' => [

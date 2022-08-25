@@ -5,139 +5,141 @@ import { ChevronDownIcon, ChevronUpIcon, UserAddIcon, PencilAltIcon, TrashIcon, 
 function ListTable(props){
 
     return(
-        <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg my-4">
-                                <table className="min-w-full divide-y divide-[#D9D9D9]">
-                                    <thead>
-                                        <tr>
-                                            {Object.entries(props.headers).map(([name, field]) => {
-                                                let visibility = 'invisible';
-                                                let sort_order = 'desc';
-                                                let sortable = true;
-                                                if(props.sort_by && props.sort_by == name) {
-                                                    visibility = '';
-                                                    if(props.sort_order == 'desc') {
-                                                        sort_order = 'asc';
+        <>
+            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg my-4">
+                <table className="min-w-full divide-y divide-[#D9D9D9]">
+                    <thead>
+                        <tr>
+                            {Object.entries(props.headers).map(([name, field]) => {
+                                let visibility = 'invisible';
+                                let sort_order = 'desc';
+                                let sortable = true;
+                                if(props.sort_by && props.sort_by == name) {
+                                    visibility = '';
+                                    if(props.sort_order == 'desc') {
+                                        sort_order = 'asc';
+                                    }
+                                }
+                                if(name == 'tag' || name == 'list'){
+                                    sortable = false;                                       
+                                }
+                                if(field.type == 'dropdown'){
+                                    if(!fieldOptions[name]){
+                                        getFieldOptions(name);
+                                    }
+                                }
+
+                                return (
+                                    <th
+                                        key={name}
+                                        scope="col"
+                                        className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-[#3D4459] sm:pl-6"
+                                    >
+                                        <a href="#" className="group inline-flex" onClick={() => { sortable ? sortColumn(name, sort_order): ''}}>
+                                            {field.label}
+                                            <span className={`ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible ` + visibility}>
+                                                {sortable &&
+                                                    <>
+                                                    {visibility == '' && props.sort_order == 'asc' ?
+                                                        <ChevronUpIcon className="h-5 w-5" aria-hidden="true" />
+                                                    :
+                                                        <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
                                                     }
+                                                    </>
                                                 }
-                                                if(name == 'tag' || name == 'list'){
-                                                    sortable = false;                                       
+                                                
+                                            </span>
+                                        </a>
+                                    </th>
+                                );
+                            })}
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody className=" bg-white">
+                        {Object.entries(props.records).map(([key, record]) => ( 
+                            <tr key={key}> 
+                                {Object.entries(props.headers).map(([name, field],index) => { 
+                                    let column_value = record[name]; 
+                                    if(props.actions.detail === true && index === 0) {
+                                        column_value = <Link href={route('detail' + props.module, {id: record.id})} className='cursor-pointer underline'>
+                                            {column_value} 
+                                        </Link>;
+                                    } 
+                                    if(record.tags && name == 'tag'){
+                                        var tagName = '';
+                                        (record.tags).map((tag,tagIndex) => {
+                                            if(tagIndex === 0 || tagIndex === 1){ 
+                                                tagName += tag.name;
+                                                if(tagIndex === 0 && (record.tags).length > 1){
+                                                    tagName += ', ';
                                                 }
-                                                if(field.type == 'dropdown'){
-                                                    if(!fieldOptions[name]){
-                                                        getFieldOptions(name);
-                                                    }
+                                            }
+                                        })
+                                        column_value = tagName;
+                                    }
+                                    if(record.categorys && name == 'list'){
+                                        var listName = '';
+                                        (record.categorys).map((list,listIndex) => {
+                                            if(listIndex === 0 || listIndex === 1){ 
+                                                listName += list.name;
+                                                if(listIndex === 0 && (record.categorys).length > 1){
+                                                    listName += ', ';
                                                 }
+                                            }
+                                        })
+                                        column_value = listName;
+                                    }
 
-                                                return (
-                                                    <th
-                                                        key={name}
-                                                        scope="col"
-                                                        className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-[#3D4459] sm:pl-6"
-                                                    >
-                                                        <a href="#" className="group inline-flex" onClick={() => { sortable ? sortColumn(name, sort_order): ''}}>
-                                                            {field.label}
-                                                            <span className={`ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible ` + visibility}>
-                                                                {sortable &&
-                                                                    <>
-                                                                    {visibility == '' && props.sort_order == 'asc' ?
-                                                                        <ChevronUpIcon className="h-5 w-5" aria-hidden="true" />
-                                                                    :
-                                                                        <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
-                                                                    }
-                                                                    </>
-                                                                }
-                                                                
-                                                            </span>
-                                                        </a>
-                                                    </th>
-                                                );
-                                            })}
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className=" bg-white">
-                                        {Object.entries(props.records).map(([key, record]) => ( 
-                                            <tr key={key}> 
-                                                {Object.entries(props.headers).map(([name, field],index) => { 
-                                                    let column_value = record[name]; 
-                                                    if(props.actions.detail === true && index === 0) {
-                                                        column_value = <Link href={route('detail' + props.module, {id: record.id})} className='cursor-pointer underline'>
-                                                            {column_value} 
-                                                        </Link>;
-                                                    } 
-                                                    if(record.tags && name == 'tag'){
-                                                        var tagName = '';
-                                                        (record.tags).map((tag,tagIndex) => {
-                                                            if(tagIndex === 0 || tagIndex === 1){ 
-                                                                tagName += tag.name;
-                                                                if(tagIndex === 0 && (record.tags).length > 1){
-                                                                    tagName += ', ';
-                                                                }
-                                                            }
-                                                        })
-                                                       column_value = tagName;
-                                                    }
-                                                    if(record.categorys && name == 'list'){
-                                                        var listName = '';
-                                                        (record.categorys).map((list,listIndex) => {
-                                                            if(listIndex === 0 || listIndex === 1){ 
-                                                                listName += list.name;
-                                                                if(listIndex === 0 && (record.categorys).length > 1){
-                                                                    listName += ', ';
-                                                                }
-                                                            }
-                                                        })
-                                                       column_value = listName;
-                                                    }
+                                    if(field.type == 'dropdown'){
+                                        column_value = (fieldOptions[name]) ? fieldOptions[name][column_value] : column_value;
+                                    }
+                                    
+                                    if(field.type == 'checkbox' && name == 'status'){
+                                        column_value = (column_value == 1) ? 'Active' : 'Inactive'
+                                    }
 
-                                                    if(field.type == 'dropdown'){
-                                                        column_value = (fieldOptions[name]) ? fieldOptions[name][column_value] : column_value;
-                                                    }
-                                                   
-                                                    if(field.type == 'checkbox' && name == 'status'){
-                                                        column_value = (column_value == 1) ? 'Active' : 'Inactive'
-                                                    }
+                                    if (field.type == 'checkbox' && name == 'is_mandatory') {
+                                        column_value = (column_value == 1) ? 'Yes' : 'No'
+                                    }
 
-                                                    if (field.type == 'checkbox' && name == 'is_mandatory') {
-                                                        column_value = (column_value == 1) ? 'Yes' : 'No'
-                                                    }
+                                    return (
+                                        <td key={name} className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]">
+                                            {column_value}
+                                        </td>
+                                    );
+                                })}
 
-                                                    return (
-                                                        <td key={name} className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]">
-                                                            {column_value}
-                                                        </td>
-                                                    );
-                                                })}
-
-                                                <td>
-                                                    <div className='flex gap-2'>
-                                                        {props.actions && props.actions.edit === true ?
-                                                            <>
-                                                            {props.edit_link ?
-                                                                <Link 
-                                                                    href={route(props.edit_link, record.id)}
-                                                                > 
-                                                                  <PencilAltIcon className='h-4 w-4 cursor-pointer' />
-                                                                </Link>
-                                                            : 
-                                                                <PencilAltIcon className='h-4 w-4 cursor-pointer' onClick={() => showEditForm(record.id)} />
-                                                            }
-                                                            </>
-                                                            
-                                                        : ''}
-                                                        {(props.actions && props.actions.delete === true) || (record.is_custom == '1') ?
-                                                            <TrashIcon className='h-4 w-4 text-red-600 cursor-pointer' onClick={() => deleteRecord(record.id)} />
-                                                        : ''}
-                                                        {props.actions.download === true && record.status === 'success' ? 
-                                                             <a href={route('invoices',record.id)} ><DownloadIcon className='h-4 w-4 cursor-pointer' /></a>
-                                                        : ''}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                <td>
+                                    <div className='flex gap-2'>
+                                        {props.actions && props.actions.edit === true ?
+                                            <>
+                                            {props.edit_link ?
+                                                <Link 
+                                                    href={route(props.edit_link, record.id)}
+                                                > 
+                                                    <PencilAltIcon className='h-4 w-4 cursor-pointer' />
+                                                </Link>
+                                            : 
+                                                <PencilAltIcon className='h-4 w-4 cursor-pointer' onClick={() => showEditForm(record.id)} />
+                                            }
+                                            </>
+                                            
+                                        : ''}
+                                        {(props.actions && props.actions.delete === true) || (record.is_custom == '1') ?
+                                            <TrashIcon className='h-4 w-4 text-red-600 cursor-pointer' onClick={() => deleteRecord(record.id)} />
+                                        : ''}
+                                        {props.actions.download === true && record.status === 'success' ? 
+                                                <a href={route('invoices',record.id)} ><DownloadIcon className='h-4 w-4 cursor-pointer' /></a>
+                                        : ''}
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </>
     );
 }
 

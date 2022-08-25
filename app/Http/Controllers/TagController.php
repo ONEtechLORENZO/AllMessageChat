@@ -206,7 +206,7 @@ class TagController extends Controller
         $query = $supModule->join('taggables', 'taggable_id', 'contacts.id')
             ->where('tag_id', $id);
            
-        $subPanelData = $this->getSubPanelRecords($supModule, $query);        
+        $subPanelData = $this->getSubPanelRecords('Tag', $supModule, $query);        
 
         $data = [
             'record' => $record,
