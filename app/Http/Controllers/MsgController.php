@@ -312,12 +312,26 @@ class MsgController extends Controller
                 }
             });
         }
+
+        // get count of categories
+        $unreadCountQuery = clone $query;
+        $unreadCount = $unreadCountQuery->where('unread' , true )->count();
+        $archiveQuery = clone $query;
+        $archiveCount = $archiveQuery->where('is_archive' , true )->count();
+        $totalQuery = clone $query;
+        $totalCount = $totalQuery->count();
+        $totalCount = $totalCount - ($archiveCount - $unreadCount);
+        $recordCounts = [ 'all' => $totalCount, 'unread' => $unreadCount , 'archived' => $archiveCount];
+
         $mode = (isset($_GET['mode'])) ? ($_GET['mode']) : 'all';
         if($mode && $mode == 'archived'){
             $query->where('is_archive' , true);
+        } else if($mode && $mode == 'unread'){
+            $query->where('unread' , true);
         } else {
             $query->where(function ($query)  {  
                 $query->whereNull('is_archive')->orWhere('is_archive' , 0);
+                $query->whereNull('unread')->orWhere('unread' , 0);
             });
         }
         $query->orderBy('chat_list_contacts.updated_at', 'desc');
@@ -348,6 +362,7 @@ class MsgController extends Controller
             'filter_id' => $filterId,
             'search' => $search,
             'mode' => $mode,
+            'counts' => $recordCounts,
         ];
     
         return $data;
@@ -387,11 +402,12 @@ class MsgController extends Controller
     /**
      * Update chat Channel
      */
-    public function updateChatChannel($user_id , $cotnact_id, $channel)
+    public function updateChatChannel($user_id , $contact_id, $channel)
     {
-        $contact = ChatListContact::where('user_id', $user_id)->where('contact_id' , $cotnact_id )->first();
+        $contact = ChatListContact::where('user_id', $user_id)->where('contact_id' , $contact_id )->first();
         if($contact){
             $contact->channel = $channel;
+            $contact->unread = false;
         }
         $contact->save();
     }
@@ -486,7 +502,10 @@ class MsgController extends Controller
     public function handleMessageResult(Request $request, $accountId , $data)
     {
         $user_id = $this->getUserIdUsingAccountId($accountId);
-        $msgable_id = $this->getInfoUsingContactUniqueId($request->destination, $request->channel, $user_id);
+        $account = Account::find($accountId);
+        $companyId = $account->company_id;
+        $_REQUEST['is_sent'] = 'sent';
+        $msgable_id = $this->getInfoUsingContactUniqueId($request->destination, $request->channel, $companyId, $user_id);
         $msgable_type = 'App\Models\Contact';
         $messageData = [
             'service_id' => $data['messageId'],
@@ -523,7 +542,7 @@ class MsgController extends Controller
     /**
      * Return record id using instagram ID
      */
-    public function getInfoUsingContactUniqueId($uniqueId, $type, $user_id , $name = '') 
+    public function getInfoUsingContactUniqueId($uniqueId, $type, $companyId, $user_id , $name = '') 
     {
         $phoneNumber = $instagramId = '';
         $field = ($type == 'whatsapp') ? 'phone_number' : 'instagram_id';
@@ -532,20 +551,9 @@ class MsgController extends Controller
             $uniqueId = ($type == 'whatsapp') ? '+'.$uniqueId : $uniqueId;
         }
 
-        //$message = new Msg();
-        //$profileDetail = $message->getProfileDetail($uniqueId);
         $contact = Contact::where($field , $uniqueId)
-            ->where('user_id', $user_id)
+            ->where('company_id', $companyId)
             ->first();
-
-        // Get Company id based on user
-        $user = User::find($user_id);
-        $company = $user->company;
-        $companyId = 1;     // Raw
-        if($company){
-            $companyId = $company[0]->id;
-        }
-        
 
         if(!$contact) {
             // Create new contact if instagram id is not found
@@ -557,6 +565,14 @@ class MsgController extends Controller
             $contact->save();
         }
 
+        // Update contact last update time
+        $chatContact = ChatListContact::where('contact_id', $contact->id)->first();
+        if(isset($_REQUEST['is_sent']) && $_REQUEST['is_sent'] == 'sent'){
+            $chatContact->unread = false;
+        } else {
+            $chatContact->unread = true;
+        }
+        $chatContact->save();
         return $contact->id;
     }
 
@@ -593,11 +609,13 @@ class MsgController extends Controller
         }
 
         $account_id = $data['account_id'];
+        $account = Account::find($account_id);
+        $companyId = $account->company_id;
         $user_id = $this->getUserIdUsingAccountId($account_id);
 
         log::info(['insta content' => $message_content]);
         // Get Contact information
-        $msgable_id = $this->getInfoUsingContactUniqueId($sender_id, 'instagram', $user_id);
+        $msgable_id = $this->getInfoUsingContactUniqueId($sender_id, 'instagram', $companyId, $user_id);
         $msgable_type = 'App\Models\Contact';
         
         // TODO Need to get instagram profile information when creating new Contact - https://documenter.getpostman.com/view/12788798/UzBtkNQb#b38d5004-215b-41d8-a993-8bf47be3199b
@@ -625,11 +643,13 @@ class MsgController extends Controller
     public function handleWhatsAppMessage($data)
     {
         $account = Account::where('phone_number', $_GET['origin'])->first();
+        $companyId = $account->company_id;
+
         $user_id = $this->getUserIdUsingAccountId($account->id);
         $msgable_type = 'App\Models\Contact';
 
         if ( isset($data['sender']) &&  $_GET['origin'] != $data['sender']['phone']) {
-            $msgable_id = $this->getInfoUsingContactUniqueId($data['sender']['phone'], 'whatsapp', $user_id, $data['sender']['name']);
+            $msgable_id = $this->getInfoUsingContactUniqueId($data['sender']['phone'], 'whatsapp', $companyId, $user_id, $data['sender']['name']);
             $messageData = [
                 'service_id' => $data['id'],
                 'service' => 'whatsapp',

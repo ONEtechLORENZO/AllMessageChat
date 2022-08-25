@@ -11,38 +11,35 @@ use Illuminate\Support\Facades\Redirect;
 
 class ChatListContactController extends Controller
 {
-        /**
+    /**
      * Return User contact list
      */
     public function getUserContacts(Request $request)
     {
         $user = $request->user();
-        $query = Contact::select('id', 'first_name', 'last_name');
-        if( $user->role != 'reqular'){
-            $companyId = Cache::get('selected_company_'. $user->id);
-            $query->where('company_id', $companyId);
-        } else {
-            $query->where('user_id', $user_id);
-        }
-        $records = $query->get();
+        $companyId = Cache::get('selected_company_'. $user->id);
 
-        $selectedContacts = [];
-        $selectedChatList =  ChatListContact::select('contact_id')->where('user_id', $user->id )->get();
-        $contactIdList = [];
-        foreach($selectedChatList as $contactId){
-            $contactIdList[] = $contactId->contact_id;
+        $query = Contact::select('contacts.id', 'first_name', 'last_name');
+        $query->where('company_id', $companyId);
+        $query->leftJoin('chat_list_contacts', 'contacts.id', 'contact_id');
+        $query->whereNull('contact_id');
+
+        // Filter records based on key 
+        $key = (isset($_GET['key']) && $_GET['key']) ? $_GET['key'] : '';
+        if($key){
+            $query->where(function($query) use($key) {
+                $query->orWhere('first_name', 'like', '%' . $key . '%');
+                $query->orWhere('last_name', 'like', '%' . $key . '%');
+            });
         }
+        $records = $query->limit(5)->get();
 
         $contacts = [];
         foreach($records as $record){
-            if( in_array($record->id , $contactIdList) ){
-                $selectedContacts[] = ['label' => $record->first_name. ' '. $record->last_name, 'value' => $record->id ];
-            } else {
-                $contacts[] = ['label' => $record->first_name. ' '. $record->last_name, 'value' => $record->id ];
-            }
+            $contacts[] = ['label' => $record->first_name. ' '. $record->last_name, 'value' => $record->id ];
         }
 
-        echo json_encode(['records' => $contacts, 'selected_records' => $selectedContacts ]); die;
+        echo json_encode(['records' => $contacts ]); die;
     }
 
     /**

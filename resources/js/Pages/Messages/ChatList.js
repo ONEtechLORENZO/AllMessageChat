@@ -52,9 +52,9 @@ function ChatList(props)
     }
     const[ current_tab, setCurrentTabId ] = useState(props.mode);
     const tabs = [
-        { name: (props.translator['All Chats']), id:'all', href: "#", count: "2", current: false },
-        { name: (props.translator['Unread']), id:'unread', href: "#", count: "", current: false },
-        { name: (props.translator['Archive']), id:'archived', href: "#", count: "", current: false },
+        { name: (props.translator['All Chats']), id:'all', href: "#", current: false },
+        { name: (props.translator['Unread']), id:'unread', href: "#", current: false },
+        { name: (props.translator['Archive']), id:'archived', href: "#", current: false },
     ];
 
     const [time, setTime] = useState(Date.now());
@@ -318,18 +318,17 @@ function ChatList(props)
                                         )}
                                     >
                                         {tab.name}
-                                        {tab.count ? (
-                                            <span
-                                                className={classNames(
-                                                    (tab.id == current_tab)
-                                                        ? "bg-purple-100 text-primary"
-                                                        : "bg-gray-100 text-gray-900",
-                                                    "hidden ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block"
-                                                )}
-                                            >
-                                                {Object.entries(props.contact_list).length}
-                                            </span>
-                                        ) : null}
+                                       
+                                        <span
+                                            className={classNames(
+                                                (tab.id == current_tab)
+                                                    ? "bg-purple-100 text-primary"
+                                                    : "bg-gray-100 text-gray-900",
+                                                "hidden ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block"
+                                            )}
+                                        >
+                                            {props.counts[tab.id]}
+                                        </span>
                                     </a>
                                 ))}
                             </nav>
