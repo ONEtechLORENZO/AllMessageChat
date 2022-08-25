@@ -27,7 +27,9 @@ export default function Index(props) {
         setTagSelectedOption(props.tagData);
         setListSelectedOption(props.listData);
         setRecordId(props.record.id);
-        setActiveTab(props.current_tab);
+        if(props.current_tab){
+            setActiveTab(props.current_tab);
+        }
       },[props]);
 
     function saveTag (){
