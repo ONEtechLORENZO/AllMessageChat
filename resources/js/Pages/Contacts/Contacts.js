@@ -1,6 +1,4 @@
-import { SettingIcon } from "../icons";
 import { Dialog, Transition } from '@headlessui/react'
-import { SearchIcon } from "@heroicons/react/outline";
 import React, { Fragment, useEffect, useRef, useState } from "react";
 import Input from '@/Components/Forms/Input';
 import InputError from '@/Components/Forms/InputError';
@@ -8,15 +6,10 @@ import Authenticated from "../../Layouts/Authenticated";
 import { useForm, Link } from '@inertiajs/inertia-react';
 import Dropdown from '@/Components/Forms/Dropdown';
 import categories, {defaultPristineConfig} from '@/Pages/Constants';
-import Select from 'react-select';
-import languages from '@/Pages/languages';
+
 import PristineJS from 'pristinejs';
 import { Inertia } from '@inertiajs/inertia';
 import ListView from "@/Components/Views/List/Index";
-
-import Pagination from "@/Components/Pagination";
-import { objectPosition } from "tailwindcss/defaultTheme";
-import { concat } from "lodash";
 
 export default function Contacts(props) {
     const [contactFields, setContactFields] = useState({

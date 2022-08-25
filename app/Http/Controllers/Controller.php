@@ -69,16 +69,9 @@ class Controller extends BaseController
             }
         }
 
-        // Preparing list view fields
-        $listFields = array_keys($list_view_columns);
-        // Skipping the tag and list 
-        $listFields = array_diff($listFields, ['tag', 'list']);
-        $listFields[] = 'id';
-        // Appending the base table for uniqueness
-        $listFields = substr_replace($listFields, "{$baseTable}.", 0, 0);
-
-        $query = $module->select($listFields)
-                    ->orderBy("{$baseTable}.{$sort_by}", $sort_order); // TODO Need to check how it reacts when we sort using custom fields.
+        $query = $module->orderBy("{$baseTable}.{$sort_by}", $sort_order); // TODO Need to check how it reacts when we sort using custom fields.
+        // Select Base module Fields
+        $query = $this->getListViewFields($baseTable, $query, $list_view_columns);        
 
         if($search) {
             $query->where(function ($query) use ($search, $list_view_columns) {  
@@ -485,4 +478,71 @@ class Controller extends BaseController
 
     }
 
+    /**
+     * select base table fiels
+     */
+    public function getListViewFields($baseTable, $query ,$headers)
+    {
+        // Preparing list view fields
+        $listFields = array_keys($headers);
+        // Skipping the tag and list 
+        $listFields = array_diff($listFields, ['tag', 'list']);
+        $listFields[] = 'id';
+        // Appending the base table for uniqueness
+        $listFields = substr_replace($listFields, "{$baseTable}.", 0, 0);
+        $query->select($listFields);
+
+        return $query;
+    }
+
+    /**
+     * Get SubPanel Records
+     */
+    public function getSubPanelRecords( $parent, $module, $query)
+    {
+        $headers = $module->getListViewFields();
+        $baseTable = $module->getTable();
+
+        $query = $this->getListViewFields($baseTable, $query, $headers);
+        $records = $query->paginate($this->limit);
+
+        unset($headers['tag']);
+        unset($headers['list']);
+
+        // Set custom url for Paginate
+        $parentId = $_GET['id'];
+        $url = route('detail'. $parent). '?id=' . $_GET['id'];
+        $records->withPath($url);
+
+        $currentTab = 'Detail';
+        if(isset($_GET['page'])){
+            $moduleName = class_basename($module);
+            $currentTab = $moduleName;
+        }
+       
+        $return = [
+            'related_records' => $records->items(),
+            'related_records_header' => $headers,
+            'current_tab' => $currentTab,
+
+            // Paginator
+            'sub_panel_pagination' => [
+                'firstPageUrl' => $records->url(1),
+                'previousPageUrl' => $records->previousPageUrl(),
+                'nextPageUrl' => $records->nextPageUrl(),
+                'lastPageUrl' => $records->url($records->lastPage()),  
+                'currentPage' => $records->currentPage(),
+                'total' => $records->total(),
+                'count' => $records->count(),
+                'lastPage' => $records->lastPage(),
+                'perPage' => $records->perPage(),
+            ],
+
+            // Actions
+            'sub_panbel_actions' => [
+                'detail' => true,
+            ],
+        ];
+        return $return;
+    }
 }

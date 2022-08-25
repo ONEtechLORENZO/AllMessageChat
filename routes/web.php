@@ -133,6 +133,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Tag
     Route::get('/tags', [TagController::class, 'index'])->name('listTag');
+    Route::get('/tag', [TagController::class, 'show'])->name('detailTag');
     Route::get('/tag/getTagList', [TagController::class, 'getTagList'])->name('get_tag_list');
     Route::post('/tag/store', [TagController::class, 'store'])->name('storeTag');
     Route::get('/tag/{id}', [TagController::class, 'edit'])->name('editTag');
@@ -141,6 +142,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Category
     Route::get('/lists', [CategoryController::class, 'index'])->name('listCategory');
+    Route::get('/list', [CategoryController::class, 'show'])->name('detailCategory');
     Route::post('/list/store', [CategoryController::class, 'store'])->name('storeCategory');
     Route::get('/list/{id}', [CategoryController::class, 'edit'])->name('editCategory');
     Route::post('/updateList/{id}', [CategoryController::class, 'update'])->name('updateCategory');

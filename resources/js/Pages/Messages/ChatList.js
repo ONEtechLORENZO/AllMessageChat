@@ -52,9 +52,9 @@ function ChatList(props)
     }
     const[ current_tab, setCurrentTabId ] = useState(props.mode);
     const tabs = [
-        { name: (props.translator['All Chats']), id:'all', href: "#", count: "2", current: false },
-        { name: (props.translator['Unread']), id:'unread', href: "#", count: "", current: false },
-        { name: (props.translator['Archive']), id:'archived', href: "#", count: "", current: false },
+        { name: (props.translator['All Chats']), id:'all', href: "#", current: false },
+        { name: (props.translator['Unread']), id:'unread', href: "#", current: false },
+        { name: (props.translator['Archive']), id:'archived', href: "#", current: false },
     ];
 
     const [time, setTime] = useState(Date.now());
@@ -267,7 +267,7 @@ function ChatList(props)
                         </div>
                     </div>
                     <div className="flex justify-between p-4">
-                        <div className="w-10 h-10 bg-white shadow-sm flex items-center justify-center">
+                        <div className="w-10 h-10 bg-white shadow-sm flex items-center justify-center z-10 ">
                             <Filter
                                 module='Contact'
                                 filter={props.filter}
@@ -318,18 +318,17 @@ function ChatList(props)
                                         )}
                                     >
                                         {tab.name}
-                                        {tab.count ? (
-                                            <span
-                                                className={classNames(
-                                                    (tab.id == current_tab)
-                                                        ? "bg-purple-100 text-primary"
-                                                        : "bg-gray-100 text-gray-900",
-                                                    "hidden ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block"
-                                                )}
-                                            >
-                                                {Object.entries(props.contact_list).length}
-                                            </span>
-                                        ) : null}
+                                       
+                                        <span
+                                            className={classNames(
+                                                (tab.id == current_tab)
+                                                    ? "bg-purple-100 text-primary"
+                                                    : "bg-gray-100 text-gray-900",
+                                                "hidden ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block"
+                                            )}
+                                        >
+                                            {props.counts[tab.id]}
+                                        </span>
                                     </a>
                                 ))}
                             </nav>
@@ -442,14 +441,62 @@ function ChatList(props)
                                                 { chatList[selectedContact].name }
                                             </span>
                                         </div>
-                                        <span className="text-sm font-normal text-[#3D4459]">
-                                        {props.translator['Junior Developer']}
-                                        </span>
+                                        
                                     </div>
                                     <DotsVerticalIcon
                                         className="h-4 w-4"
                                         aria-hidden="true"
                                     />
+                                </div>
+                                
+                                <div className="flex items-center space-x-2">
+                                    <Menu as="div" className="ml-3 relative">
+                                        <div>
+                                            <Menu.Button className="max-w-xs ring-1 p-2 flex items-center text-sm rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                
+                                                <selectedChannel.icon 
+                                                                    className="p-2 w-12 h-12 fill-current text-gray-500"
+                                                                />
+                                                <span className="ml-2">
+                                                    {selectedChannel.label}
+                                                </span>
+                                            </Menu.Button>
+                                        </div>
+                                        <Transition
+                                            as={Fragment}
+                                            enter="transition ease-out duration-100"
+                                            enterFrom="transform opacity-0 scale-95"
+                                            enterTo="transform opacity-100 scale-100"
+                                            leave="transition ease-in duration-75"
+                                            leaveFrom="transform opacity-100 scale-100"
+                                            leaveTo="transform opacity-0 scale-95"
+                                        >
+                                            <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
+                                                {Object.entries(channels).map(([name, channel]) => (
+                                                    <Menu.Item key={name}>
+                                                            <div 
+                                                                className={classNames(
+                                                                    (containerCategory ==  name)
+                                                                        ? "bg-gray-100"
+                                                                        : "",
+                                                                    "p-2 flex"
+                                                                )}
+                                                            >
+                                                                <channel.icon 
+                                                                    className="p-2 w-12 h-12 fill-current text-gray-500"
+                                                                />
+                                                                <button
+                                                                    onClick={() => selectContactCategory(name)}
+                                                                    type={'button'}
+                                                                    className="block py-2 px-4 text-sm text-gray-700 w-full">
+                                                                    {channel.label} 
+                                                                </button>
+                                                            </div>
+                                                    </Menu.Item>
+                                                ))}
+                                            </Menu.Items>
+                                        </Transition>
+                                    </Menu>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                     <Menu as="div" className="ml-3 relative">
@@ -498,55 +545,6 @@ function ChatList(props)
                                                                 </span>
                                                             </div>
                                                         
-                                                    </Menu.Item>
-                                                ))}
-                                            </Menu.Items>
-                                        </Transition>
-                                    </Menu>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Menu as="div" className="ml-3 relative">
-                                        <div>
-                                            <Menu.Button className="max-w-xs ring-1 p-2 flex items-center text-sm rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                                
-                                                <selectedChannel.icon 
-                                                                    className="p-2 w-12 h-12 fill-current text-gray-500"
-                                                                />
-                                                <span className="ml-2">
-                                                    {selectedChannel.label}
-                                                </span>
-                                            </Menu.Button>
-                                        </div>
-                                        <Transition
-                                            as={Fragment}
-                                            enter="transition ease-out duration-100"
-                                            enterFrom="transform opacity-0 scale-95"
-                                            enterTo="transform opacity-100 scale-100"
-                                            leave="transition ease-in duration-75"
-                                            leaveFrom="transform opacity-100 scale-100"
-                                            leaveTo="transform opacity-0 scale-95"
-                                        >
-                                            <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
-                                                {Object.entries(channels).map(([name, channel]) => (
-                                                    <Menu.Item key={name}>
-                                                            <div 
-                                                                className={classNames(
-                                                                    (containerCategory ==  name)
-                                                                        ? "bg-gray-100"
-                                                                        : "",
-                                                                    "p-2 flex"
-                                                                )}
-                                                            >
-                                                                <channel.icon 
-                                                                    className="p-2 w-12 h-12 fill-current text-gray-500"
-                                                                />
-                                                                <button
-                                                                    onClick={() => selectContactCategory(name)}
-                                                                    type={'button'}
-                                                                    className="block py-2 px-4 text-sm text-gray-700 w-full">
-                                                                    {channel.label} 
-                                                                </button>
-                                                            </div>
                                                     </Menu.Item>
                                                 ))}
                                             </Menu.Items>

@@ -1,11 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
-import Axios from "axios";
-import notie from 'notie';
-import nProgress, { settings } from 'nprogress';
 import { Inertia } from '@inertiajs/inertia'
-import Creatable from 'react-select/creatable';
-
             
 function SelectCompany(props) 
 {

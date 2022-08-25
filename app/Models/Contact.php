@@ -44,4 +44,21 @@ class Contact extends Model
     {
         return $this->morphMany(Note::class, 'notable');
     }
+
+    /**
+     * Return list view fields
+     */
+    public function getListViewFields()
+    {
+        $list_view_columns = [
+            'first_name' => ['label' => __('First Name'), 'type' => 'text'],
+            'last_name' =>  ['label' => __('Last Name'), 'type' => 'text'],
+            'email' =>  ['label' => __('Email'), 'type' => 'text'],
+            'tag' => ['label' => __('Tag'), 'type' => 'text'],
+            'list' =>  ['label' => __('List'), 'type' => 'text'],
+            'phone_number' => ['label' => __('Phone number'), 'type' => 'phone_number'],
+            'instagram_id' =>  ['label' => 'Instagram Id', 'type' => 'text'],
+        ];
+        return $list_view_columns;
+    }
 }

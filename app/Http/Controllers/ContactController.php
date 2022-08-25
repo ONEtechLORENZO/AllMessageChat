@@ -50,17 +50,9 @@ class ContactController extends Controller
      */
     public function index(Request $request)
     {
-        $list_view_columns = [
-            'first_name' => ['label' => __('First Name'), 'type' => 'text'],
-            'last_name' =>  ['label' => __('Last Name'), 'type' => 'text'],
-            'email' =>  ['label' => __('Email'), 'type' => 'text'],
-            'tag' => ['label' => __('Tag'), 'type' => 'text'],
-            'list' =>  ['label' => __('List'), 'type' => 'text'],
-            'phone_number' => ['label' => __('Phone number'), 'type' => 'phone_number'],
-            'instagram_id' =>  ['label' => 'Instagram Id', 'type' => 'text'],
-        ];
-
+        
         $module = new Contact();
+        $list_view_columns = $module->getListViewFields();
         $listViewData = $this->listView($request, $module, $list_view_columns);
 
         $moduleData = [
