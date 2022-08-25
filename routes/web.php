@@ -157,9 +157,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/campaigns',[CampignController::class, 'index'])->name('listCampign');
     Route::post('/campaign/store',[Campigncontroller::class, 'store'])->name('storeCampign');
     Route::get('/campaign/detail/{id}',[CampignController::class, 'show'])->name('detailCampign');
-    Route::post('/campaign/schedule',[CampignController::class,'CampignSchedule'])->name('CampignSchedule');
     Route::get('/campaign/search',[CampignController::class, 'searchRecords'])->name('searchfilter');
     Route::delete('/deleteCampaign/{id}',[CampignController::class, 'destroy'])->name('deleteCampign');
+    Route::get('/campaign/company/{service}',[CampignController::class, 'getCompanyName'])->name('get_company_name');
 });
 
 // Check user is admin

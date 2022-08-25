@@ -1,21 +1,17 @@
-import { FilterOutline } from "heroicons-react";
 import React, { useEffect,useState } from "react";
 import FilterGroups from "./FilterGroups";
 
 function ContactFilter(props){
 
     const [filterCondition, setfilterCondition] = useState(props.data.conditions);
+    const [translator, setTranslator] = useState(props.campagins.translator);
+    const [filter, setFilter] = useState(props.campagins.filter);
 
     useEffect(() => {
         let condition = props.data.conditions;
-        if (
-            typeof condition === 'object' &&
-            condition !== null &&
-            !Array.isArray(condition)
-          ){
+        if (typeof condition === 'object' && condition !== null && !Array.isArray(condition)){
             setfilterCondition(condition);
-          }
-        
+        }
     },[props]);
 
  return(
@@ -29,12 +25,11 @@ function ContactFilter(props){
                     Filter
                     <div className="mt-2">
                         <FilterGroups 
-                            translator={props.filters.translator}
-                            filter={props.filters.filter}
+                            translator={translator}
+                            filter={filter}
                             module={'Contact'}
                             setRecordCount={props.setRecordCount}
-                            setConditons={props.setConditons}
-                            isfilter={props.isfilter}
+                            setConditions={props.setConditions}
                             filterCondition={filterCondition}
                             setfilterCondition={setfilterCondition}
                         />

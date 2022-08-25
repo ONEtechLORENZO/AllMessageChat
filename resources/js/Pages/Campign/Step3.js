@@ -30,6 +30,22 @@ function Content(props){
                 />
             </div>
         </div>
+
+        <div className="border m-10 h-50 rounded-lg">
+            <div className="p-8">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                    Account
+                </label>
+                <br></br>
+                <Dropdown
+                    id='account_id'
+                    name='account_id'
+                    options={props.companyName}
+                    handleChange={props.handleChange}
+                    value={props.data.account_id == null ? '' : props.data.account_id}
+                />
+            </div>
+        </div>
     
         <div className="border m-10 h-64 rounded-lg">  
             <div className="p-8">
@@ -38,8 +54,8 @@ function Content(props){
             {props.data.service ? 
              <>
               <textarea
-                name={'action'}
-                id={'action'}
+                name='action'
+                id='action'
                 rows={2}
                 className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-1/2 h-36 mx-4 sm:text-sm border border-gray-300 rounded-md"
                 defaultValue={props.data.action}

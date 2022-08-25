@@ -1,9 +1,13 @@
 import React, { useState } from "react";
-import Input from "@/Components/Input";
-import { Check } from "heroicons-react";
-import Dropdown from "@/Components/Forms/Dropdown";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 
 function Schedule(props){
+
+    const [openDatepick, setDatepick] = useState(false);
 
     return(
         <div className="overflow-hidden shadow rounded-lg divide-gray-200 w-full float-center">
@@ -55,17 +59,14 @@ function Schedule(props){
                 </div>
                 <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
                  <dl className="sm:divide-y sm:divide-gray-200">
-                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6">
+                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                         <dt className="text-sm font-medium text-gray-500">Select Account</dt>
                         <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                            <Dropdown
-                                id='account_id'
-                                name='account_id'
-                                options={props.companyName}
-                                handleChange={props.handleChange}
-                                value={props.data.account_id == null ? '' : props.data.account_id}
-                                readOnly={props.status == 'new' ? true : false}
-                            />
+                            {props.data.account_id && props.company?
+                             <> 
+                                {props.company[props.data.account_id]}
+                             </> 
+                             : ''}
                         </dd>
                     </div>
                  </dl>
@@ -88,71 +89,79 @@ function Schedule(props){
                 </div>
             </div>
         </div>
-        
+
         <div className="border m-10 h-50 rounded-lg">
             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
                 <div className="px-4 py-5 sm:px-6">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">Schedule</h3>
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">Schedule Time</h3>
                 </div>
                 <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-                {props.status != 'draft' ? 
-                <>
                  <dl className="sm:divide-y sm:divide-gray-200">
-                     <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                       <dt className="text-sm font-medium text-gray-500">Scheduling Time</dt>
-                       <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{props.data.scheduled_at}</dd>
-                    </div>
-                 </dl>
-                </>
-                :
-                <>
-                  <dl className="sm:divide-y sm:divide-gray-200">
-                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6 flex">
-                            <button
-                                type='button'
-                                name='scheduled_at'
-                                value='now'
-                                className="flex justify-center bg-indigo-600 py-2 px-6 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                onClick={props.handleChange}
-                            >
-                            BoardCast Now 
-                            {props.data.scheduled_at == 'now' && props.scheduleOpen === false? 
-                            <>
-                                <span className="px-4"><Check /></span>
-                            </>
-                            : ''}  
-                             </button>
-                            {props.scheduleOpen ?
-                            <>
-                                <Input
-                                    type="datetime-local"
-                                    name="scheduled_at"
-                                    id="scheduled_at"
-                                    className="px-6 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                                    placeholder=""
-                                    value={props.data.scheduled_at}
-                                    handleChange={props.handleChange}
+                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6 flex sm:col-span-2">  
+                    {props.data.status != 'draft' ? 
+                       <>
+                         <dt className="text-sm font-medium text-gray-500">Scheduling Time</dt>
+                         <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{props.data.scheduled_at}</dd>
+                       </>
+                      : 
+                       <>
+                        <dt className="text-sm font-medium text-gray-500">
+                        <div className="flex">
+                            <div className="flex content-center p-4">
+                            <input
+                                    id='scheduled_at'
+                                    name='scheduled_at'
+                                    type="radio"
+                                    className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                                    value='now'
+                                    onChange={props.handleChange}
+                                    onClick={() => setDatepick(false)}
                                 />
-                            </>
-                            : 
-                            <>
-                            <button
-                                    type='button'
-                                    className="justify-end bg-indigo-600 py-2 px-6 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                    onClick={(e) => props.schedule(true)}
-                            >
-                                Schedule Time  
-                                </button> 
-                            </>
-                            }
+                                <label className="ml-3 block text-sm font-bold text-gray-700">
+                                    BoardCast Now
+                                </label>
+                            </div>
+                            <div className="flex  p-4">
+                            <input
+                                    id='scheduled_at'
+                                    name='scheduled_at'
+                                    type="radio" 
+                                    className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                                    value=''
+                                    onClick={() => setDatepick(true)}
+                            />
+                                <label className="ml-3 block text-sm font-bold text-gray-700">
+                                    Scheduling Time
+                                </label>
+                            </div>
+                        </div>
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        {openDatepick ? 
+                        <>
+                            <div className="w-1/2">
+                                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                    <Stack spacing={3}>
+                                        <DateTimePicker
+                                        label="Date&Time"
+                                        name='scheduled_at'
+                                        value={props.scheduleTime}
+                                        onChange={props.setScheduleTime}
+                                        renderInput={(params) => <TextField {...params} />}
+                                        />
+                                    </Stack>
+                                </LocalizationProvider> 
+                            </div> 
+                        </> : ''}  
+                        </dd>
+                       </>
+                      }
                     </div>
                  </dl>
-                </>
-                }
-                 
                 </div>
             </div>
         </div>
+
         {props.status != 'draft' ? 
         <>
          <div className="flex m-10 justify-end">
@@ -179,7 +188,7 @@ function Schedule(props){
                 className="justify-end bg-indigo-600 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 onClick={props.saveCampign}    
             >
-                Send Now
+                 {openDatepick ? 'Schedule' : 'Send Now' }    
             </button>
          </div>
         </>
