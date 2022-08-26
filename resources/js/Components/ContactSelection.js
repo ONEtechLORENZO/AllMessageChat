@@ -15,20 +15,32 @@ export default function ContactSelection(props) {
     const[selectedContact , setSelectedContact] = useState();
 
     useEffect(() => {    
-        getUserContacts();
+        getUserContacts('');
     },[]);
 
     /**
      * Get User contact list
      */
-    function getUserContacts(){
+    function getUserContacts(key){
         nProgress.start(0.5);
         nProgress.inc(0.2);
-        Axios.get(route('get_user_contacts_list')).then((response) => {
+        var url = route('get_user_contacts_list');
+        if(key){
+            url += '?key='+key;
+        }
+        Axios.get(url).then((response) => {
             nProgress.done(true);
             setContactList(response.data.records);
-            setSelectedContact(response.data.selected_records);
         });    
+    }
+
+    /**
+     * Get Contact list based on input 
+     */
+    function handleInputChange(value){
+        if(value){
+            getUserContacts(value);
+        }
     }
 
     function addContacts(){
@@ -97,6 +109,7 @@ export default function ContactSelection(props) {
                                                         isMulti
                                                     //    value={selectedContact}
                                                         options={contactList}
+                                                        onInputChange={handleInputChange}
                                                         onChange={setSelectedContact}
                                                     />
                                             </div>

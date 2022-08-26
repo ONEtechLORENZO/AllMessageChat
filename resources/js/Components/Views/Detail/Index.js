@@ -4,6 +4,7 @@ import { Inertia } from "@inertiajs/inertia";
 import ReactSelect from "./ReactSelect";
 import Notes from '@/Components/Notes';
 import { Head,Link } from "@inertiajs/inertia-react";
+import SubPanels from "./SubPanels";
 
 export default function Index(props) {
     const [record , setRecord] = useState(props.record);
@@ -26,6 +27,9 @@ export default function Index(props) {
         setTagSelectedOption(props.tagData);
         setListSelectedOption(props.listData);
         setRecordId(props.record.id);
+        if(props.current_tab){
+            setActiveTab(props.current_tab);
+        }
       },[props]);
 
     function saveTag (){
@@ -129,7 +133,7 @@ export default function Index(props) {
                                 }
                                 return(
                                     <li className={activeClassName} onClick={() => setActiveTab(tab.name)}>
-                                        <a id="default-tab" href="#{tab.name}"> {tab.label} </a>
+                                        <a id="default-tab" href={"#"+tab.name}> {tab.label} </a>
                                     </li>
                                 )
                             })}
@@ -265,6 +269,18 @@ export default function Index(props) {
                                                         </li>
                                                     ))}
                                                 </ul>
+                                            </>
+                                        }
+                                        {tab.name == 'Contact' &&
+                                            <>
+                                                <SubPanels 
+                                                    module={tab.name}
+                                                    headers={props.sub_headers}
+                                                    records={props.related_records} 
+                                                    actions={props.actions}
+                                                    paginator={props.pagination}
+                                                 
+                                                />
                                             </>
                                         }
                                     </div>

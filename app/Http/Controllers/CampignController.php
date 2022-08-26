@@ -79,13 +79,12 @@ class CampignController extends Controller
                 'name' => 'required'
             ]);
         }
-        
+
         $user_id = $request->user()->id;
         $company_id = Cache::get('selected_company_'.$user_id);
         $translator = Controller::getTranslations();
         $filter = Controller::getFiltersInfo($company_id, $user_id, 'Campign', '');
         $count = '';
-        $companyName = [];
 
         if($request->id){
  
@@ -96,19 +95,11 @@ class CampignController extends Controller
                 $campaign->name = $request->name;
                 $campaign->service = $request->service;
                 $campaign->action = $request->action;
+                $campaign->account_id = $request->account_id;
             }
             if($request->conditions){
                 $conditions = json_encode($request->conditions);
                 $campaign->conditions = $conditions;
-            }
-            if($campaign->service){
-                $accounts = Account::where('company_id',$company_id)
-                            ->where('service',$campaign->service)          
-                            ->get();
-
-                foreach($accounts as $account){
-                    $companyName[$account->id] = $account->company_name;
-                }
             }
             if($request->scheduled_at){
                 $scheduledTime = $request->scheduled_at;
@@ -116,12 +107,12 @@ class CampignController extends Controller
                     $currentDate = gmdate('Y-m-d h:i:s');
                     $campaign->scheduled_at = $currentDate;
                 }else{
+                    $scheduledTime = date( 'Y-m-d h:i:s', strtotime( $scheduledTime) );
                     $campaign->scheduled_at = $scheduledTime;
                 } 
             }
-        
+                
             if($currentPage == 4){
-                $campaign->account_id = $request->account_id;
                 $campaign->offset = 0;
                 $campaign->current_page = $currentPage;
                 $campaign->status = 'new';
@@ -154,7 +145,6 @@ class CampignController extends Controller
             'campign' => $campaign,
             'status' => $campaign->status,
             'count' => $count,
-            'companyName' => $companyName
         ]); 
     }
 
@@ -208,7 +198,6 @@ class CampignController extends Controller
             'campign' => $campign, 
             'status' => $status,
             'count' => $count, 
-            'companyName' => $companyName
         ]);
     }
 
@@ -272,5 +261,23 @@ class CampignController extends Controller
         $contacts = $this->getContactRecords($module, $fields, $searchData, '', '');
         
         return $contacts;
+    }
+
+    public function getCompanyName(Request $request, $service){
+        
+        if($service){
+            $user_id = $request->user()->id;
+            $company_id = Cache::get('selected_company_'.$user_id);
+
+            $accounts = Account::where('company_id',$company_id)
+                        ->where('service',$service)          
+                        ->get();
+
+            foreach($accounts as $account){
+                  $companyName[$account->id] = $account->company_name;
+            }
+        }
+
+        echo json_encode($companyName); die;
     }
 }

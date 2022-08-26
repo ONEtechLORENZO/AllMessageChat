@@ -136,6 +136,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Tag
     Route::get('/tags', [TagController::class, 'index'])->name('listTag');
+    Route::get('/tag', [TagController::class, 'show'])->name('detailTag');
     Route::get('/tag/getTagList', [TagController::class, 'getTagList'])->name('get_tag_list');
     Route::post('/tag/store', [TagController::class, 'store'])->name('storeTag');
     Route::get('/tag/{id}', [TagController::class, 'edit'])->name('editTag');
@@ -144,6 +145,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Category
     Route::get('/lists', [CategoryController::class, 'index'])->name('listCategory');
+    Route::get('/list', [CategoryController::class, 'show'])->name('detailCategory');
     Route::post('/list/store', [CategoryController::class, 'store'])->name('storeCategory');
     Route::get('/list/{id}', [CategoryController::class, 'edit'])->name('editCategory');
     Route::post('/updateList/{id}', [CategoryController::class, 'update'])->name('updateCategory');
@@ -160,9 +162,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/campaigns',[CampignController::class, 'index'])->name('listCampign');
     Route::post('/campaign/store',[Campigncontroller::class, 'store'])->name('storeCampign');
     Route::get('/campaign/detail/{id}',[CampignController::class, 'show'])->name('detailCampign');
-    Route::post('/campaign/schedule',[CampignController::class,'CampignSchedule'])->name('CampignSchedule');
     Route::get('/campaign/search',[CampignController::class, 'searchRecords'])->name('searchfilter');
     Route::delete('/deleteCampaign/{id}',[CampignController::class, 'destroy'])->name('deleteCampign');
+    Route::get('/campaign/company/{service}',[CampignController::class, 'getCompanyName'])->name('get_company_name');
 });
 
 // Check user is admin

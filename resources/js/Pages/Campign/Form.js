@@ -6,29 +6,40 @@ import Information from "./Step1";
 import ContactFilter from "./Step2";
 import Content from "./Step3";
 import Schedule from "./Step4";
+import axios from "axios";
 
 export default function Campign(props) {
   const [openTab, setOpenTab] = useState();
   const [data, setData] = useState([]);
   const [status, setStatus] = useState();
-  const [schedule, setSchedule] = useState(false);
-  const [conditions, setConditons] = useState();
+  const [conditions, setConditions] = useState();
   const [recordCount, setRecordCount] = useState(null);
-  const [isfilter, setIsfilter] = useState(false);
+  const [companyName, setCompanyName] = useState(null);
+  const [scheduleTime, setScheduleTime] = useState();
   
   useEffect(() => {
     setOpenTab(props.campign.current_page);
     setData(props.campign);
     setStatus(props.status);
     setRecordCount(props.count);
+    if(props.campign.account_id){
+      getCompanyName(props.campign.service)
+    }
   },[props]);
+
+  /**
+   * Handle input change
+   */
 
   const handleChange = (event) => {
       let newState = Object.assign({}, data);
       const name = event.target.name;
       const value = event.target.value;
       if(name == 'scheduled_at' && value == 'now'){
-        setSchedule(false);
+        setScheduleTime(value)
+      }
+      if(name == 'service' && value != ''){
+         getCompanyName(value);
       }
       newState[name] = value;
       setData(newState);
@@ -36,14 +47,16 @@ export default function Campign(props) {
 
   function saveCampign(){
 
-    let CheckCondition = checkValidation(data, openTab, isfilter, conditions);
-   
-    if(!CheckCondition){
-      return false;
-    }
+    data['scheduled_at'] = scheduleTime;
     data['conditions'] = conditions;
     data['tab'] = openTab;
 
+    let CheckCondition = checkValidation(data, openTab, conditions);
+
+    if(!CheckCondition){
+      return false;
+    }
+ 
     Inertia.post(route('storeCampign'), data, {
         onSuccess: (response) => {
           
@@ -77,7 +90,8 @@ export default function Campign(props) {
     * @returns 
     */
    function checkDate(data){
-      if(data.scheduled_at){
+      
+      if(data.scheduled_at && data.scheduled_at != 'now'){
         const getDate = new Date(data.scheduled_at);
         const currentDate = new Date();
 
@@ -91,10 +105,25 @@ export default function Campign(props) {
         return true;
    }
 
-   function checkValidation(data, openTab, isfilter, conditions){
+   /***
+    * Get company Name
+    */
 
+   function getCompanyName(service){
+      if(service){
+        axios({
+          method:'get',
+          url: route('get_company_name', {'service': service})
+        })
+        .then((response) => {
+           setCompanyName(response.data)
+        });
+      }
+   }
+
+   function checkValidation(data, openTab, conditions){
       if(openTab == '2'){
-        if(isfilter){
+        if(conditions){
           let ifCheckFilter = checkfilterCondition(conditions);
           if(!ifCheckFilter){
             return false;
@@ -104,29 +133,37 @@ export default function Campign(props) {
         }
       }
       
-      if((!data.service || data.service == '') && openTab == 3){
-        return false;
-      }
+      if(openTab == 3){
+        if(!data.service || data.service == ''){
+          return false;
+        }
 
-      if((!data.scheduled_at || data.scheduled_at == '') && openTab == 4){
-        return false;
-      }
+        if(!data.account_id || data.account_id == ''){
+          return false;
+        }
 
-      if((!data.account_id || data.account_id == '') && openTab == 4){
-        return false;
-      }
-      
-      if((!data.action || data.action == '') && openTab == 3){
-        return false;
-      }
-
-      if(data.scheduled_at != 'now'){
-        let ifValideDate = checkDate(data);
-        if(!ifValideDate){
+        if(!data.action || data.action == ''){
           return false;
         }
       }
 
+      if(openTab == 4){
+        if(!data.scheduled_at || data.scheduled_at == ''){
+          return false;
+        }
+  
+        if(!data.scheduled_at || data.scheduled_at == ''){
+          return false;
+        }
+
+        if(data.scheduled_at != 'now' && openTab == 4){
+          let ifValideDate = checkDate(data);
+          if(!ifValideDate){
+            return false;
+          }
+        }
+      }
+      
       return true;
    }
 
@@ -138,12 +175,14 @@ export default function Campign(props) {
       current_page = {props.current_page}
     >
      <div className="bg-white overflow-hidden shadow rounded-lg divide-y divide-gray-200">
-       <div className=" w-full">
+
+       <div className="w-full flex justify-center">
            <Navigator
             current_page={openTab}
             status={props.status}
           />
        </div>
+
       <div className="px-4 py-5 sm:p-6">
       <div className="flex flex-wrap">
         <div className="w-full">
@@ -169,15 +208,14 @@ export default function Campign(props) {
                   id="link2"
               >
                 <ContactFilter 
-                  filters={props}
+                  campagins={props}
                   data={data}
                   handleChange={handleChange}
                   saveCampign={saveCampign}
                   previous={setOpenTab}
-                  setConditons={setConditons}
+                  setConditions={setConditions}
                   setRecordCount={setRecordCount}
                   recordCount={recordCount}
-                  isfilter={setIsfilter}
                 />
           
               </div>
@@ -192,6 +230,7 @@ export default function Campign(props) {
                    handleChange={handleChange}
                    saveCampign={saveCampign}
                    previous={setOpenTab}
+                   companyName={companyName}
                  />
               </div>
               <div
@@ -202,14 +241,14 @@ export default function Campign(props) {
               >
                 <Schedule 
                   data={data}
-                  schedule={setSchedule}
-                  scheduleOpen={schedule}
                   previous={setOpenTab}
                   handleChange={handleChange}
                   saveCampign={saveCampign}
                   status={status}
                   records={recordCount}
-                  companyName={props.companyName}
+                  company={companyName}
+                  scheduleTime={scheduleTime}
+                  setScheduleTime={setScheduleTime}
                 />
               </div>
                     </div>

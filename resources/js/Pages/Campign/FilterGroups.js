@@ -92,6 +92,7 @@ function FilterGroups (props) {
     const [errors, setErrors] = useState({});
     const [filterName, setFilterName] = useState('');
     const [selectedFilter , setSelectedFilter] = useState(props.filter.selected_filter);
+    
     useEffect(() => {
         if(props.filterCondition){
             setFilter(props.filterCondition);
@@ -252,9 +253,8 @@ function FilterGroups (props) {
         var url = route('searchfilter') + '?filter='+advancedSearch + '&from=campignfilter';
 
         Axios.get(url).then((response) => {
-            props.isfilter(true);
             props.setRecordCount(response.data);
-            props.setConditons(filter);
+            props.setConditions(filter);
             props.setfilterCondition(filter);
         });
     }

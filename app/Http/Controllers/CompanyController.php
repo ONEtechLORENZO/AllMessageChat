@@ -132,7 +132,6 @@ class CompanyController extends Controller
                 'Notes' => __('Notes'),
                 'Edit'  =>__('Edit')
                 ]
-
         ];
         return Inertia::render('Company/Detail', $data);
        
