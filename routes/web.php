@@ -130,6 +130,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Export
     Route::get('/exports', [ExportController::class, 'exportFile'])->name('export');
+    //showfields
+    Route::post('/showColumns/{module}', [CompanyController::class, 'showColumn'])->name('showColumns');
+
 
     //Tag
     Route::get('/tags', [TagController::class, 'index'])->name('listTag');

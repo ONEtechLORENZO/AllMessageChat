@@ -236,6 +236,8 @@ class UserController extends Controller
                 'search' => true,
                 'filter' => false,
                 'invite_user' => true,
+                'select_field'=>true
+
             ],
             'translator' => [
                 'No records' =>__('No records'),

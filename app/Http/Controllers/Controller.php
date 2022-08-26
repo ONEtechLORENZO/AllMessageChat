@@ -49,11 +49,16 @@ class Controller extends BaseController
 
         // Get company selected by the user.
         $companyId = Cache::get('selected_company_'. $user->id);
+        $columnlist=Cache::get($moduleName.'selected_column_list_'. $user->id);
+       
         // If user is not related to any company, abort the below process
         if(!$companyId) {
             abort(403);
         }
-
+       if($columnlist)
+        {
+            $list_view_columns=$columnlist;
+        }
         $filterData = $this->getFiltersInfo($companyId, $user_id, $moduleName, false);
        
         $searchData = '';
@@ -71,6 +76,7 @@ class Controller extends BaseController
 
         // Preparing list view fields
         $listFields = array_keys($list_view_columns);
+        
         // Skipping the tag and list 
         $listFields = array_diff($listFields, ['tag', 'list']);
         $listFields[] = 'id';
@@ -382,7 +388,8 @@ class Controller extends BaseController
             ->orderBy('sequence', 'asc')
             ->groupBy('field_name')
             ->get(['field_label', 'field_name', 'field_type', 'is_custom', 'field_group']);
-        $header = [];
+      
+            $header = [];
         foreach ($fields as $field) {           
             $is_custom = ($field->field_group) ? $groupList[$field->field_group] : 'default';
             if($field->field_group){

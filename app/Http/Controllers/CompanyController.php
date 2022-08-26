@@ -34,6 +34,8 @@ class CompanyController extends Controller
     {
       
         $module = new Company();
+        $columnlist=Cache::get('Company'.'selected_column_list_'. $request->user()->id);
+       // dd($columnlist);
         $listViewData = $this->listView($request, $module, $this->list_view_columns);
         $moduleData = [
             'singular' => 'Company',
@@ -50,6 +52,7 @@ class CompanyController extends Controller
                 'import' => false,
                 'search' => true,
                 'filter' => false,
+                'select_field'=>true,
             ],
             'translator' => [],
         ];
@@ -215,6 +218,13 @@ class CompanyController extends Controller
     {
         $companyId = $request->company_id;
         Cache::put('selected_company_'. $request->user()->id  , $companyId);
+        
+        return Redirect::to(url()->previous());
+    }
+    public function showColumn(Request $request,$module)
+    {
+        $columnList = $request->columns;       
+        Cache::put($module.'selected_column_list_'. $request->user()->id  , $columnList);              
         return Redirect::to(url()->previous());
     }
 

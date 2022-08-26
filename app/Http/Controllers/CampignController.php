@@ -48,6 +48,7 @@ class CampignController extends Controller
                 'import' => false,
                 'search' => true,
                 'filter' => true,
+                'select_field'=>true
             ],
         ];
         

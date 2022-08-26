@@ -50,6 +50,7 @@ class ContactController extends Controller
      */
     public function index(Request $request)
     {
+
         $list_view_columns = [
             'first_name' => ['label' => __('First Name'), 'type' => 'text'],
             'last_name' =>  ['label' => __('Last Name'), 'type' => 'text'],
@@ -78,6 +79,7 @@ class ContactController extends Controller
                 'import' => true,
                 'search' => true,
                 'filter' => true,
+                'select_field'=>true
             ],
         ];
         
@@ -193,7 +195,6 @@ class ContactController extends Controller
         $ListSelectRecords = $this->getSelectedList($contact);
         $companyId = Cache::get('selected_company_'. $request->user()->id);
         $headers = $this->getModuleHeader($companyId , 'Contact');
-
         return Inertia::render('Contacts/Detail', [
             'contact' => $contact,
             'tagOptions' => $tagOptions,
