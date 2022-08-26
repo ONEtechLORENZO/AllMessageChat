@@ -4,6 +4,8 @@ import { ChevronDownIcon, ChevronUpIcon, UserAddIcon, PencilAltIcon, TrashIcon, 
 
 function ListTable(props){
 
+    const fieldOptions = props.fieldOptions;
+
     return(
         <>
             <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg my-4">
@@ -25,7 +27,7 @@ function ListTable(props){
                                 }
                                 if(field.type == 'dropdown'){
                                     if(!fieldOptions[name]){
-                                        getFieldOptions(name);
+                                        props.getFieldOptions(name);
                                     }
                                 }
 

@@ -319,7 +319,7 @@ class FieldSeeder extends Seeder
             'dropdown' => 'Dropdown',
             'date' => 'Date',
             'number' => 'Number',
-            'currency' => 'Currency'
+            'amount' => 'Currency'
         );
         return $type;
     }

@@ -211,6 +211,8 @@ function ListView(props)
                                 headers={props.headers}
                                 records={props.records}
                                 paginator={props.paginator}
+                                fieldOptions={fieldOptions}
+                                getFieldOptions={getFieldOptions}
                                 {...props}
                             />
 
