@@ -59,6 +59,7 @@ class FieldController extends Controller
                 'search' => true,
                 'field_group' => true,  
                 'order_field' => true, 
+                'select_field'=>true,
             ],
         ];
 

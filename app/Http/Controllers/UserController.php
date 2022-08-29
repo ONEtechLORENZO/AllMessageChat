@@ -21,6 +21,7 @@ use App\Models\Price;
 use App\Models\WebhookEvent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Session;
 use PDF;
 use Cache;
 use DB;
@@ -236,6 +237,8 @@ class UserController extends Controller
                 'search' => true,
                 'filter' => false,
                 'invite_user' => true,
+                'select_field'=>true
+
             ],
             'translator' => [
                 'No records' =>__('No records'),
@@ -1514,5 +1517,57 @@ class UserController extends Controller
             }
         }
         return $flag;
+    }
+
+    /**
+     * Change Login User
+     */
+    public function changeLogInUser(Request $request)
+    {
+        $userId = $request->user_id;
+        $currentUser = $request->user()->id;
+        $user = User::find($userId);
+        
+        // Start the session
+        Session::put('global_user', $currentUser);
+        
+        Auth::login($user);
+
+        return Redirect::route('dashboard');
+    }
+
+    /**
+     * Check user session value
+     */
+    public function getUserSession(Request $request)
+    {
+        $userSession = Session::get('global_user');
+        $sessionUser = false;
+        if($userSession){
+            $sessionUser = $userSession;
+        }
+        echo json_encode(['session_value' =>$sessionUser ]);
+    }
+
+    /**
+     * Set Global User
+     */
+    public function setGlobalUser(Request $request)
+    {
+        $userId = $request->user_id;
+
+        if($userId ==  $request->session()->get('global_user')){
+            $user = User::find($userId);
+
+            // clear session
+            $request->session()->forget('global_user');
+            $request->session()->flush();
+
+            // Login Global Admin
+            Auth::login($user);
+            
+        }
+
+        return Redirect::route('dashboard');
     }
 }

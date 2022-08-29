@@ -123,13 +123,13 @@ function ListTable(props){
                                                     <PencilAltIcon className='h-4 w-4 cursor-pointer' />
                                                 </Link>
                                             : 
-                                                <PencilAltIcon className='h-4 w-4 cursor-pointer' onClick={() => showEditForm(record.id)} />
+                                                <PencilAltIcon className='h-4 w-4 cursor-pointer' onClick={() => props.showEditForm(record.id)} />
                                             }
                                             </>
                                             
                                         : ''}
                                         {(props.actions && props.actions.delete === true) || (record.is_custom == '1') ?
-                                            <TrashIcon className='h-4 w-4 text-red-600 cursor-pointer' onClick={() => deleteRecord(record.id)} />
+                                            <TrashIcon className='h-4 w-4 text-red-600 cursor-pointer' onClick={() => props.deleteRecord(record.id)} />
                                         : ''}
                                         {props.actions.download === true && record.status === 'success' ? 
                                                 <a href={route('invoices',record.id)} ><DownloadIcon className='h-4 w-4 cursor-pointer' /></a>

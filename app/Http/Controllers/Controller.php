@@ -51,10 +51,15 @@ class Controller extends BaseController
         // Get company selected by the user.
         $companyId = Cache::get('selected_company_'. $user->id);
         // If user is not related to any company, abort the below process
+        $columnlist=Cache::get($moduleName.'selected_column_list_'. $user->id);
+       
         if(!$companyId) {
             abort(403);
         }
-
+       if($columnlist)
+        {
+            $list_view_columns=$columnlist;
+        }
         $filterData = $this->getFiltersInfo($companyId, $user_id, $moduleName, false);
        
         $searchData = '';

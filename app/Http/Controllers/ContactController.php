@@ -70,6 +70,7 @@ class ContactController extends Controller
                 'import' => true,
                 'search' => true,
                 'filter' => true,
+                'select_field'=>true,
             ],
         ];
         
@@ -109,9 +110,30 @@ class ContactController extends Controller
      * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Http\Response
      */
-    public function show(Contact $contact)
+    public function show(Request $request, $contact_id)
     {
-        //
+        $contact = Contact::findOrFail($request->id);
+        $tagOptions = $this->getTagOptionList($request->user()->id);
+        $tagSelectedRecords = $this->getSelectedTag($contact);
+        $ListOptions = $this->getListOption($request->user()->id);
+        $ListSelectRecords = $this->getSelectedList($contact);
+        $companyId = Cache::get('selected_company_'. $request->user()->id);
+        $headers = $this->getModuleHeader($companyId , 'Contact');
+
+        return Inertia::render('Contacts/Detail', [
+            'contact' => $contact,
+            'tagOptions' => $tagOptions,
+            'tagData' => $tagSelectedRecords,
+            'listOptions' => $ListOptions,
+            'listData' => $ListSelectRecords,
+            'headers' => $headers,
+            'translator' => [
+                'Detail' => __('Detail'),
+                'Notes' => __('Notes'),
+                'Edit'  =>__('Edit')
+                ]
+
+        ]);
     }
 
     /**
@@ -144,95 +166,11 @@ class ContactController extends Controller
      * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Contact $contact)
+    public function destroy(Request $request, $contactId)
     {
-       //
-    }
-
-    /**
-     * List contacts
-     */
-    public function contactList(Request $request)
-    {
-        $contactList = [];
-        $contacts = Contact::where('user_id', $user->id)->get();
-        foreach ($contacts as $contact) {
-            $name = $contact->first_name . ' ' . $contact->last_name;
-            $logo = trim($name, ' ');
-            $contactList[$contact->id] = [
-                'logo' => $logo,
-                'id' => $contact->id,
-                'name' => $name,
-                'last_name' => $contact->last_name,
-                'email' => $contact->email,
-                'number' => ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id
-            ];
-        }
-        return Inertia::render('Contacts/Contacts', [
-            'contacts' => $contactList,
-        ]);
-    }
-
-    /**
-     * Show contact detail
-     */
-    public function contactDetail(Request $request, $contact_id)
-    {
-        $contact = Contact::findOrFail($request->id);
-        $tagOptions = $this->getTagOptionList($request->user()->id);
-        $tagSelectedRecords = $this->getSelectedTag($contact);
-        $ListOptions = $this->getListOption($request->user()->id);
-        $ListSelectRecords = $this->getSelectedList($contact);
-        $companyId = Cache::get('selected_company_'. $request->user()->id);
-        $headers = $this->getModuleHeader($companyId , 'Contact');
-
-        return Inertia::render('Contacts/Detail', [
-            'contact' => $contact,
-            'tagOptions' => $tagOptions,
-            'tagData' => $tagSelectedRecords,
-            'listOptions' => $ListOptions,
-            'listData' => $ListSelectRecords,
-            'headers' => $headers,
-            'translator' => [
-                'Detail' => __('Detail'),
-                'Notes' => __('Notes'),
-                'Edit'  =>__('Edit')
-                ]
-
-        ]);
-    }
-
-    /**
-     * Store contact data
-     */
-    public function storeContact(Request $request)
-    {
-        /*
-        $user = $request->user();
-        if ($request->id) {
-            $request->validate([
-                'last_name' => 'required|max:255',
-                'email' => 'required|max:255',
-            ]);
-            $contact = Contact::findOrFail($request->id);
-        } else {
-            $request->validate([
-                'last_name' => 'required|max:255',
-                'email' => 'required|unique:contacts|max:255',
-            ]);
-            $contact = new Contact();
-        }
-        
-         $contact->first_name = $request->first_name;
-        $contact->last_name = $request->last_name;
-        $contact->phone_number = $request->phone_number;
-        $contact->country_code = $request->country_code;
-        $contact->email = $request->email;
-        $contact->user_id = $user->id;
-        $contact->instagram_id = $request->instagram_id;
-        $contact->save();
-        */
-  
+        $contact = Contact::find($contactId);
+        $contact->delete();
+        return Redirect::route('listContact');
     }
 
     /**
@@ -294,17 +232,6 @@ class ContactController extends Controller
         }
         return $ListSelectedRecords;
     }
-
-    /**
-     * Delete Contact 
-     */
-    public function deleteContact(Request $request, $contactId)
-    {
-        $contact = Contact::find($contactId);
-        $contact->delete();
-        return Redirect::route('listContact');
-    }
-
     
 
     public function saveContact($request){

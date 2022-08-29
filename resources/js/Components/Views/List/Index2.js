@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Pagination from '@/Components/Pagination';
 import Alert from '@/Components/Alert';
 import Button from '@/Components/Forms/Button';
+import Axios from "axios";
 import Form from '@/Components/Forms/Form';
 import { ChevronDownIcon, ChevronUpIcon, UserAddIcon, PencilAltIcon, TrashIcon, UploadIcon, DownloadIcon } from '@heroicons/react/solid';
 import { Inertia } from '@inertiajs/inertia';
@@ -10,19 +11,25 @@ import Search from './Search';
 import { Head,Link } from '@inertiajs/inertia-react';
 import Filter from "./Filter2";
 import axios from "axios";
+
+import Dropdown from "@/Components/Dropdown";
+import CreatableSelect, { useAsync } from 'react-select';
+
 import ListTable from './ListTable';
+
 
 function ListView(props)
 {
     const [showForm, setShowForm] = useState(false);
 
     const [records, setRecords] = useState([]);
-
-    const [recordId, setRecordId] = useState('');
-
+    const [columnOptions, setColumnOptions] = useState(props.headers);
+    const [recordId, setRecordId] = useState(''); 
+    const [fields, setFields] = useState([]);
     const [fieldOptions, setFieldOptions ] = useState({});
 
     useEffect(() => {
+        fetchModuleFields();
         setRecords(props.records);
     }, [props.records]);
 
@@ -33,6 +40,44 @@ function ListView(props)
         setShowForm(false);
         setRecordId('');
     }
+    
+
+      function saveSelectedColumn(){           
+       if(columnOptions!='')
+       {
+        Inertia.post(route('showColumns', [props.module]), {'columns':columnOptions});}
+        else{
+            notie.alert({type: 'error', text: 'Please select atleast one field', time: 5});
+        }
+    }
+
+    function fetchModuleFields() {        
+        let endpoint_url = route('fetchModuleFields', {'module': props.module});
+        Axios.get(endpoint_url).then((response) => {             
+            if (response.data.status !== false) {               
+                setFields(response.data.fields);               
+            }
+            else {
+                notie.alert({type: 'error', text: response.data.message, time: 5});
+            }         
+        })      
+    }
+    
+    const [ show, setShow ] = useState(false);
+    const columnHandler = (field) => () => {
+       setColumnOptions((state) => ({
+          ...state,
+          [field.field_name]: state[field.field_name]
+            ?  
+               console.log('')
+            : {
+                name:field.field_name,
+                label: field.field_label,
+                type:field.field_type                
+              }
+        }));
+        
+      };
 
     /**
      * Show Form
@@ -180,6 +225,7 @@ function ListView(props)
                                 </a>
                             </>
                         : ''}
+                         
                         {props.actions && props.actions.create === true ?
                             <>
                                 {props.add_link ?
@@ -199,6 +245,65 @@ function ListView(props)
                                         {props.add_button_text ? props.add_button_text : `Add ${props.singular}`}
                                     </Button>
                                 : ''}
+                                {props.actions && props.actions.select_field?
+                            <>
+                               <div className="overscroll-auto">
+                <Dropdown show = {show} autoClose="inside">
+                    <Dropdown.Trigger >
+                        <span className="inline-flex rounded-md">
+                            <button
+                                type="button"
+                                className="w-10 h-10 bg-white shadow-sm flex items-center justify-center"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-5">
+  <path fillRule="evenodd" d="M14 18h2.75A2.25 2.25 0 0019 15.75V4.25A2.25 2.25 0 0016.75 2H14v16zM12.5 2h-5v16h5V2zM3.25 2H6v16H3.25A2.25 2.25 0 011 15.75V4.25A2.25 2.25 0 013.25 2z" clipRule="evenodd" />
+</svg>
+
+                            </button>
+                        </span>
+                    </Dropdown.Trigger>
+
+                    <Dropdown.Content  contentClasses="right-4 py-1 px-2 bg-white w-50 shadow-lg left-8">
+                   
+                    <ul role="list" className="divide-y divide-gray-200 overflow-y-auto m-h-64">
+                    
+                    { Object.entries(fields).map(([key, field])=> {
+                    return(
+                       <><div className="form-group col-span-6 sm:col-span-4">
+                       <div className="flex items-start">
+                           <div className="flex items-center h-5">                                
+                               <input 
+                                   type="checkbox"
+                                   id={field.field_name}
+                                   name={field.field_name}                                  
+                                   className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                   value={field.field_name}
+                                 onChange={columnHandler(field)}
+                                 checked={columnOptions[field.field_name]}
+                               />
+                           </div>
+                           <div className="ml-3 text-sm">
+                               <label htmlFor="terms_condition" title="Click here to read it" className="font-medium text-gray-700" >
+                                   <span> 
+                                   {field.field_label}
+                                   </span>
+                               </label>
+                           </div></div></div></>
+                        );
+                     } )}</ul>
+                    <Button  onClick={() => saveSelectedColumn()}
+                                   
+                                   className='w-50 inline-flex justify-center items-center pr-5 py-2 bg-primary border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest active:bg-gray-900 transition ease-in-out duration-150'
+                               > 
+                                   Save 
+                               </Button>
+                    </Dropdown.Content>
+                </Dropdown>
+            </div>
+                            </>
+                        : ''}
+
+
                             </>
                         : ''}
                     </div>
@@ -211,8 +316,10 @@ function ListView(props)
                                 headers={props.headers}
                                 records={props.records}
                                 paginator={props.paginator}
-                                fieldOptions={fieldOptions}
+                            fieldOptions={fieldOptions}
                                 getFieldOptions={getFieldOptions}
+                                deleteRecord={deleteRecord}
+                                showEditForm={showEditForm}
                                 {...props}
                             />
 

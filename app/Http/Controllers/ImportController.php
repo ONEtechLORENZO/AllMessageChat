@@ -70,6 +70,7 @@ class ImportController extends Controller
                 'export' => false,
                 'import' => false,
                 'search' => true,
+                'select_field'=>true
             ],
             'translator' => [
                 'No records' =>__('No records'),
