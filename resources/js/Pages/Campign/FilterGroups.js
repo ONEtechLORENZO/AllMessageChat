@@ -253,7 +253,10 @@ function FilterGroups (props) {
         var url = route('searchfilter') + '?filter='+advancedSearch + '&from=campignfilter';
 
         Axios.get(url).then((response) => {
-            props.setRecordCount(response.data);
+            props.setOpenlist(true);
+            props.setRecordCount(response.data.total);
+            props.setHeader(response.data.headers);
+            props.setRecord(response.data.records);
             props.setConditions(filter);
             props.setfilterCondition(filter);
         });

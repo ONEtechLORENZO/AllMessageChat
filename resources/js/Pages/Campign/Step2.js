@@ -1,15 +1,20 @@
 import React, { useEffect,useState } from "react";
 import FilterGroups from "./FilterGroups";
+import ListTable from "@/Components/Views/List/ListTable";
+import Alert from "@/Components/Alert";
 
 function ContactFilter(props){
 
     const [filterCondition, setfilterCondition] = useState(props.data.conditions);
     const [translator, setTranslator] = useState(props.campagins.translator);
     const [filter, setFilter] = useState(props.campagins.filter);
+    const [headers, setHeader] = useState();
+    const [records, setRecord] = useState();
+    const [openList, setOpenlist] = useState(false);
 
     useEffect(() => {
         let condition = props.data.conditions;
-        if (typeof condition === 'object' && condition !== null && !Array.isArray(condition)){
+        if (typeof condition === 'object' && condition !== null){
             setfilterCondition(condition);
         }
     },[props]);
@@ -32,6 +37,9 @@ function ContactFilter(props){
                             setConditions={props.setConditions}
                             filterCondition={filterCondition}
                             setfilterCondition={setfilterCondition}
+                            setHeader={setHeader}
+                            setRecord={setRecord}
+                            setOpenlist={setOpenlist}
                         />
                     </div>
                 </div>
@@ -57,27 +65,48 @@ function ContactFilter(props){
                 </div>
             </div>
             </div>
+            
+            {openList ? 
+            <>
+             <div className="border m-10 h-50 rounded-lg">
+               <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                    <div className="inline-block w-full py-2 align-middle md:px-6 lg:px-8">
+                       {headers && records ? 
+                        <>
+                         <ListTable 
+                               module={'Contact'}
+                               headers={headers}
+                               records={records}
+                               actions={''}
+                           />
+                           {Object.entries(records).length == 0 ? <Alert type='info' message= {'No record related yet.'} hideClose={true} /> : ''}
+                        </>
+                       : ''} 
+                    </div>
+                </div>
+              </div>
+            </>
+            : ''}
 
-        <div>
-          <div className="pt-5">
-             <div className="m-10 flex justify-between">
-                    <button
-                        type='button'
-                        className="justify-start bg-indigo-600 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        onClick={(e) => props.previous(1)}
-                >
-                        Previous
-                    </button>
-                    <button
-                        type='button'
-                        className="justify-end bg-indigo-600 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        onClick={props.saveCampign} 
-                >
-                        Next
-                    </button>
-             </div>
-          </div>
-        </div>
+            <div className="pt-5">
+                <div className="m-10 flex justify-between">
+                        <button
+                            type='button'
+                            className="justify-start bg-indigo-600 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            onClick={(e) => props.previous(1)}
+                    >
+                            Previous
+                        </button>
+                        <button
+                            type='button'
+                            className="justify-end bg-indigo-600 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            onClick={props.saveCampign} 
+                    >
+                            Next
+                        </button>
+                </div>
+            </div>
+            
         </div>
     </div>
     );

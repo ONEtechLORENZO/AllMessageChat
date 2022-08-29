@@ -13,6 +13,7 @@ use App\Models\Category;
 use App\Models\Field;
 use App\Models\FieldGroup;
 use Cache;
+use App\Models\Contact;
 
 class Controller extends BaseController
 {
@@ -118,11 +119,20 @@ class Controller extends BaseController
         $query->groupBy("{$baseTable}.id");
         
         if($from == 'campignfilter'){
-            $records = $query->paginate();
+            
+            $module = new Contact();
+            $headers = $module->getListViewFields();
+            $records = $query->paginate($this->limit);
             $recordCount = $records->total();
-            return $recordCount;
+
+            $return = [
+                'records' => $records->items(),
+                'headers' => $headers,
+                'total' => $records->total(),
+            ];
+           
+            return json_encode($return);
         }
-        $records = $query->paginate($this->limit);
 
         // Fetch the data
         $records = $query->paginate($this->limit);

@@ -12,7 +12,9 @@ import { useForm } from '@inertiajs/inertia-react';
 import ValidationErrors from '@/Components/ValidationErrors';
 import Checkbox from '../Checkbox';
 import Creatable from 'react-select/creatable';
-import PhoneInput, {parsePhoneNumber} from 'react-phone-number-input'
+import PhoneInput, {parsePhoneNumber} from 'react-phone-number-input';
+import Number from './Number';
+import Date from './Date'; 
 
 const defaultConfig = {
     // class of the parent element where the error/success class is added
@@ -38,24 +40,18 @@ const defaultConfig = {
 function Form(props) 
 {
     const [open, setOpen] = useState(true)
-
     const cancelButtonRef = useRef(null)
-
     const [fields, setFields] = useState([]);
-
-    const[phoneNumber, setPhoneNumber] = useState('');
-
+    const [phoneNumber, setPhoneNumber] = useState('');
     const [formErrors, setErrors] = useState({});
-
     const { data, setData, post, processing, errors, reset } = useForm({});
-
     const [options, setOptions] = useState(null);
 
     useEffect(() => {
         fetchModuleFields();
         if(props.recordId) {
             fetchRecord();
-        }   
+        }  
     }, [props]);
 
     /**
@@ -129,17 +125,12 @@ function Form(props)
      * Handle Input Change
      */
     const handleChange = (event) => {
-        let newState = Object.assign({}, data); 
-        var isUpdated = CustomData(event.target);  //Custom field data entry
-        if(! isUpdated ){
-            if (event.target.name == 'field_type') {
-                EventHandler(event);
-            }
-            const field_name = event.target.name;
-            const field_value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-            newState[field_name] = field_value;
-            setData(newState);
+        const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+        let field_name = event.target.name;
+        if (event.target.name == 'field_type') {
+            EventHandler(event);
         }
+        DataHandler(field_name,value); 
     }
 
     const EventHandler = (event) => { 
@@ -186,7 +177,7 @@ function Form(props)
         if(!is_validated) {
             return false;
         }
-
+        
         data['options'] = options;
         data['is_chat'] = (props.is_chat) ? props.is_chat : '';
         
@@ -218,30 +209,41 @@ function Form(props)
             setOptions(data.options);
         }
     }
-
-    function CustomData(event){
+    
+    /**
+     * 
+     * Update Data Handler
+     */
+    function DataHandler(name, value){
         let newState = Object.assign({}, data); 
-        const value = event.type === 'checkbox' ? event.checked : event.value;
-        let field_name = event.name;
-        var isUpdate = false;
+        let customfields = (data.custom)? data.custom : {};
 
-        var customField = (data.custom)? data.custom : {};
-        Object.entries(fields).map(([key, field])=> {
-            let name = '';
-            if(field.is_custom == '1'){
-                name = field.field_name; 
-                if(name == field_name){
-                    customField[field_name] = value; 
-                    newState['custom'] = customField;
-                    isUpdate = true;
-                }
-            }  
-        })
-
-        setData(newState);
-        return isUpdate;
+        Object.entries(fields).map(([key,field]) => {
+            if(name == field.field_name && field.is_custom == 0){
+                newState[name] = value;
+            }
+            if(name == field.field_name && field.is_custom == 1){
+                customfields[name] = value; 
+                newState['custom'] = customfields;
+            }
+            setData(newState);
+        });
     }
-  
+    
+    //change Date formate
+    function changeDate(name,event){
+        var date = event.toISOString().substring(0, 10);
+        var time = event.getHours() + ':' + event.getMinutes();
+        var dateTime = date + ' ' + time;
+        DataHandler(name,dateTime);
+    }
+    
+    //remove characters
+    function changeNumber(name,event){
+        const result = event.target.value.replace(/\D/g, '');
+        DataHandler(name,result);
+    }
+    
     return (
         <Transition.Root show={open} as={Fragment}>
             <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => {}} >
@@ -383,6 +385,24 @@ function Form(props)
                                                         handleChange={handleChange}
                                                     />
                                                     break;
+                                                case 'number':
+                                                     element = <Number 
+                                                     type="text"
+                                                     className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                     id={field_info.field_name}
+                                                     name={field_info.field_name}
+                                                     value={field_value}
+                                                     handleChange={(event) => changeNumber(field_info.field_name,event)}
+                                                     />
+                                                     break;
+                                                case 'date':
+                                                    element = <Date 
+                                                    id={field_info.field_name}
+                                                    name={field_info.field_name}
+                                                    value={field_value}
+                                                    handleChange={(event) => changeDate(field_info.field_name,event)}
+                                                    />
+                                                    break;         
                                                 case 'default':
                                                     element = <Input 
                                                         type="text" 

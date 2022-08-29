@@ -72,7 +72,7 @@ export default function Index(props) {
               setFieldOptions(newFieldOptions);
             });
         }
-
+console.log('index',props)
     return (            
             <div>
                 <Head title={props.module}/>

@@ -169,7 +169,7 @@ class CampignController extends Controller
         $companyName = [];
         $status = $campign->status;
         $conditions = $campign->conditions;
-   
+  
         if($conditions){
             $searchData = json_decode($conditions);
             $campign->conditions = $searchData;
@@ -238,8 +238,8 @@ class CampignController extends Controller
 
     public function searchRecords(Request $request){
 
-        $list_view_columns = [];
         $module = new Contact();
+        $list_view_columns = $module->getListViewFields();
         $listViewData = $this->listView($request, $module, $list_view_columns);
 
         echo $listViewData;
