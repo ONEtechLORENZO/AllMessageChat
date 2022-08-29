@@ -39,6 +39,9 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 */
 
 Route::middleware('guest')->group(function () {
+    session()->forget('global_user');
+    session()->flush();
+
     Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('login');
 });
 
@@ -103,9 +106,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/notes/{module}/{id}', [NoteController::class, 'list_notes'])->name('listNotes');
     Route::post('/addnotes/{module}/{id}', [NoteController::class, 'addNotes'])->name('add_Notes');
     Route::get('/contacts', [ContactController::class, 'index'])->name('listContact');
-    Route::delete('/contact/delete/{id}', [ContactController::class, 'deleteContact'])->name('deleteContact');
+    Route::delete('/contact/delete/{id}', [ContactController::class, 'destroy'])->name('deleteContact');
 
-    Route::get('/contact/{id}', [ContactController::class, 'contactDetail'])->name('detailContact');
+    Route::get('/contact/{id}', [ContactController::class, 'show'])->name('detailContact');
     Route::post('/updateContact/{id}', [ContactController::class, 'update'])->name('updateContact');
     Route::post('/updateContact', [ContactController::class, 'store'])->name('storeContact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
@@ -165,6 +168,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/campaign/search',[CampignController::class, 'searchRecords'])->name('searchfilter');
     Route::delete('/deleteCampaign/{id}',[CampignController::class, 'destroy'])->name('deleteCampign');
     Route::get('/campaign/company/{service}',[CampignController::class, 'getCompanyName'])->name('get_company_name');
+
+    // Impersonate User
+    Route::get('/user/getUserSession',[UserController::class, 'getUserSession'])->name('get_session_value');
+    Route::post('/user/setGlobalUser',[UserController::class, 'setGlobalUser'])->name('set_global_user');
+
 });
 
 // Check user is admin
@@ -215,6 +223,9 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::post('/admin/pricing', [PriceController::class, 'store'])->name('storePrice');
     Route::post('/admin/pricing/{id}', [PriceController::class, 'update'])->name('updatePrice');
     Route::delete('/admin/pricing/{id}', [PriceController::class, 'destroy'])->name('deletePrice');
+
+    // Impersonate User 
+    Route::post('/admin/user/impersonate', [UserController::class, 'changeLogInUser'])->name('change_log_in_user');
 });
 
 require __DIR__ . '/auth.php';

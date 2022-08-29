@@ -323,6 +323,8 @@ function ListView(props)
                                 paginator={props.paginator}
                                 fieldOptions={fieldOptions}
                                 getFieldOptions={getFieldOptions}
+                                deleteRecord={deleteRecord}
+                                showEditForm={showEditForm}
                                 {...props}
                             />
 

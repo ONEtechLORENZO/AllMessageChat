@@ -1,6 +1,7 @@
-import React, { useState, Fragment } from "react";
+import React, { useState, Fragment, useEffect } from "react";
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
+import { Inertia } from '@inertiajs/inertia';
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link } from "@inertiajs/inertia-react";
 import { Dialog, Transition } from "@headlessui/react";
@@ -105,6 +106,31 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
     const [showSidebarText, setShowSidebarText] = useState(false);
 
     const [selectCompanyModal, setSelectedCompany] = useState(false);
+
+    const[returnMainUser , setReturnMainUser] = useState(false);
+
+    useEffect(() => {
+        axios.get(route('get_session_value')).then((response) => {
+            //console.log(response.data.session_value);
+            if(response.data.session_value){
+                setReturnMainUser(response.data.session_value);
+            }
+        });
+    })
+
+    function setImpersonate(){
+        var data = {
+            user_id: returnMainUser
+        }
+        Inertia.post(route('set_global_user'), data, {
+            onSuccess: (response) => {
+                console.log(response);
+            },
+            onError: (errors) => {
+                setErrors(errors)
+            }
+        });
+    }
 
     return (
         <>
@@ -319,6 +345,14 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                             Settings
                                                         </Dropdown.Link>
                                                     : ''}
+
+                                                    {returnMainUser &&
+                                                        <button className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" 
+                                                        onClick={() => setImpersonate()} 
+                                                        as="button">
+                                                            Return to global admin
+                                                        </button>
+                                                    }
 
                                                     <Dropdown.Link href={route('logout')} method="post" as="button">
                                                         Log Out

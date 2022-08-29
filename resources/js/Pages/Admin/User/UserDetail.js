@@ -66,6 +66,24 @@ export default function UserDetail(props) {
         });
     }
 
+    function setImpersonate(){
+        var data = {
+            user_id: props.user.id
+        }
+        if(! confirm('Do you want to change the user?')){
+            return false;
+        }
+        
+        Inertia.post(route('change_log_in_user'), data, {
+            onSuccess: (response) => {
+                console.log(response);
+            },
+            onError: (errors) => {
+                setErrors(errors)
+            }
+        });
+    }
+
     /**
      * Open modal for change the password
      */
@@ -110,6 +128,14 @@ export default function UserDetail(props) {
                             className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
                             {props.translator['Change Password']}
+                        </button>
+                    }
+                    {props.current_user.role == 'global_admin'  &&
+                        <button
+                            onClick={() => setImpersonate()}
+                            className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                            Impersonate User
                         </button>
                     }
                     <Link
