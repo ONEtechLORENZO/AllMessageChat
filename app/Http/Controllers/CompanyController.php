@@ -34,8 +34,7 @@ class CompanyController extends Controller
     {
       
         $module = new Company();
-        $columnlist=Cache::get('Company'.'selected_column_list_'. $request->user()->id);
-       // dd($columnlist);
+        $columnlist=Cache::get('Company'.'selected_column_list_'. $request->user()->id);       
         $listViewData = $this->listView($request, $module, $this->list_view_columns);
         $moduleData = [
             'singular' => 'Company',
@@ -58,6 +57,7 @@ class CompanyController extends Controller
         ];
 
         $data = array_merge($moduleData, $listViewData);
+        
         return Inertia::render('Company/List', $data);
     }
 

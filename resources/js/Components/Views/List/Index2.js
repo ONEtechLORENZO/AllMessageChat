@@ -23,7 +23,7 @@ function ListView(props)
     const [showForm, setShowForm] = useState(false);
 
     const [records, setRecords] = useState([]);
-    const [columnOptions, setColumnOptions] = useState([]);
+    const [columnOptions, setColumnOptions] = useState(props.headers);
     const [recordId, setRecordId] = useState(''); 
     const [fields, setFields] = useState([]);
     const [fieldOptions, setFieldOptions ] = useState({});
@@ -45,11 +45,7 @@ function ListView(props)
       function saveSelectedColumn(){           
        if(columnOptions!='')
        {
-        Inertia.post(route('showColumns', [props.module]), {'columns':columnOptions}, {
-            onSuccess: (response) => {
-               console.log("response"+response.data)
-            }
-        });}
+        Inertia.post(route('showColumns', [props.module]), {'columns':columnOptions});}
         else{
             notie.alert({type: 'error', text: 'Please select atleast one field', time: 5});
         }
@@ -66,13 +62,14 @@ function ListView(props)
             }         
         })      
     }
-
-
+    
+    const [ show, setShow ] = useState(false);
     const columnHandler = (field) => () => {
-        setColumnOptions((state) => ({
+       setColumnOptions((state) => ({
           ...state,
           [field.field_name]: state[field.field_name]
-            ? null
+            ?  
+               console.log('')
             : {
                 name:field.field_name,
                 label: field.field_label,
@@ -248,10 +245,10 @@ function ListView(props)
                                         {props.add_button_text ? props.add_button_text : `Add ${props.singular}`}
                                     </Button>
                                 : ''}
-                                {props.actions && props.actions.select_field === true ?
+                                {props.actions && props.actions.select_field?
                             <>
                                <div className="overscroll-auto">
-                <Dropdown  >
+                <Dropdown show = {show} autoClose="inside">
                     <Dropdown.Trigger >
                         <span className="inline-flex rounded-md">
                             <button
@@ -274,15 +271,13 @@ function ListView(props)
                     return(
                        <><div className="form-group col-span-6 sm:col-span-4">
                        <div className="flex items-start">
-                           <div className="flex items-center h-5">
-                                
-                               <input
+                           <div className="flex items-center h-5">                                
+                               <input 
                                    type="checkbox"
                                    id={field.field_name}
                                    name={field.field_name}                                  
                                    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                                 //  data-pristine-required={true}
-                                 value={field.field_name}
+                                   value={field.field_name}
                                  onChange={columnHandler(field)}
                                  checked={columnOptions[field.field_name]}
                                />
@@ -321,7 +316,7 @@ function ListView(props)
                                 headers={props.headers}
                                 records={props.records}
                                 paginator={props.paginator}
-                                fieldOptions={fieldOptions}
+                            fieldOptions={fieldOptions}
                                 getFieldOptions={getFieldOptions}
                                 deleteRecord={deleteRecord}
                                 showEditForm={showEditForm}
