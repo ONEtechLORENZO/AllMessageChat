@@ -317,7 +317,7 @@ class FieldSeeder extends Seeder
             'textarea' => 'Textarea',
             'checkbox' => 'checkBox',
             'dropdown' => 'Dropdown',
-            'date' => 'Date',
+            'date' => 'Date & Time',
             'number' => 'Number',
             'amount' => 'Currency'
         );
