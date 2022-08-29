@@ -64,6 +64,7 @@ function ListView(props)
     }
     
     const [ show, setShow ] = useState(false);
+
     const columnHandler = (field) => () => {
        setColumnOptions((state) => ({
           ...state,
@@ -248,58 +249,62 @@ function ListView(props)
                                 {props.actions && props.actions.select_field?
                             <>
                                <div className="overscroll-auto">
-                <Dropdown show = {show} autoClose="inside">
-                    <Dropdown.Trigger >
-                        <span className="inline-flex rounded-md">
-                            <button
-                                type="button"
-                                className="w-10 h-10 bg-white shadow-sm flex items-center justify-center"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-5">
-  <path fillRule="evenodd" d="M14 18h2.75A2.25 2.25 0 0019 15.75V4.25A2.25 2.25 0 0016.75 2H14v16zM12.5 2h-5v16h5V2zM3.25 2H6v16H3.25A2.25 2.25 0 011 15.75V4.25A2.25 2.25 0 013.25 2z" clipRule="evenodd" />
-</svg>
+                                    <Dropdown show = {show} autoClose="inside">
+                                        <Dropdown.Trigger >
+                                            <span className="inline-flex rounded-md">
+                                                <button
+                                                    type="button"
+                                                    className="w-10 h-10 bg-white shadow-sm flex items-center justify-center"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-5">
+                                                        <path fillRule="evenodd" d="M14 18h2.75A2.25 2.25 0 0019 15.75V4.25A2.25 2.25 0 0016.75 2H14v16zM12.5 2h-5v16h5V2zM3.25 2H6v16H3.25A2.25 2.25 0 011 15.75V4.25A2.25 2.25 0 013.25 2z" clipRule="evenodd" />
+                                                    </svg>
 
-                            </button>
-                        </span>
-                    </Dropdown.Trigger>
+                                                </button>
+                                            </span>
+                                        </Dropdown.Trigger>
 
-                    <Dropdown.Content  contentClasses="right-4 py-1 px-2 bg-white w-50 shadow-lg left-8">
-                   
-                    <ul role="list" className="divide-y divide-gray-200 overflow-y-auto m-h-64">
-                    
-                    { Object.entries(fields).map(([key, field])=> {
-                    return(
-                       <><div className="form-group col-span-6 sm:col-span-4">
-                       <div className="flex items-start">
-                           <div className="flex items-center h-5">                                
-                               <input 
-                                   type="checkbox"
-                                   id={field.field_name}
-                                   name={field.field_name}                                  
-                                   className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                                   value={field.field_name}
-                                 onChange={columnHandler(field)}
-                                 checked={columnOptions[field.field_name]}
-                               />
-                           </div>
-                           <div className="ml-3 text-sm">
-                               <label htmlFor="terms_condition" title="Click here to read it" className="font-medium text-gray-700" >
-                                   <span> 
-                                   {field.field_label}
-                                   </span>
-                               </label>
-                           </div></div></div></>
-                        );
-                     } )}</ul>
-                    <Button  onClick={() => saveSelectedColumn()}
-                                   
-                                   className='w-50 inline-flex justify-center items-center pr-5 py-2 bg-primary border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest active:bg-gray-900 transition ease-in-out duration-150'
-                               > 
-                                   Save 
-                               </Button>
-                    </Dropdown.Content>
-                </Dropdown>
-            </div>
+                                        <Dropdown.Content  contentClasses="right-4 py-1 px-2 bg-white w-50 shadow-lg left-8">
+                                    
+                                        <ul role="list" className="divide-y divide-gray-200 overflow-y-auto m-h-64">
+                                            { Object.entries(fields).map(([key, field])=> {
+                                            return(
+                                                <>
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <div className="flex items-start">
+                                                            <div className="flex items-center h-5">                                
+                                                                <input 
+                                                                    type="checkbox"
+                                                                    id={field.field_name}
+                                                                    name={field.field_name}                                  
+                                                                    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                                                    value={field.field_name}
+                                                                    onChange={columnHandler(field)}
+                                                                    checked={columnOptions[field.field_name]}
+                                                                />
+                                                            </div>
+                                                            <div className="ml-3 text-sm">
+                                                                <label htmlFor="terms_condition" title="Click here to read it" className="font-medium text-gray-700" >
+                                                                    <span> 
+                                                                    {field.field_label}
+                                                                    </span>
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                                );
+                                            } )}
+                                        </ul>
+                                        <Button  
+                                            onClick={() => saveSelectedColumn()}
+                                            className='w-50 inline-flex justify-center items-center pr-5 py-2 bg-primary border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest active:bg-gray-900 transition ease-in-out duration-150'
+                                        > 
+                                                    Save 
+                                                </Button>
+                                        </Dropdown.Content>
+                                    </Dropdown>
+                                </div>
                             </>
                         : ''}
 
@@ -313,10 +318,11 @@ function ListView(props)
                         <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
 
                             <ListTable 
+                                module={props.module}
                                 headers={props.headers}
                                 records={props.records}
                                 paginator={props.paginator}
-                            fieldOptions={fieldOptions}
+                                fieldOptions={fieldOptions}
                                 getFieldOptions={getFieldOptions}
                                 deleteRecord={deleteRecord}
                                 showEditForm={showEditForm}

@@ -77,13 +77,18 @@ class Controller extends BaseController
 
         $query = $module->orderBy("{$baseTable}.{$sort_by}", $sort_order); // TODO Need to check how it reacts when we sort using custom fields.
         // Select Base module Fields
-        $query = $this->getListViewFields($baseTable, $query, $list_view_columns);        
+        $query = $this->getListViewFields($baseTable, $moduleName, $query, $list_view_columns);
 
         if($search) {
-            $query->where(function ($query) use ($search, $list_view_columns) {  
+            $query->where(function ($query) use ($search, $list_view_columns, $moduleName) {  
                 foreach($list_view_columns as $field_name => $field_info) {
                     if($field_name != 'tag' && $field_name != 'list') {
-                        $query->orWhere($field_name, 'like', '%' . $search . '%');
+                        $isCustom = $this->isCustomField($field_name, $moduleName);
+                        if($isCustom){
+                            $query->orWhere("custom->{$field_name}", 'like', '%' . $search . '%');
+                        } else {
+                            $query->orWhere($field_name, 'like', '%' . $search . '%');
+                        }
                     }
                 }
             });
@@ -141,6 +146,7 @@ class Controller extends BaseController
 
         // Fetch the data
         $records = $query->paginate($this->limit);
+//dd($list_view_columns);
 
         $return = [
             'records' => $records->items(),
@@ -496,20 +502,53 @@ class Controller extends BaseController
     /**
      * select base table fiels
      */
-    public function getListViewFields($baseTable, $query ,$headers)
+    public function getListViewFields($baseTable, $moduleName, $query ,$headers)
     {
         // Preparing list view fields
         $listFields = array_keys($headers);
         // Skipping the tag and list 
         $listFields = array_diff($listFields, ['tag', 'list']);
-        $listFields[] = 'id';
+
         // Appending the base table for uniqueness
-        $listFields = substr_replace($listFields, "{$baseTable}.", 0, 0);
+        $listFields = $this->appendBaseTableName($baseTable, $moduleName, $listFields);
+        $listFields[] = "{$baseTable}.id";
+
         $query->select($listFields);
 
         return $query;
     }
 
+    /**
+     * Appending the base table for uniqueness
+     */
+    public function appendBaseTableName($baseTable, $moduleName,  $headers)
+    {
+        $listFields = [];
+        foreach($headers as $header){
+            $isCustom = $this->isCustomField($header, $moduleName);
+            
+            if($isCustom){
+                if(! in_array( "{$baseTable}.custom" , $listFields))
+                    $listFields[] = "{$baseTable}.custom";
+            } else {
+                $listFields[] = "{$baseTable}.{$header}";
+            }
+        }
+        return $listFields;
+    }
+
+    /***
+     * Check the field is custom
+     */
+    public function isCustomField($fieldName, $moduleName)
+    {
+        $return = false;
+        $field = Field::where('field_name' , $fieldName )->where('module_name', $moduleName )->first();
+        if($field && $field->is_custom){
+            $return = true;
+        }
+        return $return;
+    }
     /**
      * Get SubPanel Records
      */
@@ -517,8 +556,9 @@ class Controller extends BaseController
     {
         $headers = $module->getListViewFields();
         $baseTable = $module->getTable();
+        $moduleName = class_basename($module);
 
-        $query = $this->getListViewFields($baseTable, $query, $headers);
+        $query = $this->getListViewFields($baseTable, $moduleName, $query, $headers);
         $records = $query->paginate($this->limit);
 
         unset($headers['tag']);
