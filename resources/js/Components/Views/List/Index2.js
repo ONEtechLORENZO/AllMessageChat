@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Fragment, useRef } from 'react';
 import Pagination from '@/Components/Pagination';
 import Alert from '@/Components/Alert';
 import Button from '@/Components/Forms/Button';
@@ -11,10 +11,7 @@ import Search from './Search';
 import { Head,Link } from '@inertiajs/inertia-react';
 import Filter from "./Filter2";
 import axios from "axios";
-
-import Dropdown from "@/Components/Dropdown";
-import CreatableSelect, { useAsync } from 'react-select';
-
+import { Menu, Transition } from '@headlessui/react'
 import ListTable from './ListTable';
 
 
@@ -42,11 +39,10 @@ function ListView(props)
     }
     
 
-      function saveSelectedColumn(){           
-       if(columnOptions!='')
-       {
-        Inertia.post(route('showColumns', [props.module]), {'columns':columnOptions});}
-        else{
+    function saveSelectedColumn(){           
+       if(columnOptions!=''){
+            Inertia.post(route('showColumns', [props.module]), {'columns':columnOptions});
+        } else {
             notie.alert({type: 'error', text: 'Please select atleast one field', time: 5});
         }
     }
@@ -62,8 +58,6 @@ function ListView(props)
             }         
         })      
     }
-    
-    const [ show, setShow ] = useState(false);
 
     const columnHandler = (field) => () => {
        setColumnOptions((state) => ({
@@ -142,7 +136,7 @@ function ListView(props)
     if(props.errors.message){
         notie.alert({type: 'error', text: props.errors.message, time: 5});
     }
-   
+    
     return (
         <>
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
@@ -227,90 +221,100 @@ function ListView(props)
                             </>
                         : ''}
                          
-                        {props.actions && props.actions.create === true ?
+                        {props.actions && props.actions.create === true &&
                             <>
-                                {props.add_link ?
+                                {props.add_link &&
                                     <Link 
                                         href={props.add_link}
                                         className='inline-flex items-center px-4 py-2 bg-primary border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest active:bg-gray-900 transition ease-in-out duration-150'
                                     > 
                                         {props.add_button_text}
                                     </Link>
-                                : ''}
+                                }
 
-                                {!props.add_link ?
+                                {!props.add_link &&
                                     <Button 
                                         type='button'
                                         onClick={() => setShowForm(true)}
                                     >
                                         {props.add_button_text ? props.add_button_text : `Add ${props.singular}`}
                                     </Button>
-                                : ''}
-                                {props.actions && props.actions.select_field?
+                                }
+                            </>
+                        }
+                        {props.actions && props.actions.select_field &&
                             <>
-                               <div className="overscroll-auto">
-                                    <Dropdown show = {show} autoClose="inside">
-                                        <Dropdown.Trigger >
-                                            <span className="inline-flex rounded-md">
-                                                <button
-                                                    type="button"
-                                                    className="w-10 h-10 bg-white shadow-sm flex items-center justify-center"
-                                                >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-5">
-                                                        <path fillRule="evenodd" d="M14 18h2.75A2.25 2.25 0 0019 15.75V4.25A2.25 2.25 0 0016.75 2H14v16zM12.5 2h-5v16h5V2zM3.25 2H6v16H3.25A2.25 2.25 0 011 15.75V4.25A2.25 2.25 0 013.25 2z" clipRule="evenodd" />
-                                                    </svg>
+                                <div>
+                                    <Menu as="div" className="relative inline-block text-left">
+                                        <div>
+                                            <Menu.Button                                               
+                                                className="ba-field-dropdown inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-5">
+                                                    <path fillRule="evenodd" d="M14 18h2.75A2.25 2.25 0 0019 15.75V4.25A2.25 2.25 0 0016.75 2H14v16zM12.5 2h-5v16h5V2zM3.25 2H6v16H3.25A2.25 2.25 0 011 15.75V4.25A2.25 2.25 0 013.25 2z" clipRule="evenodd" />
+                                                </svg>
+                                            </Menu.Button>
+                                        </div>
 
-                                                </button>
-                                            </span>
-                                        </Dropdown.Trigger>
+                                        <Transition
+                                            as={Fragment}
+                                            enter="transition ease-out duration-100"
+                                            enterFrom="transform opacity-0 scale-95"
+                                            enterTo="transform opacity-100 scale-100"
+                                            leave="transition ease-in duration-75"
+                                            leaveFrom="transform opacity-100 scale-100"
+                                            leaveTo="transform opacity-0 scale-95"
+                                        >
+                                            <Menu.Items 
+                                                className={"absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none "}
+                                            >
 
-                                        <Dropdown.Content  contentClasses="right-4 py-1 px-2 bg-white w-50 shadow-lg left-8">
-                                    
-                                        <ul role="list" className="divide-y divide-gray-200 overflow-y-auto m-h-64">
-                                            { Object.entries(fields).map(([key, field])=> {
-                                            return(
-                                                <>
-                                                    <div className="form-group col-span-6 sm:col-span-4">
-                                                        <div className="flex items-start">
-                                                            <div className="flex items-center h-5">                                
-                                                                <input 
-                                                                    type="checkbox"
-                                                                    id={field.field_name}
-                                                                    name={field.field_name}                                  
-                                                                    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                                                                    value={field.field_name}
-                                                                    onChange={columnHandler(field)}
-                                                                    checked={columnOptions[field.field_name]}
-                                                                />
-                                                            </div>
-                                                            <div className="ml-3 text-sm">
-                                                                <label htmlFor="terms_condition" title="Click here to read it" className="font-medium text-gray-700" >
-                                                                    <span> 
-                                                                    {field.field_label}
-                                                                    </span>
-                                                                </label>
-                                                            </div>
-                                                        </div>
+                                                <ul role="list" className="divide-y divide-gray-200 overflow-y-auto m-h-64">
+                                                    { Object.entries(fields).map(([key, field])=> {
+                                                        return(
+                                                            <li className='p-1 mx-2'>
+                                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                                    <div className="flex items-start">
+                                                                        <div className="flex items-center h-5">                                
+                                                                            <input 
+                                                                                type="checkbox"
+                                                                                id={field.field_name}
+                                                                                name={field.field_name}                                  
+                                                                                className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                                                                value={field.field_name}
+                                                                                onChange={columnHandler(field)}
+                                                                                checked={columnOptions[field.field_name]}
+                                                                            />
+                                                                        </div>
+                                                                        <div className="ml-3 text-sm">
+                                                                            <label htmlFor="terms_condition" title="Click here to read it" className="font-medium text-gray-700" >
+                                                                                <span> 
+                                                                                {field.field_label}
+                                                                                </span>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                </li>
+                                                            );
+                                                    })}
+                                               </ul>
+                                               <Menu.Item>
+                                                    <div className='content-center justify-center'>
+                                                        <Button  
+                                                            onClick={() => saveSelectedColumn()}
+                                                            className='m-2 w-50 inline-flex justify-center items-center pr-5 py-2 bg-primary border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest active:bg-gray-900 transition ease-in-out duration-150'
+                                                        > 
+                                                            Save
+                                                        </Button>
                                                     </div>
-                                                </>
-                                                );
-                                            } )}
-                                        </ul>
-                                        <Button  
-                                            onClick={() => saveSelectedColumn()}
-                                            className='w-50 inline-flex justify-center items-center pr-5 py-2 bg-primary border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest active:bg-gray-900 transition ease-in-out duration-150'
-                                        > 
-                                                    Save 
-                                                </Button>
-                                        </Dropdown.Content>
-                                    </Dropdown>
+                                               </Menu.Item>
+                                            </Menu.Items>
+                                        </Transition>
+                                    </Menu>
                                 </div>
                             </>
-                        : ''}
-
-
-                            </>
-                        : ''}
+                        }
                     </div>
                 </div>
                 <div className="mt-2 flex flex-col">
