@@ -1,10 +1,28 @@
-import React from "react";
+import React, { useEffect, useState } from 'react';
 import { Head,Link } from '@inertiajs/inertia-react';
 import { ChevronDownIcon, ChevronUpIcon, UserAddIcon, PencilAltIcon, TrashIcon, UploadIcon, DownloadIcon } from '@heroicons/react/solid';
+import Axios from "axios";
 
 function ListTable(props){
 
     const fieldOptions = props.fieldOptions;
+    const [fields, setFields] = useState([]);
+
+    useEffect(() => {
+        fetchModuleFields();
+    }, [props.headers]);
+
+    function fetchModuleFields() {        
+        let endpoint_url = route('fetchModuleFields', {'module': props.module});
+        Axios.get(endpoint_url).then((response) => {             
+            if (response.data.status !== false) {               
+                setFields(response.data.fields);               
+            }
+            else {
+                notie.alert({type: 'error', text: response.data.message, time: 5});
+            }         
+        })      
+    }
 
     return(
         <>
@@ -103,6 +121,14 @@ function ListTable(props){
 
                                     if (field.type == 'checkbox' && name == 'is_mandatory') {
                                         column_value = (column_value == 1) ? 'Yes' : 'No'
+                                    }
+
+                                    if(fields) {
+                                        Object.entries(fields).map(([key, field])=> {
+                                            if((field.field_name == name) && field.is_custom && record.custom){
+                                                column_value = record.custom[name];
+                                            }
+                                        });
                                     }
 
                                     return (
