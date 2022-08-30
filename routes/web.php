@@ -26,6 +26,7 @@ use App\Http\Controllers\ChatListContactController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsGlobalAdmin;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Models\Notification;
 
 /*
 |--------------------------------------------------------------------------
@@ -172,6 +173,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Impersonate User
     Route::get('/user/getUserSession',[UserController::class, 'getUserSession'])->name('get_session_value');
     Route::post('/user/setGlobalUser',[UserController::class, 'setGlobalUser'])->name('set_global_user');
+
+    //Notification
+    Route::get('/notifications',[Notification::class, 'getNotifications'])->name('notification');
+    Route::get('/clickNotification/{id}',[Notification::class, 'clickNotification'])->name('clickNotification');
 
 });
 

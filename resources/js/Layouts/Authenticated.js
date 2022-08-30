@@ -22,6 +22,7 @@ import {
 import { NotifiIcon } from '../Pages/icons'
 import SelectCompany from "@/Pages/Company/SelectCompany";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
+import axios from "axios";
 
 const navigation = [
     {
@@ -109,7 +110,10 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
 
     const[returnMainUser , setReturnMainUser] = useState(false);
 
+    const [notifications, setNotifications] = useState();
+
     useEffect(() => {
+        getNotifications();
         axios.get(route('get_session_value')).then((response) => {
             //console.log(response.data.session_value);
             if(response.data.session_value){
@@ -129,6 +133,20 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
             onError: (errors) => {
                 setErrors(errors)
             }
+        });
+    }
+
+    function getNotifications(){
+        var url = route('notification');
+        axios.get(url).then((response) => {
+          setNotifications(response.data);
+        });
+    }
+
+    function notificationClick(id){
+        var url = route('clickNotification',{'id': id});
+        axios.get(url).then((response) => {
+            console.log(response);
         });
     }
 
@@ -300,8 +318,54 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                     <div className="flex">
                                     </div>
 
-                                    <div className="hidden sm:flex sm:items-center sm:ml-6">
-                                        <NotifiIcon/>
+                                    <div className="hidden sm:flex sm:items-center sm:ml-6"> 
+                                        <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <span className="inline-flex rounded-md">
+                                                            <button
+                                                                type="button"
+                                                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                                                onClick={getNotifications}
+                                                            >
+                                                                <span class="relative inline-block">
+                                                                <NotifiIcon/>
+                                                                {notifications && notifications.length > 0 ? 
+                                                                <>
+                                                                 <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">{notifications.length}</span> 
+                                                                </>
+                                                                : '' }
+                                                                </span>
+                                                            </button>
+                                                        </span>
+                                                </Dropdown.Trigger>
+                                                
+                                                <Dropdown.Content>
+                                                {notifications && (notifications).map((notification) => {
+                                                        var id = notification.id;
+                                                            return (
+                                                                <>
+                                                                    <div className="w-full" >
+                                                                    <div className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" 
+                                                                        onClick={() => notificationClick(id)} 
+                                                                        as="button"
+                                                                    >
+                                                                        <p className="text-sm font-medium text-gray-900 truncate overflow-hidden">{notification.notification_content}</p>
+                                                                        <p className="text-sm overflow-hidden">{notification.created_at}</p>
+                                                                    </div>
+                                                                </div>
+                                                                </>
+                                                            );
+                                                        })
+                                                    }
+                                                    {notifications && (notifications).length == 0 &&
+                                                     <> 
+                                                        <div className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 ease-in-out text-blue-700 bg-blue-100 rounded-lg dark:bg-blue-200 dark:text-blue-800" role="alert">
+                                                           <p className="text-sm overflow-hidden info">No notification</p>
+                                                        </div>
+                                                    </> }
+                                                </Dropdown.Content>
+                                            </Dropdown>
+
                                         <div className="ml-3 relative">
                                             <Dropdown>
                                                 <Dropdown.Trigger>
