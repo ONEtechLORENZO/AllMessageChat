@@ -572,10 +572,6 @@ class MsgController extends Controller
 
         // Update contact last update time
         $chatContact = ChatListContact::where('contact_id', $contact->id)->where('user_id', $user_id )->first();
-        Log::info([
-            'user' => $user_id,
-            'conotat' => $contact->id
-        ]);
 
         if(! $chatContact){
             $chatContact = new ChatListContact();
@@ -589,7 +585,6 @@ class MsgController extends Controller
         } else {
             $chatContact->unread = true;
         }
-       
         $chatContact->save();
         return $contact->id;
     }
