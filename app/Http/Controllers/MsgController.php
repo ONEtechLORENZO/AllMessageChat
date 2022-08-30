@@ -229,7 +229,7 @@ class MsgController extends Controller
             $selectedContact = $request->contact_id;
             $contactChaneel = ChatListContact::where('user_id', $user->id)->where('contact_id' , $selectedContact )->first();
             $category = ($request->category) ? $request->category : $contactChaneel->channel;
-            $messages = $this->getMessageList($request);        
+            $messages = $this->getMessageList($request);
         }
         $accounts = Account::where('user_id', $user->id )
             ->where(function($query) use ($category) {
@@ -411,7 +411,7 @@ class MsgController extends Controller
         $contact = ChatListContact::where('user_id', $user_id)->where('contact_id' , $contact_id )->first();
         if($contact){
             $contact->channel = $channel;
-            $contact->unread = false;
+        //   $contact->unread = false;
         }
         $contact->save();
     }

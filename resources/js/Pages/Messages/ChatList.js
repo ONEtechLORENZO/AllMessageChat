@@ -96,7 +96,9 @@ function ChatList(props)
     function getContactMessage(contact, channel){
         setSelectedContact(contact);
         setContainerCategory(channel);
-
+        if(!contact){
+            return false;
+        }
         var url = route('chat_list', {'contact_id': contact, 'category': channel});
         if(props.filter_id){
             url = url + '&filter_id='+props.filter_id;
@@ -156,7 +158,6 @@ function ChatList(props)
         var data = {'contact_id': contact};
         Inertia.post(url, data,  {
             onSuccess: (response) => {
-                
                 setChatList(response.props.contact_list);
             },
         });
