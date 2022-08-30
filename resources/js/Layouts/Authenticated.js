@@ -120,7 +120,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                 setReturnMainUser(response.data.session_value);
             }
         });
-    })
+    },[])
 
     function setImpersonate(){
         var data = {

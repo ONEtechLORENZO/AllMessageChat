@@ -61,7 +61,7 @@ function ChatList(props)
     const accountList = props.account_list;
 
     useEffect(() => {
-        setChatList(props.contact_list);
+        //setChatList(props.contact_list);
         const interval = setInterval(() => getMessageList(), 5000);
         return () => {
             clearInterval(interval);
@@ -143,7 +143,6 @@ function ChatList(props)
             return false;
         }
         var url = route('get_message_list', {'contact_id': selectedContact, 'category': containerCategory, 'mode': 'ajax'});
-
         axios({
             method: 'get',
             url: url,
@@ -158,7 +157,7 @@ function ChatList(props)
         var data = {'contact_id': contact};
         Inertia.post(url, data,  {
             onSuccess: (response) => {
-                setChatList(response.props.contact_list);
+              //  setChatList(response.props.contact_list);
             },
         });
     }
@@ -312,7 +311,7 @@ function ChatList(props)
                                       //  href={tab.href}
                                         onClick={() => setCurrentTab(tab.id)}
                                         className={classNames(
-                                            (tab.id == current_tab)
+                                            (tab.id == props.mode)
                                                 ? "border-purple-500 text-primary"
                                                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200",
                                             "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base cursor-pointer"
@@ -322,7 +321,7 @@ function ChatList(props)
                                        
                                         <span
                                             className={classNames(
-                                                (tab.id == current_tab)
+                                                (tab.id == props.mode)
                                                     ? "bg-purple-100 text-primary"
                                                     : "bg-gray-100 text-gray-900",
                                                 "hidden ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block"

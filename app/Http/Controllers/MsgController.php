@@ -9,6 +9,7 @@ use Auth;
 use App\Models\Account;
 use App\Models\Contact;
 use App\Models\Template;
+use Illuminate\Support\Facades\Redirect;
 use App\Http\Controllers\MessageLogController;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
@@ -224,8 +225,16 @@ class MsgController extends Controller
         $user = $request->user();
 
         $companyId = Cache::get('selected_company_'. $user->id);
+        $recordData = $this->getChatContactList($request);
 
         if($request->contact_id){
+
+            // Check the contact in category
+            $isRecordContainCategory = array_key_exists($request->contact_id, $recordData['contact_list']);
+            if(!$isRecordContainCategory){
+                return Redirect::route('chat_list');
+            }
+
             $selectedContact = $request->contact_id;
             $contactChaneel = ChatListContact::where('user_id', $user->id)->where('contact_id' , $selectedContact )->first();
             $category = ($request->category) ? $request->category : $contactChaneel->channel;
@@ -243,7 +252,6 @@ class MsgController extends Controller
             $accoutList[$account->id] = $account->company_name;
         }
 
-        $recordData = $this->getChatContactList($request);
         $filterData = $this->getFiltersInfo($companyId, $user->id, 'Contact', true);
 
         $translator = [
@@ -411,7 +419,7 @@ class MsgController extends Controller
         $contact = ChatListContact::where('user_id', $user_id)->where('contact_id' , $contact_id )->first();
         if($contact){
             $contact->channel = $channel;
-        //   $contact->unread = false;
+            $contact->unread = false;
         }
         $contact->save();
     }
