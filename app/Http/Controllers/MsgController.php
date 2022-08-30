@@ -252,7 +252,7 @@ class MsgController extends Controller
             'Sign out' => __('Sign out'),
             'All Chats' => __('All Chats'),
             'Unread' => __('Unread'),
-            'Archive' => __('Archive'),
+            'Archive' => __('Archived'),
             'Add Column' => __('Add Column'),
             'New Message' => __('New Message'),
             'Conversation not start yet.'  => __('Conversation not start yet.'),
