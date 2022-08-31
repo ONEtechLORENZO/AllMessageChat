@@ -1570,4 +1570,9 @@ class UserController extends Controller
 
         return Redirect::route('dashboard');
     }
+
+    public function automation(Request $request)
+    {
+        return Inertia::render('Automation/Flow');
+    }
 }

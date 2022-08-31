@@ -137,7 +137,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //showfields
     Route::post('/showColumns/{module}', [CompanyController::class, 'showColumn'])->name('showColumns');
 
-
     //Tag
     Route::get('/tags', [TagController::class, 'index'])->name('listTag');
     Route::get('/tag', [TagController::class, 'show'])->name('detailTag');
@@ -178,6 +177,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/notifications',[Notification::class, 'getNotifications'])->name('notification');
     Route::get('/clickNotification',[Notification::class, 'clickNotification'])->name('clickNotification');
     Route::get('/showMore',[Notification::class, 'showMore'])->name('showMore');
+
+    // Automation
+    Route::get('/automation', [UserController::class, 'automation'])->name('automation');
 
 });
 

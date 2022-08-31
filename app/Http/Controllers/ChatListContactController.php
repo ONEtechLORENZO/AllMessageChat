@@ -72,6 +72,7 @@ class ChatListContactController extends Controller
         $chatListContact = ChatListContact::where('user_id', $user->id )->where('contact_id', $contactId)->first();
         if(!$chatListContact->is_archive){
             $chatListContact->is_archive = true;
+            $chatListContact->unread = false;
         } else {
             $chatListContact->is_archive = false;
         }
