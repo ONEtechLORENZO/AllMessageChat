@@ -172,7 +172,8 @@ function Form(props)
         var pristine = new Pristine(document.getElementById(`form`), defaultConfig);
         is_validated = pristine.validate(
             document.querySelectorAll(
-                 'input[data-pristine-required="true"], input[data-pristine-required="required"]',
+               
+                 'input[required], input[data-pristine-required="true"], input[data-pristine-required="required"]',
                  'textarea[data-pristine-required="true"], textarea[data-pristine-required="required"]',
                  )
             );
@@ -328,8 +329,12 @@ function Form(props)
                                                     />;
                                                     break;
                                                 case 'phone_number':
-
                                                     element = <PhoneInput2
+                                                    inputProps={{
+                                                        name: 'field_info.field_name',
+                                                        required: field_info.is_mandatory === 1 ? true : false,
+                                                        autoFocus: true
+                                                      }}
                                                     containerStyle={{ marginTop: "15px" }}
                                                     searchClass="search-class"
                                                     searchStyle={{ margin: "0", width: "97%", height: "30px" }}
@@ -338,6 +343,7 @@ function Form(props)
                                                     placeholder="Enter phone number"
                                                     value={field_value} 
                                                     onChange={(value) => changePhoneNumber(value,field_info.field_name)}
+                                                    required={field_info.is_mandatory === 1 ? true : false}
                                                   />
                                     
                                                     break;
