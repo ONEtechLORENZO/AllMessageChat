@@ -596,6 +596,7 @@ class Controller extends BaseController
             // Actions
             'sub_panbel_actions' => [
                 'detail' => true,
+                'create' => true,
             ],
         ];
         return $return;

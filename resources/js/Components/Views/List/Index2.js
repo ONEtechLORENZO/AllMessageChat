@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Fragment, useRef } from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
 import Pagination from '@/Components/Pagination';
 import Alert from '@/Components/Alert';
 import Button from '@/Components/Forms/Button';
@@ -39,7 +39,7 @@ function ListView(props)
     }
     
 
-    function saveSelectedColumn(){           
+    function saveSelectedColumn(){
        if(columnOptions!=''){
             Inertia.post(route('showColumns', [props.module]), {'columns':columnOptions});
         } else {
@@ -136,7 +136,6 @@ function ListView(props)
     if(props.errors.message){
         notie.alert({type: 'error', text: props.errors.message, time: 5});
     }
-    
     return (
         <>
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">

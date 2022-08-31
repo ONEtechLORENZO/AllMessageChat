@@ -61,7 +61,7 @@ function ChatList(props)
     const accountList = props.account_list;
 
     useEffect(() => {
-        //setChatList(props.contact_list);
+        setChatList(props.contact_list);
         const interval = setInterval(() => getMessageList(), 5000);
         return () => {
             clearInterval(interval);
@@ -409,7 +409,7 @@ function ChatList(props)
                                         </div>
                                     </li>
                                 ))}
-                                {Object.entries(chatList).length == 0 &&
+                                {Object.entries(props.contact_list).length == 0 &&
                                     <li>
                                         <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
                                             {props.translator['Conversation not start yet.']}

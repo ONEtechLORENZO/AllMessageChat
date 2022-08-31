@@ -15,6 +15,8 @@ import Creatable from 'react-select/creatable';
 import PhoneInput, {parsePhoneNumber} from 'react-phone-number-input';
 import Number from './Number';
 import Date from './Date'; 
+import PhoneInput2 from 'react-phone-input-2'
+import 'react-phone-input-2/lib/style.css'
 
 const defaultConfig = {
     // class of the parent element where the error/success class is added
@@ -151,6 +153,7 @@ function Form(props)
      */
     function changePhoneNumber(value , name){
         let newState = Object.assign({}, data);
+        value = '+'+value;
         newState[name] = value;
         if(value && parsePhoneNumber(value) ){
             newState['country_code'] = parsePhoneNumber(value).countryCallingCode;
@@ -180,6 +183,10 @@ function Form(props)
         
         data['options'] = options;
         data['is_chat'] = (props.is_chat) ? props.is_chat : '';
+
+        // Set parent module detail
+        data['parent_id'] = (props.parent_id) ? props.parent_id : '';
+        data['parent_module'] = (props.parent_module) ? props.parent_module : ''; 
         
         Inertia.post(props.recordId ? route('update' + props.module, {id: props.recordId}) : route('store' + props.module), data, {
             onSuccess: (response) => {
@@ -321,14 +328,18 @@ function Form(props)
                                                     />;
                                                     break;
                                                 case 'phone_number':
-                                                    element = <PhoneInput
-                                                        initialValueFormat="national"
-                                                        withCountryCallingCode
-                                                        placeholder="Enter phone number"
-                                                        value={field_value} 
-                                                        onChange={(value) => changePhoneNumber(value,field_info.field_name)}
-                                                        required={field_info.is_mandatory === 1 ? true : false}
-                                                    />
+
+                                                    element = <PhoneInput2
+                                                    containerStyle={{ marginTop: "15px" }}
+                                                    searchClass="search-class"
+                                                    searchStyle={{ margin: "0", width: "97%", height: "30px" }}
+                                                    enableSearchField
+                                                    disableSearchIcon
+                                                    placeholder="Enter phone number"
+                                                    value={field_value} 
+                                                    onChange={(value) => changePhoneNumber(value,field_info.field_name)}
+                                                  />
+                                    
                                                     break;
                                                 case "amount":
                                                     element = <div className="mt-1 relative rounded-md shadow-sm">

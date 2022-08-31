@@ -1,5 +1,6 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, Fragment, useEffect } from "react";
 import Authenticated from '@/Layouts/Authenticated';
+
 import ReactFlow, {
     addEdge,
     MiniMap,
@@ -10,10 +11,11 @@ import ReactFlow, {
 } from 'react-flow-renderer';
 
 import { MarkerType } from 'react-flow-renderer';
+import Trigger from "./Trigger";
 
 const initialNodes = [
   {
-    id: '1',
+    id: 'start',
     type: 'input',
     data: {
       label: (
@@ -22,66 +24,12 @@ const initialNodes = [
         </>
       ),
     },
-    position: { x: 250, y: 0 },
-  },
-  {
-    id: '2',
-    data: {
-      label: (
-        <>
-          This is a <strong>default node</strong>
-        </>
-      ),
-    },
-    position: { x: 100, y: 100 },
-  },
-  {
-    id: '3',
-    data: {
-      label: (
-        <>
-          This one has a <strong>custom style</strong>
-        </>
-      ),
-    },
-    position: { x: 400, y: 100 },
-    style: {
-      background: '#D6D5E6',
-      color: '#333',
-      border: '1px solid #222138',
-      width: 180,
-    },
-  },
-  {
-    id: '4',
-    position: { x: 250, y: 200 },
-    data: {
-      label: 'Another default node',
-    },
-  },
-  {
-    id: '5',
-    data: {
-      label: 'Node id: 5',
-    },
-    position: { x: 250, y: 325 },
-  },
-  {
-    id: '6',
-    type: 'output',
-    data: {
-      label: (
-        <>
-            <strong>End Automation</strong>
-        </>
-      ),
-    },
-    position: { x: 100, y: 480 },
-  },
+    position: { x: 150, y: 0 },
+  }
 ];
 
 const initialEdges = [
-  { id: 'e1-2', source: '1', target: '2', label: 'this is an edge label' },
+  { id: 'e1-2', source: '1', target: '6', label: '+' },
   { id: 'e1-3', source: '1', target: '3' },
   {
     id: 'e3-4',
@@ -118,8 +66,22 @@ const initialEdges = [
   },
 ];
 
+const endNode = {
+  id: 'end',
+  type: 'output',
+  data: {
+    label: (
+      <>
+          <strong>End Automation</strong>
+      </>
+    ),
+  },
+  position: { x: 150, y: 300 },
+};
+
 function Flow(props)
 {
+
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
 
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -130,6 +92,33 @@ function Flow(props)
 
     const [showTrigger, setShowTrigger] = useState(false);
 
+    const [selectTrigger, setSelectedTriger] = useState();
+
+    const [data , setData] = useState();
+
+    const trigers = {
+      contact_created: { name: 'contact_created', label: 'New contact is added'},
+      contact_list_related: { name: 'contact_list_related', label: 'New contact is added to list'},
+      contact_tag_related: { name: 'contact_tag_related', label: 'New contact is added to tag' },
+      remove_webhook: { name: 'remove_webhook', label: 'Webhook is removed' },
+    }
+    /**
+     * Store triger data
+     */
+    function saveData(value){
+      setSelectedTriger(value);
+      var newNodes = nodes; // Object.assign({}, nodes);
+      Object.entries(nodes).map(([key, node]) => {
+        if(node.id == 'start'){
+          newNodes[key].data.label = <strong> {trigers[value].label} </strong>
+        }
+      });
+      newNodes.push(endNode);
+      console.log([ nodes , newNodes]);
+      setNodes(newNodes);
+      setShowTrigger(false);
+    }
+
     /**
      * When user click on the node
      */
@@ -138,7 +127,6 @@ function Flow(props)
         if(node.type == 'input') {
             // Show Modal and get the event
             setShowTrigger(true);
-            alert('started');
         }
         
         console.log(event);
@@ -151,8 +139,14 @@ function Flow(props)
         console.log(node);
     }
     
+    useEffect(()=>{
+
+    },[nodes]);
+
     return (
-        <>
+        <Authenticated 
+          auth={props.auth}
+        >
             <div className="h-screen min-w-max">
                 <ReactFlow
                     nodes={nodes}
@@ -185,14 +179,20 @@ function Flow(props)
                         nodeBorderRadius={2}
                     />
                     <Controls />
-                    <Background color="#aaa" gap={16} />
+                    <Background color="#aaa" gap={10} />
                 </ReactFlow>
             </div>
 
-            {showTrigger ?
-                <p>Show Modal</p>
-            : ''}
-        </>
+            {showTrigger &&
+              <Trigger
+                setSelectedTriger={setSelectedTriger}
+                trigers={trigers}
+                saveData={saveData}
+                setShowTrigger={setShowTrigger}
+              />
+                
+            }
+        </Authenticated>
       );
 }
 

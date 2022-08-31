@@ -50,7 +50,7 @@ const navigation = [
         show: ['admin'],
     },
     {
-        name: "Messages",
+        name: "Reports",
         href: route("message_list"),
         icon: ChatAltIcon,
         show: ['all'],
