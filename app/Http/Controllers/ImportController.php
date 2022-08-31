@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use League\Csv\Reader;
 use App\Models\Import;
 use Cache;
+use App\Models\Notification;
 
 class ImportController extends Controller
 {
@@ -236,7 +237,9 @@ class ImportController extends Controller
                 'status' => 'new',
                 'mapping' => $mapping_field
             ]);
-   
+           
+        $alertNotification = $this->updateNotification($user_id, $record_id, $import->name);
+
         return Redirect::route('listImport');
     }
 
@@ -292,5 +295,14 @@ class ImportController extends Controller
         }
 
         return Inertia::render('Import/Form',['id' => $id, 'editcsvHeader' => $headers, 'editOneStepfield' => $fields, 'status' => $status]);
+    }
+
+    public function updateNotification($user_id, $record_id, $name){
+        $notification = new Notification();
+        $notification->notifier_id = $user_id;
+        $notification->notification_id = $record_id;
+        $notification->notification_type = $name;
+        $notification->notification_content = 'created';
+        $notification->save();
     }
 }

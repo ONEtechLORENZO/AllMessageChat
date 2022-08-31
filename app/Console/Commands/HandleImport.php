@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\Import;
 use App\Models\Contact;
 use App\Models\Field;
+use App\Models\Notification;
 use League\Csv\Reader;
 use League\Csv\Statement;
 use Illuminate\Support\Facades\Log;
@@ -63,6 +64,7 @@ class HandleImport extends Command
             $company_id = $import->company_id;
             $current_date = date('Y-m-d H:i:s');
             $mapping_value = unserialize(base64_decode($import->mapping));
+            $ImportName = $import->name;
 
             $stream = fopen($file_path, 'r');
             $csv = Reader::createFromStream($stream);
@@ -116,6 +118,7 @@ class HandleImport extends Command
                     'status' => 'Completed',
                     'offset' => $nextOffset,                
                 ]);
+                $UpdateNotificaton = $this->updateNotification($user_id,$record_id,$ImportName);
             }else{
                 Import::where('id',$record_id)->update([
                     'status' => 'Inprogress',
@@ -123,5 +126,14 @@ class HandleImport extends Command
                 ]);
             }
         }
+    }
+
+    public function updateNotification($user_id, $record_id, $name){
+        $notification = new Notification();
+        $notification->notifier_id = $user_id;
+        $notification->notification_id = $record_id;
+        $notification->notification_type = $name;
+        $notification->notification_content = 'completed';
+        $notification->save();
     }
 }

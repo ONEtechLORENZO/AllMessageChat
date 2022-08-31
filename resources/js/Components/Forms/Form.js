@@ -240,7 +240,7 @@ function Form(props)
     //change Date formate
     function changeDate(name,event){
         var date = event.toISOString().substring(0, 10);
-        var time = event.getHours() + ':' + event.getMinutes();
+        var time = event.getHours() + ':' + String(event.getMinutes()).padStart(2, '0');
         var dateTime = date + ' ' + time;
         DataHandler(name,dateTime);
     }

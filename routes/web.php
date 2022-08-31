@@ -175,7 +175,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Notification
     Route::get('/notifications',[Notification::class, 'getNotifications'])->name('notification');
-    Route::get('/clickNotification/{id}',[Notification::class, 'clickNotification'])->name('clickNotification');
+    Route::get('/clickNotification',[Notification::class, 'clickNotification'])->name('clickNotification');
+    Route::get('/showMore',[Notification::class, 'showMore'])->name('showMore');
 
     // Automation
     Route::get('/automation', [UserController::class, 'automation'])->name('automation');
