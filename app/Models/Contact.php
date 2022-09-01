@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Msg;
 use App\Models\Tag;
+use App\Models\Service;
 use App\Models\Category;
 use App\Models\Note;
 
@@ -35,6 +36,11 @@ class Contact extends Model
     {
         return $this->morphToMany(Tag::class, 'taggable');
     }
+    public function services()
+    {
+        return $this->morphToMany(Service::class, 'serviceable');
+    }
+
 
     public function categorys()
     {

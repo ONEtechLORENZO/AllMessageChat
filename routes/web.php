@@ -26,6 +26,8 @@ use App\Http\Controllers\ChatListContactController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsGlobalAdmin;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Models\Contact;
+use App\Models\Service;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,7 +53,6 @@ Route::get('/invitedUserRelation', [UserInviteController::class, 'relateUser']);
 
 Route::post('/incoming', [MsgController::class, 'incoming']);
 Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
-
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -145,6 +146,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tag/{id}', [TagController::class, 'edit'])->name('editTag');
     Route::post('/updateTag/{id}', [TagController::class, 'update'])->name('updateTag');
     Route::delete('/deleteTag/{id}', [TagController::class, 'destroy'])->name('deleteTag');
+
+    //subscription
+    Route::post('/subscription/save', [ContactController::class, 'saveSubscription'])->name('saveSubscription');
+    Route::post('/subscription/delete', [ContactController::class, 'removeSubscription'])->name('removeSubscription');
 
     //Category
     Route::get('/lists', [CategoryController::class, 'index'])->name('listCategory');

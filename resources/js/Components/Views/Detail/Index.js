@@ -1,20 +1,32 @@
 import React, { Fragment, useEffect, useRef, useState } from "react";
-import { PencilIcon, UserIcon } from "../../../Pages/icons";
+import { PencilIcon, UserIcon,WhatsAppIcon,    
+    InstaIcon} from "../../../Pages/icons";
 import { Inertia } from "@inertiajs/inertia";
 import ReactSelect from "./ReactSelect";
 import Notes from '@/Components/Notes';
 import { Head,Link } from "@inertiajs/inertia-react";
 import SubPanels from "./SubPanels";
+import { WhatsApp } from "@mui/icons-material";
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
+import notie from 'notie';
 
 export default function Index(props) {
     const [record , setRecord] = useState(props.record);
     const [activeTab , setActiveTab] = useState('Detail');
     const [tagSelectedOption, setTagSelectedOption] = useState(null);
     const [ListSelectedOption, setListSelectedOption] = useState(null);
+    const [serviceSelected, setServiceSelectedOption] = useState(null);
     const [tagOption ,setTagOption] = useState();
+    const [serviceOption ,setServiceOption] = useState();
     const [listOption, setListOption] = useState();
     const [recordId, setRecordId] = useState();
     const [tagOpen, setTagOpen] = useState(false);
+    const [subscribeInfo, setSubscribeInfo] = useState(['Whatsapp','Instagram'])
+    const [subscribeStatus, setSubscribeStatus] = useState({
+        'Whatsapp':false,
+       'Instagram':false
+    })
     const [listOpen, setListOpen] = useState(false);
     const [defaultHeader , setDefaultHeader] = useState(props.headers.default);
     const [customHeader, setCustomHeader] = useState(props.headers.custom);
@@ -23,15 +35,16 @@ export default function Index(props) {
     useEffect(() => {
         setRecord(props.record);
         setTagOption(props.tagOptions);
+        setServiceOption(props.serviceOptions);
         setListOption(props.listOptions);
         setTagSelectedOption(props.tagData);
-        setListSelectedOption(props.listData);
+       setServiceSelectedOption(props.serviceData);
+        setListSelectedOption(props.listData);        
         setRecordId(props.record.id);
         if(props.current_tab){
             setActiveTab(props.current_tab);
-        }
-      },[props]);
-
+        } 
+      },[props]);  
     function saveTag (){
         var data = {
             'name': tagSelectedOption ,
@@ -43,6 +56,70 @@ export default function Index(props) {
                 setTagOpen(false);
             },
         });
+    }
+    function handleClick (e){        
+        
+        if(subscribeStatus[e.target.name]==false)
+            {   
+                savesubscription(e)
+            }
+            else
+              {
+                removesubscription(e)
+              }
+    }
+    function savesubscription (e){        
+        confirmAlert({
+            message: ('Please confirm your Subscription'),
+            buttons: [
+            {
+              label: ('Confirm'),
+              onClick: () => {                      
+        var data = {
+            'service_name': e.target.value ,
+             'service_id' : e.target.id,
+             'id' : recordId            
+        }
+        console.log('')
+        Inertia.post(route('saveSubscription'), data, {
+            onSuccess: (response) => {
+                setSubscribeStatus((state) => ({
+                    ...state,
+                    [e.target.name]: true}))
+                notie.alert({type: 'success', text: 'Subscribed successfully', time: 5});                
+            },
+        });}},
+        {
+            label: 'No',            
+          }
+        ]
+      });
+    }
+    function removesubscription (e){
+        confirmAlert({
+            message: ('Are you sure you want to cancel the subscription?'),
+            buttons: [
+            {
+              label: ('Confirm'),
+              onClick: () => {                      
+        var data = {
+            'service_name': e.target.name ,
+             'service_id' : e.target.id,
+             'id' : recordId            
+        }
+        Inertia.post(route('removeSubscription'), data, {
+            onSuccess: (response) => {
+                setSubscribeStatus((state) => ({
+                    ...state,
+                   [e.target.name]: false}))
+                notie.alert({type: 'success', text: 'Subscription removed successfully', time: 5});
+            },
+        });}},
+        {
+            label: 'No',            
+          }
+        ]
+      });
     }
 
     function saveList (){
@@ -94,20 +171,53 @@ console.log('index',props)
                                         </span>
                                     </span>
                                 </div>
-                                <div>
+                                
                                     
                                     {props.module == 'Contact' ?
                                         <>
-                                            <div className="text-gray-600"> {record.first_name} {record.last_name}  </div>
+                                        <div>
+                                            <div className="text-gray-600"> {record.first_name} {record.last_name}  
                                             <div className="text-gray-600"> {record.phone_number} </div>
                                             <div className="text-gray-600"> {record.email} </div>
+                                            </div>
+                                            <div>
+                                          
+
+                                                <div className="mt-1 text-lg text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3 ">Click here to subscribe/unsubscribe
+                                             
+                                                { Object.entries(props.serviceOptions).map(([key, service])=> {
+                                            return(
+                                                <>    
+                                                
+                                    <button
+                                        type="button"
+                                        onClick={ (e) => handleClick(e)}
+                                        name={service.name}
+                                        id={service.value}                                       
+                                        value={service.name} 
+                                                                     
+                                        className={`inline-flex items-left ml-2 px-4 py-2 h-10 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${
+                                            subscribeStatus[service.name]? "bg-green-600" : "bg-gray-700"
+                                        } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+                                    >
+                                       {/*<WhatsAppIcon className="h-3 w-5" aria-hidden="true" />*/}
+                                       {service.name}
+                                    </button>
+                                     </>
+                                                );
+                                            } )}
+                                    
+                            </div></div></div>
+                                                
+
                                         </>
                                         :
                                         <>
-                                            <div className="text-gray-600"> {record.name}  </div>
+                                        <div>
+                                            <div className="text-gray-600">{record.name}  </div></div>
                                         </>
                                     }
-                                </div>
+                                
                                 
                             </h3>
                             <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
