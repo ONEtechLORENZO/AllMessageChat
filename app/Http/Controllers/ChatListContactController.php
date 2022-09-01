@@ -17,13 +17,20 @@ class ChatListContactController extends Controller
     public function getUserContacts(Request $request)
     {
         $user = $request->user();
-        $companyId = Cache::get('selected_company_'. $user->id);
+        $userId = $user->id;
+        $companyId = Cache::get('selected_company_'. $userId);
+
+        $selectedContacts = [];
+        $getSelectedContacts = ChatListContact::where('user_id', $userId)->select('contact_id')->get();
+        foreach ($getSelectedContacts as $key => $selectedContact) {
+            $selectedContacts[] = $selectedContact->contact_id ;
+        }
 
         $query = Contact::select('contacts.id', 'first_name', 'last_name');
         $query->where('company_id', $companyId);
         $query->leftJoin('chat_list_contacts', 'contacts.id', 'contact_id');
-        $query->whereNull('contact_id');
-
+        $query->whereNotIn('chat_list_contacts.contact_id',  $selectedContacts);
+  
         // Filter records based on key 
         $key = (isset($_GET['key']) && $_GET['key']) ? $_GET['key'] : '';
         if($key){
@@ -72,6 +79,7 @@ class ChatListContactController extends Controller
         $chatListContact = ChatListContact::where('user_id', $user->id )->where('contact_id', $contactId)->first();
         if(!$chatListContact->is_archive){
             $chatListContact->is_archive = true;
+            $chatListContact->unread = false;
         } else {
             $chatListContact->is_archive = false;
         }

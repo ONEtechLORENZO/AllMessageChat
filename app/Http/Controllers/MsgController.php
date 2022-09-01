@@ -9,6 +9,7 @@ use Auth;
 use App\Models\Account;
 use App\Models\Contact;
 use App\Models\Template;
+use Illuminate\Support\Facades\Redirect;
 use App\Http\Controllers\MessageLogController;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
@@ -224,12 +225,20 @@ class MsgController extends Controller
         $user = $request->user();
 
         $companyId = Cache::get('selected_company_'. $user->id);
+        $recordData = $this->getChatContactList($request);
 
         if($request->contact_id){
+
+            // Check the contact in category
+            $isRecordContainCategory = array_key_exists($request->contact_id, $recordData['contact_list']);
+            if(!$isRecordContainCategory){
+                return Redirect::route('chat_list');
+            }
+
             $selectedContact = $request->contact_id;
             $contactChaneel = ChatListContact::where('user_id', $user->id)->where('contact_id' , $selectedContact )->first();
             $category = ($request->category) ? $request->category : $contactChaneel->channel;
-            $messages = $this->getMessageList($request);        
+            $messages = $this->getMessageList($request);
         }
         $accounts = Account::where('user_id', $user->id )
             ->where(function($query) use ($category) {
@@ -243,7 +252,6 @@ class MsgController extends Controller
             $accoutList[$account->id] = $account->company_name;
         }
 
-        $recordData = $this->getChatContactList($request);
         $filterData = $this->getFiltersInfo($companyId, $user->id, 'Contact', true);
 
         $translator = [
@@ -252,7 +260,7 @@ class MsgController extends Controller
             'Sign out' => __('Sign out'),
             'All Chats' => __('All Chats'),
             'Unread' => __('Unread'),
-            'Archive' => __('Archive'),
+            'Archive' => __('Archived'),
             'Add Column' => __('Add Column'),
             'New Message' => __('New Message'),
             'Conversation not start yet.'  => __('Conversation not start yet.'),
@@ -320,7 +328,9 @@ class MsgController extends Controller
         $archiveCount = $archiveQuery->where('is_archive' , true )->count();
         $totalQuery = clone $query;
         $totalCount = $totalQuery->count();
-        $totalCount = $totalCount - ($archiveCount - $unreadCount);
+        $otherCount = ($archiveCount - $unreadCount);
+      
+        $totalCount = $totalCount - abs($otherCount);
         $recordCounts = [ 'all' => $totalCount, 'unread' => $unreadCount , 'archived' => $archiveCount];
 
         $mode = (isset($_GET['mode'])) ? ($_GET['mode']) : 'all';
@@ -331,6 +341,8 @@ class MsgController extends Controller
         } else {
             $query->where(function ($query)  {  
                 $query->whereNull('is_archive')->orWhere('is_archive' , 0);
+            });
+            $query->where(function ($query)  {  
                 $query->whereNull('unread')->orWhere('unread' , 0);
             });
         }
@@ -501,9 +513,10 @@ class MsgController extends Controller
      */
     public function handleMessageResult(Request $request, $accountId , $data)
     {
-        $user_id = $this->getUserIdUsingAccountId($accountId);
         $account = Account::find($accountId);
+        $user_id = $account->user_id;
         $companyId = $account->company_id;
+
         $_REQUEST['is_sent'] = 'sent';
         $msgable_id = $this->getInfoUsingContactUniqueId($request->destination, $request->channel, $companyId, $user_id);
         $msgable_type = 'App\Models\Contact';
@@ -566,7 +579,15 @@ class MsgController extends Controller
         }
 
         // Update contact last update time
-        $chatContact = ChatListContact::where('contact_id', $contact->id)->first();
+        $chatContact = ChatListContact::where('contact_id', $contact->id)->where('user_id', $user_id )->first();
+
+        if(! $chatContact){
+            $chatContact = new ChatListContact();
+            $chatContact->contact_id = $contact->id;
+            $chatContact->user_id = $user_id;
+            $chatContact->channel = $type;
+        }
+        
         if(isset($_REQUEST['is_sent']) && $_REQUEST['is_sent'] == 'sent'){
             $chatContact->unread = false;
         } else {
@@ -610,8 +631,10 @@ class MsgController extends Controller
 
         $account_id = $data['account_id'];
         $account = Account::find($account_id);
+
         $companyId = $account->company_id;
-        $user_id = $this->getUserIdUsingAccountId($account_id);
+        $user_id = $account->user_id; 
+
 
         log::info(['insta content' => $message_content]);
         // Get Contact information
@@ -645,7 +668,7 @@ class MsgController extends Controller
         $account = Account::where('phone_number', $_GET['origin'])->first();
         $companyId = $account->company_id;
 
-        $user_id = $this->getUserIdUsingAccountId($account->id);
+        $user_id = $account->user_id; 
         $msgable_type = 'App\Models\Contact';
 
         if ( isset($data['sender']) &&  $_GET['origin'] != $data['sender']['phone']) {

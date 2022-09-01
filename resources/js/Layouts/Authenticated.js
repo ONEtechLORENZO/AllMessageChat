@@ -19,9 +19,11 @@ import {
     ChevronLeftIcon,
     ServerIcon,
 } from "@heroicons/react/outline";                                                                      
-import { NotifiIcon } from '../Pages/icons'
 import SelectCompany from "@/Pages/Company/SelectCompany";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
+import axios from "axios";
+import Notification from "./Notification";
+
 
 const navigation = [
     {
@@ -49,7 +51,7 @@ const navigation = [
         show: ['admin'],
     },
     {
-        name: "Messages",
+        name: "Reports",
         href: route("message_list"),
         icon: ChatAltIcon,
         show: ['all'],
@@ -109,14 +111,18 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
 
     const[returnMainUser , setReturnMainUser] = useState(false);
 
+    const [notifications, setNotifications] = useState();
+    const [count, setCount] = useState();
+    const [id, setId] = useState();
+
     useEffect(() => {
+        getNotifications();
         axios.get(route('get_session_value')).then((response) => {
-            //console.log(response.data.session_value);
             if(response.data.session_value){
                 setReturnMainUser(response.data.session_value);
             }
         });
-    })
+    },[])
 
     function setImpersonate(){
         var data = {
@@ -129,6 +135,34 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
             onError: (errors) => {
                 setErrors(errors)
             }
+        });
+    }
+
+    function getNotifications(){
+        var url = route('notification');
+        axios.get(url).then((response) => {
+          setCount(response.data.count);
+          setNotifications(response.data.notifications);
+          setId(response.data.id);
+        });
+    }
+
+    function notificationClick(){
+        var url = route('clickNotification')+'?id='+ id;
+        axios.get(url).then((response) => {
+    
+        });
+    }
+
+    function showMore(){
+        var url = route('showMore');
+        axios.get(url).then((response) => {
+            setCount(response.data.count);
+            setId(response.data.id)
+
+            let newState = Object.assign({}, notifications);
+            newState = {...newState, ...response.data.notifications};
+            setNotifications(newState);
         });
     }
 
@@ -300,8 +334,15 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                     <div className="flex">
                                     </div>
 
-                                    <div className="hidden sm:flex sm:items-center sm:ml-6">
-                                        <NotifiIcon/>
+                                    <div className="hidden sm:flex sm:items-center sm:ml-6"> 
+                                        <div className="ml-3 relative">
+                                            <Notification 
+                                                notificationClick={notificationClick}
+                                                showMore={showMore}
+                                                count={count}
+                                                notifications={notifications}
+                                            />
+                                        </div>
                                         <div className="ml-3 relative">
                                             <Dropdown>
                                                 <Dropdown.Trigger>

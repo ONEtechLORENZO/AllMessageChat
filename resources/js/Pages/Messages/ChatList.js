@@ -96,7 +96,9 @@ function ChatList(props)
     function getContactMessage(contact, channel){
         setSelectedContact(contact);
         setContainerCategory(channel);
-
+        if(!contact){
+            return false;
+        }
         var url = route('chat_list', {'contact_id': contact, 'category': channel});
         if(props.filter_id){
             url = url + '&filter_id='+props.filter_id;
@@ -141,7 +143,6 @@ function ChatList(props)
             return false;
         }
         var url = route('get_message_list', {'contact_id': selectedContact, 'category': containerCategory, 'mode': 'ajax'});
-
         axios({
             method: 'get',
             url: url,
@@ -156,8 +157,7 @@ function ChatList(props)
         var data = {'contact_id': contact};
         Inertia.post(url, data,  {
             onSuccess: (response) => {
-                
-                setChatList(response.props.contact_list);
+              //  setChatList(response.props.contact_list);
             },
         });
     }
@@ -311,7 +311,7 @@ function ChatList(props)
                                       //  href={tab.href}
                                         onClick={() => setCurrentTab(tab.id)}
                                         className={classNames(
-                                            (tab.id == current_tab)
+                                            (tab.id == props.mode)
                                                 ? "border-purple-500 text-primary"
                                                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200",
                                             "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base cursor-pointer"
@@ -321,7 +321,7 @@ function ChatList(props)
                                        
                                         <span
                                             className={classNames(
-                                                (tab.id == current_tab)
+                                                (tab.id == props.mode)
                                                     ? "bg-purple-100 text-primary"
                                                     : "bg-gray-100 text-gray-900",
                                                 "hidden ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block"
@@ -409,7 +409,7 @@ function ChatList(props)
                                         </div>
                                     </li>
                                 ))}
-                                {Object.entries(chatList).length == 0 &&
+                                {Object.entries(props.contact_list).length == 0 &&
                                     <li>
                                         <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
                                             {props.translator['Conversation not start yet.']}

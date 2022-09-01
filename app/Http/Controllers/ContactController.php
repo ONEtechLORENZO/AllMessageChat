@@ -98,8 +98,12 @@ class ContactController extends Controller
     public function store(Request $request)
     {
         $contact_id = $this->saveContact($request);
+        
         if($request->is_chat) {
             return Redirect::route('chat_list');
+        } else if($request->parent_id){
+            $url = route('detail'. $request->parent_module).'?id='.$request->parent_id.'&page=1';
+            return Redirect::to($url);
         } else {
             return Redirect::route('detailContact', $contact_id);
         }
@@ -281,8 +285,18 @@ class ContactController extends Controller
   
             $contact->user_id = $request->user()->id;
             $contact->company_id = Cache::get('selected_company_'. $request->user()->id);
-
             $contact->save();
+
+            if($request->parent_id){
+                $parent = array($request->parent_id);
+                if($request->parent_module == 'Category'){
+                    $contact->categorys()->sync($parent);
+                    $url = '/list?id='.$request->parent_id;
+                } else if($request->parent_module == 'Tag'){
+                    $contact->tags()->sync($parent);
+                    $url = '/tag?id='.$request->parent_id;
+                }
+            }
         }
 
         return $contact->id;

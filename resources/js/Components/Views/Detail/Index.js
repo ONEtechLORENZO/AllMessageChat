@@ -149,7 +149,7 @@ export default function Index(props) {
               setFieldOptions(newFieldOptions);
             });
         }
-console.log('index',props)
+
     return (            
             <div>
                 <Head title={props.module}/>
@@ -336,21 +336,17 @@ console.log('index',props)
                                                                 <div>
                                                                 <div className="px-4 py-2 -mb-px font-semibold text-gray-800 rounded-t opacity-70 ">{group}</div>  
                                                                 {Object.entries(fields).map(([key,field]) => { 
+                                                                    
+                                                                    var value = (record[key]) ? record[key] : (record.custom && record.custom[key]) ? record.custom[key] : '-';
+                                                                    if(field.type == 'checkbox'){
+                                                                        value = (value) ? 'True': 'False';
+                                                                    }
+
                                                                     return(
                                                                         <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                                                             <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
                                                                             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                                                {field.type == 'checkbox' ?
-                                                                                <> { record.custom && record.custom[key] ? 'True': 'False' }</> 
-                                                                                : 
-                                                                                <>
-                                                                                    {(record.custom && record.custom[key]) ?
-                                                                                        <>{record.custom[key]}</>
-                                                                                    :
-                                                                                        <> - </>
-                                                                                }
-                                                                                </>
-                                                                                }
+                                                                                {value}
                                                                             </dd>
                                                                         </div>
                                                                     )
@@ -385,11 +381,13 @@ console.log('index',props)
                                             <>
                                                 <SubPanels 
                                                     module={tab.name}
+                                                    parent_id={props.record.id}
+                                                    parent_module={props.module}
                                                     headers={props.sub_headers}
                                                     records={props.related_records} 
                                                     actions={props.actions}
                                                     paginator={props.pagination}
-                                                 
+
                                                 />
                                             </>
                                         }
