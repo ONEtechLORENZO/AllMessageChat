@@ -54,6 +54,8 @@ export default function Detail(props) {
                 headers = {props.headers}
                 tagData={props.tagData}
                 tagOptions={props.tagOptions}
+                serviceData={props.serviceData}
+                serviceOptions={props.serviceOptions}
                 listOptions={props.listOptions}
                 listData={props.listData}
                 translator={props.translator}

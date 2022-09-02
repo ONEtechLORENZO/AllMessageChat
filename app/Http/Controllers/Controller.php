@@ -14,6 +14,7 @@ use App\Models\Field;
 use App\Models\FieldGroup;
 use Cache;
 use App\Models\Contact;
+use App\Models\Service;
 
 class Controller extends BaseController
 {
@@ -147,7 +148,7 @@ class Controller extends BaseController
 
         // Fetch the data
         $records = $query->paginate($this->limit);
-//dd($list_view_columns);
+
 
         $return = [
             'records' => $records->items(),
@@ -228,6 +229,8 @@ class Controller extends BaseController
         return $tagList;
     }
 
+
+
     /**
      * Return categories related to company
      */
@@ -242,6 +245,25 @@ class Controller extends BaseController
             ];
         }
         return $categoryList;
+    }
+
+
+
+    /**
+     * return available services
+     */
+    public function getServiceList()
+    {
+        $services = Service::all();
+        $servicelist = [];
+        foreach($services as $service) {
+            $serviceList[] = [
+                'value' => $service->id,
+                'label' => $service->name,
+                'name'  => $service->unique_name                
+            ];
+        }
+        return $serviceList;
     }
 
     /**
@@ -517,6 +539,7 @@ class Controller extends BaseController
         $query->select($listFields);
 
         return $query;
+        
     }
 
     /**
