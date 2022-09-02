@@ -7,6 +7,8 @@ use App\Models\Contact;
 use App\Models\ChatListContact;
 use Inertia\Inertia;
 use Cache;
+use App\Models\Categorable;
+use App\Models\Taggable;
 use Illuminate\Support\Facades\Redirect;
 
 class ChatListContactController extends Controller
@@ -17,13 +19,27 @@ class ChatListContactController extends Controller
     public function getUserContacts(Request $request)
     {
         $user = $request->user();
-        $companyId = Cache::get('selected_company_'. $user->id);
+        $userId = $user->id;
+        $companyId = Cache::get('selected_company_'. $userId);
 
+        $selectedContacts = [];
+        // Get related records
+        if($request->parent == "Category"){
+            $getSelectedContacts = Categorable::select('categorable_id as contact_id')->where('category_id', $request->record)->get();
+        } elseif($request->parent == 'Tag') {
+            $getSelectedContacts = Taggable::select('taggable_id as contact_id')->where('tag_id', $request->record)->get();
+        } elseif($request->parent == 'Chat') {
+            $getSelectedContacts = ChatListContact::where('user_id', $userId)->select('contact_id')->get();
+        }
+
+        foreach ($getSelectedContacts as $key => $selectedContact) {
+            $selectedContacts[] = $selectedContact->contact_id ;
+        }
+      
         $query = Contact::select('contacts.id', 'first_name', 'last_name');
         $query->where('company_id', $companyId);
-        $query->leftJoin('chat_list_contacts', 'contacts.id', 'contact_id');
-        $query->whereNull('contact_id');
-
+        $query->whereNotIn('contacts.id',  $selectedContacts);
+  
         // Filter records based on key 
         $key = (isset($_GET['key']) && $_GET['key']) ? $_GET['key'] : '';
         if($key){
@@ -33,6 +49,7 @@ class ChatListContactController extends Controller
             });
         }
         $records = $query->limit(5)->get();
+
 
         $contacts = [];
         foreach($records as $record){
@@ -50,16 +67,29 @@ class ChatListContactController extends Controller
         $user = $request->user();
         $selectedContacts = $request->contacts;
         foreach($selectedContacts as $contact_id){
-            $chatListContact = ChatListContact::where('user_id', $user->id )->where('contact_id', $contact_id['value'])->first();
-
-            if(! $chatListContact){
-                $chatListContact = new ChatListContact();
+            $contact = Contact::find($contact_id['value']);
+            if($request->parent == 'Chat'){
+                $chatListContact = ChatListContact::where('user_id', $user->id )->where('contact_id', $contact_id['value'])->first();
+                if(! $chatListContact){
+                    $chatListContact = new ChatListContact();
+                }
+                $chatListContact->contact_id = $contact_id['value'];
+                $chatListContact->user_id = $user->id;
+                $chatListContact->save();
+            } else if($request->parent == "Category"){
+                $parent = array($request->record);
+                $contact->categorys()->sync($parent);
+            } else if($request->parent == "Tag"){
+                $parent = array($request->record);
+                $contact->tags()->sync($parent);
             }
-            $chatListContact->contact_id = $contact_id['value'];
-            $chatListContact->user_id = $user->id;
-            $chatListContact->save();
         }
-        return Redirect::route('chat_list');
+        if($request->parent == 'Chat'){
+            return Redirect::route('chat_list');
+        } else {
+            $url = route('detail'. $request->parent).'?id='.$request->record.'&page=1';
+            return Redirect::to($url);
+        }
     }
 
     /**

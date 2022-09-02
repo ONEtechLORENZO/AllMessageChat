@@ -140,17 +140,20 @@ class MsgController extends Controller
                 foreach($list_view_columns as $field_name => $field_info) {
 
                     if($field_name == 'company_name'){
-                        $field_name = "accounts.company_name";
-                    } elseif(in_array($field_name , ['sender', 'destination'])) {
-                        $field_name = "contacts.phone_number";
+                        
+                        $query->orWhere('accounts.company_name', 'like', '%' . $search . '%');
+                        
+                    } elseif($field_name  == 'sender') {
+                        $query->orWhere('contacts.phone_number', 'like', '%' . $search . '%');
+                        $query->orWhere('accounts.phone_number', 'like', '%' . $search . '%');
+                    } elseif($field_name  == 'destination') {
                     } else {
                         $field_name = "msgs.{$field_name}";
+                        $query->orWhere($field_name, 'like', '%' . $search . '%');
                     }
-                    $query->orWhere($field_name, 'like', '%' . $search . '%');
                 }    
             });
         } 
-
         $messages = $query->orderBy('msgs.id', 'desc')
             ->paginate($limit);
 
@@ -213,10 +216,10 @@ class MsgController extends Controller
                 'detail' => false,
                 'edit' => false,
                 'delete' => false,
-                'export' => false,
-                'import' => false,
+                'export' => true,
+                'import' => true,
                 'search' => true,
-                'filter' => true,
+                'filter' => false,
             ],
 
             'paginator' => [

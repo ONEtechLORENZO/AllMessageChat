@@ -25,8 +25,12 @@ export default function ContactSelection(props) {
         nProgress.start(0.5);
         nProgress.inc(0.2);
         var url = route('get_user_contacts_list');
+        url += '?parent='+props.parent_module;
+        if(props.parent_id){
+            url += '&record='+props.parent_id;
+        }
         if(key){
-            url += '?key='+key;
+            url += '&key='+key;
         }
         Axios.get(url).then((response) => {
             nProgress.done(true);
@@ -44,8 +48,13 @@ export default function ContactSelection(props) {
     }
 
     function addContacts(){
-        console.log(selectedContact);
-        Inertia.post( route('store_user_contact_list') , {'contacts': selectedContact}, {
+      
+        var data = {
+            'contacts': selectedContact,
+            'parent': props.parent_module,
+            'record': (props.parent_id) ? props.parent_id : ''
+        }
+        Inertia.post( route('store_user_contact_list') , data, {
             onSuccess: (response) => {
                 props.setShowForm(false)
             },
@@ -142,7 +151,8 @@ export default function ContactSelection(props) {
                 <Form 
                     module={'Contact'}
                     hideForm={hideForm}
-                    is_chat={true}
+                    parent_module={props.parent_module}
+                    parent_id= {props.parent_id ? props.parent_id : ''}
                     getUserContacts={getUserContacts}
                 />
             : ''}

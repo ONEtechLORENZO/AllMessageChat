@@ -97,6 +97,12 @@ function ListView(props)
             return;
         }
 
+        if(props.module == 'User'){
+            let confirmUserDelete = window.confirm('Are you sure you want to delete the user?');
+            if(!confirmUserDelete) {
+                return;
+            }
+        }
         Inertia.delete(route('delete' + props.module, {id: record_id}), {}, {
             onSuccess: (response) => { 
                 notie.alert({type: 'success', text: 'Record deleted successfully', time: 5});

@@ -183,7 +183,6 @@ function Form(props)
         }
         
         data['options'] = options;
-        data['is_chat'] = (props.is_chat) ? props.is_chat : '';
 
         // Set parent module detail
         data['parent_id'] = (props.parent_id) ? props.parent_id : '';
