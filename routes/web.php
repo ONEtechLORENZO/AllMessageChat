@@ -76,7 +76,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Messages
     Route::get('/messages/list', [MessageLogController::class, 'list'])->name('messages');
     Route::post('/messages/search_content', [MessageLogController::class, 'searchContent'])->name('searchContent');   
-    Route::get('/messages', [MsgController::class, 'messageList'])->name('message_list');
+    Route::get('/messages', [MsgController::class, 'messageList'])->name('listMessage');
 
     // Accounts
     Route::get('/account/registration', [UserController::class, 'accountRegistration'])->name('account_registration');

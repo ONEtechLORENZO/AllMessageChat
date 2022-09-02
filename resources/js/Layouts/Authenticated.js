@@ -52,7 +52,7 @@ const navigation = [
     },
     {
         name: "Reports",
-        href: route("message_list"),
+        href: route("listMessage"),
         icon: ChatAltIcon,
         show: ['all'],
     },
