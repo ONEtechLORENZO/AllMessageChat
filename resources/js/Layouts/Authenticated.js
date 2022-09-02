@@ -67,13 +67,7 @@ const navigation = [
         href: route("wallet"),
         icon: BriefcaseIcon,
         show: ['all'],
-    },
-    {
-        name: "Fields",
-        href: route("listField"),
-        icon: ServerIcon,
-        show: ['admin', 'global_admin'],
-    },
+    },    
     {
         name: "Users",
         href: route("show_Users"),
