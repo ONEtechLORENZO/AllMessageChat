@@ -11,11 +11,12 @@ function classNames(...classes) {
 
 function List(props)
 {
-
     const tabs = [
         { label:'Contacts',name: 'Contacts', href: '#',current: true },
         { label:'Lists',name: 'Lists', href: route("listCategory"),current: false},
-        { label:'Tags',name: 'Tags', href: route("listTag"),current: false }
+        { label:'Tags',name: 'Tags', href: route("listTag"),current: false },
+        { label:'Fields',name: 'Fields', href: route("listField",{'mod':props.module}),current: false }
+
       ];
     return (
         <Authenticated

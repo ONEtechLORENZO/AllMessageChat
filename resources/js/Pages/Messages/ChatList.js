@@ -677,6 +677,7 @@ function ChatList(props)
             {showForm ?
                 <ContactSelection
                     setShowForm={setShowForm}
+                    parent_module='Chat'
                 />
             : ''}
         </Authenticated>

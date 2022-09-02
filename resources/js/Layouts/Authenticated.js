@@ -51,12 +51,6 @@ const navigation = [
         show: ['admin'],
     },
     {
-        name: "Reports",
-        href: route("message_list"),
-        icon: ChatAltIcon,
-        show: ['all'],
-    },
-    {
         name: "Campaigns",
         href: route("listCampign"),
         icon: SpeakerphoneIcon,
@@ -67,18 +61,18 @@ const navigation = [
         href: route("wallet"),
         icon: BriefcaseIcon,
         show: ['all'],
-    },
-    {
-        name: "Fields",
-        href: route("listField"),
-        icon: ServerIcon,
-        show: ['admin', 'global_admin'],
-    },
+    },    
     {
         name: "Users",
         href: route("show_Users"),
         icon: UsersIcon,
         show: ['admin'],
+    },
+    {
+        name: "Reports",
+        href: route("listMessage"),
+        icon: ChatAltIcon,
+        show: ['all'],
     },
 ];
 

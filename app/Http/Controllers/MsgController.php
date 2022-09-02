@@ -113,24 +113,48 @@ class MsgController extends Controller
         $limit = $this->limit;
         $user = $request->user();
 
+        // Search & Filter
+        $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
+        $filter = $request->has('filter') && $request->get('filter') ? $request->get('filter') : '';
+
         // List view columns to show
         $list_view_columns = [
             'id' => ['label' => __('Id'), 'type' => 'text'],
-            'content' => ['label' => __('Content'), 'type' => 'text'],
-            'account_name' => ['label' => __('Account name'), 'type' => 'text'],
-            'mode' =>['label' => __('Mode'), 'type' => 'text'],
+            'message' => ['label' => __('Content'), 'type' => 'text'],
+            'company_name' => ['label' => __('Account name'), 'type' => 'text'],
+            'msg_mode' =>['label' => __('Mode'), 'type' => 'text'],
             'sender' =>['label' => __('Sender'), 'type' => 'text'],
             'destination' =>['label' => __('Destination'), 'type' => 'text'],
             'status' => ['label' => __('Status'), 'type' => 'text'],
-            'date' => ['label' => __('Date'), 'type' => 'text'],
+            'created_at' => ['label' => __('Date'), 'type' => 'text'],
         ]; 
         
         $query_columns = ['msgs.id', 'msgs.service', 'msgs.status', 'msgs.created_at', 'message', 'accounts.company_name', 'accounts.phone_number as account_phone_number', 'accounts.company_name', 'contacts.phone_number', 'contacts.instagram_id', 'msg_mode'];
-        $messages = Msg::select($query_columns)
+        $query = Msg::select($query_columns)
             ->join('accounts', 'account_id', 'accounts.id')
             ->join('contacts', 'contacts.id', 'msgable_id')
-            ->where('accounts.user_id', $user->id)
-            ->orderBy('msgs.id', 'desc')
+            ->where('accounts.user_id', $user->id);
+
+        if($search) {
+            $query->where(function ($query) use ($search, $list_view_columns) {  
+                foreach($list_view_columns as $field_name => $field_info) {
+
+                    if($field_name == 'company_name'){
+                        
+                        $query->orWhere('accounts.company_name', 'like', '%' . $search . '%');
+                        
+                    } elseif($field_name  == 'sender') {
+                        $query->orWhere('contacts.phone_number', 'like', '%' . $search . '%');
+                        $query->orWhere('accounts.phone_number', 'like', '%' . $search . '%');
+                    } elseif($field_name  == 'destination') {
+                    } else {
+                        $field_name = "msgs.{$field_name}";
+                        $query->orWhere($field_name, 'like', '%' . $search . '%');
+                    }
+                }    
+            });
+        } 
+        $messages = $query->orderBy('msgs.id', 'desc')
             ->paginate($limit);
 
         foreach($messages as $message) {
@@ -155,26 +179,36 @@ class MsgController extends Controller
 
             $messageList[] = [
                 'id' => $message->id,
-                'account_name' => $message->company_name,
-                'content' => $message->message,
+                'company_name' => $message->company_name,
+                'message' => $message->message,
                 'status' => ucfirst($message->status),
-                'mode' => ucfirst($message->msg_mode),
+                'msg_mode' => ucfirst($message->msg_mode),
                 'sender' => $sender,
                 'destination' => $destination,
-                'date' => date_format($message->created_at, $this->dateListView),
+                'created_at' => date_format($message->created_at, $this->dateListView),
             ];
         }
 
         $module = new Msg();
-     
+        $messageTranslate = [
+            'Messages' => __('Messages'),
+            'No Messages yet' => __('No messages sent/received yet for your account(s).')
+        ];
+
+        $translator = $this->getTranslations();
+        $translator = array_merge($translator , $messageTranslate);
+
         $data = [
-            'singular' => __('Message'),
-            'plural' => __('Messages'),
+            'singular' => __('Report'),
+            'plural' => __('Reports'),
             'module' => 'Message',
             'current_page' => 'Messages', 
             'records' => $messageList,
             'compact_type' => 'condense',
             'list_view_columns' => $list_view_columns,
+
+            'search' => $search,
+            'filter' => $filter,
 
             // Actions
             'actions' => [
@@ -182,9 +216,9 @@ class MsgController extends Controller
                 'detail' => false,
                 'edit' => false,
                 'delete' => false,
-                'export' => false,
-                'import' => false,
-                'search' => false,
+                'export' => true,
+                'import' => true,
+                'search' => true,
                 'filter' => false,
             ],
 
@@ -200,12 +234,8 @@ class MsgController extends Controller
                 'perPage' => $messages->perPage(),
             ],
             
-            'translator' => [
-                'Messages' => __('Messages'),
-                'No Messages yet' => __('No messages sent/received yet for your account(s).'),
-                'Search' => __('Search'),
-                'No records' => __('No records')
-            ]
+            'translator' => $this->getTranslations(),
+            
         ];
         
        

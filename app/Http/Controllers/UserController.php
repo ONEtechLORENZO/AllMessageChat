@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Session;
 use PDF;
+use Schema;
 use Cache;
 use DB;
 
@@ -605,10 +606,12 @@ class UserController extends Controller
         $id = $request->get('id');
         $user = User::find($id);
 
+        Schema::disableForeignKeyConstraints();
         if ($user->delete()) {
             Log::info('User deleted.');            
             return Redirect::route('show_Users');
         }
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

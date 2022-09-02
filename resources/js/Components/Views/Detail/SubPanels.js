@@ -2,8 +2,8 @@ import React, {useState} from "react";
 import ListTable from "../List/ListTable";
 import Alert from '@/Components/Alert';
 import Pagination from '@/Components/Pagination';
-import Form from '@/Components/Forms/Form';
 import Button from '@/Components/Forms/Button';
+import ContactSelection from '@/Components/ContactSelection';
 
 function SubPanels(props){
     const [showForm, setShowForm] = useState(false);
@@ -50,7 +50,14 @@ function SubPanels(props){
                 </div>
             </div>
 
-            {showForm ?
+            {showForm &&
+            <ContactSelection
+                    setShowForm={setShowForm}
+                    parent_module={props.parent_module}
+                    parent_id={props.parent_id}
+                />
+            }
+            {/* {showForm ?
                 <Form 
                     module={props.module}
                     heading={props.heading}
@@ -60,7 +67,7 @@ function SubPanels(props){
                     parent_id={props.parent_id}
                     parent_module={props.parent_module} 
                 />
-            : ''}
+            : ''} */}
 
         </div>
     );

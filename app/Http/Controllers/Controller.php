@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -32,6 +31,7 @@ class Controller extends BaseController
     public function listView($request, $module, $list_view_columns)
     {
         $baseTable = $module->getTable();
+       
         $moduleName = class_basename($module);
 
         // Search
@@ -52,8 +52,9 @@ class Controller extends BaseController
         // Get company selected by the user.
         $companyId = Cache::get('selected_company_'. $user->id);
         // If user is not related to any company, abort the below process
-        $columnlist=Cache::get($moduleName.'selected_column_list_'. $user->id);
-       
+        $columnlist = Cache::get($moduleName.'selected_column_list_'. $user->id);
+
+      
         if(!$companyId) {
             abort(403);
         }
@@ -93,7 +94,7 @@ class Controller extends BaseController
                     }
                 }
             });
-        } 
+        }
         else {
             if($moduleName == 'Contact') {
                 $query->leftJoin('taggables', "{$baseTable}.id", 'taggable_id');
@@ -122,7 +123,11 @@ class Controller extends BaseController
         }
         
         // Show only Contact module records
-        if($moduleName == 'Field') {
+        if($moduleName == 'Field') {           
+           $mod=$request->get('mod');          
+          if($mod)         
+            $query->where('module_name', $mod)->paginate($this->limit)->withQueryString();        
+          else
             $query->where('module_name', 'Contact');
         }
 
@@ -146,7 +151,7 @@ class Controller extends BaseController
         }
 
         // Fetch the data
-        $records = $query->paginate($this->limit);
+        $records = $query->paginate($this->limit)->withQueryString();
 
 
         $return = [
@@ -489,6 +494,7 @@ class Controller extends BaseController
     public function getContactRecords($module, $fields, $searchData, $limit, $offset){
         
         $baseTable = $module->getTable();
+        
         $moduleName = class_basename($module);
         $sort_by = 'created_at';
         $sort_order = 'asc';
@@ -515,7 +521,7 @@ class Controller extends BaseController
             return $query->get();      
         }
        
-        $records = $query->paginate();
+        $records = $query->paginate()->withQueryString();
   
         return $records->items();
 
@@ -582,7 +588,7 @@ class Controller extends BaseController
         $moduleName = class_basename($module);
 
         $query = $this->getListViewFields($baseTable, $moduleName, $query, $headers);
-        $records = $query->paginate($this->limit);
+        $records = $query->paginate($this->limit)->withQueryString();
 
         unset($headers['tag']);
         unset($headers['list']);

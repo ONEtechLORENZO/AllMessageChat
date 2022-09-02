@@ -99,7 +99,7 @@ class ContactController extends Controller
     {
         $contact_id = $this->saveContact($request);
         
-        if($request->is_chat) {
+        if($request->parent_module == 'Chat') {
             return Redirect::route('chat_list');
         } else if($request->parent_id){
             $url = route('detail'. $request->parent_module).'?id='.$request->parent_id.'&page=1';
@@ -288,14 +288,14 @@ class ContactController extends Controller
             $contact->save();
 
             if($request->parent_id){
-                $parent = array($request->parent_id);
-                if($request->parent_module == 'Category'){
-                    $contact->categorys()->sync($parent);
-                    $url = '/list?id='.$request->parent_id;
-                } else if($request->parent_module == 'Tag'){
-                    $contact->tags()->sync($parent);
-                    $url = '/tag?id='.$request->parent_id;
-                }
+                // $parent = array($request->parent_id);
+                // if($request->parent_module == 'Category'){
+                //     $contact->categorys()->sync($parent);
+                //     $url = '/list?id='.$request->parent_id;
+                // } else if($request->parent_module == 'Tag'){
+                //     $contact->tags()->sync($parent);
+                //     $url = '/tag?id='.$request->parent_id;
+                // }
             }
         }
 

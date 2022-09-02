@@ -53,7 +53,10 @@ function Form(props)
     const [options, setOptions] = useState(null);
 
     useEffect(() => {
-        fetchModuleFields();
+        fetchModuleFields();        
+        if(props.mod!='') {      //prefill the module_name in addfield form    
+            setData('module_name',props.mod)
+            }
         if(props.recordId) {
             fetchRecord();
         }  
@@ -193,7 +196,6 @@ function Form(props)
         }
         
         data['options'] = options;
-        data['is_chat'] = (props.is_chat) ? props.is_chat : '';
 
         // Set parent module detail
         data['parent_id'] = (props.parent_id) ? props.parent_id : '';
