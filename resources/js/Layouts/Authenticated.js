@@ -51,12 +51,6 @@ const navigation = [
         show: ['admin'],
     },
     {
-        name: "Reports",
-        href: route("message_list"),
-        icon: ChatAltIcon,
-        show: ['all'],
-    },
-    {
         name: "Campaigns",
         href: route("listCampign"),
         icon: SpeakerphoneIcon,
@@ -73,6 +67,12 @@ const navigation = [
         href: route("show_Users"),
         icon: UsersIcon,
         show: ['admin'],
+    },
+    {
+        name: "Reports",
+        href: route("listMessage"),
+        icon: ChatAltIcon,
+        show: ['all'],
     },
 ];
 

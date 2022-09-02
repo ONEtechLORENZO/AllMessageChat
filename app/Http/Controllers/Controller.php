@@ -52,8 +52,9 @@ class Controller extends BaseController
         // Get company selected by the user.
         $companyId = Cache::get('selected_company_'. $user->id);
         // If user is not related to any company, abort the below process
-        $columnlist=Cache::get($moduleName.'selected_column_list_'. $user->id);
-       
+        $columnlist = Cache::get($moduleName.'selected_column_list_'. $user->id);
+
+      
         if(!$companyId) {
             abort(403);
         }
@@ -93,7 +94,7 @@ class Controller extends BaseController
                     }
                 }
             });
-        } 
+        }
         else {
             if($moduleName == 'Contact') {
                 $query->leftJoin('taggables', "{$baseTable}.id", 'taggable_id');

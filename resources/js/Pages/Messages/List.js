@@ -11,17 +11,6 @@ import 'react-toastify/dist/ReactToastify.css';
 
 export default function Dashboard(props) {
 
-  // Delete Record 
-  /*
-  function removeToCollection(id){
-    axios.delete("/admin/user/delete", {
-      params:{'id': id}
-    })
-    .then(res => {
-      console.log(res,'Deleted Successfully.');
-    })
-  }
-    */
 
     const listColumn = [
         {label: 'Time'},

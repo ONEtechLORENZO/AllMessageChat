@@ -97,6 +97,12 @@ function ListView(props)
             return;
         }
 
+        if(props.module == 'User'){
+            let confirmUserDelete = window.confirm('Are you sure you want to delete the user?');
+            if(!confirmUserDelete) {
+                return;
+            }
+        }
         Inertia.delete(route('delete' + props.module, {id: record_id}), {}, {
             onSuccess: (response) => { 
                 notie.alert({type: 'success', text: 'Record deleted successfully', time: 5});
@@ -206,7 +212,7 @@ function ListView(props)
                                     href={route('listImport')}
                                     className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
                                 > 
-                                    <DownloadIcon className='h-4 w-4' /> Import 
+                                    <UploadIcon className='h-4 w-4 cursor-pointer' /> Import 
                                 </Link>
                             </>
                         : ''}
@@ -215,7 +221,7 @@ function ListView(props)
                                 <a href={route('export')} 
                                    className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
                                 >
-                                    <UploadIcon className='h-4 w-4 cursor-pointer' />Export 
+                                   <DownloadIcon className='h-4 w-4' /> Export 
                                 </a>
                             </>
                         : ''}
