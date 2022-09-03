@@ -25,6 +25,7 @@ class FieldController extends Controller
      */
     public function index(Request $request)
     {
+        
         $list_view_columns = [
             'module_name' => ['label' => 'Module Name', 'type' => 'text'],
             'field_label' => ['label' => 'Field Label', 'type' => 'text'],
@@ -38,16 +39,20 @@ class FieldController extends Controller
     //    $companyId = Cache::get('selected_company_'.$userId);
     //    $groupList = $this->getGroupList($companyId);
     
-        $module = new Field();
+        $module = new Field();        
         $listViewData = $this->listView( $request , $module, $list_view_columns);
-        $moduleList = ['Contact'=> 'Contacts'];
-
+        $moduleList = ['Contact'=> 'Contacts','Opportunity'=>'Opportunities'];
+        
+        $mod= $request->has('mod') && $request->get('mod') ? $request->get('mod') : '';
+        
+            
         $moduleData = [
             'singular' => 'Field',
             'plural' => 'Fields',
             'module' => 'Field',
         //    'group_list' => $groupList,
             'module_list' => $moduleList,
+            'mod' =>$mod,
 
             // Actions
             'actions' => [
@@ -56,7 +61,7 @@ class FieldController extends Controller
                 'delete' => false,
                 'export' => false,
                 'import' => false,
-                'search' => true,
+                'search' => true,                
                 'field_group' => true,  
                 'order_field' => true, 
                 'select_field'=>true,
@@ -85,7 +90,8 @@ class FieldController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request, Field $field)
-    {
+    {     
+           
         $status = 'new';
         //save fields in table
         $this->saveField($request, $field, $status);
@@ -173,14 +179,14 @@ class FieldController extends Controller
         return $custom;
     }
 
-    function saveField($request, $field, $status){
+    function saveField($request, $field, $status){  
 
         if($status == 'edit'){
             $field_label = $this->cleaner($request->field_label);
             $field_name = $request->field_name;
         }else{
             $field_label = $this->cleaner($request->field_label);
-            $field_name = $this->creater($field_label);
+            $field_name = $this->creater($field_label);            
         }
 
         if($request->has('is_mandatory')){

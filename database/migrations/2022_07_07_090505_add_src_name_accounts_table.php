@@ -26,7 +26,7 @@ class AddSrcNameAccountsTable extends Migration
     public function down()
     {
         Schema::table('accounts', function (Blueprint $table) {
-            $table->dropColumns(['src_name']);
+            $table->dropColumn(['src_name']);
         });
     }
 }

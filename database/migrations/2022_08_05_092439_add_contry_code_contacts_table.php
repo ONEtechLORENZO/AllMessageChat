@@ -26,7 +26,7 @@ class AddContryCodeContactsTable extends Migration
     public function down()
     {
         Schema::table('contacts', function (Blueprint $table) {
-            $table->drop_column('country_code');
+            $table->dropcolumn('country_code');
         });
     }
 }

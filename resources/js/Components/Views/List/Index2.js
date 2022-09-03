@@ -50,7 +50,7 @@ function ListView(props)
     function fetchModuleFields() {        
         let endpoint_url = route('fetchModuleFields', {'module': props.module});
         Axios.get(endpoint_url).then((response) => {             
-            if (response.data.status !== false) {               
+            if (response.data.status !== false) { 
                 setFields(response.data.fields);               
             }
             else {
@@ -356,6 +356,7 @@ function ListView(props)
                     hideForm={hideForm}
                     recordId={recordId}
                     translator={props.translator}
+                    mod={props.mod}
                 />
             : ''}
         </>

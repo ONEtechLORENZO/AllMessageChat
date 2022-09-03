@@ -47,6 +47,7 @@
         "pristinejs": "^0.1.9",
         "react-beautiful-dnd": "^13.1.0",
         "react-confirm-alert": "^2.7.0",
+        "react-datepicker": "^4.8.0",
         "react-datetime-picker": "^3.5.0",
         "react-dnd": "^16.0.1",
         "react-dnd-html5-backend": "^16.0.1",

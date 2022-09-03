@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -32,6 +31,7 @@ class Controller extends BaseController
     public function listView($request, $module, $list_view_columns)
     {
         $baseTable = $module->getTable();
+       
         $moduleName = class_basename($module);
 
         // Search
@@ -123,7 +123,11 @@ class Controller extends BaseController
         }
         
         // Show only Contact module records
-        if($moduleName == 'Field') {
+        if($moduleName == 'Field') {           
+            $mod=$request->has('mod') && $request->get('mod')?$request->get('mod'):'';       
+          if($mod)         
+            $query->where('module_name', $mod);        
+          else
             $query->where('module_name', 'Contact');
         }
 
@@ -147,7 +151,7 @@ class Controller extends BaseController
         }
 
         // Fetch the data
-        $records = $query->paginate($this->limit);
+        $records = $query->paginate($this->limit)->withQueryString();
 
 
         $return = [
@@ -490,6 +494,7 @@ class Controller extends BaseController
     public function getContactRecords($module, $fields, $searchData, $limit, $offset){
         
         $baseTable = $module->getTable();
+        
         $moduleName = class_basename($module);
         $sort_by = 'created_at';
         $sort_order = 'asc';

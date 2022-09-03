@@ -305,7 +305,8 @@ class FieldSeeder extends Seeder
     public function getModuleName()
     {
         $module = array(
-            'Contact' => 'Contact'
+            'Contact' => 'Contact',
+            'Opportunity' =>'Opportunities'
         );
         return $module;
     }
@@ -317,9 +318,12 @@ class FieldSeeder extends Seeder
             'textarea' => 'Textarea',
             'checkbox' => 'checkBox',
             'dropdown' => 'Dropdown',
-            'date' => 'Date & Time',
+            'date&time' => 'Date & Time',
             'number' => 'Number',
-            'amount' => 'Currency'
+            'amount' => 'Currency',
+            'date' => 'Date',
+            'time' => 'Time',
+            'multiselect' => 'Multi Select'
         );
         return $type;
     }
