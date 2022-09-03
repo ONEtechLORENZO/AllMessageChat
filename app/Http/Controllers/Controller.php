@@ -124,9 +124,9 @@ class Controller extends BaseController
         
         // Show only Contact module records
         if($moduleName == 'Field') {           
-           $mod=$request->get('mod');          
+            $mod=$request->has('mod') && $request->get('mod')?$request->get('mod'):'';       
           if($mod)         
-            $query->where('module_name', $mod)->paginate($this->limit)->withQueryString();        
+            $query->where('module_name', $mod);        
           else
             $query->where('module_name', 'Contact');
         }
@@ -521,7 +521,7 @@ class Controller extends BaseController
             return $query->get();      
         }
        
-        $records = $query->paginate()->withQueryString();
+        $records = $query->paginate();
   
         return $records->items();
 
@@ -588,7 +588,7 @@ class Controller extends BaseController
         $moduleName = class_basename($module);
 
         $query = $this->getListViewFields($baseTable, $moduleName, $query, $headers);
-        $records = $query->paginate($this->limit)->withQueryString();
+        $records = $query->paginate($this->limit);
 
         unset($headers['tag']);
         unset($headers['list']);

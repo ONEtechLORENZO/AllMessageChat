@@ -1,73 +1,41 @@
 import React, { useState, useCallback, useRef, Fragment, useEffect } from "react";
 import Authenticated from '@/Layouts/Authenticated';
-
-import ReactFlow, {
-    addEdge,
-    MiniMap,
-    Controls,
-    Background,
-    useNodesState,
-    useEdgesState,
-} from 'react-flow-renderer';
-
-import { MarkerType } from 'react-flow-renderer';
+import ReactFlow , {useEdgesState , useNodesState, Controls, Background} from "react-flow-renderer";
 import Trigger from "./Trigger";
 
-const initialNodes = [
+// Trigers
+const trigers = {
+  contact_created: { name: 'contact_created', label: 'New contact is added'},
+  contact_list_related: { name: 'contact_list_related', label: 'New contact is added to list'},
+  contact_tag_related: { name: 'contact_tag_related', label: 'New contact is added to tag' },
+  remove_webhook: { name: 'remove_webhook', label: 'Webhook is removed' },
+};
+
+// Next process
+const processTypes = {
+  'action': {label : 'Action', name: 'action' },
+  'condition': {label: 'Condition', name:'condition'},
+};
+
+// Actions
+const actions = {
+  'send_message': {label: 'Send Message' , name : 'send_message'},
+  'tag_contact': {label: 'Add a tag to a contact', name: 'tag_contact'},
+  'list_contact':{label: 'Add a list to a contact', name: 'list_contact'},
+  'custom_field':{label: 'Set a custom field', name: 'custom_field'}
+};
+
+const initialElements = [
   {
-    id: 'start',
-    type: 'input',
-    data: {
-      label: (
-        <>
-          <strong>Select Trigger</strong>
-        </>
-      ),
-    },
-    position: { x: 150, y: 0 },
+    id: "1",
+    type: "input", // input node
+    data: { label: (<> <strong>Select Trigger</strong></>) },
+    position: { x: 100, y: 0 }
   }
-];
 
-const initialEdges = [
-  { id: 'e1-2', source: '1', target: '6', label: '+' },
-  { id: 'e1-3', source: '1', target: '3' },
-  {
-    id: 'e3-4',
-    source: '3',
-    target: '4',
-    animated: true,
-    label: 'animated edge',
-  },
-  {
-    id: 'e4-5',
-    source: '4',
-    target: '5',
-    label: '+',
-    markerEnd: {
-      type: MarkerType.ArrowClosed,
-    },
-  },
-  {
-    id: 'e5-6',
-    source: '5',
-    target: '6',
-    type: 'smoothstep',
-    label: 'smooth step edge',
-  },
-  {
-    id: 'e5-7',
-    source: '5',
-    target: '7',
-    type: 'step',
-    style: { stroke: '#f6ab6c' },
-    label: 'a step edge',
-    animated: true,
-    labelStyle: { fill: '#f6ab6c', fontWeight: 700 },
-  },
 ];
-
 const endNode = {
-  id: 'end',
+  id: '2',
   type: 'output',
   data: {
     label: (
@@ -78,122 +46,203 @@ const endNode = {
   },
   position: { x: 150, y: 300 },
 };
+const initialEdges = [];
+let startId = 1;
 
 function Flow(props)
 {
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialElements);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-    const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const onConnect = useCallback((connection) => setEdges((eds) => addEdge(connection, eds)), []);
+  const onInit = (reactFlowInstance) => console.log('flow loaded:', reactFlowInstance);
 
-    const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const onEdgeUpdateStart = useCallback(() => {
+    edgeUpdateSuccessful.current = false;
+  }, []);
 
-    const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), []);
+  const onEdgeUpdate = useCallback((oldEdge, newConnection) => {
+    edgeUpdateSuccessful.current = true;
+    setEdges((els) => updateEdge(oldEdge, newConnection, els));
+  }, []);
 
-    const onInit = (reactFlowInstance) => console.log('flow loaded:', reactFlowInstance);
-
-    const [showTrigger, setShowTrigger] = useState(false);
-
-    const [selectTrigger, setSelectedTriger] = useState();
-
-    const [data , setData] = useState();
-
-    const trigers = {
-      contact_created: { name: 'contact_created', label: 'New contact is added'},
-      contact_list_related: { name: 'contact_list_related', label: 'New contact is added to list'},
-      contact_tag_related: { name: 'contact_tag_related', label: 'New contact is added to tag' },
-      remove_webhook: { name: 'remove_webhook', label: 'Webhook is removed' },
+  const onEdgeUpdateEnd = useCallback((_, edge) => {
+    if (!edgeUpdateSuccessful.current) {
+      setEdges((eds) => eds.filter((e) => e.id !== edge.id));
     }
-    /**
-     * Store triger data
-     */
-    function saveData(value){
-      setSelectedTriger(value);
-      var newNodes = nodes; // Object.assign({}, nodes);
-      Object.entries(nodes).map(([key, node]) => {
-        if(node.id == 'start'){
-          newNodes[key].data.label = <strong> {trigers[value].label} </strong>
-        }
-      });
-      newNodes.push(endNode);
-      console.log([ nodes , newNodes]);
+
+    edgeUpdateSuccessful.current = true;
+  }, []);
+
+  const [showOptions, setShowOptions] = useState(false);
+  const [showAction, setShowAction] = useState(false);
+  const [selectTrigger, setSelectedTriger] = useState();
+  const [data , setData] = useState();
+  const [options , setOptions] = useState();
+  const [heading  , setHeading] = useState();
+
+  const [currentNode , setCurrentNode ] = useState();
+
+
+  const yPos = useRef(0);
+  
+  function getId(){
+    startId ++;
+
+    return startId;
+  }
+  /**
+   * Store triger data
+   */
+ function saveData(value){
+    var newNodes = nodes; 
+    Object.entries(nodes).map(([key, node]) => {
+      if((node.type == currentNode.type) && currentNode.type == 'input' ){
+        newNodes[key].data.label = <strong> {trigers[value].label} </strong>
+        setNodes(newNodes);
+        addNode(currentNode, 'End', 'output');
+      } else if((currentNode.type == 'action') && node.type == currentNode.type ) {
+        newNodes[key].data.label = <strong> {actions[value].label} </strong>
+        setNodes(newNodes);
+      }  
+
+    });
+    if(currentNode.type == 'add_action' ){
       setNodes(newNodes);
-      setShowTrigger(false);
+      addNode(currentNode, processTypes[value].label , value);
     }
+    setShowOptions(false);
+  }
 
-    /**
-     * When user click on the node
-     */
-    function onNodeClick(event, node)
-    {
-        if(node.type == 'input') {
-            // Show Modal and get the event
-            setShowTrigger(true);
-        }
-        
-        console.log(event);
-        console.log(node);
-    }
+  /**
+   * Add a new node & Join 
+   */
+  const addNode = useCallback((currentNode, label, type = '') => {
+    yPos.current += 100;
+    var id = getId()
+    var nextNode = {
+          id: id.toString(),
+          type: type,
+          position: { x: 100, y: yPos.current },
+          data: { label: label }
+        };
+    var newNode = nodes;
+    newNode.push(nextNode);
+    setNodes(newNode);
 
-    function onEdgeClick(event, node)
-    {
-        console.log(event);
-        console.log(node);
+    var source = ''; var target = '';
+    
+    if(currentNode.source){
+    
+      var newEdges = [];
+      Object.entries(edges).map(([key, edge]) => {
+          if(edge.id != currentNode.id){
+            newEdges.push(edge);
+          }
+      });
+      setEdges(newEdges);
+      source = currentNode.source;
+      target = id;
+      addEdge(source , target);
+
+      source = id;
+      target = currentNode.target;
+      addEdge(source , target);
+
+    } else {
+      source = currentNode.id;
+      target = id;
+      addEdge(source , target);
     }
     
-    useEffect(()=>{
 
-    },[nodes]);
 
-    return (
-        <Authenticated 
-          auth={props.auth}
-        >
-            <div className="h-screen min-w-max">
-                <ReactFlow
-                    nodes={nodes}
-                    edges={edges}
-                    onNodesChange={onNodesChange}
-                    onEdgesChange={onEdgesChange}
-                    onConnect={onConnect}
-                    onInit={onInit}
-                    onNodeClick={onNodeClick}
-                    onEdgeClick={onEdgeClick}
-                    fitView
-                    attributionPosition="top-right"
-                >
-                    <MiniMap 
-                        nodeStrokeColor={(n) => {
-                            if (n.style?.background) return n.style.background;
-                            if (n.type === 'input') return '#0041d0';
-                            if (n.type === 'output') return '#ff0072';
-                            if (n.type === 'default') return '#1a192b';
-                
-                            return '#eee';
-                        }}
+  }, []);
 
-                        nodeColor={(n) => {
-                            if (n.style?.background) return n.style.background;
-                
-                            return '#fff';
-                        }}
+  /**
+   * Join between nodes
+   * 
+   * @param {interger} source 
+   * @param {interger} target 
+   */
+  function addEdge (source, target){
+    var newEdge =  { id: 'edge'+source+'-'+target, source: source.toString() , target: target.toString(), type:'add_action' , label: '+' };
+    
+    setEdges((eds) => eds.concat(newEdge) );
+  }
 
-                        nodeBorderRadius={2}
-                    />
-                    <Controls />
-                    <Background color="#aaa" gap={10} />
-                </ReactFlow>
-            </div>
+  
 
-            {showTrigger &&
-              <Trigger
-                setSelectedTriger={setSelectedTriger}
-                trigers={trigers}
-                saveData={saveData}
-                setShowTrigger={setShowTrigger}
-              />
-                
-            }
-        </Authenticated>
-      );
+
+  /**
+   * When user click on the node
+   */
+  function onNodeClick(event, node)
+  {
+    if(node.type == 'input') {
+      // Show Modal and get the event
+      setHeading('Triggers')
+      setOptions(trigers);
+      setShowOptions(true);
+    } else if(node.type == 'action'){
+      setHeading('Actions')
+      setOptions(actions);
+      setShowOptions(true);
+    }
+    setCurrentNode(node);
+
+   }
+
+   function onEdgeClick(event, node)
+   {
+      if(node.type == 'add_action'){
+        setHeading('Actions')
+        setOptions(processTypes);
+        setShowOptions(true);
+      }
+      setCurrentNode(node);
+
+   }
+
+  return (
+    <Authenticated 
+      auth={props.auth}
+    >
+     <div className="h-screen min-w-max">
+       
+          <ReactFlow 
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            // onEdgeUpdate={onEdgeUpdate}
+            // onEdgeUpdateStart={onEdgeUpdateStart}
+            // onEdgeUpdateEnd={onEdgeUpdateEnd}
+            onInit={onInit}
+            onNodeClick={onNodeClick}
+            onEdgeClick={onEdgeClick}
+            fitView
+            className="touchdevice-flow"
+            attributionPosition="top-right"
+          >
+      
+          <Controls />
+          <Background color="#aaa" gap={10} />
+        </ReactFlow>
+      </div>
+
+     
+        {showOptions &&
+          <Trigger
+            heading= {heading}
+            options={options}
+            saveData={saveData}
+            setShowOptions={setShowOptions}
+          />
+        }
+
+    </Authenticated>
+  );
 }
-
 export default Flow;

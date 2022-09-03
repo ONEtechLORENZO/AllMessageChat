@@ -305,7 +305,8 @@ class FieldSeeder extends Seeder
     public function getModuleName()
     {
         $module = array(
-            'Contact' => 'Contact'
+            'Contact' => 'Contact',
+            'Opportunity' =>'Opportunities'
         );
         return $module;
     }
