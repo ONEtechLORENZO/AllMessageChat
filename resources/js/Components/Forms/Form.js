@@ -14,9 +14,12 @@ import Checkbox from '../Checkbox';
 import Creatable from 'react-select/creatable';
 import PhoneInput, {parsePhoneNumber} from 'react-phone-number-input';
 import Number from './Number';
-import Date from './Date'; 
-import PhoneInput2 from 'react-phone-input-2'
-import 'react-phone-input-2/lib/style.css'
+import DateTime from './DateTime'; 
+import PhoneInput2 from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
+import Date from './Date';
+import Time from './Time';
+import MultiSelect from './MultiSelect';
 
 const defaultConfig = {
     // class of the parent element where the error/success class is added
@@ -128,6 +131,7 @@ function Form(props)
     /**
      * Handle Input Change
      */
+
     const handleChange = (event) => {
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         let field_name = event.target.name;
@@ -138,8 +142,14 @@ function Form(props)
     }
 
     const EventHandler = (event) => { 
-        if (event.target.value == 'dropdown') {
-            fields.push(optionField);
+        if (event.target.value == 'dropdown' || event.target.value == 'multiselect') {
+            fields.map((field,key) => {
+                if(field.field_type == 'selectable' && field.field_name == 'options'){
+                    fields.pop(key);
+                    setOptions(null);
+                }
+            });
+                fields.push(optionField);
         } else {
             fields.map((field,key) => { 
                 if (field.field_type == 'selectable') { 
@@ -239,11 +249,14 @@ function Form(props)
         });
     }
     
-    //change Date formate
-    function changeDate(name,event){
-        var date = event.toISOString().substring(0, 10);
-        var time = event.getHours() + ':' + String(event.getMinutes()).padStart(2, '0');
-        var dateTime = date + ' ' + time;
+    //change Date & Time formate
+    function changeDateTime(name,event){
+        let dateTime = '';
+        if(event){
+            var date = event.toISOString().substring(0, 10);
+            var time = event.getHours() + ':' + String(event.getMinutes()).padStart(2, '0');
+            dateTime = date + ' ' + time;
+        }
         DataHandler(name,dateTime);
     }
     
@@ -253,6 +266,24 @@ function Form(props)
         DataHandler(name,result);
     }
     
+    //change Date formate
+    function changeDate(name, event){
+        let date = '';
+        if(event){
+            date = event.getFullYear() + '-' + ('0' + (event.getMonth() + 1)).slice(-2) + '-' + ('0' + event.getDate()).slice(-2);
+        }
+        DataHandler(name, date);
+    }
+
+    //change Time formate
+    function changeTime(name, event){
+        let time = '';
+        if(event){
+            time = ('0' + event.getHours()).slice(-2) + ':' + ('0' + event.getMinutes()).slice(-2) + ':00';
+        }
+        DataHandler(name, time);
+    }
+
     return (
         <Transition.Root show={open} as={Fragment}>
             <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => {}} >
@@ -414,6 +445,14 @@ function Form(props)
                                                      handleChange={(event) => changeNumber(field_info.field_name,event)}
                                                      />
                                                      break;
+                                                case 'date&time':
+                                                    element = <DateTime 
+                                                    id={field_info.field_name}
+                                                    name={field_info.field_name}
+                                                    value={field_value}
+                                                    handleChange={(event) => changeDateTime(field_info.field_name,event)}
+                                                    />
+                                                    break;
                                                 case 'date':
                                                     element = <Date 
                                                     id={field_info.field_name}
@@ -421,7 +460,27 @@ function Form(props)
                                                     value={field_value}
                                                     handleChange={(event) => changeDate(field_info.field_name,event)}
                                                     />
-                                                    break;         
+                                                    break; 
+                                                case 'time':
+                                                    element = <Time 
+                                                    id={field_info.field_name}
+                                                    name={field_info.field_name}
+                                                    value={field_value}
+                                                    handleChange={(event) => changeTime(field_info.field_name,event)}
+                                                    />
+                                                    break; 
+                                                case 'multiselect':
+                                                    element = <MultiSelect
+                                                    id={field_info.field_name}
+                                                    name={field_info.field_name}
+                                                    options={field_info.options ? field_info.options : {}}
+                                                    handleChange={handleChange}
+                                                    emptyOption={field_info.field_name == 'field_group' ? 'General' : ''}
+                                                    value={field_value}
+                                                    required={field_info.is_mandatory === 1 ? true : false}
+                                                    readOnly={(readOnly) ? '' : 'disabled'}
+                                                    />
+                                                    break;                  
                                                 case 'default':
                                                     element = <Input 
                                                         type="text" 

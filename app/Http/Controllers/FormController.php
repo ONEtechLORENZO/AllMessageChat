@@ -41,7 +41,7 @@ class FormController extends Controller
             ->get();
          
         foreach($fields as $field){
-            if(($field['is_custom'] == '1' && $field['field_type'] == 'dropdown') || $field['field_name'] == 'field_group' ){
+            if(($field['is_custom'] == '1' && $field['field_type'] == 'dropdown') || $field['field_name'] == 'field_group'|| ($field['is_custom'] == '1' && $field['field_type'] == 'multiselect') ){
                 $option = $field['options'];
                 $options = [];
                 if ($option) {
