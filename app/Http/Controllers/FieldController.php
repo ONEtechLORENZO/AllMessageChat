@@ -41,11 +41,10 @@ class FieldController extends Controller
     
         $module = new Field();        
         $listViewData = $this->listView( $request , $module, $list_view_columns);
-        $moduleList = ['Contact'=> 'Contacts'];
+        $moduleList = ['Contact'=> 'Contacts','Opportunity'=>'Opportunities'];
         
-        $mod=$request->has('mod')&&$request->get('mod')?$request->get('mod'):'';
-        {
-            $mod=$request->get('mod');}
+        $mod= $request->has('mod') && $request->get('mod') ? $request->get('mod') : '';
+        
             
         $moduleData = [
             'singular' => 'Field',

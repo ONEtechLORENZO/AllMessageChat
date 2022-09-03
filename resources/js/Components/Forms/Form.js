@@ -50,10 +50,9 @@ function Form(props)
     const [options, setOptions] = useState(null);
 
     useEffect(() => {
-        fetchModuleFields();        
-        if(props.mod!='') {      //prefill the module_name in addfield form    
-            setData('module_name',props.mod)
-            }
+        fetchModuleFields();          
+        //prefill the module_name in addfield form  
+       props.module=='Field' && props.mod!='' && setData('module_name',props.mod);                
         if(props.recordId) {
             fetchRecord();
         }  

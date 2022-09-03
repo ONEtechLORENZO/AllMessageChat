@@ -27,8 +27,7 @@ class ContactObserver
      */
     public function updated(Contact $contact)
     {
-        //
-        dd('update');
+        //        
         $record = Contact::find($contact->id);
         if($record->status == 'unsubscribed'||'Unsubscribed') 
         {
