@@ -47,10 +47,10 @@ function Form(props)
     const [open, setOpen] = useState(true)
     const cancelButtonRef = useRef(null)
     const [fields, setFields] = useState([]);
-    const [phoneNumber, setPhoneNumber] = useState('');
     const [formErrors, setErrors] = useState({});
     const { data, setData, post, processing, errors, reset } = useForm({});
     const [options, setOptions] = useState(null);
+    const [multiselect, setMultiselect] = useState([]);
 
     useEffect(() => {
         fetchModuleFields();        
@@ -132,14 +132,14 @@ function Form(props)
     /**
      * Handle Input Change
      */
-
     const handleChange = (event) => {
+        
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         let field_name = event.target.name;
         if (event.target.name == 'field_type') {
             EventHandler(event);
         }
-        DataHandler(field_name,value); 
+        dataHandler(field_name,value); 
     }
 
     const EventHandler = (event) => { 
@@ -234,7 +234,7 @@ function Form(props)
      * 
      * Update Data Handler
      */
-    function DataHandler(name, value){
+    function dataHandler(name, value){
         let newState = Object.assign({}, data); 
         let customfields = (data.custom)? data.custom : {};
 
@@ -254,17 +254,17 @@ function Form(props)
     function changeDateTime(name,event){
         let dateTime = '';
         if(event){
-            var date = event.toISOString().substring(0, 10);
-            var time = event.getHours() + ':' + String(event.getMinutes()).padStart(2, '0');
+            var date = date = event.getFullYear() + '-' + ('0' + (event.getMonth() + 1)).slice(-2) + '-' + ('0' + event.getDate()).slice(-2);
+            var time = ('0' + event.getHours()).slice(-2) + ':' + ('0' + event.getMinutes()).slice(-2) + ':00';
             dateTime = date + ' ' + time;
         }
-        DataHandler(name,dateTime);
+        dataHandler(name,dateTime);
     }
     
     //remove characters
     function changeNumber(name,event){
         const result = event.target.value.replace(/\D/g, '');
-        DataHandler(name,result);
+        dataHandler(name,result);
     }
     
     //change Date formate
@@ -273,7 +273,7 @@ function Form(props)
         if(event){
             date = event.getFullYear() + '-' + ('0' + (event.getMonth() + 1)).slice(-2) + '-' + ('0' + event.getDate()).slice(-2);
         }
-        DataHandler(name, date);
+        dataHandler(name, date);
     }
 
     //change Time formate
@@ -282,9 +282,28 @@ function Form(props)
         if(event){
             time = ('0' + event.getHours()).slice(-2) + ':' + ('0' + event.getMinutes()).slice(-2) + ':00';
         }
-        DataHandler(name, time);
+        dataHandler(name, time);
     }
 
+    //multi-select entires
+    function addMultiselect(name, event){
+        let value = event.target.value;
+        let multiValue = '';
+        if(value){
+            let index = multiselect.indexOf(value);
+            if(index == -1){
+                multiselect.push(value);
+            }else{
+                multiselect.splice(index,1);
+            }
+            multiValue = multiselect;
+        }else{
+            multiValue = [];
+            setMultiselect([]);
+        }
+        dataHandler(name, multiValue);
+    }
+;
     return (
         <Transition.Root show={open} as={Fragment}>
             <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => {}} >
@@ -333,7 +352,7 @@ function Form(props)
                                         {fields && fields.map((field_info,index) => { 
                                             let element = ''; 
                                             let readOnly = true;
-                                            if(data.is_custom == '1' && data.module_name == 'Contact' && data.field_type == 'dropdown'){
+                                            if((data.is_custom == '1' && data.field_type == 'dropdown') || (data.is_custom == '1' && data.field_type == 'multiselect') ){
                                                 addSelectableField();
                                             }
                                             var field_value = data[field_info.field_name];
@@ -414,7 +433,7 @@ function Form(props)
                                                         name={field_info.field_name}
                                                         options={field_info.options ? field_info.options : {}}
                                                         handleChange={handleChange}
-                                                        emptyOption={field_info.field_name == 'field_group' ? 'General' : ''}
+                                                        emptyOption={field_info.field_name == 'field_group' ? 'General' : 'Select'}
                                                         value={field_value}
                                                         required={field_info.is_mandatory === 1 ? true : false}
                                                         readOnly={(readOnly) ? '' : 'disabled'}
@@ -446,7 +465,7 @@ function Form(props)
                                                      handleChange={(event) => changeNumber(field_info.field_name,event)}
                                                      />
                                                      break;
-                                                case 'date&time':
+                                                case 'datetime':
                                                     element = <DateTime 
                                                     id={field_info.field_name}
                                                     name={field_info.field_name}
@@ -475,8 +494,8 @@ function Form(props)
                                                     id={field_info.field_name}
                                                     name={field_info.field_name}
                                                     options={field_info.options ? field_info.options : {}}
-                                                    handleChange={handleChange}
-                                                    emptyOption={field_info.field_name == 'field_group' ? 'General' : ''}
+                                                    handleChange={(event) => addMultiselect(field_info.field_name,event)}
+                                                    emptyOption={'Select'}
                                                     value={field_value}
                                                     required={field_info.is_mandatory === 1 ? true : false}
                                                     readOnly={(readOnly) ? '' : 'disabled'}
