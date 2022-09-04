@@ -18,6 +18,7 @@ import {
     ChevronRightIcon,
     ChevronLeftIcon,
     ServerIcon,
+    EyeIcon
 } from "@heroicons/react/outline";                                                                      
 import SelectCompany from "@/Pages/Company/SelectCompany";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
@@ -38,6 +39,13 @@ const navigation = [
         icon: IdentificationIcon,
         show: ['all'],
     },    
+    {
+        name: "Opportunity",
+        href: route("listOpportunity"),
+        icon: EyeIcon,
+        show: ['all'],
+    },    
+    
     {
         name: "Chat",
         href: route("chat_list"),

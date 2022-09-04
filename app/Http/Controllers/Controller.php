@@ -13,6 +13,7 @@ use App\Models\Field;
 use App\Models\FieldGroup;
 use Cache;
 use App\Models\Contact;
+use App\Models\Opportunity;
 use App\Models\Service;
 
 class Controller extends BaseController
@@ -33,7 +34,7 @@ class Controller extends BaseController
         $baseTable = $module->getTable();
        
         $moduleName = class_basename($module);
-
+        
         // Search
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
 
@@ -51,9 +52,10 @@ class Controller extends BaseController
 
         // Get company selected by the user.
         $companyId = Cache::get('selected_company_'. $user->id);
+        
         // If user is not related to any company, abort the below process
         $columnlist = Cache::get($moduleName.'selected_column_list_'. $user->id);
-
+       
       
         if(!$companyId) {
             abort(403);
@@ -122,7 +124,7 @@ class Controller extends BaseController
             $query->where('company_user.user_id', $user_id);
         }
         
-        // Show only Contact module records
+        // Show only Contact,Opportunity module records
         if($moduleName == 'Field') {           
             $mod=$request->has('mod') && $request->get('mod')?$request->get('mod'):'';       
           if($mod)         

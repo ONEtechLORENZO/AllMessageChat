@@ -332,7 +332,7 @@ function Form(props)
                                         {fields && fields.map((field_info,index) => { 
                                             let element = ''; 
                                             let readOnly = true;
-                                            if(data.is_custom == '1' && data.module_name == 'Contact' && data.field_type == 'dropdown'){
+                                            if(data.is_custom == '1' && data.module_name == 'Contact' || data.module_name == 'Opportunity' && data.field_type == 'dropdown'){
                                                 addSelectableField();
                                             }
                                             var field_value = data[field_info.field_name];

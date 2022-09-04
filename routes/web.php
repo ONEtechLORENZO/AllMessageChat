@@ -16,6 +16,7 @@ use App\Http\Controllers\FormController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\OpportunityController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\FieldController;
 use App\Http\Controllers\CompanyController;
@@ -110,13 +111,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/addnotes/{module}/{id}', [NoteController::class, 'addNotes'])->name('add_Notes');
     Route::get('/contacts', [ContactController::class, 'index'])->name('listContact');
     Route::delete('/contact/delete/{id}', [ContactController::class, 'destroy'])->name('deleteContact');
-
     Route::get('/contact/{id}', [ContactController::class, 'show'])->name('detailContact');
     Route::post('/updateContact/{id}', [ContactController::class, 'update'])->name('updateContact');
     Route::post('/updateContact', [ContactController::class, 'store'])->name('storeContact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
   
+    //Opportunity
+    Route::get('/opportunities', [OpportunityController::class, 'index'])->name('listOpportunity');
+    Route::delete('/opportunity/delete/{id}', [OpportunityController::class, 'destroy'])->name('deleteOpportunity');
+ //   Route::get('/opportunity/{id}', [OpportunityController::class, 'show'])->name('detailOpportunity');
+    Route::post('/updateOpportunity/{id}', [OpportunityController::class, 'update'])->name('updateOpportunity');
+    Route::post('/updateOpportunity', [OpportunityController::class, 'store'])->name('storeOpportunity');
+    Route::get('/getOpportunityDetail', [OpportunityController::class, 'getContactData'])->name('editOpportunity');
+   
+    
     // Filter
     Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');
     Route::post('/storeFilter', [FilterController::class, 'storeFilter'])->name('store_filter');
