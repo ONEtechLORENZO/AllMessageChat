@@ -24,6 +24,8 @@ use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\UserInviteController;
 use App\Http\Controllers\FieldGroupController;
 use App\Http\Controllers\ChatListContactController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\LineItemController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsGlobalAdmin;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -195,6 +197,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Automation
     Route::get('/automation', [UserController::class, 'automation'])->name('automation');
+
+    //Order
+    Route::get('/orders', [OrderController::class, 'index'])->name('listOrder');
+    
+    //LineItem
+    Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');
 
 });
 
