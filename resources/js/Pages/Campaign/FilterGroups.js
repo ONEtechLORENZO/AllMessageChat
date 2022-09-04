@@ -250,7 +250,7 @@ function FilterGroups (props) {
         }
         
         var advancedSearch = JSON.stringify(filter);
-        var url = route('searchfilter') + '?filter='+advancedSearch + '&from=campignfilter';
+        var url = route('searchfilter') + '?filter='+advancedSearch + '&from=campaignfilter';
 
         Axios.get(url).then((response) => {
             props.setOpenlist(true);

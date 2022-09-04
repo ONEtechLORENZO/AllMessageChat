@@ -20,7 +20,7 @@ use App\Http\Controllers\OpportunityController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\FieldController;
 use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\CampignController;
+use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\UserInviteController;
 use App\Http\Controllers\FieldGroupController;
 use App\Http\Controllers\ChatListContactController;
@@ -176,13 +176,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/updateField/{id}',[FieldController::class, 'update'])->name('updateField');
     Route::delete('/deleteField/{id}',[FieldController::class, 'destroy'])->name('deleteField');
 
-    //Campign
-    Route::get('/campaigns',[CampignController::class, 'index'])->name('listCampign');
-    Route::post('/campaign/store',[Campigncontroller::class, 'store'])->name('storeCampign');
-    Route::get('/campaign/detail/{id}',[CampignController::class, 'show'])->name('detailCampign');
-    Route::get('/campaign/search',[CampignController::class, 'searchRecords'])->name('searchfilter');
-    Route::delete('/deleteCampaign/{id}',[CampignController::class, 'destroy'])->name('deleteCampign');
-    Route::get('/campaign/company/{service}',[CampignController::class, 'getCompanyName'])->name('get_company_name');
+    //Campaign
+    Route::get('/campaigns',[CampaignController::class, 'index'])->name('listCampaign');
+    Route::post('/campaign/store',[Campaigncontroller::class, 'store'])->name('storeCampaign');
+    Route::get('/campaign/detail/{id}',[CampaignController::class, 'show'])->name('detailCampaign');
+    Route::get('/campaign/search',[CampaignController::class, 'searchRecords'])->name('searchfilter');
+    Route::delete('/deleteCampaign/{id}',[CampaignController::class, 'destroy'])->name('deleteCampaign');
+    Route::get('/campaign/company/{service}',[CampaignController::class, 'getCompanyName'])->name('get_company_name');
 
     // Impersonate User
     Route::get('/user/getUserSession',[UserController::class, 'getUserSession'])->name('get_session_value');

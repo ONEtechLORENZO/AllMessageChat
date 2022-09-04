@@ -136,7 +136,7 @@ class Controller extends BaseController
         // To skip the duplicates
         $query->groupBy("{$baseTable}.id");
         
-        if($from == 'campignfilter'){
+        if($from == 'campaignfilter'){
             
             $module = new Contact();
             $headers = $module->getListViewFields();

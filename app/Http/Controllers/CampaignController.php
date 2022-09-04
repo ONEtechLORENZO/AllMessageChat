@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use Inertia\Inertia;
-use App\Models\Campign;
-use App\Models\Contact;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Redirect;
 use Cache;
-use App\Models\Taggable;
+use Inertia\Inertia;
+use App\Models\Account;
+use App\Models\Campaign;
+use App\Models\Contact;
+use App\Http\Controllers\Controller;
 use App\Models\Msg;
 use App\Http\Controllers\MsgController;
-use App\Models\Account;
+use App\Models\Taggable;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 
-class CampignController extends Controller
+class CampaignController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -30,13 +30,13 @@ class CampignController extends Controller
             'scheduled_at' => ['label' => __('Scheduled'), 'type' => 'text'],
         ];
 
-        $module = new Campign();
+        $module = new Campaign();
         $listViewData = $this->listView($request, $module, $list_view_columns);
 
         $moduleData = [
             'singular' => __('Campaign'),
             'plural' => __('Campaigns'),
-            'module' => 'Campign',
+            'module' => 'Campaign',
             'current_page' => 'Campaigns', 
             // Actions
             'actions' => [
@@ -53,7 +53,7 @@ class CampignController extends Controller
         ];
         
         $data = array_merge($moduleData, $listViewData);
-        return Inertia::render('Campign/List', $data);
+        return Inertia::render('Campaign/List', $data);
     }
 
     /**
@@ -72,7 +72,7 @@ class CampignController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, Campign $campaign)
+    public function store(Request $request, Campaign $campaign)
     { 
         if($request){
             $request->validate([
@@ -83,12 +83,12 @@ class CampignController extends Controller
         $user_id = $request->user()->id;
         $company_id = Cache::get('selected_company_'.$user_id);
         $translator = Controller::getTranslations();
-        $filter = Controller::getFiltersInfo($company_id, $user_id, 'Campign', '');
+        $filter = Controller::getFiltersInfo($company_id, $user_id, 'Campaign', '');
         $count = '';
 
         if($request->id){
  
-            $campaign = Campign::findOrFail($request->id);
+            $campaign = Campaign::findOrFail($request->id);
             $currentPage = $request->tab;
                  
             if($request->name){
@@ -118,7 +118,7 @@ class CampignController extends Controller
                 $campaign->status = 'new';
                 $campaign->save();
 
-                return Redirect::route('listCampign');
+                return Redirect::route('listCampaign');
             }
 
             $campaign->current_page = $currentPage + 1;
@@ -139,10 +139,10 @@ class CampignController extends Controller
             $campaign->save();
         }
 
-        return Inertia::render('Campign/Form',[
+        return Inertia::render('Campaign/Form',[
             'translator' => $translator, 
             'filter' => $filter,
-            'campign' => $campaign,
+            'campaign' => $campaign,
             'status' => $campaign->status,
             'count' => $count,
         ]); 
@@ -151,36 +151,36 @@ class CampignController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Campign  $campign
+     * @param  \App\Models\Campaign  $campaign
      * @return \Illuminate\Http\Response
      */
     public function show(Request $request, $id)
     {
         $user_id = $request->user()->id;
         $company_id = Cache::get('selected_company_'.$user_id);
-        $campign = Campign::where('id',$request->id)
+        $campaign = Campaign::where('id',$request->id)
                    ->where('company_id', $company_id)
                    ->first();
          
-        if(!$campign){
+        if(!$campaign){
             about(401);
         } 
         
         $count = '';
         $companyName = [];
-        $status = $campign->status;
-        $conditions = $campign->conditions;
+        $status = $campaign->status;
+        $conditions = $campaign->conditions;
   
         if($conditions){
             $searchData = json_decode($conditions);
-            $campign->conditions = $searchData;
+            $campaign->conditions = $searchData;
             $contacts = $this->getTotalContact($searchData);
             $count = count($contacts);
         };
       
-        if($campign->service){
+        if($campaign->service){
             $accounts = Account::where('company_id',$company_id)
-                        ->where('service',$campign->service)          
+                        ->where('service',$campaign->service)          
                         ->get();
 
             foreach($accounts as $account){
@@ -190,12 +190,12 @@ class CampignController extends Controller
 
         $user_id = $request->user()->id;
         $translator = Controller::getTranslations();
-        $filter = Controller::getFiltersInfo($company_id, $user_id, 'Campign', '');
+        $filter = Controller::getFiltersInfo($company_id, $user_id, 'Campaign', '');
     
-        return Inertia::render('Campign/Form',[
+        return Inertia::render('Campaign/Form',[
             'translator' => $translator, 
             'filter' => $filter, 
-            'campign' => $campign, 
+            'campaign' => $campaign, 
             'status' => $status,
             'count' => $count, 
         ]);
@@ -204,11 +204,11 @@ class CampignController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Campign  $campign
+     * @param  \App\Models\Campaign  $campaign
      * @return \Illuminate\Http\Response
      */
-    public function edit(Request $request,$id)
-    {     
+    public function edit(Campaign $campaign)
+    {
         //
     }
 
@@ -216,10 +216,10 @@ class CampignController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Campign  $campign
+     * @param  \App\Models\Campaign  $campaign
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Campign $campign)
+    public function update(Request $request, Campaign $campaign)
     {
         //
     }
@@ -227,14 +227,14 @@ class CampignController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Campign  $campign
+     * @param  \App\Models\Campaign  $campaign
      * @return \Illuminate\Http\Response
      */
     public function destroy(Request $request, $id)
     {
-        $campign = Campign::find($id);
-        $campign->delete();
-        return Redirect::route('listCampign');
+        $campaign = Campaign::find($id);
+        $campaign->delete();
+        return Redirect::route('listCampaign');
     }
 
     public function searchRecords(Request $request){

@@ -8,7 +8,7 @@ import Content from "./Step3";
 import Schedule from "./Step4";
 import axios from "axios";
 
-export default function Campign(props) {
+export default function Campaign(props) {
   const [openTab, setOpenTab] = useState();
   const [data, setData] = useState([]);
   const [status, setStatus] = useState();
@@ -18,12 +18,12 @@ export default function Campign(props) {
   const [scheduleTime, setScheduleTime] = useState();
   
   useEffect(() => {
-    setOpenTab(props.campign.current_page);
-    setData(props.campign);
+    setOpenTab(props.campaign.current_page);
+    setData(props.campaign);
     setStatus(props.status);
     setRecordCount(props.count);
-    if(props.campign.account_id){
-      getCompanyName(props.campign.service)
+    if(props.campaign.account_id){
+      getCompanyName(props.campaign.service)
     }
   },[props]);
 
@@ -45,7 +45,7 @@ export default function Campign(props) {
       setData(newState);
   }
 
-  function saveCampign(){
+  function saveCampaign(){
 
     data['scheduled_at'] = scheduleTime;
     data['conditions'] = conditions;
@@ -57,7 +57,7 @@ export default function Campign(props) {
       return false;
     }
  
-    Inertia.post(route('storeCampign'), data, {
+    Inertia.post(route('storeCampaign'), data, {
         onSuccess: (response) => {
           
         },
@@ -198,7 +198,7 @@ export default function Campign(props) {
                    <Information
                     data={data}
                     handleChange={handleChange}
-                    saveCampign={saveCampign}
+                    saveCampaign={saveCampaign}
                    />
               </div>
               <div
@@ -211,7 +211,7 @@ export default function Campign(props) {
                   campagins={props}
                   data={data}
                   handleChange={handleChange}
-                  saveCampign={saveCampign}
+                  saveCampaign={saveCampaign}
                   previous={setOpenTab}
                   setConditions={setConditions}
                   setRecordCount={setRecordCount}
@@ -228,7 +228,7 @@ export default function Campign(props) {
                  <Content 
                    data={data}
                    handleChange={handleChange}
-                   saveCampign={saveCampign}
+                   saveCampaign={saveCampaign}
                    previous={setOpenTab}
                    companyName={companyName}
                  />
@@ -243,7 +243,7 @@ export default function Campign(props) {
                   data={data}
                   previous={setOpenTab}
                   handleChange={handleChange}
-                  saveCampign={saveCampign}
+                  saveCampaign={saveCampaign}
                   status={status}
                   records={recordCount}
                   company={companyName}
