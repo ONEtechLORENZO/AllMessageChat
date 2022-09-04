@@ -44,7 +44,7 @@ function Trigger(props){
                                           <div className="sm:flex sm:items-start">
                                               <div className="mt-3 text-center sm:mt-0 sm:text-left">
                                                   <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                                                      Triggers
+                                                      {props.heading}
                                                   </Dialog.Title>
                                               </div>
                                           </div>
@@ -57,7 +57,7 @@ function Trigger(props){
                                                  
                                                   <div className="space-y-4">
                                                     <ul class="grid gap-6 w-full md:grid-cols-2">
-                                                        {Object.entries(props.trigers).map(([key, plan]) => {
+                                                        {Object.entries(props.options).map(([key, plan]) => {
                                                           return(
                                                             <li className="border-1 border-gray-100">
                                                                 <input type="radio" id={plan.name} name="trigger" value={plan.name} class="hidden peer" onClick={() => props.saveData(plan.name)} required />
@@ -90,7 +90,7 @@ function Trigger(props){
                                         <button
                                             type="button"
                                             className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                                            onClick={() => props.setShowTrigger(false)}
+                                            onClick={() => props.setShowOptions(false)}
                                             ref={cancelButtonRef}
                                         >
                                             Cancel
