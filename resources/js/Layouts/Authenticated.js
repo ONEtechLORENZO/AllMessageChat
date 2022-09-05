@@ -67,7 +67,7 @@ const navigation = [
     },
     {
         name: "Campaigns",
-        href: route("listCampign"),
+        href: route("listCampaign"),
         icon: SpeakerphoneIcon,
         show: ['all'],
     },
