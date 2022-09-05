@@ -16,13 +16,17 @@ use App\Http\Controllers\FormController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\OpportunityController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\FieldController;
 use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\CampignController;
+use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\UserInviteController;
 use App\Http\Controllers\FieldGroupController;
 use App\Http\Controllers\ChatListContactController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\LineItemController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsGlobalAdmin;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -110,13 +114,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/addnotes/{module}/{id}', [NoteController::class, 'addNotes'])->name('add_Notes');
     Route::get('/contacts', [ContactController::class, 'index'])->name('listContact');
     Route::delete('/contact/delete/{id}', [ContactController::class, 'destroy'])->name('deleteContact');
-
     Route::get('/contact/{id}', [ContactController::class, 'show'])->name('detailContact');
     Route::post('/updateContact/{id}', [ContactController::class, 'update'])->name('updateContact');
     Route::post('/updateContact', [ContactController::class, 'store'])->name('storeContact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
   
+    //Opportunity
+    Route::get('/opportunities', [OpportunityController::class, 'index'])->name('listOpportunity');
+    Route::delete('/opportunity/delete/{id}', [OpportunityController::class, 'destroy'])->name('deleteOpportunity');
+ //   Route::get('/opportunity/{id}', [OpportunityController::class, 'show'])->name('detailOpportunity');
+    Route::post('/updateOpportunity/{id}', [OpportunityController::class, 'update'])->name('updateOpportunity');
+    Route::post('/updateOpportunity', [OpportunityController::class, 'store'])->name('storeOpportunity');
+    Route::get('/getOpportunityDetail', [OpportunityController::class, 'getContactData'])->name('editOpportunity');
+   
+    //Product
+    Route::get('/products', [ProductController::class, 'index'])->name('listProduct');
+    Route::delete('/product/delete/{id}', [ProductController::class, 'destroy'])->name('deleteProduct');
+ //   Route::get('/product/{id}', [ProductController::class, 'show'])->name('detailProduct');
+    Route::post('/updateProduct/{id}', [ProductController::class, 'update'])->name('updateProduct');
+    Route::post('/updateProduct', [ProductController::class, 'store'])->name('storeProduct');
+    Route::get('/getProductDetail', [ProductController::class, 'getContactData'])->name('editProduct');
+   
+    
+    
     // Filter
     Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');
     Route::post('/storeFilter', [FilterController::class, 'storeFilter'])->name('store_filter');
@@ -167,13 +188,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/updateField/{id}',[FieldController::class, 'update'])->name('updateField');
     Route::delete('/deleteField/{id}',[FieldController::class, 'destroy'])->name('deleteField');
 
-    //Campign
-    Route::get('/campaigns',[CampignController::class, 'index'])->name('listCampign');
-    Route::post('/campaign/store',[Campigncontroller::class, 'store'])->name('storeCampign');
-    Route::get('/campaign/detail/{id}',[CampignController::class, 'show'])->name('detailCampign');
-    Route::get('/campaign/search',[CampignController::class, 'searchRecords'])->name('searchfilter');
-    Route::delete('/deleteCampaign/{id}',[CampignController::class, 'destroy'])->name('deleteCampign');
-    Route::get('/campaign/company/{service}',[CampignController::class, 'getCompanyName'])->name('get_company_name');
+    //Campaign
+    Route::get('/campaigns',[CampaignController::class, 'index'])->name('listCampaign');
+    Route::post('/campaign/store',[Campaigncontroller::class, 'store'])->name('storeCampaign');
+    Route::get('/campaign/detail/{id}',[CampaignController::class, 'show'])->name('detailCampaign');
+    Route::get('/campaign/search',[CampaignController::class, 'searchRecords'])->name('searchfilter');
+    Route::delete('/deleteCampaign/{id}',[CampaignController::class, 'destroy'])->name('deleteCampaign');
+    Route::get('/campaign/company/{service}',[CampaignController::class, 'getCompanyName'])->name('get_company_name');
 
     // Impersonate User
     Route::get('/user/getUserSession',[UserController::class, 'getUserSession'])->name('get_session_value');
@@ -186,6 +207,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Automation
     Route::get('/automation', [UserController::class, 'automation'])->name('automation');
+
+    //Order
+    Route::get('/orders', [OrderController::class, 'index'])->name('listOrder');
+    
+    //LineItem
+    Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');
 
 });
 

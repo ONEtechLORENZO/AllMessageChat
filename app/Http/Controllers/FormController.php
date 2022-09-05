@@ -71,7 +71,7 @@ class FormController extends Controller
             'module_name'=> $moduleName, 
             'field_name' => $fieldName, 
         ];
-        if($moduleName == 'Contact'){
+        if($moduleName == 'Contact' || $moduleName == 'Opportunity' ){
             $whereCondition['user_id'] = $request->user()->id ;
         }
 

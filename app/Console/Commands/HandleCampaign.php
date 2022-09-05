@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
-use App\Models\Campign;
+use App\Models\Campaign;
 use App\Models\Contact;
 use App\Models\Account;
 use App\Models\Msg;
@@ -49,11 +49,11 @@ class HandleCampaign extends Command
 
         // Look for campaign with in_progress status
         $status = 'Inprogress';
-        $campaign = Campign::where('status',$status)->first(); 
+        $campaign = Campaign::where('status',$status)->first(); 
         if(!$campaign){
             // Look for new campaign
             $status = 'new';
-            $campaign = Campign::where('status',$status)->first();   
+            $campaign = Campaign::where('status',$status)->first();   
         }
 
         if($campaign){
