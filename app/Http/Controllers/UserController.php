@@ -1576,6 +1576,6 @@ class UserController extends Controller
 
     public function automation(Request $request)
     {
-        return Inertia::render('Automation/Flow');
+        return Inertia::render('Automation/AutomationFlow');
     }
 }
