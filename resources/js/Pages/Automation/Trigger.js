@@ -42,11 +42,23 @@ function Trigger(props){
                                   <Dialog.Panel className="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-xl sm:w-full">
                                       <div className="bg-gray-50 px-4 pt-5 pb-4 sm:p-4 sm:pb-4">
                                           <div className="sm:flex sm:items-start">
-                                              <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                                                  <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                                                      {props.heading}
-                                                  </Dialog.Title>
-                                              </div>
+                                                <div className="flex justify-between w-full">
+                                                    <div className="mt-3 text-center sm:mt-0 sm:text-left">
+                                                        <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
+                                                        {props.heading}
+                                                        </Dialog.Title>
+                                                    </div>
+                                                    <div>
+                                                        <button
+                                                            className="border-1 border-indigo-300"
+                                                            onClick={() => props.setShowOptions(false)}
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
                                           </div>
                                       </div>
       

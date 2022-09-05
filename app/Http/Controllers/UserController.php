@@ -1574,8 +1574,20 @@ class UserController extends Controller
         return Redirect::route('dashboard');
     }
 
+    /**
+     * Automation
+     */
     public function automation(Request $request)
     {
         return Inertia::render('Automation/Flow');
+    }
+
+    /**
+     * Return account List based on the company
+     */
+    public function getAccountList(Request $request)
+    {
+        $companyId = Cache::get('selected_company_' . $request->user()->id);
+        $accountList = Account::where('company_id', $companyId)->get();
     }
 }

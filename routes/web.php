@@ -186,6 +186,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Automation
     Route::get('/automation', [UserController::class, 'automation'])->name('automation');
+    Route::get('/getAccountList', [UserController::class, 'getAccountList'])->name('get_account_list');
 
 });
 
