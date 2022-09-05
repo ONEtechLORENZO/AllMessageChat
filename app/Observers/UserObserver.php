@@ -119,8 +119,18 @@ class UserObserver
             [
                 'module_name' => 'Opportunity','field_name' => 'description' ,'field_label' =>'Description','field_type' => 'textarea','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
              ],
-
-
+             [
+                'module_name' => 'Product','field_name' => 'name' ,'field_label' =>'Product Name','field_type' => 'text','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
+             ],
+             [
+                'module_name' => 'Product','field_name' => 'price' ,'field_label' =>'Price','field_type' => 'amount','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
+             ],
+             [
+                'module_name' => 'Product','field_name' => 'description' ,'field_label' =>'Description','field_type' => 'textarea','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
+             ],
+             [
+                'module_name' => 'Product','field_name' => 'product_category','field_label' => 'Product Category','field_type' => 'dropdown','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => json_encode(['software'=>'Software', 'hardware'=>'Hardware'])
+            ],
        ];
 
        return $fields;

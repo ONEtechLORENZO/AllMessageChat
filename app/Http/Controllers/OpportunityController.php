@@ -6,8 +6,6 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
 use Cache;
-use App\Models\Tag;
-use App\Models\Category;
 use App\Models\Field;
 
 class OpportunityController extends Controller

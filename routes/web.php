@@ -17,6 +17,7 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OpportunityController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\FieldController;
 use App\Http\Controllers\CompanyController;
@@ -125,6 +126,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/updateOpportunity', [OpportunityController::class, 'store'])->name('storeOpportunity');
     Route::get('/getOpportunityDetail', [OpportunityController::class, 'getContactData'])->name('editOpportunity');
    
+    //Product
+    Route::get('/products', [ProductController::class, 'index'])->name('listProduct');
+    Route::delete('/product/delete/{id}', [ProductController::class, 'destroy'])->name('deleteProduct');
+ //   Route::get('/product/{id}', [ProductController::class, 'show'])->name('detailProduct');
+    Route::post('/updateProduct/{id}', [ProductController::class, 'update'])->name('updateProduct');
+    Route::post('/updateProduct', [ProductController::class, 'store'])->name('storeProduct');
+    Route::get('/getProductDetail', [ProductController::class, 'getContactData'])->name('editProduct');
+   
+    
     
     // Filter
     Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');

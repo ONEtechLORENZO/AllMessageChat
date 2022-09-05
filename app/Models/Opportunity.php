@@ -4,10 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Tag;
-use App\Models\Service;
-use App\Models\Category;
-use App\Models\Note;
+
 
 class Opportunity extends Model
 {

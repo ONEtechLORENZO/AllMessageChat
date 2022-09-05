@@ -22,12 +22,15 @@ class FieldSeeder extends Seeder
 
         $moduleOptions = $this->getModuleName();
         $fieldTypes = $this->getFieldType();
-        $salesstage=$this->getSalesStage();
+        $salesStage=$this->getSalesStage();
+        $productCategory=$this->getProductCategory();
         
         $this->createFields('Price', 'country_code', 'Country', 'dropdown', '1', $countryCodes, 'false');
         $this->createFields('Field', 'module_name', 'Module Name', 'dropdown', '1', $moduleOptions, 'true');
         $this->createFields('Field', 'field_type', 'Field Type', 'dropdown', '1', $fieldTypes, 'true');
-        $this->createFields('Opportunity', 'sales_stage', 'Sales Stage', 'dropdown', '1', $salesstage, 'true');
+        $this->createFields('Opportunity', 'sales_stage', 'Sales Stage', 'dropdown', '1', $salesStage, 'true');
+        $this->createFields('Product', 'product_category', 'Product Category', 'dropdown', '1', $productCategory, 'true');
+
         DB::table('fields')->insert([
             
              //Price
@@ -62,9 +65,13 @@ class FieldSeeder extends Seeder
             ['module_name' => 'Opportunity', 'field_name' => 'name', 'field_label' => 'Opportunity Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'Opportunity', 'field_name' => 'amount', 'field_label' => 'Amount', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'Opportunity', 'field_name' => 'expected_close_date', 'field_label' => 'Expected Close Date', 'field_type' => 'date', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
-            
             ['module_name' => 'Opportunity', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
            
+             //Product
+             ['module_name' => 'Product', 'field_name' => 'name', 'field_label' => 'Product Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
+             ['module_name' => 'Product', 'field_name' => 'price', 'field_label' => 'Price', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
+             ['module_name' => 'Product', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
+             
             //Campaign
             ['module_name' => 'Campign', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
 
@@ -314,22 +321,33 @@ class FieldSeeder extends Seeder
     {
         $module = array(
             'Contact' => 'Contact',
-            'Opportunity' =>'Opportunity'
+            'Opportunity' =>'Opportunity',
+            'Product' =>'Product'            
         );
         return $module;
     }
 
     public function getSalesStage()
     {
-        $salesstage = array(
+        $salesStage = array(
             'Prospecting' => 'Prospecting',
             'Qualification' =>'Qualification',
             'Need Analysis' => 'Need Analysis',
             'Closed Won' => 'Closed Won',
             'Closed Lost' => 'Closed Lost'
         );
-        return $salesstage;
+        return $salesStage;
     }
+
+    public function getProductCategory()
+    {
+        $productCategory = array(
+            'Software' => 'Software',
+            'Harddware' => 'Hardware',            
+        );
+        return $productCategory;
+    }
+
 
     public function getFieldType()
     {
