@@ -814,7 +814,6 @@ select {
 	position: relative;
 }
 .sticky {
-	position: -webkit-sticky;
 	position: sticky;
 }
 .inset-0 {
