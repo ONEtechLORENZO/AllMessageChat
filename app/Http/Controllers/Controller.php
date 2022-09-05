@@ -124,7 +124,7 @@ class Controller extends BaseController
             $query->where('company_user.user_id', $user_id);
         }
         
-        // Show only Contact,Opportunity module records
+        // Show only module records
         if($moduleName == 'Field') {           
             $mod=$request->has('mod') && $request->get('mod')?$request->get('mod'):'';       
           if($mod)         

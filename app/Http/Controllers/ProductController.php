@@ -16,9 +16,6 @@ class ProductController extends Controller
     public $default_sort_by = 'created_at';
 
     public $default_sort_order = 'desc';
-
-   
-
     /**
      * Display a listing of the resource.
      *
@@ -42,7 +39,8 @@ class ProductController extends Controller
                 'edit' => true,
                 'delete' => true,                
                 'search' => true,                
-                'select_field'=>true,
+                'select_field'=> true,
+                'detail' => true,
             ],
         ];
         
@@ -101,7 +99,7 @@ class ProductController extends Controller
         $headers = $this->getModuleHeader($companyId , 'Product');
         
         return Inertia::render('Product/Detail', [
-            'Product' => $product,            
+            'record' => $product,            
             'headers' => $headers,
             'translator' => [
                 'Detail' => __('Detail'),
@@ -155,12 +153,6 @@ class ProductController extends Controller
         echo json_encode(['record' => $product]);
         die;
     }
-
-  
-
-   
-
-   
    
     public function saveProduct($request){
 
@@ -213,5 +205,4 @@ class ProductController extends Controller
     }
     
 
-   
 }
