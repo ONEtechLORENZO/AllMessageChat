@@ -15,9 +15,6 @@ class OpportunityController extends Controller
     public $default_sort_by = 'created_at';
 
     public $default_sort_order = 'desc';
-
-   
-
     /**
      * Display a listing of the resource.
      *
@@ -42,6 +39,8 @@ class OpportunityController extends Controller
                 'delete' => true,                
                 'search' => true,                
                 'select_field'=>true,
+                'detail' => true,
+
             ],
         ];
         
@@ -49,16 +48,7 @@ class OpportunityController extends Controller
         return Inertia::render('Opportunity/List', $data);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
+   
     /**
      * Store a newly created resource in storage.
      *
@@ -75,7 +65,7 @@ class OpportunityController extends Controller
             $url = route('detail'. $request->parent_module).'?id='.$request->parent_id.'&page=1';
             return Redirect::to($url);
         } else {
-            return Redirect::route('listOpportunity', $opportunity_id);
+            return Redirect::route('detailOpportunity', $opportunity_id);
         }
     }
 
@@ -100,7 +90,7 @@ class OpportunityController extends Controller
         $headers = $this->getModuleHeader($companyId , 'Opportunity');
         
         return Inertia::render('Opportunity/Detail', [
-            'Opportunity' => $opportunity,            
+            'record' => $opportunity,            
             'headers' => $headers,
             'translator' => [
                 'Detail' => __('Detail'),
@@ -154,13 +144,7 @@ class OpportunityController extends Controller
         echo json_encode(['record' => $opportunity]);
         die;
     }
-
-  
-
-   
-
-   
-   
+    
     public function saveOpportunity($request){
 
         if ($request->id) {

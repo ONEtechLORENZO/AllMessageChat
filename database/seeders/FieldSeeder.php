@@ -36,7 +36,7 @@ class FieldSeeder extends Seeder
         $this->createFields('Opportunity', 'sales_stage', 'Sales Stage', 'dropdown', '1', $salesStage, 'true');
         $this->createFields('Product', 'product_category', 'Product Category', 'dropdown', '1', $productCategory, 'true');
 
-        $this->createFields('Opportunity', 'sales_stage', 'Sales Stage', 'dropdown', '1', $salesstage, 'true');
+        
         $this->createFields('Order', 'status', 'Status', 'dropdown', '1', $orderList, 'false');
 
 

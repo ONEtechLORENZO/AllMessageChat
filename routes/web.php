@@ -123,7 +123,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //Opportunity
     Route::get('/opportunities', [OpportunityController::class, 'index'])->name('listOpportunity');
     Route::delete('/opportunity/delete/{id}', [OpportunityController::class, 'destroy'])->name('deleteOpportunity');
- //   Route::get('/opportunity/{id}', [OpportunityController::class, 'show'])->name('detailOpportunity');
+   Route::get('/opportunity/{id}', [OpportunityController::class, 'show'])->name('detailOpportunity');
     Route::post('/updateOpportunity/{id}', [OpportunityController::class, 'update'])->name('updateOpportunity');
     Route::post('/updateOpportunity', [OpportunityController::class, 'store'])->name('storeOpportunity');
     Route::get('/getOpportunityDetail', [OpportunityController::class, 'getContactData'])->name('editOpportunity');
@@ -131,13 +131,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //Product
     Route::get('/products', [ProductController::class, 'index'])->name('listProduct');
     Route::delete('/product/delete/{id}', [ProductController::class, 'destroy'])->name('deleteProduct');
- //   Route::get('/product/{id}', [ProductController::class, 'show'])->name('detailProduct');
+    Route::get('/product/{id}', [ProductController::class, 'show'])->name('detailProduct');
     Route::post('/updateProduct/{id}', [ProductController::class, 'update'])->name('updateProduct');
     Route::post('/updateProduct', [ProductController::class, 'store'])->name('storeProduct');
     Route::get('/getProductDetail', [ProductController::class, 'getContactData'])->name('editProduct');
    
-    
-    
+    //Order
+   Route::get('/orders', [OrderController::class, 'index'])->name('listOrder');
+   Route::delete('/order/delete/{id}', [OrderController::class, 'destroy'])->name('deleteOrder');
+   Route::get('/order/{id}', [OrderController::class, 'show'])->name('detailOrder');
+   Route::post('/updateOrder/{id}', [OrderController::class, 'update'])->name('updateOrder');
+   Route::post('/updateOrder', [OrderController::class, 'store'])->name('storeOrder');
+   Route::get('/getOrderDetail', [OrderController::class, 'getContactData'])->name('editOrder');
+  
     // Filter
     Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');
     Route::post('/storeFilter', [FilterController::class, 'storeFilter'])->name('store_filter');
@@ -207,10 +213,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Automation
     Route::get('/automation', [UserController::class, 'automation'])->name('automation');
-
-    //Order
-    Route::get('/orders', [OrderController::class, 'index'])->name('listOrder');
-    
+      
     //LineItem
     Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');
 
