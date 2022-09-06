@@ -72,7 +72,6 @@ function AutomationFlow(props)
     // Node position
     const yPos = useRef(0);
 
-
     /**
      * Generate ID
      * 
