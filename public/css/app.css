@@ -1405,6 +1405,10 @@ select {
 	--tw-translate-y: -0.5rem;
 	transform: var(--tw-transform);
 }
+.rotate-180 {
+	--tw-rotate: 180deg;
+	transform: var(--tw-transform);
+}
 .rotate-90 {
 	--tw-rotate: 90deg;
 	transform: var(--tw-transform);
