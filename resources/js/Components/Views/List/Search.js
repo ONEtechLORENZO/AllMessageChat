@@ -10,13 +10,21 @@ function Search(props)
     useEffect(() => {
         setSearch(props.search);
     }, [props.search]);
+    
 
     /**
      * Trigger search
      */
     function triggerSearch()
     {
-        Inertia.get(route('list' + props.module) + '?page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order);
+       if(props.module=="Field" && props.mod!='')
+       {
+        Inertia.get(route('list' + props.module) +'?mod='+ props.mod + '&page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order);
+       }
+        else 
+        {
+       Inertia.get(route('list' + props.module) +'?page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order);
+        }
     }
 
     return (

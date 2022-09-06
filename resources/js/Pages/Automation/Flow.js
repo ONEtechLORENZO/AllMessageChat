@@ -2,6 +2,7 @@ import React, { useState, useCallback, useRef, Fragment, useEffect } from "react
 import Authenticated from '@/Layouts/Authenticated';
 import ReactFlow , {useEdgesState , useNodesState, Controls, Background} from "react-flow-renderer";
 import Trigger from "./Trigger";
+import Action from "./Action";
 
 // Trigers
 const trigers = {
@@ -75,8 +76,10 @@ function Flow(props)
   }, []);
 
   const [showOptions, setShowOptions] = useState(false);
+  
   const [showAction, setShowAction] = useState(false);
-  const [selectTrigger, setSelectedTriger] = useState();
+  const [actionData, setActionData] = useState();
+
   const [data , setData] = useState();
   const [options , setOptions] = useState();
   const [heading  , setHeading] = useState();
@@ -102,16 +105,27 @@ function Flow(props)
         setNodes(newNodes);
         addNode(currentNode, 'End', 'output');
       } else if((currentNode.type == 'action') && node.type == currentNode.type ) {
+        
+        // Get Action input
+        let newData = Object.assign({}, actionData); 
+        newData['heading'] = actions[value].label;
+        newData['type'] = value;
+        setActionData(newData);
+        setShowAction(true);
+
+
         newNodes[key].data.label = <strong> {actions[value].label} </strong>
         setNodes(newNodes);
       }  
 
     });
+    setShowOptions(false);
     if(currentNode.type == 'add_action' ){
+
       setNodes(newNodes);
       addNode(currentNode, processTypes[value].label , value);
     }
-    setShowOptions(false);
+    
   }
 
   /**
@@ -155,8 +169,6 @@ function Flow(props)
       addEdge(source , target);
     }
     
-
-
   }, []);
 
   /**
@@ -190,6 +202,7 @@ function Flow(props)
       setShowOptions(true);
     }
     setCurrentNode(node);
+    console.log(currentNode);
 
    }
 
@@ -201,6 +214,7 @@ function Flow(props)
         setShowOptions(true);
       }
       setCurrentNode(node);
+      console.log(currentNode);
 
    }
 
@@ -239,6 +253,14 @@ function Flow(props)
             options={options}
             saveData={saveData}
             setShowOptions={setShowOptions}
+          />
+        }
+
+        {showAction &&
+          <Action 
+            actionData={actionData}
+            setShowAction={setShowAction}
+
           />
         }
 

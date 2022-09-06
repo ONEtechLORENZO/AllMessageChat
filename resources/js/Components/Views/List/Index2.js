@@ -27,7 +27,7 @@ function ListView(props)
 
     useEffect(() => {
         fetchModuleFields();
-        setRecords(props.records);
+        setRecords(props.records);       
     }, [props.records]);
 
     /**
@@ -154,6 +154,7 @@ function ListView(props)
                             <Search 
                                 module={props.module} 
                                 search={props.search}
+                                mod={props.mod}                             
                                 currentPage={props.paginator.currentPage}
                                 sort_by={props.sort_by}
                                 sort_order={props.sort_order}

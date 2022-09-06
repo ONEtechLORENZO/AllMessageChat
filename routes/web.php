@@ -27,6 +27,7 @@ use App\Http\Controllers\FieldGroupController;
 use App\Http\Controllers\ChatListContactController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\LineItemController;
+use App\Http\Controllers\AutomationController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsGlobalAdmin;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -119,7 +120,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/updateContact', [ContactController::class, 'store'])->name('storeContact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
-  
+    
     //Opportunity
     Route::get('/opportunities', [OpportunityController::class, 'index'])->name('listOpportunity');
     Route::delete('/opportunity/delete/{id}', [OpportunityController::class, 'destroy'])->name('deleteOpportunity');
@@ -153,7 +154,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Form
     Route::get('/fetchModuleFields/{module}', [FormController::class, 'fetchModuleFields'])->name('fetchModuleFields');
     Route::get('/field/getFieldOptions',[FormController::class,'getFieldOptions'])->name('get_field_options');
-
+    Route::get('/getRelateContacts', [FormController::class, 'getRelateContacts'])->name('get_relate_contacts_list');
     // Import
     Route::get('/imports', [ImportController::class, 'index'])->name('listImport');
     Route::get('/import/create', [ImportController::class, 'create'])->name('new_import');
@@ -213,8 +214,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/showMore',[Notification::class, 'showMore'])->name('showMore');
 
     // Automation
-    Route::get('/automation', [UserController::class, 'automation'])->name('automation');
-      
+    Route::get('/automations', [AutomationController::class, 'index'])->name('listAutomation');
+    Route::post('/automation/store',[AutomationController::class, 'store'])->name('storeAutomation');
+    Route::post('/automation/update/{id}',[AutomationController::class, 'update'])->name('updateAutomation');
+    Route::get('/automation/create/{id}', [AutomationController::class, 'create'])->name('createAutomation');
+    Route::get('/getAccountList', [AutomationController::class, 'getActionData'])->name('get_account_list');
+
+    //Order
+    Route::get('/orders', [OrderController::class, 'index'])->name('listOrder');
+    
     //LineItem
     Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');
     Route::get('create/lineitem', [LineItemController::class, 'create'])->name('createLineItem');

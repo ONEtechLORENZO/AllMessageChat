@@ -9,7 +9,6 @@ import { Head, useForm, Link } from '@inertiajs/inertia-react';
 import Dropdown from '@/Components/Forms/Dropdown';
 import InputError from '@/Components/Forms/InputError';
 import {defaultPristineConfig} from '@/Pages/Constants';
-import { Tooltip } from '@material-ui/core';
 import notie from 'notie';
 
 function Registration(props) {

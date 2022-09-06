@@ -17,6 +17,8 @@ use App\Http\Controllers\TemplateController;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Models\Msg;
+use App\Models\Tag;
+use App\Models\Category;
 use App\Models\Price;
 use App\Models\WebhookEvent;
 use Illuminate\Support\Facades\Auth;
@@ -902,7 +904,6 @@ class UserController extends Controller
     {
         $template = Template::where('account_id', $account_id)
             ->where('id', $template_id)
-            ->where('account_id', $account_id)
             ->first();
 
         $template->template_name_space = $request->get('template_name_space');
@@ -1574,8 +1575,4 @@ class UserController extends Controller
         return Redirect::route('dashboard');
     }
 
-    public function automation(Request $request)
-    {
-        return Inertia::render('Automation/AutomationFlow');
-    }
 }

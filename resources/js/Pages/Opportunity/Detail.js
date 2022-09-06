@@ -16,8 +16,7 @@ function Detail(props){
     function hideForm() {
         setShowForm(false);
     }
-    console.log('here i am'+props.record)
-
+   
     /**
      * Update contact
      */
