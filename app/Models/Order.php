@@ -10,7 +10,9 @@ class Order extends Model
     use HasFactory;
     protected $table = 'orders';
 
-    
+    protected $casts = [
+        'custom' => 'array',
+    ];
 
     protected $fillable = ['name', 'due_date', 'status','opportunity','company_id', 'description','created_at', 'updated_at'];
 
