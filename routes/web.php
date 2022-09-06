@@ -142,7 +142,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
    Route::get('/order/{id}', [OrderController::class, 'show'])->name('detailOrder');
    Route::post('/updateOrder/{id}', [OrderController::class, 'update'])->name('updateOrder');
    Route::post('/updateOrder', [OrderController::class, 'store'])->name('storeOrder');
-   Route::get('/getOrderDetail', [OrderController::class, 'getContactData'])->name('editOrder');
+   Route::get('/order/detail/{id}', [OrderController::class, 'edit'])->name('editOrder');
+   Route::get('/productPrice/{id}', [OrderController::class , 'getProductPrice'])->name('get_product_price');
   
     // Filter
     Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');
@@ -216,6 +217,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
       
     //LineItem
     Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');
+    Route::get('create/lineitem', [LineItemController::class, 'create'])->name('createLineItem');
 
 });
 

@@ -20,6 +20,7 @@ import 'react-phone-input-2/lib/style.css';
 import Date from './Date';
 import Time from './Time';
 import MultiSelect from './MultiSelect';
+import LineItem from '@/Pages/Order/Form';
 
 const defaultConfig = {
     // class of the parent element where the error/success class is added
@@ -47,10 +48,11 @@ function Form(props)
     const [open, setOpen] = useState(true)
     const cancelButtonRef = useRef(null)
     const [fields, setFields] = useState([]);
-    const [phoneNumber, setPhoneNumber] = useState('');
     const [formErrors, setErrors] = useState({});
     const { data, setData, post, processing, errors, reset } = useForm({});
     const [options, setOptions] = useState(null);
+    const [lineItems, setLineItems] = useState([]);
+    const [totalPrice, setTotalPrice] = useState('0.00');
 
     useEffect(() => {
         fetchModuleFields();          
@@ -74,6 +76,7 @@ function Form(props)
             nProgress.done(true);
             if(response.data.status !== false) {
                 setData(response.data.record);
+                setLineItems(response.data.lineItems);           
             }
             else {
                 notie.alert({type: 'error', text: response.data.message, time: 5});
@@ -195,6 +198,7 @@ function Form(props)
         }
         
         data['options'] = options;
+        data['lineItems'] = lineItems;
 
         // Set parent module detail
         data['parent_id'] = (props.parent_id) ? props.parent_id : '';
@@ -283,6 +287,10 @@ function Form(props)
         }
         DataHandler(name, time);
     }
+    
+    function classNames(...classes) {
+        return classes.filter(Boolean).join(" ");
+    }
 
     return (
         <Transition.Root show={open} as={Fragment}>
@@ -310,7 +318,12 @@ function Form(props)
                             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         >
-                            <Dialog.Panel className="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-xl sm:w-full">
+                            <Dialog.Panel 
+                            className={classNames(
+                                props && props.module == 'Order' 
+                                ? "relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-1/2"
+                                :"relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-xl sm:w-full"
+                            )} >
                                 <div className="bg-gray-50 px-4 pt-5 pb-4 sm:p-4 sm:pb-4">
                                     <div className="sm:flex sm:items-start">
                                         <div className="mt-3 text-center sm:mt-0 sm:text-left">
@@ -506,6 +519,17 @@ function Form(props)
                                                 </div>
                                             )
                                         })}
+                                    </div>
+                                    <div>
+                                        {props && props.module == 'Order' ? 
+                                        <LineItem 
+                                            productList={props.productList}
+                                            lineItems={lineItems}
+                                            totalPrice={totalPrice}
+                                            setLineItems={setLineItems}
+                                            setTotalPrice={setTotalPrice}
+                                        />
+                                        : ''}
                                     </div>
                                 </form>
 

@@ -1,7 +1,6 @@
 import React from 'react';
 import Authenticated from "../../Layouts/Authenticated";
 import ListView from '@/Components/Views/List/Index2';
-//import { Link } from 'heroicons-react';
 import { Link } from "@inertiajs/inertia-react";
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
@@ -32,7 +31,7 @@ function List(props)
                             className={classNames(
                                 tab.current
                                     ? "border-purple-500 text-primary"
-                                    : "border-transparent text-gray-500 text-[#3D4459] hover:text-primary hover:border-purple-500",
+                                    : "border-transparent text-gray-500 hover:text-primary hover:border-purple-500",
                                 "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base  my-6"
                             )}
                         >

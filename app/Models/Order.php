@@ -4,17 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\LineItem;
 
 class Order extends Model
 {
     use HasFactory;
+
     protected $table = 'orders';
 
-    
-
     protected $fillable = ['name', 'due_date', 'status','opportunity','company_id', 'description','created_at', 'updated_at'];
-
-   
+  
     /**
      * Return list view fields
      */
@@ -29,8 +28,8 @@ class Order extends Model
         return $list_view_columns;
     }
 
-    public function comments()
+    public function lineItem()
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(LineItem::class);
     }
 }
