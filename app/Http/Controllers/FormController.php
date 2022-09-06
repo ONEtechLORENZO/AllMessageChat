@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Field;
+use App\Models\Contact;
+use App\Models\Opportunity;
 use App\Models\FieldGroup;
 use Illuminate\Http\Request;
 use Cache;
@@ -78,5 +80,38 @@ class FormController extends Controller
         $options = Field::where($whereCondition)
             ->first('options');
         echo json_encode($options);
+    }
+
+
+    public function getRelateContacts(Request $request)
+    {
+        $user = $request->user();
+        $userId = $user->id;
+        $companyId = Cache::get('selected_company_'. $userId);
+
+        $selectedContacts = [];
+        // Get related records
+       
+      
+        $query = Contact::select('contacts.id', 'first_name', 'last_name');
+        $query->where('company_id', $companyId);
+        
+        // Filter records based on key 
+        $key = (isset($_GET['key']) && $_GET['key']) ? $_GET['key'] : '';
+        if($key){
+            $query->where(function($query) use($key) {
+                $query->orWhere('first_name', 'like', '%' . $key . '%');
+                $query->orWhere('last_name', 'like', '%' . $key . '%');
+            });
+        }
+        $records = $query->limit(5)->get();
+
+
+        $contacts = [];
+        foreach($records as $record){
+            $contacts[] = ['label' => $record->first_name. ' '. $record->last_name, 'value' => $record->id ];
+        }
+
+        echo json_encode(['records' => $contacts ]); die;
     }
 }

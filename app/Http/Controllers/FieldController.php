@@ -96,7 +96,7 @@ class FieldController extends Controller
         //save fields in table
         $this->saveField($request, $field, $status);
 
-        return Redirect::route('listField');
+        return Redirect::to(url()->previous());
     }
 
     /**
@@ -144,7 +144,7 @@ class FieldController extends Controller
 
         $status = 'edit';
         $this->saveField($request, $field, $status);
-        return Redirect::route('listField');
+        return Redirect::to(url()->previous());
     }
 
     /**
@@ -160,7 +160,7 @@ class FieldController extends Controller
            $field->delete();
         }
 
-        return Redirect::route('listField');
+        return Redirect::to(url()->previous());
     }
 
     function cleaner($string)
