@@ -27,7 +27,7 @@ function ListView(props)
 
     useEffect(() => {
         fetchModuleFields();
-        setRecords(props.records);
+        setRecords(props.records);       
     }, [props.records]);
 
     /**
@@ -142,6 +142,7 @@ function ListView(props)
     if(props.errors.message){
         notie.alert({type: 'error', text: props.errors.message, time: 5});
     }
+   
     return (
         <>
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
@@ -153,6 +154,7 @@ function ListView(props)
                             <Search 
                                 module={props.module} 
                                 search={props.search}
+                                mod={props.mod}                             
                                 currentPage={props.paginator.currentPage}
                                 sort_by={props.sort_by}
                                 sort_order={props.sort_order}
@@ -357,6 +359,7 @@ function ListView(props)
                     recordId={recordId}
                     translator={props.translator}
                     mod={props.mod}
+                    productList={props.productList}
                 />
             : ''}
         </>

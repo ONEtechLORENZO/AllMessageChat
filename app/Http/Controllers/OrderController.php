@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Inertia\Inertia;
-use App\Models\Order;
-use Illuminate\Http\Request;
-use App\Models\Field;
-use Illuminate\Support\Facades\Redirect;
 use Cache;
+use Inertia\Inertia;
+use App\Models\Field;
+use App\Models\Order;
+use App\Models\Product;
+use App\Models\LineItem;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 
 class OrderController extends Controller
 {
-    public $contactColumns = ['first_name', 'last_name', 'phone_number', 'email'];
 
     public $limit = 15;
 
@@ -29,12 +30,16 @@ class OrderController extends Controller
         $module = new Order();
         $list_view_columns = $module->getListViewFields();
         $listViewData = $this->listView($request, $module, $list_view_columns);
+        $companyId = Cache::get('selected_company_'. $request->user()->id);
+
+        //get Product List
+        $productList = $this->getProductList($companyId);
 
         $moduleData = [
             'singular' => __('Order'),
             'plural' => __('Orders'),
             'module' => 'Order',
-            'current_page' => 'Orders', 
+            'current_page' => 'Orders',
             // Actions
             'actions' => [
                 'create' => true,                
@@ -44,6 +49,7 @@ class OrderController extends Controller
                 'select_field'=>true,
                 'detail' =>true
             ],
+            'productList' => $productList,
         ];
         
         $data = array_merge($moduleData, $listViewData);
@@ -54,7 +60,7 @@ class OrderController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
         //
     }
@@ -66,24 +72,17 @@ class OrderController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
-        $order_id = $this->saveOrder($request);
-        
-        if($request->parent_module == 'Chat') {
-            return Redirect::route('chat_list');
-        } else if($request->parent_id){
-            $url = route('detail'. $request->parent_module).'?id='.$request->parent_id.'&page=1';
-            return Redirect::to($url);
-        } else {
-            return Redirect::route('detailOrder', $order_id);
-        }
-    }
+    {   
+        $companyId = Cache::get('selected_company_'. $request->user()->id);
 
-    public function getContactData(Request $request)
-    {
-        $order =Order::findOrFail($request->id);
-        echo json_encode(['record' => $order]);
-        die;
+        //save the Order
+        $order_id = $this->saveOrder($request);
+
+        //save the lineItems
+        $lineItems = $this->saveLineItems($request->lineItems, $order_id, $companyId);
+
+        return Redirect::route('detailOrder', $order_id);
+      
     }
 
     /**
@@ -117,7 +116,39 @@ class OrderController extends Controller
      * @param  \App\Models\Order  $order
      * @return \Illuminate\Http\Response
      */
-   
+    
+    public function edit(Request $request, $id)
+    {
+        $order = Order::with('lineItem')->whereId($id)->first();
+
+        if(!$order){
+            about(404);
+        }
+     
+        if($order){
+            $orderItems = $order->lineItem;
+            $lineItems = [];
+
+            if($orderItems){
+                foreach($orderItems as $item){  
+
+                    $product = Product::find($item->product_id);
+                    $lineItems[] = [
+                        'name' => ['value' => $product->name, 'label' => $product->name],
+                        'quantity' => $item->quantity,
+                        'price' => $item->price,
+                        'amount' => $item->total_amount,
+                        'id' => $item->product_id,
+                    ];
+                    $companyId = $item->company_id;
+                }
+            }
+            $productList = $this->getProductList($companyId);
+
+            return response()->json(['record' => $order, 'productList' => $productList, 'lineItems' => $lineItems ]);
+        }
+        
+    }
 
     /**
      * Update the specified resource in storage.
@@ -128,7 +159,17 @@ class OrderController extends Controller
      */
     public function update(Request $request)
     {
+        $companyId = Cache::get('selected_company_'. $request->user()->id);
+
+        //save the Order
         $order_id = $this->saveOrder($request);
+        
+        //delete the old lineItem
+        $sync = LineItem::where('order_id', $order_id)->delete();
+
+        //save the lineItems
+        $lineItems = $this->saveLineItems($request->lineItems, $order_id, $companyId);
+
         return Redirect::route('listOrder', $order_id);
     }
 
@@ -150,7 +191,7 @@ class OrderController extends Controller
      */
     public function getOpportunityData(Request $request)
     {
-        $order =Order::findOrFail($request->id);
+        $order = Order::findOrFail($request->id);
         echo json_encode(['record' => $order]);
         die;
     }
@@ -198,14 +239,67 @@ class OrderController extends Controller
             $order->contact='1';
             $order->company_id = Cache::get('selected_company_'. $request->user()->id);
             $order->save();
-            if($request->parent_id){
-               
-            }
         }
 
         return $order->id;
     }
     
+    public function getProductPrice(Request $request, $id){
+           
+           if($id){
+               $companyId = Cache::get('selected_company_'. $request->user()->id);
+               $products = Product::where('id',$id)
+                                ->where('company_id', $companyId)
+                                ->get();
+                $productPrice = [];                
+                foreach($products as $product){
+                    $productPrice = [
+                        'name' => ['value' => $product->name, 'label' => $product->name],
+                        'quantity' => 0,
+                        'price' => $product->price,
+                        'amount' => '0.00',
+                        'id' => $product->id
+                    ]; 
+                } 
+                             
+               return response()->json($productPrice);
+           }
+           
+    }
 
-   
+    public function saveLineItems($lineItems, $order_id, $companyId){
+        
+        if($order_id){
+            
+            $lineItem = LineItem::where('order_id',$order_id);
+        
+            foreach($lineItems as$key => $item){
+            
+                if($item['id'] != ''){
+
+                    $lineItem = new LineItem();
+                    $lineItem->order_id = $order_id;
+                    $lineItem->product_id = $item['id'];
+                    $lineItem->quantity = $item['quantity'];
+                    $lineItem->price = $item['price'];
+                    $lineItem->total_amount = $item['amount'];
+                    $lineItem->sequence = $key;
+                    $lineItem->company_id = $companyId;
+                    $lineItem->save();
+                }
+            }
+        }
+    }
+
+    public function getProductList($companyId){
+    
+        $products = Product::where('company_id', $companyId)->get(['id','name']);
+        $productList = [];
+        $productList[] = ['value' => '', 'label' => 'Select', 'id' => ''];
+        foreach($products as $product){
+            $productList[] = ['value' => $product->name, 'label' => $product->name, 'id' => $product->id];
+        }
+
+        return $productList;
+    }
 }
