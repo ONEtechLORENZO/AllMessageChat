@@ -209,7 +209,7 @@ class MsgController extends Controller
                 'created_at' => date_format($message->created_at, $this->dateListView),
             ];
         }
-        $filterData = $this->getFiltersInfo($companyId, $user_id, 'Msg', false);
+        $filterData = $this->getFiltersInfo($companyId, $user_id, 'Message', false);
 
         $module = new Msg();
         $messageTranslate = [

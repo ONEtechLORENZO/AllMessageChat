@@ -107,7 +107,7 @@ function Filter(props)
         if(props.is_chat){
             var url = route('chat_list') + '?filter_id='+filter;
         } else {
-            var url = route('listContact') + '?filter_id='+filter;
+            var url = route('list'+props.module) + '?filter_id='+filter;
         }
         
         Inertia.get(url,  {
