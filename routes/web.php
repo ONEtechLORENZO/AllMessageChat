@@ -220,6 +220,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/automation/store',[AutomationController::class, 'store'])->name('storeAutomation');
     Route::post('/automation/update/{id}',[AutomationController::class, 'update'])->name('updateAutomation');
     Route::get('/automation/create/{id}', [AutomationController::class, 'create'])->name('createAutomation');
+    Route::get('/automation/edit/{id}', [AutomationController::class, 'edit'])->name('editAutomation');
+    Route::delete('/automation/delete/{id}',[AutomationController::class, 'destroy'])->name('deleteAutomation');
+
     Route::get('/getAccountList', [AutomationController::class, 'getActionData'])->name('get_account_list');
 
     // Order

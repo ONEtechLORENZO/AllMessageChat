@@ -15,28 +15,6 @@ import Input from '@/Components/Forms/Input';
 import { Inertia } from '@inertiajs/inertia'
 import { Link } from '@inertiajs/inertia-react';
 
-// Triggers
-const triggers = {
-  contact_created: { name: 'contact_created', label: 'New contact is added'},
-  contact_list_related: { name: 'contact_list_related', label: 'New contact is added to list'},
-  contact_tag_related: { name: 'contact_tag_related', label: 'New contact is added to tag' },
-  remove_webhook: { name: 'remove_webhook', label: 'Webhook is removed' },
-};
-
-// Next process
-const processTypes = {
-  'action': {label : 'Action', name: 'action'},
-  'condition': {label: 'Condition', name:'condition'},
-};
-
-// Actions
-const actions = {
-  'send_message': {label: 'Send Message' , name : 'send_message'},
-  'tag_contact': {label: 'Add a tag to a contact', name: 'tag_contact'},
-  'list_contact':{label: 'Add a list to a contact', name: 'list_contact'},
-  'custom_field':{label: 'Set a custom field', name: 'custom_field'}
-};
-
 const initialNodes = [{
     id: "1",
     type: "input", // input node
@@ -52,8 +30,12 @@ let startId = 1;
 
 function AutomationFlow(props)
 {
-    const [automationData, setAutomationData] = useState({});
+    const [actions , setActions] = useState() ;
+    const [processTypes, setProcessTypes] = useState() ;
+    const [triggers, setTriggers] = useState() ;
 
+    const [automationData, setAutomationData] = useState({});
+    const [trigger , setTrigger ] = useState(); 
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
     const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), []);
@@ -77,16 +59,23 @@ function AutomationFlow(props)
     const yPos = useRef(0);
     const cancelButtonRef = useRef(null);
     const [rfInstance, setRfInstance] = useState(null);
-    
+
     useEffect(() => {
+        if(props.options){
+            setActions(props.options.actions);
+            setProcessTypes(props.options.processTypes);
+            setTriggers(props.options.triggers);
+        }
         if(props.record) {
-            console.log(props.record);
             var newData = Object.assign({}, automationData);
             newData['id'] = props.record.id;
             newData['name'] = props.record.name;
-            
-           // setNodes(props.record.nodes);
-           // setEdges(props.record.edges);
+
+            const flow = JSON.parse(props.record.flow);
+            if (flow) {
+                setNodes(flow.nodes || []);
+                setEdges(flow.edges || []);
+            }
             setAutomationData(newData);
         }
     },[]);
@@ -108,7 +97,7 @@ function AutomationFlow(props)
      */
     function appendNodeData( trigger_type , type, nodeId)
     {
-        console.log( ' rfInstance', rfInstance ); 
+       
         if(type == 'action' || type == 'condition') {
 
             var newCurrentEdge = createNewNode(currentEdge, type, processTypes[type].label);
@@ -119,6 +108,7 @@ function AutomationFlow(props)
             }
         }
         else if(trigger_type == 'input') {
+            setTrigger(type);
             // Update the label and create new output node
             setNodes((nds) =>
                 nds.map((node) => {
@@ -205,7 +195,6 @@ function AutomationFlow(props)
             setShowCondition(true);
         } 
          setCurrentNode(node);
-         console.log(node);
      }
 
     /**
@@ -358,17 +347,18 @@ function AutomationFlow(props)
             flow = rfInstance.toObject();
             flow = JSON.stringify(flow);
         }
-            
-        data['flow'] = flow;
 
+        data['flow'] = flow;
+        data['trigger'] = trigger;
+        
         axios({
             method: 'post',
             url: route('update' + props.module, data.id),
             data: data
         })
         .then((response) => {
-            if (response.data) {
-                console.log(response.data)
+            if (response.data && response.data.result == 'success' ) {
+                Inertia.get(route('list'+ props.module))
             }
         });
     }
@@ -381,14 +371,15 @@ function AutomationFlow(props)
                 <div class="flex justify-between">
                     <div class="font-medium text-slate-900 mx-1 flex">
                         <span className='mt-2 mx-1'> Name: </span>
-                        <Input
+                        {/* <Input
                             name="name"
                             value={automationData.name}
                             type="text" 
                             className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
                             id={'name'}
                             handleChange={handleChange}
-                        />
+                        /> */}
+                        <label className='mt-2 mx-1'> {automationData.name} </label>
                     </div>
                     <div className='mx-4'>
                         
