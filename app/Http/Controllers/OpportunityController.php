@@ -151,36 +151,37 @@ class OpportunityController extends Controller
      
         $fields = Field::where('module_name', 'Opportunity')
             ->where('user_id', $request->user()->id)
-            ->get(['field_name', 'is_custom']);
+            ->get(['field_name', 'is_custom', 'field_type']);
 
         if ($fields) {
             $custom_field = [];
             foreach ($fields as $record) {
                 $field = $record['field_name'];
                 $custom = $record['is_custom'];
-                if ($request->has($field) && ($custom == '0' || !$custom)) {
-                    $opportunity->$field = $request->$field;
+                if($record['field_type'] == 'relate' && $custom == '0' && $request->has($field)) {
+                    $opportunity->$field = $request->get($field)['value'];
+                }
+                else {
+                    if ($request->has($field) && ($custom == '0' || !$custom)) {
+                        $opportunity->$field = $request->$field;
+                    }
                 }
   
-                if($custom == '1'){
-                    if($request->custom){
-                        foreach($request->custom as $key => $value){
+                if($custom == '1') {
+                    if($request->custom) {
+                        foreach($request->custom as $key => $value) {
                             $custom_field[$key] = $value;
                         }
                     }
                 }
             }
+
             if ($custom_field) {
                 $opportunity->custom = $custom_field;
             }
-            $opportunity->contact_id='1';
-            $opportunity->assigned_to = $request->user()->id;
+
             $opportunity->company_id = Cache::get('selected_company_'. $request->user()->id);
             $opportunity->save();
-
-            if($request->parent_id){
-               
-            }
         }
 
         return $opportunity->id;

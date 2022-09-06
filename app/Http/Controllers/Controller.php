@@ -13,7 +13,6 @@ use App\Models\Field;
 use App\Models\FieldGroup;
 use Cache;
 use App\Models\Contact;
-use App\Models\Opportunity;
 use App\Models\Service;
 
 class Controller extends BaseController
@@ -53,17 +52,17 @@ class Controller extends BaseController
         // Get company selected by the user.
         $companyId = Cache::get('selected_company_'. $user->id);
         
-        // If user is not related to any company, abort the below process
-        $columnlist = Cache::get($moduleName.'selected_column_list_'. $user->id);
-       
-      
+        // If user is not related to any company, abort the below process      
         if(!$companyId) {
             abort(403);
         }
-       if($columnlist)
-        {
-            $list_view_columns=$columnlist;
+
+        // Check whether user has updated the list view columns. If so, use it
+        $columnlist = Cache::get($moduleName . 'selected_column_list_'. $user->id);
+        if($columnlist) {
+            $list_view_columns = $columnlist;
         }
+
         $filterData = $this->getFiltersInfo($companyId, $user_id, $moduleName, false);
        
         $searchData = '';
@@ -120,28 +119,28 @@ class Controller extends BaseController
         }
 
         if($moduleName == 'Company' && $user->role != 'global_admin') {
-            $query->join('company_user' ,'company_id', 'companies.id');
+            $query->join('company_user', 'company_id', 'companies.id');
             $query->where('company_user.user_id', $user_id);
         }
         
         // Show only module records
         if($moduleName == 'Field') {           
-            $mod=$request->has('mod') && $request->get('mod')?$request->get('mod'):'';       
-          if($mod)         
-            $query->where('module_name', $mod);        
-          else
-            $query->where('module_name', 'Contact');
+            $mod = $request->has('mod') ? $request->get('mod') : '';
+            if($mod) {
+                $query->where('module_name', $mod);        
+            }
+            else {
+                $query->where('module_name', 'Contact');
+            }
         }
 
         // To skip the duplicates
         $query->groupBy("{$baseTable}.id");
         
-        if($from == 'campaignfilter'){
-            
+        if($from == 'campaignfilter') {
             $module = new Contact();
             $headers = $module->getListViewFields();
             $records = $query->paginate($this->limit);
-            $recordCount = $records->total();
 
             $return = [
                 'records' => $records->items(),
@@ -154,7 +153,6 @@ class Controller extends BaseController
 
         // Fetch the data
         $records = $query->paginate($this->limit)->withQueryString();
-
 
         $return = [
             'records' => $records->items(),
@@ -182,7 +180,6 @@ class Controller extends BaseController
             ],
 
             'translator' => $this->getTranslations(),
-
         ];
      
         return $return;
