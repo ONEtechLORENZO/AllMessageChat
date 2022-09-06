@@ -28,13 +28,7 @@ class ContactObserver
     public function updated(Contact $contact)
     {
         //        
-        $record = Contact::find($contact->id);
-        if($record->status == 'unsubscribed'||'Unsubscribed') 
-        {
-            $serviceable = Serviceable::where('serviceable_id', $contact->id)->get();
-        }
-        $serviceable->each->delete();
-
+       
     }
 
     /**

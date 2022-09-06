@@ -16,6 +16,7 @@ import PhoneInput, {parsePhoneNumber} from 'react-phone-number-input';
 import Number from './Number';
 import DateTime from './DateTime'; 
 import PhoneInput2 from 'react-phone-input-2';
+import Relate from '@/Components/Relate';
 import 'react-phone-input-2/lib/style.css';
 import Date from './Date';
 import Time from './Time';
@@ -51,7 +52,7 @@ function Form(props)
     const [formErrors, setErrors] = useState({});
     const { data, setData, post, processing, errors, reset } = useForm({});
     const [options, setOptions] = useState(null);
-
+    
     useEffect(() => {
         fetchModuleFields();          
         //prefill the module_name in addfield form  
@@ -480,7 +481,13 @@ function Form(props)
                                                     required={field_info.is_mandatory === 1 ? true : false}
                                                     readOnly={(readOnly) ? '' : 'disabled'}
                                                     />
-                                                    break;                  
+                                                    break;
+                                                    case 'relate':
+                                                    element = 
+                                                        <Relate                                                            
+                                                            parent_module='Opportunity'
+                                                        />                                                    
+                                                    break;                                 
                                                 case 'default':
                                                     element = <Input 
                                                         type="text" 

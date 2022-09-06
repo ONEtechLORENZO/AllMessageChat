@@ -1,9 +1,4 @@
 import React, { useState } from "react";
-import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 
 function Schedule(props){
 
@@ -140,7 +135,7 @@ function Schedule(props){
                         {openDatepick ? 
                         <>
                             <div className="w-1/2">
-                                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                {/*<LocalizationProvider dateAdapter={AdapterDateFns}>
                                     <Stack spacing={3}>
                                         <DateTimePicker
                                         label="Date&Time"
@@ -150,7 +145,7 @@ function Schedule(props){
                                         renderInput={(params) => <TextField {...params} />}
                                         />
                                     </Stack>
-                                </LocalizationProvider> 
+                                </LocalizationProvider> */}
                             </div> 
                         </> : ''}  
                         </dd>

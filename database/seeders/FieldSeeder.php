@@ -74,6 +74,7 @@ class FieldSeeder extends Seeder
             ['module_name' => 'Opportunity', 'field_name' => 'name', 'field_label' => 'Opportunity Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'Opportunity', 'field_name' => 'amount', 'field_label' => 'Amount', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'Opportunity', 'field_name' => 'expected_close_date', 'field_label' => 'Expected Close Date', 'field_type' => 'date', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
+          //  ['module_name' => 'Opportunity', 'field_name' => 'contact_id', 'field_label' => 'Contact', 'field_type' => 'relate', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'Opportunity', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
            
              //Product
@@ -346,7 +347,8 @@ class FieldSeeder extends Seeder
         $module = array(
             'Contact' => 'Contact',
             'Opportunity' =>'Opportunity',
-            'Product' =>'Product'            
+            'Product' =>'Product' ,
+            'Order' =>'Order'          
         );
         return $module;
     }
@@ -385,7 +387,8 @@ class FieldSeeder extends Seeder
             'amount' => 'Currency',
             'date' => 'Date',
             'time' => 'Time',
-            'multiselect' => 'Multi Select'
+            'multiselect' => 'Multi Select',
+            'relate' => 'Relate'
         );
         return $type;
     }

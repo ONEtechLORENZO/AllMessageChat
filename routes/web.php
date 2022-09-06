@@ -120,7 +120,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/updateContact', [ContactController::class, 'store'])->name('storeContact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
-  
+    
     //Opportunity
     Route::get('/opportunities', [OpportunityController::class, 'index'])->name('listOpportunity');
     Route::delete('/opportunity/delete/{id}', [OpportunityController::class, 'destroy'])->name('deleteOpportunity');
@@ -153,7 +153,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Form
     Route::get('/fetchModuleFields/{module}', [FormController::class, 'fetchModuleFields'])->name('fetchModuleFields');
     Route::get('/field/getFieldOptions',[FormController::class,'getFieldOptions'])->name('get_field_options');
-
+    Route::get('/getRelateContacts', [FormController::class, 'getRelateContacts'])->name('get_relate_contacts_list');
     // Import
     Route::get('/imports', [ImportController::class, 'index'])->name('listImport');
     Route::get('/import/create', [ImportController::class, 'create'])->name('new_import');
