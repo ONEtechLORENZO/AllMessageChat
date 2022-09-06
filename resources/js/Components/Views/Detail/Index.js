@@ -1,12 +1,10 @@
 import React, { Fragment, useEffect, useRef, useState } from "react";
-import { PencilIcon, UserIcon,WhatsAppIcon,    
-    InstaIcon} from "../../../Pages/icons";
+import { PencilIcon, UserIcon, WhatsAppIcon, InstaIcon} from "../../../Pages/icons";
 import { Inertia } from "@inertiajs/inertia";
 import ReactSelect from "./ReactSelect";
 import Notes from '@/Components/Notes';
 import { Head,Link } from "@inertiajs/inertia-react";
 import SubPanels from "./SubPanels";
-import { WhatsApp } from "@mui/icons-material";
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import notie from 'notie';

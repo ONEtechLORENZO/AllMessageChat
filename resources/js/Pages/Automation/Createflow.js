@@ -40,7 +40,7 @@ const actions = {
 const initialNodes = [{
     id: "1",
     type: "input", // input node
-    data: { label: (<> <strong>Select Trigger</strong></>) },
+    data: { label: 'Select Trigger' },
     position: { x: 250, y: 0 },
     width: 150,
     height: 40,
@@ -77,7 +77,6 @@ function AutomationFlow(props)
     const yPos = useRef(0);
     const cancelButtonRef = useRef(null);
     const [rfInstance, setRfInstance] = useState(null);
-    
     
     useEffect(() => {
         if(props.record) {
@@ -126,7 +125,7 @@ function AutomationFlow(props)
                     if (node.id === '1') {
                         node.data = {
                             ...node.data, 
-                            label: <strong> {triggers[type].label} </strong>,
+                            label: triggers[type].label,
                             action: type,
                         };
                     }
@@ -145,7 +144,7 @@ function AutomationFlow(props)
                     if (node.id == nodeId) {
                         node.data = {
                             ...node.data, 
-                            label: <strong> {actions[type].label} </strong>,
+                            label: actions[type].label,
                         };
                     }
                     return node;
@@ -170,7 +169,8 @@ function AutomationFlow(props)
                 nodeData = node.data.action;
             }
         });
-        if(nodeData || action_type){
+
+        if(nodeData || action_type) {
             action_type = (nodeData && nodeData.type) ? nodeData.type : action_type;
             let newData = Object.assign({}, actionData); 
             newData['heading'] = actions[action_type].label;
@@ -237,17 +237,14 @@ function AutomationFlow(props)
         var id = getId();
         yPos.current += 100;
         var nodeType = type;
-        if(type == 'condition_action'){
+        if(type == 'condition_action') {
             nodeType = 'action';
         }
+
         let newNode = {
             id: id,
             data: {
-                label: (
-                    <>
-                        {label}
-                    </>
-                ),
+                label: label,
             },
             type: nodeType,
             position: { x: 300, y: 100 },
@@ -256,7 +253,7 @@ function AutomationFlow(props)
         };
 
         if(type == 'output') {
-            newNode['data']['label'] = <strong>End Automation</strong>;
+            newNode['data']['label'] = 'End Automation';
         }
 
         /*else if(type == 'condition') {
@@ -348,32 +345,32 @@ function AutomationFlow(props)
         newData[name] = value;
         setActionData(newData);
     }
+
     /**
      * Save Automation Data 
      */
-    function saveAutomation(){
-        
+    function saveAutomation()
+    {    
         var data = Object.assign({}, automationData);
-        
+
         var flow = '';
         if (rfInstance) {
-          flow = rfInstance.toObject();
-         //localStorage.setItem(flowKey, JSON.stringify(flow));
-         }
+            flow = rfInstance.toObject();
+            flow = JSON.stringify(flow);
+        }
             
-            data['flow'] = (flow);
-            console.log( 'save data' , data);
+        data['flow'] = flow;
 
-            axios({
-                method: 'post',
-                url: route('update' + props.module, data.id),
-                data: data
-            })
-            .then( (response) =>{
-                if (response.data) {
-                    console.log(response.data)
-                }
-            })
+        axios({
+            method: 'post',
+            url: route('update' + props.module, data.id),
+            data: data
+        })
+        .then((response) => {
+            if (response.data) {
+                console.log(response.data)
+            }
+        });
     }
 
     return (

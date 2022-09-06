@@ -132,7 +132,6 @@ function Form(props)
     /**
      * Handle Input Change
      */
-
     const handleChange = (event) => {
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         let field_name = event.target.name;
@@ -231,23 +230,24 @@ function Form(props)
     }
     
     /**
-     * 
      * Update Data Handler
      */
-    function DataHandler(name, value){
+    function DataHandler(name, value) {
         let newState = Object.assign({}, data); 
-        let customfields = (data.custom)? data.custom : {};
-
-        Object.entries(fields).map(([key,field]) => {
-            if(name == field.field_name && field.is_custom == 0){
+        let customfields = (data.custom) ? data.custom : {};
+        Object.entries(fields).map(([key, field]) => {
+            console.log(field);
+            if(name == field.field_name && field.is_custom == 0) {
                 newState[name] = value;
             }
-            if(name == field.field_name && field.is_custom == 1){
+
+            if(name == field.field_name && field.is_custom == 1) {
                 customfields[name] = value; 
                 newState['custom'] = customfields;
             }
-            setData(newState);
         });
+        console.log(newState);
+        setData(newState);
     }
     
     //change Date & Time formate
@@ -261,14 +261,14 @@ function Form(props)
         DataHandler(name,dateTime);
     }
     
-    //remove characters
-    function changeNumber(name,event){
+    // Remove characters
+    function changeNumber(name,event) {
         const result = event.target.value.replace(/\D/g, '');
         DataHandler(name,result);
     }
     
-    //change Date formate
-    function changeDate(name, event){
+    // Change Date format
+    function changeDate(name, event) {
         let date = '';
         if(event){
             date = event.getFullYear() + '-' + ('0' + (event.getMonth() + 1)).slice(-2) + '-' + ('0' + event.getDate()).slice(-2);
@@ -276,13 +276,23 @@ function Form(props)
         DataHandler(name, date);
     }
 
-    //change Time formate
-    function changeTime(name, event){
+    // Change Time format
+    function changeTime(name, event) {
         let time = '';
         if(event){
             time = ('0' + event.getHours()).slice(-2) + ':' + ('0' + event.getMinutes()).slice(-2) + ':00';
         }
         DataHandler(name, time);
+    }
+
+    /**
+     * Handle relate field change
+     * 
+     * @param {object} value 
+     * @param {string} field_name 
+     */
+    function handleRelateChange(value, field_name) {
+        DataHandler(field_name, value);
     }
 
     return (
@@ -482,10 +492,15 @@ function Form(props)
                                                     readOnly={(readOnly) ? '' : 'disabled'}
                                                     />
                                                     break;
-                                                    case 'relate':
-                                                    element = 
-                                                        <Relate                                                            
+                                                case 'relate':
+                                                    element = <Relate
+                                                            id={field_info.field_name}
+                                                            name={field_info.field_name}                                               
                                                             parent_module='Opportunity'
+                                                            handleChange={handleRelateChange}
+                                                            value={field_value}
+                                                            required={field_info.is_mandatory === 1 ? true : false}
+                                                            readOnly={(readOnly) ? '' : 'disabled'}
                                                         />                                                    
                                                     break;                                 
                                                 case 'default':
