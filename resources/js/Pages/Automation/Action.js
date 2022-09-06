@@ -1,30 +1,46 @@
 import React, { useState, useCallback, useRef, Fragment, useEffect } from "react";
 import { Dialog, Transition } from '@headlessui/react'
-import Dropdown from './Dropdown';
+import Dropdown from "@/Components/Forms/Dropdown";
 import Axios from "axios";
 
 function Action(props){
 
     const cancelButtonRef = useRef(null);
-    const [accountList , setAccountList] = useState();
+    const [actionData , setActionData] = useState({});
+    const [options, setOptions] = useState({});
+
     useEffect(()=>{
-        if(props.actionData.type == 'send_message'){
-            getAccountList();    
+        
+        if(props.actionData.node_data){
+            setActionData(props.actionData.node_data);
+        } else {
+            var newActionData = Object.assign({}, actionData);
+            newActionData['type'] = props.actionData.type;
+            setActionData(newActionData);
+        
         }
-    });
+        getActionData(props.actionData.type);        
+    }, []);
+
+    function handleChange(event){
+        console.log(event);
+        var name = event.target.name;
+        var value = event.target.value;
+
+        var newActionData = Object.assign({}, actionData);
+        newActionData[name] = value;
+        setActionData(newActionData);
+    }
     
     /**
      * Get account list
      */
-    function getAccountList(){
-        
-        Axios.get(route('get_account_list')).then((response) => {
-            nProgress.done(true);
+    function getActionData(action_type){
+        var url = route('get_account_list') + '?action_type='+action_type;
+        Axios.get(url).then((response) => {
+            
             if(response.data.status !== false) {
-                setData(response.data.record);
-            }
-            else {
-                notie.alert({type: 'error', text: response.data.message, time: 5});
+                setOptions(response.data.result);
             }
         });
     }
@@ -59,10 +75,20 @@ function Action(props){
                                       <div className="bg-gray-50 px-4 pt-5 pb-4 sm:p-4 sm:pb-4">
                                           <div className="sm:flex sm:items-start">
                                               <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                                                  <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                                                      {props.actionData.heading}
-                                                  </Dialog.Title>
-                                              </div>
+                                                        <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
+                                                        {props.actionData.heading}
+                                                        </Dialog.Title>
+                                                    </div>
+                                                    <div>
+                                                        <button
+                                                            className="border-1 border-indigo-300"
+                                                            onClick={() => props.setShowAction(false)}
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
                                           </div>
                                       </div>
       
@@ -70,7 +96,7 @@ function Action(props){
                                           <div className='p-4 space-y-4'>
                                               <div className='form-group' >
                                                 
-                                                    {props.actionData.type == 'send_message' &&
+                                                    {actionData.type == 'send_message' &&
                                                         <div>
                                                             <div class="flex flex-wrap -mx-3 mb-6">
                                                                 <div class="w-full px-3">
@@ -80,17 +106,75 @@ function Action(props){
                                                                 <Dropdown
                                                                     id={'select_account'}
                                                                     name={'select_account'}
-                                                                    options={{}}
+                                                                    options={options.account_list}
                                                                     handleChange={handleChange}
                                                                     emptyOption={'Select'}
-                                                                   // value={field_value}
-                                                                    required={field_info.is_mandatory === 1 ? true : false}
-                                                                   // readOnly={(readOnly) ? '' : 'disabled'}
+                                                                    value={actionData.select_account}
+                                                                    required={ true }
                                                                 />
-                                                                <p class="text-gray-600 text-xs italic">Send a message via selected account</p>
+                                                                <p class="text-gray-600 text-xs italic">Send a message using the selected account</p>
+                                                                </div>
+                                                            </div>
+                                                            <div class="flex flex-wrap -mx-3 mb-6">
+                                                                <div class="w-full px-3">
+                                                                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-password">
+                                                                    Select Template
+                                                                </label>
+                                                                <Dropdown
+                                                                    id={'select_template'}
+                                                                    name={'select_template'}
+                                                                    options={options.template_list}
+                                                                    handleChange={handleChange}
+                                                                    emptyOption={'Select'}
+                                                                    value={actionData.select_template}
+                                                                    required={ true }
+                                                                />
+                                                                <p class="text-gray-600 text-xs italic">Send a message using the template</p>
                                                                 </div>
                                                             </div>
 
+                                                        </div>
+                                                    }
+                                                    {actionData.type == 'tag_contact' &&
+                                                        <div>
+                                                            <div class="flex flex-wrap -mx-3 mb-6">
+                                                                <div class="w-full px-3">
+                                                                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-password">
+                                                                    Select Tag
+                                                                </label>
+                                                                <Dropdown
+                                                                    id={'select_tag'}
+                                                                    name={'select_tag'}
+                                                                    options={options.tag_list}
+                                                                    handleChange={handleChange}
+                                                                    emptyOption={'Select'}
+                                                                    value={actionData.select_tag}
+                                                                    required={ true }
+                                                                />
+                                                                <p class="text-gray-600 text-xs italic">Relate the tag to the contact</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                    {actionData.type == 'list_contact' &&
+                                                        <div>
+                                                            <div class="flex flex-wrap -mx-3 mb-6">
+                                                                <div class="w-full px-3">
+                                                                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-password">
+                                                                    Select List
+                                                                </label>
+                                                                <Dropdown
+                                                                    id={'select_list'}
+                                                                    name={'select_list'}
+                                                                    options={options.list_list}
+                                                                    handleChange={handleChange}
+                                                                    emptyOption={'Select'}
+                                                                    value={actionData.select_list}
+                                                                    required={ true }
+                                                                />
+                                                                <p class="text-gray-600 text-xs italic">Relate the List to the contact</p>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     }
                                                   
@@ -102,7 +186,7 @@ function Action(props){
                                         <button
                                             type="button"
                                             className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-                                            //onClick={props.setShowAction(selected)}
+                                            onClick={() => props.saveActionData(props.actionData.node_id, actionData)}
                                         >
                                             Save
                                         </button>
