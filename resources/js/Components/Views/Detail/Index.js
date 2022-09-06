@@ -80,7 +80,7 @@ export default function Index(props) {
              'service_id' : e.target.id,
              'id' : recordId            
         }
-        console.log('')
+        
         Inertia.post(route('saveSubscription'), data, {
             onSuccess: (response) => {
                 setSubscribeStatus((state) => ({
