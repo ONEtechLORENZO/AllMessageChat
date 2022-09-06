@@ -53,7 +53,7 @@ let startId = 1;
 function AutomationFlow(props)
 {
     const [automationData, setAutomationData] = useState({});
-
+    const [trigger , setTrigger ] = useState(); 
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
     const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), []);
@@ -109,7 +109,7 @@ function AutomationFlow(props)
      */
     function appendNodeData( trigger_type , type, nodeId)
     {
-        console.log( ' rfInstance', rfInstance ); 
+       
         if(type == 'action' || type == 'condition') {
 
             var newCurrentEdge = createNewNode(currentEdge, type, processTypes[type].label);
@@ -120,6 +120,7 @@ function AutomationFlow(props)
             }
         }
         else if(trigger_type == 'input') {
+            setTrigger(type);
             // Update the label and create new output node
             setNodes((nds) =>
                 nds.map((node) => {
@@ -347,6 +348,7 @@ function AutomationFlow(props)
         var newData = Object.assign({}, automationData);
         newData[name] = value;
         setActionData(newData);
+        
     }
     /**
      * Save Automation Data 
@@ -362,6 +364,7 @@ function AutomationFlow(props)
          }
             
             data['flow'] = (flow);
+            data['trigger'] = trigger;
             console.log( 'save data' , data);
 
             axios({

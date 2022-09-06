@@ -135,15 +135,15 @@ class AutomationController extends Controller
      */
     public function update(Request $request, Automation $automation)
     {
-        dd($request);
+       
         $companyId = Cache::get('selected_company_' . $request->user()->id);
         $id = $request->id;
         $automation = Automation::where('company_id', $companyId)->where('id', $id)->first();
         if(! $automation){
             abort('404');
         }
-        $automation->nodes = $request->nodes;
-        $automation->edges = $request->edges;
+        $automation->flow = $request->flow;
+        $automation->trigger_mode = $request->trigger;
         $automation->save();
      
         return Redirect::route('listAutomation');

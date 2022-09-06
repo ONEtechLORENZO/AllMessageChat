@@ -17,10 +17,10 @@ class CreateAutomationsTable extends Migration
             $table->id();
 
             $table->string('name')->nullable();
+            $table->string('trigger_mode')->nullable();
             $table->boolean('status')->nullable();
             $table->string('company_id')->nullable();
-            $table->LONGTEXT('nodes')->nullable();
-            $table->LONGTEXT('edges')->nullable();
+            $table->LONGTEXT('flow')->nullable();
 
             $table->timestamps();
         });
