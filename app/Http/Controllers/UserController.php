@@ -17,8 +17,6 @@ use App\Http\Controllers\TemplateController;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Models\Msg;
-use App\Models\Tag;
-use App\Models\Category;
 use App\Models\Price;
 use App\Models\WebhookEvent;
 use Illuminate\Support\Facades\Auth;

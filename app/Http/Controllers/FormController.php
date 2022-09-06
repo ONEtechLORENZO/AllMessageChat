@@ -10,7 +10,7 @@ use Cache;
 
 class FormController extends Controller
 {
-    public $entity_modules = ['Contact', 'Product', 'Opportunity', 'Order', 'Campaign'];
+    public $entity_modules = ['Contact', 'Product', 'Opportunity', 'Order', 'Campaign', 'User'];
 
     /**
      * Fetch module fields from Field model
@@ -125,5 +125,59 @@ class FormController extends Controller
         }
 
         echo json_encode(['records' => $contacts ]); die;
+    }
+
+    /**
+     * Search for given key in module
+     */
+    function lookup(Request $request)
+    {
+        $records = [];
+        $key = $request->has('key') ? $request->get('key') : ''; 
+        $module = $request->has('module') ? $request->get('module') : ''; 
+        if($key && $module && in_array($module, $this->entity_modules)) {
+            $user = $request->user();
+            $userId = $user->id;
+            $companyId = Cache::get('selected_company_' . $userId);
+
+            $class_name = "App\Models\\$module";
+            $moduleBean = new $class_name();
+
+            $baseTable = $moduleBean->getTable();
+            $query = $moduleBean->orderBy("{$baseTable}.created_at", 'DESC');
+
+            if($module == 'Contact') {
+                $query->select(['id', 'first_name', 'last_name']);
+                $query->where(function($query) use($key) {
+                    $query->orWhere('first_name', 'like', '%' . $key . '%');
+                    $query->orWhere('last_name', 'like', '%' . $key . '%');
+                });
+
+                $query->where('company_id', $companyId);
+            }
+            else if($module == 'User') {
+                $query->select(['id', 'name']);
+                $query->join('company_user', 'user_id', 'users.id');
+                $query->where('company_user.company_id', $companyId);
+                $query->where('name', 'like', '%' . $key . '%');
+            }
+            else {
+                $query->select(['id', 'name']);
+                $query->where('name', 'like', '%' . $key . '%');
+                $query->where('company_id', $companyId);
+            }
+
+            $response = $query->limit(5)->get();
+            foreach($response as $record) {
+                if($module == 'Contact') {
+                    $records[] = ['label' => $record->first_name . ' ' . $record->last_name, 'value' => $record->id];
+                }
+                else {
+                    $records[] = ['label' => $record->name, 'value' => $record->id];
+                }
+            }
+        }
+
+        return response()->json(['records' => $records]);
     }
 }

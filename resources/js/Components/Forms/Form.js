@@ -530,7 +530,7 @@ function Form(props)
                                                     element = <Relate
                                                             id={field_info.field_name}
                                                             name={field_info.field_name}                                               
-                                                            parent_module='Opportunity'
+                                                            module={field_info.options.module}
                                                             handleChange={handleRelateChange}
                                                             value={field_value}
                                                             required={field_info.is_mandatory === 1 ? true : false}

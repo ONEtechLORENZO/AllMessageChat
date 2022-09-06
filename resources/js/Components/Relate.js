@@ -15,12 +15,8 @@ function Relate(props)
         nProgress.start(0.5);
         nProgress.inc(0.2);
 
-        var url = route('get_relate_contacts_list');
-        url += '?parent=' + props.parent_module;
-        if(props.parent_id) {
-            url += '&record='+props.parent_id;
-        }
-
+        var url = route('lookup');
+        url += '?module=' + props.module;
         if(key) {
             url += '&key=' + key;
         }
@@ -28,7 +24,7 @@ function Relate(props)
         Axios.get(url).then((response) => {
             nProgress.done(true);
             setRecords(response.data.records);    
-        });    
+        });
     }
 
     /**

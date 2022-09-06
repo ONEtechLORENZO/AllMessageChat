@@ -213,15 +213,20 @@ class OrderController extends Controller
      
         $fields = Field::where('module_name', 'Order')
             ->where('user_id', $request->user()->id)
-            ->get(['field_name', 'is_custom']);
+            ->get(['field_name', 'is_custom', 'field_type']);
 
         if ($fields) {
             $custom_field = [];
             foreach ($fields as $record) {
                 $field = $record['field_name'];
                 $custom = $record['is_custom'];
-                if ($request->has($field) && ($custom == '0' || !$custom)) {
-                    $order->$field = $request->$field;
+                if($record['field_type'] == 'relate' && $custom == '0' && $request->has($field)) {
+                    $order->$field = $request->get($field)['value'];
+                }
+                else {
+                    if ($request->has($field) && ($custom == '0' || !$custom)) {
+                        $order->$field = $request->$field;
+                    }
                 }
   
                 if($custom == '1'){
@@ -232,11 +237,11 @@ class OrderController extends Controller
                     }
                 }
             }
+
             if ($custom_field) {
                 $order->custom = $custom_field;
             }
-            $order->opportunity='1';
-            $order->contact='1';
+
             $order->company_id = Cache::get('selected_company_'. $request->user()->id);
             $order->save();
         }

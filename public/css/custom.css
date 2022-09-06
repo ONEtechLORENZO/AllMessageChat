@@ -18,3 +18,13 @@
 .react-tel-input input {
     width: 100% !important;
 }
+
+.gio-navbar li ul{
+    margin:10px 0;
+}
+
+.gio-navbar li ul li {
+    padding-left:40px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}

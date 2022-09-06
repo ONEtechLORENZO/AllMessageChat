@@ -13,13 +13,13 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
         <!-- Styles -->
-        <link rel="stylesheet" href="{{ url('css/app.css') }}?v=1.7.16">
-        <link rel="stylesheet" href="{{ url('css/notie.min.css') }}?v=1.7.16">
-        <link rel="stylesheet" href="{{ url('css/custom.css') }}?v=1.7.16">
+        <link rel="stylesheet" href="{{ url('css/app.css') }}?v=1.7.20">
+        <link rel="stylesheet" href="{{ url('css/notie.min.css') }}?v=1.7.20">
+        <link rel="stylesheet" href="{{ url('css/custom.css') }}?v=1.7.20">
 
         <!-- Scripts -->
         @routes
-        <script src="{{ url('js/app.js') }}?v=1.3.24" defer></script>
+        <script src="{{ url('js/app.js') }}?v=1.3.25" defer></script>
 
     </head>
     <body class="font-sans antialiased">
