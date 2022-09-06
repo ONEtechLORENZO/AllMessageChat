@@ -54,7 +54,7 @@ export default function Relate(props) {
          defaultOptions
         // defaultValue={selectedContact}
          value={selectedContact}
-          options
+          options={options}
          // loadOptions={loadOptions}
        onInputChange={handleInputChange}
         onChange={setSelectedContact}
