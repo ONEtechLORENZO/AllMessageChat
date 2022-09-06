@@ -15,6 +15,7 @@ class OpportunityController extends Controller
     public $default_sort_by = 'created_at';
 
     public $default_sort_order = 'desc';
+
     /**
      * Display a listing of the resource.
      *
@@ -22,7 +23,6 @@ class OpportunityController extends Controller
      */
     public function index(Request $request)
     {
-        
         $module = new Opportunity();
         $list_view_columns = $module->getListViewFields();
         $listViewData = $this->listView($request, $module, $list_view_columns);
@@ -47,7 +47,6 @@ class OpportunityController extends Controller
         $data = array_merge($moduleData, $listViewData);
         return Inertia::render('Opportunity/List', $data);
     }
-
    
     /**
      * Store a newly created resource in storage.
@@ -87,7 +86,7 @@ class OpportunityController extends Controller
         $opportunity = Opportunity::findOrFail($request->id);
        
         $companyId = Cache::get('selected_company_'. $request->user()->id);
-        $headers = $this->getModuleHeader($companyId , 'Opportunity');
+        $headers = $this->getModuleHeader($companyId, 'Opportunity');
         
         return Inertia::render('Opportunity/Detail', [
             'record' => $opportunity,            
@@ -96,18 +95,9 @@ class OpportunityController extends Controller
                 'Detail' => __('Detail'),
                 'Notes' => __('Notes'),
                 'Edit'  =>__('Edit')
-                ]
-
+            ],
         ]);
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Opportunity  $opportunity
-     * @return \Illuminate\Http\Response
-     */
-   
 
     /**
      * Update the specified resource in storage.
@@ -194,8 +184,5 @@ class OpportunityController extends Controller
         }
 
         return $opportunity->id;
-    }
-    
-
-   
+    }  
 }

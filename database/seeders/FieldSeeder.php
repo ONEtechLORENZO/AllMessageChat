@@ -22,86 +22,60 @@ class FieldSeeder extends Seeder
 
         $moduleOptions = $this->getModuleName();
         $fieldTypes = $this->getFieldType();
-
-        $salesStage=$this->getSalesStage();
-        $productCategory=$this->getProductCategory();
-        $salesstage = $this->getSalesStage();
-        $orderList = $this->getOrderType();
-
         
-        $this->createFields('Price', 'country_code', 'Country', 'dropdown', '1', $countryCodes, 'false');
-        $this->createFields('Field', 'module_name', 'Module Name', 'dropdown', '1', $moduleOptions, 'true');
-        $this->createFields('Field', 'field_type', 'Field Type', 'dropdown', '1', $fieldTypes, 'true');
+        $this->createField('Price', 'country_code', 'Country', 'dropdown', '1', $countryCodes, 'false');
+        $this->createField('Field', 'module_name', 'Module Name', 'dropdown', '1', $moduleOptions, 'true');
+        $this->createField('Field', 'field_type', 'Field Type', 'dropdown', '1', $fieldTypes, 'true');
 
-        $this->createFields('Opportunity', 'sales_stage', 'Sales Stage', 'dropdown', '1', $salesStage, 'true');
-        $this->createFields('Product', 'product_category', 'Product Category', 'dropdown', '1', $productCategory, 'true');
-
-        
-        $this->createFields('Order', 'status', 'Status', 'dropdown', '1', $orderList, 'false');
-
+        // Add Service entries
+        DB::table('services')->insert([
+            ['name' => 'Whatsapp', 'unique_name' => 'Whatsapp'],
+            ['name' => 'Instagram', 'unique_name' => 'Instagram'],
+        ]);
 
         DB::table('fields')->insert([
             
-            //Price
+            // Price
             ['module_name' => 'Price', 'field_name' => 'user_initiated', 'field_label' => 'User Initiated', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'Price', 'field_name' => 'business_initiated', 'field_label' => 'Business Initiated', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'Price', 'field_name' => 'message', 'field_label' => 'Message', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'Price', 'field_name' => 'media', 'field_label' => 'Media', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'Price', 'field_name' => 'is_default', 'field_label' => 'Is default?', 'field_type' => 'checkbox', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
 
-            //Tag
+            // Tag
             ['module_name' => 'Tag', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'Tag', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             
-            //Category
+            // Category
             ['module_name' => 'Category', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'Category', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             
-            //Field
+            // Field
             ['module_name' => 'Field', 'field_name' => 'field_label', 'field_label' => 'Field Label', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'Field', 'field_name' => 'field_group', 'field_label' => 'Field Group', 'field_type' => 'dropdown', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'Field', 'field_name' => 'is_mandatory', 'field_label' => 'Mandatory', 'field_type' => 'checkbox', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
 
-            //Company
+            // Company
             ['module_name' => 'Company', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'Company', 'field_name' => 'address_line_1', 'field_label' => 'Address Line 1', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'Company', 'field_name' => 'address_line_2', 'field_label' => 'Address Line 2', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'Company', 'field_name' => 'city', 'field_label' => 'City', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'Company', 'field_name' => 'state', 'field_label' => 'State', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
-            ['module_name' => 'Company', 'field_name' => 'country', 'field_label' => 'Country', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
-            
-            //Opportunity
-            ['module_name' => 'Opportunity', 'field_name' => 'name', 'field_label' => 'Opportunity Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
-            ['module_name' => 'Opportunity', 'field_name' => 'amount', 'field_label' => 'Amount', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
-            ['module_name' => 'Opportunity', 'field_name' => 'expected_close_date', 'field_label' => 'Expected Close Date', 'field_type' => 'date', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
-          //  ['module_name' => 'Opportunity', 'field_name' => 'contact_id', 'field_label' => 'Contact', 'field_type' => 'relate', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
-            ['module_name' => 'Opportunity', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
-           
-             //Product
-             ['module_name' => 'Product', 'field_name' => 'name', 'field_label' => 'Product Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
-             ['module_name' => 'Product', 'field_name' => 'price', 'field_label' => 'Price', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
-             ['module_name' => 'Product', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
-             
-            //Campaign
-            ['module_name' => 'Campaign', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
+            ['module_name' => 'Company', 'field_name' => 'country', 'field_label' => 'Country', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'], 
 
-            //Order
-            ['module_name' => 'Order', 'field_name' => 'name', 'field_label' => 'Subject', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
-            ['module_name' => 'Order', 'field_name' => 'due_date', 'field_label' => 'Due Date', 'field_type' => 'date', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
-            ['module_name' => 'Order', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
+            // Campaign
+            ['module_name' => 'Campaign', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false'],
 
-            //LineItem
+            // LineItem
             ['module_name' => 'LineItem', 'field_name' => 'quantity', 'field_label' => 'Quantity', 'field_type' => 'number', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'LineItem', 'field_name' => 'price', 'field_label' => 'Price', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'LineItem', 'field_name' => 'total_amount', 'field_label' => 'Amount', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'LineItem', 'field_name' => 'sequence', 'field_label' => 'Sequence', 'field_type' => 'number', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             ['module_name' => 'LineItem', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
 
-            // Automation 
+            // Automation
             ['module_name' => 'Automation', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
-
         ]);
-        
     }
 
     /**
@@ -404,9 +378,8 @@ class FieldSeeder extends Seeder
         return $orderList;
     }
 
-    public function createFields($module, $name, $label, $type, $mandatory, $options, $readOnly)
+    public function createField($module, $name, $label, $type, $mandatory, $options, $readOnly)
     {
-
         $current_datetime = gmdate('Y-m-d H:i:s');
 
         $field = new Field();

@@ -109,7 +109,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/getUserContacts', [ChatListContactController::class, 'getUserContacts'])->name('get_user_contacts_list');
     Route::post('/store/userChartContacts', [ChatListContactController::class, 'storeUserChatContact'])->name('store_user_contact_list');
 
-    //Contact
+    // Contact
     //Route::get('/contacts', [ContactController::class, 'index'])->name('contacts');
     Route::get('/notes/{module}/{id}', [NoteController::class, 'list_notes'])->name('listNotes');
     Route::post('/addnotes/{module}/{id}', [NoteController::class, 'addNotes'])->name('add_Notes');
@@ -121,15 +121,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
     
-    //Opportunity
+    // Opportunity
     Route::get('/opportunities', [OpportunityController::class, 'index'])->name('listOpportunity');
     Route::delete('/opportunity/delete/{id}', [OpportunityController::class, 'destroy'])->name('deleteOpportunity');
-   Route::get('/opportunity/{id}', [OpportunityController::class, 'show'])->name('detailOpportunity');
+    Route::get('/opportunity/{id}', [OpportunityController::class, 'show'])->name('detailOpportunity');
     Route::post('/updateOpportunity/{id}', [OpportunityController::class, 'update'])->name('updateOpportunity');
     Route::post('/updateOpportunity', [OpportunityController::class, 'store'])->name('storeOpportunity');
     Route::get('/getOpportunityDetail', [OpportunityController::class, 'getContactData'])->name('editOpportunity');
    
-    //Product
+    // Product
     Route::get('/products', [ProductController::class, 'index'])->name('listProduct');
     Route::delete('/product/delete/{id}', [ProductController::class, 'destroy'])->name('deleteProduct');
     Route::get('/product/{id}', [ProductController::class, 'show'])->name('detailProduct');
@@ -137,14 +137,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/updateProduct', [ProductController::class, 'store'])->name('storeProduct');
     Route::get('/getProductDetail', [ProductController::class, 'getContactData'])->name('editProduct');
    
-    //Order
-   Route::get('/orders', [OrderController::class, 'index'])->name('listOrder');
-   Route::delete('/order/delete/{id}', [OrderController::class, 'destroy'])->name('deleteOrder');
-   Route::get('/order/{id}', [OrderController::class, 'show'])->name('detailOrder');
-   Route::post('/updateOrder/{id}', [OrderController::class, 'update'])->name('updateOrder');
-   Route::post('/updateOrder', [OrderController::class, 'store'])->name('storeOrder');
-   Route::get('/order/detail/{id}', [OrderController::class, 'edit'])->name('editOrder');
-   Route::get('/productPrice/{id}', [OrderController::class , 'getProductPrice'])->name('get_product_price');
+    // Order
+    Route::get('/orders', [OrderController::class, 'index'])->name('listOrder');
+    Route::delete('/order/delete/{id}', [OrderController::class, 'destroy'])->name('deleteOrder');
+    Route::get('/order/{id}', [OrderController::class, 'show'])->name('detailOrder');
+    Route::post('/updateOrder/{id}', [OrderController::class, 'update'])->name('updateOrder');
+    Route::post('/updateOrder', [OrderController::class, 'store'])->name('storeOrder');
+    Route::get('/order/detail/{id}', [OrderController::class, 'edit'])->name('editOrder');
+    Route::get('/productPrice/{id}', [OrderController::class , 'getProductPrice'])->name('get_product_price');
   
     // Filter
     Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');
@@ -155,6 +155,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/fetchModuleFields/{module}', [FormController::class, 'fetchModuleFields'])->name('fetchModuleFields');
     Route::get('/field/getFieldOptions',[FormController::class,'getFieldOptions'])->name('get_field_options');
     Route::get('/getRelateContacts', [FormController::class, 'getRelateContacts'])->name('get_relate_contacts_list');
+
     // Import
     Route::get('/imports', [ImportController::class, 'index'])->name('listImport');
     Route::get('/import/create', [ImportController::class, 'create'])->name('new_import');
@@ -163,12 +164,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/import/file', [ImportController::class, 'handleFileImport'])->name('handleFileImport');
     Route::delete('/import/{id}', [ImportController::class, 'destroy'])->name('deleteImport');
 
-    //Export
+    // Export
     Route::get('/exports', [ExportController::class, 'exportFile'])->name('export');
-    //showfields
+
+    // Show Columns
     Route::post('/showColumns/{module}', [CompanyController::class, 'showColumn'])->name('showColumns');
 
-    //Tag
+    // Tag
     Route::get('/tags', [TagController::class, 'index'])->name('listTag');
     Route::get('/tag', [TagController::class, 'show'])->name('detailTag');
     Route::get('/tag/getTagList', [TagController::class, 'getTagList'])->name('get_tag_list');
@@ -177,11 +179,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/updateTag/{id}', [TagController::class, 'update'])->name('updateTag');
     Route::delete('/deleteTag/{id}', [TagController::class, 'destroy'])->name('deleteTag');
 
-    //subscription
+    // Subscription
     Route::post('/subscription/save', [ContactController::class, 'saveSubscription'])->name('saveSubscription');
     Route::post('/subscription/delete', [ContactController::class, 'removeSubscription'])->name('removeSubscription');
 
-    //Category
+    // Category
     Route::get('/lists', [CategoryController::class, 'index'])->name('listCategory');
     Route::get('/list', [CategoryController::class, 'show'])->name('detailCategory');
     Route::post('/list/store', [CategoryController::class, 'store'])->name('storeCategory');
@@ -189,14 +191,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/updateList/{id}', [CategoryController::class, 'update'])->name('updateCategory');
     Route::delete('/deleteList/{id}', [CategoryController::class, 'destroy'])->name('deleteCategory');
 
-    //Field
+    // Field
     Route::get('/fields', [FieldController::class, 'index'])->name('listField');
     Route::get('/field/{id}', [FieldController::class, 'edit'])->name('editField');
     Route::post('/field/store', [FieldController::class, 'store'])->name('storeField');
     Route::post('/updateField/{id}',[FieldController::class, 'update'])->name('updateField');
     Route::delete('/deleteField/{id}',[FieldController::class, 'destroy'])->name('deleteField');
 
-    //Campaign
+    // Campaign
     Route::get('/campaigns',[CampaignController::class, 'index'])->name('listCampaign');
     Route::post('/campaign/store',[Campaigncontroller::class, 'store'])->name('storeCampaign');
     Route::get('/campaign/detail/{id}',[CampaignController::class, 'show'])->name('detailCampaign');
@@ -208,7 +210,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/user/getUserSession',[UserController::class, 'getUserSession'])->name('get_session_value');
     Route::post('/user/setGlobalUser',[UserController::class, 'setGlobalUser'])->name('set_global_user');
 
-    //Notification
+    // Notification
     Route::get('/notifications',[Notification::class, 'getNotifications'])->name('notification');
     Route::get('/clickNotification',[Notification::class, 'clickNotification'])->name('clickNotification');
     Route::get('/showMore',[Notification::class, 'showMore'])->name('showMore');
@@ -220,12 +222,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/automation/create/{id}', [AutomationController::class, 'create'])->name('createAutomation');
     Route::get('/getAccountList', [AutomationController::class, 'getActionData'])->name('get_account_list');
 
-    //Order
+    // Order
     Route::get('/orders', [OrderController::class, 'index'])->name('listOrder');
     
-    //LineItem
+    // LineItem
     Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');
-    Route::get('create/lineitem', [LineItemController::class, 'create'])->name('createLineItem');
+    Route::get('/create/lineitem', [LineItemController::class, 'create'])->name('createLineItem');
 
 });
 

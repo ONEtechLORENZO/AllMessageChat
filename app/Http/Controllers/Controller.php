@@ -425,16 +425,18 @@ class Controller extends BaseController
             ->orderBy('sequence', 'asc')
             ->groupBy('field_name')
             ->get(['field_label', 'field_name', 'field_type', 'is_custom', 'field_group']);
+
         $header = [];
         foreach ($fields as $field) {           
             $is_custom = ($field->field_group) ? $groupList[$field->field_group] : 'default';
-            if($field->field_group){
-                $header['custom'][$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type']];
+            if($field->field_group) {
+                $header['custom'][$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type'], 'custom' => $field['is_custom']];
             } else {
-                $header[$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type']];
+                $header[$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type'], 'custom' => $field['is_custom']];
             }
         }
-        if($module == 'Contact'){
+
+        if($module == 'Contact') {
             $header['default']['tag'] = ['label' => __('Tag'), 'type' => 'text'];
             $header['default']['list'] = ['label' => __('List'), 'type' => 'text'];
         }

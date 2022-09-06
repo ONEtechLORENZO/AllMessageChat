@@ -24,7 +24,7 @@ class UserObserver
         // Check whether field entries are already added for this company
         $isAdded = Field::where('company_id', $company_id)->first();
         if(!$isAdded) {
-            $fields = $this->insertUserfield($user->id, $company_id);
+            $fields = $this->getModuleFields($user->id, $company_id);
             Field::insert($fields);
         }
     }
@@ -81,7 +81,10 @@ class UserObserver
     /**
      * Preparing field array for insertion
      */
-    public function insertUserfield($user_id, $company_id) {
+    public function getModuleFields($user_id, $company_id) 
+    {
+        $current_datetime = date('Y-m-d H:i:s');
+
         $fields = [
             [
                'module_name' => 'Contact','field_name' => 'first_name','field_label' => 'First Name','field_type' => 'text','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
@@ -110,8 +113,9 @@ class UserObserver
              [
                 'module_name' => 'Opportunity','field_name' => 'expected_close_date' ,'field_label' =>'Expected Close Date','field_type' => 'date','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
              ],
+            ['module_name' => 'Opportunity','field_name' => 'contact' ,'field_label' =>'Contact','field_type' => 'relate','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => json_encode(['module' => 'Contact'])],
              [
-                'module_name' => 'Opportunity','field_name' => 'assigned_to' ,'field_label' =>'Assigned to','field_type' => 'text','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
+                'module_name' => 'Opportunity','field_name' => 'assigned_to' ,'field_label' =>'Assigned to','field_type' => 'relate','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => json_encode(['module' => 'User']),
              ],
              [
                 'module_name' => 'Opportunity','field_name' => 'sales_stage','field_label' => 'Sales Stage','field_type' => 'dropdown','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => json_encode(['prospecting'=>'Prospecting', 'qualification'=>'Qualification','need_analysis'=>'Need Analysis','Closed Won'=>'closed_won','closed_lost'=>'Closed Lost'])
@@ -131,8 +135,15 @@ class UserObserver
              [
                 'module_name' => 'Product','field_name' => 'product_category','field_label' => 'Product Category','field_type' => 'dropdown','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => json_encode(['software'=>'Software', 'hardware'=>'Hardware'])
             ],
-       ];
 
-       return $fields;
+            // Order
+            ['module_name' => 'Order', 'field_name' => 'name', 'field_label' => 'Subject', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+            ['module_name' => 'Order', 'field_name' => 'due_date', 'field_label' => 'Due Date', 'field_type' => 'date', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'options' => ''],
+            ['module_name' => 'Order', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'options' => ''],
+            ['module_name' => 'Order', 'field_name' => 'opportunity', 'field_label' => 'Opportunity', 'field_type' => 'relate', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => json_encode(['module' => 'Opportunity'])],
+            ['module_name' => 'Order', 'field_name' => 'contact', 'field_label' => 'Contact', 'field_type' => 'relate', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => json_encode(['module' => 'Contact'])],
+        ];
+       
+        return $fields;
     }
 }

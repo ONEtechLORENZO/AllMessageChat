@@ -4,27 +4,12 @@ import DetailView from "@/Components/Views/Detail/Index";
 import Form from '@/Components/Forms/Form';
 
 
-export default function Detail(props) {
-
-    // const contactFields ={
-    //     'id': { 'label': '', 'type': 'hidden', 'required': false, 'value': '' },
-    //     'first_name': { 'label': 'First Name', 'type': 'text', 'required': false, 'value': '' },
-    //     'last_name': { 'label': 'Last Name', 'type': 'text', 'required': true, 'value': '' } , 
-    //     'email': { 'label': 'Email', 'type': 'email', 'required': true, 'value': '' }, 
-    //     'phone_number': { 'label': 'Phone number', 'type': 'text', 'required': false, 'value': '' },
-    //     'instagram_id': { 'label': 'Instagram ID', 'type': 'text', 'required': false, 'value': '' }, 
-    //     'tag': { 'label': 'Tag', 'type': 'text', 'required': false, 'value': '' },
-    //     'list': { 'label': 'List', 'type': 'text', 'required': false, 'value': '' },
-
-    //     'tag': { 'label': 'Tag', 'type': 'text', 'required': false, 'value': '' },
-    //     'list': { 'label': 'List', 'type': 'text', 'required': false, 'value': '' }
-    // };
-    
-    //const[record , setRecord] = useState(props.contact);
+export default function Detail(props) 
+{
     const tabs = [
-        { label:(props.translator['Detail']),name: 'Detail', href: '#'  },
-        { label:(props.translator['Notes']),name: 'Notes', href: '#' },
-      ];
+        { label: (props.translator['Detail']), name: 'Detail', href: '#' },
+        { label: (props.translator['Notes']), name: 'Notes', href: '#' },
+    ];
 
     const [showForm, setShowForm] = useState(false);
 
@@ -38,8 +23,9 @@ export default function Detail(props) {
     /**
      * Update contact
      */
-     function showEditForm(id){
+     function showEditForm(id) {
         setShowForm(true);
+
     }
     return (
         <Authenticated
@@ -47,18 +33,18 @@ export default function Detail(props) {
             errors={props.errors}
         >
             <DetailView
-                record = {props.contact}
-                module = 'Contact'
-                updateRecord = {showEditForm}
-                tabs = {tabs}
-                headers = {props.headers}
+                record={props.contact}
+                module='Contact'
+                updateRecord={showEditForm}
+                tabs={tabs}
+                headers={props.headers}
                 tagData={props.tagData}
                 tagOptions={props.tagOptions}
-                serviceData={props.serviceData}
-                serviceOptions={props.serviceOptions}
                 listOptions={props.listOptions}
                 listData={props.listData}
                 translator={props.translator}
+                serviceOptions={props.serviceOptions}
+                subscribedServices={props.subscribedServices}
             />
             
             {showForm ?

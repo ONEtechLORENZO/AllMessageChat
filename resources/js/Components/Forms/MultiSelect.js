@@ -28,12 +28,16 @@ export default function MultiSelect({
             className={`mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm` + className}
             required={required}
             ref={input}
-            onChange={(e) => handleChange(e)}
+            onChange={handleChange}
             disabled={readOnly}
             multiple
          >
-            <option value=''>{emptyOption}</option>
             {options && Object.keys(options).map((key) => {
+                // No need to show empty value
+                if(!key) {
+                    return;
+                }
+
                 return <option key={key} value={key}>{options[key]}</option>;
             })}
         </select>

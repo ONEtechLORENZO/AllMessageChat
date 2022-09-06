@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { PlusCircleIcon, TrashIcon } from '@heroicons/react/solid';
-import CreatableSelect, { useAsync } from 'react-select';
+import CreatableSelect from 'react-select';
 import axios from "axios";
 
-export default function LineItem(props){
-
+export default function LineItem(props)
+{
     const [productList, setProductList] = useState(props.productList);
 
     useEffect(()=>{
@@ -141,28 +141,29 @@ export default function LineItem(props){
                     })}
                     </tbody>
                 </table>
-                </div>
-                <div className="pt-8 grid grid-cols-2">
-                    <div className="flex justify-start">
-                        <button 
+            </div>
+
+            <div className="pt-8 grid grid-cols-2">
+                <div className="flex justify-start">
+                    <button 
+                        type='button'
                         className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
                         onClick={() => addItem()}
-                        >
-                        <PlusCircleIcon className="h-5 w-5"/>
-                        Add new item
-                        </button>
-                    </div>
-                    <div className="grid grid-cols-2">
-                        <div className="flex justify-center p-2">Total($)</div>
-                        <div className="flex justify-end">
-                            <input 
+                    >
+                        <PlusCircleIcon className="h-5 w-5"/> Add new item
+                    </button>
+                </div>
+                <div className="grid grid-cols-2">
+                    <div className="flex justify-center p-2">Total($)</div>
+                    <div className="flex justify-end">
+                        <input 
                             className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md border-gray-300 mt-1 appearance-none  px-3 py-2 border shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm"
                             name='total_amount' 
                             value={props.totalPrice}
-                            />
-                        </div>
+                        />
                     </div>
                 </div>
+            </div>
         </div>
     );
 }

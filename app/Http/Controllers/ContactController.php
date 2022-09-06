@@ -51,7 +51,6 @@ class ContactController extends Controller
      */
     public function index(Request $request)
     {
-        
         $module = new Contact();
         $list_view_columns = $module->getListViewFields();
         $listViewData = $this->listView($request, $module, $list_view_columns);
@@ -119,29 +118,35 @@ class ContactController extends Controller
     {
         $contact = Contact::findOrFail($request->id);
         $tagOptions = $this->getTagOptionList($request->user()->id);
-        $serviceOptions=$this->getServiceList();
+
+        $serviceOptions = $this->getServiceList();
+        
         $tagSelectedRecords = $this->getSelectedTag($contact);
-        $serviceSelectedRecords = $this->getSelectedService($contact_id);
         $ListOptions = $this->getListOption($request->user()->id);
         $ListSelectRecords = $this->getSelectedList($contact);
+
         $companyId = Cache::get('selected_company_'. $request->user()->id);
         $headers = $this->getModuleHeader($companyId , 'Contact');
+
+        $subscribedServices = [];
+        foreach($contact->services as $subscribed_service) {
+            $subscribedServices[] = $subscribed_service['unique_name'];
+        }
         
         return Inertia::render('Contacts/Detail', [
             'contact' => $contact,
             'tagOptions' => $tagOptions,
-            'serviceOptions' =>$serviceOptions,
+            'serviceOptions' => $serviceOptions,
             'tagData' => $tagSelectedRecords,
-           'serviceData'=>$serviceSelectedRecords,
             'listOptions' => $ListOptions,
             'listData' => $ListSelectRecords,
             'headers' => $headers,
+            'subscribedServices' => $subscribedServices,
             'translator' => [
                 'Detail' => __('Detail'),
                 'Notes' => __('Notes'),
                 'Edit'  =>__('Edit')
-                ]
-
+            ]
         ]);
     }
 
@@ -302,35 +307,29 @@ class ContactController extends Controller
         return $contact->id;
     }
 
-    //add subscription    
-    
+    /**
+     * Add Subscription
+     */
     public function saveSubscription(Request $request)
     { 
         $contact_id = $request->get('id');
         $service_id = $request->get('service_id');     
-        $contact=Contact::find($contact_id);
-        $service=Service::find($service_id);  
-        $contact->services()->save($service);       
+
+        $contact = Contact::find($contact_id);
+        $service = Service::find($service_id);  
+        $contact->services()->save($service);
+
         return Redirect::to(url()->previous());
     }
-    //remove subscription  
+
+    /**
+     * Remove Subscription
+     */
     public function removeSubscription(Request $request)
     { 
         $contact_id = $request->get('id');
         $service_id = $request->get('service_id');     
-        $serviceable = Serviceable::where('serviceable_id', $contact_id)->where('service_id', $service_id)->delete(); 
+        Serviceable::where('serviceable_id', $contact_id)->where('service_id', $service_id)->delete(); 
         return Redirect::to(url()->previous());
-    }
-
-    public function getSelectedService($contact_id)    {      
-        $contact=Contact::find($contact_id);       
-       $serviceRecords = $contact->services;      
-        $selectedServices = [];
-        if ($serviceRecords) {
-            foreach ($serviceRecords as $record) {
-                $selectedServices[] = ['id'=> $record['id'],'label' => $record['name'], 'name' => $record['unique_name']];
-            }
-        }       
-       return($selectedServices);
     }
 }

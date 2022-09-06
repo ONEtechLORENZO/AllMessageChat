@@ -1,126 +1,155 @@
-import React, { Fragment, useEffect, useRef, useState } from "react";
-import { PencilIcon, UserIcon, WhatsAppIcon, InstaIcon} from "../../../Pages/icons";
+import React, { useEffect, useState } from "react";
+import { PencilIcon, UserIcon } from "../../../Pages/icons";
 import { Inertia } from "@inertiajs/inertia";
 import ReactSelect from "./ReactSelect";
 import Notes from '@/Components/Notes';
-import { Head,Link } from "@inertiajs/inertia-react";
+import { Head } from "@inertiajs/inertia-react";
 import SubPanels from "./SubPanels";
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import notie from 'notie';
 
-export default function Index(props) {
+export default function Index(props) 
+{
     const [record , setRecord] = useState(props.record);
     const [activeTab , setActiveTab] = useState('Detail');
+
     const [tagSelectedOption, setTagSelectedOption] = useState(null);
     const [ListSelectedOption, setListSelectedOption] = useState(null);
-    const [serviceSelected, setServiceSelectedOption] = useState(null);
+
     const [tagOption ,setTagOption] = useState();
-    const [serviceOption ,setServiceOption] = useState();
     const [listOption, setListOption] = useState();
     const [recordId, setRecordId] = useState();
     const [tagOpen, setTagOpen] = useState(false);
-    const [subscribeInfo, setSubscribeInfo] = useState(['Whatsapp','Instagram'])
-    const [subscribeStatus, setSubscribeStatus] = useState({
-        'Whatsapp':false,
-       'Instagram':false
-    })
+
     const [listOpen, setListOpen] = useState(false);
     const [defaultHeader , setDefaultHeader] = useState(props.headers.default);
     const [customHeader, setCustomHeader] = useState(props.headers.custom);
     const [fieldOptions, setFieldOptions ] = useState({});
 
+    const [subscribedServices, setSubscribedServices] = useState([]);
+
     useEffect(() => {
         setRecord(props.record);
         setTagOption(props.tagOptions);
-        setServiceOption(props.serviceOptions);
+
         setListOption(props.listOptions);
         setTagSelectedOption(props.tagData);
-       setServiceSelectedOption(props.serviceData);
+
         setListSelectedOption(props.listData);        
         setRecordId(props.record.id);
         if(props.current_tab){
             setActiveTab(props.current_tab);
         } 
-      },[props]);  
-    function saveTag (){
+
+        setSubscribedServices(props.subscribedServices);
+
+    },[props]);
+
+    function saveTag()
+    {
         var data = {
             'name': tagSelectedOption ,
              'id' : recordId,
              'view': 'Detail',
         }
+
         Inertia.post(route('storeTag'), data, {
             onSuccess: (response) => {
                 setTagOpen(false);
             },
         });
     }
-    function handleClick (e){        
-        
-        if(subscribeStatus[e.target.name]==false)
-            {   
-                savesubscription(e)
-            }
-            else
-              {
-                removesubscription(e)
-              }
+
+    /**
+     * Handle Contact Subscription
+     * 
+     * @param {object} event
+     */
+    function handleSubscription(event) 
+    {
+        let service_name = event.target.name;
+        if(subscribedServices.includes(service_name)) {
+            removeSubscription(event);
+        }
+        else {
+            saveSubscription(event);
+        }
     }
-    function savesubscription (e){        
+
+    /**
+     * Subscribe selected service
+     * 
+     * @param {object} e 
+     */
+    function saveSubscription(e)
+    {
         confirmAlert({
             message: ('Please confirm your Subscription'),
-            buttons: [
-            {
-              label: ('Confirm'),
-              onClick: () => {                      
-        var data = {
-            'service_name': e.target.value ,
-             'service_id' : e.target.id,
-             'id' : recordId            
-        }
+            buttons: [{
+                label: ('Confirm'),
+                onClick: () => {                      
+                    var data = {
+                        'service_name': e.target.value,
+                        'service_id': e.target.id,
+                        'id': recordId
+                    }
         
-        Inertia.post(route('saveSubscription'), data, {
-            onSuccess: (response) => {
-                setSubscribeStatus((state) => ({
-                    ...state,
-                    [e.target.name]: true}))
-                notie.alert({type: 'success', text: 'Subscribed successfully', time: 5});                
-            },
-        });}},
-        {
-            label: 'No',            
-          }
-        ]
-      });
+                    Inertia.post(route('saveSubscription'), data, {
+                        onSuccess: (response) => {
+                            let tmpState = Object.assign([], subscribedServices);
+                            tmpState.push(e.target.name);
+                            setSubscribedServices(tmpState);
+
+                            notie.alert({type: 'success', text: 'Subscribed successfully', time: 5});                
+                        },
+                    });
+                }
+            }, {
+                label: 'No',            
+            }]
+        });
     }
-    function removesubscription (e){
+
+    /**
+     * Remove selected service from Subscription
+     * 
+     * @param {object} e 
+     */
+    function removeSubscription(e)
+    {
         confirmAlert({
             message: ('Are you sure you want to cancel the subscription?'),
             buttons: [
             {
-              label: ('Confirm'),
-              onClick: () => {                      
-        var data = {
-            'service_name': e.target.name ,
-             'service_id' : e.target.id,
-             'id' : recordId            
-        }
-        Inertia.post(route('removeSubscription'), data, {
-            onSuccess: (response) => {
-                setSubscribeStatus((state) => ({
-                    ...state,
-                   [e.target.name]: false}))
-                notie.alert({type: 'success', text: 'Subscription removed successfully', time: 5});
-            },
-        });}},
-        {
-            label: 'No',            
-          }
-        ]
-      });
+                label: ('Confirm'),
+                onClick: () => {                      
+                    var data = {
+                        'service_name': e.target.name ,
+                        'service_id' : e.target.id,
+                        'id' : recordId            
+                    }
+
+                    Inertia.post(route('removeSubscription'), data, {
+                        onSuccess: (response) => {
+                            let tmpState = Object.assign([], subscribedServices);
+                            const index = tmpState.indexOf(5);
+                            if (index > -1) { 
+                                tmpState.splice(index, 1); 
+                            }
+                            setSubscribedServices(tmpState);
+                            
+                            notie.alert({type: 'success', text: 'Subscription removed successfully', time: 5});
+                        },
+                    });
+                }
+            }, {
+                label: 'No',            
+            }]
+        });
     }
 
-    function saveList (){
+    function saveList() {
         var data = {
             'name': ListSelectedOption ,
              'id' : recordId,
@@ -136,17 +165,18 @@ export default function Index(props) {
     /**
      * Get dropdown field options
      */
-         function getFieldOptions(name){
-            let newFieldOptions = Object.assign({}, fieldOptions);
-            axios({
-                method: 'get',
-                url: route('get_field_options', {'field_name': name, 'module_name': props.module}),
-            })
-            .then( (response) =>{
-              newFieldOptions[name] = response.data.options;
-              setFieldOptions(newFieldOptions);
-            });
-        }
+    function getFieldOptions(name)
+    {
+        let newFieldOptions = Object.assign({}, fieldOptions);
+        axios({
+            method: 'get',
+            url: route('get_field_options', {'field_name': name, 'module_name': props.module}),
+        })
+        .then((response) => {
+            newFieldOptions[name] = response.data.options;
+            setFieldOptions(newFieldOptions);
+        });
+    }
 
     return (            
             <div>
@@ -173,41 +203,31 @@ export default function Index(props) {
                                     
                                     {props.module == 'Contact' ?
                                         <>
-                                        <div>
-                                            <div className="text-gray-600"> {record.first_name} {record.last_name}  
-                                            <div className="text-gray-600"> {record.phone_number} </div>
-                                            <div className="text-gray-600"> {record.email} </div>
+                                            <div>
+                                                <div className="text-gray-600"> {record.first_name} {record.last_name} </div>
+                                                <div className="text-gray-600"> {record.phone_number} </div>
+                                                <div className="text-gray-600"> {record.email} </div>
                                             </div>
                                             <div>
-                                          
-
-                                                <div className="mt-1 text-lg text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3 ">Click here to subscribe/unsubscribe
-                                             
-                                                { Object.entries(props.serviceOptions).map(([key, service])=> {
-                                            return(
-                                                <>    
-                                                
-                                    <button
-                                        type="button"
-                                        onClick={ (e) => handleClick(e)}
-                                        name={service.name}
-                                        id={service.value}                                       
-                                        value={service.name} 
-                                                                     
-                                        className={`inline-flex items-left ml-2 px-4 py-2 h-10 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${
-                                            subscribeStatus[service.name]? "bg-green-600" : "bg-gray-700"
-                                        } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
-                                    >
-                                       {/*<WhatsAppIcon className="h-3 w-5" aria-hidden="true" />*/}
-                                       {service.name}
-                                    </button>
-                                     </>
-                                                );
-                                            } )}
-                                    
-                            </div></div></div>
-                                                
-
+                                                {Object.entries(props.serviceOptions).map(([key, service]) => {
+                                                    return (
+                                                        <>
+                                                            <button
+                                                                type="button"
+                                                                onClick={handleSubscription}
+                                                                name={service.name}
+                                                                id={service.value}                                       
+                                                                value={service.name}                         
+                                                                className={`inline-flex items-left ml-2 px-4 py-2 h-10 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${
+                                                                    subscribedServices.includes(service.name) ? "bg-green-600" : "bg-gray-700"
+                                                                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+                                                            >
+                                                                {service.name}
+                                                            </button>
+                                                        </>
+                                                    );
+                                                })}
+                                            </div>
                                         </>
                                         :
                                         <>
@@ -263,24 +283,26 @@ export default function Index(props) {
                                                 {Object.entries(defaultHeader).map( ([key, field]) => {
                                                     var field_name = key;
                                                     let showField = true;
-                                                    let select = false;
-                                                    if(key == 'id'){
+
+                                                    if(key == 'id' || key == 'tag' || key == 'list') {
                                                         showField = false;
                                                     }
-                                                    if(key == 'tag'||key == 'list'){
-                                                        showField = false;
-                                                    }
-                                                    var value = record[key];
-                                                    if(field.type == 'dropdown'){
+
+                                                    var value = field.custom == 0 ? record[key] : record['custom'] ? record['custom'][key] : '';
+                                                    if(field.type == 'dropdown') {
                                                         if(!fieldOptions[field_name]){
                                                             getFieldOptions(field_name);
                                                         }
+
                                                         if(record.hasOwnProperty(key)){
                                                             value = (fieldOptions[field_name]) ? fieldOptions[field_name][value] : value;
                                                         }
                                                     }
+                                                    else if(field.type == 'multiselect') {
+                                                        value = value.join(', ');
+                                                    }
                                                    
-                                                    if(showField){ 
+                                                    if(showField) {
                                                         return(
                                                             <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                                                 <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
@@ -288,6 +310,7 @@ export default function Index(props) {
                                                             </div>
                                                         )
                                                     }
+
                                                     if(key == 'tag'){
                                                         return(
                                                             <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -329,15 +352,17 @@ export default function Index(props) {
                                                 {customHeader &&
                                                     <div className="divide-y"> 
                                                    
-                                                        {Object.entries(customHeader).map(([group,fields]) => { 
+                                                        {Object.entries(customHeader).map(([group, fields]) => { 
                                                             return(
                                                                 <div>
                                                                 <div className="px-4 py-2 -mb-px font-semibold text-gray-800 rounded-t opacity-70 ">{group}</div>  
                                                                 {Object.entries(fields).map(([key,field]) => { 
-                                                                    
                                                                     var value = (record[key]) ? record[key] : (record.custom && record.custom[key]) ? record.custom[key] : '-';
-                                                                    if(field.type == 'checkbox'){
-                                                                        value = (value) ? 'True': 'False';
+                                                                    if(field.type == 'checkbox') {
+                                                                        value = (value) ? 'On': 'Off';
+                                                                    }
+                                                                    else if(field.type == 'multiselect') {
+                                                                        value = value.join(', ');
                                                                     }
 
                                                                     return(

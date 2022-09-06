@@ -4,46 +4,57 @@ namespace App\Http\Controllers;
 
 use App\Models\Field;
 use App\Models\Contact;
-use App\Models\Opportunity;
 use App\Models\FieldGroup;
 use Illuminate\Http\Request;
 use Cache;
 
 class FormController extends Controller
 {
+    public $entity_modules = ['Contact', 'Product', 'Opportunity', 'Order', 'Campaign'];
+
     /**
      * Fetch module fields from Field model
      */
     function fetchModuleFields(Request $request)
     {     
-       
         $user = $request->user();
+        $userId = $user->id;
+        $companyId = Cache::get('selected_company_' . $userId);
         $module = $request->route('module');
-        if($user->role == 'regular' && $module == 'Price') {
+
+        // Only global admin can able to access the price module
+        if($user->role != 'global_admin' && $module == 'Price') {
             abort(401);
         }
-        $whereCondition = [
-            'module_name'=> $module, 
-        ];
-        if($module == 'Contact'){
-            $whereCondition['user_id'] = $user->id ;
+
+        // Regular user is not allowed to view the User module
+        if($user->role == 'regular' && $module == 'User') {
+            abort(401);
         }
 
-        if($module == 'Field'){
-            $userId = $user->id;
-            $companyId = Cache::get('selected_company_'.$userId);
-            $fieldGroupList = FieldGroup::where('company_id' , $companyId)->get();
+        $whereCondition = [
+            'module_name' => $module, 
+        ];
+
+        if(in_array($module, $this->entity_modules)) {
+            $whereCondition['company_id'] = $companyId;
+        }
+
+        if($module == 'Field') {
+            $fieldGroupList = FieldGroup::where('company_id', $companyId)->get();
             $fieldGroupOptions = [];
-            foreach($fieldGroupList as $fieldGroup){
+            foreach($fieldGroupList as $fieldGroup) {
                 $fieldGroupOptions[$fieldGroup->id] = $fieldGroup->name;
             }
         }
 
-        $fields = Field::where($whereCondition)
-            ->get();
+        $fields = Field::where($whereCondition)->get();
          
-        foreach($fields as $field){
-            if(($field['is_custom'] == '1' && $field['field_type'] == 'dropdown') || $field['field_name'] == 'field_group'|| ($field['is_custom'] == '1' && $field['field_type'] == 'multiselect') ){
+        foreach($fields as $field) {
+            if(($field['is_custom'] == '1' && $field['field_type'] == 'dropdown') 
+                || $field['field_name'] == 'field_group'
+                || ($field['is_custom'] == '1' && $field['field_type'] == 'multiselect')) {
+
                 $option = $field['options'];
                 $options = [];
                 if ($option) {
@@ -52,7 +63,7 @@ class FormController extends Controller
                     }
                 }
                
-                if($field['field_name'] == 'field_group'){
+                if($field['field_name'] == 'field_group') {
                     $options = $fieldGroupOptions;
                 }
                 $field->options = $options;
@@ -73,15 +84,16 @@ class FormController extends Controller
             'module_name'=> $moduleName, 
             'field_name' => $fieldName, 
         ];
-        if($moduleName == 'Contact' || $moduleName == 'Opportunity' ){
-            $whereCondition['user_id'] = $request->user()->id ;
+
+        if($moduleName == 'Contact' || $moduleName == 'Opportunity') {
+            $whereCondition['user_id'] = $request->user()->id;
         }
 
-        $options = Field::where($whereCondition)
-            ->first('options');
+        $options = Field::where($whereCondition)->first('options');
+        // return response()->json($options);
         echo json_encode($options);
+        die;
     }
-
 
     public function getRelateContacts(Request $request)
     {

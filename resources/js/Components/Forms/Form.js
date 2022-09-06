@@ -2,7 +2,7 @@ import { Fragment, useEffect, useRef, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import Axios from "axios";
 import notie from 'notie';
-import nProgress, { settings } from 'nprogress';
+import nProgress from 'nprogress';
 import Dropdown from './Dropdown';
 import TextArea from './TextArea';
 import Input from './Input';
@@ -12,7 +12,7 @@ import { useForm } from '@inertiajs/inertia-react';
 import ValidationErrors from '@/Components/ValidationErrors';
 import Checkbox from '../Checkbox';
 import Creatable from 'react-select/creatable';
-import PhoneInput, {parsePhoneNumber} from 'react-phone-number-input';
+import { parsePhoneNumber } from 'react-phone-number-input';
 import Number from './Number';
 import DateTime from './DateTime'; 
 import PhoneInput2 from 'react-phone-input-2';
@@ -36,24 +36,26 @@ const defaultConfig = {
     errorTextClass: 'text-red-500 text-xs pt-1'
 };
 
- const optionField = {
+const optionField = {
     'field_name': 'options',
     'field_label': 'Options',
     'field_type': 'selectable',
     'is_mandatory': 1,
     'is_custom':1
- }
+}
             
 function Form(props) 
 {
     const [open, setOpen] = useState(true)
-    const cancelButtonRef = useRef(null)
     const [fields, setFields] = useState([]);
     const [formErrors, setErrors] = useState({});
-    const { data, setData, post, processing, errors, reset } = useForm({});
     const [options, setOptions] = useState(null);
     const [lineItems, setLineItems] = useState([]);
     const [totalPrice, setTotalPrice] = useState('0.00');
+
+    const cancelButtonRef = useRef(null)
+
+    const { data, setData, post, processing, errors, reset } = useForm({});
 
     useEffect(() => {
         fetchModuleFields();          
@@ -187,11 +189,10 @@ function Form(props)
         var pristine = new Pristine(document.getElementById(`form`), defaultConfig);
         is_validated = pristine.validate(
             document.querySelectorAll(
-               
-                 'input[required], input[data-pristine-required="true"], input[data-pristine-required="required"]',
-                 'textarea[data-pristine-required="true"], textarea[data-pristine-required="required"]',
-                 )
-            );
+                'input[required], input[data-pristine-required="true"], input[data-pristine-required="required"]',
+                'textarea[data-pristine-required="true"], textarea[data-pristine-required="required"]',
+            )
+        );
 
         if(!is_validated) {
             return false;
@@ -220,27 +221,29 @@ function Form(props)
     /**
      * Added custom dropdown options
      */
-    function addSelectableField(){
+    function addSelectableField()
+    {
         var isAdded = false;
-        Object.entries(fields).map(([key, field])=> {
+        Object.entries(fields).map(([key, field]) => {
             if(field.field_type == 'selectable'){
                 isAdded = true;
             }
-        })
-        if(!isAdded){
+        });
+
+        if(!isAdded) {
             fields.push(optionField);
             setOptions(data.options);
         }
     }
     
     /**
-     * Update Data Handler
+     * Form Data Handling
      */
-    function DataHandler(name, value) {
+    function DataHandler(name, value) 
+    {
         let newState = Object.assign({}, data); 
         let customfields = (data.custom) ? data.custom : {};
         Object.entries(fields).map(([key, field]) => {
-            console.log(field);
             if(name == field.field_name && field.is_custom == 0) {
                 newState[name] = value;
             }
@@ -250,12 +253,11 @@ function Form(props)
                 newState['custom'] = customfields;
             }
         });
-        console.log(newState);
         setData(newState);
     }
     
-    //change Date & Time formate
-    function changeDateTime(name,event){
+    // Change Date & Time Format
+    function changeDateTime(name,event) {
         let dateTime = '';
         if(event){
             var date = event.toISOString().substring(0, 10);
@@ -301,6 +303,25 @@ function Form(props)
      */
     function handleRelateChange(value, field_name) {
         DataHandler(field_name, value);
+    }
+
+    /**
+     * Handle multi select change
+     * 
+     * @param {object} event 
+     */
+    function handleMultiSelectChange(event) 
+    {
+        let field_name = event.target.name;
+        var options = event.target.options;
+        var values = [];
+        for (var i = 0; i < options.length; i++) {
+            if (options[i].selected) {
+                values.push(options[i].value);
+            }
+        }
+
+        DataHandler(field_name, values);
     }
 
     return (
@@ -495,14 +516,14 @@ function Form(props)
                                                     break; 
                                                 case 'multiselect':
                                                     element = <MultiSelect
-                                                    id={field_info.field_name}
-                                                    name={field_info.field_name}
-                                                    options={field_info.options ? field_info.options : {}}
-                                                    handleChange={handleChange}
-                                                    emptyOption={field_info.field_name == 'field_group' ? 'General' : ''}
-                                                    value={field_value}
-                                                    required={field_info.is_mandatory === 1 ? true : false}
-                                                    readOnly={(readOnly) ? '' : 'disabled'}
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        options={field_info.options ? field_info.options : {}}
+                                                        handleChange={handleMultiSelectChange}
+                                                        emptyOption={field_info.field_name == 'field_group' ? 'General' : ''}
+                                                        value={field_value}
+                                                        required={field_info.is_mandatory === 1 ? true : false}
+                                                        readOnly={(readOnly) ? '' : 'disabled'}
                                                     />
                                                     break;
                                                 case 'relate':
