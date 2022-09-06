@@ -67,6 +67,7 @@ class AutomationController extends Controller
         $parent = 'Contact';
         $data = [
             'record' => $automation,
+            'options' => $automation->getTriggerOptions(),
             'module' => 'Automation',
             'filter' => $filterData,
             'parent' => $parent,
@@ -121,9 +122,15 @@ class AutomationController extends Controller
      * @param  \App\Models\Automation  $automation
      * @return \Illuminate\Http\Response
      */
-    public function edit(Automation $automation)
+    public function edit(Request $request, $id)
     {
-        //
+       
+        $companyId = Cache::get('selected_company_' . $request->user()->id);
+        $record = Automation::where('company_id', $companyId)->where('id', $id)->first('name');
+        if(!$record) {
+            abort(401);
+        }
+        return response()->json(['status' => true, 'record' => $record]);
     }
 
     /**
@@ -142,11 +149,19 @@ class AutomationController extends Controller
         if(! $automation){
             abort('404');
         }
+        if(! $request->flow){
+            $automation->name = $request->name;
+            $automation->save();
+            return Redirect::route('createAutomation', $automation->id);
+        }
+ 
         $automation->flow = $request->flow;
-        $automation->trigger_mode = $request->trigger;
+        if( $request->trigger){
+            $automation->trigger_mode = $request->trigger;
+        }
         $automation->save();
      
-        return Redirect::route('listAutomation');
+        echo json_encode(['result' => 'success' ]);
     }
 
     /**
@@ -155,9 +170,17 @@ class AutomationController extends Controller
      * @param  \App\Models\Automation  $automation
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Automation $automation)
+    public function destroy(Request $request, $id)
     {
-        //
+        $user_id = $request->user()->id;
+        $companyId = Cache::get('selected_company_' . $user_id);
+        
+        $automation = Automation::where('company_id', $companyId)->where('id', $id)->first();
+        if(!$automation){
+            abort(404);
+        }
+        $automation->delete();
+        return Redirect::route('listAutomation');
     }
 
     /**

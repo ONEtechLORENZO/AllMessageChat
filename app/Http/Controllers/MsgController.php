@@ -112,9 +112,14 @@ class MsgController extends Controller
         $messageList = [];
         $limit = $this->limit;
         $user = $request->user();
+        $user_id = $user->id;
+
+        // Get company selected by the user.
+        $companyId = Cache::get('selected_company_'. $user->id);
 
         // Search & Filter
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
+        $filterId = $request->has('filter_id') && $request->get('filter_id') ? $request->get('filter_id') : '';
         $filter = $request->has('filter') && $request->get('filter') ? $request->get('filter') : '';
 
         // List view columns to show
@@ -135,6 +140,20 @@ class MsgController extends Controller
             ->join('contacts', 'contacts.id', 'msgable_id')
             ->where('accounts.user_id', $user->id);
 
+
+        $searchData = '';
+        if($filter) {
+            $searchData = json_decode($filter);
+        }
+
+        // If filter is selected, we should use the filter conditions
+        if($filterId && $filterId != 'All') {
+            $filter = Filter::where('id', $filterId)->where('company_id', $companyId)->first();
+            if($filter) {
+                $searchData = unserialize( base64_decode($filter->condition) );
+            }
+        }
+
         if($search) {
             $query->where(function ($query) use ($search, $list_view_columns) {  
                 foreach($list_view_columns as $field_name => $field_info) {
@@ -154,6 +173,8 @@ class MsgController extends Controller
                 }    
             });
         } 
+        $query = ($searchData) ? $this->prepareQuery($searchData, $query, 'msgs') : $query;
+
         $messages = $query->orderBy('msgs.id', 'desc')
             ->paginate($limit);
 
@@ -188,6 +209,7 @@ class MsgController extends Controller
                 'created_at' => date_format($message->created_at, $this->dateListView),
             ];
         }
+        $filterData = $this->getFiltersInfo($companyId, $user_id, 'Msg', false);
 
         $module = new Msg();
         $messageTranslate = [
@@ -208,7 +230,7 @@ class MsgController extends Controller
             'list_view_columns' => $list_view_columns,
 
             'search' => $search,
-            'filter' => $filter,
+            'filter' => $filterData,
 
             // Actions
             'actions' => [
@@ -219,7 +241,7 @@ class MsgController extends Controller
                 'export' => true,
                 'import' => true,
                 'search' => true,
-                'filter' => false,
+                'filter' => true,
             ],
 
             'paginator' => [

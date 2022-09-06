@@ -5,6 +5,8 @@ namespace App\Observers;
 use App\Models\Contact;
 use App\Models\Serviceable;
 use App\Models\Service;
+use App\Models\Automation;
+use Cache;
 
 class ContactObserver
 {
@@ -16,7 +18,16 @@ class ContactObserver
      */
     public function created(Contact $contact)
     {
-        //
+        $user_id = $contact->user_id;
+        $companyId = Cache::get('selected_company_' . $user_id);
+        $automations = Automation::where('company_id', $companyId)
+            ->where('trigger_mode', 'contact_created')
+            ->get();
+        
+        foreach($automations as $automation){
+            $flow = json_decode($automation->flow);
+            $result = $automation->getFlowResult($flow , $contact );
+        }
     }
 
     /**
