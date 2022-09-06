@@ -20,7 +20,8 @@ import {
     ServerIcon,
     EyeIcon,
     ShoppingCartIcon,
-    ShoppingBagIcon
+    ShoppingBagIcon,
+    ChevronDownIcon
 } from "@heroicons/react/outline";                                                                      
 import SelectCompany from "@/Pages/Company/SelectCompany";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
@@ -34,6 +35,10 @@ const navigation = [
         href: route("dashboard"),
         icon: HomeIcon,
         show: ['all'],
+        subMenu : [{
+            name: 'test',
+            href : route("listContact")
+        }]
     },
     {
         name: "Contacts",
@@ -122,13 +127,15 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    const [showSidebarText, setShowSidebarText] = useState(false);
+    const [showSidebarText, setShowSidebarText] = useState(true);
 
     const [selectCompanyModal, setSelectedCompany] = useState(false);
 
     const[returnMainUser , setReturnMainUser] = useState(false);
+    const[menuDropdownActive , setMenuDropdownActive] = useState({});
 
     const [notifications, setNotifications] = useState();
+    
     const [count, setCount] = useState();
     const [id, setId] = useState();
 
@@ -139,7 +146,55 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                 setReturnMainUser(response.data.session_value);
             }
         });
+
+        console.count()
+
+       // drownDownToggleAction();
     },[])
+
+    // function drownDownToggleAction(){
+
+    //     const toggleElements = document.querySelectorAll('.gio-menu-item');
+    //     toggleElements.forEach(el => {
+    //     el.addEventListener('click', function() {
+    //         console.count()
+    //         this.querySelector('.gio-dropdown-icon').classList.toggle('rotate-180');
+    //     });
+    //     });
+
+    // }
+
+    function drownDownToggleAction(e,item){
+        console.log(e)
+        e.preventDefault();
+        e.stopPropagation();
+        e.nativeEvent.stopImmediatePropagation();
+
+        if(!item.subMenu) return;
+
+        // const dataset = e.target.dataset;
+        // debugger;
+        // console.log(dataset.index)
+
+        // if(navigation[index].hasOwnProperty('drop')){
+        //     navigation[index].drop = !navigation[index].drop
+        // }else{           
+        //     navigation[index].drop = true;
+        // }
+
+        const DropdownActive = menuDropdownActive;
+        const menu = item.name;
+        
+        if(DropdownActive.hasOwnProperty(menu)){
+            DropdownActive[menu] = !DropdownActive[menu]
+        }else{
+            DropdownActive[menu] = {};
+            DropdownActive[menu] = true;
+        }
+
+        setMenuDropdownActive(DropdownActive);
+
+    }
 
     function setImpersonate(){
         var data = {
@@ -276,43 +331,64 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                             {showSidebarText ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                         </div>
                         <div className="mt-2 flex-grow flex flex-col">
-                            <nav className="flex-1 px-2 pb-4 space-y-1">
-                                {navigation.map((item) => {
+                            <nav className="flex-1 px-2 pb-4 space-y-1 gio-navbar">
+                                <ul>
+                                {navigation.map((item,index) => {
                                     if(item.show != 'all' && !item.show.includes(auth.user.role)) {
                                         return;
                                     }
                                     return (
-                                        <Link
-                                            key={item.name}
-                                            href={item.href}
-                                            className={classNames(
-                                                (item.name == current_page)
-                                                    ? "text-primary"                                                    
-                                                    :"text-[#3D4459]  hover:text-primary",
-                                                     "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
-                                            )}
-                                        >
-                                            <item.icon
+                                        <li data-index={index}  onClick={(e)=>{drownDownToggleAction(e,item)}}>
+                                            <Link
+                                                preserveState
+                                                key={item.name}
+                                                href='#'
                                                 className={classNames(
                                                     (item.name == current_page)
-                                                        ? "text-primary"
-                                                        : "text-[#3D4459] group-hover:text-primary",
-                                                    "mr-3 flex-shrink-0 h-6 w-6"
+                                                        ? "text-primary"                                                    
+                                                        :"text-[#3D4459]  hover:text-primary",
+                                                        "group flex items-center px-2 py-2 text-sm font-medium rounded-md gio-menu-item"
+                                                )}                                                
+                                            >
+                                                <item.icon
+                                                    className={classNames(
+                                                        (item.name == current_page)
+                                                            ? "text-primary"
+                                                            : "text-[#3D4459] group-hover:text-primary",
+                                                        "mr-3 flex-shrink-0 h-6 w-6"
+                                                        
+                                                    )}
                                                     
-                                                )}
-                                                aria-hidden="true"
-                                            />
-                                            {showSidebarText ? item.name: ""}
-                                        </Link>
+                                                    aria-hidden="true"
+                                                   
+                                                />
+                                                {showSidebarText ? <div data-index={index} className="flex justify-between items-center flex-1">{item.name} {item.subMenu ? <ChevronDownIcon data-index={index} className={` ${(menuDropdownActive[item.name] ? 'rotate-180' : '')} h-6 w-6 gio-dropdown-icon  transition-all`} /> : '' }  </div>: ""}
+                                            </Link>
+                                            {
+                                                showSidebarText && menuDropdownActive[item.name] == true && item.subMenu ?
+
+                                                <ul>
+
+                                                    { item.subMenu.map((subItem,index) => {
+                                                    return <li><Link href={subItem.href}>{subItem.name}</Link></li>                          
+                                                        }) }
+
+                                                </ul> : ''
+
+                                            }
+                                           
+                                        </li>
                                     );
                                 })}
+                                </ul>
                             </nav>
                         </div>
                         {auth.user.role == 'global_admin' ?
                             <div className="flex-shrink-0 flex">
-                                <nav className="flex-1 px-2 pb-4 space-y-1">
+                                <nav className="flex-1 px-2 pb-4 space-y-1 gio-navbar">
                                     {globalAdminLinks.map((item) => {
                                         return (
+                                            
                                             <Link
                                                 key={item.name}
                                                 href={item.href}
@@ -335,6 +411,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                 />
                                                 {showSidebarText ? item.name: ""}
                                             </Link>
+                                            
                                         );
                                     })}
                                 </nav>
