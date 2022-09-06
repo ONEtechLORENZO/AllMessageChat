@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Authenticated from "../../../Layouts/Authenticated";
+import Authenticated from '@/Layouts/Authenticated';
 import ListView from '@/Components/Views/List/Index2';
 import InviteUser from './InviteUsers';
 

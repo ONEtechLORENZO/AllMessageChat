@@ -27,6 +27,7 @@ use App\Http\Controllers\FieldGroupController;
 use App\Http\Controllers\ChatListContactController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\LineItemController;
+use App\Http\Controllers\AutomationController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsGlobalAdmin;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -212,8 +213,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/showMore',[Notification::class, 'showMore'])->name('showMore');
 
     // Automation
-    Route::get('/automation', [UserController::class, 'automation'])->name('automation');
-      
+    Route::get('/automations', [AutomationController::class, 'index'])->name('listAutomation');
+    Route::post('/automation/store',[AutomationController::class, 'store'])->name('storeAutomation');
+    Route::post('/automation/update/{id}',[AutomationController::class, 'update'])->name('updateAutomation');
+    Route::get('/automation/create/{id}', [AutomationController::class, 'create'])->name('createAutomation');
+    Route::get('/getAccountList', [AutomationController::class, 'getActionData'])->name('get_account_list');
+
+    //Order
+    Route::get('/orders', [OrderController::class, 'index'])->name('listOrder');
+    
     //LineItem
     Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');
 

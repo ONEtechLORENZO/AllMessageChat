@@ -969,6 +969,10 @@ select {
 	margin-top: 0.5rem;
 	margin-bottom: 0.5rem;
 }
+.-mx-3 {
+	margin-left: -0.75rem;
+	margin-right: -0.75rem;
+}
 .ml-3 {
 	margin-left: 0.75rem;
 }
@@ -1794,6 +1798,10 @@ select {
 	--tw-border-opacity: 1;
 	border-color: rgba(199, 210, 254, var(--tw-border-opacity));
 }
+.border-indigo-300 {
+	--tw-border-opacity: 1;
+	border-color: rgba(165, 180, 252, var(--tw-border-opacity));
+}
 .bg-white {
 	--tw-bg-opacity: 1;
 	background-color: rgba(255, 255, 255, var(--tw-bg-opacity));
@@ -2234,6 +2242,9 @@ select {
 }
 .lowercase {
 	text-transform: lowercase;
+}
+.italic {
+	font-style: italic;
 }
 .leading-5 {
 	line-height: 1.25rem;
