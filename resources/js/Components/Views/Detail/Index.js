@@ -133,7 +133,7 @@ export default function Index(props)
                     Inertia.post(route('removeSubscription'), data, {
                         onSuccess: (response) => {
                             let tmpState = Object.assign([], subscribedServices);
-                            const index = tmpState.indexOf(5);
+                            const index = tmpState.indexOf(e.target.name);
                             if (index > -1) { 
                                 tmpState.splice(index, 1); 
                             }

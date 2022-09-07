@@ -239,7 +239,7 @@ class MsgController extends Controller
                 'edit' => false,
                 'delete' => false,
                 'export' => true,
-                'import' => true,
+                'import' => false,
                 'search' => true,
                 'filter' => true,
             ],

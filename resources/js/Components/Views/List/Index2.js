@@ -220,7 +220,7 @@ function ListView(props)
                         : ''}
                          {props.actions && props.actions.export === true ?
                             <>
-                                <a href={route('export')} 
+                                <a href={route('export',{'exportmod':props.module})} 
                                    className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
                                 >
                                    <DownloadIcon className='h-4 w-4' /> Export 

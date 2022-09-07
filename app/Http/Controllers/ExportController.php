@@ -1,22 +1,25 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 use App\Models\Field;
-use App\Models\Contact;
 use League\Csv\Writer;
 use Cache;
 
 class ExportController extends Controller
 {
+    public $entity_modules = ['Contact', 'Product', 'Opportunity', 'Order', 'Campaign'];
+
     public function exportFile(Request $request){
-        
         $user_id = $request->user()->id;
         $company_id = Cache::get('selected_company_'. $user_id);
+
+        $export_mod= $request->has('exportmod') && $request->get('exportmod') ? $request->get('exportmod') : '';
+        $module = "App\Models\\{$export_mod}";
+
         $where_conditon = [
             'user_id' => $user_id,
-            'module_name' => 'Contact'
+            'module_name' => $export_mod
         ];
         $fields = Field::where($where_conditon)->get(['field_name','field_label','is_custom']);
    
@@ -27,16 +30,22 @@ class ExportController extends Controller
                 $csvHeader[] = $field['field_label'];
                 $fieldList[$field['field_name']] = ['label' => $field['field_label'], 'is_custom' => $field['is_custom']];
             }
-
-            $contact_records = Contact::where('company_id' , $company_id)->get();
-    
-            $this->generateCSVfile($csvHeader, $contact_records, $fieldList);
+          
+            if($export_mod=='Message')
+            {
+                $export_records = MessageLog::where('company_id' , $company_id)->get();
+            }
+            else
+            {
+                $export_records = $module::where('company_id' , $company_id)->get();
+            }    
+            $this->generateCSVfile($csvHeader, $export_records, $fieldList,$export_mod);
         }
     }
 
-    public function generateCSVfile($header, $records, $fields){
-
-       $fileName = 'Contact';
+    public function generateCSVfile($header, $records, $fields,$modulename){
+        
+       $fileName = $modulename;
        $csvRecords = [];
          foreach($records as $index => $record){
             $csvRecord = [];
