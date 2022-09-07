@@ -48,8 +48,7 @@ class FormController extends Controller
             }
         }
 
-        $fields = Field::where($whereCondition)->get();
-         
+        $fields = Field::where($whereCondition)->groupBy('field_name')->orderBy('id')->get();
         foreach($fields as $field) {
             if(($field['is_custom'] == '1' && $field['field_type'] == 'dropdown') 
                 || $field['field_name'] == 'field_group'

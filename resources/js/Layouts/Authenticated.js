@@ -348,7 +348,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                             <Link
                                                 preserveState
                                                 key={item.name}
-                                                href='#'
+                                                href={item.href}
                                                 className={classNames(
                                                     (item.name == current_page)
                                                         ? "text-primary"                                                    
