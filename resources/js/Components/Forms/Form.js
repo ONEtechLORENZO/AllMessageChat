@@ -490,7 +490,7 @@ function Form(props)
                                                      handleChange={(event) => changeNumber(field_info.field_name,event)}
                                                      />
                                                      break;
-                                                case 'date&time':
+                                                case 'datetime':
                                                     element = <DateTime 
                                                     id={field_info.field_name}
                                                     name={field_info.field_name}
