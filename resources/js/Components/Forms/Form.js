@@ -52,6 +52,7 @@ function Form(props)
     const [options, setOptions] = useState(null);
     const [lineItems, setLineItems] = useState([]);
     const [totalPrice, setTotalPrice] = useState('0.00');
+    const [productList, setProductList] = useState(props.productList);
 
     const cancelButtonRef = useRef(null)
 
@@ -566,7 +567,7 @@ function Form(props)
                                     <div>
                                         {props && props.module == 'Order' ? 
                                         <LineItem 
-                                            productList={props.productList}
+                                            productList={productList}
                                             lineItems={lineItems}
                                             totalPrice={totalPrice}
                                             setLineItems={setLineItems}

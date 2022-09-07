@@ -95,6 +95,7 @@ class AutomationController extends Controller
         // } else {
             $automation = new Automation();
             $automation->name = $name;
+            $automation->status = $request->status;
             $automation->company_id = $companyId;
             $automation->save();
 
@@ -126,10 +127,11 @@ class AutomationController extends Controller
     {
        
         $companyId = Cache::get('selected_company_' . $request->user()->id);
-        $record = Automation::where('company_id', $companyId)->where('id', $id)->first('name');
+        $record = Automation::where('company_id', $companyId)->where('id', $id)->select('name', 'status')->first();
         if(!$record) {
             abort(401);
         }
+      
         return response()->json(['status' => true, 'record' => $record]);
     }
 
@@ -159,6 +161,7 @@ class AutomationController extends Controller
         if( $request->trigger){
             $automation->trigger_mode = $request->trigger;
         }
+       
         $automation->save();
      
         echo json_encode(['result' => 'success' ]);

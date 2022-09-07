@@ -91,13 +91,32 @@ class OrderController extends Controller
      * @param  \App\Models\Order  $order
      * @return \Illuminate\Http\Response
      */
-    public function show(Request $request, $order_id)
+    public function show(Request $request, $order_id) 
     {
-        $order =Order::findOrFail($request->id);
-       
+        $order = Order::findOrFail($order_id);
+
+        if(!$order){
+            about(401);
+        }
+         
         $companyId = Cache::get('selected_company_'. $request->user()->id);
         $headers = $this->getModuleHeader($companyId , 'Order');
-        
+        $lineItems = [];
+        $totalPrice = 0;
+        foreach($order->lineItem as $item){
+
+            $product = Product::find($item->product_id);
+            $lineItems[] = [
+                'name' => $product->name,
+                'quantity' => $item->quantity,
+                'price' => $item->price,
+                'amount' => $item->total_amount,
+                'id' => $item->product_id,
+            ]; 
+            
+            $totalPrice += $item->total_amount;
+        }
+
         return Inertia::render('Order/Detail', [
             'record' => $order,            
             'headers' => $headers,
@@ -105,8 +124,9 @@ class OrderController extends Controller
                 'Detail' => __('Detail'),
                 'Notes' => __('Notes'),
                 'Edit'  =>__('Edit')
-                ]
-
+            ],
+            'lineItems' => $lineItems,
+            'totalPrice' => $totalPrice
         ]);
     }
 
@@ -122,7 +142,7 @@ class OrderController extends Controller
         $order = Order::with('lineItem')->whereId($id)->first();
 
         if(!$order){
-            about(404);
+            about(401);
         }
      
         if($order){

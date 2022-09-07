@@ -35,36 +35,41 @@ const navigation = [
         href: route("dashboard"),
         icon: HomeIcon,
         show: ['all'],
-        subMenu : [{
-            name: 'test',
-            href : route("listContact")
-        }]
     },
     {
         name: "Contacts",
         href: route("listContact"),
         icon: IdentificationIcon,
         show: ['all'],
-    },    
-    {
-        name: "Opportunity",
-        href: route("listOpportunity"),
-        icon: EyeIcon,
-        show: ['all'],
-    },    
-    {
-        name: "Orders",
-        href: route("listOrder"),
-        icon: ShoppingBagIcon,
-        show: ['all'],
+        subMenu : [{
+                name: 'Tag',
+                href : route("listTag")
+            },{
+                name: 'List',
+                href : route("listCategory")
+            },{
+            name: 'Field',
+            href : route("listField")
+        }]
     },    
     {
         name: "Product",
         href: route("listProduct"),
         icon: ShoppingCartIcon,
         show: ['all'],
+    },   
+    {
+        name: "Opportunity",
+        href: route("listOpportunity"),
+        icon: EyeIcon,
+        show: ['all'],
+    },  
+    {
+        name: "Orders",
+        href: route("listOrder"),
+        icon: ShoppingBagIcon,
+        show: ['all'],
     },    
-    
     {
         name: "Chat",
         href: route("chat_list"),
