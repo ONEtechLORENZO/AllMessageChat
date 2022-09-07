@@ -270,7 +270,14 @@ function Form(props)
     
     // Remove characters
     function changeNumber(name,event) {
-        const result = event.target.value.replace(/\D/g, '');
+        let result = event.target.value;
+
+        if(result){
+            result = result.replace(/[^0-9\.]/g,'');
+            if(result.split('.').length>2){
+                result = result.replace(/\.+$/,"")
+            } 
+        }
         DataHandler(name,result);
     }
     
