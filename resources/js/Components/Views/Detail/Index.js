@@ -8,6 +8,7 @@ import SubPanels from "./SubPanels";
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import notie from 'notie';
+import ItemTable from "@/Pages/Order/itemTable";
 
 export default function Index(props) 
 {
@@ -350,7 +351,7 @@ export default function Index(props)
                                                 })}
                                             </div>
                                                 {customHeader &&
-                                                    <div className="divide-y"> 
+                                                  <div className="divide-y"> 
                                                    
                                                         {Object.entries(customHeader).map(([group, fields]) => { 
                                                             return(
@@ -379,6 +380,20 @@ export default function Index(props)
                                                         }) }
                                                   </div>
                                                 }
+                                                {tab && tab.linktab == 'lineItem' ? 
+                                                 <div className="divide-y pt-4">
+                                                   <ItemTable 
+                                                    lineItems={props.lineItems}
+                                                    view={'Detail'}
+                                                    totalPrice={props.totalPrice}
+                                                    getProductName={''}
+                                                    addQuantity={''}
+                                                    deleteItem={''}
+                                                    addItem={''}
+                                                    productList={''}
+                                                   />
+                                                 </div>
+                                                :''}
                                             </>
                                         }
                                         {tab.name == 'Notes' &&

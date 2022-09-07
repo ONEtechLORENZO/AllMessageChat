@@ -52,6 +52,7 @@ function Form(props)
     const [options, setOptions] = useState(null);
     const [lineItems, setLineItems] = useState([]);
     const [totalPrice, setTotalPrice] = useState('0.00');
+    const [productList, setProductList] = useState(props.productList);
 
     const cancelButtonRef = useRef(null)
 
@@ -269,7 +270,14 @@ function Form(props)
     
     // Remove characters
     function changeNumber(name,event) {
-        const result = event.target.value.replace(/\D/g, '');
+        let result = event.target.value;
+
+        if(result){
+            result = result.replace(/[^0-9\.]/g,'');
+            if(result.split('.').length>2){
+                result = result.replace(/\.+$/,"")
+            } 
+        }
         DataHandler(name,result);
     }
     
@@ -566,7 +574,7 @@ function Form(props)
                                     <div>
                                         {props && props.module == 'Order' ? 
                                         <LineItem 
-                                            productList={props.productList}
+                                            productList={productList}
                                             lineItems={lineItems}
                                             totalPrice={totalPrice}
                                             setLineItems={setLineItems}
