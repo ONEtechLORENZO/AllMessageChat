@@ -53,24 +53,23 @@ const navigation = [
         }]
     },    
     {
+        name: "Product",
+        href: route("listProduct"),
+        icon: ShoppingCartIcon,
+        show: ['all'],
+    },   
+    {
         name: "Opportunity",
         href: route("listOpportunity"),
         icon: EyeIcon,
         show: ['all'],
-    },    
+    },  
     {
         name: "Orders",
         href: route("listOrder"),
         icon: ShoppingBagIcon,
         show: ['all'],
     },    
-    {
-        name: "Product",
-        href: route("listProduct"),
-        icon: ShoppingCartIcon,
-        show: ['all'],
-    },    
-    
     {
         name: "Chat",
         href: route("chat_list"),
