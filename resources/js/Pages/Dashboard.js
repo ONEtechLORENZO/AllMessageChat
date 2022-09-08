@@ -56,7 +56,7 @@ export default function Dashboard(props) {
                     href={route('account_registration')}
                     className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 >
-                    {props.translator['Create new account']}
+                    {props.translator['Create new social profile']}
                 </Link>
                 </div> 
             </div>}
@@ -126,11 +126,11 @@ export default function Dashboard(props) {
                                         d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
                                     />
                                 </svg>
-                                    <h3 className="mt-2 text-sm font-medium text-gray-900">{props.translator['No account']}</h3>
-                                    <p className="mt-1 text-sm text-gray-500">{props.translator['Get started by creating a new account.']}</p>
+                                    <h3 className="mt-2 text-sm font-medium text-gray-900">{props.translator['No profile']}</h3>
+                                    <p className="mt-1 text-sm text-gray-500">{props.translator['Get started by creating a new social profile.']}</p>
                                     <div className="mt-6">
                                         <Link href={route('account_registration')} className="underline text-sm text-indigo-600 hover:text-indigo-900">
-                                        {props.translator['Click here to create new account']}
+                                        {props.translator['Click here to create new social profile']}
                                         </Link>
                                     </div>
                               </div>

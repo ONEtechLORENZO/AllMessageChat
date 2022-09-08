@@ -39,7 +39,8 @@ class OpportunityController extends Controller
                 'create' => true,                
                 'edit' => true,
                 'delete' => true,                
-                'search' => true,                
+                'search' => true, 
+                'export' => true,               
                 'select_field'=>true,
                 'detail' => true,
 

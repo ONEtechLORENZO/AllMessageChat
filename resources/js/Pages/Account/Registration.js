@@ -59,9 +59,7 @@ function Registration(props) {
 
     const services = {
          'whatsapp': 'WhatsApp',
-         'instagram': 'Instagram',
-        'facebook': 'Facebook',
-    };
+        };
     
     
     const [checked, setChecked] = useState(false);  
