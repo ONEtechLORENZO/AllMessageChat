@@ -115,7 +115,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/addnotes/{module}/{id}', [NoteController::class, 'addNotes'])->name('add_Notes');
     Route::get('/contacts', [ContactController::class, 'index'])->name('listContact');
     Route::delete('/contact/delete/{id}', [ContactController::class, 'destroy'])->name('deleteContact');
-    Route::get('/contact/{id}', [ContactController::class, 'show'])->name('detailContact');
+    Route::get('/contact', [ContactController::class, 'show'])->name('detailContact');
     Route::post('/updateContact/{id}', [ContactController::class, 'update'])->name('updateContact');
     Route::post('/updateContact', [ContactController::class, 'store'])->name('storeContact');
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');

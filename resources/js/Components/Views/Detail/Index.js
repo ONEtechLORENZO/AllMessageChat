@@ -46,7 +46,7 @@ export default function Index(props)
         setSubscribedServices(props.subscribedServices);
 
     },[props]);
-
+    
     function saveTag()
     {
         var data = {
@@ -416,6 +416,20 @@ export default function Index(props)
                                             </>
                                         }
                                         {tab.name == 'Contact' &&
+                                            <>
+                                                <SubPanels 
+                                                    module={tab.name}
+                                                    parent_id={props.record.id}
+                                                    parent_module={props.module}
+                                                    headers={props.sub_headers}
+                                                    records={props.related_records} 
+                                                    actions={props.actions}
+                                                    paginator={props.pagination}
+
+                                                />
+                                            </>
+                                        }
+                                        {tab.name == 'Opportunity' &&
                                             <>
                                                 <SubPanels 
                                                     module={tab.name}

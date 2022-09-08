@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Models\Opportunity;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Http\Request;
@@ -114,7 +115,7 @@ class ContactController extends Controller
      * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Http\Response
      */
-    public function show(Request $request, $contact_id)
+    public function show(Request $request)
     {
         $contact = Contact::findOrFail($request->id);
         $tagOptions = $this->getTagOptionList($request->user()->id);
@@ -132,8 +133,12 @@ class ContactController extends Controller
         foreach($contact->services as $subscribed_service) {
             $subscribedServices[] = $subscribed_service['unique_name'];
         }
-        
-        return Inertia::render('Contacts/Detail', [
+
+        // Get Sub module data
+        $subModule = new Opportunity();
+        $query = $subModule->where('contact_id', $request->id);
+        $subPanelData = $this->getSubPanelRecords('Contact', $subModule, $query);            
+        $data = [
             'contact' => $contact,
             'tagOptions' => $tagOptions,
             'serviceOptions' => $serviceOptions,
@@ -146,8 +151,9 @@ class ContactController extends Controller
                 'Detail' => __('Detail'),
                 'Notes' => __('Notes'),
                 'Edit'  =>__('Edit')
-            ]
-        ]);
+            ]];
+        $data = array_merge($data , $subPanelData);
+        return Inertia::render('Contacts/Detail', $data);
     }
 
     /**

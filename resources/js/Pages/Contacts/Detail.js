@@ -9,8 +9,9 @@ export default function Detail(props)
     const tabs = [
         { label: (props.translator['Detail']), name: 'Detail', href: '#' },
         { label: (props.translator['Notes']), name: 'Notes', href: '#' },
+        { label: 'Opportunity', name: 'Opportunity', href: '#' },
     ];
-
+    
     const [showForm, setShowForm] = useState(false);
 
     /**
@@ -45,6 +46,10 @@ export default function Detail(props)
                 translator={props.translator}
                 serviceOptions={props.serviceOptions}
                 subscribedServices={props.subscribedServices}
+                related_records={props.related_records}
+                sub_headers = {props.related_records_header} 
+                actions={props.sub_panbel_actions}
+                pagination={props.sub_panel_pagination}                
             />
             
             {showForm ?
