@@ -6,8 +6,10 @@ use Cache;
 use Inertia\Inertia;
 use App\Models\Field;
 use App\Models\Order;
+use App\Models\Contact;
 use App\Models\Product;
 use App\Models\LineItem;
+use App\Models\Opportunity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 
@@ -144,7 +146,18 @@ class OrderController extends Controller
         if(!$order){
             about(401);
         }
-     
+        
+        //related field pre-fill 
+        if($order->opportunity){
+           $Opportunity = Opportunity::findOrFail($order->opportunity);
+           $order['opportunity'] = ['value' => $Opportunity->id , 'label' => $Opportunity->name];
+        }
+        if($order->contact){
+            $contact = Contact::findOrFail($order->contact);
+            $name = $contact->first_name .' '.$contact->last_name;
+            $order['contact'] = ['value' => $contact->id, 'label' => $name];
+        }
+      
         if($order){
             $orderItems = $order->lineItem;
             $lineItems = [];

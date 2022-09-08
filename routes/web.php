@@ -124,10 +124,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Opportunity
     Route::get('/opportunities', [OpportunityController::class, 'index'])->name('listOpportunity');
     Route::delete('/opportunity/delete/{id}', [OpportunityController::class, 'destroy'])->name('deleteOpportunity');
-    Route::get('/opportunity/{id}', [OpportunityController::class, 'show'])->name('detailOpportunity');
+    Route::get('/opportunity/detail/{id}', [OpportunityController::class, 'show'])->name('detailOpportunity');
     Route::post('/updateOpportunity/{id}', [OpportunityController::class, 'update'])->name('updateOpportunity');
     Route::post('/updateOpportunity', [OpportunityController::class, 'store'])->name('storeOpportunity');
-    Route::get('/getOpportunityDetail', [OpportunityController::class, 'getContactData'])->name('editOpportunity');
+    Route::get('/opportunity/edit/{id}', [OpportunityController::class, 'edit'])->name('editOpportunity');
    
     // Product
     Route::get('/products', [ProductController::class, 'index'])->name('listProduct');
