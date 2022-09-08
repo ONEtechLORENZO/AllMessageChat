@@ -7,6 +7,8 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
 use Cache;
 use App\Models\Field;
+use App\Models\Contact;
+use App\Models\User;
 
 class OpportunityController extends Controller
 {
@@ -59,21 +61,37 @@ class OpportunityController extends Controller
     {
         $opportunity_id = $this->saveOpportunity($request);
         
-        if($request->parent_module == 'Chat') {
-            return Redirect::route('chat_list');
-        } else if($request->parent_id){
-            $url = route('detail'. $request->parent_module).'?id='.$request->parent_id.'&page=1';
-            return Redirect::to($url);
-        } else {
-            return Redirect::route('detailOpportunity', $opportunity_id);
-        }
+        return Redirect::route('detailOpportunity', $opportunity_id);
     }
 
-    public function getContactData(Request $request)
+     /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Models\Opportunity  $Opportunity
+     * @return \Illuminate\Http\Response
+     */
+    
+    public function edit(Request $request, $id)
     {
-        $opportunity = Opportunity::findOrFail($request->id);
-        echo json_encode(['record' => $opportunity]);
-        die;
+        $Opportunity = Opportunity::findOrFail($id);
+      
+        if(!$Opportunity){
+            about(401);
+        }
+
+        //related field pre-fill
+        if($Opportunity->contact_id){
+            $contact = Contact::findOrFail($Opportunity->contact_id);
+            $name = $contact->first_name .' '.$contact->last_name;
+            $Opportunity['contact_id'] = ['value' => $contact->id, 'label' => $name];
+        }
+
+        if($Opportunity->assigned_to){
+            $user = User::findOrFail($Opportunity->assigned_to);
+            $Opportunity['assigned_to'] = ['value' => $user->id, 'label' => $user->name];
+        }
+        
+        return response()->json(['record' => $Opportunity]);
     }
 
     /**
