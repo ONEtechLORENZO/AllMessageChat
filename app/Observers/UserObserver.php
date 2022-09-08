@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\User;
 
 use App\Models\Field;
+use App\Models\Wallet;
 
 use App\Models\FieldGroup;
 
@@ -28,6 +29,9 @@ class UserObserver
         if(!$isAdded) {
             $fields = $this->getModuleFields($user->id, $company_id);
             Field::insert($fields);
+            
+            //add amount in wallet 
+            $wallet = $this->addWalletAmount($user->id, $company_id);
         }
     }
 
@@ -167,5 +171,18 @@ class UserObserver
         ];
        
         return $fields;
+    }
+
+    public function addWalletAmount($user_id, $company_id){
+
+        if($user_id){
+            $wallet = new Wallet;
+  
+            $wallet->balance_amount = 1;
+            $wallet->user_id = $user_id;
+            $wallet->company_id = $company_id;
+            
+            $wallet->save();
+         }
     }
 }

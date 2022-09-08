@@ -80,7 +80,8 @@ function Form(props)
             nProgress.done(true);
             if(response.data.status !== false) {
                 setData(response.data.record);
-                setLineItems(response.data.lineItems);           
+                setLineItems(response.data.lineItems);
+                setProductList(response.data.productList)           
             }
             else {
                 notie.alert({type: 'error', text: response.data.message, time: 5});

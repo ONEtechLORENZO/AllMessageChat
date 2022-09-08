@@ -131,7 +131,7 @@ class FormController extends Controller
      */
     function lookup(Request $request)
     {
-        $records = [];
+        $records[] = ['label' => 'Select', 'value' => ''];
         $key = $request->has('key') ? $request->get('key') : ''; 
         $module = $request->has('module') ? $request->get('module') : ''; 
         if($key && $module && in_array($module, $this->entity_modules)) {
@@ -167,6 +167,7 @@ class FormController extends Controller
             }
 
             $response = $query->limit(5)->get();
+           
             foreach($response as $record) {
                 if($module == 'Contact') {
                     $records[] = ['label' => $record->first_name . ' ' . $record->last_name, 'value' => $record->id];
@@ -176,7 +177,7 @@ class FormController extends Controller
                 }
             }
         }
-
+        
         return response()->json(['records' => $records]);
     }
 }

@@ -161,6 +161,7 @@ class OrderController extends Controller
         if($order){
             $orderItems = $order->lineItem;
             $lineItems = [];
+            $companyId = '';
 
             if($orderItems){
                 foreach($orderItems as $item){  
@@ -175,6 +176,10 @@ class OrderController extends Controller
                     ];
                     $companyId = $item->company_id;
                 }
+            }
+            
+            if(!$companyId){
+                $companyId = Cache::get('selected_company_'. $request->user()->id);
             }
             $productList = $this->getProductList($companyId);
 
@@ -246,43 +251,40 @@ class OrderController extends Controller
      
         $fields = Field::where('module_name', 'Order')
             ->where('user_id', $request->user()->id)
-            ->get(['field_name', 'is_custom', 'field_type']);
-
-        if ($fields) {
-            $custom_field = [];
-            foreach ($fields as $record) {
-                $field = $record['field_name'];
-                $custom = $record['is_custom'];
-                if($record['field_type'] == 'relate' && $custom == '0' && $request->has($field)) {
-                    $order->$field = $request->get($field)['value'];
-                }
-                else {
-                    if ($request->has($field) && ($custom == '0' || !$custom)) {
-                        $order->$field = $request->$field;
-                    }
-                }
-  
-                if($custom == '1'){
-                    if($request->custom){
-                        foreach($request->custom as $key => $value){
-                            $custom_field[$key] = $value;
+            ->get('field_name');
+          
+        if($fields){
+            foreach($fields as $field){
+                $name = $field->field_name;
+                
+                if($request->has($name)){
+                    if($name == 'opportunity'){
+                        $Opportunity = $request->opportunity;
+                        if($Opportunity && $Opportunity['value']){
+                            $order->$name = $Opportunity['value'];
+                        }else{
+                            $order->$name = NULL;
                         }
+                    }else if($name == 'contact'){
+                        $contact = $request->contact;
+                        if($contact && $contact['value']){
+                            $order->$name = $contact['value'];
+                        }else{
+                            $order->$name = NULL;
+                        }
+                    }else{
+                        $order->$name = $request->$name;
                     }
                 }
             }
-
-            if ($custom_field) {
-                $order->custom = $custom_field;
-            }
-
+            
             $order->company_id = Cache::get('selected_company_'. $request->user()->id);
             $order->save();
-        }
-
+        } 
         return $order->id;
     }
     
-    public function getProductPrice(Request $request, $id){
+    public function getProductPrice(Request $request, $id){ 
            
            if($id){
                $companyId = Cache::get('selected_company_'. $request->user()->id);
@@ -308,12 +310,12 @@ class OrderController extends Controller
     public function saveLineItems($lineItems, $order_id, $companyId){
         
         if($order_id){
-            
+         
             $lineItem = LineItem::where('order_id',$order_id);
-        
+       
             foreach($lineItems as$key => $item){
             
-                if($item['id'] != ''){
+                if($item['name'] != ''){
 
                     $lineItem = new LineItem();
                     $lineItem->order_id = $order_id;

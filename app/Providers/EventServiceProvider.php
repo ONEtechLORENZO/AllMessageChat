@@ -8,8 +8,10 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvi
 use Illuminate\Support\Facades\Event;
 use App\Models\Account;
 use App\Models\Contact;
+use App\Models\Company;
 use App\Observers\AccountObserver;
 use App\Observers\ContactObserver;
+use App\Observers\CompanyObserver;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -33,5 +35,6 @@ class EventServiceProvider extends ServiceProvider
     {
         Account::observe(AccountObserver::class);
         Contact::observe(ContactObserver::class);
+        Company::observe(CompanyObserver::class);
     }
 }

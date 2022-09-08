@@ -3,6 +3,8 @@
 namespace App\Observers;
 
 use App\Models\Company;
+use App\Models\Wallet;
+use Auth;
 
 class CompanyObserver
 {
@@ -14,7 +16,17 @@ class CompanyObserver
      */
     public function created(Company $company)
     {
-        //
+       $user_id = Auth::id();
+
+       if($user_id){
+          $wallet = new Wallet;
+
+          $wallet->balance_amount = 1;
+          $wallet->user_id = $user_id;
+          $wallet->company_id = $company->id;
+          
+          $wallet->save();
+       }
     }
 
     /**
