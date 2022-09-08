@@ -252,7 +252,7 @@ class OrderController extends Controller
         $fields = Field::where('module_name', 'Order')
             ->where('user_id', $request->user()->id)
             ->get('field_name');
-            
+          
         if($fields){
             foreach($fields as $field){
                 $name = $field->field_name;
@@ -260,19 +260,24 @@ class OrderController extends Controller
                 if($request->has($name)){
                     if($name == 'opportunity'){
                         $Opportunity = $request->opportunity;
-                        if($Opportunity['value']){
+                        if($Opportunity && $Opportunity['value']){
                             $order->$name = $Opportunity['value'];
+                        }else{
+                            $order->$name = NULL;
                         }
                     }else if($name == 'contact'){
                         $contact = $request->contact;
-                        if($contact['value']){
+                        if($contact && $contact['value']){
                             $order->$name = $contact['value'];
+                        }else{
+                            $order->$name = NULL;
                         }
                     }else{
                         $order->$name = $request->$name;
                     }
                 }
             }
+            
             $order->company_id = Cache::get('selected_company_'. $request->user()->id);
             $order->save();
         } 
