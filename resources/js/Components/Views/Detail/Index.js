@@ -42,7 +42,7 @@ export default function Index(props)
         if(props.current_tab){
             setActiveTab(props.current_tab);
         } 
-
+      
         setSubscribedServices(props.subscribedServices);
 
     },[props]);
@@ -380,7 +380,7 @@ export default function Index(props)
                                                         }) }
                                                   </div>
                                                 }
-                                                {tab && tab.linktab == 'lineItem' ? 
+                                                {tab.linktab == 'lineItem' && props.lineItems.length != 0? 
                                                  <div className="divide-y pt-4">
                                                    <ItemTable 
                                                     lineItems={props.lineItems}
