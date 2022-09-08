@@ -300,7 +300,7 @@ export default function Index(props)
                                                         }
                                                     }
                                                     else if(field.type == 'multiselect') {
-                                                        value = value.join(', ');
+                                                        value =  (value) ? value.join(', ') : '-';
                                                     }
                                                    
                                                     if(showField) {

@@ -27,7 +27,7 @@ class FieldSeeder extends Seeder
         $this->createField('Price', 'country_code', 'Country', 'dropdown', '1', $countryCodes, 'false');
         $this->createField('Field', 'module_name', 'Module Name', 'dropdown', '1', $moduleOptions, 'true');
         $this->createField('Field', 'field_type', 'Field Type', 'dropdown', '1', $fieldTypes, 'true');
-         $this->createField('Message', 'msg_mode', 'Mode', 'dropdown', '1', $msgMode, 'true');
+        $this->createField('Message', 'msg_mode', 'Mode', 'dropdown', '1', $msgMode, 'true');
 
         // Add Service entries
         DB::table('services')->insert([
