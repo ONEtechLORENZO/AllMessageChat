@@ -13,6 +13,7 @@ use App\Models\Field;
 use App\Models\FieldGroup;
 use Cache;
 use App\Models\Contact;
+use App\Models\Opportunity;
 use App\Models\Service;
 
 class Controller extends BaseController
@@ -582,24 +583,27 @@ class Controller extends BaseController
     /**
      * Get SubPanel Records
      */
-    public function getSubPanelRecords( $parent, $module, $query)
+    public function getSubPanelRecords( $parent, $submodule, $query)
     {
+        $module=new $submodule;
         $headers = $module->getListViewFields();
+        
         $baseTable = $module->getTable();
+       
         $moduleName = class_basename($module);
-
         $query = $this->getListViewFields($baseTable, $moduleName, $query, $headers);
-        $records = $query->paginate($this->limit);
 
+        $records = $query->paginate($this->limit);
         unset($headers['tag']);
         unset($headers['list']);
 
         // Set custom url for Paginate
         $parentId = $_GET['id'];
+        
         $url = route('detail'. $parent). '?id=' . $_GET['id'];
         $records->withPath($url);
 
-        $currentTab = 'Detail';
+        $currentTab = $moduleName;
         if(isset($_GET['page'])){
             $moduleName = class_basename($module);
             $currentTab = $moduleName;
@@ -622,6 +626,7 @@ class Controller extends BaseController
                 'lastPage' => $records->lastPage(),
                 'perPage' => $records->perPage(),
             ],
+            
 
             // Actions
             'sub_panbel_actions' => [

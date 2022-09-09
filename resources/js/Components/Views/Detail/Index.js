@@ -39,14 +39,16 @@ export default function Index(props)
 
         setListSelectedOption(props.listData);        
         setRecordId(props.record.id);
+        
         if(props.current_tab){
             setActiveTab(props.current_tab);
-        } 
-      
+        }      
         setSubscribedServices(props.subscribedServices);
-
+       
     },[props]);
+
     
+        
     function saveTag()
     {
         var data = {
@@ -261,8 +263,9 @@ export default function Index(props)
                                     activeClassName += ' border-b-2 border-blue-400';
                                 }
                                 return(
+                                   
                                     <li className={activeClassName} onClick={() => setActiveTab(tab.name)}>
-                                        <a id="default-tab" href={"#"+tab.name}> {tab.label} </a>
+                                       <a id="default-tab" href={"#"+tab.name}> {tab.label} </a>
                                     </li>
                                 )
                             })}
@@ -421,10 +424,10 @@ export default function Index(props)
                                                     module={tab.name}
                                                     parent_id={props.record.id}
                                                     parent_module={props.module}
-                                                    headers={props.sub_headers}
-                                                    records={props.related_records} 
-                                                    actions={props.actions}
-                                                    paginator={props.pagination}
+                                                  //  headers={props.sub_headers}
+                                                    //records={props.related_records} 
+                                                    //actions={props.actions}
+                                                    //paginator={props.pagination}
 
                                                 />
                                             </>
@@ -435,10 +438,10 @@ export default function Index(props)
                                                     module={tab.name}
                                                     parent_id={props.record.id}
                                                     parent_module={props.module}
-                                                    headers={props.sub_headers}
+                                                   /* headers={props.sub_headers}
                                                     records={props.related_records} 
                                                     actions={props.actions}
-                                                    paginator={props.pagination}
+                                                    paginator={props.pagination}*/
 
                                                 />
                                             </>
