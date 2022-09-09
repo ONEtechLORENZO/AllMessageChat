@@ -4,10 +4,12 @@ import Alert from '@/Components/Alert';
 import Pagination from '@/Components/Pagination';
 import Button from '@/Components/Forms/Button';
 import ContactSelection from '@/Components/ContactSelection';
+import Form from '@/Components/Forms/Form';
 
 function SubPanels(props){
     const [showForm, setShowForm] = useState(false);
-    
+    const [fieldOptions, setFieldOptions ] = useState({});
+    const [recordId, setRecordId] = useState(''); 
     /**
      * Hide form and reset the Record ID
      */
@@ -15,7 +17,20 @@ function SubPanels(props){
         setShowForm(false);
         setRecordId('');
     }
-    
+    /**
+     * Get dropdown field options
+     */
+     function getFieldOptions(name){
+        let newFieldOptions = Object.assign({}, fieldOptions);
+        axios({
+            method: 'get',
+            url: route('get_field_options', {'field_name': name, 'module_name': props.module}),
+        })
+        .then( (response) =>{
+          newFieldOptions[name] = response.data.options;
+          setFieldOptions(newFieldOptions);
+        });
+    }
     return(
         <div className="">
             <div className="flex min-w-0 justify-between">
@@ -39,6 +54,8 @@ function SubPanels(props){
                                 headers={props.headers}
                                 records={props.records}
                                 actions={props.actions}
+                                fieldOptions={fieldOptions}
+                                getFieldOptions={getFieldOptions}
                             />
                             {Object.entries(props.records).length == 0 ?         
                                 <Alert type='info' message= {'No record related yet.'} hideClose={true} />
@@ -50,13 +67,21 @@ function SubPanels(props){
                 </div>
             </div>
 
-            {showForm &&
+            {showForm && (props.module==='Contact'?
             <ContactSelection
                     setShowForm={setShowForm}
                     parent_module={props.parent_module}
                     parent_id={props.parent_id}
-                />
-            }
+                /> :<Form 
+                module={props.module}
+                heading={props.heading}
+                hideForm={hideForm}
+                recordId={recordId}
+                translator={props.translator}
+               // parent_id={props.parent_id}
+                //parent_module={props.parent_module} 
+            />)
+           }
             {/* {showForm ?
                 <Form 
                     module={props.module}
