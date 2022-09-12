@@ -6,10 +6,12 @@ use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Models\OutgoingServerConfig;
 use App\Models\MailToAddress;
+use App\Models\Company;
 use Illuminate\Support\Facades\Redirect;
 
 use auth;
-
+use Cache;
+use DB;
 
 class SettingsController extends Controller
 {
@@ -94,5 +96,56 @@ class SettingsController extends Controller
 
         $toAddress->save();
         return Redirect::route('to_mail');
+    }
+
+    public function walletSubscription(Request $request){
+        
+        $userCompany = $this->UserCompanyDetail($request);
+
+        return Inertia::render('Subscription/index',[
+            'company' => $userCompany
+        ]);
+    }
+
+    public function UserCompanyDetail($request){
+        
+        $user_id = $request->user()->id;
+        $company_id = Cache::get('selected_company_'.$user_id);
+
+        //get current company details
+        $currentCompany =  Company::where('id', $company_id)->first();
+
+        //get related company details
+        $userCompany = DB::table('company_user')->where('user_id', $user_id)->get('company_id');
+        
+        foreach($userCompany as $company){
+            $company =  Company::where('id', $company->company_id)->first();
+            $related_company[$company['id']] = $company['name'];
+        }
+       
+        return $return = [
+              'currentCompany' => $currentCompany,
+              'relatedCompany' => $related_company
+        ];
+    }
+
+    public function CurrentCompany(Request $request){
+        
+        $company = $this->UserCompanyDetail($request);
+
+        return response()->json($company);
+        
+    }
+
+    public function changeCompany(Request $request, $id){
+        
+        if($id){
+            Cache::put('selected_company_'. $request->user()->id  , $id);
+        }
+    }
+
+    public function updateSubscription(Request $request){
+
+        return Inertia::render('Subscription/subscription');
     }
 }

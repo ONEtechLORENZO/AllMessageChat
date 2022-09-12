@@ -424,11 +424,7 @@ export default function Index(props)
                                                     module={tab.name}
                                                     parent_id={props.record.id}
                                                     parent_module={props.module}
-                                                  //  headers={props.sub_headers}
-                                                    //records={props.related_records} 
-                                                    //actions={props.actions}
-                                                    //paginator={props.pagination}
-
+                                                  
                                                 />
                                             </>
                                         }
@@ -438,11 +434,15 @@ export default function Index(props)
                                                     module={tab.name}
                                                     parent_id={props.record.id}
                                                     parent_module={props.module}
-                                                   /* headers={props.sub_headers}
-                                                    records={props.related_records} 
-                                                    actions={props.actions}
-                                                    paginator={props.pagination}*/
-
+                                                />
+                                            </>
+                                        }
+                                        {tab.name == 'Order' &&
+                                            <>
+                                                <SubPanels 
+                                                    module={tab.name}
+                                                    parent_id={props.record.id}
+                                                    parent_module={props.module}
                                                 />
                                             </>
                                         }

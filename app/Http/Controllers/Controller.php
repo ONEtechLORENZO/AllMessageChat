@@ -603,7 +603,7 @@ class Controller extends BaseController
         $url = route('detail'. $parent). '?id=' . $_GET['id'];
         $records->withPath($url);
 
-        $currentTab = $moduleName;
+        $currentTab = 'Detail';
         if(isset($_GET['page'])){
             $moduleName = class_basename($module);
             $currentTab = $moduleName;
@@ -627,7 +627,6 @@ class Controller extends BaseController
                 'perPage' => $records->perPage(),
             ],
             
-
             // Actions
             'sub_panbel_actions' => [
                 'detail' => true,
