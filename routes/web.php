@@ -112,7 +112,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Contact
     //Route::get('/contacts', [ContactController::class, 'index'])->name('contacts');
     Route::get('/notes/{module}/{id}', [NoteController::class, 'list_notes'])->name('listNotes');
-    Route::get('/subpanelDetail', [ContactController::class, 'show_subpanel'])->name('subpanel_list');
     Route::post('/addnotes/{module}/{id}', [NoteController::class, 'addNotes'])->name('add_Notes');
     Route::get('/contacts', [ContactController::class, 'index'])->name('listContact');
     Route::delete('/contact/delete/{id}', [ContactController::class, 'destroy'])->name('deleteContact');
@@ -122,6 +121,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
     
+    Route::get('/subpanelrecords', [ContactController::class, 'show_subpanel'])->name('subpanel_list');
+
     // Opportunity
     Route::get('/opportunities', [OpportunityController::class, 'index'])->name('listOpportunity');
     Route::delete('/opportunity/delete/{id}', [OpportunityController::class, 'destroy'])->name('deleteOpportunity');

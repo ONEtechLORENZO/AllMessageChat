@@ -134,14 +134,7 @@ class ContactController extends Controller
             $subscribedServices[] = $subscribed_service['unique_name'];
         }
 
-     /*   // Get Sub module data
-      //  $subModule= $request->has('submodule') && $request->get('submodule') ? $request->get('submodule') : '';
-      // dd($request->get('submodule'));
-       // $submod = "App\Models\\{$subModule}";
-       $subModule = new Opportunity();
-        $query = $subModule::where('contact_id', $request->id);
-        $subPanelData = $this->getSubPanelRecords('Contact', $subModule, $query);    */        
-        $data = [
+        return Inertia::render('Contacts/Detail', [
             'contact' => $contact,
             'tagOptions' => $tagOptions,
             'serviceOptions' => $serviceOptions,
@@ -154,35 +147,39 @@ class ContactController extends Controller
                 'Detail' => __('Detail'),
                 'Notes' => __('Notes'),
                 'Edit'  =>__('Edit')
-            ]];
-        $data = array_merge($data);
-        return Inertia::render('Contacts/Detail', $data);
+            ]
+        ]);
     }
 
-
+// Get Sub panel data
 
     public function show_subpanel(Request $request)
     {
-        $module= $request->has('module') && $request->get('module') ? $request->get('module') : '';
-       $mod = "App\Models\\{$module}";
-       
-        $contact = $mod::findOrFail($request->id);
+        $parent_module= $request->has('module') && $request->get('module') ? $request->get('module') : '';
+        $parent_mod = "App\Models\\{$parent_module}";       
+
+        $contact = $parent_mod::findOrFail($request->id);
         $companyId = Cache::get('selected_company_'. $request->user()->id);
         $headers = $this->getModuleHeader($companyId , 'Contact');
-    // Get Sub module data
-       $subModule= $request->has('submodule') && $request->get('submodule') ? $request->get('submodule') : '';
-       $submod = "App\Models\\{$subModule}";
-       if($module=='Tag')
-       {
-        $query = $submod::join('taggables', 'taggable_id', 'contacts.id')
-            ->where('tag_id', $request->id);
-       }
-       else
-       {
-       $query = $submod::where('contact_id', $request->id);
-       }
-      
-        $subPanelData = $this->getSubPanelRecords('Contact', $submod, $query);  
+        
+        $subModule= $request->has('submodule') && $request->get('submodule') ? $request->get('submodule') : '';
+        $submod = "App\Models\\{$subModule}";
+
+        if($parent_module=='Tag')
+        {
+            $query = $submod::join('taggables', 'taggable_id', 'contacts.id')
+                ->where('tag_id', $request->id);
+        }
+
+        if($parent_module=='Contact')
+        {
+            if($subModule=='Opportunity')
+              $query = $submod::where('contact_id', $request->id);
+            if($subModule=='Order')
+              $query = $submod::where('contact', $request->id);
+        }
+
+        $subPanelData = $this->getSubPanelRecords($parent_module, $submod, $query);  
         echo json_encode($subPanelData);
        die;
       }

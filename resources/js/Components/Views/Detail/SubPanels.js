@@ -22,9 +22,9 @@ function SubPanels(props){
        }, [props]);
 
 
-     
+     //Get subpanel records
        function getData()
-    {
+       {
         let endpoint_url = route("subpanel_list" , {'module':props.parent_module,'id': props.parent_id,'submodule':props.module});   
         axios({
             method: 'get',
@@ -32,12 +32,10 @@ function SubPanels(props){
         })
         .then((response) => {                      
           setrecordDetails(response.data.related_records); 
-          setHeaders(response.data.sub_headers);
-          setpaginateDetail(response.data.pagination);
-          setActions(response.data.actions);
-      
+          setHeaders(response.data.related_records_header);
+          setpaginateDetail(response.data.sub_panel_pagination);
+          setActions(response.data.sub_panbel_actions);
       });
-   
     }
 
     /**
