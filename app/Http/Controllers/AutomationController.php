@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Redirect;
 use App\Models\Account;
 use App\Models\Template;
 use App\Models\Tag;
+use App\Models\Field;
 use App\Models\Category;
 use Inertia\Inertia;
 use Cache;
@@ -222,10 +223,26 @@ class AutomationController extends Controller
                 $return['list_list'][$list->id] = $list->name;
             }
         } else if('custom_field' == $_GET['action_type']){ 
-            $getList = Category::where('company_id', $companyId)->get();
-            foreach($getList as $list){
-                $return['list_list'][$list->id] = $list->name;
+            $module = 'Contact';
+            $getFields = Field::where('module_name', $module)
+                ->where('company_id', $companyId)
+                ->where('is_custom' , 1)
+                ->groupBy('field_name')
+                ->get();
+            foreach($getFields as $field){
+                $return['field_list'][$field->field_name] = $field->field_label;
+              
+                $option = $field->options;
+                $options = [];
+                if ($option) {
+                    foreach ($option as $key) {
+                        $options[$key['value']] = $key['value'];
+                    }
+                }
+                $field->options = $options;
+                $return['field_info'][$field->field_name] = $field;
             }
+            
         } 
         echo json_encode(['result' =>$return ]);
     }

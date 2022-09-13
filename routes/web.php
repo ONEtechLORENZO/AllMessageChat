@@ -224,7 +224,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/automation/edit/{id}', [AutomationController::class, 'edit'])->name('editAutomation');
     Route::delete('/automation/delete/{id}',[AutomationController::class, 'destroy'])->name('deleteAutomation');
 
-    Route::get('/getAccountList', [AutomationController::class, 'getActionData'])->name('get_account_list');
+    Route::get('/getActionData', [AutomationController::class, 'getActionData'])->name('get_action_data');
     
     // LineItem
     Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');

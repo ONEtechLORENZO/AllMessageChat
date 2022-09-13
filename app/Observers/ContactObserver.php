@@ -18,16 +18,7 @@ class ContactObserver
      */
     public function created(Contact $contact)
     {
-        $user_id = $contact->user_id;
-        $companyId = Cache::get('selected_company_' . $user_id);
-        $automations = Automation::where('company_id', $companyId)
-            ->where('trigger_mode', 'contact_created')
-            ->get();
-        
-        foreach($automations as $automation){
-            $flow = json_decode($automation->flow);
-            $result = $automation->getFlowResult($flow , $contact );
-        }
+        $this->runFlowActions($contact , 'contact_created');
     }
 
     /**
@@ -38,8 +29,7 @@ class ContactObserver
      */
     public function updated(Contact $contact)
     {
-        //        
-       
+      //  $this->runFlowActions($contact , 'contact_created');
     }
 
     /**
@@ -73,5 +63,23 @@ class ContactObserver
     public function forceDeleted(Contact $contact)
     {
         //
+    }
+
+    /**
+     * Run flow actions
+     */
+    public function runFlowActions($contact , $mode)
+    {
+        
+        $user_id = $contact->user_id;
+        $companyId = Cache::get('selected_company_' . $user_id);
+        $automations = Automation::where('company_id', $companyId)
+            ->where('trigger_mode', $mode)
+            ->get();
+        
+        foreach($automations as $automation){
+            $flow = json_decode($automation->flow);
+            $result = $automation->getFlowResult($flow , $contact );
+        }
     }
 }

@@ -1530,6 +1530,10 @@ class UserController extends Controller
         $currentUser = $request->user()->id;
         $user = User::find($userId);
         
+        // clear cache
+        Cache::forget('selected_company_'. $request->user()->id);
+        Cache::flush();
+
         // Start the session
         Session::put('global_user', $currentUser);
         
@@ -1560,6 +1564,10 @@ class UserController extends Controller
 
         if($userId ==  $request->session()->get('global_user')){
             $user = User::find($userId);
+
+            // clear cache
+            Cache::forget('selected_company_'. $request->user()->id);
+            Cache::flush();
 
             // clear session
             $request->session()->forget('global_user');

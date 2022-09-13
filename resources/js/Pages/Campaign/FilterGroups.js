@@ -82,8 +82,8 @@ function FilterGroups (props) {
         'tag': {
             'equal':  props.translator['Equal'],
         }
-       
     };
+
     const [filter, setFilter] = useState([
         {'AND': [newCondition]}
     ]);
@@ -248,7 +248,10 @@ function FilterGroups (props) {
         if(!is_valid){
             return false;
         }
-        
+        if(props.is_flow){
+            props.updateNodeCondition(props.nodeId,filter);
+            return false;
+        }
         var advancedSearch = JSON.stringify(filter);
         var url = route('searchfilter') + '?filter='+advancedSearch + '&from=campaignfilter';
 
@@ -327,133 +330,110 @@ function FilterGroups (props) {
     }
 
     return (
-       <div>
-        <div className="relative p-6 flex-auto max-h-[60vh] overflow-auto">
-            <form id="filter_list_form">
-                <div className="overscroll-auto">
-                    {Object.entries(filter).map(([grpCondition_index, grpConditions]) => 
-                        <>
-                        {Object.entries(grpConditions).map(([grpCondition,conditions ],group_index ) => 
-                            <>  
-                            
-                                <div className="relative mt-3 border border-gray-200 rounded-sm px-3 py-4 shadow-sm focus-within:ring-1 focus-within:ring-indigo-200 focus-within:border-indigo-200">
-                                    <fieldset>
-                                            <legend className="w-full">  
-                                                <div className="flex w-full justify-between">
-                                                    {grpCondition_index != 0 &&
-                                                        <select
-                                                            name="group_condition"
-                                                            id="group_condition"
-                                                            value={grpCondition}
-                                                            group_index={grpCondition_index} 
-                                                            onChange={ (e) => handleChange(e)}
-                                                            className='mt-1 inline-flex w-28 py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
-                                                        >
-                                                            {(logic_operators).map((value) => {
-                                                                return (
-                                                                    <option defaultValue={grpCondition === value} value={value} > {value} </option>
-                                                                )
-                                                            })}
-                                                        </select>
-                                                    }
-                                                    {grpCondition_index == 0 &&
-                                                        <div></div>
+        <div>
+            <div className="relative p-6 flex-auto max-h-[60vh] overflow-auto">
+                <form id="filter_list_form">
+                    <div className="overscroll-auto">
+                        {Object.entries(filter).map(([grpCondition_index, grpConditions]) => 
+                            <>
+                            {Object.entries(grpConditions).map(([grpCondition,conditions ],group_index ) => 
+                                <>  
+                                
+                                    <div className="relative mt-3 border border-gray-200 rounded-sm px-3 py-4 shadow-sm focus-within:ring-1 focus-within:ring-indigo-200 focus-within:border-indigo-200">
+                                        <fieldset>
+                                                <legend className="w-full">  
+                                                    <div className="flex w-full justify-between">
+                                                        {grpCondition_index != 0 &&
+                                                            <select
+                                                                name="group_condition"
+                                                                id="group_condition"
+                                                                value={grpCondition}
+                                                                group_index={grpCondition_index} 
+                                                                onChange={ (e) => handleChange(e)}
+                                                                className='mt-1 inline-flex w-28 py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                            >
+                                                                {(logic_operators).map((value) => {
+                                                                    return (
+                                                                        <option defaultValue={grpCondition === value} value={value} > {value} </option>
+                                                                    )
+                                                                })}
+                                                            </select>
                                                         }
-                                                    <div 
-                                                        group_index={grpCondition_index} 
-                                                        type="button"
-                                                        onClick={(e) => deleteGroup(grpCondition_index)}
-                                                        className=" right-0 p-2 mx-2 cursor-pointer text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded">
-                                                            <TrashIcon 
-                                                                className='h-4 w-4 text-red-600 cursor-pointer' 
-                                                            />
-                                                    </div>
-                                                
-                                                </div>
-                                            </legend>
-                                    
-                                        {Object.entries(conditions).map(([condition_index, condition]) => {
-                                            var valueField = '';
-                                            var selectedOptionValues = {'tag_relation': [] , 'list_relation': []};
-                                            var optionValues = {'tag_relation': [] , 'list_relation': []};
-
-                                            Object.entries(fields).map(([key, field])=> {
-                                                if(field.field_name == condition.field_name){
-                                                    condition.field_type = field.field_type
-                                                }
-                                                
-                                                if(condition.field_type == 'tag'){
-                                                    if(field.field_name == condition.field_name) {
-                                                        optionValues[field.field_name] = field.options;
-                                                        var selectedValues = [];
-                                                        Object.entries(field.options).map(([key, tag])=> {
-                                                            if(condition.condition_value == tag.value) {
-                                                                (selectedValues).push(tag);
+                                                        {grpCondition_index == 0 &&
+                                                            <div></div>
                                                             }
-                                                        })
-                                                        selectedOptionValues[field.field_name] = selectedValues;
-                                                    }
-                                                }
-                                                
-                                                if(field.field_name == condition.field_name){
+                                                        <div 
+                                                            group_index={grpCondition_index} 
+                                                            type="button"
+                                                            onClick={(e) => deleteGroup(grpCondition_index)}
+                                                            className=" right-0 p-2 mx-2 cursor-pointer text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded">
+                                                                <TrashIcon 
+                                                                    className='h-4 w-4 text-red-600 cursor-pointer' 
+                                                                />
+                                                        </div>
                                                     
-                                                    switch(condition.field_type){
-                                                        case 'select' :
-                                                            valueField = <select
-                                                                name="condition_value"
-                                                                group_index={grpCondition_index} 
-                                                                condition_index={condition_index}
-                                                                id="condition_value"
-                                                                value={condition.condition_value}
-                                                                onChange={ (e) => handleChange(e)}
-                                                                className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
-                                                            >
-                                                                {Object.entries(field.options).map(([name, label]) => 
-                                                                    <option defaultValue={condition.condition_value === name} value={name}> {label} </option>
-                                                                )}
-                                                            </select>
-                                                            break;
-                                                        case 'dropdown':
-                                                            valueField = <select
-                                                                name="condition_value"
-                                                                group_index={grpCondition_index} 
-                                                                condition_index={condition_index}
-                                                                id="condition_value"
-                                                                value={condition.condition_value}
-                                                                onChange={ (e) => handleChange(e)}
-                                                                className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
-                                                            >
-                                                                {Object.entries(field.options).map(([name, label]) => 
-                                                                    <option defaultValue={condition.condition_value === name} value={name}> {label} </option>
-                                                                )}
-                                                            </select>
-                                                            break;
-                                                        case 'text':
-                                                            valueField = <input
-                                                                type='text'
-                                                                className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
-                                                                name="condition_value"
-                                                                group_index={grpCondition_index} 
-                                                                condition_index={condition_index}
-                                                                id= "condition_value"
-                                                                onChange={(e) => handleChange(e)}
-                                                                value={condition.condition_value}
-                                                            />
-                                                            break;
-                                                        case 'checkbox':
-                                                                valueField = <input
-                                                                    type='checkbox'
-                                                                    className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD]  block rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                    </div>
+                                                </legend>
+                                        
+                                            {Object.entries(conditions).map(([condition_index, condition]) => {
+                                                var valueField = '';
+                                                var selectedOptionValues = {'tag_relation': [] , 'list_relation': []};
+                                                var optionValues = {'tag_relation': [] , 'list_relation': []};
+
+                                                Object.entries(fields).map(([key, field])=> {
+                                                    if(field.field_name == condition.field_name){
+                                                        condition.field_type = field.field_type
+                                                    }
+                                                    
+                                                    if(condition.field_type == 'tag'){
+                                                        if(field.field_name == condition.field_name) {
+                                                            optionValues[field.field_name] = field.options;
+                                                            var selectedValues = [];
+                                                            Object.entries(field.options).map(([key, tag])=> {
+                                                                if(condition.condition_value == tag.value) {
+                                                                    (selectedValues).push(tag);
+                                                                }
+                                                            })
+                                                            selectedOptionValues[field.field_name] = selectedValues;
+                                                        }
+                                                    }
+                                                    
+                                                    if(field.field_name == condition.field_name){
+                                                        
+                                                        switch(condition.field_type){
+                                                            case 'select' :
+                                                                valueField = <select
                                                                     name="condition_value"
                                                                     group_index={grpCondition_index} 
                                                                     condition_index={condition_index}
-                                                                    id= "condition_value"
-                                                                    onChange={(e) => handleChange(e)}
+                                                                    id="condition_value"
                                                                     value={condition.condition_value}
-                                                                />
+                                                                    onChange={ (e) => handleChange(e)}
+                                                                    className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                >
+                                                                    {Object.entries(field.options).map(([name, label]) => 
+                                                                        <option defaultValue={condition.condition_value === name} value={name}> {label} </option>
+                                                                    )}
+                                                                </select>
                                                                 break;
-                                                        case 'textarea':
-                                                                valueField = <textarea
+                                                            case 'dropdown':
+                                                                valueField = <select
+                                                                    name="condition_value"
+                                                                    group_index={grpCondition_index} 
+                                                                    condition_index={condition_index}
+                                                                    id="condition_value"
+                                                                    value={condition.condition_value}
+                                                                    onChange={ (e) => handleChange(e)}
+                                                                    className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                >
+                                                                    {Object.entries(field.options).map(([name, label]) => 
+                                                                        <option defaultValue={condition.condition_value === name} value={name}> {label} </option>
+                                                                    )}
+                                                                </select>
+                                                                break;
+                                                            case 'text':
+                                                                valueField = <input
+                                                                    type='text'
                                                                     className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
                                                                     name="condition_value"
                                                                     group_index={grpCondition_index} 
@@ -461,168 +441,195 @@ function FilterGroups (props) {
                                                                     id= "condition_value"
                                                                     onChange={(e) => handleChange(e)}
                                                                     value={condition.condition_value}
-                                                                > {condition.condition_value}
-                                                                </textarea> 
+                                                                />
                                                                 break;
-                                                        default :
-                                                            valueField = <input
-                                                                type='text'
-                                                                className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
-                                                                name="condition_value"
-                                                                group_index={grpCondition_index} 
-                                                                condition_index={condition_index}
-                                                                id= "condition_value"
-                                                                onChange={(e) => handleChange(e)}
-                                                                value={condition.condition_value}
-                                                            />
-
-                                                    }
-                                                }
-
-                                            })
-                                            return(
-                                                <>
-                                                    <div className="flex w-full">
-                                                        <div className="flex flex-1  gap-2">
-                                                            <div className="flex-1 flex items-center ">
-                                                                <select
-                                                                    name="field_name"
+                                                            case 'checkbox':
+                                                                    valueField = <input
+                                                                        type='checkbox'
+                                                                        className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD]  block rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                        name="condition_value"
+                                                                        group_index={grpCondition_index} 
+                                                                        condition_index={condition_index}
+                                                                        id= "condition_value"
+                                                                        onChange={(e) => handleChange(e)}
+                                                                        value={condition.condition_value}
+                                                                    />
+                                                                    break;
+                                                            case 'textarea':
+                                                                    valueField = <textarea
+                                                                        className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                        name="condition_value"
+                                                                        group_index={grpCondition_index} 
+                                                                        condition_index={condition_index}
+                                                                        id= "condition_value"
+                                                                        onChange={(e) => handleChange(e)}
+                                                                        value={condition.condition_value}
+                                                                    > {condition.condition_value}
+                                                                    </textarea> 
+                                                                    break;
+                                                            default :
+                                                                valueField = <input
+                                                                    type='text'
+                                                                    className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                    name="condition_value"
                                                                     group_index={grpCondition_index} 
                                                                     condition_index={condition_index}
-                                                                    id="field_name"
-                                                                    value={condition.field_name}
-                                                                    onChange={ (e) => handleChange(e)}
-                                                                    className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
-                                                                >
-                                                                    <option value=""></option>
-                                                                    {Object.entries(fields).map(([key, field]) => 
-                                                                        <option field_type={field.field_type} defaultValue={condition.field_name === field.field_name} value={field.field_name}> {field.field_label} </option>
-                                                                    )}
-                                                                </select>
-                                                            </div>
-                                                            <div className="flex-1 flex items-center">
-                                                                <select
-                                                                    name="record_condition"
-                                                                    group_index={grpCondition_index} 
-                                                                    condition_index={condition_index}
-                                                                    id="record_condition"
-                                                                    value={condition.record_condition}
-                                                                    onChange={ (e) => handleChange(e)}
-                                                                    className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
-                                                                >
-                                                                    {Object.entries(condition_operators[condition.field_type]).map(([name, label]) => 
-                                                                        <option defaultValue={condition.record_condition === name} value={name}> {label} </option>
-                                                                    )}
-                                                                </select>
-                                                            </div>
-                                                            <div className="flex-1 flex items-center">
-                                                                
-                                                                {condition.record_condition != 'is_null' &&
-                                                                    <>
-                                                                        {condition.field_type != 'tag' ?
-                                                                            <> {valueField} </>
-                                                                        :
-                                                                            <CreatableSelect
-                                                                                isMulti 
-                                                                                defaultValue={selectedOptionValues[condition.field_name]}
-                                                                                onChange={(e) => handleTagInputChange(e, grpCondition_index, condition_index, condition.field_name)}
-                                                                                options={optionValues[condition.field_name]} 
-                                                                                name={condition.field_name}
-                                                                                className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
-                                                                            
-                                                                            />
-                                                                        }
-                                                                    </>
-                                                                }
-                                                            </div>
-                                                            <div className="w-28 flex items-center">
-                                                                <select
-                                                                    name="condition_operator"
-                                                                    id="condition_operator"
-                                                                    group_index={grpCondition_index} 
-                                                                    value={condition.condition_operator}
-                                                                    condition_index={condition_index}
-                                                                    onChange={ (e) => handleChange(e)}
-                                                                    className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
-                                                                >
-                                                                    {(logic_operators).map((value) => 
-                                                                        <option defaultValue={condition.condition_operator === value} value={value}> {value} </option>
-                                                                    )}
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center justify-between p-4 space-x-6">
-                                                            <button
-                                                                type="button"
-                                                                onClick={(e) => deleteCondition(grpCondition_index, condition_index)}
-                                                                className="inline-flex  items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
-                                                            >
-                                                                <TrashIcon 
-                                                                    group_index={grpCondition_index} 
-                                                                    condition_index={condition_index}
-                                                                    className='h-4 w-4 text-red-600 cursor-pointer' 
+                                                                    id= "condition_value"
+                                                                    onChange={(e) => handleChange(e)}
+                                                                    value={condition.condition_value}
                                                                 />
 
-                                                            </button>
-                                                        </div>       
-                                                    </div>
-                                                </>
-                                            )
-                                        })}
-                                        
-                                        <div>
-                                            <button
-                                                type="button"
-                                                grp_count={grpCondition_index}
-                                                onClick={(e) => addCondition(e)}
-                                                className="inline-flex items-center mt-6 px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-[#F6FFFD] hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
-                                            >
-                                                <AddIcon
+                                                        }
+                                                    }
+
+                                                })
+                                                return(
+                                                    <>
+                                                        <div className="flex w-full">
+                                                            <div className="flex flex-1  gap-2">
+                                                                <div className="flex-1 flex items-center ">
+                                                                    <select
+                                                                        name="field_name"
+                                                                        group_index={grpCondition_index} 
+                                                                        condition_index={condition_index}
+                                                                        id="field_name"
+                                                                        value={condition.field_name}
+                                                                        onChange={ (e) => handleChange(e)}
+                                                                        className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                    >
+                                                                        <option value=""></option>
+                                                                        {Object.entries(fields).map(([key, field]) => 
+                                                                            <option field_type={field.field_type} defaultValue={condition.field_name === field.field_name} value={field.field_name}> {field.field_label} </option>
+                                                                        )}
+                                                                    </select>
+                                                                </div>
+                                                                <div className="flex-1 flex items-center">
+                                                                    <select
+                                                                        name="record_condition"
+                                                                        group_index={grpCondition_index} 
+                                                                        condition_index={condition_index}
+                                                                        id="record_condition"
+                                                                        value={condition.record_condition}
+                                                                        onChange={ (e) => handleChange(e)}
+                                                                        className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                    >
+                                                                        {Object.entries(condition_operators[condition.field_type]).map(([name, label]) => 
+                                                                            <option defaultValue={condition.record_condition === name} value={name}> {label} </option>
+                                                                        )}
+                                                                    </select>
+                                                                </div>
+                                                                <div className="flex-1 flex items-center">
+                                                                    
+                                                                    {condition.record_condition != 'is_null' &&
+                                                                        <>
+                                                                            {condition.field_type != 'tag' ?
+                                                                                <> {valueField} </>
+                                                                            :
+                                                                                <CreatableSelect
+                                                                                    isMulti 
+                                                                                    defaultValue={selectedOptionValues[condition.field_name]}
+                                                                                    onChange={(e) => handleTagInputChange(e, grpCondition_index, condition_index, condition.field_name)}
+                                                                                    options={optionValues[condition.field_name]} 
+                                                                                    name={condition.field_name}
+                                                                                    className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                                
+                                                                                />
+                                                                            }
+                                                                        </>
+                                                                    }
+                                                                </div>
+                                                                <div className="w-28 flex items-center">
+                                                                    <select
+                                                                        name="condition_operator"
+                                                                        id="condition_operator"
+                                                                        group_index={grpCondition_index} 
+                                                                        value={condition.condition_operator}
+                                                                        condition_index={condition_index}
+                                                                        onChange={ (e) => handleChange(e)}
+                                                                        className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                    >
+                                                                        {(logic_operators).map((value) => 
+                                                                            <option defaultValue={condition.condition_operator === value} value={value}> {value} </option>
+                                                                        )}
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center justify-between p-4 space-x-6">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => deleteCondition(grpCondition_index, condition_index)}
+                                                                    className="inline-flex  items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+                                                                >
+                                                                    <TrashIcon 
+                                                                        group_index={grpCondition_index} 
+                                                                        condition_index={condition_index}
+                                                                        className='h-4 w-4 text-red-600 cursor-pointer' 
+                                                                    />
+
+                                                                </button>
+                                                            </div>       
+                                                        </div>
+                                                    </>
+                                                )
+                                            })}
+                                            
+                                            <div>
+                                                <button
                                                     type="button"
                                                     grp_count={grpCondition_index}
                                                     onClick={(e) => addCondition(e)}
-                                                    className="-ml-0.5 mr-2 h-4 w-4" 
-                                                    aria-hidden="true" />
-                                                {props.translator['Add New Condition']}
-                                            </button>
-                                        </div>
-                                                
-                                    </fieldset>
-                                </div>
+                                                    className="inline-flex items-center mt-6 px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-[#F6FFFD] hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+                                                >
+                                                    <AddIcon
+                                                        type="button"
+                                                        grp_count={grpCondition_index}
+                                                        onClick={(e) => addCondition(e)}
+                                                        className="-ml-0.5 mr-2 h-4 w-4" 
+                                                        aria-hidden="true" />
+                                                    {props.translator['Add New Condition']}
+                                                </button>
+                                            </div>
+                                                    
+                                        </fieldset>
+                                    </div>
+                                </>
+                            )}   
                             </>
-                        )}   
-                        </>
-                    )}
-                    <div className="w-full">
-                        <button
-                            type="button"
-                            onClick={addConditionGroup}
-                            className="inline-flex items-center mt-6 px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-[#F6FFFD] hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
-                        >
-                            <AddIcon
+                        )}
+                        <div className="w-full">
+                            <button
                                 type="button"
                                 onClick={addConditionGroup}
-                                className="-ml-0.5 mr-2 h-4 w-4" 
-                                aria-hidden="true" />
-                            {props.translator['Add Group']}
-                        </button>
+                                className="inline-flex items-center mt-6 px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-[#F6FFFD] hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+                            >
+                                <AddIcon
+                                    type="button"
+                                    onClick={addConditionGroup}
+                                    className="-ml-0.5 mr-2 h-4 w-4" 
+                                    aria-hidden="true" />
+                                {props.translator['Add Group']}
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </form>
-        </div>
+                </form>
+            </div>
 
-        <div className="flex items-center justify-end p-6 border-t border-solid border-slate-200 rounded-b">
-            {errors.field_name &&
-                <div className="absolute left-0 mx-2" ><small className="text-red-500"> Please fill the condition </small> </div>
-            }
-            <button
-                className="bg-primary text-white active:bg-primary/80 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                type="button"
-                onClick={() => searchFilterData()}
-            >
-                {props.translator['Search Filter']}
-            </button>
-        </div>
+            <div className="flex items-center justify-end p-6 border-t border-solid border-slate-200 rounded-b">
+                {errors.field_name &&
+                    <div className="absolute left-0 mx-2" ><small className="text-red-500"> Please fill the condition </small> </div>
+                }
+                <button
+                    className="bg-primary text-white active:bg-primary/80 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                    type="button"
+                    onClick={() => searchFilterData()}
+                >
+                  {props.is_flow ?
+                        <> Save condition </>
+                        :
+                        <> {props.translator['Search Filter']} </>
+                    }  
+                </button>
+            </div>
 
         </div>   
     );

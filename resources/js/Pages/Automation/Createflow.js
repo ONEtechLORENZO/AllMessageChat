@@ -10,10 +10,10 @@ import ReactFlow, {
 import Authenticated from '@/Layouts/Authenticated';
 import Trigger from "./Trigger";
 import Action from "./Action";
-import FilterGroups from '../Campaign/FilterGroups';
 import Input from '@/Components/Forms/Input';
 import { Inertia } from '@inertiajs/inertia'
 import { Link } from '@inertiajs/inertia-react';
+import FlowCondition from './FlowCondition';
 
 const initialNodes = [{
     id: "1",
@@ -97,7 +97,7 @@ function AutomationFlow(props)
      */
     function appendNodeData( trigger_type , type, nodeId)
     {
-       
+      // console.log(trigger_type , type);
         if(type == 'action' || type == 'condition') {
 
             var newCurrentEdge = createNewNode(currentEdge, type, processTypes[type].label);
@@ -110,41 +110,40 @@ function AutomationFlow(props)
         else if(trigger_type == 'input') {
             setTrigger(type);
             // Update the label and create new output node
-            setNodes((nds) =>
-                nds.map((node) => {
-                    if (node.id === '1') {
-                        node.data = {
-                            ...node.data, 
-                            label: triggers[type].label,
-                            action: type,
-                        };
-                    }
-                    return node;
-                })
-            );
+            setNodeData(1, triggers[type].label)
 
             createNewNode('', 'output');
         } 
+        else if(type == 'exit') {
+            createNewNode(currentEdge, type, 'End');
+        }
         else if(trigger_type == 'action') {
-            
+            // Open modal for get the input for the action
             openActionNode(nodeId , type);
-
-            setNodes((nds) =>
-                nds.map((node) => {
-                    if (node.id == nodeId) {
-                        node.data = {
-                            ...node.data, 
-                            label: actions[type].label,
-                        };
-                    }
-                    return node;
-                })
-            );
+            setNodeData(nodeId, actions[type].label);
         }
         setCurrentEdge({});
         setCurrentNode({});
         setShowOptions(false);
     }
+
+    /**
+     * Set Nodes
+     */
+    function setNodeData(nodeId, label){
+        setNodes((nds) =>
+            nds.map((node) => {
+                if (node.id == nodeId) {
+                    node.data = {
+                        ...node.data, 
+                        label: label,
+                    };
+                }
+                return node;
+            })
+        );
+    }
+
 
     /**
      * If already action selected shows selected value
@@ -194,7 +193,8 @@ function AutomationFlow(props)
         else if(node.type == 'condition'){
             setShowCondition(true);
         } 
-         setCurrentNode(node);
+    //    console.log('node:', node);
+        setCurrentNode(node);
      }
 
     /**
@@ -210,7 +210,7 @@ function AutomationFlow(props)
             setOptions(processTypes);
             setShowOptions(true);
         }
-
+// console.log('edge:', edge);
         setCurrentEdge(edge);
     }
 
@@ -226,8 +226,17 @@ function AutomationFlow(props)
         var id = getId();
         yPos.current += 100;
         var nodeType = type;
-        if(type == 'condition_action') {
-            nodeType = 'action';
+        var isCondition = false;
+        if(type == 'condition_action' ) {
+            nodeType = label;
+            if(label == 'Yes'){
+                isCondition = true;
+            } else if( label == 'No'){
+                type = 'action';
+            }
+        }
+        if(type == 'exit') {
+            nodeType = 'output';
         }
 
         let newNode = {
@@ -259,10 +268,10 @@ function AutomationFlow(props)
             setEdges((edges) => edges.filter((ed) => ed.id !== edge.id));
 
             createNewEdge(edge.source, id);
-          var newEdge = createNewEdge(id, edge.target);
+            var newEdge = createNewEdge(id, edge.target);
             return newEdge;
         }
-        else if(type == 'condition_action') {
+        else if(isCondition) {
             // Delete the current edge
             setEdges((edges) => edges.filter((ed) => ed.id !== edge.id));
 
@@ -270,7 +279,12 @@ function AutomationFlow(props)
             createNewEdge(id, edge.target);
 
             // Create another node and connect the edge
-            createNewNode(edge, 'action', 'No');
+            createNewNode(edge, 'condition_action', 'No');
+        }
+        else if(type == 'exit') {
+            // Delete the current edge
+            setEdges((edges) => edges.filter((ed) => ed.id !== edge.id));
+            createNewEdge(edge.source, id);
         }
         else if(type == 'output') {
             createNewEdge('1', id);
@@ -333,6 +347,14 @@ function AutomationFlow(props)
         var newData = Object.assign({}, automationData);
         newData[name] = value;
         setActionData(newData);
+    }
+
+    /**
+     * Update node condition
+     */
+    function updateNodeCondition(nodeId, condition){
+        saveActionData(nodeId, condition);
+        setShowCondition(false);
     }
 
     /**
@@ -449,14 +471,19 @@ function AutomationFlow(props)
                     actionData={actionData}
                     saveActionData={saveActionData}
                     setShowAction={setShowAction}
-
                 />
             }
+
             {showCondition &&
-                <FilterGroups
+                <FlowCondition
                     translator={props.translator}
                     filter={props.filter}
                     module={props.parent}
+                    setShowCondition={setShowCondition}
+                    nodeId={currentNode.id}
+                    is_flow={true}
+                    filterCondition={(currentNode.data && currentNode.data.action) ? currentNode.data.action : ''}
+                    updateNodeCondition={updateNodeCondition}
                 />
             }
 

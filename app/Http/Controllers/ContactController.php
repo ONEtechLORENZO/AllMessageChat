@@ -105,7 +105,8 @@ class ContactController extends Controller
             $url = route('detail'. $request->parent_module).'?id='.$request->parent_id.'&page=1';
             return Redirect::to($url);
         } else {
-            return Redirect::route('detailContact', $contact_id);
+            $url = route('detailContact').'?id='.$contact_id;
+            return Redirect::to($url);
         }
     }
 
@@ -177,7 +178,10 @@ class ContactController extends Controller
     public function update(Request $request)
     {
         $contact_id = $this->saveContact($request);
-        return Redirect::route('detailContact', $contact_id);
+        
+        $url = route('detailContact').'?id='.$contact_id;
+        return Redirect::to($url);
+       
     }
 
     /**
