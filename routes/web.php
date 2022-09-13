@@ -271,6 +271,7 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_global_user');
     Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_global_user');
     Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detail_global_user');
+    Route::post('/wallet/amount', [UserController::class, 'addWalletAmount'])->name('wallet_amount');
 
     // Settings
     Route::get('/admin/settings/outgoing_server', [SettingsController::class, 'settings'])->name('settings');

@@ -19,6 +19,7 @@ use App\Models\Wallet;
 use App\Models\Msg;
 use App\Models\Price;
 use App\Models\WebhookEvent;
+use App\Models\Company;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Session;
@@ -356,6 +357,8 @@ class UserController extends Controller
 
         $user = User::find($id);
 
+        $related_Company = $this->UserRelatedCompany($id);
+
         $token = $user->api_token;
         if($currentUser->role != 'regular' || $user->id == $currentUser->id) {
             return Inertia::render('Admin/User/UserDetail', [
@@ -363,6 +366,7 @@ class UserController extends Controller
                 'token' => $token,
                 'current_user' => $request->user(),
                 'time_zone' => $this->timezones,
+                'related_company' => $related_Company,
                 'translator' => [
                     'Name' => __('Name'),
                     'New Password' => __('New Password'),
@@ -1589,6 +1593,40 @@ class UserController extends Controller
         }
 
         return Redirect::route('dashboard');
+    }
+
+    public function UserRelatedCompany($user_id){
+        
+        if($user_id){
+            //related company details
+            $userCompany = DB::table('company_user')->where('user_id', $user_id)->get('company_id');
+            
+            foreach($userCompany as $company){
+                $company =  Company::where('id', $company->company_id)->first();
+                $related_company[$company['id']] = $company['name'];
+            }
+
+            return $related_company;
+        }
+    }
+
+    public function addWalletAmount(Request $request){
+        
+        $company_id = $request->selected_company;
+        $walletAmount = $request->wallet_amount;
+
+        $wallet = Wallet::where('company_id',$company_id)->first();
+
+        if($wallet){
+            $balanceAmount = $wallet->balance_amount;
+            $addCash = $balanceAmount + $walletAmount;
+            
+            $wallet->balance_amount = $addCash;
+            $wallet->save();
+        }
+
+        return Redirect::route('list_global_user');
+
     }
 
 }
