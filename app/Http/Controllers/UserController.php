@@ -174,7 +174,7 @@ class UserController extends Controller
      */
     public function dashboard(Request $request)
     {
-        $user = $request->user();
+        $user = $request->user();        
         $user_id = $user->id;
         $companyId = Cache::get('selected_company_' . $user_id);
 
@@ -184,16 +184,17 @@ class UserController extends Controller
         }
 
         $accounts = $query->get();
-
+        
         return Inertia::render('Dashboard', [
             'accounts' => $accounts,
+            'users' =>$user,
             'translator' => [
                 'Dashboard'=>__('Dashboard'),
-                'Create new social profile'=>__('Create new social profile'),
+                'Create a new social profile'=>__('Create a new social profile'),
                 'Business profiles'=>__('Business profiles'),
                 'No profile'=>__('No profile'),
                 'Get started by creating a new social profile.'=>__('Get started by creating a new social profile.'),
-                'Click here to create new social profile'=>__('Click here to create new social profile'),
+                'Click here to create a new social profile'=>__('Click here to create a new social profile'),
                 'Confirm to Delete' =>  __('Confirm to Delete'),
                 'Are you sure to do this?' => __('Are you sure to do this?'),
                 'Yes' =>__('Yes'),
@@ -298,8 +299,8 @@ class UserController extends Controller
     public function editUser(Request $request, $id)
     {
         $currentUser = $request->user();
+       
         $flag = $this->checkPermission($currentUser, $id);
-        
         if($flag === false) {
             abort(401);
         }
@@ -530,7 +531,7 @@ class UserController extends Controller
                 return Redirect::route('profile');
             }
         }
-        
+         
         return Redirect::route('dashboard');
     }
 
@@ -749,6 +750,7 @@ class UserController extends Controller
      */
     public function accountRegistration(Request $request)
     {
+       // return Inertia::render('Account/Registration/Form');
         return Inertia::render('Account/Registration', [
             'webhook_events' => $this->webhook_events, 
             'translator' => [
@@ -1553,6 +1555,14 @@ class UserController extends Controller
             $sessionUser = $userSession;
         }
         echo json_encode(['session_value' =>$sessionUser ]);
+    }
+
+    /**
+     * get User Timezone
+     */
+    public function getUserTimeZone(Request $request)
+    {
+        echo json_encode(['time_zone' => $this->timezones ]);
     }
 
     /**

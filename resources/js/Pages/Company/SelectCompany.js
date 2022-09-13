@@ -69,7 +69,7 @@ function SelectCompany(props)
                                         <div className="sm:flex sm:items-start">
                                             <div className="mt-3 text-center sm:mt-0 sm:text-left">
                                                 <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                                                    Choose Company
+                                                    Choose Workspace
                                                 </Dialog.Title>
                                             </div>
                                         </div>

@@ -2,7 +2,11 @@
 
 namespace App\Observers;
 
+use Auth;
+use Mail;
 use App\Models\Account;
+use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class AccountObserver
 {
@@ -13,8 +17,21 @@ class AccountObserver
      * @return void
      */
     public function created(Account $account)
-    {
-        // 
+    {   
+        $currendUser = User::find(Auth::id());
+        $emailAddress = $currendUser->email;
+        $emailAddress = filter_var($emailAddress, FILTER_SANITIZE_EMAIL);
+
+        $data = [
+            'data' => $account
+        ];
+
+        if($emailAddress){
+            Mail::send('account',$data, function($message) use ($emailAddress){
+                $message->to($emailAddress)->subject
+                ('Welcome');
+            });
+        } 
     }
 
     /**

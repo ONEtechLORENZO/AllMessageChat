@@ -1,15 +1,43 @@
-import React, {useState} from "react";
+import React, {useState,useEffect} from "react";
 import ListTable from "../List/ListTable";
 import Alert from '@/Components/Alert';
 import Pagination from '@/Components/Pagination';
 import Button from '@/Components/Forms/Button';
 import ContactSelection from '@/Components/ContactSelection';
 import Form from '@/Components/Forms/Form';
+import Axios from "axios";
+import notie from 'notie';
 
 function SubPanels(props){
     const [showForm, setShowForm] = useState(false);
-    const [fieldOptions, setFieldOptions ] = useState({});
+    const [fieldOptions, setFieldOptions ] = useState([]);
+    const [recordDetails, setrecordDetails ] = useState([]);
+    const [headers, setHeaders ] = useState([]);
+    const [actions, setActions ] = useState([]);
+    const [paginateDetail, setpaginateDetail ] = useState([]);
     const [recordId, setRecordId] = useState(''); 
+
+    useEffect(() => {
+        getData();
+       }, [props]);
+
+
+     //Get subpanel records
+       function getData()
+       {
+        let endpoint_url = route("subpanel_list" , {'module':props.parent_module,'id': props.parent_id,'submodule':props.module});   
+        axios({
+            method: 'get',
+            url: endpoint_url,
+        })
+        .then((response) => {                      
+          setrecordDetails(response.data.related_records); 
+          setHeaders(response.data.related_records_header);
+          setpaginateDetail(response.data.sub_panel_pagination);
+          setActions(response.data.sub_panbel_actions);
+      });
+    }
+
     /**
      * Hide form and reset the Record ID
      */
@@ -27,7 +55,7 @@ function SubPanels(props){
             url: route('get_field_options', {'field_name': name, 'module_name': props.module}),
         })
         .then( (response) =>{
-          newFieldOptions[name] = response.data.options;
+            newFieldOptions[name] = response.data.options;          
           setFieldOptions(newFieldOptions);
         });
     }
@@ -36,12 +64,12 @@ function SubPanels(props){
             <div className="flex min-w-0 justify-between">
                 <div className='flex gap-4'></div>
                 <div className='flex gap-4'>
-                    {props.actions && props.actions.create === true &&
+                    {actions && actions.create === true &&
                         <Button 
                             type='button'
                             onClick={() => setShowForm(true)}
                         >
-                            {props.add_button_text ? props.add_button_text : `Add ${props.module}`}
+                            {actions.add_button_text ? actions.add_button_text : `Add ${props.module}`}
                         </Button>
                     }
                 </div>
@@ -51,16 +79,17 @@ function SubPanels(props){
                            
                             <ListTable 
                                 module={props.module}
-                                headers={props.headers}
-                                records={props.records}
-                                actions={props.actions}
+                                headers={headers}
+                                records={recordDetails}
+                                actions={actions}
                                 fieldOptions={fieldOptions}
                                 getFieldOptions={getFieldOptions}
+                                paginator={paginateDetail}
                             />
-                            {Object.entries(props.records).length == 0 ?         
+                            {Object.entries(recordDetails).length == 0 ?         
                                 <Alert type='info' message= {'No record related yet.'} hideClose={true} />
                             : 
-                                <Pagination paginator={props.paginator} />
+                                <Pagination paginator={paginateDetail} />
                             }
                             
                             

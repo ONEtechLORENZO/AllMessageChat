@@ -5,6 +5,8 @@ import { Inertia } from '@inertiajs/inertia';
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link } from "@inertiajs/inertia-react";
 import { Dialog, Transition } from "@headlessui/react";
+import UserRegistration from '@/Components/UserRegistration';
+
 import {
     HomeIcon,
     ChatAltIcon,
@@ -18,6 +20,7 @@ import {
     ChevronRightIcon,
     ChevronLeftIcon,
     ServerIcon,
+    CogIcon,
     EyeIcon,
     ShoppingCartIcon,
     ShoppingBagIcon,
@@ -27,7 +30,6 @@ import SelectCompany from "@/Pages/Company/SelectCompany";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
 import axios from "axios";
 import Notification from "./Notification";
-
 
 const navigation = [
     {
@@ -76,12 +78,13 @@ const navigation = [
         icon: ChatAlt2Icon,
         show: ['all'],
         
-    },{
+    },
+    /*{
         name: "Company",
         href: route("listCompany"),
         icon: OfficeBuildingIcon,
         show: ['admin'],
-    },
+    },*/
     {
         name: "Campaigns",
         href: route("listCampaign"),
@@ -120,6 +123,11 @@ const globalAdminLinks = [
         href: route("list_global_user"),
         icon: UsersIcon,
     },
+    {
+        name: "Settings",
+        href: route("wallet_subscription"),
+        icon: CogIcon,
+    },
 ];
 
 function classNames(...classes) {
@@ -140,11 +148,17 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
     const[menuDropdownActive , setMenuDropdownActive] = useState({});
 
     const [notifications, setNotifications] = useState();
-    
+    const [timezone, setTimezone] = useState([]);
+    const[showModal,setshowModal]= useState(false);
     const [count, setCount] = useState();
     const [id, setId] = useState();
 
     useEffect(() => {
+        if(auth.user.currency==null)
+        {
+            setshowModal(true)
+            getTimezones();
+        }
         getNotifications();
         axios.get(route('get_session_value')).then((response) => {
             if(response.data.session_value){
@@ -221,6 +235,14 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
           setCount(response.data.count);
           setNotifications(response.data.notifications);
           setId(response.data.id);
+        });
+    }
+
+//to get timezones
+    function getTimezones(){
+        var url = route('get_time_zone');
+        axios.get(url).then((response) => {
+          setTimezone(response.data.time_zone);          
         });
     }
 
@@ -477,7 +499,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                     </Dropdown.Link>
 
                                                     <button className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" onClick={() => setSelectedCompany(true)} as="button">
-                                                        Switch company
+                                                        Switch Workspace
                                                     </button>
 
                                                     {auth && auth.user && auth.user.role == 'global_admin' ?
@@ -566,6 +588,14 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                 openModal={selectCompanyModal}
                 setSelectedCompany={setSelectedCompany}
             />
+
+        {showModal?
+            <UserRegistration
+              user={auth.user}
+              time_zone={timezone}
+              setshowModal={setshowModal}
+            />:''
+        }
 
         </>
     );

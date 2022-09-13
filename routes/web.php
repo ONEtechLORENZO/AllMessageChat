@@ -62,9 +62,11 @@ Route::post('/incoming', [MsgController::class, 'incoming']);
 Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
+     
 
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
     Route::get('/getCompanyId', [UserController::class, 'getSelectedCompany'])->name('get_selected_company');
+    Route::get('/user/timezone',[UserController::class, 'getUserTimeZone'])->name('get_time_zone');
 
     // Wallet
     Route::get('/wallet', [UserController::class, 'wallet'])->name('wallet');
@@ -121,6 +123,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
     
+    Route::get('/subpanelrecords', [ContactController::class, 'show_subpanel'])->name('subpanel_list');
+
     // Opportunity
     Route::get('/opportunities', [OpportunityController::class, 'index'])->name('listOpportunity');
     Route::delete('/opportunity/delete/{id}', [OpportunityController::class, 'destroy'])->name('deleteOpportunity');
@@ -248,7 +252,7 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::post('/storeFieldOrder', [FieldGroupController::class, 'storeFieldOrder'])->name('store_field_order');
     
     //Company
-    Route::get('/companies', [CompanyController::class, 'index'])->name('listCompany');
+   // Route::get('/workspaces', [CompanyController::class, 'index'])->name('listCompany');
     Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');
     Route::get('/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
     Route::get('/company/edit/{id}', [CompanyController::class, 'edit'])->name('editCompany');
@@ -273,6 +277,12 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/admin/settings/template_notification', [SettingsController::class, 'toMail'])->name('template_notification');
     Route::post('/admin/settings/saveSMTP', [SettingsController::class, 'saveOutgoingServerData'])->name('store_smtp_data');
     Route::post('/admin/settings/saveToAddress', [SettingsController::class, 'saveToAddressData'])->name('store_toAddress_data');
+    Route::get('/wallet/subscription', [SettingsController::class, 'walletSubscription'])->name('wallet_subscription');
+    Route::get('/user/company/Detail', [SettingsController::class, 'CurrentCompany'])->name('user_company');
+    Route::get('/changeCompany/{id}', [SettingsController::class, 'changeCompany'])->name('change_company');
+    Route::get('/user/company/pricing', [SettingsController::class, 'updateSubscription'])->name('updateSubscription');
+    Route::post('/edit/company',[SettingsController::class, 'saveCompany'])->name('saveCompany');
+    Route::post('/save/subscription/{plan}', [SettingsController::class, 'SubscriptionPlan'])->name('subscribe_plan');
 
     // Pricing
     Route::get('/admin/pricing', [PriceController::class, 'index'])->name('listPrice');
