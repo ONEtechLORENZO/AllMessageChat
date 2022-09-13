@@ -877,11 +877,11 @@ select {
 .order-1 {
 	order: 1;
 }
-.col-span-1 {
-	grid-column: span 1 / span 1;
-}
 .col-span-6 {
 	grid-column: span 6 / span 6;
+}
+.col-span-1 {
+	grid-column: span 1 / span 1;
 }
 .col-span-2 {
 	grid-column: span 2 / span 2;
@@ -1844,6 +1844,10 @@ select {
 	--tw-bg-opacity: 1;
 	background-color: rgba(238, 242, 255, var(--tw-bg-opacity));
 }
+.bg-gray-50 {
+	--tw-bg-opacity: 1;
+	background-color: rgba(249, 250, 251, var(--tw-bg-opacity));
+}
 .bg-\[\#f6f6f6\] {
 	--tw-bg-opacity: 1;
 	background-color: rgba(246, 246, 246, var(--tw-bg-opacity));
@@ -1882,10 +1886,6 @@ select {
 .bg-red-100 {
 	--tw-bg-opacity: 1;
 	background-color: rgba(254, 226, 226, var(--tw-bg-opacity));
-}
-.bg-gray-50 {
-	--tw-bg-opacity: 1;
-	background-color: rgba(249, 250, 251, var(--tw-bg-opacity));
 }
 .bg-primary {
 	--tw-bg-opacity: 1;
@@ -2020,6 +2020,10 @@ select {
 	padding-top: 0.75rem;
 	padding-bottom: 0.75rem;
 }
+.py-5 {
+	padding-top: 1.25rem;
+	padding-bottom: 1.25rem;
+}
 .px-3 {
 	padding-left: 0.75rem;
 	padding-right: 0.75rem;
@@ -2059,10 +2063,6 @@ select {
 .py-10 {
 	padding-top: 2.5rem;
 	padding-bottom: 2.5rem;
-}
-.py-5 {
-	padding-top: 1.25rem;
-	padding-bottom: 1.25rem;
 }
 .px-24 {
 	padding-left: 6rem;
@@ -2361,6 +2361,10 @@ select {
 	--tw-text-opacity: 1;
 	color: rgba(67, 56, 202, var(--tw-text-opacity));
 }
+.text-red-700 {
+	--tw-text-opacity: 1;
+	color: rgba(185, 28, 28, var(--tw-text-opacity));
+}
 .text-red-600 {
 	--tw-text-opacity: 1;
 	color: rgba(220, 38, 38, var(--tw-text-opacity));
@@ -2388,10 +2392,6 @@ select {
 .text-yellow-800 {
 	--tw-text-opacity: 1;
 	color: rgba(146, 64, 14, var(--tw-text-opacity));
-}
-.text-red-700 {
-	--tw-text-opacity: 1;
-	color: rgba(185, 28, 28, var(--tw-text-opacity));
 }
 .text-yellow-400 {
 	--tw-text-opacity: 1;
@@ -3107,12 +3107,12 @@ select {
 		left: 1.5rem;
 	}
 
-	.sm\:col-span-2 {
-		grid-column: span 2 / span 2;
-	}
-
 	.sm\:col-span-4 {
 		grid-column: span 4 / span 4;
+	}
+
+	.sm\:col-span-2 {
+		grid-column: span 2 / span 2;
 	}
 
 	.sm\:col-span-3 {

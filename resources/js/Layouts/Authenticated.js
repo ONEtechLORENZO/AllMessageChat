@@ -5,6 +5,8 @@ import { Inertia } from '@inertiajs/inertia';
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link } from "@inertiajs/inertia-react";
 import { Dialog, Transition } from "@headlessui/react";
+import UserRegistration from '@/Components/UserRegistration';
+
 import {
     HomeIcon,
     ChatAltIcon,
@@ -140,11 +142,17 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
     const[menuDropdownActive , setMenuDropdownActive] = useState({});
 
     const [notifications, setNotifications] = useState();
-    
+    const [timezone, setTimezone] = useState([]);
+    const[showModal,setshowModal]= useState(false);
     const [count, setCount] = useState();
     const [id, setId] = useState();
 
     useEffect(() => {
+        if(auth.user.currency==null)
+        {
+            setshowModal(true)
+            getTimezones();
+        }
         getNotifications();
         axios.get(route('get_session_value')).then((response) => {
             if(response.data.session_value){
@@ -221,6 +229,14 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
           setCount(response.data.count);
           setNotifications(response.data.notifications);
           setId(response.data.id);
+        });
+    }
+
+//to get timezones
+    function getTimezones(){
+        var url = route('get_time_zone');
+        axios.get(url).then((response) => {
+          setTimezone(response.data.time_zone);          
         });
     }
 
@@ -566,6 +582,14 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                 openModal={selectCompanyModal}
                 setSelectedCompany={setSelectedCompany}
             />
+
+        {showModal?
+            <UserRegistration
+              user={auth.user}
+              time_zone={timezone}
+              setshowModal={setshowModal}
+            />:''
+        }
 
         </>
     );
