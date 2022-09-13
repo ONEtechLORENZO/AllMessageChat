@@ -78,12 +78,13 @@ const navigation = [
         icon: ChatAlt2Icon,
         show: ['all'],
         
-    },{
+    },
+    /*{
         name: "Company",
         href: route("listCompany"),
         icon: OfficeBuildingIcon,
         show: ['admin'],
-    },
+    },*/
     {
         name: "Campaigns",
         href: route("listCampaign"),
@@ -498,7 +499,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                     </Dropdown.Link>
 
                                                     <button className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" onClick={() => setSelectedCompany(true)} as="button">
-                                                        Switch company
+                                                        Switch Workspace
                                                     </button>
 
                                                     {auth && auth.user && auth.user.role == 'global_admin' ?
