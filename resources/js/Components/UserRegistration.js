@@ -15,7 +15,7 @@ export default function UserRegistration(props) {
     const [show, setShow] = useState(true);
     const cancelButtonRef = useRef(null);
     const fieldList = {
-        'Personal Information': {
+        'User Information': {
             'currency': {'value': props.user.currency, 'label': 'Currency', 'type': 'select', 'required': true, 'options': currencies },
             'time_zone': {'value': props.user.time_zone, 'label': 'Time Zone', 'type': 'select', 'required': true , 'options': props.time_zone },
         },
@@ -52,8 +52,8 @@ export default function UserRegistration(props) {
   function validateAndSubmitForm() 
   {
         var pristine = new PristineJS(document.getElementById("register_user_form"), defaultPristineConfig);
-        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required="true"], select[data-pristine-required="true"]'));
-       
+        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required="true"], select[data-pristine-required="true"], textarea[data-pristine-required="true"]'));
+     //  console.log(is_validated)
         if(!is_validated) {
             return false;
         }
@@ -94,10 +94,10 @@ export default function UserRegistration(props) {
                                 
                                     <div className="">
                                         <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
-                                            User Registration
+                                            Please enter the below details to proceed ..
                                            </Dialog.Title>
                                         </div>
-                                        <form action="#" method="POST" className="container mx-auto px-4 sm:px-6 lg:px-8" id="register_user_form" >
+                                        <form action="#" method="POST" id="register_user_form" >
                                         <input type='hidden' name='id' value={data.id} />
                                 {Object.entries(fieldList).map(([title, fields]) => {
                     return(
@@ -162,7 +162,7 @@ export default function UserRegistration(props) {
                                 <button
                                         type="button"
                                         className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
-                                            onClick={() =>{post(route('store_user_data'))}}
+                                            onClick={validateAndSubmitForm}
                                     >
                                         Save
                                     </button>
