@@ -154,7 +154,8 @@ class TagController extends Controller
             //Sync the tag module to taggable table
             $sync = $this->syncHandling($record, $id);
          
-            return Redirect::route('detailContact', $id);
+            $url = route('detailContact').'?id='.$id;
+            return Redirect::to($url);
         }else{
 
             // Check whether tag name has been unique

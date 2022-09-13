@@ -153,7 +153,9 @@ class CategoryController extends Controller
             //Sync the tag module to taggable table
             $sync = $this->syncHandling($record, $id);
         
-            return Redirect::route('detailContact', $id);
+            $url = route('detailContact').'?id='.$id;
+            return Redirect::to($url);
+           // return Redirect::route('detailContact', $id);
         }else{
 
             $checkTagName = Category::where('name', $request->get('name'))

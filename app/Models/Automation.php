@@ -12,8 +12,8 @@ class Automation extends Model
 
     public $recordModal = '';
     public $enquiryNodes = [];
-    public $nodes = '';
-    public $edges = '';
+    public $nodes = [];
+    public $edges = [];
 
     /**
      * Return List view field
@@ -60,7 +60,6 @@ class Automation extends Model
             $node = $this->getNextNode($edge->target);
             $this->processNodeAction($node, $statnode);
         }
-        
     }
 
     /**
@@ -78,7 +77,7 @@ class Automation extends Model
             // Check condition based end node
             if($node->type == 'output'){
                 // Clear other nodes & edges
-                $this->nodes = '';
+                $this->nodes = [];
                 $this->edges = []; 
             } 
 
