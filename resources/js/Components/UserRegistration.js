@@ -53,6 +53,7 @@ export default function UserRegistration(props) {
   {
         var pristine = new PristineJS(document.getElementById("register_user_form"), defaultPristineConfig);
         let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required="true"], select[data-pristine-required="true"]'));
+       
         if(!is_validated) {
             return false;
         }
@@ -155,7 +156,7 @@ export default function UserRegistration(props) {
                                 </dl>
                             </div>
                         </>
-                )})}</form>
+                )})}
 
                                 <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
                                 <button
@@ -173,6 +174,7 @@ export default function UserRegistration(props) {
                                       Cancel
                                     </button>
                                 </div>
+                                </form>
                             </div>
                             
                         </Transition.Child>
