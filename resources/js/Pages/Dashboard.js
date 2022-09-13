@@ -1,14 +1,17 @@
-import React,{useState} from 'react';
+import React,{useState,useEffect} from 'react';
 import Authenticated from '@/Layouts/Authenticated';
 import { Head, Link } from '@inertiajs/inertia-react';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
+import UserRegistration from '@/Components/UserRegistration';
 
 export default function Dashboard(props) {
     
     const[ deleteAccoutId , setDeleteAccountId] = useState('');
     const[ accounts , setAccountList] = useState(props.accounts);
+   
 
+    //console.log('Records dash'+props)
     // Delete Account
     function deleteAccount(accountId){
        
@@ -56,11 +59,12 @@ export default function Dashboard(props) {
                     href={route('account_registration')}
                     className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 >
-                    {props.translator['Create new social profile']}
+                    {props.translator['Create a new social profile']}
                 </Link>
                 </div> 
             </div>}
         >
+            
             <Head title={props.translator['Dashboard']} />
 
             <div className="py-12">
@@ -130,7 +134,7 @@ export default function Dashboard(props) {
                                     <p className="mt-1 text-sm text-gray-500">{props.translator['Get started by creating a new social profile.']}</p>
                                     <div className="mt-6">
                                         <Link href={route('account_registration')} className="underline text-sm text-indigo-600 hover:text-indigo-900">
-                                        {props.translator['Click here to create new social profile']}
+                                        {props.translator['Click here to create a new social profile']}
                                         </Link>
                                     </div>
                               </div>

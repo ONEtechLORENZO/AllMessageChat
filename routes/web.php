@@ -62,9 +62,11 @@ Route::post('/incoming', [MsgController::class, 'incoming']);
 Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
+     
 
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
     Route::get('/getCompanyId', [UserController::class, 'getSelectedCompany'])->name('get_selected_company');
+    Route::get('/user/timezone',[UserController::class, 'getUserTimeZone'])->name('get_time_zone');
 
     // Wallet
     Route::get('/wallet', [UserController::class, 'wallet'])->name('wallet');
