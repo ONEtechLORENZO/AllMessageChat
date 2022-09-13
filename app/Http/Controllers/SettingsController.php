@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\OutgoingServerConfig;
 use App\Models\MailToAddress;
 use App\Models\Company;
+use App\Models\Field;
 use Illuminate\Support\Facades\Redirect;
 
 use auth;
@@ -146,6 +147,49 @@ class SettingsController extends Controller
 
     public function updateSubscription(Request $request){
 
-        return Inertia::render('Subscription/subscription');
+        $user_id = $request->user()->id;
+        $company_id = Cache::get('selected_company_'.$user_id);
+
+        //get current company details
+        $currentCompany =  Company::where('id', $company_id)->first();
+
+        return Inertia::render('Subscription/subscription', ['plan' => $currentCompany->plan]);
+    }
+
+    public function saveCompany(Request $request){
+     
+        $user_id = $request->user()->id;
+        $company_id = Cache::get('selected_company_'.$user_id);
+        $fields = Field::where('module_name', 'Company')->get();
+        
+        $company = Company::findOrFail($company_id);
+      
+        if($company){
+            foreach($fields as $field){
+                $name = $field->field_name;
+                if($request->has($name)){
+                    $company->$name = $request->$name;
+                    $company->save();
+                }
+            }
+        }
+
+        return Redirect::route('wallet_subscription');
+    }
+
+    public function SubscriptionPlan(Request $request, $plan){
+        
+        $user_id = $request->user()->id;
+        $company_id = Cache::get('selected_company_'.$user_id);
+        
+        //get current company
+        $company = Company::findOrFail($company_id);
+      
+        if($company && $plan){
+            $company->plan = $plan;
+            $company->save();
+        }
+
+        return Redirect::route('wallet_subscription');
     }
 }

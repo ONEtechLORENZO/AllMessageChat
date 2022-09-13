@@ -2,16 +2,18 @@ import React from "react";
 import Authenticated from "@/Layouts/Authenticated";
 import { Fragment } from 'react';
 import { CheckIcon, XIcon  } from "@heroicons/react/solid";
+import { Inertia } from "@inertiajs/inertia";
 
 const tiers = [
-    { name: 'Lite', href: '#', priceMonthly: 0, currency: '€',description: '' },
-    { name: 'Pro', href: '#', priceMonthly: 49, currency: '€',description: '' },
+    { name: 'Lite', href: '#', priceMonthly: 0, currency: '€',description: '' , original: 'lite'},
+    { name: 'Pro', href: '#', priceMonthly: 49, currency: '€',description: '' , original: 'pro'},
     {
       name: 'Business',
       href: '#',
       priceMonthly: 99,
       currency: '€',
       description: '',
+      original: 'business'
     },
     {
       name: 'Enterprise',
@@ -19,6 +21,7 @@ const tiers = [
       priceMonthly: 'custom',
       currency: '',
       description: '',
+      original: 'enterprise'
     },
 ];
 
@@ -74,6 +77,20 @@ function classNames(...classes) {
 }
 
 export default function Subscription(props){
+
+    function Subscribe(plan){
+        let confirm = window.confirm(['Are you sure to subscribe this plan']);
+        if(!confirm) {
+            return;
+        }
+   
+        Inertia.post(route('subscribe_plan',{'plan' : plan}), '', {
+            onSuccess: (response) => {
+
+            }
+        });
+    }
+
     return(
     <Authenticated
       auth={props.auth}
@@ -82,86 +99,6 @@ export default function Subscription(props){
         <div>
          <div className="bg-white">
           <div className="mx-auto max-w-7xl bg-white py-16 sm:py-24 sm:px-6 lg:px-8">
-        {/* xs to lg */}
-            {/* <div className="mx-auto max-w-2xl space-y-16 lg:hidden">
-            {tiers.map((tier, tierIdx) => (
-                <section key={tier.name}>
-                <div className="mb-8 px-4">
-                    <h2 className="text-lg font-medium leading-7 text-gray-900">{tier.name}</h2>
-                    <p className="mt-4">
-                    <span className="text-4xl font-bold tracking-tight text-gray-900">€{tier.priceMonthly}</span>{' '}
-                    <span className="text-base font-medium text-gray-500">{tier.currency}</span>
-                    </p>
-                    <p className="mt-4 text-sm text-gray-500">{tier.description}</p>
-                    <a
-                    href={tier.href}
-                    className="mt-6 block w-full rounded-md border border-gray-800 bg-gray-800 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
-                    >
-                    Buy {tier.name}
-                    </a>
-                </div>
-
-                {sections.map((section) => (
-                    <table key={section.name} className="w-full">
-                    <caption className="border-t border-gray-200 bg-gray-50 py-3 px-4 text-left text-sm font-medium text-gray-900">
-                        {section.name}
-                    </caption>
-                    <thead>
-                        <tr>
-                        <th className="sr-only" scope="col">
-                            Feature
-                        </th>
-                        <th className="sr-only" scope="col">
-                            Included
-                        </th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                        {section.features.map((feature) => (
-                        <tr key={feature.name} className="border-t border-gray-200">
-                            <th className="py-5 px-4 text-left text-sm font-normal text-gray-500" scope="row">
-                            {console.log(feature)}
-                            {feature.name}
-                            </th>
-                            <td className="py-5 pr-4">
-                            {typeof feature.tiers[tier.name] === 'string' ? (
-                                <span className="block text-right text-sm text-gray-700">{feature.tiers[tier.name]}</span>
-                            ) : (
-                                <>
-                                {feature.tiers[tier.name] === true ? (
-                                    <CheckIcon className="ml-auto h-5 w-5 text-green-500" aria-hidden="true" />
-                                ) : (
-                                    <MinusIcon className="ml-auto h-5 w-5 text-gray-400" aria-hidden="true" />
-                                )}
-
-                                <span className="">{feature.tiers[tier.name] === true ? 'Yes' : 'No'}</span>
-                                </>
-                            )}
-                            </td>
-                        </tr>
-                        ))}
-                    </tbody>
-                    </table>
-                ))}
-
-                <div
-                    className={classNames(
-                    tierIdx < tiers.length - 1 ? 'py-5 border-b' : 'pt-5',
-                    'border-t border-gray-200 px-4'
-                    )}
-                >
-                    <a
-                    href={tier.href}
-                    className="block w-full rounded-md border border-gray-800 bg-gray-800 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
-                    >
-                    Buy {tier.name}
-                    </a>
-                </div>
-                </section>
-            ))}
-            </div> */}
-
-        {/* lg+ */}
             <div className="hidden lg:block">
             <table className="h-px w-full table-fixed">
                 <caption className="sr-only">Pricing plan comparison</caption>
@@ -195,12 +132,16 @@ export default function Subscription(props){
                             <span className="text-base font-medium text-gray-500">/mo</span>
                         </p>
                         <p className="mt-4 mb-16 text-sm text-gray-500">{tier.description}</p>
-                        <a
-                            href={tier.href}
-                            className="5 absolute bottom-0 block w-full flex-grow rounded-md border border-gray-800 bg-gray-800 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
+                        <button
+                            className={classNames(
+                                props.plan == tier.original
+                                ?"5 absolute bottom-0 block w-full flex-grow rounded-md border border-indigo-600 bg-indigo-600 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
+                                :"5 absolute bottom-0 block w-full flex-grow rounded-md border border-gray-800 bg-gray-800 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
+                            )}
+                            onClick={() => Subscribe(tier.original)}
                         >
                             Buy {tier.name}
-                        </a>
+                        </button>
                         </div>
                     </td>
                     ))}
@@ -251,12 +192,12 @@ export default function Subscription(props){
                     </th>
                     {tiers.map((tier) => (
                     <td key={tier.name} className="px-6 pt-5">
-                        <a
-                        href={tier.href}
+                        <button
                         className="block w-full rounded-md border border-gray-800 bg-gray-800 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
+                        onClick={() => Subscribe(tier.name)}    
                         >
                         Buy {tier.name}
-                        </a>
+                        </button>
                     </td>
                     ))}
                 </tr>

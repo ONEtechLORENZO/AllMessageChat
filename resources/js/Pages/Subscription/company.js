@@ -4,18 +4,19 @@ import Dropdown from "@/Components/Forms/Dropdown";
 import { Link } from "@inertiajs/inertia-react";
 import Axios from "axios";
 import Input from "@/Components/Forms/Input";
+import { Inertia } from "@inertiajs/inertia";
 
 export default function CompanyDetail(props){
 
   const [fields, setFields] = useState();
-  const [open, setOpen] = useState({name:''});
+  const [open, setOpen] = useState({});
+  const [temp, setTemp] = useState({});
 
   useEffect(() => {
     fetchModuleFields();
   },[]);
 
   function fetchModuleFields() {
-
     let endpoint_url = route('fetchModuleFields', {'module': 'Company'});
     Axios.get(endpoint_url).then((response) => {
         if (response.data.status !== false) {
@@ -27,26 +28,47 @@ export default function CompanyDetail(props){
     });
   }
 
-  function editCompany(name){
+  function editCompany(field_name){
     let newOpen = Object.assign({}, open);
-    newOpen['name'] = name;
+    let newTemp = Object.assign({}, temp);
+    
+    //reset the value
+    newTemp = {};
+    setTemp(newTemp);
+
+    //new value
+    newOpen['name'] = field_name;
+    newTemp[field_name] = props.currentCompany[field_name];
     setOpen(newOpen);
+    setTemp(newTemp);
   }
 
   function editCancel(){
     let newOpen = Object.assign({}, open);
     newOpen['name'] = '';
     setOpen(newOpen);
+    setTemp({});
   }
 
-  function saveCompany(event){
-    let newState = Object.assign({},props.currentCompany);
+  function saveTemp(event){
+    let newTemp = Object.assign({}, temp);
     const name = event.target.name;
-    let field_value = event.target.value;
-    newState[name] = field_value
-    props.setCurrentCompany(newState);
+    let value = event.target.value;
+    newTemp[name] = value;
+    setTemp(newTemp);
   }
 
+  function saveCompany(){
+    if(temp){
+      Inertia.post(route('saveCompany'), temp, {
+        onSuccess: (response) => {
+          setTemp({});
+          setOpen({'name':''})
+        }
+      });
+    } 
+  }
+console.log(temp, open)
     return(
         <div>
             <div className="sm:grid grid grid-cols-2 gap-4 p-4">
@@ -142,6 +164,10 @@ export default function CompanyDetail(props){
                             if(!field_value){
                               field_value = '-';
                             }
+                            if(temp.hasOwnProperty(field_name)){
+                              field_value = temp[field_name];
+                            }
+
                             return(
                               <tr>
                                 <td className="whitespace-nowrap px-3 py-4 w-1/3 text-sm font-medium text-gray-500">{field_name}</td>
@@ -154,10 +180,10 @@ export default function CompanyDetail(props){
                                         id={field_name}
                                         name={field_name}
                                         value={field_value} 
-                                        handleChange={saveCompany}
+                                        handleChange={saveTemp}
                                     />
-                                    <div className="p-2 text-gray-900"><CheckIcon className="h-6 w-6"/></div>
-                                    <div className="p-2 text-gray-900" onClick={() => editCancel()}><XIcon className="h-6 w-6"/></div>
+                                    <div className="p-2 text-gray-900" onClick={() => saveCompany()}><CheckIcon className="h-6 w-6 text-green-900"/></div>
+                                    <div className="p-2 text-gray-900" onClick={() => editCancel()}><XIcon className="h-6 w-6 text-red-900"/></div>
                                   </>
                                   : 
                                   <>

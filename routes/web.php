@@ -279,7 +279,8 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/user/company/Detail', [SettingsController::class, 'CurrentCompany'])->name('user_company');
     Route::get('/changeCompany/{id}', [SettingsController::class, 'changeCompany'])->name('change_company');
     Route::get('/user/company/pricing', [SettingsController::class, 'updateSubscription'])->name('updateSubscription');
-    
+    Route::post('/edit/company',[SettingsController::class, 'saveCompany'])->name('saveCompany');
+    Route::post('/save/subscription/{plan}', [SettingsController::class, 'SubscriptionPlan'])->name('subscribe_plan');
 
     // Pricing
     Route::get('/admin/pricing', [PriceController::class, 'index'])->name('listPrice');
