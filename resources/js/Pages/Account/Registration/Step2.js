@@ -15,11 +15,8 @@ export default function Step2(props){
     const [tab, setTab] = useState('');
     const [source, setSource] = useState('');
     const [process, setProcess] =useState('');
-
-    function sourceHandler(event){
-        setSource(event);
-    }
     
+    //handle the user account 
     function EventHandler(){
         if(source == 'yes'){
             setTab(1);
@@ -30,7 +27,7 @@ export default function Step2(props){
         if(source == 'yes' && process == 'no'){
             setStep(3);
         }
-        if(source == 'no'){
+        if((source == 'no') || (source == 'not_sure') || (step == 2 && process == 'yes')){
             props.setCurrentPage(3);
             props.setAddField(true);
         }
@@ -100,7 +97,11 @@ export default function Step2(props){
                 step == 3 ? "block" : "hidden"
                 }
             >
-              <Source3 />
+              <Source3 
+               data={props.data}
+               formHandler={props.formHandler}
+               legalEntityName={props.legalEntityName}
+              />
             </div>
                 
             </form>

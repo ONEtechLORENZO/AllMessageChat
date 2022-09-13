@@ -1,5 +1,6 @@
 import React from "react";
 import Dropdown from '@/Components/Forms/Dropdown';
+import { Link } from "@inertiajs/inertia-react";
 
 const serivceOption = {
     'whatsapp' : 'Whatsapp',
@@ -8,6 +9,7 @@ const serivceOption = {
 
 export default function Step1(props){
 
+    //select the service 
     function serviceHandler(event){
         const value = event.target.value;
         if(value){
@@ -57,13 +59,12 @@ export default function Step1(props){
             >
                 Next
             </button>
-            <button
-                type="button"
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                onClick={() => props.setOpen(false)}
+            <Link
+             href={route('dashboard')}
+             className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
             >
-                Cancel
-            </button>
+             Cancel
+            </Link>
         </div>
        </div> 
     );

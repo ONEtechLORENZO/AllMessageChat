@@ -20,9 +20,9 @@ const formField = [
 ];
 
 const addformField = [
-  {'label':'Phone Number', 'name':'phone_number', 'type':'text'},
+  {'label':'Business Phone Number', 'name':'phone_number', 'type':'text'},
   {'label':'Legal Entity Name', 'name':'entity_name', 'type':'text'},
-  {'label':'Display Name', 'name':'display_name', 'type':'text'},
+  {'label':'Legal Business Name', 'name':'display_name', 'type':'text'},
 ];
 
 export default function Step3(props){
@@ -109,14 +109,14 @@ export default function Step3(props){
             {(checklist.map((check) => {
                let field_value = '';
                let field_name = check.name;
-               field_value = props.data[field_name];
+               field_value = props.checkPermission[field_name];
                return(
                 <div class="form-check">
                   <Checkbox
                     id={field_name}
                     name={field_name}
                     value={field_value}
-                    handleChange={props.formHandler}
+                    handleChange={props.checkAllPermissioin}
                   />
               <label class="form-check-label inline-block text-gray-500 px-4">
                   {check.description}
@@ -130,7 +130,7 @@ export default function Step3(props){
             <button
                 type="button"
                 className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-                onClick={''}
+                onClick={() => props.validateRequest()}
             >
                 Send Request
             </button>

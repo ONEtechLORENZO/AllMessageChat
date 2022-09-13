@@ -4,6 +4,8 @@ import Authenticated from '@/Layouts/Authenticated';
 import Step1 from './Step1';
 import Step2 from './Step2';
 import Step3 from './Step3';
+import Step4 from './Step4';
+import Step5 from './Step5';
 
 export default function AccountRegistration(props){
 
@@ -13,7 +15,12 @@ export default function AccountRegistration(props){
     const [service, setService] = useState('');
     const [data, setData] = useState({});
     const [addfield, setAddField] = useState(false);
+    const [checkPermission, setPermission] = useState({});
     
+    useEffect(() => {
+      setData({});
+    },[]);
+
     function accountHandler(){
         if(service){
             setCurrentPage(2);
@@ -21,12 +28,56 @@ export default function AccountRegistration(props){
         return false;
     }
 
+    //get all the value in the form page
     function formHandler(event){
       let newData = Object.assign({}, data);
-      const field_name = event.target.name;
-      const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+      const field_name = event.target.name;  
+      let value = '';
+      if(field_name == 'phone_number'){
+        value = event.target.value.replace(/\D/g, "");
+      }else{
+        value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+      }
       newData[field_name] = value;
       setData(newData);
+    }
+    
+    //check the conditions
+    function checkAllPermissioin(event){
+      let newCheck = Object.assign({}, checkPermission);
+      const name = event.target.name;
+      const value = event.target.checked;
+      newCheck[name] = value;
+      setPermission(newCheck);
+    }
+    
+    //validate to check the all conditions
+    function validateRequest(){
+        let checklength = Object.keys(checkPermission).length;
+        let validate = true;
+        if(checklength == 3){
+          Object.entries(checkPermission).map((check) => {
+            if(!check[1]){
+               validate = false;
+            }
+         });
+        }else{
+          return false;
+        }
+        if(validate){
+          setCurrentPage(4);
+        }
+    }
+
+    function legalEntityName(id, name){
+      let newUser = Object.assign({}, data);
+      newUser[name] = id;
+      props.setData(newUser);
+    }
+
+    //save the account details
+    function saveAccount(){
+      console.log('adf')
     }
     
     return(
@@ -83,8 +134,11 @@ export default function AccountRegistration(props){
                                       }
                                     >
                                         <Step2 
+                                        data={data}
+                                        formHandler={formHandler}
                                         setCurrentPage={setCurrentPage}
                                         setAddField={setAddField}
+                                        legalEntityName={legalEntityName}
                                         />
                                     </div>
 
@@ -97,7 +151,28 @@ export default function AccountRegistration(props){
                                         data={data}
                                         formHandler={formHandler}
                                         addfield={addfield}
+                                        checkPermission={checkPermission}
+                                        checkAllPermissioin={checkAllPermissioin}
+                                        validateRequest={validateRequest}
                                        />
+                                    </div>
+
+                                    <div 
+                                      className={
+                                        curretpage == 4 ? "block" : "hidden"
+                                      }
+                                    >
+                                       <Step4 
+                                       saveAccount={saveAccount}
+                                       />
+                                    </div>
+
+                                    <div 
+                                      className={
+                                        curretpage == 5 ? "block" : "hidden"
+                                      }
+                                    >
+                                       <Step5 />
                                     </div>
 
                                   </div>

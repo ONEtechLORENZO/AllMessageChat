@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import Input from "@/Components/Forms/Input";
 
 const notificationMethods = [
@@ -6,9 +6,8 @@ const notificationMethods = [
   { id: 'no', title: 'No' },
 ]
 
-
 export default function Source3(props){
-
+  
     return(
         <div>
             <div className="overflow-hidden  md:rounded-lg">
@@ -24,8 +23,8 @@ export default function Source3(props){
                             className={`mt-1 appearance-none block w-3/4 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
                             id='phone_number'
                             name='phone_number'
-                            value={''} 
-                            handleChange={''}
+                            value={props.data['phone_number']} 
+                            handleChange={props.formHandler}
                             required={true}
                         />
                       </td>
@@ -39,10 +38,10 @@ export default function Source3(props){
                         <Input 
                             type="text" 
                             className={`mt-1 appearance-none block w-3/4 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
-                            id='phone_number'
-                            name='phone_number'
-                            value={''} 
-                            handleChange={''}
+                            id='entity_name'
+                            name='entity_name'
+                            value={props.data['entity_name']} 
+                            handleChange={props.formHandler}
                             required={true}
                         />
                       </td>
@@ -55,10 +54,10 @@ export default function Source3(props){
                         <Input 
                             type="text" 
                             className={`mt-1 appearance-none block w-3/4 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
-                            id='phone_number'
-                            name='phone_number'
-                            value={''} 
-                            handleChange={''}
+                            id='website'
+                            name='website'
+                            value={props.data['website']} 
+                            handleChange={props.formHandler}
                             required={true}
                         />
                       </td>
@@ -75,10 +74,11 @@ export default function Source3(props){
                                 <div key={notificationMethod.id} className="flex items-center">
                                 <input
                                     id={notificationMethod.id}
-                                    name="notification-method"
+                                    name="legal_entity"
                                     type="radio"
-                                    defaultChecked={notificationMethod.id === 'email'}
+                                    defaultValue={props.data['legal_entity'] == notificationMethod.id}
                                     className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                    onChange={() => props.legalEntityName(notificationMethod.id, 'legal_entity')}
                                 />
                                 <label htmlFor={notificationMethod.id} className="ml-3 block text-sm font-medium text-gray-700">
                                     {notificationMethod.title}
