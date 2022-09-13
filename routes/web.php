@@ -277,6 +277,11 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/admin/settings/template_notification', [SettingsController::class, 'toMail'])->name('template_notification');
     Route::post('/admin/settings/saveSMTP', [SettingsController::class, 'saveOutgoingServerData'])->name('store_smtp_data');
     Route::post('/admin/settings/saveToAddress', [SettingsController::class, 'saveToAddressData'])->name('store_toAddress_data');
+    Route::get('/wallet/subscription', [SettingsController::class, 'walletSubscription'])->name('wallet_subscription');
+    Route::get('/user/company/Detail', [SettingsController::class, 'CurrentCompany'])->name('user_company');
+    Route::get('/changeCompany/{id}', [SettingsController::class, 'changeCompany'])->name('change_company');
+    Route::get('/user/company/pricing', [SettingsController::class, 'updateSubscription'])->name('updateSubscription');
+    
 
     // Pricing
     Route::get('/admin/pricing', [PriceController::class, 'index'])->name('listPrice');

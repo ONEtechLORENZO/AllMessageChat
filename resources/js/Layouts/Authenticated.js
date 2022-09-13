@@ -20,6 +20,7 @@ import {
     ChevronRightIcon,
     ChevronLeftIcon,
     ServerIcon,
+    CogIcon,
     EyeIcon,
     ShoppingCartIcon,
     ShoppingBagIcon,
@@ -29,7 +30,6 @@ import SelectCompany from "@/Pages/Company/SelectCompany";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
 import axios from "axios";
 import Notification from "./Notification";
-
 
 const navigation = [
     {
@@ -121,6 +121,11 @@ const globalAdminLinks = [
         name: "Users",
         href: route("list_global_user"),
         icon: UsersIcon,
+    },
+    {
+        name: "Settings",
+        href: route("wallet_subscription"),
+        icon: CogIcon,
     },
 ];
 

@@ -1107,6 +1107,12 @@ select {
 .mt-16 {
 	margin-top: 4rem;
 }
+.mb-8 {
+	margin-bottom: 2rem;
+}
+.mb-16 {
+	margin-bottom: 4rem;
+}
 .block {
 	display: block;
 }
@@ -1199,6 +1205,15 @@ select {
 }
 .h-14 {
 	height: 3.5rem;
+}
+.h-40 {
+	height: 10rem;
+}
+.h-48 {
+	height: 12rem;
+}
+.h-px {
+	height: 1px;
 }
 .max-h-96 {
 	max-height: 24rem;
@@ -1305,6 +1320,9 @@ select {
 .w-1\/5 {
 	width: 20%;
 }
+.w-2\/5 {
+	width: 40%;
+}
 .min-w-0 {
 	min-width: 0px;
 }
@@ -1366,6 +1384,9 @@ select {
 }
 .table-auto {
 	table-layout: auto;
+}
+.table-fixed {
+	table-layout: fixed;
 }
 .border-collapse {
 	border-collapse: collapse;
@@ -1594,6 +1615,11 @@ select {
 	margin-right: calc(0.5rem * var(--tw-space-x-reverse));
 	margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
 }
+.space-y-16 > :not([hidden]) ~ :not([hidden]) {
+	--tw-space-y-reverse: 0;
+	margin-top: calc(4rem * calc(1 - var(--tw-space-y-reverse)));
+	margin-bottom: calc(4rem * var(--tw-space-y-reverse));
+}
 .divide-y > :not([hidden]) ~ :not([hidden]) {
 	--tw-divide-y-reverse: 0;
 	border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
@@ -1807,6 +1833,10 @@ select {
 .border-indigo-200 {
 	--tw-border-opacity: 1;
 	border-color: rgba(199, 210, 254, var(--tw-border-opacity));
+}
+.border-gray-800 {
+	--tw-border-opacity: 1;
+	border-color: rgba(31, 41, 55, var(--tw-border-opacity));
 }
 .bg-white {
 	--tw-bg-opacity: 1;
@@ -2088,6 +2118,10 @@ select {
 	padding-left: 0px;
 	padding-right: 0px;
 }
+.py-16 {
+	padding-top: 4rem;
+	padding-bottom: 4rem;
+}
 .pt-8 {
 	padding-top: 2rem;
 }
@@ -2186,6 +2220,9 @@ select {
 }
 .text-right {
 	text-align: right;
+}
+.align-top {
+	vertical-align: top;
 }
 .align-middle {
 	vertical-align: middle;
@@ -2435,6 +2472,10 @@ select {
 .text-yellow-700 {
 	--tw-text-opacity: 1;
 	color: rgba(180, 83, 9, var(--tw-text-opacity));
+}
+.text-red-900 {
+	--tw-text-opacity: 1;
+	color: rgba(127, 29, 29, var(--tw-text-opacity));
 }
 .text-opacity-40 {
 	--tw-text-opacity: 0.4;
@@ -3470,6 +3511,11 @@ select {
 		padding-right: 2rem;
 	}
 
+	.sm\:py-24 {
+		padding-top: 6rem;
+		padding-bottom: 6rem;
+	}
+
 	.sm\:pt-0 {
 		padding-top: 0px;
 	}
@@ -3730,6 +3776,10 @@ select {
 
 	.lg\:grid {
 		display: grid;
+	}
+
+	.lg\:hidden {
+		display: none;
 	}
 
 	.lg\:h-full {
