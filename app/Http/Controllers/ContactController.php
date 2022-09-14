@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
-use App\Models\Opportunity;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Http\Request;

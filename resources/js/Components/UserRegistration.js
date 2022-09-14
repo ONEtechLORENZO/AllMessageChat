@@ -53,7 +53,6 @@ export default function UserRegistration(props) {
   {
         var pristine = new PristineJS(document.getElementById("register_user_form"), defaultPristineConfig);
         let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required="true"], select[data-pristine-required="true"], textarea[data-pristine-required="true"]'));
-     //  console.log(is_validated)
         if(!is_validated) {
             return false;
         }

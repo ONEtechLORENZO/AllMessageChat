@@ -63,7 +63,6 @@ Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
      
-
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
     Route::get('/getCompanyId', [UserController::class, 'getSelectedCompany'])->name('get_selected_company');
     Route::get('/user/timezone',[UserController::class, 'getUserTimeZone'])->name('get_time_zone');
@@ -74,6 +73,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/user-balance', [UserController::class, 'userBalance'])->name('userBalance');
     Route::get('/transactions', [UserController::class, 'transactions'])->name('listTransaction');
     Route::get('/invoices/{id}', [UserController::class, 'invoices'])->name('invoices');    
+    Route::get('/getPaymentMethods', [UserController::class, 'getPaymentMethods'])->name('getPaymentMethods');
+
+    // Stripe
+    Route::get('/createStripeSetupIntent', [UserController::class, 'createStripeSetupIntent'])->name('createStripeSetupIntent');
+    Route::post('/relatePaymentMethod', [UserController::class, 'relatePaymentMethod'])->name('relatePaymentMethod');
+
+    // Subscription
+    Route::get('/wallet/subscription', [SettingsController::class, 'walletSubscription'])->name('wallet_subscription');
+    Route::get('/user/company/pricing', [SettingsController::class, 'updateSubscription'])->name('updateSubscription');
+    Route::post('/save/subscription/{plan}', [SettingsController::class, 'SubscriptionPlan'])->name('subscribe_plan');
     
     // Profile
     Route::get('/user/profile', [UserController::class, 'profile'])->name('profile');
@@ -278,12 +287,11 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/admin/settings/template_notification', [SettingsController::class, 'toMail'])->name('template_notification');
     Route::post('/admin/settings/saveSMTP', [SettingsController::class, 'saveOutgoingServerData'])->name('store_smtp_data');
     Route::post('/admin/settings/saveToAddress', [SettingsController::class, 'saveToAddressData'])->name('store_toAddress_data');
-    Route::get('/wallet/subscription', [SettingsController::class, 'walletSubscription'])->name('wallet_subscription');
+    
     Route::get('/user/company/Detail', [SettingsController::class, 'CurrentCompany'])->name('user_company');
     Route::get('/changeCompany/{id}', [SettingsController::class, 'changeCompany'])->name('change_company');
-    Route::get('/user/company/pricing', [SettingsController::class, 'updateSubscription'])->name('updateSubscription');
+    
     Route::post('/edit/company',[SettingsController::class, 'saveCompany'])->name('saveCompany');
-    Route::post('/save/subscription/{plan}', [SettingsController::class, 'SubscriptionPlan'])->name('subscribe_plan');
 
     // Pricing
     Route::get('/admin/pricing', [PriceController::class, 'index'])->name('listPrice');

@@ -8,9 +8,9 @@ use App\Models\OutgoingServerConfig;
 use App\Models\MailToAddress;
 use App\Models\Company;
 use App\Models\Field;
+use App\Models\User;
 use Illuminate\Support\Facades\Redirect;
 
-use auth;
 use Cache;
 use DB;
 
@@ -99,11 +99,11 @@ class SettingsController extends Controller
         return Redirect::route('to_mail');
     }
 
-    public function walletSubscription(Request $request){
-        
+    public function walletSubscription(Request $request)
+    {    
         $userCompany = $this->UserCompanyDetail($request);
 
-        return Inertia::render('Subscription/index',[
+        return Inertia::render('Subscription/index', [
             'company' => $userCompany
         ]);
     }
@@ -177,17 +177,65 @@ class SettingsController extends Controller
         return Redirect::route('wallet_subscription');
     }
 
-    public function SubscriptionPlan(Request $request, $plan){
-        
+    public function SubscriptionPlan(Request $request, $plan)
+    {    
+        $flag = false;
         $user_id = $request->user()->id;
-        $company_id = Cache::get('selected_company_'.$user_id);
+        $company_id = Cache::get('selected_company_' . $user_id);
         
-        //get current company
+        // Get current company
         $company = Company::findOrFail($company_id);
       
-        if($company && $plan){
-            $company->plan = $plan;
-            $company->save();
+        if($company && $plan) {
+            /** 
+             * Create/Update Subscription.
+             * If exception occurs, plan update will be skipped.
+             **/ 
+            $plan_id = config('stripe.stripe_' . $plan);
+            if($plan_id) {
+                $user = User::find($user_id);
+                // Get Default Payment Method or Use the first Payment Method
+                $paymentMethod = $user->defaultPaymentMethod();
+                if(!$paymentMethod) {
+                    $paymentMethods = $user->paymentMethods();
+                    if(count($paymentMethods) > 0) {
+                        $paymentMethod = $paymentMethods[0];
+                    }
+                }
+
+                if($paymentMethod) {
+                    // Create new Subscription
+                    if(!$company->subscription_id) {
+                        $paymentMethodId = $paymentMethod->id;
+                        // New Subscription
+                        try {
+                            $subscription = $user->newSubscription('default', $plan_id)->create($paymentMethodId);
+                            $company->subscription_id = $subscription->id;
+                            $flag = true;
+                        }
+                        catch(\Exception $e) {
+                            // Log the issue
+
+                        }
+                    }
+                    else {
+                        // Update Subscription
+                        try {
+                            $user->subscription('default')->swap($plan_id);
+                            $flag = true;
+                        }
+                        catch(\Exception $e) {
+                            // Log the issue
+
+                        }
+                    }
+                }
+            }
+
+            if($flag) {
+                $company->plan = $plan;
+                $company->save();
+            }
         }
 
         return Redirect::route('wallet_subscription');

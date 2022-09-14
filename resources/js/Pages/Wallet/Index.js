@@ -1,21 +1,28 @@
 import React, { useEffect, useState } from "react";
 import StripeForm from "./StripeForm";
+import PaymentMethodForm from "./PaymentMethodForm";
 import Authenticated from "@/Layouts/Authenticated";
 import Axios from "axios";
 import notie from 'notie';
 import nProgress from 'nprogress';
 import { Link, Head } from "@inertiajs/inertia-react";
+import axios from "axios";
 
 function Wallet(props)
 {
     const [balance, setBalance] = useState(0);
 
+    const [paymentMethods, setPaymentMethods] = useState([]);
+
     const [showStripeForm, setShowStripeForm] = useState(false);
+
+    const [paymentMethodForm, setPaymentMethodForm] = useState(false);
 
     const [messageDeduction , setMessageDeduction] = useState({});
 
     useEffect(() => {
         setBalance(props.balance);
+        setPaymentMethods(props.paymentMethods);
         setMessageDeduction(props.message_deduction);
     }, [props.balance]);
 
@@ -49,6 +56,26 @@ function Wallet(props)
             }
 
             notie.alert({type: 'error', text: error_message, time: 5});
+        });
+    }
+
+    /**
+     * Refresh Payment Methods
+     */
+    function refreshPaymentMethods()
+    {
+        nProgress.start(0.5);
+        nProgress.inc(0.2);
+
+        axios({
+            method: 'get',
+            url: route('getPaymentMethods'),
+        })
+        .then((response) => {
+            nProgress.done(true);
+            if(response.status == 200) {
+                setPaymentMethods(response.data.paymentMethods);
+            }
         });
     }
 
@@ -319,37 +346,33 @@ function Wallet(props)
                             </span>
 
                             <div className="payment-list mt-4 space-y-6">
-                                <div className="payment-item sm:flex gap-4 space-y-2 sm:space-y-0">
-                                    <div className="w-40 h-20 bg-red-200 rounded-lg "></div>
-                                    <div>
-                                        <h5 className="text-sm font-semibold">
-                                            Visa
-                                        </h5>
-                                        <div className="mt-3">
-                                            <p>Debit </p>
-                                            <p>************0991</p>
+                                {paymentMethods.length > 0 && paymentMethods.map((paymentMethod) => {
+                                    return (
+                                        <div className="payment-item sm:flex gap-4 space-y-2 sm:space-y-0">
+                                            <div className="w-40 h-20 bg-red-200 rounded-lg "></div>
+                                            <div>
+                                                <h5 className="text-sm font-semibold capitalize">
+                                                    {paymentMethod.card.brand}
+                                                </h5>
+                                                <div className="mt-3">
+                                                    <p className="capitalize">{paymentMethod.card.funding}</p>
+                                                    <p>************{paymentMethod.card.last4}</p>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
+                                    )
+                                })}
 
-                                <div className="payment-item sm:flex space-y-2 sm:space-y-0  gap-4 ">
-                                    <div className="w-40 h-20 bg-red-200 rounded-lg "></div>
-                                    <div>
-                                        <h5 className="text-sm font-semibold">
-                                            Visa
-                                        </h5>
-                                        <div className="mt-3">
-                                            <p>Debit </p>
-                                            <p>************0991</p>
-                                        </div>
-                                    </div>
-                                </div>
+                                {paymentMethods.length == 0 ?
+                                    <p className="p-5">No Payment Methods Added Yet</p>
+                                : ''}
                             </div>
 
                             <div className="w-full flex justify-end mt-4">
                                 <button
                                     type="button"
                                     className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bg-primary/80"
+                                    onClick={() => setPaymentMethodForm(true)}
                                 >
                                     {props.translator['Add a Payment Method']}
                                 </button>
@@ -388,6 +411,15 @@ function Wallet(props)
                     setShowStripeForm={setShowStripeForm}
                     stripe_public_key={props.stripe_public_key}
                     fetchWalletBalance={fetchWalletBalance}
+                    translator={props.translator}
+                />
+            : ''}
+
+            {paymentMethodForm ?
+                <PaymentMethodForm 
+                    refreshPaymentMethods={refreshPaymentMethods}
+                    setPaymentMethodForm={setPaymentMethodForm}
+                    stripe_public_key={props.stripe_public_key}
                     translator={props.translator}
                 />
             : ''}

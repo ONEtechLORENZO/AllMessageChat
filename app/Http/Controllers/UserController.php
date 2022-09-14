@@ -1653,4 +1653,35 @@ class UserController extends Controller
 
     }
 
+    /**
+     * Create Stripe Setup Intent
+     */
+    public function createStripeSetupIntent(Request $request) 
+    {
+        $user = $request->user();
+        $intent = $user->createSetupIntent();
+
+        return response()->json(['intent' => $intent]);
+    }
+
+    /**
+     * Get Payment Methods
+     */
+    public function getPaymentMethods(Request $request) 
+    {
+        $user = $request->user();
+        $paymentMethods = $user->paymentMethods();
+
+        return response()->json(['paymentMethods' => $paymentMethods]);
+    }
+
+    /**
+     * Relate Payment Method
+     */
+    public function relatePaymentMethod(Request $request)
+    {
+        $user = $request->user();
+        $user->addPaymentMethod($request->get('id'));
+        return response()->json(['message' => 'Payment Method Related Successfully', 'status' => true]);
+    }
 }

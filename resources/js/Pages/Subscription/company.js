@@ -6,8 +6,8 @@ import Axios from "axios";
 import Input from "@/Components/Forms/Input";
 import { Inertia } from "@inertiajs/inertia";
 
-export default function CompanyDetail(props){
-
+export default function CompanyDetail(props)
+{
   const [fields, setFields] = useState();
   const [open, setOpen] = useState({});
   const [temp, setTemp] = useState({});
@@ -68,8 +68,10 @@ export default function CompanyDetail(props){
       });
     } 
   }
-console.log(temp, open)
-    return(
+
+  console.log(props.currentCompany);
+
+    return (
         <div>
             <div className="sm:grid grid grid-cols-2 gap-4 p-4">
               <div className="flex border border-solid rounded-lg h-40 p-4 gap-4">
@@ -97,7 +99,7 @@ console.log(temp, open)
                 </div>
               </div>
               <div className="border border-solid rounded-lg p-4">
-                <div className="font-bold">{props.currentCompany.plan} Plan</div>
+                <div className="font-bold capitalize">{props.currentCompany.plan} Plan</div>
                 <div className="grid grid-cols-2 p-2">
                     <div className="">
                         <p className="flex text-gray-500 gap-2"><span className="w-5 h-5"><CheckIcon/></span>Monthly Fee</p>
@@ -170,7 +172,7 @@ console.log(temp, open)
 
                             return(
                               <tr>
-                                <td className="whitespace-nowrap px-3 py-4 w-1/3 text-sm font-medium text-gray-500">{field_name}</td>
+                                <td className="whitespace-nowrap px-3 py-4 w-1/3 text-sm font-medium text-gray-500">{field.field_label}</td>
                                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900 flex w-2/5">
                                   {open  && open.name == field_name? 
                                   <>

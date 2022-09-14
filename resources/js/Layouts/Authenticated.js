@@ -12,7 +12,6 @@ import {
     ChatAltIcon,
     ChatAlt2Icon,
     IdentificationIcon,
-    OfficeBuildingIcon,
     BriefcaseIcon,
     UsersIcon,
     XIcon,
@@ -112,21 +111,24 @@ const navigation = [
     },
 ];
 
-const globalAdminLinks = [
+const bottomNavigation = [
     {
         name: "Pricing",
         href: route("listPrice"),
         icon: CurrencyDollarIcon,
+        show: ['global_admin'],
     },
     {
         name: "Users",
         href: route("list_global_user"),
         icon: UsersIcon,
+        show: ['global_admin'],
     },
     {
         name: "Settings",
         href: route("wallet_subscription"),
         icon: CogIcon,
+        show: ['admin', 'global_admin'],
     },
 ];
 
@@ -166,8 +168,6 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
             }
         });
 
-        console.count()
-
        // drownDownToggleAction();
     },[])
 
@@ -184,7 +184,6 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
     // }
 
     function drownDownToggleAction(e,item){
-        console.log(e)
         e.preventDefault();
         e.stopPropagation();
         e.nativeEvent.stopImmediatePropagation();
@@ -364,6 +363,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                     if(item.show != 'all' && !item.show.includes(auth.user.role)) {
                                         return;
                                     }
+
                                     return (
                                         <li data-index={index}  onClick={(e)=>{drownDownToggleAction(e,item)}}>
                                             <Link
@@ -410,40 +410,43 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                 </ul>
                             </nav>
                         </div>
-                        {auth.user.role == 'global_admin' ?
-                            <div className="flex-shrink-0 flex">
-                                <nav className="flex-1 px-2 pb-4 space-y-1 gio-navbar">
-                                    {globalAdminLinks.map((item) => {
-                                        return (
-                                            
-                                            <Link
-                                                key={item.name}
-                                                href={item.href}
+
+                        
+                        <div className="flex-shrink-0 flex">
+                            <nav className="flex-1 px-2 pb-4 space-y-1 gio-navbar">
+                                {bottomNavigation.map((item) => {
+                                    if(item.show != 'all' && !item.show.includes(auth.user.role)) {
+                                        return;
+                                    }
+                                    
+                                    return (
+                                        <Link
+                                            key={item.name}
+                                            href={item.href}
+                                            className={classNames(
+                                                (item.name == current_page)
+                                                    ? "text-primary"                                                    
+                                                    :"text-[#3D4459]  hover:text-primary",
+                                                    "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+                                            )}
+                                        >
+                                            <item.icon
                                                 className={classNames(
                                                     (item.name == current_page)
-                                                        ? "text-primary"                                                    
-                                                        :"text-[#3D4459]  hover:text-primary",
-                                                        "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+                                                        ? "text-primary"
+                                                        : "text-[#3D4459] group-hover:text-primary",
+                                                    "mr-3 flex-shrink-0 h-6 w-6"
+                                                    
                                                 )}
-                                            >
-                                                <item.icon
-                                                    className={classNames(
-                                                        (item.name == current_page)
-                                                            ? "text-primary"
-                                                            : "text-[#3D4459] group-hover:text-primary",
-                                                        "mr-3 flex-shrink-0 h-6 w-6"
-                                                        
-                                                    )}
-                                                    aria-hidden="true"
-                                                />
-                                                {showSidebarText ? item.name: ""}
-                                            </Link>
-                                            
-                                        );
-                                    })}
-                                </nav>
-                            </div>
-                        : ''}
+                                                aria-hidden="true"
+                                            />
+                                            {showSidebarText ? item.name: ""}
+                                        </Link>     
+                                    );
+                                })}
+                            </nav>
+                        </div>
+
                     </div>
                 </div>
                 <div className="flex flex-col flex-1 bg-[#FBFBFBBF]">

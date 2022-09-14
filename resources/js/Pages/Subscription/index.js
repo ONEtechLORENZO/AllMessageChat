@@ -5,26 +5,21 @@ import axios from "axios";
 
 const tabs = [
   { name: 'Workspace Settings', href: '#', current: true, page: 1 },
-  { name: 'Channels', href: '#', current: false , page: 2},
-  { name: 'Users', href: '#', current: false , page: 3},
+  { name: 'Channels', href: '#', current: false , page: 2 },
+  { name: 'Users', href: '#', current: false , page: 3 },
 ];
-
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function Subscription(props){
-  
+export default function Subscription(props)
+{  
   const [page, setPage] = useState(1);
   const [currentCompany, setCurrentCompany] = useState(props.company.currentCompany);
   const [relatedCompany, setRelatedCompany] = useState(props.company.relatedCompany);
 
-  useEffect(() => {
-    currentUserCompany();
-  },[props]);
-
-  function currentUserCompany(){
+  function currentUserCompany() {
     axios.get(route('user_company')).then((response) => {
       setCurrentCompany(response.data.currentCompany);
       setRelatedCompany(response.data.relatedCompany);
