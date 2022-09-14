@@ -254,4 +254,16 @@ return [
     // CRM Data
     'crmUserName' => env('CRM_USER_NAME'),
     'crmAccessKey' => env('CRM_ACCESS_KEY'),
+
+    'stripe' => [
+        'stripe_key' => env('STRIPE_KEY'),
+        'stripe_secret' => env('STRIPE_SECRET'),
+        'stripe_webhook' => env('STRIPE_WEBHOOK_SECRET'),
+    ],
+
+    'plans' => [
+        'pro' => env('PRO'),
+        'business' => env('BUSINESS'),
+        'enterprise' => env('ENTERPRISE'),
+    ]
 ];

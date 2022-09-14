@@ -19,6 +19,7 @@ import {
     ChevronRightIcon,
     ChevronLeftIcon,
     ServerIcon,
+    ChipIcon,
     CogIcon,
     EyeIcon,
     ShoppingCartIcon,
@@ -88,6 +89,11 @@ const navigation = [
         name: "Campaigns",
         href: route("listCampaign"),
         icon: SpeakerphoneIcon,
+        show: ['all'],
+    },{
+        name: "Automations",
+        href: route("listAutomation"),
+        icon: ChipIcon,
         show: ['all'],
     },
     {

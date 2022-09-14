@@ -17,9 +17,9 @@ use App\Http\Controllers\TemplateController;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Models\Msg;
+use App\Models\Company;
 use App\Models\Price;
 use App\Models\WebhookEvent;
-use App\Models\Company;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Session;
@@ -1243,7 +1243,7 @@ class UserController extends Controller
         // Get message amount deduction
         $messageDeduction = $this->getAmountDeduction($user->id);
  
-        $paymentMethods = $user->paymentMethods();
+        $paymentMethods = $this->getPaymentMethods($request);
 
         $stripe_public_key = config('stripe.stripe_key');
 
@@ -1287,10 +1287,15 @@ class UserController extends Controller
         $user = $request->user();
         $user_id = $user->id;
         $amount = $request->get('amount') * 100;
+        $companyId = Cache::get('selected_company_'. $user_id);
+
+        // Get company
+        $company = Company::find($companyId);
+        
         try {
             $params = [
                 'description' => 'OneMessage recharge',
-                'customer' => $user->stripe_id,
+                'customer' => $company->stripe_id,
             ];
 
             $stripeCharge = $user->charge(
@@ -1316,7 +1321,7 @@ class UserController extends Controller
                 $transaction->amount = $amount / 100;
                 $transaction->status = 'success';
                 $transaction->user_id = $user_id;
-                $transaction->company_id = Cache::get('selected_company_'. $user_id);
+                $transaction->company_id = $companyId;
                 $transaction->save();
             }
         }
@@ -1617,6 +1622,27 @@ class UserController extends Controller
         }
 
         return Redirect::route('dashboard');
+    }
+
+    /**
+     * Store Stribe payment method
+     */
+    public function storePaymentMethod(Request $request)
+    {
+        $user = $request->user();
+        // Get company
+        $companyId = Cache::get('selected_company_'. $user->id);
+        $company = Company::find($companyId);
+
+        $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
+
+        // Attach payment method to customer
+        $stripe->paymentMethods->attach(
+            $request->id,
+            ['customer' => $company->stripe_id]
+        );
+        
+        echo json_encode(['status' => true ]);
     }
 
     public function UserRelatedCompany($user_id){

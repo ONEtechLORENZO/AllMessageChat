@@ -237,7 +237,6 @@ class SettingsController extends Controller
                 $company->save();
             }
         }
-
         return Redirect::route('wallet_subscription');
     }
 }

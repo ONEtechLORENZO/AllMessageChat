@@ -54,6 +54,11 @@ Route::middleware('guest')->group(function () {
     Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('login');
 });
 
+// Test
+Route::get('/test_stripe', function(){
+    Log::info('stirple');
+});
+
 // Invite User
 Route::get('/user-invite', [UserInviteController::class, 'relateUser']);
 Route::get('/invitedUserRelation', [UserInviteController::class, 'relateUser']);
@@ -83,7 +88,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/wallet/subscription', [SettingsController::class, 'walletSubscription'])->name('wallet_subscription');
     Route::get('/user/company/pricing', [SettingsController::class, 'updateSubscription'])->name('updateSubscription');
     Route::post('/save/subscription/{plan}', [SettingsController::class, 'SubscriptionPlan'])->name('subscribe_plan');
-    
+
     // Profile
     Route::get('/user/profile', [UserController::class, 'profile'])->name('profile');
     Route::post('/user/registration', [UserController::class, 'storeUserRegistration'])->name('store_user_data');

@@ -20,11 +20,16 @@ function Wallet(props)
 
     const [messageDeduction , setMessageDeduction] = useState({});
 
+    const [isPaymentForm , setPaymentForm] = useState(false);
+
     useEffect(() => {
         setBalance(props.balance);
         setPaymentMethods(props.paymentMethods);
         setMessageDeduction(props.message_deduction);
+        
     }, [props.balance]);
+
+    useEffect(()=>{},[paymentMethods]);
 
     /**
      * Fetch balance
@@ -56,6 +61,24 @@ function Wallet(props)
             }
 
             notie.alert({type: 'error', text: error_message, time: 5});
+        });
+    }
+
+    /**
+     * Show charge form
+     */
+    function setShowChargeForm(){
+        setPaymentForm(false);
+        setShowStripeForm(true);
+    }
+
+    /**
+     * Fetch payment methods
+     */
+    function fetchPaymentMethods(){
+        Axios.get(route('getPaymentMethods')).then((response) => {
+            console.log(response.data.result);
+            setPaymentMethods(response.data.result);
         });
     }
 
@@ -130,7 +153,7 @@ function Wallet(props)
                                 <button
                                     type="button"
                                     className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bg-primary/80"
-                                    onClick={() => setShowStripeForm(true)}
+                                    onClick={() => setShowChargeForm()}
                                 >
                                     {props.translator['Add Balance']}
                                 </button>
@@ -366,6 +389,7 @@ function Wallet(props)
                                 {paymentMethods.length == 0 ?
                                     <p className="p-5">No Payment Methods Added Yet</p>
                                 : ''}
+
                             </div>
 
                             <div className="w-full flex justify-end mt-4">
@@ -412,6 +436,8 @@ function Wallet(props)
                     stripe_public_key={props.stripe_public_key}
                     fetchWalletBalance={fetchWalletBalance}
                     translator={props.translator}
+                    isPaymentForm={isPaymentForm}
+                    fetchPaymentMethods={fetchPaymentMethods}
                 />
             : ''}
 

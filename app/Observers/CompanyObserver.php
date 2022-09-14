@@ -3,8 +3,10 @@
 namespace App\Observers;
 
 use App\Models\Company;
+use App\Models\User;
 use App\Models\Wallet;
 use Auth;
+use Log;
 
 class CompanyObserver
 {
@@ -16,17 +18,21 @@ class CompanyObserver
      */
     public function created(Company $company)
     {
-       $user_id = Auth::id();
+        // Create user in Stripe
+        $this->createStripeCustomer($company);
 
-       if($user_id){
-          $wallet = new Wallet;
+        $user_id = Auth::id();
+        $user = User::find($user_id);
+        
+        if($user){
+            $wallet = new Wallet;
 
-          $wallet->balance_amount = 1;
-          $wallet->user_id = $user_id;
-          $wallet->company_id = $company->id;
-          
-          $wallet->save();
-       }
+            $wallet->balance_amount = 1;
+            $wallet->user_id = $user_id;
+            $wallet->company_id = $company->id;
+            
+            $wallet->save();
+        }
     }
 
     /**
@@ -37,7 +43,12 @@ class CompanyObserver
      */
     public function updated(Company $company)
     {
-        //
+        if(!$company->stripe_id) {
+            $this->createStripeCustomer($company);
+        } else {
+            if(! isset($_REQUEST['is_stripe_action']) )
+                $this->createStripeCustomer($company , 'update');
+        }
     }
 
     /**
@@ -71,5 +82,31 @@ class CompanyObserver
     public function forceDeleted(Company $company)
     {
         //
+    }
+
+    /**
+     * Create stripe customer 
+     */
+    public function createStripeCustomer(Company $company, $mode = '')
+    {
+        $secretIId = config('stripe.stripe_secret');
+        $stripe = new \Stripe\StripeClient($secretIId);
+        
+        if(!$mode){
+            $result = $stripe->customers->create([
+                    'description' => $company->name,
+                ]);
+        } else if($mode == 'update'){
+        
+            $result = $stripe->customers->update(
+                $company->stripe_id,
+                []
+              );
+        }
+        
+        $company->stripe_id = $result->id;
+        $_REQUEST['is_stripe_action'] = true;
+        $company->save();
+        return true;
     }
 }

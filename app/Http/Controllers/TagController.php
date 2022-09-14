@@ -13,7 +13,7 @@ use App\Models\Contact;
 use App\Models\Taggable;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
-
+use App\Models\Automation;
 
 class TagController extends Controller
 {
@@ -316,8 +316,30 @@ class TagController extends Controller
                 $tag_id[] = $tag['id']; 
             }
         }
-        
-        return $contact->tags()->sync($tag_id);
+
+        // Compare exist and current tags
+        $existTags = $contact->tags;
+        $existTagIds = [];
+        foreach($existTags as $tag){
+            $existTagIds[] = $tag->id;
+        }
+        $newTags = array_diff($tag_id , $existTagIds);
+        $contact->tags()->sync($tag_id);
+      
+        if($newTags){
+            // Process flow functions 
+            $user_id = $contact->user_id;
+            $companyId = Cache::get('selected_company_' . $user_id);
+            $automations = Automation::where('trigger_mode', 'contact_tag_related')
+            //    ->where('company_id', $companyId)
+                ->get();
+            
+            foreach($automations as $automation){
+                $flow = json_decode($automation->flow);
+                $result = $automation->getFlowResult($flow , $contact );
+            }
+        }
+        return true;
     }
 
     /**
