@@ -43,12 +43,7 @@ class CompanyObserver
      */
     public function updated(Company $company)
     {
-        if(!$company->stripe_id) {
-            $this->createStripeCustomer($company);
-        } else {
-            if(! isset($_REQUEST['is_stripe_action']) )
-                $this->createStripeCustomer($company , 'update');
-        }
+        //
     }
 
     /**
@@ -89,24 +84,24 @@ class CompanyObserver
      */
     public function createStripeCustomer(Company $company, $mode = '')
     {
-        $secretIId = config('stripe.stripe_secret');
-        $stripe = new \Stripe\StripeClient($secretIId);
+        $secretId = config('stripe.stripe_secret');
+        $stripe = new \Stripe\StripeClient($secretId);
         
-        if(!$mode){
+        if(!$mode) {
             $result = $stripe->customers->create([
-                    'description' => $company->name,
-                ]);
-        } else if($mode == 'update'){
-        
+                'description' => $company->name,
+            ]);
+        } 
+        else if($mode == 'update') {
             $result = $stripe->customers->update(
                 $company->stripe_id,
                 []
-              );
+            );
         }
         
-        $company->stripe_id = $result->id;
+        /*$company->stripe_id = $result->id;
         $_REQUEST['is_stripe_action'] = true;
-        $company->save();
+        $company->save();*/
         return true;
     }
 }
