@@ -6,6 +6,7 @@ import Step2 from './Step2';
 import Step3 from './Step3';
 import Step4 from './Step4';
 import Step5 from './Step5';
+import axios from 'axios';
 
 export default function AccountRegistration(props){
 
@@ -64,9 +65,8 @@ export default function AccountRegistration(props){
         }else{
           return false;
         }
-        if(validate){
-          setCurrentPage(4);
-        }
+
+        return validate;
     }
 
     function legalEntityName(id, name){
@@ -77,7 +77,14 @@ export default function AccountRegistration(props){
 
     //save the account details
     function saveAccount(){
-      console.log('adf')
+      let validate = validateRequest();
+      
+      if(validate){
+        let url = route('store_account_registration', {'record' : data});
+        axios.psot(url).then((response) => {
+            setCurrentPage(4);
+        });
+      }
     }
     
     return(
@@ -154,6 +161,7 @@ export default function AccountRegistration(props){
                                         checkPermission={checkPermission}
                                         checkAllPermissioin={checkAllPermissioin}
                                         validateRequest={validateRequest}
+                                        saveAccount={saveAccount}
                                        />
                                     </div>
 
