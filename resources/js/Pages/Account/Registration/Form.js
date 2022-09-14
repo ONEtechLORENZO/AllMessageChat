@@ -81,7 +81,7 @@ export default function AccountRegistration(props){
       
       if(validate){
         let url = route('store_account_registration', {'record' : data});
-        axios.psot(url).then((response) => {
+        axios.post(url).then((response) => {
             setCurrentPage(4);
         });
       }
