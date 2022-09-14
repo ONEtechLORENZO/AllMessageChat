@@ -4,29 +4,87 @@ import Authenticated from '@/Layouts/Authenticated';
 import Step1 from './Step1';
 import Step2 from './Step2';
 import Step3 from './Step3';
+import Step4 from './Step4';
+import Step5 from './Step5';
+import axios from 'axios';
 
 export default function AccountRegistration(props){
 
     const cancelButtonRef = useRef(null);
     const [open, setOpen] = useState(true);
     const [curretpage, setCurrentPage] = useState(1);
-    const [service, setService] = useState('');
     const [data, setData] = useState({});
     const [addfield, setAddField] = useState(false);
+    const [checkPermission, setPermission] = useState({});
     
-    function accountHandler(){
-        if(service){
+    useEffect(() => {
+      setData({});
+    },[]);
+
+    function serviceHandler(){
+        const service = data.service;
+        if(service == "whatsapp"){
             setCurrentPage(2);
         }
         return false;
     }
 
+    //get all the value in the form page
     function formHandler(event){
       let newData = Object.assign({}, data);
-      const field_name = event.target.name;
-      const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+      const field_name = event.target.name;  
+      let value = '';
+      if(field_name == 'phone_number'){
+        value = event.target.value.replace(/\D/g, "");
+      }else{
+        value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+      }
       newData[field_name] = value;
       setData(newData);
+    }
+    
+    //check the conditions
+    function checkAllPermissioin(event){
+      let newCheck = Object.assign({}, checkPermission);
+      const name = event.target.name;
+      const value = event.target.checked;
+      newCheck[name] = value;
+      setPermission(newCheck);
+    }
+    
+    //validate to check the all conditions
+    function validateRequest(){
+        let checklength = Object.keys(checkPermission).length;
+        let validate = true;
+        if(checklength == 3){
+          Object.entries(checkPermission).map((check) => {
+            if(!check[1]){
+               validate = false;
+            }
+         });
+        }else{
+          return false;
+        }
+
+        return validate;
+    }
+
+    function legalEntityName(id, name){
+      let newUser = Object.assign({}, data);
+      newUser[name] = id;
+      setData(newUser);
+    }
+
+    //save the account details
+    function saveAccount(){
+      let validate = validateRequest();
+      
+      if(validate){
+        let url = route('store_account_registration');
+        axios.post(url, data).then((response) => {
+            setCurrentPage(4);
+        });
+      }
     }
     
     return(
@@ -70,10 +128,10 @@ export default function AccountRegistration(props){
                                       }
                                     >
                                        <Step1 
-                                        service={service}
-                                        setService={setService}
-                                        accountHandler={accountHandler}
+                                        data={data}
                                         setOpen={setOpen}
+                                        formHandler={formHandler}
+                                        serviceHandler={serviceHandler}
                                        />
                                     </div>
 
@@ -83,8 +141,11 @@ export default function AccountRegistration(props){
                                       }
                                     >
                                         <Step2 
+                                        data={data}
+                                        formHandler={formHandler}
                                         setCurrentPage={setCurrentPage}
                                         setAddField={setAddField}
+                                        legalEntityName={legalEntityName}
                                         />
                                     </div>
 
@@ -97,7 +158,29 @@ export default function AccountRegistration(props){
                                         data={data}
                                         formHandler={formHandler}
                                         addfield={addfield}
+                                        checkPermission={checkPermission}
+                                        checkAllPermissioin={checkAllPermissioin}
+                                        validateRequest={validateRequest}
+                                        saveAccount={saveAccount}
                                        />
+                                    </div>
+
+                                    <div 
+                                      className={
+                                        curretpage == 4 ? "block" : "hidden"
+                                      }
+                                    >
+                                       <Step4 
+                                       saveAccount={saveAccount}
+                                       />
+                                    </div>
+
+                                    <div 
+                                      className={
+                                        curretpage == 5 ? "block" : "hidden"
+                                      }
+                                    >
+                                       <Step5 />
                                     </div>
 
                                   </div>

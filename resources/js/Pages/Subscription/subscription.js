@@ -27,7 +27,7 @@ const tiers = [
 
 const sections = [
 {
-    name: 'Chat Cost',
+    name: 'Features',
     features: [
     { name: 'Target', tiers: { Lite: 'Freelance', Pro: 'Small Business',Business: 'Medium Business', Enterprise:'Large Business' } },
     { name: 'Setup per Workspace', tiers: { Lite: '0€', Pro: '0€',Business: '0€', Enterprise:'Custom' } },
@@ -46,7 +46,7 @@ const sections = [
 {
     name: 'Message Costs',
     features: [
-    { name: 'Chat Cost (for WABA Only)', tiers: { Lite: 'Different from Country to Country' } },
+    { name: 'Chat Cost (for WABA Only)', tiers: { Lite: 'Different from Country to Country', Pro: true, Business: true, Enterprise: true } },
     { name: 'Cost per Message', tiers: { Lite: '0.0017€', Pro: '0.0017€',Business: '0.0017€', Enterprise:'custom' } },
     { name: 'Cost per Allegato', tiers: { Lite: '0.0027€', Pro: '0.0027€',Business: '0.0027€', Enterprise:'custom' } },
     { name: 'Ciclo di fatturazione', tiers: { Lite: 'Prepagato', Pro: 'Prepagato',Business: 'Prepagato', Enterprise:'Postpagato' } },
@@ -193,10 +193,14 @@ export default function Subscription(props){
                     {tiers.map((tier) => (
                     <td key={tier.name} className="px-6 pt-5">
                         <button
-                        className="block w-full rounded-md border border-gray-800 bg-gray-800 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
-                        onClick={() => Subscribe(tier.name)}    
+                            className={classNames(
+                                props.plan == tier.original
+                                ?"block w-full rounded-md border border-indigo-800 bg-indigo-600 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
+                                :"block w-full rounded-md border border-gray-800 bg-gray-800 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
+                            )}
+                            onClick={() => Subscribe(tier.original)}
                         >
-                        Buy {tier.name}
+                            Buy {tier.name}
                         </button>
                     </td>
                     ))}

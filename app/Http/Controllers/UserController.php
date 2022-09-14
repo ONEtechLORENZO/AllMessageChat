@@ -20,6 +20,7 @@ use App\Models\Msg;
 use App\Models\Company;
 use App\Models\Price;
 use App\Models\WebhookEvent;
+use App\Models\Company;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Session;
@@ -357,6 +358,8 @@ class UserController extends Controller
 
         $user = User::find($id);
 
+        $related_Company = $this->UserRelatedCompany($id);
+
         $token = $user->api_token;
         if($currentUser->role != 'regular' || $user->id == $currentUser->id) {
             return Inertia::render('Admin/User/UserDetail', [
@@ -364,6 +367,7 @@ class UserController extends Controller
                 'token' => $token,
                 'current_user' => $request->user(),
                 'time_zone' => $this->timezones,
+                'related_company' => $related_Company,
                 'translator' => [
                     'Name' => __('Name'),
                     'New Password' => __('New Password'),
@@ -751,44 +755,44 @@ class UserController extends Controller
      */
     public function accountRegistration(Request $request)
     {
-       // return Inertia::render('Account/Registration/Form');
-        return Inertia::render('Account/Registration', [
-            'webhook_events' => $this->webhook_events, 
-            'translator' => [
-                'Account Registration' => __('Account Registration'),
-                'Account Information' =>  __('Account Information'),
-                'Enter your company information. We will be using this information to create your business account' =>  __('Enter your company information. We will be using this information to create your business account'),
-                'Name' => __('Name'),
-                'Enter your Account name' => __('Enter your Account name'),
-                'Company Name' =>  __('Company Name'),
-                'Enter your company name' =>  __('Enter your company name'),
-                'Service' =>  __('Service'),
-                'Company type' =>  __('Company type'),
-                'Company website' =>  __('Company website'),
-                'Enter your company website' =>  __('Enter your company website'),
-                'Email (Technical point of contact' =>  __('Email (Technical point of contact)'),
-                'Estimated launch date' =>  __('Estimated launch date'),
-                'Type of integration' =>  __('Type of integration'),
-                'Whatsapp Information' =>  __('Whatsapp Information'),
-                'Instagram Information' =>  __('Instagram Information'),
-                'Information will be used to create your whatsapp business account' =>  __('Information will be used to create your whatsapp business account'),
-                'Information will be used to create your instagram business account' =>  __('Information will be used to create your instagram business account'),
-                'Phone number' =>  __('Phone number'),
-                'Source Name' =>  __('Source Name'),
-                'Display Name' =>  __('Display Name'),
-                'API partner Name' => __('API partner Name'),
-                'Do you agree with our' =>__('Do you agree with our'),'terms and conditions?' => __('terms and conditions?'),
-                'Business manager Id' =>  __('Business manager Id'),
-                'Profile picture' =>  __('Profile picture'),
-                'Profile description' =>  __('Profile description'),
-                'Official business account' =>  __('Official business account'),
-                'Request for Whatsapp official business account (OBA).' =>  __('Request for Whatsapp official business account (OBA).'),
-                'Cancel' =>  __('Cancel'),'Save' =>  __('Save'),
-                'Sole Proprietorship' =>  __('Sole Proprietorship'),
-                'Partnership' =>  __('Partnership'),'Limited Liability Company (LLC)' =>  __('Limited Liability Company (LLC)'),
-                'Corporation' =>  __('Corporation'),'Website' =>  __('Website'),'Support' =>  __('Support')]
+        return Inertia::render('Account/Registration/Form');
+        // return Inertia::render('Account/Registration', [
+        //     'webhook_events' => $this->webhook_events, 
+        //     'translator' => [
+        //         'Account Registration' => __('Account Registration'),
+        //         'Account Information' =>  __('Account Information'),
+        //         'Enter your company information. We will be using this information to create your business account' =>  __('Enter your company information. We will be using this information to create your business account'),
+        //         'Name' => __('Name'),
+        //         'Enter your Account name' => __('Enter your Account name'),
+        //         'Company Name' =>  __('Company Name'),
+        //         'Enter your company name' =>  __('Enter your company name'),
+        //         'Service' =>  __('Service'),
+        //         'Company type' =>  __('Company type'),
+        //         'Company website' =>  __('Company website'),
+        //         'Enter your company website' =>  __('Enter your company website'),
+        //         'Email (Technical point of contact' =>  __('Email (Technical point of contact)'),
+        //         'Estimated launch date' =>  __('Estimated launch date'),
+        //         'Type of integration' =>  __('Type of integration'),
+        //         'Whatsapp Information' =>  __('Whatsapp Information'),
+        //         'Instagram Information' =>  __('Instagram Information'),
+        //         'Information will be used to create your whatsapp business account' =>  __('Information will be used to create your whatsapp business account'),
+        //         'Information will be used to create your instagram business account' =>  __('Information will be used to create your instagram business account'),
+        //         'Phone number' =>  __('Phone number'),
+        //         'Source Name' =>  __('Source Name'),
+        //         'Display Name' =>  __('Display Name'),
+        //         'API partner Name' => __('API partner Name'),
+        //         'Do you agree with our' =>__('Do you agree with our'),'terms and conditions?' => __('terms and conditions?'),
+        //         'Business manager Id' =>  __('Business manager Id'),
+        //         'Profile picture' =>  __('Profile picture'),
+        //         'Profile description' =>  __('Profile description'),
+        //         'Official business account' =>  __('Official business account'),
+        //         'Request for Whatsapp official business account (OBA).' =>  __('Request for Whatsapp official business account (OBA).'),
+        //         'Cancel' =>  __('Cancel'),'Save' =>  __('Save'),
+        //         'Sole Proprietorship' =>  __('Sole Proprietorship'),
+        //         'Partnership' =>  __('Partnership'),'Limited Liability Company (LLC)' =>  __('Limited Liability Company (LLC)'),
+        //         'Corporation' =>  __('Corporation'),'Website' =>  __('Website'),'Support' =>  __('Support')]
 
-        ]);
+        // ]);
     }
 
     /**
@@ -796,61 +800,85 @@ class UserController extends Controller
      */
     public function storeAccountRegistration(Request $request)
     {
+        $id = '';
+        $displayName = '';
         $user_id = $request->user()->id;
-
-        $id = false;
-        $service = $request->get('service');
+        
+        //check for edit or create new account
         if ($request->has('id') && $request->get('id') > 0) {
             $id = $request->get('id');
         }
 
-        if($service == 'whatsapp') {
-            $phone_validation = 'required|numeric|unique:accounts';
+        if($request->has('legal_entity') && $request->get('legal_entity')){
+            $displayName = $request->get('legal_entity'); 
+        }
+
+        //check if the user select the company name as display name
+        if($displayName != 'yes'){
+           $request->validate([
+            'display_name' => 'required|max:255',
+           ]);
+        }
+
+        $request->validate([
+            'service' => 'required',
+            'company_name' => 'required'
+        ]);
+
+        $service = $request->get('service');
+
+        if($service == 'whatsapp'){
+
+            //validate the phone number is unique
+            $request->validate([
+                'phone_number' => 'required|numeric|unique:accounts'
+            ]);
+
             if($id) {
-                $phone_validation = 'required|numeric|unique:accounts,phone_number,' . $request->get('id');
+                $request->validate([
+                    'phone_number' => 'required|numeric|unique:accounts,phone_number,' . $request->get('id')
+                ]);
             }
-
-            $request->validate([
-                'company_name' => 'required|max:255',
-                'service' => 'required'
-            ]);
-        }
-        else {
-            $request->validate([
-                'company_name' => 'required|max:255',
-                'service' => 'required',
-            ]);
         }
 
-        if($id) {
+        if($id){
             $account = Account::findOrFail($id);
-        }
-        else {
+        }else{
             $account = new Account();
 
-            if($service == 'whatsapp') {
-                // Storing the profile picture
-            //    $path = $request->file('profile_picture')->store('profile_pictures');
-            //    $account->profile_picture = $path;
-            }
-            $account->status = 'New'; // Setting the status as New.
+            $account->status = 'New'; // inicial  status as New.
         }
 
-        $fields = [
-            'company_name', 'service', 'phone_number', 'src_name', 'business_manager_id', 'api_partner','display_name','api_partner_name'
-        ];
-        foreach ($fields as $field_name) {
-            $field_value = $request->get($field_name);
-            $account->$field_name = $field_value;
+        $account->service = $request->service;
+        $account->phone_number = $request->phone_number;
+        $account->src_name = $request->company_name;
+        $account->company_name = $request->company_name;
+
+        if($displayName == 'yes'){
+           $account->display_name = $request->company_name;
+        }else{
+           $account->display_name = $request->display_name;
         }
-        
-        // Setting logged in user id
+
+        $acccountFields = ['company_name','website','category','description','email'];
+
+        foreach($acccountFields as $field){
+            if($request->has($field)){
+                $account->$field = $request->$field;
+            }
+        }
+
+        //log in user id & company
         $account->user_id = $user_id;
         $account->company_id = Cache::get('selected_company_'. $user_id);
-        
         $account->save();
 
-        return Redirect::route('dashboard');
+        if($id){
+            return Redirect::route('dashboard');
+        }else{
+            echo true;
+        }
+
     }
 
     /**
@@ -1597,7 +1625,6 @@ class UserController extends Controller
         return Redirect::route('dashboard');
     }
 
-
     /**
      * Store Stribe payment method
      */
@@ -1649,4 +1676,39 @@ class UserController extends Controller
             return $paymentMethods;
         }
     }
+
+    public function UserRelatedCompany($user_id){
+        
+        if($user_id){
+            //related company details
+            $userCompany = DB::table('company_user')->where('user_id', $user_id)->get('company_id');
+            
+            foreach($userCompany as $company){
+                $company =  Company::where('id', $company->company_id)->first();
+                $related_company[$company['id']] = $company['name'];
+            }
+
+            return $related_company;
+        }
+    }
+
+    public function addWalletAmount(Request $request){
+        
+        $company_id = $request->selected_company;
+        $walletAmount = $request->wallet_amount;
+
+        $wallet = Wallet::where('company_id',$company_id)->first();
+
+        if($wallet){
+            $balanceAmount = $wallet->balance_amount;
+            $addCash = $balanceAmount + $walletAmount;
+            
+            $wallet->balance_amount = $addCash;
+            $wallet->save();
+        }
+
+        return Redirect::route('list_global_user');
+
+    }
+
 }

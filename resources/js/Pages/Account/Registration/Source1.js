@@ -48,7 +48,12 @@ export default function Source1(props){
                             <label htmlFor={procedure.id} className="ml-3 block text-sm font-medium text-gray-700">
                                 {procedure.title}
                                 <br></br>
-                                <span className="text-gray-500">{procedure.explain}</span>
+                                <span className="text-gray-500">
+                                    {procedure.explain}
+                                    {procedure.id == 'no' ? 
+                                    <a className="text-blue-500" href="https://www.onemessage.chat/new-phone-number" target="_blank">onemessage.chat/new-phone-number</a>
+                                     : ''} 
+                                </span>
                             </label>
                             </div>
                         ))}

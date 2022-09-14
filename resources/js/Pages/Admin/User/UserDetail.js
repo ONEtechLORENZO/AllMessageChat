@@ -9,6 +9,7 @@ import Input from '@/Components/Forms/Input';
 import InputError from '@/Components/Forms/InputError';
 import { currencies, countries } from '@/Pages/Constants';
 import { BriefcaseIcon } from '@heroicons/react/solid';
+import Dropdown from '@/Components/Forms/Dropdown';
 
 export default function UserDetail(props) {
 
@@ -38,6 +39,8 @@ export default function UserDetail(props) {
     const [errors, setErrors] = useState({});
     const { data, setData, post, processing, reset } = useForm({});
     const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
+    const [addCash, setAddCash] = useState(false);
+    const [walletCash, setWalletCash] = useState({});
     const cancelButtonRef = useRef(null);
 
     /**
@@ -99,6 +102,52 @@ export default function UserDetail(props) {
             }
         });
     }
+
+    //select the company to add the cash
+    function changeCompany(event){
+        let newCompany = Object.assign({}, walletCash);
+        const name = event.target.name;
+        let value = event.target.value;
+        newCompany[name] = value;
+        setWalletCash(newCompany);
+        console.log(newCompany);
+    }
+ 
+    //wallet amount 
+    function walletHandler(event){
+        let newCompany = Object.assign({}, walletCash);
+        const name = event.target.name;
+        let result = event.target.value;
+
+        if(result){
+            result = result.replace(/[^0-9\.]/g,'');
+            if(result.split('.').length>2){
+                result = result.replace(/\.+$/,"")
+            } 
+
+        }
+        newCompany[name] = result;
+        setWalletCash(newCompany);
+    }
+
+    function closeWallet(){
+        setAddCash(false);
+        setWalletCash({});
+    }
+    
+    //add cash in wallet
+    function addWalletAmount(){
+
+      if(walletCash['selected_company'] && walletCash['wallet_amount']){
+
+        Inertia.post(route('wallet_amount'), walletCash, {
+            onSuccess: (response) => {
+                closeWallet();
+                notie.alert({type: 'success', text: 'Successfully add cash in the wallet', time: 5});
+            }
+        });
+      }
+    }
     
     var isChangePassword = false;
     if ((props.user.id == props.current_user.id) || (props.current_user.role != 'regular')) {
@@ -136,6 +185,14 @@ export default function UserDetail(props) {
                             className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
                             Impersonate User
+                        </button>
+                    }
+                    {props.current_user.role == 'global_admin'  &&
+                        <button
+                            onClick={() => setAddCash(true)}
+                            className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                            Add Cash
                         </button>
                     }
                     <Link
@@ -298,6 +355,97 @@ export default function UserDetail(props) {
                                         type="button"
                                         className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
                                         onClick={() => setChangePasswordModalOpen(false)}
+                                    >
+                                        {props.translator['Close']}
+                                    </button>
+                                </div>
+                            </div>
+                        </Transition.Child>
+                    </div>
+                </Dialog>
+            </Transition.Root>
+
+            <Transition.Root show={addCash} as={Fragment}>
+                <Dialog as="div" className="fixed z-10 inset-0 overflow-y-auto" initialFocus={cancelButtonRef} onClose={setAddCash}>
+                    <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                        <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-300"
+                            enterFrom="opacity-0"
+                            enterTo="opacity-100"
+                            leave="ease-in duration-200"
+                            leaveFrom="opacity-100"
+                            leaveTo="opacity-0"
+                        >
+                            <Dialog.Overlay className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                        </Transition.Child>
+
+                        {/* This element is to trick the browser into centering the modal contents. */}
+                        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+                            &#8203;
+                        </span>
+                        <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-300"
+                            enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                            enterTo="opacity-100 translate-y-0 sm:scale-100"
+                            leave="ease-in duration-200"
+                            leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                            leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                        >
+                            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                                <div>
+                                    <div className="">
+                                        <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
+                                        Add Cash
+                                        </Dialog.Title>
+                                        <div className="mt-2">
+                                            <form id="add_cash">                                            
+                                                <div className="grid gap-6 mt-3">                                                
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <label htmlFor="new_password" className="block text-sm font-medium text-gray-700">
+                                                         Switch Company
+                                                        </label>
+                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                            <Dropdown
+                                                                id="selected_company"
+                                                                name="selected_company"
+                                                                options={props.related_company}
+                                                                handleChange={changeCompany}
+                                                                emptyOption="Select Company"
+                                                                value={walletCash['selected_company']}
+                                                            />
+                                                        </div>
+                                                        <InputError message={errors.new_password} />
+                                                    </div>
+                                                </div>
+                                                <div className="grid gap-6 mt-3">                                                
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <label htmlFor="confirm_password" className="block text-sm font-medium text-gray-700">
+                                                         Wallet Amount
+                                                        </label>
+                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                            <Input type="text" minlength="8" name='wallet_amount' required={true} id='wallet_amount' placeholder='$' handleChange={walletHandler}  value={walletCash['wallet_amount']}/>
+                                                        </div>
+                                                        <InputError message={errors.confirm_password} />
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                                    <button
+                                        type="button"
+                                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
+                                        onClick={() => addWalletAmount()}
+                                    >
+                                        Add 
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
+                                        onClick={() => closeWallet()}
                                     >
                                         {props.translator['Close']}
                                     </button>

@@ -15,11 +15,8 @@ export default function Step2(props){
     const [tab, setTab] = useState('');
     const [source, setSource] = useState('');
     const [process, setProcess] =useState('');
-
-    function sourceHandler(event){
-        setSource(event);
-    }
     
+    //handle the user account 
     function EventHandler(){
         if(source == 'yes'){
             setTab(1);
@@ -30,7 +27,7 @@ export default function Step2(props){
         if(source == 'yes' && process == 'no'){
             setStep(3);
         }
-        if(source == 'no'){
+        if((source == 'no') || (source == 'not_sure') || (step == 2 && process == 'yes')){
             props.setCurrentPage(3);
             props.setAddField(true);
         }
@@ -100,14 +97,18 @@ export default function Step2(props){
                 step == 3 ? "block" : "hidden"
                 }
             >
-              <Source3 />
+              <Source3 
+               data={props.data}
+               formHandler={props.formHandler}
+               legalEntityName={props.legalEntityName}
+              />
             </div>
                 
             </form>
 
             <div className="bg-gray-50 py-3 flex">
             <div className='flex justify-start w-2/3'>
-                Not sure? Go to FAQ or Get in Contact with Customer Service
+                Not sure? Go to <a className='px-2 text-blue-500' href='#'> FAQ</a>or Get in Contact with <a className='px-2 text-blue-500' href='#'> Customer Service</a>
             </div>
             <div className='w-1/3 flex justify-end'>
                 <button

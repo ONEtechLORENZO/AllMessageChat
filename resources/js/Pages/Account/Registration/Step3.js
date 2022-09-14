@@ -20,9 +20,9 @@ const formField = [
 ];
 
 const addformField = [
-  {'label':'Phone Number', 'name':'phone_number', 'type':'text'},
-  {'label':'Legal Entity Name', 'name':'entity_name', 'type':'text'},
-  {'label':'Display Name', 'name':'display_name', 'type':'text'},
+  {'label':'Business Phone Number', 'name':'phone_number', 'type':'text'},
+  {'label':'Legal Entity Name', 'name':'company_name', 'type':'text'},
+  {'label':'Legal Business Name', 'name':'display_name', 'type':'text'},
 ];
 
 export default function Step3(props){
@@ -106,31 +106,46 @@ export default function Step3(props){
           </div>
       
           <div className="p-4">
-            {(checklist.map((check) => {
-               let field_value = '';
-               let field_name = check.name;
-               field_value = props.data[field_name];
-               return(
-                <div class="form-check">
-                  <Checkbox
-                    id={field_name}
-                    name={field_name}
-                    value={field_value}
-                    handleChange={props.formHandler}
+            <div className="form-check">
+                 <Checkbox
+                    id="accept"
+                    name="accept"
+                    value={props.checkPermission['accept']}
+                    handleChange={props.checkAllPermissioin}
                   />
               <label class="form-check-label inline-block text-gray-500 px-4">
-                  {check.description}
+                  Accept <a className="text-blue-500 px-2" href="https://www.whatsapp.com/legal/business-policy/" target="_blank">WA Business Policy</a> & <a className="text-blue-500 px-2" href="https://www.whatsapp.com/legal/commerce-policy/" target="_blank">Commerce Policy</a>
               </label>
-             </div>
-               )
-            } ))}
+            </div>
+            <div className="form-check">
+                 <Checkbox
+                    id="condition"
+                    name="condition"
+                    value={props.checkPermission['condition']}
+                    handleChange={props.checkAllPermissioin}
+                  />
+              <label class="form-check-label inline-block text-gray-500 px-4">
+                  OneMessage <a className="text-blue-500 px-2" href="https://www.gupshup.io/terms-and-conditions" target="_blank">Terms & Conditions</a>and<a className="text-blue-500 px-2" href="https://www.gupshup.io/privacy-policy" target="_blank">Privary Policy</a>
+              </label>
+            </div>
+            <div className="form-check">
+                 <Checkbox
+                    id="confirm"
+                    name="confirm"
+                    value={props.checkPermission['confirm']}
+                    handleChange={props.checkAllPermissioin}
+                  />
+              <label class="form-check-label inline-block text-gray-500 px-4">
+                    I confirm that i own this number and i have the authority to bind it to this account
+              </label>
+            </div>
           </div>
 
           <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
             <button
                 type="button"
                 className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-                onClick={''}
+                onClick={() => props.saveAccount()}
             >
                 Send Request
             </button>
