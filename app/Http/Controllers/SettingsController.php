@@ -187,7 +187,7 @@ class SettingsController extends Controller
       
         if($company && $plan){
             $company->plan = $plan;
-         //   $company->save();
+            $company->save();
 
             $price = config('app.plans.' . $plan);
 
