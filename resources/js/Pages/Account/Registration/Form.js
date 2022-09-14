@@ -23,7 +23,7 @@ export default function AccountRegistration(props){
     },[]);
 
     function accountHandler(){
-        if(service){
+        if(service == "whatsapp"){
             setCurrentPage(2);
         }
         return false;

@@ -100,7 +100,7 @@ export default function Source3(props){
                             if you want to use a Display Name that is different <br></br> 
                             from your Legal Entity Name, you will have to add a link<br></br>
                             to a web page that show that you actually own that<br></br> 
-                            brand/trademark (e.g. yourcompanydomain.com)
+                            brand/trademark (e.g.<a className="text-blue-500" href="http://yourcompanydomain.com/trademarks" target="_blank">yourcompanydomain.com/trademarks</a>)
                         </span>
                        </p>
                       </td>

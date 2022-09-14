@@ -11,15 +11,21 @@ export default function Source2(props){
              <li className="pt-4">
                 <p>1.<span className="px-3 text-gray-500">(optional) Backup your existing account Whatsappp or Whatsappp Business Account</span></p>
                 <div className="p-3">
-                <p className="px-3 text-blue-500">Backup on iCloud (for iPhone & IOS)</p>
-                <p className="px-3 text-blue-500">Backup on Google Drive (for Android)</p>
+                 <p className="px-3 text-blue-500">
+                   <a href="https://faq.whatsapp.com/180225246548988/?locale=it_IT" target="_blank">Backup on iCloud (for iPhone & IOS)</a>
+                 </p>
+                 <p className="px-3 text-blue-500">
+                   <a href="https://faq.whatsapp.com/301038450892741/?helpref=hc_fnav" target="_blank">Backup on Google Drive (for Android)</a>
+                 </p>
               </div>
              </li>
 
              <li className="pt-4">
                 <p>2.<span className="px-3 text-gray-500">Delete your existing account Whatsapp</span></p>
                 <div className="p-3">
-                <p className="px-3 text-blue-500">Delete your Account</p>
+                <p className="px-3 text-blue-500">
+                  <a href="https://faq.whatsapp.com/605464643328528/?locale=en_US" target="_blank">Delete your Account</a>
+                </p>
               </div>
              </li>
 

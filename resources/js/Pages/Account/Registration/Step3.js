@@ -106,24 +106,39 @@ export default function Step3(props){
           </div>
       
           <div className="p-4">
-            {(checklist.map((check) => {
-               let field_value = '';
-               let field_name = check.name;
-               field_value = props.checkPermission[field_name];
-               return(
-                <div class="form-check">
-                  <Checkbox
-                    id={field_name}
-                    name={field_name}
-                    value={field_value}
+            <div className="form-check">
+                 <Checkbox
+                    id="accept"
+                    name="accept"
+                    value={props.checkPermission['accept']}
                     handleChange={props.checkAllPermissioin}
                   />
               <label class="form-check-label inline-block text-gray-500 px-4">
-                  {check.description}
+                  Accept <a className="text-blue-500 px-2" href="https://www.whatsapp.com/legal/business-policy/" target="_blank">WA Business Policy</a> & <a className="text-blue-500 px-2" href="https://www.whatsapp.com/legal/commerce-policy/" target="_blank">Commerce Policy</a>
               </label>
-             </div>
-               )
-            } ))}
+            </div>
+            <div className="form-check">
+                 <Checkbox
+                    id="condition"
+                    name="condition"
+                    value={props.checkPermission['condition']}
+                    handleChange={props.checkAllPermissioin}
+                  />
+              <label class="form-check-label inline-block text-gray-500 px-4">
+                  OneMessage <a className="text-blue-500 px-2" href="https://www.gupshup.io/terms-and-conditions" target="_blank">Terms & Conditions</a>and<a className="text-blue-500 px-2" href="https://www.gupshup.io/privacy-policy" target="_blank">Privary Policy</a>
+              </label>
+            </div>
+            <div className="form-check">
+                 <Checkbox
+                    id="confirm"
+                    name="confirm"
+                    value={props.checkPermission['confirm']}
+                    handleChange={props.checkAllPermissioin}
+                  />
+              <label class="form-check-label inline-block text-gray-500 px-4">
+                    I confirm that i own this number and i have the authority to bind it to this account
+              </label>
+            </div>
           </div>
 
           <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">

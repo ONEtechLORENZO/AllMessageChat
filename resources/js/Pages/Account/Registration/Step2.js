@@ -108,7 +108,7 @@ export default function Step2(props){
 
             <div className="bg-gray-50 py-3 flex">
             <div className='flex justify-start w-2/3'>
-                Not sure? Go to FAQ or Get in Contact with Customer Service
+                Not sure? Go to <a className='px-2 text-blue-500' href='#'> FAQ</a>or Get in Contact with <a className='px-2 text-blue-500' href='#'> Customer Service</a>
             </div>
             <div className='w-1/3 flex justify-end'>
                 <button
