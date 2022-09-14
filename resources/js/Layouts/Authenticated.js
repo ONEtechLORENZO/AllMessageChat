@@ -20,6 +20,7 @@ import {
     ChevronRightIcon,
     ChevronLeftIcon,
     ServerIcon,
+    ChipIcon,
     CogIcon,
     EyeIcon,
     ShoppingCartIcon,
@@ -89,6 +90,11 @@ const navigation = [
         name: "Campaigns",
         href: route("listCampaign"),
         icon: SpeakerphoneIcon,
+        show: ['all'],
+    },{
+        name: "Automations",
+        href: route("listAutomation"),
+        icon: ChipIcon,
         show: ['all'],
     },
     {
@@ -184,7 +190,6 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
     // }
 
     function drownDownToggleAction(e,item){
-        console.log(e)
         e.preventDefault();
         e.stopPropagation();
         e.nativeEvent.stopImmediatePropagation();

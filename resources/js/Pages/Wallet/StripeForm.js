@@ -52,7 +52,13 @@ function StripeForm(props)
                                     <div className="sm:flex sm:items-start">
                                         <div className="mt-3 text-center sm:mt-0 sm:text-left">
                                             <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                                            {props.translator['Recharge your account']}                                            </Dialog.Title>
+                                            {props.isPaymentForm ?
+                                                <> Add payment details </>
+                                                :
+                                                <> {props.translator['Recharge your account']} </>
+                                            }
+                                           
+                                            </Dialog.Title>
                                         </div>
                                     </div>
                                 </div>
@@ -113,9 +119,10 @@ const CheckoutForm = (props) => {
             return;
         }
 
-        if(amount <= 0) {
+        if(amount <= 0 && !(props.isPaymentForm)) {
             return;
         }
+        
 
         setLoading(true);
         const result = await stripe.createPaymentMethod({
@@ -130,9 +137,14 @@ const CheckoutForm = (props) => {
             // Subscribe the user
             nProgress.start(0.5);
             nProgress.inc(0.2);
+            
+            var url = route('charge'); 
+            if(props.isPaymentForm){
+                url = route('store_payment_method');
+            }
 
             const config = {
-                url: route('charge'),
+                url: url,
                 method: 'POST',
                 data: {
                     id: result.paymentMethod.id,
@@ -147,6 +159,7 @@ const CheckoutForm = (props) => {
                     notie.alert({type: 'success', text: response.data.message, time: 5});
                     props.setShowStripeForm(false);
                     props.fetchWalletBalance();
+                    props.fetchPaymentMethods();
                 }
                 else {
                     notie.alert({type: 'error', text: response.data.message, time: 5});
@@ -172,30 +185,32 @@ const CheckoutForm = (props) => {
 
     return (
         <form onSubmit={handleSubmit}>
-            <div className='form-group py-4 pb-6'>
-                <label htmlFor='amount' className="block text-sm font-medium text-gray-700">
-                    {props.translator['Enter the amount']} <span className='text-red-600'>*</span>
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500 sm:text-sm">$</span>
+            {! props.isPaymentForm &&
+                <div className='form-group py-4 pb-6'>
+                    <label htmlFor='amount' className="block text-sm font-medium text-gray-700">
+                        {props.translator['Enter the amount']} <span className='text-red-600'>*</span>
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span className="text-gray-500 sm:text-sm">$</span>
+                        </div>
+                        <Input 
+                            id="amount" 
+                            name="amount" 
+                            value={amount} 
+                            handleChange={handleChange} 
+                            className={`pl-6 mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`} 
+                        />    
                     </div>
-                    <Input 
-                        id="amount" 
-                        name="amount" 
-                        value={amount} 
-                        handleChange={handleChange} 
-                        className={`pl-6 mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`} 
-                    />    
                 </div>
-            </div>
+            }
             <CardElement />
             <div className='pt-10'>
                 <button
                     className="border border-transparent rounded-md w-full px-8 py-4 flex items-center justify-center text-lg leading-6 font-medium bg-primary text-white md:px-10"
                     disabled={!stripe || loading}
                 >
-                    {loading ? 'Loading...' : 'Charge'}
+                    {loading ? 'Loading...' : <> {props.isPaymentForm ? 'Add' : 'Charge'} </>}
                 </button>
             </div>
         </form>

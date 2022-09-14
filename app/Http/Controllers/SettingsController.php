@@ -187,9 +187,38 @@ class SettingsController extends Controller
       
         if($company && $plan){
             $company->plan = $plan;
-            $company->save();
-        }
+         //   $company->save();
 
+            $price = config('app.plans.' . $plan);
+
+            // Update subscribtion on stripe
+            $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
+            $result = $stripe->subscriptions->create([
+                'customer' => $company->stripe_id,
+                'items' => [
+                    ['price' => $price],
+                ],
+                
+            ]);
+            try { 
+                $result = $stripe->subscriptions->create([
+                    'customer' => $company->stripe_id,
+                    'items' => [
+                        ['price' => $price,
+                        'payment_settings' => [
+                                'payment_method_types' => ['card', 'ach_credit_transfer', 'paper_check'],
+                            ],
+                        ],
+                    ],
+                    
+                ]);
+                
+            }catch(Exception $e) { 
+                $api_error = $e->getMessage(); 
+            } 
+            dd($result, $api_error);
+
+        }
         return Redirect::route('wallet_subscription');
     }
 }

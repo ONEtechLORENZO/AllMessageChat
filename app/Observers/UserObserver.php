@@ -19,9 +19,6 @@ class UserObserver
      */
     public function created(User $user)
     {
-        // Create user in Stripe
-        $user->createAsStripeCustomer();
-
         $company_id = $_REQUEST['company_id'];
        
         // Check whether field entries are already added for this company
@@ -43,12 +40,12 @@ class UserObserver
      */
     public function updated(User $user)
     {
-        if(!$user->stripe_id) {
-            $user->createAsStripeCustomer();
-        }
-        else {
-            $user->updateStripeCustomer();
-        }
+        // if(!$user->stripe_id) {
+        //     $user->createAsStripeCustomer();
+        // }
+        // else {
+        //     $user->updateStripeCustomer();
+        // }
     }
 
     /**

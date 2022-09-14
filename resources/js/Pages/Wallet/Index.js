@@ -14,10 +14,17 @@ function Wallet(props)
 
     const [messageDeduction , setMessageDeduction] = useState({});
 
+    const [isPaymentForm , setPaymentForm] = useState(false);
+
+    const [paymentMethods , setPaymentMethods] = useState(props.paymentMethods); 
+
     useEffect(() => {
         setBalance(props.balance);
         setMessageDeduction(props.message_deduction);
+        
     }, [props.balance]);
+
+    useEffect(()=>{},[paymentMethods]);
 
     /**
      * Fetch balance
@@ -49,6 +56,32 @@ function Wallet(props)
             }
 
             notie.alert({type: 'error', text: error_message, time: 5});
+        });
+    }
+    
+    /**
+     * Show payment method form
+     */
+    function showPaymetMethodForm(){
+        setPaymentForm(true);
+        setShowStripeForm(true);
+    }
+
+    /**
+     * Show charge form
+     */
+    function setShowChargeForm(){
+        setPaymentForm(false);
+        setShowStripeForm(true);
+    }
+
+    /**
+     * Fetch payment methods
+     */
+    function fetchPaymentMethods(){
+        Axios.get(route('getPaymentMethods')).then((response) => {
+            console.log(response.data.result);
+            setPaymentMethods(response.data.result);
         });
     }
 
@@ -103,7 +136,7 @@ function Wallet(props)
                                 <button
                                     type="button"
                                     className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bg-primary/80"
-                                    onClick={() => setShowStripeForm(true)}
+                                    onClick={() => setShowChargeForm()}
                                 >
                                     {props.translator['Add Balance']}
                                 </button>
@@ -319,35 +352,25 @@ function Wallet(props)
                             </span>
 
                             <div className="payment-list mt-4 space-y-6">
-                                <div className="payment-item sm:flex gap-4 space-y-2 sm:space-y-0">
-                                    <div className="w-40 h-20 bg-red-200 rounded-lg "></div>
-                                    <div>
-                                        <h5 className="text-sm font-semibold">
-                                            Visa
-                                        </h5>
-                                        <div className="mt-3">
-                                            <p>Debit </p>
-                                            <p>************0991</p>
+                                {Object.entries(paymentMethods).map(([key, method]) => (
+                                    <div className="payment-item sm:flex gap-4 space-y-2 sm:space-y-0">
+                                        <div className="w-40 h-20 bg-red-200 rounded-lg "></div>
+                                        <div>
+                                            <h5 className="text-sm font-semibold">
+                                                {method.card_brand}
+                                            </h5>
+                                            <div className="mt-3">
+                                                <p>{(method.card_type).slice(0,1).toUpperCase() + (method.card_type).slice(1, (method.card_type).length)} </p>
+                                                <p>************{method.last_four_digit}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div className="payment-item sm:flex space-y-2 sm:space-y-0  gap-4 ">
-                                    <div className="w-40 h-20 bg-red-200 rounded-lg "></div>
-                                    <div>
-                                        <h5 className="text-sm font-semibold">
-                                            Visa
-                                        </h5>
-                                        <div className="mt-3">
-                                            <p>Debit </p>
-                                            <p>************0991</p>
-                                        </div>
-                                    </div>
-                                </div>
+                                ))}
                             </div>
 
                             <div className="w-full flex justify-end mt-4">
                                 <button
+                                    onClick={() => showPaymetMethodForm()}
                                     type="button"
                                     className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bg-primary/80"
                                 >
@@ -389,6 +412,8 @@ function Wallet(props)
                     stripe_public_key={props.stripe_public_key}
                     fetchWalletBalance={fetchWalletBalance}
                     translator={props.translator}
+                    isPaymentForm={isPaymentForm}
+                    fetchPaymentMethods={fetchPaymentMethods}
                 />
             : ''}
 

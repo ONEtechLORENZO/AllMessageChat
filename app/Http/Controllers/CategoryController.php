@@ -13,6 +13,7 @@ use App\Models\Category;
 use App\Models\Categorable;
 use App\Models\Contact;
 use App\Models\Field;
+use App\Models\Automation;
 
 class CategoryController extends Controller
 {
@@ -316,7 +317,30 @@ class CategoryController extends Controller
                 $category_id[] = $category['id']; 
             }
         }
-        
-        return $contact->categorys()->sync($category_id);
+
+        // Compare exist and current categories
+        $existCategories = $contact->categorys;
+        $existCategoryIds = [];
+        foreach($existCategories as $tag){
+            $existCategoryIds[] = $tag->id;
+        }
+        $newCategories = array_diff($category_id , $existCategoryIds);
+        $contact->categorys()->sync($category_id);
+      
+        if($newCategories){
+            // Process flow functions 
+            $user_id = $contact->user_id;
+            $companyId = Cache::get('selected_company_' . $user_id);
+            $automations = Automation::where('company_id', $companyId)
+                ->where('trigger_mode', 'contact_list_related')
+                ->get();
+            
+            foreach($automations as $automation){
+                $flow = json_decode($automation->flow);
+                $result = $automation->getFlowResult($flow , $contact );
+            }
+        }
+        return true;
+         
     }
 }

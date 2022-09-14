@@ -211,7 +211,6 @@ class Automation extends Model
            
             case 'custom_field':
                 if($action->field_name){
-
                     $custom_field[$action->field_name] = $action->field_value;
                     $recordModal->custom = $custom_field;
                     $_REQUEST['isFlowAction'] = true;

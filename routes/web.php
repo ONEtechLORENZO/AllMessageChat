@@ -54,6 +54,11 @@ Route::middleware('guest')->group(function () {
     Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('login');
 });
 
+// Test
+Route::get('/test_stripe', function(){
+    Log::info('stirple');
+});
+
 // Invite User
 Route::get('/user-invite', [UserInviteController::class, 'relateUser']);
 Route::get('/invitedUserRelation', [UserInviteController::class, 'relateUser']);
@@ -74,7 +79,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/user-balance', [UserController::class, 'userBalance'])->name('userBalance');
     Route::get('/transactions', [UserController::class, 'transactions'])->name('listTransaction');
     Route::get('/invoices/{id}', [UserController::class, 'invoices'])->name('invoices');    
+    Route::post('/storePaymentMethod', [UserController::class, 'storePaymentMethod'])->name('store_payment_method');
+    Route::get('/getPaymentMethods', [UserController::class, 'getPaymentMethods'])->name('getPaymentMethods');    
     
+
     // Profile
     Route::get('/user/profile', [UserController::class, 'profile'])->name('profile');
     Route::post('/user/registration', [UserController::class, 'storeUserRegistration'])->name('store_user_data');
