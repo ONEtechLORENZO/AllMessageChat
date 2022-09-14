@@ -19,7 +19,7 @@ class CompanyObserver
     public function created(Company $company)
     {
         // Create user in Stripe
-        $this->createStripeCustomer($company);
+        // $this->createStripeCustomer($company);
 
         $user_id = Auth::id();
         $user = User::find($user_id);

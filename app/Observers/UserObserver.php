@@ -40,12 +40,12 @@ class UserObserver
      */
     public function updated(User $user)
     {
-        // if(!$user->stripe_id) {
-        //     $user->createAsStripeCustomer();
-        // }
-        // else {
-        //     $user->updateStripeCustomer();
-        // }
+         if(!$user->stripe_id) {
+            $user->createAsStripeCustomer();
+         }
+         else {
+            $user->updateStripeCustomer();
+         }
     }
 
     /**
