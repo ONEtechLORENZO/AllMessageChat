@@ -20,7 +20,6 @@ use App\Models\Msg;
 use App\Models\Company;
 use App\Models\Price;
 use App\Models\WebhookEvent;
-use App\Models\Company;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Session;
@@ -1655,21 +1654,22 @@ class UserController extends Controller
         // Get company
         $companyId = Cache::get('selected_company_'. $userId);
         $company = Company::find($companyId);
-
-        $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
-        $result = $stripe->customers->allPaymentMethods(
-            $company->stripe_id,
-            ['type' => 'card']
-        );
         $paymentMethods = [];
-        foreach($result->data as $stripe){
-            $paymentMethods[] = [
-                'card_brand' => $stripe->card->brand,
-                'card_type' => $stripe->card->funding,
-                'last_four_digit' => $stripe->card->last4,
-            ];
+        if($company->stripe_id){
+            $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
+            $result = $stripe->customers->allPaymentMethods(
+                $company->stripe_id,
+                ['type' => 'card']
+            );
+            
+            foreach($result->data as $stripe){
+                $paymentMethods[] = [
+                    'card_brand' => $stripe->card->brand,
+                    'card_type' => $stripe->card->funding,
+                    'last_four_digit' => $stripe->card->last4,
+                ];
+            }
         }
-        
         if($request->ajax()){
             echo json_encode(['result' => $paymentMethods ]);
         } else {

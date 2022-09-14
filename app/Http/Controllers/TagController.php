@@ -330,8 +330,8 @@ class TagController extends Controller
             // Process flow functions 
             $user_id = $contact->user_id;
             $companyId = Cache::get('selected_company_' . $user_id);
-            $automations = Automation::where('company_id', $companyId)
-                ->where('trigger_mode', 'contact_tag_related')
+            $automations = Automation::where('trigger_mode', 'contact_tag_related')
+            //    ->where('company_id', $companyId)
                 ->get();
             
             foreach($automations as $automation){
