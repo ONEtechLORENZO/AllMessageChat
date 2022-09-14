@@ -13,7 +13,6 @@ export default function AccountRegistration(props){
     const cancelButtonRef = useRef(null);
     const [open, setOpen] = useState(true);
     const [curretpage, setCurrentPage] = useState(1);
-    const [service, setService] = useState('');
     const [data, setData] = useState({});
     const [addfield, setAddField] = useState(false);
     const [checkPermission, setPermission] = useState({});
@@ -22,7 +21,8 @@ export default function AccountRegistration(props){
       setData({});
     },[]);
 
-    function accountHandler(){
+    function serviceHandler(){
+        const service = data.service;
         if(service == "whatsapp"){
             setCurrentPage(2);
         }
@@ -72,7 +72,7 @@ export default function AccountRegistration(props){
     function legalEntityName(id, name){
       let newUser = Object.assign({}, data);
       newUser[name] = id;
-      props.setData(newUser);
+      setData(newUser);
     }
 
     //save the account details
@@ -80,8 +80,8 @@ export default function AccountRegistration(props){
       let validate = validateRequest();
       
       if(validate){
-        let url = route('store_account_registration', {'record' : data});
-        axios.post(url).then((response) => {
+        let url = route('store_account_registration');
+        axios.post(url, data).then((response) => {
             setCurrentPage(4);
         });
       }
@@ -128,10 +128,10 @@ export default function AccountRegistration(props){
                                       }
                                     >
                                        <Step1 
-                                        service={service}
-                                        setService={setService}
-                                        accountHandler={accountHandler}
+                                        data={data}
                                         setOpen={setOpen}
+                                        formHandler={formHandler}
+                                        serviceHandler={serviceHandler}
                                        />
                                     </div>
 

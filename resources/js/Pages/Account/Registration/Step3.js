@@ -21,7 +21,7 @@ const formField = [
 
 const addformField = [
   {'label':'Business Phone Number', 'name':'phone_number', 'type':'text'},
-  {'label':'Legal Entity Name', 'name':'entity_name', 'type':'text'},
+  {'label':'Legal Entity Name', 'name':'company_name', 'type':'text'},
   {'label':'Legal Business Name', 'name':'display_name', 'type':'text'},
 ];
 

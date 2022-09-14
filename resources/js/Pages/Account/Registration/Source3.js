@@ -14,8 +14,8 @@ export default function Source3(props){
               <table className="min-w-full divide-gray-300">
                 <tbody className="divide-gray-200 bg-white">
                     <tr>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        Which Phone number do you want to link to <br></br>this WABA Account? 
+                      <td className="whitespace-initial px-3 py-4 text-sm text-gray-500">
+                        Which Phone number do you want to link to this WABA Account? 
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                         <Input 
@@ -30,17 +30,17 @@ export default function Source3(props){
                       </td>
                     </tr>
                     <tr>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          What is your offical Legal Entity Name<br></br>
+                      <td className="whitespace-initial px-3 py-4 text-sm text-gray-500">
+                          What is your offical Legal Entity Name
                          (Business Registered Name, e.g. One Srl)
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                         <Input 
                             type="text" 
                             className={`mt-1 appearance-none block w-3/4 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
-                            id='entity_name'
-                            name='entity_name'
-                            value={props.data['entity_name']} 
+                            id='company_name'
+                            name='company_name'
+                            value={props.data['company_name']} 
                             handleChange={props.formHandler}
                             required={true}
                         />
@@ -62,9 +62,27 @@ export default function Source3(props){
                         />
                       </td>
                     </tr>
+                    {props.data && props.data['legal_entity'] == 'no' ? 
                     <tr>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        Do you want to use a Display Name that<br></br> matches your Legal Entity Name?
+                        Legal Business Name
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                        <Input 
+                            type="text" 
+                            className={`mt-1 appearance-none block w-3/4 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                            id='display_name'
+                            name='display_name'
+                            value={props.data['display_name']} 
+                            handleChange={props.formHandler}
+                            required={true}
+                        />
+                      </td>
+                    </tr>
+                    :''}
+                    <tr>
+                      <td className="whitespace-initial px-3 py-4 text-sm text-gray-500">
+                        Do you want to use a Display Name that matches your Legal Entity Name?
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 w-1/5">
                         <fieldset className="mt-4">
