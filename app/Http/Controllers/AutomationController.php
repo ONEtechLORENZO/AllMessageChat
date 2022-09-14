@@ -154,6 +154,9 @@ class AutomationController extends Controller
         }
         if(! $request->flow){
             $automation->name = $request->name;
+            if( $request->status){
+                $automation->status = $request->status;
+            }
             $automation->save();
             return Redirect::route('createAutomation', $automation->id);
         }
@@ -162,7 +165,6 @@ class AutomationController extends Controller
         if( $request->trigger){
             $automation->trigger_mode = $request->trigger;
         }
-       
         $automation->save();
      
         echo json_encode(['result' => 'success' ]);

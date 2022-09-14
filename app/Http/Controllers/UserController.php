@@ -802,7 +802,7 @@ class UserController extends Controller
         $user_id = $request->user()->id;
 
         $id = false;
-        $service = $request->get('service');
+        $service = 'whatsapp'; // $request->get('service');
         if ($request->has('id') && $request->get('id') > 0) {
             $id = $request->get('id');
         }
@@ -814,14 +814,14 @@ class UserController extends Controller
             }
 
             $request->validate([
-                'company_name' => 'required|max:255',
-                'service' => 'required'
+           //     'display_name' => 'required|max:255',
+            //    'service' => 'required'
             ]);
         }
         else {
             $request->validate([
-                'company_name' => 'required|max:255',
-                'service' => 'required',
+            //    'display_name' => 'required|max:255',
+            //    'service' => 'required',
             ]);
         }
 
@@ -838,14 +838,22 @@ class UserController extends Controller
             }
             $account->status = 'New'; // Setting the status as New.
         }
+        $data = $request->record;
+      //  dd($request->record);
+        // $fields = [
+        //     'company_name', 'service', 'phone_number', 'src_name', 'business_manager_id', 'api_partner','display_name','api_partner_name'
+        // ];
+        // foreach ($fields as $field_name) {
+        //     $field_value = $request->get($field_name);
+        //     $account->$field_name = $field_value;
+        // }
 
-        $fields = [
-            'company_name', 'service', 'phone_number', 'src_name', 'business_manager_id', 'api_partner','display_name','api_partner_name'
-        ];
-        foreach ($fields as $field_name) {
-            $field_value = $request->get($field_name);
-            $account->$field_name = $field_value;
-        }
+        $account->service = $service;
+        $account->src_name = $data['entity_name'];
+        $account->phone_number = $data['phone_number'];
+        $account->company_name = $data['display_name'];
+        $account->display_name = $data['display_name'];
+
         
         // Setting logged in user id
         $account->user_id = $user_id;
@@ -853,7 +861,8 @@ class UserController extends Controller
         
         $account->save();
 
-        return Redirect::route('dashboard');
+        return true;
+        //return Redirect::route('dashboard');
     }
 
     /**
