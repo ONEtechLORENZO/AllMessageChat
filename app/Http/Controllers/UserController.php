@@ -1242,8 +1242,8 @@ class UserController extends Controller
         
         // Get message amount deduction
         $messageDeduction = $this->getAmountDeduction($user->id);
- 
-        $paymentMethods = $this->getPaymentMethods($request);
+
+        $paymentMethods = $this->getPaymentMethods($request , 'direct');
 
         $stripe_public_key = config('stripe.stripe_key');
 
@@ -1693,12 +1693,15 @@ class UserController extends Controller
     /**
      * Get Payment Methods
      */
-    public function getPaymentMethods(Request $request) 
+    public function getPaymentMethods(Request $request , $mode) 
     {
         $user = $request->user();
         $paymentMethods = $user->paymentMethods();
-
-        return response()->json(['paymentMethods' => $paymentMethods]);
+        if($mode){
+            return $paymentMethods; 
+        } else {
+            return response()->json(['paymentMethods' => $paymentMethods]);
+        }
     }
 
     /**
