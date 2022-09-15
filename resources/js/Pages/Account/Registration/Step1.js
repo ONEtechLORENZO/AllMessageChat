@@ -4,7 +4,7 @@ import { Link } from "@inertiajs/inertia-react";
 
 const serivceOption = {
     'whatsapp' : 'Whatsapp',
-    'instagram' : 'Instagram'
+  //  'instagram' : 'Instagram'
 }
 
 export default function Step1(props){
