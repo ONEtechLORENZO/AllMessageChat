@@ -145,19 +145,25 @@ class SettingsController extends Controller
         }
     }
 
-    public function updateSubscription(Request $request){
+    /**
+     * Update User Subscription
+     */
+    public function updateSubscription(Request $request, $user_id = '')
+    {
+        if(!$user_id) {
+            $user_id = $request->user()->id;
+        }
 
-        $user_id = $request->user()->id;
-        $company_id = Cache::get('selected_company_'.$user_id);
+        $company_id = Cache::get('selected_company_' . $user_id);
 
-        //get current company details
+        // Get current company details
         $currentCompany =  Company::where('id', $company_id)->first();
 
-        return Inertia::render('Subscription/subscription', ['plan' => $currentCompany->plan]);
+        return Inertia::render('Subscription/subscription', ['plan' => $currentCompany->plan, 'user_id' => $user_id]);
     }
 
-    public function saveCompany(Request $request){
-     
+    public function saveCompany(Request $request)
+    { 
         $user_id = $request->user()->id;
         $company_id = Cache::get('selected_company_'.$user_id);
         $fields = Field::where('module_name', 'Company')->get();
@@ -177,10 +183,22 @@ class SettingsController extends Controller
         return Redirect::route('wallet_subscription');
     }
 
+    /**
+     * Update Subscription Plan. This function can be triggered by normal user and global admin.
+     */
     public function SubscriptionPlan(Request $request, $plan)
     {    
         $flag = false;
-        $user_id = $request->user()->id;
+        $user_id = $request->get('user_id');
+
+        // If Logged in user and passed user is different, check logged in user is global admin
+        if($user_id != $request->user()->id) {
+            // Check whether user is global admin
+            if($request->user()->role != 'global_admin') {
+                abort(401);
+            }
+        }
+        
         $company_id = Cache::get('selected_company_' . $user_id);
         
         // Get current company
@@ -236,6 +254,11 @@ class SettingsController extends Controller
                 $company->plan = $plan;
                 $company->save();
             }
+        }
+
+        // Redirect to the Subscription page if global admin is changing
+        if($user_id != $request->user()->id && $request->user()->role == 'global_admin') {
+            return Redirect::route('updateUserSubscription', ['user_id' => $user_id]);    
         }
         return Redirect::route('wallet_subscription');
     }
