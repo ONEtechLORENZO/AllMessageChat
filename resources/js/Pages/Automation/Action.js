@@ -35,8 +35,12 @@ function Action(props){
     }, []);
 
     useEffect(()=>{
-        
-    },[actionData]);
+      
+       if(actionData && actionData.field_name){
+        if(options.field_info)
+            setFieldInfo(options.field_info[actionData.field_name]);
+       }
+    },[actionData, fieldInfo]);
 
     function DataHandler(name, value) 
     {
@@ -46,12 +50,11 @@ function Action(props){
     }
 
     function handleChange(event){
-        console.log(event);
+        
         var name = event.target.name;
         var value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
 
         if(name == 'field_name' && actionData.type == 'custom_field' ){
-            console.log(['fieldInfo',options.field_info[value], 'val', value]);
             DataHandler('field_name', '');
             setFieldInfo(options.field_info[value]);
         }
@@ -133,7 +136,7 @@ function Action(props){
             }
         });
     }
-//console.log('fieldInfo : ' , fieldInfo) ;
+
     return(
         <Transition.Root show={true} as={Fragment}>
                   <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => {}} >
@@ -268,7 +271,7 @@ function Action(props){
                                                     }
                                                     {actionData.type == 'custom_field' &&
                                                         <div>
-                                                            <div class="flex flex-wrap -mx-3 mb-6">
+                                                            <div class="flex flex-wrap mx-3 mb-6">
                                                                 <div className="w-1/2">
                                                                     <div className='form-group' >
                                                                         <label htmlFor={'field_name'} className="block text-sm font-medium text-gray-700">
@@ -292,13 +295,14 @@ function Action(props){
                                                                         </label>
                                                                         {(() => {
                                                                             var element = <Input
-                                                                            type="text"
-                                                                            className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
-                                                                            id={'field_value'}
-                                                                            name={'field_value'}
-                                                                            value={actionData.field_value}
-                                                                            handleChange={handleChange}            
-                                                                        />;
+                                                                                type="text"
+                                                                                className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                                                id={'field_value'}
+                                                                                name={'field_value'}
+                                                                                value={actionData.field_value}
+                                                                                handleChange={handleChange}            
+                                                                            />;
+                                                                        
                                                                             switch (fieldInfo.field_type) {
                                                                                 case "text":
                                                                                     element = <Input

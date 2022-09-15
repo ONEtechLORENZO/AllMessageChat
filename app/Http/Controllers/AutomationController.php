@@ -154,9 +154,7 @@ class AutomationController extends Controller
         }
         if(! $request->flow){
             $automation->name = $request->name;
-            if( $request->status){
-                $automation->status = $request->status;
-            }
+            $automation->status = $request->status;
             $automation->save();
             return Redirect::route('createAutomation', $automation->id);
         }

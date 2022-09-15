@@ -40,7 +40,7 @@ export default function Source1(props){
                             <div key={procedure.id} className="flex items-center">
                             <input
                                 id={procedure.id}
-                                name="notification-method"
+                                name="procedure-method"
                                 type="radio"
                                 className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                 onClick={() => props.setProcess(procedure.id)}

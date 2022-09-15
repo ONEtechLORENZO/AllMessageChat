@@ -88,6 +88,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/wallet/subscription', [SettingsController::class, 'walletSubscription'])->name('wallet_subscription');
     Route::get('/user/company/pricing', [SettingsController::class, 'updateSubscription'])->name('updateSubscription');
     Route::post('/save/subscription/{plan}', [SettingsController::class, 'SubscriptionPlan'])->name('subscribe_plan');
+    Route::post('/edit/company',[SettingsController::class, 'saveCompany'])->name('saveCompany');
 
     // Profile
     Route::get('/user/profile', [UserController::class, 'profile'])->name('profile');
@@ -296,8 +297,6 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/user/company/Detail', [SettingsController::class, 'CurrentCompany'])->name('user_company');
     Route::get('/changeCompany/{id}', [SettingsController::class, 'changeCompany'])->name('change_company');
     
-    Route::post('/edit/company',[SettingsController::class, 'saveCompany'])->name('saveCompany');
-
     // Pricing
     Route::get('/admin/pricing', [PriceController::class, 'index'])->name('listPrice');
     Route::get('/admin/pricing/edit/{id}', [PriceController::class, 'edit'])->name('editPrice');
