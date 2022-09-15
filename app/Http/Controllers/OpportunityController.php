@@ -106,7 +106,21 @@ class OpportunityController extends Controller
        
         $companyId = Cache::get('selected_company_'. $request->user()->id);
         $headers = $this->getModuleHeader($companyId, 'Opportunity');
-        
+
+        //related contact details
+        $contact = Contact::where('id', $opportunity->contact_id)->first();
+
+        //assign user details
+        $user = User::where('id', $opportunity->assigned_to)->first();
+
+        if($contact){
+            $opportunity['contact_id'] = $contact['first_name'].' '.$contact['last_name'];
+        }
+
+        if($user){
+            $opportunity['assigned_to'] = $user['name'];
+        }
+       
         return Inertia::render('Opportunity/Detail', [
             'record' => $opportunity,            
             'headers' => $headers,

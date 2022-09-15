@@ -33,7 +33,21 @@ export default function Step2(props){
             props.setAddField(true);
         }
         if(step == 3){
-            props.setCurrentPage(3);
+            let ifcheckDisplayName = validateCheck();
+            if(ifcheckDisplayName){
+                props.setCurrentPage(3);
+            }
+        }
+        return false;
+    }
+
+    function validateCheck(){
+        let record = props.data;
+        if(record){
+            let value = record['legal_entity'];
+            if(value){
+                return true;
+            }
         }
         return false;
     }

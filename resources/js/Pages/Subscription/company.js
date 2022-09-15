@@ -69,8 +69,6 @@ export default function CompanyDetail(props)
     } 
   }
 
-  console.log(props.currentCompany);
-
     return (
         <div>
             <div className="sm:grid grid grid-cols-2 gap-4 p-4">
