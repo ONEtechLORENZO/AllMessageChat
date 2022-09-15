@@ -19,7 +19,7 @@ class CreateTransactionsTable extends Migration
             $table->string('transaction_id');
             $table->float('amount', 8, 4);
             $table->string('status');
-            $table->string('error_message')->nullable();
+            $table->longText('error_message')->nullable();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('company_id')->constrained('companies');            
             $table->timestamps();
