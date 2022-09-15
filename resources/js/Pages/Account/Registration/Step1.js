@@ -4,7 +4,7 @@ import { Link } from "@inertiajs/inertia-react";
 
 const serivceOption = {
     'whatsapp' : 'Whatsapp',
-    'instagram' : 'Instagram'
+  //  'instagram' : 'Instagram'
 }
 
 export default function Step1(props){
@@ -20,12 +20,24 @@ export default function Step1(props){
     return(
         <div className='p-4'>
         <form id='form p-2'>
-            <div className='p-2'>
-                <div className='font-bold text-lg'>
-                    Link Account
+            <div className="flex">
+                <div className='p-2'>
+                    <div className='font-bold text-lg'>
+                        Link Account 
+                    </div>
+                    <div className='pt-2 text-gray-500 text-sm'>
+                        Connect your account to your OneMessage Workspace
+                    </div>
                 </div>
-                <div className='pt-2 text-gray-500 text-sm'>
-                    Connect your account to your OneMessage Workspace
+                <div className="w-1/2"> 
+                    <div className="float-right">  
+                        <Link
+                            href={route('dashboard')}
+                            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-3 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                        >
+                          X
+                        </Link>
+                    </div> 
                 </div>
             </div>
             <hr></hr>

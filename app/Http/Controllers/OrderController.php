@@ -100,7 +100,7 @@ class OrderController extends Controller
         if(!$order){
             about(401);
         }
-         
+     
         $companyId = Cache::get('selected_company_'. $request->user()->id);
         $headers = $this->getModuleHeader($companyId , 'Order');
         $lineItems = [];
@@ -117,6 +117,20 @@ class OrderController extends Controller
             ]; 
             
             $totalPrice += $item->total_amount;
+        }
+
+        //related contact details
+        $contact = Contact::where('id', $order->contact)->first();
+
+        //related opporuntity details
+        $Opportunity = Opportunity::where('id', $order->opportunity)->first();
+
+        if($contact){
+            $order['contact'] = $contact['first_name'].' '.$contact['last_name'];
+        }
+
+        if($Opportunity){
+            $order['opportunity'] = $Opportunity['name'];
         }
 
         return Inertia::render('Order/Detail', [

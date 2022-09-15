@@ -2,6 +2,7 @@ import {useState} from 'react'
 import Source2 from './Source2';
 import Source1 from './Source1';
 import Source3 from './Source3';
+import { Link } from "@inertiajs/inertia-react";
 
 const events = [
     { id: 'yes', title: 'Yes' },
@@ -32,19 +33,48 @@ export default function Step2(props){
             props.setAddField(true);
         }
         if(step == 3){
-            props.setCurrentPage(3);
+            let ifcheckDisplayName = validateCheck();
+            if(ifcheckDisplayName){
+                props.setCurrentPage(3);
+            }
+        }
+        return false;
+    }
+
+    function validateCheck(){
+        let record = props.data;
+        if(record){
+            let value = record['legal_entity'];
+            if(value){
+                return true;
+            }
         }
         return false;
     }
 
     return(
         <div className='p-8'>
+            <div className="flex">
+                <div className='p-2 w-1/2'>
+                </div>
+                <div className="w-1/2"> 
+                    <div className="float-right">  
+                        <Link
+                            href={route('dashboard')}
+                            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-3 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                        >
+                        X
+                        </Link>
+                    </div> 
+                </div>
+            </div>
             <form id='form p-2'>
             <div 
                 className={
                 step == 1 ? "block" : "hidden"
                 }
             >
+                
                 <div>
                     <label className="text-base font-medium text-gray-900">
                         Do you already use WhatsApp Business API via a BSP or via Cloud API on this number? 

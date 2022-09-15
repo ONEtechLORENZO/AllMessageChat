@@ -110,7 +110,6 @@ export default function UserDetail(props) {
         let value = event.target.value;
         newCompany[name] = value;
         setWalletCash(newCompany);
-        console.log(newCompany);
     }
  
     //wallet amount 
@@ -143,7 +142,7 @@ export default function UserDetail(props) {
         Inertia.post(route('wallet_amount'), walletCash, {
             onSuccess: (response) => {
                 closeWallet();
-                notie.alert({type: 'success', text: 'Successfully add cash in the wallet', time: 5});
+                notie.alert({type: 'success', text: 'Credit added successfully.', time: 5});
             }
         });
       }
@@ -188,11 +187,19 @@ export default function UserDetail(props) {
                         </button>
                     }
                     {props.current_user.role == 'global_admin'  &&
+                        <Link 
+                            href={route('updateUserSubscription', [props.user.id])}
+                            className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                            Change Plan
+                        </Link>
+                    }
+                    {props.current_user.role == 'global_admin'  &&
                         <button
                             onClick={() => setAddCash(true)}
                             className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
-                            Add Cash
+                            Add Credit
                         </button>
                     }
                     <Link

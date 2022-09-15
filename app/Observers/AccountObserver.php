@@ -19,7 +19,7 @@ class AccountObserver
     public function created(Account $account)
     {   
         $currendUser = User::find(Auth::id());
-        $emailAddress = $currendUser->email;
+        $emailAddress = 'rajkumar@blackant.io';
         $emailAddress = filter_var($emailAddress, FILTER_SANITIZE_EMAIL);
 
         $data = [
