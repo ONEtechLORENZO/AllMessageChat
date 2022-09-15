@@ -19,6 +19,8 @@ class ContactObserver
     public function created(Contact $contact)
     {
         $this->runFlowActions($contact , 'contact_created');
+        
+        $this->set_Service_Subscription($contact);            
     }
 
     /**
@@ -30,8 +32,12 @@ class ContactObserver
     public function updated(Contact $contact)
     {
       //  $this->runFlowActions($contact , 'contact_created');
+     
+      if($contact->wasChanged('status'))
+      {
+         $this->set_Service_Subscription($contact);
+      }
     }
-
     /**
      * Handle the Contact "deleted" event.
      *
@@ -41,6 +47,7 @@ class ContactObserver
     public function deleted(Contact $contact)
     {
         //
+
     }
 
     /**
@@ -63,6 +70,32 @@ class ContactObserver
     public function forceDeleted(Contact $contact)
     {
         //
+    }
+
+
+    //set service_subscription_status
+
+    public function set_Service_Subscription($contact)
+    {
+        $subscription_status=$contact->status;
+
+        if($subscription_status=='subscribed')
+        {
+            $services = Service::all();
+            foreach($services as $service)
+             {
+                $contact->services()->save($service);
+             }
+        }
+        if($subscription_status=='unsubscribed')
+        {
+            $unsub_service=Serviceable::find([$contact->id],['serviceable_id']);
+
+            if($unsub_service)  
+                {
+                    Serviceable::where('serviceable_id', $contact->id)->delete();
+                }
+        }
     }
 
     /**
