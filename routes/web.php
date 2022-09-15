@@ -307,6 +307,8 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
 
     // Impersonate User 
     Route::post('/admin/user/impersonate', [UserController::class, 'changeLogInUser'])->name('change_log_in_user');
+
+    Route::get('/user/company/pricing/{user_id}', [SettingsController::class, 'updateSubscription'])->name('updateUserSubscription');
 });
 
 require __DIR__ . '/auth.php';

@@ -84,7 +84,7 @@ export default function Subscription(props){
             return;
         }
    
-        Inertia.post(route('subscribe_plan',{'plan' : plan}), '', {
+        Inertia.post(route('subscribe_plan',{'plan': plan}), {user_id: props.user_id}, {
             onSuccess: (response) => {
 
             }
