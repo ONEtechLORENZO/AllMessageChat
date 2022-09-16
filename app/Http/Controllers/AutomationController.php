@@ -202,27 +202,36 @@ class AutomationController extends Controller
     {
         $return = [];
         $companyId = Cache::get('selected_company_' . $request->user()->id);
+       
         if( $_GET['action_type'] == 'send_message') {
+
+             // Collect Message requird data
             $getAccountList = Account::where('company_id', $companyId)->get();
             foreach($getAccountList as $account){
                 $return['account_list'][$account->id] = $account->company_name;
             }
             $account_id = isset($return['accountList']) ? array_keys($return['accountList']) : [];
-            $getTemplates = Template::whereIn('account_id', $account_id)->get();
+            $getTemplates = Template::where('company_id', $companyId)->get();
             foreach($getTemplates as $template){
-                $return['template_list'][$template->id] = $template->name;
+                $return['template_list'][$template->template_uid] = $template->name;
             }
         } else if('tag_contact' == $_GET['action_type']){ 
+
+            // Get tag list
             $getTags = Tag::where('company_id', $companyId)->get();
             foreach($getTags as $tag){
                 $return['tag_list'][$tag->id] = $tag->name;
             }
         } else if('list_contact' == $_GET['action_type']){ 
+
+            // Get category list
             $getList = Category::where('company_id', $companyId)->get();
             foreach($getList as $list){
                 $return['list_list'][$list->id] = $list->name;
             }
         } else if('custom_field' == $_GET['action_type']){ 
+
+            // Get custom field list
             $module = 'Contact';
             $getFields = Field::where('module_name', $module)
                 ->where('company_id', $companyId)

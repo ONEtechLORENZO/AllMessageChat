@@ -323,12 +323,14 @@ class MsgController extends Controller
             'Write your message!' => __('Write your message!')
         ];
         $translator = array_merge( $translator, $this->getTranslations());
-    
+        $templates = $this->getTemplates($companyId);
+
         $data = [
             'contact_list' => $contactList,
             'account_list' => $accoutList,
             'messages' => $messages,
             'selected_contact' => $selectedContact,
+            'templates' => $templates,
             'current_page' => 'Chat',
             'category' => ($category) ? $category : 'all',
             'translator' => $translator,
@@ -430,6 +432,18 @@ class MsgController extends Controller
         ];
     
         return $data;
+    }
+
+    /**
+     * Return template list
+     */
+    public function getTemplates($companyId)
+    {
+        $templates = Template::join('messages', 'templates.id', 'template_id')
+            ->where('company_id', $companyId)
+            ->get(['template_uid', 'body', 'name']);
+        
+        return $templates;
     }
 
     /**
@@ -549,15 +563,23 @@ class MsgController extends Controller
             $result['status'] = $status;
             $result['messageId'] = uniqid().'_'.date('ymdhis');
         } else {
-            $result = $msg->sendWhatsAppMessage($request->content , $request->destination, $account );
-            if($result['result']['status'] == 'submitted'){
-                $result['status'] = 'Queued';
-            }
            
-            $result['messageId'] = $result['result']['messageId'];
+            $template = ($request->template_id) ? $request->template_id : '';
+            $result = $msg->sendWhatsAppMessage($request->content , $request->destination, $account , $template);
+            if($result['result'] ){
+                if( $result['result']['status'] == 'submitted'){
+                    $result['status'] = 'Queued';
+                }
+                $result['messageId'] = $result['result']['messageId'];
+            } else {
+                $result['status'] = 'Failed';
+                $result['error'] = 'Please check the configuration';
+            }
         }
-        $this->handleMessageResult($request, $account->id, $result);
-        echo json_encode($result);
+        if(isset($result['messageId']))
+            $this->handleMessageResult($request, $account->id, $result);
+
+        return response()->json($result);
     }
 
     /**
@@ -827,7 +849,7 @@ class MsgController extends Controller
      */
     public function handlePrice($number , $category, $user_id)
     {
-        $return = '';
+        $return = 0;
         $number = '+'.$number ;
         $price = '';
         $contact = Contact::where('phone_number' , $number)
@@ -841,13 +863,15 @@ class MsgController extends Controller
             $price = Price::where('is_default' , 1)->first();
         }
 
-        if($category == 'UIC'){
-            $return = $price->user_initiated;
-        } else if($category == 'BIC'){
-            $return = $price->business_initiated;
-        } else {
-            $return = $price->message;
-        }
+        if( $price){
+            if($category == 'UIC'){
+                $return = $price->user_initiated;
+            } else if($category == 'BIC'){
+                $return = $price->business_initiated;
+            } else {
+                $return = $price->message;
+            }
+        } 
         return $return;
     }
 

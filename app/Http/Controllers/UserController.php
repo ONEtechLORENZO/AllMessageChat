@@ -918,6 +918,7 @@ class UserController extends Controller
         $template->category = $request->get('category');
         $template->languages = $request->get('languages');
         $template->status = 'draft';
+        $template->company_id = Cache::get('selected_company_' . $request->user()->id) ;
         $template->account_id = $account_id;
         $template->save();
 

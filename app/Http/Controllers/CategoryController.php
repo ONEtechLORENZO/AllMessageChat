@@ -327,7 +327,6 @@ class CategoryController extends Controller
         $newCategories = array_diff($category_id , $existCategoryIds);
         $contact->categorys()->sync($category_id);
       
-
         if($newCategories){
             // Process flow functions 
             $user_id = $contact->user_id;
@@ -338,6 +337,8 @@ class CategoryController extends Controller
                 ->get();
            
             foreach($automations as $automation){
+                unset($_REQUEST['isFlowAction']);   // Reset the flow action
+
                 $flow = json_decode($automation->flow);
                 $result = $automation->getFlowResult($flow , $contact );
             }
