@@ -28,13 +28,12 @@ export const integrations = [
     {value: 'Support', label: 'Support'},
 ];
 
-export const header_templates = [
-    {value: '', label: 'None'},
-    {value: 'text', label: 'Text'},
-    {value: 'image', label: 'Image'},
-    {value: 'document', label: 'Document'},
-    {value: 'video', label: 'Video'},
-];
+export const header_templates = {
+        'text': 'Text',
+        'image': 'Image',
+        'document': 'Document',
+        'video': 'Video'
+    };
 
 export const templates = [
     {value: 'text', label: 'Text'},
@@ -42,10 +41,10 @@ export const templates = [
     {value: 'interactive', label: 'Interactive (Buttons)'},
 ];
 
-export const button_types = [
-    {value: 'Quick Reply', label: 'Quick Reply'},
-    {value: 'Call to Action', label: 'Call to Action'},
-];
+export const button_types = {
+    'Quick Reply': 'Quick Reply',
+    'Call to Action': 'Call to Action'
+};
 
 export const defaultPristineConfig = {
     // class of the parent element where the error/success class is added
@@ -60,10 +59,10 @@ export const defaultPristineConfig = {
     errorTextClass: 'text-red-500 text-xs mt-1'
 };
 
-export const call_to_action_lists = [
-    {value: 'call_phone_number', label: 'Call phone number'},
-    {value: 'visit_website', label: 'Visit website'},
-];
+export const call_to_action_lists = {
+    'call_phone_number': 'Call phone number',
+    'visit_website': 'Visit website'
+};
 
 export const url_types = [
     {value: 'Static', label: 'Static'},
