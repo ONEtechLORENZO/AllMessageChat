@@ -69,6 +69,7 @@ class UserObserver
     {
         //
     }
+    
 
     /**
      * Handle the User "force deleted" event.
@@ -81,39 +82,88 @@ class UserObserver
         //
     }
 
+    public function add_FieldGroup($group_name,$module_name,$user_id,$company_id) 
+    {
+        $fieldGroup = new FieldGroup();
+        $fieldGroup->module_name = $module_name;
+        $fieldGroup->name = $group_name;
+        $fieldGroup->company_id = $company_id;
+        $fieldGroup->created_by = $user_id;
+        $fieldGroup->save();
+        return ($fieldGroup->id);
+    }
+
     /**
      * Preparing field array for insertion
      */
     public function getModuleFields($user_id, $company_id) 
     {
         $current_datetime = date('Y-m-d H:i:s');
-        $fieldGroup = new FieldGroup();
-        $fieldGroup->module_name = 'Order';
-        $fieldGroup->name = 'Address Details';
-        $fieldGroup->company_id = $company_id;
-        $fieldGroup->created_by = $user_id;
-        $fieldGroup->save();
-        $address_group_id = $fieldGroup->id;
-
+        $address_group_id = $this->add_FieldGroup('Address Details','Order',$user_id,$company_id);
+        $contact_info_id = $this->add_FieldGroup('Contact info','Contact',$user_id,$company_id);
+        $contact_address_id= $this->add_FieldGroup('Address info','Contact',$user_id,$company_id);
+        $contact_source_id= $this->add_FieldGroup('Source info','Contact',$user_id,$company_id);
+        $countryCodes = $this->getCountryCodeJson();
         $fields = [
-            [
-               'module_name' => 'Contact','field_name' => 'first_name','field_label' => 'First Name','field_type' => 'text','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,  'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
-            ],
-            [
-               'module_name' => 'Contact','field_name' => 'last_name','field_label' => 'Last Name','field_type' => 'text','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
-            ],
-            [
-               'module_name' => 'Contact','field_name' => 'email','field_label' => 'Email','field_type' => 'text','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
-            ],
-            [
-               'module_name' => 'Contact','field_name' => 'phone_number','field_label' => 'Phone Number','field_type' => 'phone_number','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
-            ],
-            [
-               'module_name' => 'Contact','field_name' => 'instagram_id','field_label' => 'Instagram id','field_type' => 'text','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'','created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
-            ],
-            [
-                'module_name' => 'Contact','field_name' => 'status','field_label' => 'Subscription status','field_type' => 'dropdown','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'','created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => json_encode(['subscribed'=>'Subscribed', 'unsubscribed'=>'Unsubscribed'])
-            ],
+         //contact
+               [
+                  'module_name' => 'Contact','field_name' => 'first_name','field_label' => 'First Name','field_type' => 'text','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,  'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
+               ],
+               [
+                  'module_name' => 'Contact','field_name' => 'last_name','field_label' => 'Last Name','field_type' => 'text','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
+               ],
+               [
+                  'module_name' => 'Contact','field_name' => 'email','field_label' => 'Email','field_type' => 'text','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
+               ],
+               [
+                  'module_name' => 'Contact','field_name' => 'phone_number','field_label' => 'Phone Number','field_type' => 'phone_number','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
+               ],
+               [
+                  'module_name' => 'Contact','field_name' => 'gender','field_label' => 'Gender','field_type' => 'dropdown','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'','created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>json_encode(['male'=>'Male', 'female'=>'Female' ,'unknown'=>'Unknown'])
+               ],
+               
+               [
+                  'module_name' => 'Contact','field_name' => 'birth_date','field_label' => 'Birth Date','field_type' => 'date','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
+               ],
+               [
+                  'module_name' => 'Contact','field_name' => 'languages_spoken','field_label' => 'Languages Spoken','field_type' => 'multiselect','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>json_encode(['English'=>'English', 'Italy'=>'Italy' ,'French'=>'French','German'=>'German'])
+               ],
+               [
+                'module_name' => 'Contact','field_name' => 'organization_id','field_label' => 'Organization','field_type' => 'relate','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'','created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => json_encode(['module' => 'Organization'])
+               ],
+               [
+                  'module_name' => 'Contact','field_name' => 'organization_role','field_label' => 'Organization Role','field_type' => 'text','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'','created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => ''
+               ],
+               [
+                  'module_name' => 'Contact','field_name' => 'status','field_label' => 'Subscription status','field_type' => 'dropdown','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'','created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => json_encode(['subscribed'=>'Subscribed', 'unsubscribed'=>'Unsubscribed'])
+               ],
+
+                  //Contact Info
+                  ['module_name' => 'Contact', 'field_name' => 'whatsapp_number', 'field_label' => 'Whatsapp Number', 'field_type' => 'phone_number', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_info_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Contact', 'field_name' => 'telegram_number', 'field_label' => 'Telegram Number', 'field_type' => 'phone_number', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_info_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Contact', 'field_name' => 'facebook_username', 'field_label' => 'Facebook Username', 'field_type' => 'url', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_info_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Contact', 'field_name' => 'instagram_username', 'field_label' => 'Instagram Username', 'field_type' => 'url', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_info_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Contact', 'field_name' => 'tiktok_username', 'field_label' => 'Tiktok Username', 'field_type' => 'url', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_info_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Contact', 'field_name' => 'linkedin_username', 'field_label' => 'Linkedin Username', 'field_type' => 'url', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_info_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Contact', 'field_name' => 'personal_website', 'field_label' => 'Personal Website', 'field_type' => 'url', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_info_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+               
+                  //Contact Address Info
+                 ['module_name' => 'Contact', 'field_name' => 'country', 'field_label' => 'Country', 'field_type' => 'dropdown', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_address_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => json_encode($countryCodes)],
+                 ['module_name' => 'Contact', 'field_name' => 'state', 'field_label' => 'State', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_address_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                 ['module_name' => 'Contact', 'field_name' => 'city', 'field_label' => 'City', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_address_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                 ['module_name' => 'Contact', 'field_name' => 'street', 'field_label' => 'Street', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_address_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                 ['module_name' => 'Contact', 'field_name' => 'zip_code', 'field_label' => 'Zip Code', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_address_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''], 
+
+                 //contact Source Info                
+                 ['module_name' => 'Contact', 'field_name' => 'origin', 'field_label' => 'Origin', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_source_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                 ['module_name' => 'Contact', 'field_name' => 'source', 'field_label' => 'Source', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_source_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                 ['module_name' => 'Contact', 'field_name' => 'medium', 'field_label' => 'Medium', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_source_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                 ['module_name' => 'Contact', 'field_name' => 'campaign', 'field_label' => 'Campaign', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_source_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                 ['module_name' => 'Contact', 'field_name' => 'content', 'field_label' => 'Content', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_source_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                 ['module_name' => 'Contact', 'field_name' => 'term', 'field_label' => 'Term', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $contact_source_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                 
+
+            //Opportunity
              [
                 'module_name' => 'Opportunity','field_name' => 'name' ,'field_label' =>'Opportunity Name','field_type' => 'text','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'','created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
              ],
@@ -152,20 +202,33 @@ class UserObserver
             ['module_name' => 'Order', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'options' => ''],
             ['module_name' => 'Order', 'field_name' => 'opportunity', 'field_label' => 'Opportunity', 'field_type' => 'relate', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => json_encode(['module' => 'Opportunity'])],
             ['module_name' => 'Order', 'field_name' => 'contact', 'field_label' => 'Contact', 'field_type' => 'relate', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'',  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => json_encode(['module' => 'Contact'])],
-           
-            ['module_name' => 'Order', 'field_name' => 'billing_address', 'field_label' => 'Billing address', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
-            ['module_name' => 'Order', 'field_name' => 'billing_city', 'field_label' => 'Billing City', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
-            ['module_name' => 'Order', 'field_name' => 'billing_state', 'field_label' => 'Billing State', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
-            ['module_name' => 'Order', 'field_name' => 'billing_postal_code', 'field_label' => 'Billing Postalcode', 'field_type' => 'number', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],            
-            ['module_name' => 'Order', 'field_name' => 'billing_country', 'field_label' => 'Billing Country', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
-        
-            ['module_name' => 'Order', 'field_name' => 'shipping_address', 'field_label' => 'Shipping address', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
-            ['module_name' => 'Order', 'field_name' => 'shipping_city', 'field_label' => 'Shipping City', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
-            ['module_name' => 'Order', 'field_name' => 'shipping_state', 'field_label' => 'Shipping State', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
-            ['module_name' => 'Order', 'field_name' => 'shipping_postal_code', 'field_label' => 'Shipping Postalcode', 'field_type' => 'number', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],            
-            ['module_name' => 'Order', 'field_name' => 'shipping_country', 'field_label' => 'Shipping Country', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
-        
-        ];
+               //Order Address Details
+                  ['module_name' => 'Order', 'field_name' => 'billing_address', 'field_label' => 'Billing address', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Order', 'field_name' => 'billing_city', 'field_label' => 'Billing City', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Order', 'field_name' => 'billing_state', 'field_label' => 'Billing State', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Order', 'field_name' => 'billing_postal_code', 'field_label' => 'Billing Postalcode', 'field_type' => 'number', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],            
+                  ['module_name' => 'Order', 'field_name' => 'billing_country', 'field_label' => 'Billing Country', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+            
+                  ['module_name' => 'Order', 'field_name' => 'shipping_address', 'field_label' => 'Shipping address', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Order', 'field_name' => 'shipping_city', 'field_label' => 'Shipping City', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Order', 'field_name' => 'shipping_state', 'field_label' => 'Shipping State', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Order', 'field_name' => 'shipping_postal_code', 'field_label' => 'Shipping Postalcode', 'field_type' => 'number', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],            
+                  ['module_name' => 'Order', 'field_name' => 'shipping_country', 'field_label' => 'Shipping Country', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $address_group_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+            //// Organization
+                  ['module_name' => 'Organization', 'field_name' => 'organization_name', 'field_label' => 'Organization Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Organization', 'field_name' => 'industry', 'field_label' => 'Industry', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Organization', 'field_name' => 'number_of_employees', 'field_label' => 'Number Of Employees', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Organization', 'field_name' => 'annual_turnover', 'field_label' => 'Annual Turnover', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Organization', 'field_name' => 'tax_id', 'field_label' => 'Tax ID', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Organization', 'field_name' => 'country', 'field_label' => 'Country', 'field_type' => 'dropdown', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => json_encode($countryCodes)],
+                  ['module_name' => 'Organization', 'field_name' => 'state', 'field_label' => 'State', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Organization', 'field_name' => 'city', 'field_label' => 'City', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Organization', 'field_name' => 'street', 'field_label' => 'Street', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Organization', 'field_name' => 'email', 'field_label' => 'Email', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Organization', 'field_name' => 'website', 'field_label' => 'Website', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Organization', 'field_name' => 'phone_number', 'field_label' => 'Phone Number', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+
+         ];
        
         return $fields;
     }
@@ -182,4 +245,263 @@ class UserObserver
             $wallet->save();
          }
     }
+
+    public function getCountryCodeJson()
+    {
+        $countryCode = array(
+         'AF' =>   'Afghanistan',
+         'AX' =>   'Aland Islands',
+         'AL' =>   'Albania',
+         'DZ' =>   'Algeria',
+         'AS' =>   'American Samoa',
+         'AD' =>   'Andorra',
+         'AO' =>   'Angola',
+         'AI' =>   'Anguilla',
+         'AQ' =>   'Antarctica',
+         'AG' =>   'Antigua and Barbuda',
+         'AR' =>   'Argentina',
+         'AM' =>   'Armenia',
+         'AW' =>   'Aruba',
+         'AU' =>   'Australia',
+         'AT' =>   'Austria',
+         'AZ' =>   'Azerbaijan',
+         'BS' =>   'Bahamas',
+         'BH' =>   'Bahrain',
+         'BD' =>   'Bangladesh',
+         'BB' =>   'Barbados',
+         'BY' =>   'Belarus',
+         'BE' =>   'Belgium',
+         'BZ' =>   'Belize',
+         'BJ' =>   'Benin',
+         'BM' =>   'Bermuda',
+         'BT' =>   'Bhutan',
+         'BO' =>   'Bolivia',
+         'BQ' =>   'Bonaire, Sint Eustatius and Saba',
+         'BA' =>   'Bosnia and Herzegovina',
+         'BW' =>   'Botswana',
+         'BV' =>   'Bouvet Island',
+         'BR' =>   'Brazil',
+         'IO' =>   'British Indian Ocean Territory',
+         'BN' =>   'Brunei Darussalam',
+         'BG' =>   'Bulgaria',
+         'BF' =>   'Burkina Faso',
+         'BI' =>   'Burundi',
+         'KH' =>   'Cambodia',
+         'CM' =>   'Cameroon',
+         'CA' =>   'Canada',
+         'CV' =>   'Cape Verde',
+         'KY' =>   'Cayman Islands',
+         'CF' =>   'Central African Republic',
+         'TD' =>   'Chad',
+         'CL' =>   'Chile',
+         'CN' =>   'China',
+         'CX' =>   'Christmas Island',
+         'CC' =>   'Cocos (Keeling) Islands',
+         'CO' =>   'Colombia',
+         'KM' =>   'Comoros',
+         'CG' =>   'Congo',
+         'CD' =>   'Congo, the Democratic Republic of the',
+         'CK' =>   'Cook Islands',
+         'CR' =>   'Costa Rica',
+         'CI' =>   'Cote DIvoire',
+         'HR' =>   'Croatia',
+         'CU' =>   'Cuba',
+         'CW' =>   'Curacao',
+         'CY' =>   'Cyprus',
+         'CZ' =>   'Czech Republic',
+         'DK' =>   'Denmark',
+         'DJ' =>   'Djibouti',
+         'DM' =>   'Dominica',
+         'DO' =>   'Dominican Republic',
+         'EC' =>   'Ecuador',
+         'EG' =>   'Egypt',
+         'SV' =>   'El Salvador',
+         'GQ' =>   'Equatorial Guinea',
+         'ER' =>   'Eritrea',
+         'EE' =>   'Estonia',
+         'ET' =>   'Ethiopia',
+         'FK' =>   'Falkland Islands (Malvinas)',
+         'FO' =>   'Faroe Islands',
+         'FJ' =>   'Fiji',
+         'FI' =>   'Finland',
+         'FR' =>   'France',
+         'GF' =>   'French Guiana',
+         'PF' =>   'French Polynesia',
+         'TF' =>   'French Southern Territories',
+         'GA' =>   'Gabon',
+         'GM' =>   'Gambia',
+         'GE' =>   'Georgia',
+         'DE' =>   'Germany',
+         'GH' =>   'Ghana',
+         'GI' =>   'Gibraltar',
+         'GR' =>   'Greece',
+         'GL' =>   'Greenland',
+         'GD' =>   'Grenada',
+         'GP' =>   'Guadeloupe',
+         'GU' =>   'Guam',
+         'GT' =>   'Guatemala',
+         'GG' =>   'Guernsey',
+         'GN' =>   'Guinea',
+         'GW' =>   'Guinea-Bissau',
+         'GY' =>   'Guyana',
+         'HT' =>   'Haiti',
+         'HM' =>   'Heard Island and Mcdonald Islands',
+         'VA' =>   'Holy See (Vatican City State)',
+         'HN' =>   'Honduras',
+         'HK' =>   'Hong Kong',
+         'HU' =>   'Hungary',
+         'IS' =>   'Iceland',
+         'IN' =>   'India',
+         'ID' =>   'Indonesia',
+         'IR' =>   'Iran, Islamic Republic of',
+         'IQ' =>   'Iraq',
+         'IE' =>   'Ireland',
+         'IM' =>   'Isle of Man',
+         'IL' =>   'Israel',
+         'IT' =>   'Italy',
+         'JM' =>   'Jamaica',
+         'JP' =>   'Japan',
+         'JE' =>   'Jersey',
+         'JO' =>   'Jordan',
+         'KZ' =>   'Kazakhstan',
+         'KE' =>   'Kenya',
+         'KI' =>   'Kiribati',
+         'KP' =>   'Korea Democratic Peoples Republic of',
+         'KR' =>   'Korea, Republic of',
+         'XK' =>   'Kosovo',
+         'KW' =>   'Kuwait',
+         'KG' =>   'Kyrgyzstan',
+         'LA' =>   'Lao Peoples Democratic Republic',
+         'LV' =>   'Latvia',
+         'LB' =>   'Lebanon',
+         'LS' =>   'Lesotho',
+         'LR' =>   'Liberia',
+         'LY' =>   'Libyan Arab Jamahiriya',
+         'LI' =>   'Liechtenstein',
+         'LT' =>   'Lithuania',
+         'LU' =>   'Luxembourg',
+         'MO' =>   'Macao',
+         'MK' =>   'Macedonia, the Former Yugoslav Republic of',
+         'MG' =>   'Madagascar',
+         'MW' =>   'Malawi',
+         'MY' =>   'Malaysia',
+         'MV' =>   'Maldives',
+         'ML' =>   'Mali',
+         'MT' =>   'Malta',
+         'MH' =>   'Marshall Islands',
+         'MQ' =>   'Martinique',
+         'MR' =>   'Mauritania',
+         'MU' =>   'Mauritius',
+         'YT' =>   'Mayotte',
+         'MX' =>   'Mexico',
+         'FM' =>   'Micronesia, Federated States of',
+         'MD' =>   'Moldova, Republic of',
+         'MC' =>   'Monaco',
+         'MN' =>   'Mongolia',
+         'ME' =>   'Montenegro',
+         'MS' =>   'Montserrat',
+         'MA' =>   'Morocco',
+         'MZ' =>   'Mozambique',
+         'MM' =>   'Myanmar',
+         'NA' =>   'Namibia',
+         'NR' =>   'Nauru',
+         'NP' =>   'Nepal',
+         'NL' =>   'Netherlands',
+         'AN' =>   'Netherlands Antilles',
+         'NC' =>   'New Caledonia',
+         'NZ' =>   'New Zealand',
+         'NI' =>   'Nicaragua',
+         'NE' =>   'Niger',
+         'NG' =>   'Nigeria',
+         'NU' =>   'Niue',
+         'NF' =>   'Norfolk Island',
+         'MP' =>   'Northern Mariana Islands',
+         'NO' =>   'Norway',
+         'OM' =>   'Oman',
+         'PK' =>   'Pakistan',
+         'PW' =>   'Palau',
+         'PS' =>   'Palestinian Territory, Occupied',
+         'PA' =>   'Panama',
+         'PG' =>   'Papua New Guinea',
+         'PY' =>   'Paraguay',
+         'PE' =>   'Peru',
+         'PH' =>   'Philippines',
+         'PN' =>   'Pitcairn',
+         'PL' =>   'Poland',
+         'PT' =>   'Portugal',
+         'PR' =>   'Puerto Rico',
+         'QA' =>   'Qatar',
+         'RE' =>   'Reunion',
+         'RO' =>   'Romania',
+         'RU' =>   'Russian Federation',
+         'RW' =>   'Rwanda',
+         'BL' =>   'Saint Barthelemy',
+         'SH' =>   'Saint Helena',
+         'KN' =>   'Saint Kitts and Nevis',
+         'LC' =>   'Saint Lucia',
+         'MF' =>   'Saint Martin',
+         'PM' =>   'Saint Pierre and Miquelon',
+         'VC' =>   'Saint Vincent and the Grenadines',
+         'WS' =>   'Samoa',
+         'SM' =>   'San Marino',
+         'ST' =>   'Sao Tome and Principe',
+         'SA' =>   'Saudi Arabia',
+         'SN' =>   'Senegal',
+         'RS' =>   'Serbia',
+         'CS' =>   'Serbia and Montenegro',
+         'SC' =>   'Seychelles',
+         'SL' =>   'Sierra Leone',
+         'SG' =>   'Singapore',
+         'SX' =>   'Sint Maarten',
+         'SK' =>   'Slovakia',
+         'SI' =>   'Slovenia',
+         'SB' =>   'Solomon Islands',
+         'SO' =>   'Somalia',
+         'ZA' =>   'South Africa',
+         'GS' =>   'South Georgia and the South Sandwich Islands',
+         'SS' =>   'South Sudan',
+         'ES' =>   'Spain',
+         'LK' =>   'Sri Lanka',
+         'SD' =>   'Sudan',
+         'SR' =>   'Suriname',
+         'SJ' =>   'Svalbard and Jan Mayen',
+         'SZ' =>   'Swaziland',
+         'SE' =>   'Sweden',
+         'CH' =>   'Switzerland',
+         'SY' =>   'Syrian Arab Republic',
+         'TW' =>   'Taiwan, Province of China',
+         'TJ' =>   'Tajikistan',
+         'TZ' =>   'Tanzania, United Republic of',
+         'TH' =>   'Thailand',
+         'TL' =>   'Timor-Leste',
+         'TG' =>   'Togo',
+         'TK' =>   'Tokelau',
+         'TO' =>   'Tonga',
+         'TT' =>   'Trinidad and Tobago',
+         'TN' =>   'Tunisia',
+         'TR' =>   'Turkey',
+         'TM' =>   'Turkmenistan',
+         'TC' =>   'Turks and Caicos Islands',
+         'TV' =>   'Tuvalu',
+         'UG' =>   'Uganda',
+         'UA' =>   'Ukraine',
+         'AE' =>   'United Arab Emirates',
+         'GB' =>   'United Kingdom',
+         'US' =>   'United States',
+         'UM' =>   'United States Minor Outlying Islands',
+         'UY' =>   'Uruguay',
+         'UZ' =>   'Uzbekistan',
+         'VU' =>   'Vanuatu',
+         'VE' =>   'Venezuela',
+         'VN' =>   'Viet Nam',
+         'VG' =>   'Virgin Islands, British',
+         'VI' =>   'Virgin Islands, U.s.',
+         'WF' =>   'Wallis and Futuna',
+         'EH' =>   'Western Sahara',
+         'YE' =>   'Yemen',
+         'ZM' =>   'Zambia',
+         'ZW' =>   'Zimbabwe'
+      );
+      return $countryCode;
+  }
 }

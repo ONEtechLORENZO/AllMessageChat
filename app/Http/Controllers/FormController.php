@@ -160,6 +160,15 @@ class FormController extends Controller
                 $query->where('company_user.company_id', $companyId);
                 $query->where('name', 'like', '%' . $key . '%');
             }
+            else if($module == 'Organization') {
+                $query->select(['id', 'organization_name']);
+                $query->where(function($query) use($key) {
+                    $query->orWhere('organization_name', 'like', '%' . $key . '%');
+                    
+                });
+
+                $query->where('company_id', $companyId);
+            }
             else {
                 $query->select(['id', 'name']);
                 $query->where('name', 'like', '%' . $key . '%');

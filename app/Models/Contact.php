@@ -23,9 +23,10 @@ class Contact extends Model
 
     protected $casts = [
         'custom' => 'array',
+        'languages_spoken' =>'array'
     ];
 
-    protected $fillable = ['first_name', 'last_name', 'email', 'phone_number', 'instagram_id', 'user_id', 'created_at', 'updated_at', 'custom', 'country_code'];
+    protected $fillable = ['first_name', 'last_name', 'email', 'phone_number', 'gender','birth_date', 'languages_spoken','lists','tags','organization_id','organization_role','user_id', 'created_at', 'updated_at', 'custom', 'country_code'];
 
     public function messages()
     {
@@ -62,8 +63,7 @@ class Contact extends Model
             'email' =>  ['label' => __('Email'), 'type' => 'text'],
             'tag' => ['label' => __('Tag'), 'type' => 'text'],
             'list' =>  ['label' => __('List'), 'type' => 'text'],
-            'phone_number' => ['label' => __('Phone number'), 'type' => 'phone_number'],
-            'instagram_id' =>  ['label' => 'Instagram Id', 'type' => 'text'],
+            'phone_number' => ['label' => __('Phone number'), 'type' => 'phone_number'],          
         ];
         return $list_view_columns;
     }
