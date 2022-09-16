@@ -73,13 +73,8 @@ class Msg extends Model
             $data = $post_data;
             $data['account_id'] = $account->id;
             $data['content'] = $content;
-            $result = ($response_body);
-            $data['result'] = $result;
-        } else {
-            // TODO Why are we not returning the response? This function should return response as it is common for all
-            echo json_encode($response_body);
-            die;
-        }
+        } 
+        $data['result'] = $response_body;
         return $data;
     }
 

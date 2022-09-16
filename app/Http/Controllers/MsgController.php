@@ -553,11 +553,10 @@ class MsgController extends Controller
             if($result['result']['status'] == 'submitted'){
                 $result['status'] = 'Queued';
             }
-           
             $result['messageId'] = $result['result']['messageId'];
         }
         $this->handleMessageResult($request, $account->id, $result);
-        echo json_encode($result);
+        return response()->json($result);
     }
 
     /**
@@ -827,7 +826,7 @@ class MsgController extends Controller
      */
     public function handlePrice($number , $category, $user_id)
     {
-        $return = '';
+        $return = 0;
         $number = '+'.$number ;
         $price = '';
         $contact = Contact::where('phone_number' , $number)
@@ -841,13 +840,15 @@ class MsgController extends Controller
             $price = Price::where('is_default' , 1)->first();
         }
 
-        if($category == 'UIC'){
-            $return = $price->user_initiated;
-        } else if($category == 'BIC'){
-            $return = $price->business_initiated;
-        } else {
-            $return = $price->message;
-        }
+        if( $price){
+            if($category == 'UIC'){
+                $return = $price->user_initiated;
+            } else if($category == 'BIC'){
+                $return = $price->business_initiated;
+            } else {
+                $return = $price->message;
+            }
+        } 
         return $return;
     }
 

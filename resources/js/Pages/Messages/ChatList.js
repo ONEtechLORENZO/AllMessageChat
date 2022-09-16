@@ -198,6 +198,9 @@ function ChatList(props)
                 data: data
             })
             .then( (response) =>{
+                console.log(response);
+                return false;
+                
                 if(response.data.status == 'Queued' || response.data.status == 'Send'){
                     let newState = Object.assign({}, data);
                     newState['content'] = '';
