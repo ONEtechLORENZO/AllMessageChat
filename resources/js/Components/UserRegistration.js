@@ -9,6 +9,7 @@ import InputError from '@/Components/Forms/InputError';
 import PristineJS from 'pristinejs';
 
 import {defaultPristineConfig, currencies, countries} from '@/Pages/Constants';
+import axios from 'axios';
 
 export default function UserRegistration(props) {
 
@@ -56,7 +57,8 @@ export default function UserRegistration(props) {
         if(!is_validated) {
             return false;
         }
-        post(route('store_user_data'));
+      post(route('store_user_data'))
+      props.setshowModal(false)       
   }
 
     return (
