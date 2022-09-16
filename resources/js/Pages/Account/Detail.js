@@ -355,7 +355,6 @@ function Detail(props)
                                                     {props.translator['Category']}
                                                     </label>
                                                     <div className="mt-1">
-                                                        {console.log(categories)}
                                                         <Dropdown 
                                                             required={true} 
                                                             id="category"

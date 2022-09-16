@@ -24,7 +24,7 @@ class Msg extends Model
     /**
      * Send message to WhatsApp
      */
-    public function sendWhatsAppMessage($content, $destination, $account)
+    public function sendWhatsAppMessage($content, $destination, $account, $template = '')
     {        
         $url = config('app.api_url');
         if(strpos($destination, '+') === true){
@@ -39,14 +39,10 @@ class Msg extends Model
             'disablePreview' => null
         ];
 
-        if(isset($_POST['template'])) {
-            $template = Message::where('template_id', $_POST['template'])->first();
-            if($template) {
-                $content = $template->body;
-            }
+        if(isset($_POST['template']) || $template) {
 
             $message = [
-                'id' => $_POST['template'],
+                'id' => $template,
                 'params' => []
             ];
 
@@ -69,17 +65,13 @@ class Msg extends Model
         log::info(['send_message_info', $post_data]);
         $response = Http::asForm()->withHeaders($headers)->post($url, $post_data);
         $response_body = json_decode($response->body(), true);
-        if ($response_body['status'] != 'error') {
+    
+        if( $response_body && $response_body['status'] != 'error') {
             $data = $post_data;
             $data['account_id'] = $account->id;
             $data['content'] = $content;
-            $result = ($response_body);
-            $data['result'] = $result;
-        } else {
-            // TODO Why are we not returning the response? This function should return response as it is common for all
-            echo json_encode($response_body);
-            die;
-        }
+        } 
+        $data['result'] = $response_body;
         return $data;
     }
 
