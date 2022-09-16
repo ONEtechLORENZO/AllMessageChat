@@ -829,13 +829,13 @@ class UserController extends Controller
         if($service == 'whatsapp'){
 
             //validate the phone number is unique
-            $request->validate([
-                'phone_number' => 'required|numeric|unique:accounts'
-            ]);
-
-            if($id) {
+            if($request->get('id')) {
                 $request->validate([
                     'phone_number' => 'required|numeric|unique:accounts,phone_number,' . $request->get('id')
+                ]);
+            } else {
+                $request->validate([
+                    'phone_number' => 'required|numeric|unique:accounts'
                 ]);
             }
         }
@@ -1242,7 +1242,6 @@ class UserController extends Controller
         
         // Get message amount deduction
         $messageDeduction = $this->getAmountDeduction($user->id);
-
         $paymentMethods = $this->getPaymentMethods($request , 'direct');
 
         $stripe_public_key = config('stripe.stripe_key');
