@@ -111,6 +111,8 @@ class ContactObserver
             ->get();
         
         foreach($automations as $automation){
+            unset($_REQUEST['isFlowAction']); // Reset the flow action
+            
             $flow = json_decode($automation->flow);
             $result = $automation->getFlowResult($flow , $contact );
         }

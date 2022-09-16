@@ -8,15 +8,16 @@ import ContactSelection from '@/Components/ContactSelection';
 import notie from 'notie';
 import Filter from '@/Components/Views/List/Filter2';
 import { Inertia } from '@inertiajs/inertia';
+import nProgress from 'nprogress';
 
 import {
     DotsVerticalIcon,
-    PlusSmIcon,
+    ChevronDownIcon,
     SearchIcon,
     MenuIcon
 } from "@heroicons/react/outline";
 
-import { Menu, Transition } from "@headlessui/react";
+import { Menu, Popover, Transition } from "@headlessui/react";
 
 import {
     SmileEmoji,
@@ -192,16 +193,21 @@ function ChatList(props)
         data['account_id'] = selectedAccount;
 
         if(data.content && data.destination && selectedAccount ){
+            nProgress.start(0.5);
+            nProgress.inc(0.2);
+
             axios({
                 method: 'post',
                 url: route('send_message_to_contact'),
                 data: data
             })
             .then( (response) =>{
-                console.log(response);
-                return false;
-                
-                if(response.data.status == 'Queued' || response.data.status == 'Send'){
+                var result = response.data;
+                nProgress.done(true);
+            
+                if(result.status == 'Failed'){
+                    notie.alert({type: 'error', text: result.error, time: 5});
+                } else if(result.status == 'Queued' || response.data.status == 'Send') {
                     let newState = Object.assign({}, data);
                     newState['content'] = '';
                     setData(newState);
@@ -211,7 +217,18 @@ function ChatList(props)
             });
         }
     }
-
+    
+    /**
+     * Set template data
+     * 
+     * @param {Object} template 
+     */
+    function setTemplateInfo(template){
+        let newState = Object.assign({}, data);
+        newState['content'] = template.body;
+        newState['template_id'] = template.template_uid;
+        setData(newState);
+    }
     
     var category = (containerCategory) ? containerCategory : 'all';
     const selectedChannel = channels[category] ;
@@ -664,10 +681,23 @@ function ChatList(props)
                                     <div className="flex flex-col gap-1 ">
                                        
                                         <div className="flex rounded-md bg-white h-7 w-7 justify-center items-center cursor-pointer">
-                                            <PlusSmIcon
-                                                className="h-6 w-6"
-                                                aria-hidden="true"
-                                            />
+                                          {console.log('props: ', props)}
+                                            <Popover className="relative">
+                                                <Popover.Button>
+                                                    <ChevronDownIcon className={open ? 'rotate-180 transform' : ''} />
+                                                </Popover.Button>
+                                                <Popover.Panel className="absolute z-10">
+                                                    <div class="flex justify-center">
+                                                        <ul class="bg-white rounded-lg border border-gray-200 w-96 text-gray-900">
+                                                            {props.templates && Object.entries(props.templates).map(([key, template]) => {
+                                                                return(
+                                                                    <li class="px-6 py-2 rounded-b-lg" onClick={()=> setTemplateInfo(template)}> {template.name} </li>
+                                                                )
+                                                            })}
+                                                        </ul>
+                                                    </div>
+                                                </Popover.Panel>
+                                            </Popover>
                                         </div>
                                     </div>
                                 </div>

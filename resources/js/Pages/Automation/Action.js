@@ -207,7 +207,7 @@ function Action(props){
                                                                 <p class="text-gray-600 text-xs italic">Send a message using the selected account</p>
                                                                 </div>
                                                             </div>
-                                                            <div class="flex flex-wrap -mx-3 mb-6">
+                                                            <div class="flex flex-wrap mx-3 mb-6">
                                                                 <div class="w-full px-3">
                                                                 <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-password">
                                                                     Select Template

@@ -99,34 +99,23 @@ class Automation extends Model
                 $baseTable = $recordModal->getTable();
                 $query = $recordModal->where($baseTable.'.id' , $recordModal->id);
                 $result = $this->checkCondition($actionData, $query, $baseTable);
-
+                
+                // Find current edge position
+                $i = $this->getCurrentEdgeInex($node->id);
+                
                 if($result){
-                // If the condition is true
-                    $i = $this->getCurrentEdgeInex($node->id);
-                    $i ++;
-                    $trueEdge = $this->edges[$i];
-                    $trueNode = $this->getNextNode($trueEdge->target);
-                    $this->enquiryNodes[] = $trueNode->id;
-                    $nextEdge = $this->getNextEdge($trueNode->id , 'source');
-                    $node = $this->getNextNode($nextEdge->target);
-                    $this->processNodeAction($node, $i);
-
+                    $i ++; // If the condition is true, move next node
                 } else {
-                   
-                // If the condition is false
-                    $i = $this->getCurrentEdgeInex($node->id);
-                    $i = $i + 2;
-                    $falseEdge = $this->edges[$i];
-                    $falseNode = $this->getNextNode($falseEdge->target);
-                    $this->enquiryNodes[] = $falseNode->id;
-                    $nextEdge = $this->getNextEdge($falseNode->id , 'source');
-
-                   
-                    $node = $this->getNextNode($nextEdge->target);
-                    
-                    $this->processNodeAction($node, $i);
-
+                    $i = $i + 2; // If the condition is false, move second node
                 }
+
+                $edge = $this->edges[$i];
+                $currentNode = $this->getNextNode($edge->target);
+                $this->enquiryNodes[] = $currentNode->id;
+                $nextEdge = $this->getNextEdge($currentNode->id , 'source');
+                $node = $this->getNextNode($nextEdge->target);
+                
+                $this->processNodeAction($node, $i);
             }
         }
     }
@@ -165,7 +154,6 @@ class Automation extends Model
      */
     public function getCurrentEdgeInex($nodeId)
     {
-      
         foreach($this->edges as $key => $edge){
             if($edge->target == $nodeId){
                 return $key;
@@ -196,7 +184,7 @@ class Automation extends Model
 
         switch($action->type){
             case 'send_message':
-                $this->sendMessage();
+                $this->sendMessage($action);
                 break;
             case 'tag_contact':
                 if($action->select_tag){
@@ -219,4 +207,16 @@ class Automation extends Model
                 break;
         }
     }   
+
+    /**
+     * Send message
+     */
+    public function sendMessage($data)
+    {
+        $msg = new Msg();
+        $recordModal = $this->recordModal;
+        $account = Account::find($data->select_account);
+        $result = $msg->sendWhatsAppMessage('' , $recordModal->phone_number, $account , $data->select_template);
+        return true;
+    }
 }
