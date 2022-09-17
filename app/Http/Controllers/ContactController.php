@@ -340,14 +340,11 @@ class ContactController extends Controller
             foreach ($fields as $record) {
                 $field = $record['field_name'];
                 $custom = $record['is_custom'];
-<<<<<<< HEAD
-                if($request->has($field) && ($custom == '0' || !$custom)) {
-                    if(($field == 'user_id' || $field == 'organization_id')) {
-=======
+                
 
                 if($request->has($field) && ($custom == '0' || !$custom)) {
-                    if(($field == 'assigned_to' || $field == 'organization_id')) {
->>>>>>> cfd35b38e224114a11695a09997d2381c870a8b3
+                    if(($field == 'user_id' || $field == 'organization_id')) {
+
                         $related_id = $request->$field;
                         if($related_id['value']){
                             $contact->$field = $related_id['value'];
