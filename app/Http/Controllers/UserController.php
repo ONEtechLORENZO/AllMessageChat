@@ -1241,6 +1241,11 @@ class UserController extends Controller
             $balance = $wallet->balance_amount;
         }
         
+        $company_id = Cache::get('selected_company_'.$user->id);
+
+        //get current company details
+        $currentCompany =  Company::where('id', $company_id)->first();
+        
         // Get message amount deduction
         $messageDeduction = $this->getAmountDeduction($user->id);
 
@@ -1254,6 +1259,7 @@ class UserController extends Controller
             'message_deduction' => $messageDeduction,
             'paymentMethods' => $paymentMethods,
             'stripe_public_key' => $stripe_public_key,
+            'currentPlan' => $currentCompany,
             'current_page' => 'Wallet',
             'translator' => [
                 'Wallet' => __('Wallet'),

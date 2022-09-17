@@ -7,6 +7,7 @@ import notie from 'notie';
 import nProgress from 'nprogress';
 import { Link, Head } from "@inertiajs/inertia-react";
 import axios from "axios";
+import { CheckIcon } from "@heroicons/react/outline";
 
 function Wallet(props)
 {
@@ -111,30 +112,50 @@ function Wallet(props)
             <Head title={props.translator['Wallet']} />
 
             <div className="px-4 sm:px-6 lg:px-8 text-[#3D4459]">
-                <div class="bg-white rounded-md shadow w-full py-8 flex items-center flex-col sm:flex-row">
-                    <div className="mx-10">
-                        <svg
-                            width={80}
-                            height={83}
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <path
-                                d="M57.333 25.076V9.888c0-3.61 0-5.415-.759-6.524a4.333 4.333 0 0 0-2.847-1.825c-1.324-.225-2.96.531-6.232 2.044l-38.44 17.77c-2.918 1.348-4.377 2.023-5.446 3.07a8.682 8.682 0 0 0-2.108 3.3C1 29.133 1 30.743 1 33.963v21.495m58.5-2.17h.043M1 38.965v28.646c0 4.862 0 7.292.945 9.15a8.674 8.674 0 0 0 3.787 3.793c1.854.946 4.28.946 9.135.946h50.266c4.854 0 7.281 0 9.135-.946a8.674 8.674 0 0 0 3.787-3.794C79 74.903 79 72.473 79 67.611V38.965c0-4.861 0-7.292-.945-9.15a8.673 8.673 0 0 0-3.787-3.793c-1.854-.946-4.28-.946-9.135-.946H14.867c-4.854 0-7.281 0-9.135.946a8.674 8.674 0 0 0-3.787 3.794C1 31.673 1 34.104 1 38.966Zm60.667 14.323c0 1.199-.97 2.17-2.167 2.17a2.168 2.168 0 0 1-2.167-2.17c0-1.198.97-2.17 2.167-2.17 1.197 0 2.167.972 2.167 2.17Z"
-                                stroke="#3D4459"
-                                strokeWidth={2}
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            />
-                        </svg>
+                <div className="sm:grid grid grid-cols-2 gap-4 ">
+                    <div className="flex border border-solid rounded-lg h-40 p-4 gap-4 shadow">
+                        <div className="pl-4 w-40">
+                            <svg
+                                width={80}
+                                height={83}
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    d="M57.333 25.076V9.888c0-3.61 0-5.415-.759-6.524a4.333 4.333 0 0 0-2.847-1.825c-1.324-.225-2.96.531-6.232 2.044l-38.44 17.77c-2.918 1.348-4.377 2.023-5.446 3.07a8.682 8.682 0 0 0-2.108 3.3C1 29.133 1 30.743 1 33.963v21.495m58.5-2.17h.043M1 38.965v28.646c0 4.862 0 7.292.945 9.15a8.674 8.674 0 0 0 3.787 3.793c1.854.946 4.28.946 9.135.946h50.266c4.854 0 7.281 0 9.135-.946a8.674 8.674 0 0 0 3.787-3.794C79 74.903 79 72.473 79 67.611V38.965c0-4.861 0-7.292-.945-9.15a8.673 8.673 0 0 0-3.787-3.793c-1.854-.946-4.28-.946-9.135-.946H14.867c-4.854 0-7.281 0-9.135.946a8.674 8.674 0 0 0-3.787 3.794C1 31.673 1 34.104 1 38.966Zm60.667 14.323c0 1.199-.97 2.17-2.167 2.17a2.168 2.168 0 0 1-2.167-2.17c0-1.198.97-2.17 2.167-2.17 1.197 0 2.167.972 2.167 2.17Z"
+                                    stroke="#3D4459"
+                                    strokeWidth={2}
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                        </div>
+                        <div className="text-[#3D4459] space-y-2">
+                            <h2 className="text-lg font-semibold">{props.translator['Hi']} {props.name}!</h2>
+                            <p className="text-sm">{props.translator['Welcome to your Wallet']}</p>
+                            <p className="text-sm">
+                                {props.translator['Here you can see your payments, change your payment method and get your invoices.']}
+                            
+                            </p>
+                        </div>
                     </div>
-                    <div className="text-[#3D4459] space-y-2">
-                        <h2 className="text-lg font-semibold">{props.translator['Hi']} {props.name}!</h2>
-                        <p className="text-sm">{props.translator['Welcome to your Wallet']}</p>
-                        <p className="text-sm">
-                            {props.translator['Here you can see your payments, change your payment method and get your invoices.']}
-                           
-                        </p>
+                    <div className="border border-solid rounded-lg p-4 shadow">
+                        <div className="font-bold capitalize">{props.currentPlan.plan} Plan</div>
+                        <div className="grid grid-cols-2 p-2">
+                            <div className="">
+                                <p className="flex text-gray-500 gap-2"><span className="w-5 h-5"><CheckIcon/></span>Monthly Fee</p>
+                                <p className="flex text-gray-500 gap-2"><span className="w-5 h-5"><CheckIcon/></span>1 Number for channel</p>
+                                <p className="flex text-gray-500 gap-2"><span className="w-5 h-5"><CheckIcon/></span>1 User for Workspace</p>
+                            </div>
+                            <div className="p-4 sm:flex sm:flex-row-reverse">
+                            <Link
+                                    href={route('updateSubscription')}
+                                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+                                    >
+                                    Update
+                            </Link>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
