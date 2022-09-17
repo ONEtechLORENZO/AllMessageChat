@@ -24,7 +24,8 @@ import {
     EyeIcon,
     ShoppingCartIcon,
     ShoppingBagIcon,
-    ChevronDownIcon
+    ChevronDownIcon,
+    OfficeBuildingIcon
 } from "@heroicons/react/outline";                                                                      
 import SelectCompany from "@/Pages/Company/SelectCompany";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
@@ -78,6 +79,12 @@ const navigation = [
         icon: ChatAlt2Icon,
         show: ['all'],
         
+    },
+    {
+        name: "Organization",
+        href: route("listOrganization"),
+        icon: OfficeBuildingIcon,
+        show: ['all'],
     },
     /*{
         name: "Company",

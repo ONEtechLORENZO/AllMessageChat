@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Models\Organization;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Http\Request;
@@ -12,6 +13,7 @@ use App\Models\Tag;
 use App\Models\Category;
 use App\Models\Field;
 use App\Models\Service;
+use App\Models\User;
 
 class ContactController extends Controller
 {
@@ -133,6 +135,19 @@ class ContactController extends Controller
         foreach($contact->services as $subscribed_service) {
             $subscribedServices[] = $subscribed_service['unique_name'];
         }
+        //related organization details
+        $organization = Organization::where('id', $contact->organization_id)->first();
+
+        //assign user details
+        $user = User::where('id', $contact->user_id)->first();
+
+        if($organization){
+            $contact['organization_id'] = $organization['name'];
+        }
+
+        if($user){
+            $contact['user_id'] = $user['name'];
+        }
 
         return Inertia::render('Contacts/Detail', [
             'contact' => $contact,
@@ -178,7 +193,11 @@ class ContactController extends Controller
             if($subModule=='Order')
               $query = $submod::where('contact', $request->id);
         }
-
+        if($parent_module=='Organization')
+        {
+            if($subModule=='Contact')
+              $query = $submod::where('organization_id', $request->id);
+        }
         $subPanelData = $this->getSubPanelRecords($parent_module, $submod, $query);  
         echo json_encode($subPanelData);
        die;
@@ -231,6 +250,17 @@ class ContactController extends Controller
     public function getContactData(Request $request)
     {
         $contact = Contact::findOrFail($request->id);
+         //related field pre-fill
+         if($contact->organization_id){
+            $organization = organization::findOrFail($contact->organization_id);
+            $name = $organization->name;
+            $contact['organization_id'] = ['value' => $organization->id, 'label' => $name];
+        }
+
+        if($contact->user_id){
+            $user = User::findOrFail($contact->user_id);
+            $contact['user_id'] = ['value' => $user->id, 'label' => $user->name];
+        }
         echo json_encode(['record' => $contact]);
         die;
     }
@@ -310,8 +340,17 @@ class ContactController extends Controller
             foreach ($fields as $record) {
                 $field = $record['field_name'];
                 $custom = $record['is_custom'];
-                if ($request->has($field) && ($custom == '0' || !$custom)) {
-                    $contact->$field = $request->$field;
+                if($request->has($field) && ($custom == '0' || !$custom)) {
+                    if(($field == 'user_id' || $field == 'organization_id')) {
+                        $related_id = $request->$field;
+                        if($related_id['value']){
+                            $contact->$field = $related_id['value'];
+                        }else {
+                            $contact->$field = NULL;
+                        }
+                    }else {
+                        $contact->$field = $request->$field;
+                    }
                 }
   
                 if($custom == '1'){
@@ -326,8 +365,9 @@ class ContactController extends Controller
                 $contact->custom = $custom_field;
             }
   
-            $contact->user_id = $request->user()->id;
+           // $contact->user_id= $request->user()->id;
             $contact->company_id = Cache::get('selected_company_'. $request->user()->id);
+           
             $contact->save();
 
             if($request->parent_id){

@@ -10,7 +10,7 @@ use Cache;
 
 class FormController extends Controller
 {
-    public $entity_modules = ['Contact', 'Product', 'Opportunity', 'Order', 'Campaign', 'User'];
+    public $entity_modules = ['Contact', 'Product', 'Opportunity', 'Order', 'Campaign', 'User','Organization'];
 
     /**
      * Fetch module fields from Field model
@@ -133,7 +133,9 @@ class FormController extends Controller
     {
         $records[] = ['label' => 'Select', 'value' => ''];
         $key = $request->has('key') ? $request->get('key') : ''; 
+        
         $module = $request->has('module') ? $request->get('module') : ''; 
+        
         if($key && $module && in_array($module, $this->entity_modules)) {
             $user = $request->user();
             $userId = $user->id;
@@ -143,6 +145,7 @@ class FormController extends Controller
             $moduleBean = new $class_name();
 
             $baseTable = $moduleBean->getTable();
+            
             $query = $moduleBean->orderBy("{$baseTable}.created_at", 'DESC');
 
             if($module == 'Contact') {
@@ -160,15 +163,7 @@ class FormController extends Controller
                 $query->where('company_user.company_id', $companyId);
                 $query->where('name', 'like', '%' . $key . '%');
             }
-            else if($module == 'Organization') {
-                $query->select(['id', 'organization_name']);
-                $query->where(function($query) use($key) {
-                    $query->orWhere('organization_name', 'like', '%' . $key . '%');
-                    
-                });
-
-                $query->where('company_id', $companyId);
-            }
+           
             else {
                 $query->select(['id', 'name']);
                 $query->where('name', 'like', '%' . $key . '%');

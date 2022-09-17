@@ -26,6 +26,7 @@ use App\Http\Controllers\UserInviteController;
 use App\Http\Controllers\FieldGroupController;
 use App\Http\Controllers\ChatListContactController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\LineItemController;
 use App\Http\Controllers\AutomationController;
 use App\Http\Middleware\IsAdmin;
@@ -148,6 +149,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/updateOpportunity', [OpportunityController::class, 'store'])->name('storeOpportunity');
     Route::get('/opportunity/edit/{id}', [OpportunityController::class, 'edit'])->name('editOpportunity');
    
+    //Organization
+    Route::get('/organizations', [OrganizationController::class, 'index'])->name('listOrganization');
+    Route::delete('/organization/delete/{id}', [OrganizationController::class, 'destroy'])->name('deleteOrganization');
+    Route::get('/organization', [OrganizationController::class, 'show'])->name('detailOrganization');
+    Route::post('/updateOrganization/{id}', [OrganizationController::class, 'update'])->name('updateOrganization');
+    Route::post('/updateOrganization', [OrganizationController::class, 'store'])->name('storeOrganization');
+    Route::get('/organization/edit/{id}', [OrganizationController::class, 'edit'])->name('editOrganization');
+
     // Product
     Route::get('/products', [ProductController::class, 'index'])->name('listProduct');
     Route::delete('/product/delete/{id}', [ProductController::class, 'destroy'])->name('deleteProduct');
