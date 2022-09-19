@@ -27,8 +27,10 @@ class CreateContactsTable extends Migration
             $table->string('tags')->nullable();            
             $table->string('organization_role')->nullable();
 
-            $table->foreignId('organization_id')->constrained('organizations');
-            $table->foreignId('user_id')->constrained('users');  
+            $table->foreignId('assigned_to')->nullable()->constrained('users');  
+            $table->foreignId('organization_id')->nullable()->constrained('organizations');
+            $table->foreignId('creater_id')->constrained('users'); 
+
             $table->foreignId('company_id')->constrained('companies');
             $table->LONGTEXT('custom')->nullable();
             

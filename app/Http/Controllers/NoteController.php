@@ -16,13 +16,22 @@ class NoteController extends Controller
      * @return \Illuminate\Http\Response
      */
     public $dateListView = 'd-m-Y h:m:s';
-    public function list_notes(Request $request, $module, $id)
-    {                
-        $contact = Contact::findOrFail($id); 
-        $user = User::findorFail($contact->user_id);
+    public function list_notes(Request $request, $mod,$id)
+    {         
+        
+        $user_id = $request->user()->id;
+        
+        if($mod)     
+        {  
+        $module_bean = "App\Models\\{$mod}";
+        }
+        
+        $module = $module_bean::findOrFail($user_id); 
+        
+        $user = User::findorFail($module->user_id);
         $note_List = [];
         $name = $user->name;
-        foreach ($contact->notes as $note) 
+        foreach ($module->notes as $note) 
         {       
             $note_id=$note->id;
             $note_List[] = [
@@ -40,14 +49,19 @@ class NoteController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function addNotes(Request $request, $module, $id)    
+    public function addNotes(Request $request, $mod,$id)    
     {               
-        $contact = Contact::findOrFail($id);        
+        $user_id = $request->user()->id;
+        if($mod)     
+        {  
+        $module_bean = "App\Models\\{$mod}";
+        }
+        $module = $module_bean::findOrFail($user_id);       
         $note=new Note;
-        $note->user_id = $contact->user_id;
-        $note->company_id = $contact->company_id;
+        $note->user_id = $module->user_id;
+        $note->company_id = $module->company_id;
         $note->note=$request->get('noteText');
-        $contact->notes()->save($note); 
+        $module->notes()->save($note); 
     }
 
     /**

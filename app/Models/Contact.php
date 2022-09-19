@@ -61,8 +61,8 @@ class Contact extends Model
             'first_name' => ['label' => __('First Name'), 'type' => 'text'],
             'last_name' =>  ['label' => __('Last Name'), 'type' => 'text'],
             'email' =>  ['label' => __('Email'), 'type' => 'text'],
-            'tag' => ['label' => __('Tag'), 'type' => 'text'],
-            'list' =>  ['label' => __('List'), 'type' => 'text'],
+            'tag' => ['label' => __('Tags'), 'type' => 'text'],
+            'list' =>  ['label' => __('Lists'), 'type' => 'text'],
             'phone_number' => ['label' => __('Phone number'), 'type' => 'phone_number'],          
         ];
         return $list_view_columns;

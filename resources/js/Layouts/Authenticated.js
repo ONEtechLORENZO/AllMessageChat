@@ -93,6 +93,12 @@ const navigation = [
         show: ['admin'],
     },*/
     {
+        name: "Leads",
+        href: route("listLead"),
+        icon: ServerIcon,
+        show: ['all'],
+    },
+    {
         name: "Campaigns",
         href: route("listCampaign"),
         icon: SpeakerphoneIcon,

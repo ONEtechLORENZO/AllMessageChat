@@ -192,7 +192,7 @@ export default function Index(props)
                                     <span className="text-gray-900 p-3">
                                         <span className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-gray-500">
                                             <span className="text-3xl font-medium leading-none text-white">
-                                                {(props.module == 'Contact')  ?
+                                                {(props.module == 'Contact' || props.module == 'Lead')  ?
                                                     <> {(record.first_name).substring(0,2)} </>
                                                 :
                                                     <> {(record.name).substring(0,2)} </>
@@ -202,15 +202,16 @@ export default function Index(props)
                                         </span>
                                     </span>
                                 </div>
-                                
+                                     
                                     
-                                    {props.module == 'Contact' ?
+                                    {(props.module == 'Contact' || props.module == 'Lead')?
                                         <>
                                             <div>
                                                 <div className="text-gray-600"> {record.first_name} {record.last_name} </div>
                                                 <div className="text-gray-600"> {record.phone_number} </div>
                                                 <div className="text-gray-600"> {record.email} </div>
                                             </div>
+                                            {props.module == 'Contact'?
                                             <div>
                                                 {Object.entries(props.serviceOptions).map(([key, service]) => {
                                                     return (
@@ -230,7 +231,7 @@ export default function Index(props)
                                                         </>
                                                     );
                                                 })}
-                                            </div>
+                                            </div>:''}
                                         </>
                                         :
                                         <>
