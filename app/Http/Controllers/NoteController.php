@@ -26,7 +26,7 @@ class NoteController extends Controller
         $module_bean = "App\Models\\{$mod}";
         }
         
-        $module = $module_bean::findOrFail($user_id); 
+        $module = $module_bean::findOrFail($id); 
         
         $user = User::findorFail($module->user_id);
         $note_List = [];
@@ -56,7 +56,7 @@ class NoteController extends Controller
         {  
         $module_bean = "App\Models\\{$mod}";
         }
-        $module = $module_bean::findOrFail($user_id);       
+        $module = $module_bean::findOrFail($id);       
         $note=new Note;
         $note->user_id = $module->user_id;
         $note->company_id = $module->company_id;

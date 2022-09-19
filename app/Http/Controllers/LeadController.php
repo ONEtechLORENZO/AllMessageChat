@@ -213,7 +213,7 @@ class LeadController extends Controller
                          
                         $related_id = $request->$field;
                         
-                        if($related_id!=NULL){
+                        if(isset($related_id)){
                             $lead->$field = $related_id['value'];
                         }else {
                             $lead->$field = NULL;
