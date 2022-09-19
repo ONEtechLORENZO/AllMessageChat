@@ -9,6 +9,7 @@ import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import notie from 'notie';
 import ItemTable from "@/Pages/Order/itemTable";
+import InlineEdit from "./InlineEdit";
 
 export default function Index(props) 
 {
@@ -196,7 +197,7 @@ export default function Index(props)
         return false;
        }
     }
-
+ 
     return (            
             <div>
                 <Head title={props.module}/>
@@ -332,7 +333,15 @@ export default function Index(props)
                                                         return(
                                                             <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                                                 <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
-                                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"> {value} </dd>
+                                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex"> 
+                                                                 <InlineEdit 
+                                                                   module={props.module}
+                                                                   field={field}
+                                                                   value={value}
+                                                                   record={record}
+                                                                   fieldOptions={fieldOptions}
+                                                                  />
+                                                                </dd>
                                                             </div>
                                                         )
                                                     }
@@ -421,13 +430,13 @@ export default function Index(props)
                                                 :''}
                                             </>
                                         }
-                                        {tab.name == 'Notes' &&
+                                        {activeTab == 'Notes' &&
                                                 <Notes
                                                     module={props.module}                                                                                
                                                     recordId={props.record.id} 
                                                 />
                                         }
-                                        {tab.name == 'Users' &&
+                                        {activeTab == 'Users' &&
                                             <>
                                             
                                                <ul role="list" className="divide-y divide-gray-200">
@@ -440,7 +449,7 @@ export default function Index(props)
                                                 </ul>
                                             </>
                                         }
-                                        {tab.name == 'Contact' &&
+                                        {activeTab == 'Contact' &&
                                             <>
                                                 <SubPanels 
                                                     module={tab.name}
@@ -450,7 +459,7 @@ export default function Index(props)
                                                 />
                                             </>
                                         }
-                                        {tab.name == 'Opportunity' &&
+                                        {activeTab == 'Opportunity' &&
                                             <>
                                                 <SubPanels 
                                                     module={tab.name}
@@ -459,7 +468,7 @@ export default function Index(props)
                                                 />
                                             </>
                                         }
-                                        {tab.name == 'Order' &&
+                                        {activeTab == 'Order' &&
                                             <>
                                                 <SubPanels 
                                                     module={tab.name}
