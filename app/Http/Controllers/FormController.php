@@ -10,7 +10,7 @@ use Cache;
 
 class FormController extends Controller
 {
-    public $entity_modules = ['Contact', 'Product', 'Opportunity', 'Order', 'Campaign', 'User','Organization'];
+    public $entity_modules = ['Contact','Lead', 'Product', 'Opportunity', 'Order', 'Campaign', 'User','Organization'];
 
     /**
      * Fetch module fields from Field model
@@ -84,7 +84,7 @@ class FormController extends Controller
             'field_name' => $fieldName, 
         ];
 
-        if($moduleName == 'Contact' || $moduleName == 'Opportunity') {
+        if($moduleName == 'Contact' || $moduleName == 'Opportunity' || $moduleName == 'Lead') {
             $whereCondition['user_id'] = $request->user()->id;
         }
 
@@ -148,7 +148,7 @@ class FormController extends Controller
             
             $query = $moduleBean->orderBy("{$baseTable}.created_at", 'DESC');
 
-            if($module == 'Contact') {
+            if($module == 'Contact' || $module == 'Lead') {
                 $query->select(['id', 'first_name', 'last_name']);
                 $query->where(function($query) use($key) {
                     $query->orWhere('first_name', 'like', '%' . $key . '%');
@@ -173,7 +173,7 @@ class FormController extends Controller
             $response = $query->limit(5)->get();
            
             foreach($response as $record) {
-                if($module == 'Contact') {
+                if($module == 'Contact' || $module == 'Lead') {
                     $records[] = ['label' => $record->first_name . ' ' . $record->last_name, 'value' => $record->id];
                 }
                 else {

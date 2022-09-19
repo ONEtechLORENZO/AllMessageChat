@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateContactsTable extends Migration
+class CreateLeadsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateContactsTable extends Migration
      */
     public function up()
     {
-        Schema::create('contacts', function (Blueprint $table) {
+        Schema::create('leads', function (Blueprint $table) {
             $table->id();
             $table->string('first_name');
             $table->string('last_name')->nullable();
@@ -22,15 +22,11 @@ class CreateContactsTable extends Migration
             $table->string('gender')->nullable();
             $table->date('birth_date')->nullable();
             $table->string('languages_spoken')->nullable();
-            $table->string('status')->nullable();
-            $table->string('lists')->nullable();
-            $table->string('tags')->nullable();             
             $table->string('organization_role')->nullable();
-
-            $table->foreignId('assigned_to')->nullable()->constrained('users');  
             $table->foreignId('organization_id')->nullable()->constrained('organizations');
-            $table->foreignId('creater_id')->constrained('users'); 
-
+            $table->foreignId('assigned_to')->nullable()->constrained('users');
+           
+            $table->foreignId('user_id')->constrained('users');               
             $table->foreignId('company_id')->constrained('companies');
             $table->LONGTEXT('custom')->nullable();
             
@@ -67,6 +63,6 @@ class CreateContactsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('contacts');
+        Schema::dropIfExists('leads');
     }
 }
