@@ -137,16 +137,14 @@ class UserObserver
                   'module_name' => 'Contact','field_name' => 'languages_spoken','field_label' => 'Languages Spoken','field_type' => 'multiselect','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>json_encode(['English'=>'English', 'Italy'=>'Italy' ,'French'=>'French','German'=>'German'])
                ],
                [
-                  'module_name' => 'Contact','field_name' => 'assigned_to' ,'field_label' =>'Assigned to','field_type' => 'relate','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => json_encode(['module' => 'User']),
+                  'module_name' => 'Contact','field_name' => 'assigned_to' ,'field_label' =>'Assigned to','field_type' => 'relate','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => json_encode(['module' => 'User']),
                ],
               
 
                [
                 'module_name' => 'Contact','field_name' => 'organization_id','field_label' => 'Organization','field_type' => 'relate','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'','created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => json_encode(['module' => 'Organization'])
                ],
-               [
-                  'module_name' => 'Contact','field_name' => 'user_id' ,'field_label' =>'Assigned to','field_type' => 'relate','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => json_encode(['module' => 'User']),
-               ],
+               
                [
                   'module_name' => 'Contact','field_name' => 'organization_role','field_label' => 'Organization Role','field_type' => 'text','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'','created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => ''
                ],
@@ -267,14 +265,14 @@ class UserObserver
                   [
                      'module_name' => 'Lead','field_name' => 'languages_spoken','field_label' => 'Languages Spoken','field_type' => 'multiselect','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>json_encode(['English'=>'English', 'Italy'=>'Italy' ,'French'=>'French','German'=>'German'])
                   ],
-                 
+                  [
+                     'module_name' => 'Lead','field_name' => 'assigned_to' ,'field_label' =>'Assigned to','field_type' => 'relate','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => json_encode(['module' => 'User']),
+                  ],
    
                   [
                    'module_name' => 'Lead','field_name' => 'organization_id','field_label' => 'Organization','field_type' => 'relate','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'','created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => json_encode(['module' => 'Organization'])
                   ],
-                  [
-                     'module_name' => 'Lead','field_name' => 'assigned_to' ,'field_label' =>'Assigned to','field_type' => 'relate','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => json_encode(['module' => 'User']),
-                  ],
+                 
                   [
                      'module_name' => 'Lead','field_name' => 'organization_role','field_label' => 'Organization Role','field_type' => 'text','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'','created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => ''
                   ],

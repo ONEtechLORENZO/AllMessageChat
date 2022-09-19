@@ -139,14 +139,14 @@ class ContactController extends Controller
         $organization = Organization::where('id', $contact->organization_id)->first();
 
         //assign user details
-        $user = User::where('id', $contact->user_id)->first();
+        $user = User::where('id', $contact->assigned_to)->first();
 
         if($organization){
             $contact['organization_id'] = $organization['name'];
         }
 
         if($user){
-            $contact['user_id'] = $user['name'];
+            $contact['assigned_to'] = $user['name'];
         }
 
         return Inertia::render('Contacts/Detail', [
@@ -256,10 +256,13 @@ class ContactController extends Controller
             $name = $organization->name;
             $contact['organization_id'] = ['value' => $organization->id, 'label' => $name];
         }
+        
 
-        if($contact->user_id){
-            $user = User::findOrFail($contact->user_id);
-            $contact['user_id'] = ['value' => $user->id, 'label' => $user->name];
+        if($contact->assigned_to){
+            $user = User::findOrFail($contact->assigned_to);
+            $name = $user->name;
+            
+            $contact['assigned_to'] = ['value' => $user->id, 'label' => $name];
         }
         echo json_encode(['record' => $contact]);
         die;
@@ -340,6 +343,7 @@ class ContactController extends Controller
             foreach ($fields as $record) {
                 $field = $record['field_name'];
                 $custom = $record['is_custom'];
+                         
                 
 
                 if($request->has($field) && ($custom == '0' || !$custom)) {
@@ -355,8 +359,7 @@ class ContactController extends Controller
                         $contact->$field = $request->$field;
                     }
                 }
-  
-                if($custom == '1'){
+            if($custom == '1'){
                     if($request->custom){
                         foreach($request->custom as $key => $value){
                             $custom_field[$key] = $value;
