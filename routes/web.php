@@ -114,6 +114,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/account/{id}', [UserController::class, 'showAccount'])->name('account_view');
     Route::post('/account/delete_account', [UserController::class, 'deleteAccount'])->name('delete_account');
     Route::post('/saveTemplateStatus/account/{acc_id}/template/{tmp_id}', [UserController::class, 'saveTemplateStatus'])->name('template_status_form');
+    Route::post('/migrateRequest', [UserController::class, 'sendMigrateRequest'])->name('migrate_request');
 
     // Webhook Events
     Route::post('/account/{id}/webhook_event', [UserController::class, 'createWebhookEvent'])->name('create_webhook_event');
