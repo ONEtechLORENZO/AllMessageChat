@@ -343,10 +343,10 @@ class ContactController extends Controller
                 
 
                 if($request->has($field) && ($custom == '0' || !$custom)) {
-                    if(($field == 'user_id' || $field == 'organization_id')) {
+                    if(($field == 'assigned_to' || $field == 'organization_id')) {
 
                         $related_id = $request->$field;
-                        if($related_id['value']){
+                        if(isset($related_id['value'])){
                             $contact->$field = $related_id['value'];
                         }else {
                             $contact->$field = NULL;
@@ -368,9 +368,8 @@ class ContactController extends Controller
                 $contact->custom = $custom_field;
             }
   
-           // $contact->user_id= $request->user()->id;
+            $contact->creater_id= $request->user()->id;
             $contact->company_id = Cache::get('selected_company_'. $request->user()->id);
-           
             $contact->save();
 
             if($request->parent_id){

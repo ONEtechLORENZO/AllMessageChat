@@ -29,6 +29,7 @@ export default function Index(props)
     const [fieldOptions, setFieldOptions ] = useState({});
 
     const [subscribedServices, setSubscribedServices] = useState([]);
+    const [addClass, setAddClass] = useState(false);
 
     useEffect(() => {
         setRecord(props.record);
@@ -181,13 +182,28 @@ export default function Index(props)
         });
     }
 
+    function classNames(...classes) {
+        return classes.filter(Boolean).join(' ')
+    }
+
+    function removeClass(){
+       if(!addClass){
+        setAddClass(true);
+        return false;
+       }
+       if(addClass){
+        setAddClass(false);
+        return false;
+       }
+    }
+
     return (            
             <div>
                 <Head title={props.module}/>
                 <ul className="py-4 space-y-2 sm:px-6 sm:space-y-4 lg:px-8" role="list">
                     <li className="bg-white px-4 py-6 shadow sm:rounded-lg sm:px-6">
                         <div className="sm:flex sm:justify-between sm:items-baseline">
-                            <h3 className="text-base font-medium flex">
+                            <h3 className="text-base font-medium flex w-full">
                                 <div>
                                     <span className="text-gray-900 p-3">
                                         <span className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-gray-500">
@@ -235,8 +251,14 @@ export default function Index(props)
                                         </>
                                         :
                                         <>
-                                        <div>
-                                            <div className="text-gray-600">{record.name}  </div></div>
+                                        <div className="pl-3 w-full">
+                                            <div className="text-gray-600">{record.name}  </div>
+                                            {props.module == 'Tag' || props.module == 'Category' ? 
+                                              <div className={classNames(
+                                                addClass ? 'text-gray-600 break-words w-3/4':'text-gray-600 w-1/2 truncate'
+                                              )} onClick={() => removeClass()}>{record.description} </div>
+                                            : ''}
+                                        </div>
                                         </>
                                     }
                                 

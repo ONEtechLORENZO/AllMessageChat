@@ -24,7 +24,7 @@ class CreateContactsTable extends Migration
             $table->string('languages_spoken')->nullable();
             $table->string('status')->nullable();
             $table->string('lists')->nullable();
-            $table->string('tags')->nullable();            
+            $table->string('tags')->nullable();             
             $table->string('organization_role')->nullable();
 
             $table->foreignId('assigned_to')->nullable()->constrained('users');  

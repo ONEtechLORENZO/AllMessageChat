@@ -134,7 +134,10 @@ class UserObserver
                   'module_name' => 'Contact','field_name' => 'birth_date','field_label' => 'Birth Date','field_type' => 'date','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
                ],
                [
-                  'module_name' => 'Contact','field_name' => 'languages_spoken','field_label' => 'Languages Spoken','field_type' => 'multiselect','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>json_encode(['English'=>'English', 'Italy'=>'Italy' ,'French'=>'French','German'=>'German'])
+                  'module_name' => 'Contact','field_name' => 'languages_spoken','field_label' => 'Languages Spoken','field_type' => 'multiselect','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>json_encode(['English'=>'English', 'Italy'=>'Italy' ,'French'=>'French','German'=>'German'])
+               ],
+               [
+                  'module_name' => 'Contact','field_name' => 'assigned_to' ,'field_label' =>'Assigned to','field_type' => 'relate','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => json_encode(['module' => 'User']),
                ],
               
 
