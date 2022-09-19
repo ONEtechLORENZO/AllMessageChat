@@ -28,7 +28,15 @@ class NoteController extends Controller
         
         $module = $module_bean::findOrFail($id); 
         
-        $user = User::findorFail($module->user_id);
+        if($mod=='Contact' || $mod=='Lead')
+          {
+            $user = User::findorFail($module->creater_id);
+          }
+       else
+         {
+            $user = User::findorFail($module->user_id);
+         }
+       
         $note_List = [];
         $name = $user->name;
         foreach ($module->notes as $note) 
@@ -58,7 +66,14 @@ class NoteController extends Controller
         }
         $module = $module_bean::findOrFail($id);       
         $note=new Note;
-        $note->user_id = $module->user_id;
+        if($mod=='Contact' || $mod=='Lead')
+        {
+            $note->user_id = $module->creater_id;
+        }
+        else{
+            $note->user_id = $module->user_id;
+        }
+          
         $note->company_id = $module->company_id;
         $note->note=$request->get('noteText');
         $module->notes()->save($note); 

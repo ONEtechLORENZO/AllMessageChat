@@ -172,8 +172,8 @@ class LeadController extends Controller
             $lead['organization_id'] = ['value' => $organization->id, 'label' => $name];
         }
 
-        if($lead->user_id){
-            $user = User::findOrFail($lead->user_id);
+        if($lead->creater_id){
+            $user = User::findOrFail($lead->creater_id);
             $lead['assigned_to'] = ['value' => $user->id, 'label' => $user->name];
         }
         echo json_encode(['record' => $lead]);
@@ -235,7 +235,7 @@ class LeadController extends Controller
                 $lead->custom = $custom_field;
             }
   
-            $lead->user_id= $request->user()->id;
+            $lead->creater_id= $request->user()->id;
             $lead->company_id = Cache::get('selected_company_'. $request->user()->id);
            
             $lead->save();
