@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\MessageLogController;
 use App\Http\Controllers\MsgController;
+use App\Http\Controllers\AutomationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,6 +17,8 @@ use App\Http\Controllers\MsgController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+Route::post('/webhook/v1/', [AutomationController::class , 'storeWebActionData'])->name('web_hook_event');
 
 Route::middleware(['auth:sanctum'])->group(function() {
 

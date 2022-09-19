@@ -10,10 +10,10 @@ import ReactFlow, {
 import Authenticated from '@/Layouts/Authenticated';
 import Trigger from "./Trigger";
 import Action from "./Action";
-import Input from '@/Components/Forms/Input';
 import { Inertia } from '@inertiajs/inertia'
 import { Link } from '@inertiajs/inertia-react';
 import FlowCondition from './FlowCondition';
+import WebHook from './WebHook';
 
 const initialNodes = [{
     id: "1",
@@ -50,6 +50,7 @@ function AutomationFlow(props)
 
     // Condition
     const [showCondition, setShowCondition] = useState(false);
+    const [showWebhook, setShowWebhook] = useState(false);
 
     // Action
     const [showAction, setShowAction] = useState(false);
@@ -97,7 +98,6 @@ function AutomationFlow(props)
      */
     function appendNodeData( trigger_type , type, nodeId)
     {
-      // console.log(trigger_type , type);
         if(type == 'action' || type == 'condition') {
 
             var newCurrentEdge = createNewNode(currentEdge, type, processTypes[type].label);
@@ -110,9 +110,27 @@ function AutomationFlow(props)
         else if(trigger_type == 'input') {
             setTrigger(type);
             // Update the label and create new output node
-            setNodeData(1, triggers[type].label)
+            setNodeData(1, triggers[type].label, type)
 
-            createNewNode('', 'output');
+            // Check alreay exist
+            var existNode = false;
+            nodes.map((node) => {
+                if (node.type == 'output' && nodeId == 1) {
+                    existNode = true;
+                }
+            })
+            if(!existNode){
+                createNewNode('', 'output');    // Create end node
+            }
+
+            // Show web hook form
+            if(type == 'received_webhook'){
+                setHeading('WebHook');
+                setShowWebhook(true);
+                setShowOptions(false);
+                return false;
+            }
+
         } 
         else if(type == 'exit') {
             createNewNode(currentEdge, type, 'End');
@@ -130,7 +148,7 @@ function AutomationFlow(props)
     /**
      * Set Nodes
      */
-    function setNodeData(nodeId, label){
+    function setNodeData(nodeId, label, type = ''){
         setNodes((nds) =>
             nds.map((node) => {
                 if (node.id == nodeId) {
@@ -138,6 +156,12 @@ function AutomationFlow(props)
                         ...node.data, 
                         label: label,
                     };
+                    if(nodeId == 1 && type){
+                        node.data = {
+                            ...node.data, 
+                            type: type,
+                        };
+                    }
                 }
                 return node;
             })
@@ -159,10 +183,20 @@ function AutomationFlow(props)
             }
         });
 
+        if(nodes[0].data.type && nodes[0].data.type == 'webhook'){
+            setOptions(props.options.webHookActions);
+            setActions(props.options.webHookActions);
+            var actionType = props.options.webHookActions;
+        } else {
+            setOptions(props.options.actions);
+            setActions(props.options.actions);
+            var actionType = props.options.actions
+        }
+        
         if(nodeData || action_type) {
             action_type = (nodeData && nodeData.type) ? nodeData.type : action_type;
             let newData = Object.assign({}, actionData); 
-            newData['heading'] = actions[action_type].label;
+            newData['heading'] = (actionType[action_type] && actionType[action_type].label) ? actionType[action_type].label : '';
             newData['node_id'] = nodeId;
             newData['type'] = action_type;
             newData['node_data'] = nodeData;
@@ -170,8 +204,7 @@ function AutomationFlow(props)
             setActionData(newData);
             setShowAction(true);
         } else {
-            setHeading('Actions')
-            setOptions(actions);
+            setHeading('Actions');
             setShowOptions(true);
         }
     }
@@ -334,6 +367,28 @@ function AutomationFlow(props)
             );
             setShowAction(false);
     }
+    
+    /**
+     * Append web hook sample data
+     * 
+     * @param {Object} data 
+     * @param {Integer} nodeId 
+     */
+    function saveWebHookData(data , nodeId){
+        setNodes((nds) =>
+            nds.map((node) => {
+                if (node.id == nodeId) {
+                    node.data = {
+                        ...node.data, 
+                        type:'webhook',
+                        sample_data: data,
+                    };
+                }
+                return node;
+            })
+        );
+        setShowWebhook(false);
+    }
 
     /**
      * Save data 
@@ -471,6 +526,7 @@ function AutomationFlow(props)
                     actionData={actionData}
                     saveActionData={saveActionData}
                     setShowAction={setShowAction}
+                    record={props.record}
                 />
             }
 
@@ -487,6 +543,15 @@ function AutomationFlow(props)
                 />
             }
 
+            {showWebhook &&
+                <WebHook
+                    heading={heading}
+                    node={currentNode}
+                    record={props.record}
+                    saveWebHookData={saveWebHookData}
+                    setShowWebhook={setShowWebhook}
+                />
+            }
         </Authenticated>
     );
 };

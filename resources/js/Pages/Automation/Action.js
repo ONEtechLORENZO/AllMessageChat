@@ -13,16 +13,29 @@ import DateTime from "@/Components/Forms/DateTime";
 import Time from "@/Components/Forms/Time";
 import MultiSelect from "@/Components/Forms/MultiSelect";
 import Relate from "@/Components/Relate";
+import { TrashIcon } from '@heroicons/react/solid';
 
 function Action(props){
+
+    const inital_field = {
+            module_field: '',
+            map_field: '',
+        };
 
     const cancelButtonRef = useRef(null);
     const [actionData , setActionData] = useState({});
     const [options, setOptions] = useState({});
     const [fieldInfo, setFieldInfo] = useState({});
 
+    const [moduleFields, setModuleFields] = useState({});
+    const [mappedField , setFieldMapping] = useState([]);
+
     useEffect(()=>{
-        
+      
+        if(props.actionData.type == 'create_contact' || props.actionData.type == 'update_contact'){
+            fetchModuleFields( );
+            addMoreMapFields();
+        }
         if(props.actionData.node_data){
             setActionData(props.actionData.node_data);
         } else {
@@ -40,13 +53,67 @@ function Action(props){
         if(options.field_info)
             setFieldInfo(options.field_info[actionData.field_name]);
        }
+
+       if(actionData && actionData.field_mapping){
+            setFieldMapping(actionData.field_mapping);
+       }
     },[actionData, fieldInfo]);
 
-    function DataHandler(name, value) 
+    function dataHandler(name, value) 
     {
         var newActionData = Object.assign({}, actionData);
         newActionData[name] = value;
         setActionData(newActionData);
+        
+    }
+
+    /**
+     * Handle field map module field
+     * 
+     * @param {Element} event 
+     */
+    function handleFieldMap(event){
+       
+        var newMapField = Object.assign([], mappedField);
+        var value = event.target.value;
+        var name = event.target.name;
+        var key = event.target.getAttribute('map_index');
+
+        var fieldMap = newMapField[key]
+    
+        if(name == 'webhook_field'){
+            name = "map_field";
+            value = fieldMap.map_field + ' ' + value;
+        }
+
+
+        fieldMap[name] = value;
+        newMapField[key] = fieldMap;
+        setFieldMapping(newMapField);
+
+        dataHandler('field_mapping', newMapField);
+    }
+    
+    /**
+     * Delete mapping 
+     * 
+     * @param {Integer} index 
+     */
+    function deleteMaField(index){
+        var newMapField = Object.assign([], mappedField);
+        delete newMapField[index]; 
+        setFieldMapping(newMapField);
+
+        dataHandler('field_mapping', newMapField);
+    }
+
+    /**
+     * Add more one field to mapping
+     */
+    function addMoreMapFields(){
+        var newMapField = Object.assign([], mappedField);
+        newMapField.push(inital_field);
+        setFieldMapping(newMapField);
     }
 
     function handleChange(event){
@@ -55,11 +122,11 @@ function Action(props){
         var value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
 
         if(name == 'field_name' && actionData.type == 'custom_field' ){
-            DataHandler('field_name', '');
+            dataHandler('field_name', '');
             setFieldInfo(options.field_info[value]);
         }
         
-        DataHandler(name, value);
+        dataHandler(name, value);
     }
 
     /**
@@ -69,7 +136,7 @@ function Action(props){
      * @param {string} field_name 
      */
      function handleRelateChange(value, field_name) {
-        DataHandler(field_name, value);
+        dataHandler(field_name, value);
     }
  
     // Remove characters
@@ -82,7 +149,7 @@ function Action(props){
                 result = result.replace(/\.+$/,"")
             } 
         }
-        DataHandler(name,result);
+        dataHandler(name,result);
     }
     
     // Change Date format
@@ -91,7 +158,7 @@ function Action(props){
         if(event){
             date = event.getFullYear() + '-' + ('0' + (event.getMonth() + 1)).slice(-2) + '-' + ('0' + event.getDate()).slice(-2);
         }
-        DataHandler(name, date);
+        dataHandler(name, date);
     }
 
     // Change Time format
@@ -100,7 +167,7 @@ function Action(props){
         if(event){
             time = ('0' + event.getHours()).slice(-2) + ':' + ('0' + event.getMinutes()).slice(-2) + ':00';
         }
-        DataHandler(name, time);
+        dataHandler(name, time);
     }
     /**
      * Handle multi select change
@@ -118,18 +185,19 @@ function Action(props){
             }
         }
 
-        DataHandler(field_name, values);
+        dataHandler(field_name, values);
     }
 
     /**
      * Get account list
      */
     function getActionData(action_type){
-        var url = route('get_action_data') + '?action_type='+action_type;
+        var url = route('get_action_data') + '?action_type='+action_type+'&record='+props.record.id;
         Axios.get(url).then((response) => {
             
             if(response.data.status !== false) {
                 setOptions(response.data.result);
+                
                 if(action_type == 'custom_field' && props.actionData.node_data.field_name){
                     setFieldInfo(props.actionData.node_data);
                 }
@@ -137,6 +205,20 @@ function Action(props){
         });
     }
 
+    /**
+     * Fetch module fields
+     */
+     function fetchModuleFields() {
+      
+        let endpoint_url = route('fetchModuleFields', {'module': 'Contact'});
+        Axios.get(endpoint_url).then((response) => {
+            if(response.data.status !== false) {
+                setModuleFields(response.data.fields);
+            }
+        });
+    }
+    
+    
     return(
         <Transition.Root show={true} as={Fragment}>
                   <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => {}} >
@@ -462,6 +544,89 @@ function Action(props){
                                                                         })()}
                                                                        
                                                                     </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                    {(actionData.type == 'create_contact' || 'update_contact' == actionData.type) &&
+                                                        <div>
+                                                            <div class="flex flex-wrap mx-3 mb-6">
+                                                                <div className="w-full">
+                                                                    <div className='form-group' >
+                                                                        <label htmlFor={'field_name'} className="block text-sm font-medium text-gray-700">
+                                                                            Select Fields
+                                                                        </label>
+
+                                                                        {Object.entries(mappedField).map(([key, field_map]) => {
+                                                                            return(
+                                                                                <div className="flex w-full">
+                                                                                    <div className="flex flex-1  gap-2">
+                                                                                        <div className="flex-1 flex items-center ">
+                                                                                            <select
+                                                                                                name="module_field"
+                                                                                                map_index={key}
+                                                                                                id="module_field"
+                                                                                                value={field_map.module_field}
+                                                                                                onChange={ (e) => handleFieldMap(e)}
+                                                                                                className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                                            >
+                                                                                                <option value=""></option>
+                                                                                                {Object.entries(moduleFields).map(([key, field]) => 
+                                                                                                    <option map_index={key} value={field.field_name}  defaultValue={field_map.module_field === field.field_name} > {field.field_label} </option>
+                                                                                                )}
+                                                                                            </select>
+                                                                                        </div>
+                                                                                        <div className="flex-2 flex items-center ">
+                                                                                            <input
+                                                                                                className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                                                type="text"
+                                                                                                name={'map_field'}
+                                                                                                map_index={key}
+                                                                                                onChange={ (e) => handleFieldMap(e)}
+                                                                                                value={field_map.map_field}
+                                                                                            />
+                                                                                        </div>
+                                                                                        <div className="flex-1 flex items-center ">
+                                                                                       
+                                                                                            <select
+                                                                                                onChange={ (e) => handleFieldMap(e)}
+                                                                                                map_index={key}
+                                                                                                value=''
+                                                                                                name="webhook_field"
+                                                                                                className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                                            >
+                                                                                                <option value=""> {'{{}}'} </option>
+                                                                                                {options.sample_data && Object.entries(options.sample_data).map(([key, field]) => 
+                                                                                                    <option map_index={key} value={"{{"+key+'}}'}> {key} </option>
+                                                                                                )}
+                                                                                            </select>
+                                                                                        </div>
+                                                                                        <div className="flex items-center justify-between p-4 space-x-6">
+                                                                                            <button
+                                                                                                type="button"
+                                                                                                onClick={(e) => deleteMaField(key)}
+                                                                                                className="inline-flex  items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+                                                                                            >
+                                                                                                <TrashIcon 
+                                                                                                    className='h-4 w-4 text-red-600 cursor-pointer' 
+                                                                                                />
+
+                                                                                            </button>
+                                                                                        </div>     
+                                                                                    </div>
+                                                                                </div>
+                                                                            )
+                                                                        })}
+                                                                    </div>
+                                                                </div>
+                                                                <div className='form-group' >
+                                                                    <button
+                                                                        type="button"
+                                                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                                                                        onClick={ () => addMoreMapFields()}
+                                                                    >
+                                                                        Add
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         </div>

@@ -65,6 +65,7 @@ Route::get('/invitedUserRelation', [UserInviteController::class, 'relateUser']);
 
 Route::post('/incoming', [MsgController::class, 'incoming']);
 Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
+
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
      
@@ -244,6 +245,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/automation/delete/{id}',[AutomationController::class, 'destroy'])->name('deleteAutomation');
 
     Route::get('/getActionData', [AutomationController::class, 'getActionData'])->name('get_action_data');
+    Route::get('/webhook/sample/{id}/{uuid}', [AutomationController::class , 'getSampleData'])->name('get_webhook_data');
     
     // LineItem
     Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');

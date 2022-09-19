@@ -1,15 +1,11 @@
 import React, { useEffect,useState } from 'react';
 import Authenticated from '@/Layouts/Authenticated';
 import Input from '@/Components/Forms/Input';
-import TextArea from '@/Components/Forms/TextArea';
-import FileInput from '@/Components/Forms/FileInput';
 import PristineJS from 'pristinejs';
-import Checkbox from '@/Components/Forms/Checkbox';
 import { Head, useForm, Link } from '@inertiajs/inertia-react';
 import Dropdown from '@/Components/Forms/Dropdown';
 import InputError from '@/Components/Forms/InputError';
 import {defaultPristineConfig} from '@/Pages/Constants';
-import notie from 'notie';
 
 function Registration(props) {
 

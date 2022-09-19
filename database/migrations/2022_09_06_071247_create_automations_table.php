@@ -21,7 +21,8 @@ class CreateAutomationsTable extends Migration
             $table->boolean('status')->nullable();
             $table->string('company_id')->nullable();
             $table->LONGTEXT('flow')->nullable();
-
+            $table->string('uuid')->nullable();
+            
             $table->timestamps();
         });
     }
