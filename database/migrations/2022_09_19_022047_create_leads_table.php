@@ -26,7 +26,7 @@ class CreateLeadsTable extends Migration
             $table->foreignId('organization_id')->nullable()->constrained('organizations');
             $table->foreignId('assigned_to')->nullable()->constrained('users');
            
-            $table->foreignId('user_id')->constrained('users');               
+            $table->foreignId('creater_id')->constrained('users');               
             $table->foreignId('company_id')->constrained('companies');
             $table->LONGTEXT('custom')->nullable();
             
