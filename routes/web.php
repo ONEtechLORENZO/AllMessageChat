@@ -26,6 +26,8 @@ use App\Http\Controllers\UserInviteController;
 use App\Http\Controllers\FieldGroupController;
 use App\Http\Controllers\ChatListContactController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\LeadController;
+use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\LineItemController;
 use App\Http\Controllers\AutomationController;
 use App\Http\Middleware\IsAdmin;
@@ -113,6 +115,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/account/{id}', [UserController::class, 'showAccount'])->name('account_view');
     Route::post('/account/delete_account', [UserController::class, 'deleteAccount'])->name('delete_account');
     Route::post('/saveTemplateStatus/account/{acc_id}/template/{tmp_id}', [UserController::class, 'saveTemplateStatus'])->name('template_status_form');
+    Route::post('/migrateRequest', [UserController::class, 'sendMigrateRequest'])->name('migrate_request');
 
     // Webhook Events
     Route::post('/account/{id}/webhook_event', [UserController::class, 'createWebhookEvent'])->name('create_webhook_event');
@@ -149,6 +152,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/updateOpportunity', [OpportunityController::class, 'store'])->name('storeOpportunity');
     Route::get('/opportunity/edit/{id}', [OpportunityController::class, 'edit'])->name('editOpportunity');
    
+    //Leads
+    Route::get('/leads', [LeadController::class, 'index'])->name('listLead');
+    Route::delete('/lead/delete/{id}', [LeadController::class, 'destroy'])->name('deleteLead');
+    Route::get('/lead', [LeadController::class, 'show'])->name('detailLead');
+    Route::post('/updateLead/{id}', [LeadController::class, 'update'])->name('updateLead');
+    Route::post('/updateLead', [LeadController::class, 'store'])->name('storeLead');
+    Route::get('/getLeadDetail', [LeadController::class, 'getLeadData'])->name('editLead');
+    
+    
+    //Organization
+    Route::get('/organizations', [OrganizationController::class, 'index'])->name('listOrganization');
+    Route::delete('/organization/delete/{id}', [OrganizationController::class, 'destroy'])->name('deleteOrganization');
+    Route::get('/organization', [OrganizationController::class, 'show'])->name('detailOrganization');
+    Route::post('/updateOrganization/{id}', [OrganizationController::class, 'update'])->name('updateOrganization');
+    Route::post('/updateOrganization', [OrganizationController::class, 'store'])->name('storeOrganization');
+    Route::get('/organization/edit/{id}', [OrganizationController::class, 'edit'])->name('editOrganization');
+
     // Product
     Route::get('/products', [ProductController::class, 'index'])->name('listProduct');
     Route::delete('/product/delete/{id}', [ProductController::class, 'destroy'])->name('deleteProduct');

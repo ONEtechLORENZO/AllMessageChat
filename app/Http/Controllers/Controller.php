@@ -428,9 +428,9 @@ class Controller extends BaseController
         foreach ($fields as $field) {           
             $is_custom = ($field->field_group) ? $groupList[$field->field_group] : 'default';
             if($field->field_group) {
-                $header['custom'][$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type'], 'custom' => $field['is_custom']];
+                $header['custom'][$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type'], 'custom' => $field['is_custom'], 'name' => $field['field_name']];
             } else {
-                $header[$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type'], 'custom' => $field['is_custom']];
+                $header[$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type'], 'custom' => $field['is_custom'], 'name' => $field['field_name']];
             }
         }
 

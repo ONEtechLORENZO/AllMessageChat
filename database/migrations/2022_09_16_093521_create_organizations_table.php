@@ -15,16 +15,16 @@ class CreateOrganizationsTable extends Migration
     {
         Schema::create('organizations', function (Blueprint $table) {
             $table->id();
-            $table->string('organization_name');
+            $table->string('name');
             $table->string('industry')->nullable();
-            $table->integer('number_of_employees')->nullable();
-            $table->integer('annual_turnover')->nullable();
+            $table->string('number_of_employees')->nullable();
+            $table->string('annual_turnover')->nullable();
             $table->string('tax_id')->nullable();
             $table->string('country')->nullable();
             $table->string('state')->nullable();
             $table->string('city')->nullable();
             $table->string('street')->nullable();
-            $table->string('email')->unique();
+            $table->string('email')->nullable();
             $table->string('website')->nullable();
             $table->string('phone_number')->nullable();            
             $table->foreignId('company_id')->constrained('companies'); 

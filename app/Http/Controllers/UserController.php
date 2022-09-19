@@ -875,7 +875,7 @@ class UserController extends Controller
         if($id){
             return Redirect::route('dashboard');
         }else{
-            echo true;
+            return response()->json(['status' => true]);
         }
 
     }
@@ -1241,6 +1241,11 @@ class UserController extends Controller
             $balance = $wallet->balance_amount;
         }
         
+        $company_id = Cache::get('selected_company_'.$user->id);
+
+        //get current company details
+        $currentCompany =  Company::where('id', $company_id)->first();
+        
         // Get message amount deduction
         $messageDeduction = $this->getAmountDeduction($user->id);
 
@@ -1254,6 +1259,7 @@ class UserController extends Controller
             'message_deduction' => $messageDeduction,
             'paymentMethods' => $paymentMethods,
             'stripe_public_key' => $stripe_public_key,
+            'currentPlan' => $currentCompany,
             'current_page' => 'Wallet',
             'translator' => [
                 'Wallet' => __('Wallet'),
@@ -1713,5 +1719,23 @@ class UserController extends Controller
         $user = $request->user();
         $user->addPaymentMethod($request->get('id'));
         return response()->json(['message' => 'Payment Method Related Successfully', 'status' => true]);
+    }
+
+    public function sendMigrateRequest(Request $request) {
+        
+        $user_id = $request->user()->id;
+        $account = new Account();
+
+        if($request){
+             $account->migrate = $request->migrate;
+             $account->business_solution = $request->business_solution;
+
+            // Log in user id & company
+            $account->user_id = $user_id;
+            $account->company_id = Cache::get('selected_company_'. $user_id);
+            $account->save();
+        }
+
+        return response()->json(['status' => true]);
     }
 }

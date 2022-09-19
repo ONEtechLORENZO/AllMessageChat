@@ -2235,6 +2235,9 @@ select {
 .pl-9 {
 	padding-left: 2.25rem;
 }
+.pr-2 {
+	padding-right: 0.5rem;
+}
 .text-left {
 	text-align: left;
 }

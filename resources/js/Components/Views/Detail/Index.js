@@ -9,6 +9,7 @@ import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import notie from 'notie';
 import ItemTable from "@/Pages/Order/itemTable";
+import InlineEdit from "./InlineEdit";
 
 export default function Index(props) 
 {
@@ -29,6 +30,7 @@ export default function Index(props)
     const [fieldOptions, setFieldOptions ] = useState({});
 
     const [subscribedServices, setSubscribedServices] = useState([]);
+    const [addClass, setAddClass] = useState(false);
 
     useEffect(() => {
         setRecord(props.record);
@@ -181,18 +183,33 @@ export default function Index(props)
         });
     }
 
+    function classNames(...classes) {
+        return classes.filter(Boolean).join(' ')
+    }
+
+    function removeClass(){
+       if(!addClass){
+        setAddClass(true);
+        return false;
+       }
+       if(addClass){
+        setAddClass(false);
+        return false;
+       }
+    }
+ 
     return (            
             <div>
                 <Head title={props.module}/>
                 <ul className="py-4 space-y-2 sm:px-6 sm:space-y-4 lg:px-8" role="list">
                     <li className="bg-white px-4 py-6 shadow sm:rounded-lg sm:px-6">
                         <div className="sm:flex sm:justify-between sm:items-baseline">
-                            <h3 className="text-base font-medium flex">
+                            <h3 className="text-base font-medium flex w-full">
                                 <div>
                                     <span className="text-gray-900 p-3">
                                         <span className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-gray-500">
                                             <span className="text-3xl font-medium leading-none text-white">
-                                                {(props.module == 'Contact')  ?
+                                                {(props.module == 'Contact' || props.module == 'Lead')  ?
                                                     <> {(record.first_name).substring(0,2)} </>
                                                 :
                                                     <> {(record.name).substring(0,2)} </>
@@ -202,15 +219,16 @@ export default function Index(props)
                                         </span>
                                     </span>
                                 </div>
-                                
+                                     
                                     
-                                    {props.module == 'Contact' ?
+                                    {(props.module == 'Contact' || props.module == 'Lead')?
                                         <>
                                             <div>
                                                 <div className="text-gray-600"> {record.first_name} {record.last_name} </div>
                                                 <div className="text-gray-600"> {record.phone_number} </div>
                                                 <div className="text-gray-600"> {record.email} </div>
                                             </div>
+                                            {props.module == 'Contact'?
                                             <div>
                                                 {Object.entries(props.serviceOptions).map(([key, service]) => {
                                                     return (
@@ -230,12 +248,18 @@ export default function Index(props)
                                                         </>
                                                     );
                                                 })}
-                                            </div>
+                                            </div>:''}
                                         </>
                                         :
                                         <>
-                                        <div>
-                                            <div className="text-gray-600">{record.name}  </div></div>
+                                        <div className="pl-3 w-full">
+                                            <div className="text-gray-600">{record.name}  </div>
+                                            {props.module == 'Tag' || props.module == 'Category' ? 
+                                              <div className={classNames(
+                                                addClass ? 'text-gray-600 break-words w-3/4':'text-gray-600 w-1/2 truncate'
+                                              )} onClick={() => removeClass()}>{record.description} </div>
+                                            : ''}
+                                        </div>
                                         </>
                                     }
                                 
@@ -310,7 +334,15 @@ export default function Index(props)
                                                         return(
                                                             <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                                                 <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
-                                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"> {value} </dd>
+                                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex"> 
+                                                                 <InlineEdit 
+                                                                   module={props.module}
+                                                                   field={field}
+                                                                   value={value}
+                                                                   record={record}
+                                                                   fieldOptions={fieldOptions}
+                                                                  />
+                                                                </dd>
                                                             </div>
                                                         )
                                                     }
@@ -399,13 +431,13 @@ export default function Index(props)
                                                 :''}
                                             </>
                                         }
-                                        {tab.name == 'Notes' &&
+                                        {activeTab == 'Notes' &&
                                                 <Notes
                                                     module={props.module}                                                                                
                                                     recordId={props.record.id} 
                                                 />
                                         }
-                                        {tab.name == 'Users' &&
+                                        {activeTab == 'Users' &&
                                             <>
                                             
                                                <ul role="list" className="divide-y divide-gray-200">
@@ -418,7 +450,7 @@ export default function Index(props)
                                                 </ul>
                                             </>
                                         }
-                                        {tab.name == 'Contact' &&
+                                        {activeTab == 'Contact' &&
                                             <>
                                                 <SubPanels 
                                                     module={tab.name}
@@ -428,7 +460,7 @@ export default function Index(props)
                                                 />
                                             </>
                                         }
-                                        {tab.name == 'Opportunity' &&
+                                        {activeTab == 'Opportunity' &&
                                             <>
                                                 <SubPanels 
                                                     module={tab.name}
@@ -437,7 +469,7 @@ export default function Index(props)
                                                 />
                                             </>
                                         }
-                                        {tab.name == 'Order' &&
+                                        {activeTab == 'Order' &&
                                             <>
                                                 <SubPanels 
                                                     module={tab.name}
