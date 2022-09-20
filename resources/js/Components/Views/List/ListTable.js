@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Head,Link } from '@inertiajs/inertia-react';
 import { ChevronDownIcon, ChevronUpIcon, UserAddIcon, PencilAltIcon, TrashIcon, UploadIcon, DownloadIcon } from '@heroicons/react/solid';
 import Axios from "axios";
+import Checkbox from '@/Components/Forms/Checkbox';
 
 function ListTable(props){
 
@@ -30,6 +31,16 @@ function ListTable(props){
                 <table className="min-w-full divide-y divide-[#D9D9D9]">
                     <thead>
                         <tr>
+                        {props.actions.mass_edit === true &&  
+                            <th>
+                                <Checkbox
+                                    id={'checkall'}
+                                    name={'checkall'}
+                                    value={props.checkAll === true ? 1 : ''}
+                                    handleChange={() => props.selectCheckAll()}
+                                />
+                           </th>
+                        }
                             {Object.entries(props.headers).map(([name, field]) => {
                                 let visibility = 'invisible';
                                 let sort_order = 'desc';
@@ -77,8 +88,19 @@ function ListTable(props){
                         </tr>
                     </thead>
                     <tbody className=" bg-white">
+                       
                         {Object.entries(props.records).map(([key, record]) => ( 
                             <tr key={key}> 
+                            {props.actions.mass_edit === true && 
+                              <td className='px-2 py-2'>
+                                    <Checkbox
+                                        id={record.id}
+                                        name={record.id}
+                                        value={props.checkedId.includes(record.id) ? 1 :''}
+                                        handleChange={() => props.getCheckId(key, record.id)}
+                                    />
+                               </td>
+                            }
                                 {Object.entries(props.headers).map(([name, field],index) => { 
                                     let column_value = record[name]; 
                                     if(props.actions.detail === true && index === 0) {

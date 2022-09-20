@@ -10,7 +10,7 @@ use Cache;
 
 class ExportController extends Controller
 {
-    public $entity_modules = ['Contact', 'Product', 'Opportunity', 'Order', 'Campaign','Message'];
+    public $entity_modules = ['Contact', 'Product', 'Opportunity', 'Order', 'Campaign','Message','Lead'];
 
     public function exportFile(Request $request){
         $user_id = $request->user()->id;

@@ -1,0 +1,68 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateLeadsTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('leads', function (Blueprint $table) {
+            $table->id();
+            $table->string('first_name');
+            $table->string('last_name')->nullable();
+            $table->string('email')->nullable();
+            $table->string('phone_number');
+            $table->string('gender')->nullable();
+            $table->date('birth_date')->nullable();
+            $table->string('languages_spoken')->nullable();
+            $table->string('organization_role')->nullable();
+            $table->foreignId('organization_id')->nullable()->constrained('organizations');
+            $table->foreignId('assigned_to')->nullable()->constrained('users');
+           
+            $table->foreignId('creater_id')->constrained('users');               
+            $table->foreignId('company_id')->constrained('companies');
+            $table->LONGTEXT('custom')->nullable();
+            
+            //contact_info
+            $table->string('whatsapp_number')->nullable();
+            $table->string('telegram_number')->nullable();
+            $table->string('facebook_username')->nullable();
+            $table->string('instagram_username')->nullable();
+            $table->string('tiktok_username')->nullable();
+            $table->string('linkedin_username')->nullable();
+            $table->string('personal_website')->nullable();
+            //address_info
+            $table->string('country')->nullable();
+            $table->string('state')->nullable();
+            $table->string('city')->nullable();
+            $table->string('street')->nullable();
+            $table->string('zip_code')->nullable();
+            //source info
+            $table->string('origin')->nullable();
+            $table->string('source')->nullable();
+            $table->string('medium')->nullable();
+            $table->string('campaign')->nullable();
+            $table->string('content')->nullable();
+            $table->string('term')->nullable();
+
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('leads');
+    }
+}

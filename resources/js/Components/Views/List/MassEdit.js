@@ -3,25 +3,25 @@ import { Dialog, Transition } from '@headlessui/react'
 import Axios from "axios";
 import notie from 'notie';
 import nProgress from 'nprogress';
-import Dropdown from './Dropdown';
-import TextArea from './TextArea';
-import Input from './Input';
 import Pristine from "pristinejs";
 import { Inertia } from '@inertiajs/inertia'
 import { useForm } from '@inertiajs/inertia-react';
 import ValidationErrors from '@/Components/ValidationErrors';
-import Checkbox from '../Checkbox';
 import Creatable from 'react-select/creatable';
 import { parsePhoneNumber } from 'react-phone-number-input';
-import Number from './Number';
-import DateTime from './DateTime'; 
-import PhoneInput2 from 'react-phone-input-2';
 import Relate from '@/Components/Relate';
 import 'react-phone-input-2/lib/style.css';
-import Date from './Date';
-import Time from './Time';
-import MultiSelect from './MultiSelect';
-import LineItem from '@/Pages/Order/Form';
+
+import Input from "@/Components/Forms/Input";
+import Dropdown from "@/Components/Forms/Dropdown";
+import TextArea from "@/Components/Forms/TextArea";
+import Checkbox from "@/Components/Forms/Checkbox";
+import Number from "@/Components/Forms/Number"; 
+import MultiSelect from "@/Components/Forms/MultiSelect";
+import Date from "@/Components/Forms/Date";
+import DateTime from "@/Components/Forms/DateTime";
+import PhoneInput2 from 'react-phone-input-2';
+import Time from "@/Components/Forms/DateTime";
 
 const defaultConfig = {
     // class of the parent element where the error/success class is added
@@ -44,79 +44,20 @@ const optionField = {
     'is_custom':1
 }
             
-function Form(props) 
+export default function MassEdit(props) 
 {
     const [open, setOpen] = useState(true)
     const [fields, setFields] = useState([]);
     const [formErrors, setErrors] = useState({});
     const [options, setOptions] = useState(null);
-    const [lineItems, setLineItems] = useState([]);
-    const [totalPrice, setTotalPrice] = useState('0.00');
-    const [productList, setProductList] = useState(props.productList);
 
     const cancelButtonRef = useRef(null)
 
-    const { data, setData, post, processing, errors, reset } = useForm({});
+    const { data, setData} = useForm({});
 
     useEffect(() => {
-        fetchModuleFields();       
-
-        //prefill the module_name in addfield form  
-       props.module=='Field' && props.mod!='' && setData('module_name',props.mod);  
-        //prefill relate field in subpanel
-       if(props.parent_module == 'Organization' && props.module == 'Contact')
-        {                        
-            setData('organization_id',{'value':props.parent_id,'label':props.parent_name});
-        }       
-        if(props.parent_module == 'Contact' && props.module == 'Opportunity')
-        {                        
-            setData('contact_id',{'value':props.parent_id,'label':props.parent_name});
-        }     
-        if(props.parent_module == 'Contact' && props.module == 'Order')
-        {                        
-            setData('contact',{'value':props.parent_id,'label':props.parent_name});
-        }           
-
-        if(props.recordId) {
-            fetchRecord();
-        }  
+        fetchModuleFields();           
     }, [props]);
-
-    /**
-     * Fetch record
-     */
-    function fetchRecord() {
-        nProgress.start(0.5);
-        nProgress.inc(0.2);
-
-        let endpoint_url = route('edit'+ props.module , {'id': props.recordId});
-        
-        Axios.get(endpoint_url).then((response) => {
-            nProgress.done(true);
-            if(response.data.status !== false) {
-                setData(response.data.record);
-                setLineItems(response.data.lineItems);
-                setProductList(response.data.productList)           
-            }
-            else {
-                notie.alert({type: 'error', text: response.data.message, time: 5});
-            }
-        }).catch((error) => {
-            nProgress.done(true);
-            let error_message = 'Something went wrong';
-            if(error.response) {
-                error_message = error.response.data.message;
-                if(error_message == undefined) {
-                    error_message = error.response.statusText;
-                }
-            }
-            else {
-                error_message = error.message;
-            }
-
-            notie.alert({type: 'error', text: error_message, time: 5});
-        });
-    }
 
     /**
      * Fetch module fields
@@ -129,7 +70,7 @@ function Form(props)
         Axios.get(endpoint_url).then((response) => {
             nProgress.done(true);
             if (response.data.status !== false) {
-                setFields(response.data.fields);
+                getMassEditfield(response.data.fields);
             }
             else {
                 notie.alert({type: 'error', text: response.data.message, time: 5});
@@ -157,29 +98,7 @@ function Form(props)
     const handleChange = (event) => {
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         let field_name = event.target.name;
-        if (event.target.name == 'field_type') {
-            EventHandler(event);
-        }
         DataHandler(field_name,value); 
-    }
-
-    const EventHandler = (event) => { 
-        if (event.target.value == 'dropdown' || event.target.value == 'multiselect') {
-            fields.map((field,key) => {
-                if(field.field_type == 'selectable' && field.field_name == 'options'){
-                    fields.pop(key);
-                    setOptions(null);
-                }
-            });
-                fields.push(optionField);
-        } else {
-            fields.map((field,key) => { 
-                if (field.field_type == 'selectable') { 
-                    fields.pop(key); 
-                    setOptions(null);
-                }
-            });
-        }
     }
 
     /**
@@ -201,56 +120,19 @@ function Form(props)
      */
     function saveForm()
     {    
-        // Validate the data
-        let is_validated = false;
-        var pristine = new Pristine(document.getElementById(`form`), defaultConfig);
-        is_validated = pristine.validate(
-            document.querySelectorAll(
-                'input[required], input[data-pristine-required="true"], input[data-pristine-required="required"]',
-                'textarea[data-pristine-required="true"], textarea[data-pristine-required="required"]',
-            )
-        );
+        data['id'] = props.checkId;
+        data['module'] = props.module;
+    
+        let url = route('mass_edit');
 
-        if(!is_validated) {
-            return false;
-        }
-        
-        data['options'] = options;
-        data['lineItems'] = lineItems;
-
-        // Set parent module detail
-        data['parent_id'] = (props.parent_id) ? props.parent_id : '';
-        data['parent_module'] = (props.parent_module) ? props.parent_module : ''; 
-        
-        Inertia.post(props.recordId ? route('update' + props.module, {id: props.recordId}) : route('store' + props.module), data, {
+        Inertia.post(url, data, {
             onSuccess: (response) => {
-                props.hideForm();
-                if(props.is_chat){
-                    props.getUserContacts();
-                }
+                props.hideMassEdit();
             },
             onError: (errors) => {
                 setErrors(errors)
             }
         });
-    }
-
-    /**
-     * Added custom dropdown options
-     */
-    function addSelectableField()
-    {
-        var isAdded = false;
-        Object.entries(fields).map(([key, field]) => {
-            if(field.field_type == 'selectable'){
-                isAdded = true;
-            }
-        });
-
-        if(!isAdded) {
-            fields.push(optionField);
-            setOptions(data.options);
-        }
     }
     
     /**
@@ -347,6 +229,26 @@ function Form(props)
 
         DataHandler(field_name, values);
     }
+    /**
+     * 
+     *  Get Mass edit fields 
+     */
+    function getMassEditfield(modulefields) {
+        let newfield = Object.assign([], fields);
+        if(modulefields) {
+            modulefields.map((field) => {
+                if(field.mass_edit == 1) {
+                    newfield.push(field);
+                }
+            })
+        }
+        setFields(newfield);
+    }
+
+    function hideForm(){
+        setData({});
+        props.setShowMassEdit(false);
+    }
 
     return (
         <Transition.Root show={open} as={Fragment}>
@@ -398,12 +300,10 @@ function Form(props)
 
                                 <form id='form'>
                                     <div className='p-4 space-y-4'>
-                                        {fields && fields.map((field_info,index) => { 
+                                        {fields && fields.length != 0 ? fields.map((field_info,index) => { 
                                             let element = ''; 
                                             let readOnly = true;
-                                            if(data.is_custom == '1' && data.module_name == 'Contact' || data.module_name == 'Opportunity'  && data.field_type == 'dropdown'){
-                                                addSelectableField();
-                                            }
+                                          
                                             var field_value = data[field_info.field_name];
                                             if(data.custom){
                                                 const custom = data.custom;
@@ -592,25 +492,14 @@ function Form(props)
                                             return (
                                                 <div className='form-group' key={field_info.field_name}>
                                                     <label htmlFor={field_info.field_name} className="block text-sm font-medium text-gray-700">
-                                                        {field_info.field_label} {field_info.is_mandatory === 1 ? <span className='text-red-600'>*</span> : ''}
+                                                        {field_info.field_label}
                                                     </label>
                                                     <div className="mt-1">
                                                         {element}
                                                     </div>
                                                 </div>
                                             )
-                                        })}
-                                    </div>
-                                    <div>
-                                        {props && props.module == 'Order' ? 
-                                        <LineItem 
-                                            productList={productList}
-                                            lineItems={lineItems}
-                                            totalPrice={totalPrice}
-                                            setLineItems={setLineItems}
-                                            setTotalPrice={setTotalPrice}
-                                        />
-                                        : ''}
+                                        }) :'No fields for edit in Mass Edit'}
                                     </div>
                                 </form>
 
@@ -625,7 +514,7 @@ function Form(props)
                                     <button
                                         type="button"
                                         className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                                        onClick={() => props.hideForm()}
+                                        onClick={() => hideForm()}
                                         ref={cancelButtonRef}
                                     >
                                         Cancel
@@ -639,5 +528,3 @@ function Form(props)
         </Transition.Root>
     )
 }
-
-export default Form;

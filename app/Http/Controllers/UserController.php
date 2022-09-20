@@ -27,6 +27,7 @@ use PDF;
 use Schema;
 use Cache;
 use DB;
+use Mail;
 
 class UserController extends Controller
 {
@@ -879,7 +880,7 @@ class UserController extends Controller
         if($id){
             return Redirect::route('dashboard');
         }else{
-            echo true;
+            return response()->json(['status' => true]);
         }
 
     }
@@ -1245,6 +1246,11 @@ class UserController extends Controller
             $balance = $wallet->balance_amount;
         }
         
+        $company_id = Cache::get('selected_company_'.$user->id);
+
+        //get current company details
+        $currentCompany =  Company::where('id', $company_id)->first();
+        
         // Get message amount deduction
         $messageDeduction = $this->getAmountDeduction($user->id);
         $paymentMethods = $this->getPaymentMethods($request , 'direct');
@@ -1257,6 +1263,7 @@ class UserController extends Controller
             'message_deduction' => $messageDeduction,
             'paymentMethods' => $paymentMethods,
             'stripe_public_key' => $stripe_public_key,
+            'currentPlan' => $currentCompany,
             'current_page' => 'Wallet',
             'translator' => [
                 'Wallet' => __('Wallet'),
@@ -1716,5 +1723,24 @@ class UserController extends Controller
         $user = $request->user();
         $user->addPaymentMethod($request->get('id'));
         return response()->json(['message' => 'Payment Method Related Successfully', 'status' => true]);
+    }
+
+    public function sendMigrateRequest(Request $request) {
+
+        $emailAddress = 'rajkumar@blackant.io';
+        $emailAddress = filter_var($emailAddress, FILTER_SANITIZE_EMAIL);
+
+        $data = [
+            'data' => $request
+        ];
+
+        if($emailAddress){
+            Mail::send('account',$data, function($message) use ($emailAddress){
+                $message->to($emailAddress)->subject
+                ('Welcome');
+            });
+        }
+        
+        return response()->json(['status' => true]);
     }
 }

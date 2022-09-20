@@ -26,6 +26,8 @@ use App\Http\Controllers\UserInviteController;
 use App\Http\Controllers\FieldGroupController;
 use App\Http\Controllers\ChatListContactController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\LeadController;
+use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\LineItemController;
 use App\Http\Controllers\AutomationController;
 use App\Http\Middleware\IsAdmin;
@@ -65,6 +67,7 @@ Route::get('/invitedUserRelation', [UserInviteController::class, 'relateUser']);
 
 Route::post('/incoming', [MsgController::class, 'incoming']);
 Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
+
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
      
@@ -112,6 +115,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/account/{id}', [UserController::class, 'showAccount'])->name('account_view');
     Route::post('/account/delete_account', [UserController::class, 'deleteAccount'])->name('delete_account');
     Route::post('/saveTemplateStatus/account/{acc_id}/template/{tmp_id}', [UserController::class, 'saveTemplateStatus'])->name('template_status_form');
+    Route::post('/migrateRequest', [UserController::class, 'sendMigrateRequest'])->name('migrate_request');
 
     // Webhook Events
     Route::post('/account/{id}/webhook_event', [UserController::class, 'createWebhookEvent'])->name('create_webhook_event');
@@ -148,6 +152,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/updateOpportunity', [OpportunityController::class, 'store'])->name('storeOpportunity');
     Route::get('/opportunity/edit/{id}', [OpportunityController::class, 'edit'])->name('editOpportunity');
    
+    //Leads
+    Route::get('/leads', [LeadController::class, 'index'])->name('listLead');
+    Route::delete('/lead/delete/{id}', [LeadController::class, 'destroy'])->name('deleteLead');
+    Route::get('/lead', [LeadController::class, 'show'])->name('detailLead');
+    Route::post('/updateLead/{id}', [LeadController::class, 'update'])->name('updateLead');
+    Route::post('/updateLead', [LeadController::class, 'store'])->name('storeLead');
+    Route::get('/getLeadDetail', [LeadController::class, 'getLeadData'])->name('editLead');
+    Route::post('/convertLead/{id}', [LeadController::class, 'convert_lead'])->name('convertLead');
+    
+    
+    //Organization
+    Route::get('/organizations', [OrganizationController::class, 'index'])->name('listOrganization');
+    Route::delete('/organization/delete/{id}', [OrganizationController::class, 'destroy'])->name('deleteOrganization');
+    Route::get('/organization', [OrganizationController::class, 'show'])->name('detailOrganization');
+    Route::post('/updateOrganization/{id}', [OrganizationController::class, 'update'])->name('updateOrganization');
+    Route::post('/updateOrganization', [OrganizationController::class, 'store'])->name('storeOrganization');
+    Route::get('/organization/edit/{id}', [OrganizationController::class, 'edit'])->name('editOrganization');
+
     // Product
     Route::get('/products', [ProductController::class, 'index'])->name('listProduct');
     Route::delete('/product/delete/{id}', [ProductController::class, 'destroy'])->name('deleteProduct');
@@ -175,6 +197,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/field/getFieldOptions',[FormController::class,'getFieldOptions'])->name('get_field_options');
     Route::get('/getRelateContacts', [FormController::class, 'getRelateContacts'])->name('get_relate_contacts_list');
     Route::get('/lookup', [FormController::class, 'lookup'])->name('lookup');
+    Route::post('/massEdit', [FormController::class, 'massEdit'])->name('mass_edit');
 
     // Import
     Route::get('/imports', [ImportController::class, 'index'])->name('listImport');
@@ -225,6 +248,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/campaign/search',[CampaignController::class, 'searchRecords'])->name('searchfilter');
     Route::delete('/deleteCampaign/{id}',[CampaignController::class, 'destroy'])->name('deleteCampaign');
     Route::get('/campaign/company/{service}',[CampaignController::class, 'getCompanyName'])->name('get_company_name');
+    Route::get('/campaign/getTemplates/{account_id}',[CampaignController::class, 'getTemplateList'])->name('get_template_list');
 
     // Impersonate User
     Route::get('/user/getUserSession',[UserController::class, 'getUserSession'])->name('get_session_value');
@@ -244,6 +268,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/automation/delete/{id}',[AutomationController::class, 'destroy'])->name('deleteAutomation');
 
     Route::get('/getActionData', [AutomationController::class, 'getActionData'])->name('get_action_data');
+    Route::get('/webhook/sample/{id}/{uuid}', [AutomationController::class , 'getSampleData'])->name('get_webhook_data');
     
     // LineItem
     Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');

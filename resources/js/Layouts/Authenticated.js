@@ -24,7 +24,8 @@ import {
     EyeIcon,
     ShoppingCartIcon,
     ShoppingBagIcon,
-    ChevronDownIcon
+    ChevronDownIcon,
+    OfficeBuildingIcon
 } from "@heroicons/react/outline";                                                                      
 import SelectCompany from "@/Pages/Company/SelectCompany";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
@@ -79,12 +80,24 @@ const navigation = [
         show: ['all'],
         
     },
+    {
+        name: "Organization",
+        href: route("listOrganization"),
+        icon: OfficeBuildingIcon,
+        show: ['all'],
+    },
     /*{
         name: "Company",
         href: route("listCompany"),
         icon: OfficeBuildingIcon,
         show: ['admin'],
     },*/
+    {
+        name: "Leads",
+        href: route("listLead"),
+        icon: ServerIcon,
+        show: ['all'],
+    },
     {
         name: "Campaigns",
         href: route("listCampaign"),

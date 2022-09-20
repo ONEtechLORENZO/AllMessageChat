@@ -26,7 +26,7 @@ class AddCompanyIdTemplateTable extends Migration
     public function down()
     {
         Schema::table('templates', function (Blueprint $table) {
-            $this->dropColumn('company_id');
+            $table->dropColumn('company_id');
         });
     }
 }

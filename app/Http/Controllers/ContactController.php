@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Models\Organization;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Http\Request;
@@ -12,6 +13,7 @@ use App\Models\Tag;
 use App\Models\Category;
 use App\Models\Field;
 use App\Models\Service;
+use App\Models\User;
 
 class ContactController extends Controller
 {
@@ -71,6 +73,7 @@ class ContactController extends Controller
                 'search' => true,
                 'filter' => true,
                 'select_field'=>true,
+                'mass_edit' => true
             ],
         ];
         
@@ -133,6 +136,19 @@ class ContactController extends Controller
         foreach($contact->services as $subscribed_service) {
             $subscribedServices[] = $subscribed_service['unique_name'];
         }
+        //related organization details
+        $organization = Organization::where('id', $contact->organization_id)->first();
+
+        //assign user details
+        $user = User::where('id', $contact->assigned_to)->first();
+
+        if($organization){
+            $contact['organization_id'] = $organization['name'];
+        }
+
+        if($user){
+            $contact['assigned_to'] = $user['name'];
+        }
 
         return Inertia::render('Contacts/Detail', [
             'contact' => $contact,
@@ -159,6 +175,15 @@ class ContactController extends Controller
         $parent_mod = "App\Models\\{$parent_module}";       
 
         $contact = $parent_mod::findOrFail($request->id);
+
+        if($parent_module == 'Contact')
+        {
+            $parent_name = $contact->first_name. ' '. $contact->last_name;
+        }
+        else {
+             $parent_name = $contact->name;
+             }
+         
         $companyId = Cache::get('selected_company_'. $request->user()->id);
         $headers = $this->getModuleHeader($companyId , 'Contact');
         
@@ -178,8 +203,12 @@ class ContactController extends Controller
             if($subModule=='Order')
               $query = $submod::where('contact', $request->id);
         }
-
-        $subPanelData = $this->getSubPanelRecords($parent_module, $submod, $query);  
+        if($parent_module=='Organization')
+        {
+            if($subModule=='Contact')
+              $query = $submod::where('organization_id', $request->id);
+        }
+        $subPanelData = $this->getSubPanelRecords($parent_module, $submod, $query,$parent_name);  
         echo json_encode($subPanelData);
        die;
       }
@@ -231,6 +260,20 @@ class ContactController extends Controller
     public function getContactData(Request $request)
     {
         $contact = Contact::findOrFail($request->id);
+         //related field pre-fill
+         if($contact->organization_id){
+            $organization = organization::findOrFail($contact->organization_id);
+            $name = $organization->name;
+            $contact['organization_id'] = ['value' => $organization->id, 'label' => $name];
+        }
+        
+
+        if($contact->assigned_to){
+            $user = User::findOrFail($contact->assigned_to);
+            $name = $user->name;
+            
+            $contact['assigned_to'] = ['value' => $user->id, 'label' => $name];
+        }
         echo json_encode(['record' => $contact]);
         die;
     }
@@ -310,11 +353,23 @@ class ContactController extends Controller
             foreach ($fields as $record) {
                 $field = $record['field_name'];
                 $custom = $record['is_custom'];
-                if ($request->has($field) && ($custom == '0' || !$custom)) {
-                    $contact->$field = $request->$field;
+                         
+                
+
+                if($request->has($field) && ($custom == '0' || !$custom)) {
+                    if(($field == 'assigned_to' || $field == 'organization_id')) {
+
+                        $related_id = $request->$field;
+                        if(isset($related_id['value'])){
+                            $contact->$field = $related_id['value'];
+                        }else {
+                            $contact->$field = NULL;
+                        }
+                    }else {
+                        $contact->$field = $request->$field;
+                    }
                 }
-  
-                if($custom == '1'){
+            if($custom == '1'){
                     if($request->custom){
                         foreach($request->custom as $key => $value){
                             $custom_field[$key] = $value;
@@ -326,7 +381,7 @@ class ContactController extends Controller
                 $contact->custom = $custom_field;
             }
   
-            $contact->user_id = $request->user()->id;
+            $contact->creater_id= $request->user()->id;
             $contact->company_id = Cache::get('selected_company_'. $request->user()->id);
             $contact->save();
 

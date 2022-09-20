@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Http\Controllers\Controller;
+use Log;
 
 class Automation extends Model
 {
@@ -28,14 +29,16 @@ class Automation extends Model
         ];
         return $list_view_columns;
     }
+    
     /**
      * Return options
      */
     public function getTriggerOptions()
     {
-        $return['triggers'] = array('contact_created' => array('name' => 'contact_created', 'label' => 'New contact is added'), 'contact_list_related' => array('name' => 'contact_list_related', 'label' => 'New contact is added to list'), 'contact_tag_related' => array('name' => 'contact_tag_related', 'label' => 'New contact is added to tag'), 'remove_webhook' => array('name' => 'remove_webhook', 'label' => 'Webhook is removed'));
+        $return['triggers'] = array('contact_created' => array('name' => 'contact_created', 'label' => 'New contact is added'), 'contact_list_related' => array('name' => 'contact_list_related', 'label' => 'New contact is added to list'), 'contact_tag_related' => array('name' => 'contact_tag_related', 'label' => 'New contact is added to tag'), 'received_webhook' => array('name' => 'received_webhook', 'label' => 'Webhook is received'));
         $return['processTypes'] = array('action' => array('label' => 'Action', 'name' => 'action'), 'condition' => array('label' => 'Condition', 'name' => 'condition'), 'exit' => array('label' => 'Exit', 'name' => 'exit'));        
         $return['actions'] = array('send_message' => array('label' => 'Send Message', 'name' => 'send_message'), 'tag_contact' => array('label' => 'Add a tag to a contact', 'name' => 'tag_contact'), 'list_contact' => array('label' => 'Add a list to a contact', 'name' => 'list_contact'), 'custom_field' => array('label' => 'Set a custom field', 'name' => 'custom_field'));
+        $return['webHookActions'] = array('create_contact' => array('label' => 'Create Contact', 'name' => 'create_contact'), 'update_contact' => array('label' => 'Update Contact', 'name' => 'update_contact'));
 
         return $return;
     }
@@ -205,6 +208,19 @@ class Automation extends Model
                     $recordModal->save();
                 }
                 break;
+
+            case 'create_contact':
+                if($action->field_mapping){
+                    $this->storeRecord($action->field_mapping);
+                }
+                break;
+
+            case 'update_contact':
+                if($action->field_mapping){
+                    $this->storeRecord($action->field_mapping);
+                }
+                break;
+
         }
     }   
 
@@ -219,4 +235,58 @@ class Automation extends Model
         $result = $msg->sendWhatsAppMessage('' , $recordModal->phone_number, $account , $data->select_template);
         return true;
     }
+
+    /**
+     * Create contact
+     * 
+     * @param {Object} $fieldMap
+     */
+    public function storeRecord($fieldMap)
+    {
+        try{
+            $recordModal = $this->recordModal;
+        
+            foreach($fieldMap as $map){
+                // Replace field name - field value
+                $fieldValue = $this->checkMapFieldIsFieldName($map->map_field);
+
+                $fieldName = $map->module_field;
+                $recordModal->$fieldName = $fieldValue;
+            }
+            $recordModal->save();
+            Log::info([ 'status' => 'Success', 'messgae' => 'Record stored successfully.']);
+        }
+        catch(\Exception $e){
+            Log::info([ 'status' => 'Failed', 'messgae' => 'Record not stored, Please check mapping configuration']);
+            Log::info('Cannot store the record for : ' . $e->getMessage());
+        }
+        
+    }
+
+    /**
+     * Find the field name between the curly braces
+     */
+    public function checkMapFieldIsFieldName($str, $starting_word = "{{", $ending_word = "}}")
+	{
+        $fieldValue = $str;
+        // Fetch substring between the curly braces
+        $subtring_start = strpos($str, $starting_word);
+        $subtring_start += strlen($starting_word);
+        $size = strpos($str, $ending_word, $subtring_start) - $subtring_start;
+        $fieldName = substr($str, $subtring_start, $size);
+
+        // Check post data contain field name
+        if($fieldName && in_array($fieldName , array_keys($_POST))) {
+            
+            $value = $_POST[$fieldName];
+            // Concat webhook value and input value
+            $fieldValue = str_replace( "{{".$fieldName."}}", $value , $str );
+        
+            // Replace other vaiable value 
+            $fieldValue = $this->checkMapFieldIsFieldName($fieldValue);
+           
+            return $fieldValue;
+        }
+        return $fieldValue;
+  	}
 }

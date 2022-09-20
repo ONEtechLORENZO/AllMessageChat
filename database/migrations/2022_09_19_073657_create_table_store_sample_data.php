@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddOptionToContactsTable extends Migration
+class CreateTableStoreSampleData extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,12 @@ class AddOptionToContactsTable extends Migration
      */
     public function up()
     {
-        Schema::table('contacts', function (Blueprint $table) {
-            $table->LONGTEXT('custom')->nullable();
+        Schema::create('webhook_data', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('automation_id')->constrained('automations');    
+            $table->longText('data');
+            
         });
     }
 
@@ -25,8 +29,6 @@ class AddOptionToContactsTable extends Migration
      */
     public function down()
     {
-        Schema::table('contacts', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('webhook_data');
     }
 }

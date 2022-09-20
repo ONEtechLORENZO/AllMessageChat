@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddOrderModuleBillingFields extends Migration
+class CreateOrdersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,17 @@ class AddOrderModuleBillingFields extends Migration
      */
     public function up()
     {
-        Schema::table('orders', function (Blueprint $table) {
+        Schema::create('orders', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->nullable();
+            $table->foreignId('opportunity')->nullable()->constrained('opportunities');
+            $table->foreignId('contact')->nullable()->constrained('contacts');
+            $table->dateTime('due_date')->nullable();
+            $table->string('status')->nullable();
+            $table->longText('description')->nullable();
+            $table->foreignId('company_id')->constrained('companies');
+            
+           //order billing,shipping address
             $table->string('billing_address')->nullable();
             $table->string('billing_city')->nullable();
             $table->string('billing_state')->nullable();
@@ -24,6 +34,8 @@ class AddOrderModuleBillingFields extends Migration
             $table->string('shipping_state')->nullable();
             $table->string('shipping_postal_code')->nullable();
             $table->string('shipping_country')->nullable();
+
+            $table->timestamps();
         });
     }
 
@@ -34,9 +46,6 @@ class AddOrderModuleBillingFields extends Migration
      */
     public function down()
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumns(['billing_address', 'billing_city', 'billing_state', 'billing_postal_code', 'billing_country']);
-            $table->dropColumns(['shipping_address','shipping_city', 'shipping_state', 'shipping_postal_code', 'shipping_country']);
-        });
+        Schema::dropIfExists('orders');
     }
 }

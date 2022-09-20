@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Dropdown from "@/Components/Forms/Dropdown";
 
 const options = {
@@ -49,21 +49,19 @@ function Content(props){
     
         <div className="border m-10 h-64 rounded-lg">  
             <div className="p-8">
-                Information
-            </div>
-            {props.data.service ? 
-             <>
-              <textarea
-                name='action'
-                id='action'
-                rows={2}
-                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-1/2 h-36 mx-4 sm:text-sm border border-gray-300 rounded-md"
-                defaultValue={props.data.action}
-                onChange={props.handleChange}
-                value={props.data.action}
+                
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                    Template
+                </label>
+                <br></br>
+                <Dropdown
+                    id='template_id'
+                    name='template_id'
+                    options={props.templates}
+                    handleChange={props.handleChange}
+                    value={props.data.template_id == null ? '' : props.data.template_id}
                 />
-             </>
-            :'' }
+            </div>
         </div>
         
         <div className="m-10 flex justify-between">

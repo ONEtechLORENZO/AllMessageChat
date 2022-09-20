@@ -31,6 +31,9 @@ class ChatListContactController extends Controller
         } elseif($request->parent == 'Chat') {
             $getSelectedContacts = ChatListContact::where('user_id', $userId)->select('contact_id')->get();
         }
+        elseif($request->parent == 'Organization') {
+            $getSelectedContacts = Contact::select('id as contact_id')->where('organization_id', $request->record)->get();
+        }
 
         foreach ($getSelectedContacts as $key => $selectedContact) {
             $selectedContacts[] = $selectedContact->contact_id ;

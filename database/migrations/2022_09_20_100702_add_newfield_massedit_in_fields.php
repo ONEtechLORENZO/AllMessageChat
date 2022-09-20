@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddContryCodeContactsTable extends Migration
+class AddNewfieldMasseditInFields extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddContryCodeContactsTable extends Migration
      */
     public function up()
     {
-        Schema::table('contacts', function (Blueprint $table) {
-            $table->string('country_code')->nullable();
+        Schema::table('fields', function (Blueprint $table) {
+            $table->string('mass_edit')->default('0');
         });
     }
 
@@ -25,8 +25,8 @@ class AddContryCodeContactsTable extends Migration
      */
     public function down()
     {
-        Schema::table('contacts', function (Blueprint $table) {
-            $table->dropcolumn('country_code');
+        Schema::table('fields', function (Blueprint $table) {
+            //
         });
     }
 }

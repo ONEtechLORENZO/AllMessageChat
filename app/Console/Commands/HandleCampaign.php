@@ -59,7 +59,7 @@ class HandleCampaign extends Command
         if($campaign){
             
             $channel = $campaign->service;
-            $content = $campaign->action;
+            $template = $campaign->template_id;
             $conditions = $campaign->conditions;
             $offset = $campaign->offset;
             $searchData = json_decode($conditions);
@@ -93,7 +93,7 @@ class HandleCampaign extends Command
                             if($mobileNumber){
                                 //Send Message to Whatsapp
                                 $msg = new Msg();
-                                $response = $msg->sendWhatsAppMessage($content , $mobileNumber, $account);
+                                $response = $msg->sendWhatsAppMessage('' , $mobileNumber, $account, $template);
                             }
         
                         }else{
@@ -101,7 +101,7 @@ class HandleCampaign extends Command
         
                             if($instagramId){
                                 //Send Message to Instagram
-                               $response = $msg->sendInstagramMessage($content , $instagramId, $account->src_name);
+                               $response = $msg->sendInstagramMessage('' , $instagramId, $account->src_name, $template);
                             }
                         }    
                     }

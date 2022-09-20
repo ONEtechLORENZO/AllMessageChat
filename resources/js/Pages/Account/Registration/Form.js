@@ -6,6 +6,8 @@ import Step2 from './Step2';
 import Step3 from './Step3';
 import Step4 from './Step4';
 import Step5 from './Step5';
+import Step6 from './Step6';
+import Step7 from './Step7';
 import axios from 'axios';
 
 export default function AccountRegistration(props){
@@ -24,7 +26,7 @@ export default function AccountRegistration(props){
     function serviceHandler(){
         const service = data.service;
         if(service == "whatsapp"){
-            setCurrentPage(2);
+            setCurrentPage(6);
         }
         return false;
     }
@@ -181,6 +183,26 @@ export default function AccountRegistration(props){
                                       }
                                     >
                                        <Step5 />
+                                    </div>
+
+                                    <div 
+                                      className={
+                                        curretpage == 6 ? "block" : "hidden"
+                                      }
+                                    >
+                                      <Step6 
+                                      setCurrentPage={setCurrentPage}
+                                      />
+                                    </div>
+
+                                    <div 
+                                      className={
+                                        curretpage == 7 ? "block" : "hidden"
+                                      }
+                                    >
+                                      <Step7 
+                                      setCurrentPage={setCurrentPage}
+                                      />
                                     </div>
 
                                   </div>

@@ -428,9 +428,9 @@ class Controller extends BaseController
         foreach ($fields as $field) {           
             $is_custom = ($field->field_group) ? $groupList[$field->field_group] : 'default';
             if($field->field_group) {
-                $header['custom'][$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type'], 'custom' => $field['is_custom']];
+                $header['custom'][$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type'], 'custom' => $field['is_custom'], 'name' => $field['field_name']];
             } else {
-                $header[$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type'], 'custom' => $field['is_custom']];
+                $header[$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type'], 'custom' => $field['is_custom'], 'name' => $field['field_name']];
             }
         }
 
@@ -583,11 +583,11 @@ class Controller extends BaseController
     /**
      * Get SubPanel Records
      */
-    public function getSubPanelRecords( $parent, $submodule, $query)
+    public function getSubPanelRecords( $parent, $submodule, $query,$parent_name)
     {
         $module=new $submodule;
         $headers = $module->getListViewFields();
-        
+   
         $baseTable = $module->getTable();
        
         $moduleName = class_basename($module);
@@ -613,7 +613,7 @@ class Controller extends BaseController
             'related_records' => $records->items(),
             'related_records_header' => $headers,
             'current_tab' => $currentTab,
-
+            'parent_name' => $parent_name,
             // Paginator
             'sub_panel_pagination' => [
                 'firstPageUrl' => $records->url(1),
