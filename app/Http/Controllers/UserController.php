@@ -27,6 +27,7 @@ use PDF;
 use Schema;
 use Cache;
 use DB;
+use Mail;
 
 class UserController extends Controller
 {
@@ -1722,20 +1723,21 @@ class UserController extends Controller
     }
 
     public function sendMigrateRequest(Request $request) {
-        
-        $user_id = $request->user()->id;
-        $account = new Account();
 
-        if($request){
-             $account->migrate = $request->migrate;
-             $account->business_solution = $request->business_solution;
+        $emailAddress = 'rajkumar@blackant.io';
+        $emailAddress = filter_var($emailAddress, FILTER_SANITIZE_EMAIL);
 
-            // Log in user id & company
-            $account->user_id = $user_id;
-            $account->company_id = Cache::get('selected_company_'. $user_id);
-            $account->save();
+        $data = [
+            'data' => $request
+        ];
+
+        if($emailAddress){
+            Mail::send('account',$data, function($message) use ($emailAddress){
+                $message->to($emailAddress)->subject
+                ('Welcome');
+            });
         }
-
+        
         return response()->json(['status' => true]);
     }
 }
