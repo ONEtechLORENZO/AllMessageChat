@@ -248,6 +248,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/campaign/search',[CampaignController::class, 'searchRecords'])->name('searchfilter');
     Route::delete('/deleteCampaign/{id}',[CampaignController::class, 'destroy'])->name('deleteCampaign');
     Route::get('/campaign/company/{service}',[CampaignController::class, 'getCompanyName'])->name('get_company_name');
+    Route::get('/campaign/getTemplates/{account_id}',[CampaignController::class, 'getTemplateList'])->name('get_template_list');
 
     // Impersonate User
     Route::get('/user/getUserSession',[UserController::class, 'getUserSession'])->name('get_session_value');

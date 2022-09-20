@@ -13,6 +13,7 @@ use App\Http\Controllers\MsgController;
 use App\Models\Taggable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
+use App\Models\Template;
 
 class CampaignController extends Controller
 {
@@ -94,8 +95,8 @@ class CampaignController extends Controller
             if($request->name){
                 $campaign->name = $request->name;
                 $campaign->service = $request->service;
-                $campaign->action = $request->action;
                 $campaign->account_id = $request->account_id;
+                $campaign->template_id = $request->template_id;
             }
             if($request->conditions){
                 $conditions = json_encode($request->conditions);
@@ -279,5 +280,18 @@ class CampaignController extends Controller
         }
 
         echo json_encode($companyName); die;
+    }
+
+    /**
+     * Get template list
+     */
+    public function getTemplateList(Request $request, $account)
+    {
+        $templateList = [];
+        $templates = Template::where('account_id', $account)->get();
+        foreach($templates as $template){
+            $templateList[$template->id] = $template->name;
+        }
+        return response()->json(['templates' => $templateList]);
     }
 }

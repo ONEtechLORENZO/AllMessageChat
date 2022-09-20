@@ -15,6 +15,7 @@ export default function Campaign(props) {
   const [conditions, setConditions] = useState();
   const [recordCount, setRecordCount] = useState(null);
   const [companyName, setCompanyName] = useState(null);
+  const [templates , setTemplates] = useState({});
   const [scheduleTime, setScheduleTime] = useState();
   
   useEffect(() => {
@@ -23,7 +24,9 @@ export default function Campaign(props) {
     setStatus(props.status);
     setRecordCount(props.count);
     if(props.campaign.account_id){
-      getCompanyName(props.campaign.service)
+      getCompanyName(props.campaign.service);
+
+      getTemplateList(props.campaign.account_id);
     }
   },[props]);
 
@@ -40,6 +43,9 @@ export default function Campaign(props) {
       }
       if(name == 'service' && value != ''){
          getCompanyName(value);
+      }
+      if(name == 'account_id' && value != ''){
+        getTemplateList(value);
       }
       newState[name] = value;
       setData(newState);
@@ -121,6 +127,21 @@ export default function Campaign(props) {
       }
    }
 
+    /**
+     * Get template list
+     */
+    function getTemplateList(accountId){
+      if(accountId){
+        axios({
+          method:'get',
+          url: route('get_template_list', {'account_id': accountId})
+        })
+        .then((response) => {
+          setTemplates(response.data.templates)
+        });
+      }
+    }
+
    function checkValidation(data, openTab, conditions){
       if(openTab == '2'){
         if(conditions){
@@ -142,7 +163,7 @@ export default function Campaign(props) {
           return false;
         }
 
-        if(!data.action || data.action == ''){
+        if(!data.template_id || data.template_id == ''){
           return false;
         }
       }
@@ -231,6 +252,7 @@ export default function Campaign(props) {
                    saveCampaign={saveCampaign}
                    previous={setOpenTab}
                    companyName={companyName}
+                   templates={templates}
                  />
               </div>
               <div
@@ -248,6 +270,7 @@ export default function Campaign(props) {
                   records={recordCount}
                   company={companyName}
                   scheduleTime={scheduleTime}
+                  templates={templates}
                   setScheduleTime={setScheduleTime}
                 />
               </div>
