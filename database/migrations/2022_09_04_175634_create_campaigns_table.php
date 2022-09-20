@@ -19,7 +19,7 @@ class CreateCampaignsTable extends Migration
             $table->string('status')->nullable();
             $table->string('service')->nullable();
             $table->longText('conditions')->nullable();
-            $table->longText('action')->nullable();
+            $table->string('template_id')->nullable();
             $table->dateTime('scheduled_at')->nullable();
             $table->foreignId('company_id')->constrained('companies');
             $table->string('current_page')->nullable();
