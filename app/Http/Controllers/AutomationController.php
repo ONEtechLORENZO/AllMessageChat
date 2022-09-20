@@ -10,8 +10,11 @@ use App\Models\Template;
 use App\Models\Tag;
 use App\Models\Field;
 use App\Models\Category;
+use App\Models\Contact;
 use Inertia\Inertia;
+use DB;
 use Cache;
+use Str;
 
 class AutomationController extends Controller
 {
@@ -66,6 +69,7 @@ class AutomationController extends Controller
             abort('404');
         }
         $parent = 'Contact';
+        
         $data = [
             'record' => $automation,
             'options' => $automation->getTriggerOptions(),
@@ -89,22 +93,16 @@ class AutomationController extends Controller
         $companyId = Cache::get('selected_company_' . $request->user()->id);
         $name = $request->name;
 
-        // $id = ($request->id) ? $request->id : '';
-        // dd($request);
-        // if($id){
-        //     $automation = Automation::where('company_id', $companyId)->where('id', $id)->first();
-        // } else {
+            $uniqueId = Str::uuid()->toString();
             $automation = new Automation();
             $automation->name = $name;
             $automation->status = $request->status;
             $automation->company_id = $companyId;
+            $automation->uuid = $uniqueId;
             $automation->save();
 
             // Redirect to React flow page for create workflow
             return Redirect::route('createAutomation', $automation->id);
-     //   }
-
-        // dd($request);
     }
 
     /**
@@ -183,6 +181,9 @@ class AutomationController extends Controller
         if(!$automation){
             abort(404);
         }
+        // Delete Relate table entry
+        DB::table('webhook_data')->where('automation_id' , $automation->id)->delete();
+
         $automation->delete();
         return Redirect::route('listAutomation');
     }
@@ -252,8 +253,91 @@ class AutomationController extends Controller
                 $return['field_info'][$field->field_name] = $field;
             }
             
+        } else if('create_contact' == $_GET['action_type'] || $_GET['action_type'] == 'update_contact' ){ 
+
+            $automation = Automation::where([
+                            'id' => $_GET['record'],
+                        ])
+                        ->first();
+            
+            $return['sample_data'] = $this->getSampleData($request , $automation->id , $automation->uuid , true);
+
         } 
         echo json_encode(['result' =>$return ]);
     }
 
+    /**
+     * Store action data
+     */
+    public function storeWebActionData(Request $request)
+    {
+       
+        $recordId = $request->get('automation_id') ;
+        $uuid = $request->get('unique_id') ;
+        $automation = Automation::where([
+                'id' => $recordId,
+                'uuid' => $uuid,
+            ])
+            ->first();
+        
+        if($automation){
+            $data = json_encode($_POST);
+          
+            // Store post data 
+            DB::table('webhook_data')
+                ->updateOrInsert(
+                    ['automation_id' => $automation->id],
+                    ['data' => $data]
+                );
+            $result = 'Data updated.';
+            if($automation->trigger_mode == 'received_webhook' ){
+                unset($_REQUEST['isFlowAction']);   // Reset the flow action
+                
+                $flow = json_decode($automation->flow);
+                
+                if( isset( $_POST['id']) ){
+                    // Update contact
+                    $contact = Contact::where([
+                            'id' => $_POST['id'],
+                            'company_id' => $automation->company_id
+                        ])->first();
+                } else {
+                    // Create contact
+                    $contact = new Contact;
+                }
+                $contact->company_id = $automation->company_id;
+                $result = $automation->getFlowResult($flow , $contact);
+              
+            }
+            return response()->json(['status' => true , 'result' => $result]);
+        }
+        abort(403, 'Unauthorized action.');
+    }
+
+
+    /**
+     * Return sample data 
+     * 
+     * @param {Integer} $automationId
+     * @param {String} $uuid
+     */
+    public function getSampleData(Request $request, $automationId, $uuid, $functionCall = false)
+    {
+        $data = ''; 
+        $automation = Automation::where([
+            'automations.id' => $automationId,
+            'uuid' => $uuid,
+        ])
+        ->join('webhook_data', 'automations.id' , 'automation_id')
+        ->first('data');
+        
+        if($automation){
+            $data = json_decode($automation->data);
+        }
+        if($functionCall){
+            return $data;
+        } else {
+            return response()->json(['status' => true, 'result' => $data]);
+        }
+    }
 }

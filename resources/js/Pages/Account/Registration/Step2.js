@@ -77,7 +77,7 @@ export default function Step2(props){
                 
                 <div>
                     <label className="text-base font-medium text-gray-900">
-                        Do you already use WhatsApp Business API via a BSP or via Cloud API on this number? 
+                        The phone number that you want to use on OneMessage is already associated to a whatsapp account or a whatsapp Business account?
                     </label>
 
                     <fieldset className="mt-4">

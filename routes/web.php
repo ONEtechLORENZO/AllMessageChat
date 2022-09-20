@@ -67,6 +67,7 @@ Route::get('/invitedUserRelation', [UserInviteController::class, 'relateUser']);
 
 Route::post('/incoming', [MsgController::class, 'incoming']);
 Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
+
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
      
@@ -114,6 +115,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/account/{id}', [UserController::class, 'showAccount'])->name('account_view');
     Route::post('/account/delete_account', [UserController::class, 'deleteAccount'])->name('delete_account');
     Route::post('/saveTemplateStatus/account/{acc_id}/template/{tmp_id}', [UserController::class, 'saveTemplateStatus'])->name('template_status_form');
+    Route::post('/migrateRequest', [UserController::class, 'sendMigrateRequest'])->name('migrate_request');
 
     // Webhook Events
     Route::post('/account/{id}/webhook_event', [UserController::class, 'createWebhookEvent'])->name('create_webhook_event');
@@ -263,6 +265,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/automation/delete/{id}',[AutomationController::class, 'destroy'])->name('deleteAutomation');
 
     Route::get('/getActionData', [AutomationController::class, 'getActionData'])->name('get_action_data');
+    Route::get('/webhook/sample/{id}/{uuid}', [AutomationController::class , 'getSampleData'])->name('get_webhook_data');
     
     // LineItem
     Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');
