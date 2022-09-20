@@ -31,7 +31,8 @@ export default function Element(props) {
     // Multi select value formate
     function multiformate(field_value){
         let isArray = Array.isArray(field_value);
-        if(!isArray){
+    
+        if(!isArray && field_value){
             var multi = field_value;
             var field_value = multi.split(', ');
             return field_value;
