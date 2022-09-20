@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Field;
 use App\Models\Contact;
 use App\Models\FieldGroup;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Http\Request;
 use Cache;
 
@@ -184,4 +185,60 @@ class FormController extends Controller
         
         return response()->json(['records' => $records]);
     }
+
+    public function massEdit(Request $request) {
+
+        $record_id = $request->id;
+        $module = $request->module;
+
+        // Custom fields modules
+        $customfieldModule = ['Contact', 'Opportunity', 'Product', 'Order'];
+
+        if($module){
+            $fields = Field::where('module_name', $module)
+                      ->where('mass_edit', '1')
+                      ->get();
+            
+            if($fields) {
+                foreach($record_id as $id) {
+                
+                    $model = "App\\Models\\{$module}"; // Get selected model
+                    $currentModel = new $model;  // Create object from the model
+                    
+                    $currentModule = $currentModel::findOrFail($id);
+                    $customField = [];
+                    foreach($fields as $field) {
+                        $field_name = $field['field_name'];
+                        $custom = $field['is_custom'];
+                        
+                        if($request->has($field_name) && $custom == 0) {
+                           $currentModule->$field_name = $request->$field_name;
+                        }
+                    }
+                    
+                    // Check if the current module in custom module list
+                    foreach($customfieldModule as $customModule) {
+                        if($module == $customModule) {
+                            if($request->custom) {
+                                foreach( $request->custom as $key => $value) {
+                                    $customField[$key] = $value;
+                                }
+                            }
+                        }
+                    }
+
+                    if($customField) {
+                        $currentModule->custom = $customField;
+                    }
+
+                    $currentModule->save();
+                }
+            }          
+        }
+        
+        $redirect = "list{$module}";
+        return Redirect::route($redirect);
+    }
+        
+        
 }

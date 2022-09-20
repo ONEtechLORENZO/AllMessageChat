@@ -196,6 +196,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/field/getFieldOptions',[FormController::class,'getFieldOptions'])->name('get_field_options');
     Route::get('/getRelateContacts', [FormController::class, 'getRelateContacts'])->name('get_relate_contacts_list');
     Route::get('/lookup', [FormController::class, 'lookup'])->name('lookup');
+    Route::post('/massEdit', [FormController::class, 'massEdit'])->name('mass_edit');
 
     // Import
     Route::get('/imports', [ImportController::class, 'index'])->name('listImport');

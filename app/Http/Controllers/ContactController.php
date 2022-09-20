@@ -73,6 +73,7 @@ class ContactController extends Controller
                 'search' => true,
                 'filter' => true,
                 'select_field'=>true,
+                'mass_edit' => true
             ],
         ];
         

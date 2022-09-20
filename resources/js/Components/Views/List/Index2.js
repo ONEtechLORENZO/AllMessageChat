@@ -13,6 +13,7 @@ import Filter from "./Filter2";
 import axios from "axios";
 import { Menu, Transition } from '@headlessui/react'
 import ListTable from './ListTable';
+import MassEdit from './MassEdit';
 
 
 function ListView(props)
@@ -24,10 +25,13 @@ function ListView(props)
     const [recordId, setRecordId] = useState(''); 
     const [fields, setFields] = useState([]);
     const [fieldOptions, setFieldOptions ] = useState({});
+    const [showMassEdit, setShowMassEdit] = useState(false);
+    const [checkedId, setCheckedId] = useState([]);
+    const [checkAll, setCheckAll] = useState(false);
 
     useEffect(() => {
         fetchModuleFields();
-        setRecords(props.records);       
+        setRecords(props.records);   
     }, [props.records]);
 
     /**
@@ -38,7 +42,6 @@ function ListView(props)
         setRecordId('');
     }
     
-
     function saveSelectedColumn(){
        if(columnOptions!=''){
             Inertia.post(route('showColumns', [props.module]), {'columns':columnOptions});
@@ -142,7 +145,57 @@ function ListView(props)
     if(props.errors.message){
         notie.alert({type: 'error', text: props.errors.message, time: 5});
     }
-   
+
+    
+    // Get current check field id 
+    function getCheckId(key, id) {
+        let newCheck = Object.assign([], checkedId);
+        const recordLength = props.records.length;
+        const index = newCheck.indexOf(id);
+        if(index > -1) {
+            newCheck.splice(index, 1);
+        }else {
+            newCheck.push(id);
+        }
+        setCheckedId(newCheck)
+        if(recordLength == newCheck.length) {
+            setCheckAll(true);
+        } else {
+            setCheckAll(false);
+        }
+        
+    }
+
+    // Check select all field 
+    function selectCheckAll() {
+        let newCheck = Object.assign([], checkedId);
+        if(!checkAll) {
+            if(props.records) {
+                (props.records).map( (record) => {
+                    !newCheck.includes(record.id) ? newCheck.push(record.id) :"";
+                    setCheckedId(newCheck);
+                });
+            }
+            setCheckAll(true);
+        } else {
+            setCheckedId([]);
+            setCheckAll(false);
+        }
+    }
+
+    function massEdit(){
+        const length = checkedId.length;
+        if(length){
+            setShowMassEdit(true);
+        }
+    }
+
+    function hideMassEdit() {
+        setShowMassEdit(false);
+        setCheckedId([]);
+        setCheckAll(false);
+    }
+ 
     return (
         <>
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
@@ -172,7 +225,6 @@ function ListView(props)
                                 translator={props.translator}
                             />
                         }
-
                     </div>
                     <div className='flex gap-4'>
                         {props.actions && props.actions.invite_user === true ?
@@ -225,6 +277,16 @@ function ListView(props)
                                 >
                                    <DownloadIcon className='h-4 w-4' /> Export 
                                 </a>
+                            </>
+                        : ''}
+                         {props.actions && props.actions.mass_edit === true ?
+                            <>
+                                <button
+                                   className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
+                                   onClick={() => massEdit()}
+                                >
+                                   <PencilAltIcon className='h-4 w-4' /> Mass edit
+                                </button>
                             </>
                         : ''}
                          
@@ -337,6 +399,10 @@ function ListView(props)
                                 getFieldOptions={getFieldOptions}
                                 deleteRecord={deleteRecord}
                                 showEditForm={showEditForm}
+                                checkAll={checkAll}
+                                checkedId={checkedId}
+                                getCheckId={getCheckId}
+                                selectCheckAll={selectCheckAll}
                                 {...props}
                             />
 
@@ -362,6 +428,14 @@ function ListView(props)
                     productList={props.productList}
                 />
             : ''}
+
+            {showMassEdit ? 
+             <MassEdit 
+               module={props.module}
+               checkId={checkedId}
+               hideMassEdit={hideMassEdit}
+             />
+            : '' }
         </>
     )
 }
