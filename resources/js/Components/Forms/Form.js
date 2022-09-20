@@ -63,7 +63,7 @@ function Form(props)
 
         //prefill the module_name in addfield form  
        props.module=='Field' && props.mod!='' && setData('module_name',props.mod);  
-
+        //prefill relate field in subpanel
        if(props.parent_module == 'Organization' && props.module == 'Contact')
         {                        
             setData('organization_id',{'value':props.parent_id,'label':props.parent_name});

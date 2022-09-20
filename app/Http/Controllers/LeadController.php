@@ -14,7 +14,7 @@ use App\Models\Category;
 use App\Models\Field;
 use App\Models\Service;
 use App\Models\User;
-
+use App\Models\Note;
 class LeadController extends Controller
 {
     /**
@@ -95,7 +95,7 @@ class LeadController extends Controller
 
        
         //related organization details
-        $organization = Lead::where('id', $lead->organization_id)->first();
+        $organization = Organization::where('id', $lead->organization_id)->first();
 
         //assign user details
         $user = User::where('id', $lead->assigned_to)->first();
@@ -158,6 +158,22 @@ class LeadController extends Controller
         return Redirect::route('listLead');
     }
 
+
+
+    //convert a lead to contact
+    public function convert_lead(Lead $lead,$leadId)
+    {
+        $lead = Lead::find($leadId);
+        $user_id = $request->user()->id;
+
+        $new_contact=$lead->replicate(['id']);
+        $new_contact->setTable('contacts');
+        $new_contact->save();
+        $lead->delete();        
+
+        return Redirect::route('listLead');
+
+    }
    
     /**
      * Return Lead Detail

@@ -159,6 +159,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/updateLead/{id}', [LeadController::class, 'update'])->name('updateLead');
     Route::post('/updateLead', [LeadController::class, 'store'])->name('storeLead');
     Route::get('/getLeadDetail', [LeadController::class, 'getLeadData'])->name('editLead');
+    Route::post('/convertLead/{id}', [LeadController::class, 'convert_lead'])->name('convertLead');
     
     
     //Organization
