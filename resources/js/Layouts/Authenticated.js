@@ -173,14 +173,12 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
     const[showModal,setshowModal]= useState(false);
     const [count, setCount] = useState();
     const [id, setId] = useState();
+    const [company, setCompany] = useState({});
 
     useEffect(() => {
-        if(auth.user.currency==null)
-        {
-            setshowModal(true)
-            getTimezones();
-        }
+        getUserCompany();
         getNotifications();
+        getTimezones();
         axios.get(route('get_session_value')).then((response) => {
             if(response.data.session_value){
                 setReturnMainUser(response.data.session_value);
@@ -280,6 +278,19 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
             let newState = Object.assign({}, notifications);
             newState = {...newState, ...response.data.notifications};
             setNotifications(newState);
+        });
+    }
+
+    function getUserCompany() {
+        let url = route('get_selected_company');
+        axios.get(url).then( (response) => {
+            if(response) {
+                const companies = response.data.companies;
+                if(companies[0].currency == null) {
+                    setshowModal(true)
+                    setCompany(companies[0]);  
+                }
+            }
         });
     }
 
@@ -611,11 +622,12 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                 setSelectedCompany={setSelectedCompany}
             />
 
-        {showModal?
+        {showModal && company.hasOwnProperty('name')?
             <UserRegistration
               user={auth.user}
               time_zone={timezone}
               setshowModal={setshowModal}
+              company={company}
             />:''
         }
 

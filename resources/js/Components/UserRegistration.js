@@ -9,7 +9,6 @@ import InputError from '@/Components/Forms/InputError';
 import PristineJS from 'pristinejs';
 
 import {defaultPristineConfig, currencies, countries} from '@/Pages/Constants';
-import axios from 'axios';
 
 export default function UserRegistration(props) {
 
@@ -17,22 +16,23 @@ export default function UserRegistration(props) {
     const cancelButtonRef = useRef(null);
     const fieldList = {
         'User Information': {
-            'currency': {'value': props.user.currency, 'label': 'Currency', 'type': 'select', 'required': true, 'options': currencies },
-            'time_zone': {'value': props.user.time_zone, 'label': 'Time Zone', 'type': 'select', 'required': true , 'options': props.time_zone },
+            'currency': {'value': props.company.currency, 'label': 'Currency', 'type': 'select', 'required': true, 'options': currencies },
+            'time_zone': {'value': props.company.time_zone, 'label': 'Time Zone', 'type': 'select', 'required': true , 'options': props.time_zone },
         },
         'Billing Information': {
-            'company_address': {'value': props.user.company_address, 'label': 'Company Address', 'type': 'textarea', 'required': true },
-            'company_country': {'value': props.user.company_country, 'label': 'Company Country', 'type': 'select', 'required': true, 'options': countries },
-            'company_vat_id': {'value': props.user.company_vat_id, 'label': 'Company VAT ID', 'type': 'text', 'required': true },
-            'codice_destinatario': {'value': props.user.codice_destinatario, 'label': 'Company Codice Destinatario', 'type': 'text', 'required': true },
-            'admin_email': {'value': props.user.admin_email, 'label': 'Admin email for invoices', 'type': 'email', 'required': true },
+            'company_address': {'value': props.company.company_address, 'label': 'Company Address', 'type': 'textarea', 'required': true },
+            'company_country': {'value': props.company.company_country, 'label': 'Company Country', 'type': 'select', 'required': true, 'options': countries },
+            'company_vat_id': {'value': props.company.company_vat_id, 'label': 'Company VAT ID', 'type': 'text', 'required': true },
+            'codice_destinatario': {'value': props.company.codice_destinatario, 'label': 'Company Codice Destinatario', 'type': 'text', 'required': true },
+            'admin_email': {'value': props.company.admin_email, 'label': 'Admin email for invoices', 'type': 'email', 'required': true },
         }
     };
 
     const { data, setData, post, processing, errors, reset } = useForm({});
-    useEffect(() => {  
-        let newData = Object.assign({}, data);
-        setData(props.user);
+    useEffect(() => {
+        if(props.company) {
+            setData(props.company);
+        }  
     },[]);
 
     /**
@@ -46,7 +46,6 @@ export default function UserRegistration(props) {
         setData(newState);
     }
 
-
  /**
      * Validate the form and submit
      */
@@ -57,7 +56,7 @@ export default function UserRegistration(props) {
         if(!is_validated) {
             return false;
         }
-      post(route('store_user_data'))
+      post(route('storeCompany'))
       props.setshowModal(false)       
   }
 
