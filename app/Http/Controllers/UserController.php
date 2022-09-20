@@ -592,7 +592,7 @@ class UserController extends Controller
      */
     public function createAccessToken($user_id)
     {
-	$user = User::findOrFail($user_id);
+	    $user = User::findOrFail($user_id);
         // Delete existing token
         Auth::user()->tokens->each(function($token) {
             $token->delete();
@@ -624,10 +624,14 @@ class UserController extends Controller
      */
     public function showAccount(Request $request, $id)
     {
-        $user_id = $request->user()->id;
-        $account = Account::where('user_id', $user_id)
-            ->where('id', $id)
-            ->first();
+        $user = $request->user();
+        $companyId = Cache::get('selected_company_'. $user->id);
+        $query = Account::where('id', $id);
+
+        if($user->role != 'global_admin') {
+            $query->where('company_id', $companyId);
+        }
+        $account = $query->first();
 
         if (!$account) {
             abort(401, __('You are not authorised to see this record.'));
