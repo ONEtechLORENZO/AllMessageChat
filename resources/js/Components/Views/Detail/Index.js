@@ -155,6 +155,23 @@ export default function Index(props)
             }]
         });
     }
+    function lead_to_contact()
+    {
+        confirmAlert({
+            message: ('Are you sure you want to convert the Lead to a Contact?'),
+            buttons: [
+            {
+                label: ('Confirm'),
+                onClick: () => {   
+                    Inertia.post(route('convertLead',{id: record.id})), {
+                        onSuccess: (response) => {
+                            notie.alert({type: 'success', text: 'Moved successfully', time: 5});
+                }}}
+            }, {
+                label: 'No',            
+            }]
+        });
+    }
 
     function saveList() {
         var data = {
@@ -267,6 +284,20 @@ export default function Index(props)
                                 
                                 
                             </h3>
+                            {(props.module == 'Lead')?
+                            <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
+                            <div>
+                                <button
+                                    type="button"
+                                    onClick={ () => lead_to_contact()}
+                                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                >                                    
+                                    Convert Lead to Contact
+                                </button>
+                            </div>
+                        </div>                                      
+                                            :''}
+
                             <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
                                 <div>
                                     <button
@@ -497,6 +528,7 @@ export default function Index(props)
                                                 <SubPanels 
                                                     module={tab.name}
                                                     parent_id={props.record.id}
+                                                    parent_name={props.record.name}
                                                     parent_module={props.module}
                                                   
                                                 />
@@ -508,6 +540,7 @@ export default function Index(props)
                                                     module={tab.name}
                                                     parent_id={props.record.id}
                                                     parent_module={props.module}
+                                                    parent_name={props.record.name}
                                                 />
                                             </>
                                         }
@@ -517,6 +550,7 @@ export default function Index(props)
                                                     module={tab.name}
                                                     parent_id={props.record.id}
                                                     parent_module={props.module}
+                                                    parent_name={props.record.name}
                                                 />
                                             </>
                                         }
