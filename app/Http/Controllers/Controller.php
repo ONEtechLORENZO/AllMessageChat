@@ -583,11 +583,11 @@ class Controller extends BaseController
     /**
      * Get SubPanel Records
      */
-    public function getSubPanelRecords( $parent, $submodule, $query)
+    public function getSubPanelRecords( $parent, $submodule, $query,$parent_name)
     {
         $module=new $submodule;
         $headers = $module->getListViewFields();
-        
+   
         $baseTable = $module->getTable();
        
         $moduleName = class_basename($module);
@@ -613,7 +613,7 @@ class Controller extends BaseController
             'related_records' => $records->items(),
             'related_records_header' => $headers,
             'current_tab' => $currentTab,
-
+            'parent_name' => $parent_name,
             // Paginator
             'sub_panel_pagination' => [
                 'firstPageUrl' => $records->url(1),

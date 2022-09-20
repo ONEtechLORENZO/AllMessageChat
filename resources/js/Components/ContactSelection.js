@@ -16,8 +16,9 @@ export default function ContactSelection(props) {
 
     useEffect(() => {    
         getUserContacts('');
+        
     },[]);
-
+ 
     /**
      * Get User contact list
      */
@@ -153,6 +154,7 @@ export default function ContactSelection(props) {
                     hideForm={hideForm}
                     parent_module={props.parent_module}
                     parent_id= {props.parent_id ? props.parent_id : ''}
+                    parent_name= {props.parent_name}
                     getUserContacts={getUserContacts}
                 />
             : ''}

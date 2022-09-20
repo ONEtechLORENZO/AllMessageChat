@@ -174,6 +174,15 @@ class ContactController extends Controller
         $parent_mod = "App\Models\\{$parent_module}";       
 
         $contact = $parent_mod::findOrFail($request->id);
+
+        if($parent_module == 'Contact')
+        {
+            $parent_name = $contact->first_name. ' '. $contact->last_name;
+        }
+        else {
+             $parent_name = $contact->name;
+             }
+         
         $companyId = Cache::get('selected_company_'. $request->user()->id);
         $headers = $this->getModuleHeader($companyId , 'Contact');
         
@@ -198,7 +207,7 @@ class ContactController extends Controller
             if($subModule=='Contact')
               $query = $submod::where('organization_id', $request->id);
         }
-        $subPanelData = $this->getSubPanelRecords($parent_module, $submod, $query);  
+        $subPanelData = $this->getSubPanelRecords($parent_module, $submod, $query,$parent_name);  
         echo json_encode($subPanelData);
        die;
       }

@@ -455,6 +455,7 @@ export default function Index(props)
                                                 <SubPanels 
                                                     module={tab.name}
                                                     parent_id={props.record.id}
+                                                    parent_name={props.record.name}
                                                     parent_module={props.module}
                                                   
                                                 />
@@ -466,6 +467,7 @@ export default function Index(props)
                                                     module={tab.name}
                                                     parent_id={props.record.id}
                                                     parent_module={props.module}
+                                                    parent_name={props.record.name}
                                                 />
                                             </>
                                         }
@@ -475,6 +477,7 @@ export default function Index(props)
                                                     module={tab.name}
                                                     parent_id={props.record.id}
                                                     parent_module={props.module}
+                                                    parent_name={props.record.name}
                                                 />
                                             </>
                                         }

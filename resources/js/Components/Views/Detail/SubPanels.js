@@ -15,6 +15,7 @@ function SubPanels(props){
     const [headers, setHeaders ] = useState([]);
     const [actions, setActions ] = useState([]);
     const [paginateDetail, setpaginateDetail ] = useState([]);
+    const [parentName, setparentName ] = useState([]);
     const [recordId, setRecordId] = useState(''); 
 
     useEffect(() => {
@@ -35,6 +36,7 @@ function SubPanels(props){
           setHeaders(response.data.related_records_header);
           setpaginateDetail(response.data.sub_panel_pagination);
           setActions(response.data.sub_panbel_actions);
+          setparentName(response.data.parent_name);
       });
     }
 
@@ -101,14 +103,16 @@ function SubPanels(props){
                     setShowForm={setShowForm}
                     parent_module={props.parent_module}
                     parent_id={props.parent_id}
+                    parent_name={parentName}
                 /> :<Form 
                 module={props.module}
                 heading={props.heading}
                 hideForm={hideForm}
                 recordId={recordId}
                 translator={props.translator}
-               // parent_id={props.parent_id}
-                //parent_module={props.parent_module} 
+                parent_name={parentName}
+                parent_module={props.parent_module} 
+                parent_id={props.parent_id} 
             />)
            }
             {/* {showForm ?
