@@ -453,13 +453,14 @@ class MsgController extends Controller
     {
         $user = $request->user();
         $contactId = $request->contact_id;
+        $companyId = Cache::get('selected_company_'. $user->id);
         // Update Channel
         $this->updateChatChannel($user->id , $contactId, $request->category); 
         $category = ($request->category == 'all') ?['instagram', 'whatsapp'] : [$request->category] ;
         
         $messages = [];
         $account = Account::where('user_id', $user->id)->first();
-        $contact = Contact::where('user_id', $user->id)
+        $contact = Contact::where('company_id', $companyId)
             ->where('id', $contactId)
             ->first();
         if(!$contact){
@@ -852,8 +853,9 @@ class MsgController extends Controller
         $return = 0;
         $number = '+'.$number ;
         $price = '';
+        $companyId = Cache::get('selected_company_'. $user_id);
         $contact = Contact::where('phone_number' , $number)
-            ->where('user_id', $user_id)
+            ->where('company_id', $companyId)
             ->first();
         if($contact ){
             $price = Price::where('country_code' , $contact->country_code)->first();

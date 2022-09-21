@@ -306,6 +306,7 @@ class AutomationController extends Controller
                     $contact = new Contact;
                 }
                 $contact->company_id = $automation->company_id;
+                $contact->creater_id = 1;
                 $result = $automation->getFlowResult($flow , $contact);
               
             }
