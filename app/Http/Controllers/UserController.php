@@ -495,13 +495,13 @@ class UserController extends Controller
             $user->email = $request->get('email');
             $user->phone_number = $request->get('phone_number');
             $user->language = $request->get('language');
-            $user->currency = $request->get('currency');
-            $user->time_zone = $request->get('time_zone');
-            $user->company_address = $request->get('company_address');
-            $user->company_country = $request->get('company_country');
-            $user->company_vat_id = $request->get('company_vat_id');
-            $user->codice_destinatario = $request->get('codice_destinatario');
-            $user->admin_email = $request->get('admin_email');
+            // $user->currency = $request->get('currency');
+            // $user->time_zone = $request->get('time_zone');
+            // $user->company_address = $request->get('company_address');
+            // $user->company_country = $request->get('company_country');
+            // $user->company_vat_id = $request->get('company_vat_id');
+            // $user->codice_destinatario = $request->get('codice_destinatario');
+            // $user->admin_email = $request->get('admin_email');
 
             // Only admin and global admin can able to set the user role
             if($currentUser->role == 'admin' || $currentUser->role == 'global_admin') {

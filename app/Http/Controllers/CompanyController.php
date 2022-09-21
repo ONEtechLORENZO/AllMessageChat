@@ -79,6 +79,7 @@ class CompanyController extends Controller
      */
     public function store(Request $request)
     {
+    
         $request->validate([
             'name' => 'required|max:255',
         ]);
@@ -92,6 +93,14 @@ class CompanyController extends Controller
         $company->state = $request->state;
         $company->country = $request->country;
 
+        $company->currency = $request->get('currency');
+        $company->time_zone = $request->get('time_zone');
+        $company->company_address = $request->get('company_address');
+        $company->company_country = $request->get('company_country');
+        $company->company_vat_id = $request->get('company_vat_id');
+        $company->codice_destinatario = $request->get('codice_destinatario');
+        $company->admin_email = $request->get('admin_email');
+
         $company->save();
         if(!$request->id){
             DB::table('company_user')->insert([
@@ -99,7 +108,8 @@ class CompanyController extends Controller
                 'company_id' => $company->id
             ]);
         }
-        return Redirect::route('detailCompany', $company->id );
+       // return Redirect::route('detailCompany', $company->id );
+       return Redirect::route('dashboard');
     }
 
     /**

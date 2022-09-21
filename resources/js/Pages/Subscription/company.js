@@ -5,11 +5,12 @@ import { Link } from "@inertiajs/inertia-react";
 import Axios from "axios";
 import Input from "@/Components/Forms/Input";
 import { Inertia } from "@inertiajs/inertia";
+import {countries} from '@/Pages/Constants';
+import TextArea from "@/Components/Forms/TextArea";
 
 export default function CompanyDetail(props)
 {
   const [fields, setFields] = useState();
-  const [open, setOpen] = useState({});
   const [temp, setTemp] = useState({});
 
   useEffect(() => {
@@ -29,7 +30,6 @@ export default function CompanyDetail(props)
   }
 
   function editCompany(field_name){
-    let newOpen = Object.assign({}, open);
     let newTemp = Object.assign({}, temp);
     
     //reset the value
@@ -37,16 +37,11 @@ export default function CompanyDetail(props)
     setTemp(newTemp);
 
     //new value
-    newOpen['name'] = field_name;
     newTemp[field_name] = props.currentCompany[field_name];
-    setOpen(newOpen);
     setTemp(newTemp);
   }
 
   function editCancel(){
-    let newOpen = Object.assign({}, open);
-    newOpen['name'] = '';
-    setOpen(newOpen);
     setTemp({});
   }
 
@@ -63,7 +58,6 @@ export default function CompanyDetail(props)
       Inertia.post(route('saveCompany'), temp, {
         onSuccess: (response) => {
           setTemp({});
-          setOpen({'name':''})
         }
       });
     } 
@@ -97,7 +91,7 @@ export default function CompanyDetail(props)
                 </div>
               </div>
               <div className="border border-solid rounded-lg p-4">
-                <div className="font-bold capitalize">{props.currentCompany.plan} Plan</div>
+                <div className="font-bold capitalize">{props.currentCompany && props.currentCompany.plan} Plan</div>
                 <div className="grid grid-cols-2 p-2">
                     <div className="">
                         <p className="flex text-gray-500 gap-2"><span className="w-5 h-5"><CheckIcon/></span>Monthly Fee</p>
@@ -124,7 +118,7 @@ export default function CompanyDetail(props)
                     </div>
                     <div className="w-full">
                         <div className="p-2">
-                          {props.currentCompany.name}
+                          {props.currentCompany && props.currentCompany.name}
                         </div>
                         <div className="p-2">
                             <Dropdown 
@@ -158,37 +152,61 @@ export default function CompanyDetail(props)
                         {fields ? 
                           (fields).map((field, index) => {
                             let field_value = '';
+                            let options = '';
                             let field_name = field.field_name;
-                            let company = props.currentCompany;
-                            field_value = company[field_name];
+                            if(props.currentCompany){
+                              let company = props.currentCompany;
+                              field_value = company[field_name];
+                            }
                             if(!field_value){
                               field_value = '-';
                             }
                             if(temp.hasOwnProperty(field_name)){
                               field_value = temp[field_name];
                             }
-
                             return(
                               <tr>
                                 <td className="whitespace-nowrap px-3 py-4 w-1/3 text-sm font-medium text-gray-500">{field.field_label}</td>
                                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900 flex w-2/5">
-                                  {open  && open.name == field_name? 
+                                  {temp  && temp.hasOwnProperty(field_name)? 
                                   <>
-                                    <Input 
-                                        type="text" 
-                                        className={`mt-1 appearance-none block w-2/5 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
-                                        id={field_name}
-                                        name={field_name}
-                                        value={field_value} 
-                                        handleChange={saveTemp}
-                                    />
+                                    {field.field_type == 'text' ? 
+                                        <Input 
+                                          type="text" 
+                                          className={`mt-1 appearance-none block w-2/5 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                          id={field_name}
+                                          name={field_name}
+                                          value={field_value} 
+                                          handleChange={saveTemp}
+                                        />
+                                    : field.field_type == 'textarea' ?
+                                        <TextArea
+                                          id={field_name}
+                                          name={field_name}
+                                          rows="2"
+                                          className={`mt-1 max-w-lg shadow-sm block w-full focus:ring-skin-primary focus:border-skin-primary sm:text-sm border border-gray-300 rounded-md`}
+                                          value={field_value}
+                                          handleChange={saveTemp}
+                                       />    
+                                    :
+                                        <Dropdown
+                                          id={field_name}
+                                          name={field_name}
+                                          options={countries}
+                                          handleChange={saveTemp}
+                                          emptyOption={'Select'}
+                                          value={field_value}
+                                        />
+                                    }
                                     <div className="p-2 text-gray-900" onClick={() => saveCompany()}><CheckIcon className="h-6 w-6 text-green-900"/></div>
                                     <div className="p-2 text-gray-900" onClick={() => editCancel()}><XIcon className="h-6 w-6 text-red-900"/></div>
                                   </>
                                   : 
                                   <>
                                     {field_value}
-                                    <span className="pl-4" onClick={() => editCompany(field_name)}><PencilIcon className="h-4 w-4"/></span>
+                                    {field_name != 'currency' && field_name != 'time_zone' ? 
+                                        <span className="pl-4" onClick={() => editCompany(field_name)}><PencilIcon className="h-4 w-4"/></span>
+                                    : ''}
                                   </>
                                   }
                                 </td>

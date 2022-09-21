@@ -16,14 +16,6 @@ class AddUserFiedls extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->string('phone_number')->nullable();
             $table->string('language')->nullable();
-            $table->string('currency')->nullable();
-            $table->string('time_zone')->nullable();
-            $table->text('company_address')->nullable();
-            $table->string('company_country')->nullable();
-            $table->string('company_vat_id')->nullable();
-            $table->string('codice_destinatario')->nullable();
-            $table->string('admin_email')->nullable();
-
         });
     }
 
