@@ -286,7 +286,7 @@ export default function MassEdit(props)
                                     <div className="sm:flex sm:items-start">
                                         <div className="mt-3 text-center sm:mt-0 sm:text-left">
                                             <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                                                {props.recordId ? 'Update' : 'Create'} {props.heading}
+                                                Mass edit
                                             </Dialog.Title>
                                         </div>
                                     </div>
