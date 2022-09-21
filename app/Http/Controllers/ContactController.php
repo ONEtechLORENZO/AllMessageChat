@@ -200,6 +200,11 @@ class ContactController extends Controller
             $query = $submod::join('taggables', 'taggable_id', 'contacts.id')
                 ->where('tag_id', $request->id);
         }
+        if($parent_module=='Category')
+        {
+            $query = $submod::join('categorables', 'categorable_id', 'contacts.id')
+                ->where('categorable_id', $request->id);
+        }
 
         if($parent_module=='Contact')
         {

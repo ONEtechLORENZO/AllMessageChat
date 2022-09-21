@@ -165,8 +165,9 @@ class LeadController extends Controller
     public function convert_lead(Lead $lead,$leadId)
     {
         $lead = Lead::find($leadId);
-        $new_contact=$lead->replicate(['id']);
-        $new_contact->setTable('contacts');
+        $new_contact=new Contact();
+        $new_contact=$lead->replicate(['id']);       
+        $new_contact->setTable('contacts');        
         $new_contact->save();
         $lead->delete();     
         $contact_note=Contact::find($new_contact->id);
