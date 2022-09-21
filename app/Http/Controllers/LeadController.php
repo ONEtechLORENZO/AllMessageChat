@@ -164,12 +164,10 @@ class LeadController extends Controller
     public function convert_lead(Lead $lead,$leadId)
     {
         $lead = Lead::find($leadId);
-        $user_id = $request->user()->id;
-
         $new_contact=$lead->replicate(['id']);
         $new_contact->setTable('contacts');
         $new_contact->save();
-        $lead->delete();        
+        $lead->delete();                
 
         return Redirect::route('listLead');
 
