@@ -14,7 +14,7 @@ class AddNewfieldMasseditInFields extends Migration
     public function up()
     {
         Schema::table('fields', function (Blueprint $table) {
-            $table->string('mass_edit')->default('0');
+            $table->string('mass_edit')->nullable()->default('0');
         });
     }
 
