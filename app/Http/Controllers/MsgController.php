@@ -134,7 +134,7 @@ class MsgController extends Controller
             'created_at' => ['label' => __('Date'), 'type' => 'text'],
         ]; 
         
-        $query_columns = ['msgs.id', 'msgs.service', 'msgs.status', 'msgs.created_at', 'message', 'accounts.company_name', 'accounts.phone_number as account_phone_number', 'accounts.company_name', 'contacts.phone_number', 'contacts.instagram_id', 'msg_mode'];
+        $query_columns = ['msgs.id', 'msgs.service', 'msgs.status', 'msgs.created_at', 'message', 'accounts.company_name', 'accounts.phone_number as account_phone_number', 'accounts.company_name', 'contacts.phone_number', 'contacts.instagram_username', 'msg_mode'];
         $query = Msg::select($query_columns)
             ->join('accounts', 'account_id', 'accounts.id')
             ->join('contacts', 'contacts.id', 'msgable_id')
@@ -190,11 +190,11 @@ class MsgController extends Controller
             }
             else if($message->service == 'instagram') {
                 if($message->msg_mode == 'incoming') {
-                    $sender = $message->instagram_id;
+                    $sender = $message->instagram_username;
                     $destination = $message->company_name;
                 } else {
                     $sender = $message->company_name;
-                    $destination = $message->instagram_id;
+                    $destination = $message->instagram_username;
                 }
             }
 
@@ -270,7 +270,7 @@ class MsgController extends Controller
     public function ChatList(Request $request)
     {
         $limit = $this->limit;
-        $contactFields = ['contacts.id' , 'contacts.first_name', 'contacts.last_name', 'contacts.phone_number', 'contacts.instagram_id' ];
+        $contactFields = ['contacts.id' , 'contacts.first_name', 'contacts.last_name', 'contacts.phone_number', 'contacts.instagram_username' ];
         $condition = $selectedContact = '';
         $category = ($request->category) ? $request->category : '';
         $contactList = $messages = $accoutList= [];
@@ -365,7 +365,7 @@ class MsgController extends Controller
         }
 
         if($search){
-            $list_view_columns = ['first_name', 'last_name', 'phone_number', 'instagram_id', 'email'];
+            $list_view_columns = ['first_name', 'last_name', 'phone_number', 'instagram_username', 'email'];
             $query->join('contacts', 'contact_id', 'contacts.id');
             $query->where(function ($query) use ($search, $list_view_columns) {  
                 foreach($list_view_columns as $field_name) {
@@ -410,7 +410,7 @@ class MsgController extends Controller
             if($contact){
                 $name = $contact->first_name . ' ' .$contact->last_name;
                 if($name == ' '){
-                    $name = ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_id;
+                    $name = ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_username;
                 } 
                 $name = trim($name , ' '); 
 
@@ -418,7 +418,7 @@ class MsgController extends Controller
                     'id' => $contact->id,
                     'name' => $name,
                     'number' =>  $contact->phone_number,
-                    'insta_id' => $contact->instagram_id,
+                    'insta_id' => $contact->instagram_username,
                     'channel' => $contactId->channel, 
                 ];
             }
@@ -633,7 +633,7 @@ class MsgController extends Controller
     public function getInfoUsingContactUniqueId($uniqueId, $type, $companyId, $user_id , $name = '') 
     {
         $phoneNumber = $instagramId = '';
-        $field = ($type == 'whatsapp') ? 'phone_number' : 'instagram_id';
+        $field = ($type == 'whatsapp') ? 'phone_number' : 'instagram_username';
 
         if(strpos($uniqueId, '+') === false){
             $uniqueId = ($type == 'whatsapp') ? '+'.$uniqueId : $uniqueId;
