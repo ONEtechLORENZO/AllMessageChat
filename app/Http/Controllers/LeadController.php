@@ -15,6 +15,7 @@ use App\Models\Field;
 use App\Models\Service;
 use App\Models\User;
 use App\Models\Note;
+use App\Models\Contact;
 class LeadController extends Controller
 {
     /**
@@ -167,8 +168,14 @@ class LeadController extends Controller
         $new_contact=$lead->replicate(['id']);
         $new_contact->setTable('contacts');
         $new_contact->save();
-        $lead->delete();                
-
+        $lead->delete();     
+        $contact_note=Contact::find($new_contact->id);
+        $notes= Note::where('notable_id', $leadId)->where('notable_type','App\Models\Lead')->get();
+        foreach($notes as $note) {
+            $note->notable_id=$new_contact->id;           
+            $contact_note->notes()->save($note);
+        }
+        
         return Redirect::route('listLead');
 
     }
