@@ -340,7 +340,7 @@ export default function Index(props)
                                            <>
                                             <div className="bg-gray-50">
                                                 <dl className="text-gray-200 divide-y">
-                                                    <Disclosure as="div" key='General' className="">
+                                                    <Disclosure as="div" key='General' className="" defaultOpen>
                                                         {({ open }) => (
                                                         <>
                                                             <dt className="pt-2">
@@ -444,7 +444,7 @@ export default function Index(props)
                                                 <div className="bg-gray-50">
                                                 <dl className="text-gray-200 divide-y">
                                                     {Object.entries(customHeader).map(([group, fields]) => (
-                                                    <Disclosure as="div" key={group} className="">
+                                                    <Disclosure as="div" key={group} className="" defaultOpen>
                                                         {({ open }) => (
                                                         <>
                                                             <dt className="pt-2">
