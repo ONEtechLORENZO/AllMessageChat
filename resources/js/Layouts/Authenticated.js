@@ -287,7 +287,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
             if(response) {
                 const companies = response.data.companies;
                 if(companies[0].currency == null) {
-                    setshowModal(true)
+                    //setshowModal(true)
                     setCompany(companies[0]);  
                 }
             }

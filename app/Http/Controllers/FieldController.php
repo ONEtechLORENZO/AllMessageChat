@@ -208,6 +208,7 @@ class FieldController extends Controller
         $field->field_label = $field_label;
         $field->field_type = $request->field_type;
         $field->is_mandatory = $mandatory;
+        $field->mass_edit = $request->mass_edit;
         $field->is_custom = $custom;
         $field->field_group = $request->field_group;
         $field->user_id = $request->user()->id;
