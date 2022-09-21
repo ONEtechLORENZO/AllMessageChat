@@ -188,6 +188,11 @@ class ContactController extends Controller
         $headers = $this->getModuleHeader($companyId , 'Contact');
         
         $subModule= $request->has('submodule') && $request->get('submodule') ? $request->get('submodule') : '';
+        if($subModule == 'Detail'){
+            // TODO return data
+        //    return true;
+        }
+
         $submod = "App\Models\\{$subModule}";
 
         if($parent_module=='Tag')

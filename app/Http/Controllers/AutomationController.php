@@ -11,6 +11,7 @@ use App\Models\Tag;
 use App\Models\Field;
 use App\Models\Category;
 use App\Models\Contact;
+use App\Models\Lead;
 use Inertia\Inertia;
 use DB;
 use Cache;
@@ -297,13 +298,13 @@ class AutomationController extends Controller
                 
                 if( isset( $_POST['id']) ){
                     // Update contact
-                    $contact = Contact::where([
+                    $contact = Lead::where([
                             'id' => $_POST['id'],
                             'company_id' => $automation->company_id
                         ])->first();
                 } else {
                     // Create contact
-                    $contact = new Contact;
+                    $contact = new Lead;
                 }
                 $contact->company_id = $automation->company_id;
                 $contact->creater_id = 1;

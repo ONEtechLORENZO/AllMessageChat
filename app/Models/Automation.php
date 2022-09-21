@@ -38,7 +38,7 @@ class Automation extends Model
         $return['triggers'] = array('contact_created' => array('name' => 'contact_created', 'label' => 'New contact is added'), 'contact_list_related' => array('name' => 'contact_list_related', 'label' => 'New contact is added to list'), 'contact_tag_related' => array('name' => 'contact_tag_related', 'label' => 'New contact is added to tag'), 'received_webhook' => array('name' => 'received_webhook', 'label' => 'Webhook is received'));
         $return['processTypes'] = array('action' => array('label' => 'Action', 'name' => 'action'), 'condition' => array('label' => 'Condition', 'name' => 'condition'), 'exit' => array('label' => 'Exit', 'name' => 'exit'));        
         $return['actions'] = array('send_message' => array('label' => 'Send Message', 'name' => 'send_message'), 'tag_contact' => array('label' => 'Add a tag to a contact', 'name' => 'tag_contact'), 'list_contact' => array('label' => 'Add a list to a contact', 'name' => 'list_contact'), 'custom_field' => array('label' => 'Set a custom field', 'name' => 'custom_field'));
-        $return['webHookActions'] = array('create_contact' => array('label' => 'Create Contact', 'name' => 'create_contact'), 'update_contact' => array('label' => 'Update Contact', 'name' => 'update_contact'));
+        $return['webHookActions'] = array('create_contact' => array('label' => 'Create Lead', 'name' => 'create_contact'), 'update_contact' => array('label' => 'Update Lead', 'name' => 'update_contact'));
 
         return $return;
     }
