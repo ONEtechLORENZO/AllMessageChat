@@ -259,7 +259,7 @@ class Controller extends BaseController
     public function getServiceList()
     {
         $services = Service::all();
-        $servicelist = [];
+        $serviceList = [];
         foreach($services as $service) {
             $serviceList[] = [
                 'value' => $service->id,

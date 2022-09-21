@@ -85,6 +85,11 @@ class ChatListContactController extends Controller
             } else if($request->parent == "Tag"){
                 $parent = array($request->record);
                 $contact->tags()->sync($parent);
+            }else if($request->parent == "Organization"){
+                if($request->record){
+                    $contact->organization_id = $request->record;
+                    $contact->save();
+                }
             }
         }
         if($request->parent == 'Chat'){

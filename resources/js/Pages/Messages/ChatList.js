@@ -681,10 +681,10 @@ function ChatList(props)
                                     <div className="flex flex-col gap-1 ">
                                        
                                         <div className="flex rounded-md bg-white h-7 w-7 justify-center items-center cursor-pointer">
-                                          {console.log('props: ', props)}
+                                         
                                             <Popover className="relative">
                                                 <Popover.Button>
-                                                    <ChevronDownIcon className={open ? 'rotate-180 transform' : ''} />
+                                                    <ChevronDownIcon className={open ? 'rotate-180 transform w-5 h-5' : 'w-5 h-5'} />
                                                 </Popover.Button>
                                                 <Popover.Panel className="absolute z-10">
                                                     <div class="flex justify-center">
