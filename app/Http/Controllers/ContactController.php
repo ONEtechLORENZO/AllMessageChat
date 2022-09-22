@@ -354,9 +354,11 @@ class ContactController extends Controller
             ]);
             $contact = new Contact();
         }
+
+        $company_id = Cache::get('selected_company_'. $request->user()->id);
      
         $fields = Field::where('module_name', 'Contact')
-            ->where('user_id', $request->user()->id)
+            ->where('company_id', $company_id)
             ->get(['field_name', 'is_custom']);
 
         if ($fields) {
@@ -365,8 +367,6 @@ class ContactController extends Controller
                 $field = $record['field_name'];
                 $custom = $record['is_custom'];
                          
-                
-
                 if($request->has($field) && ($custom == '0' || !$custom)) {
                     if(($field == 'assigned_to' || $field == 'organization_id')) {
 
@@ -380,14 +380,15 @@ class ContactController extends Controller
                         $contact->$field = $request->$field;
                     }
                 }
-            if($custom == '1'){
-                    if($request->custom){
-                        foreach($request->custom as $key => $value){
-                            $custom_field[$key] = $value;
+                if($custom == '1'){
+                        if($request->custom){
+                            foreach($request->custom as $key => $value){
+                                $custom_field[$key] = $value;
+                            }
                         }
                     }
-                }
             }
+            
             if ($custom_field) {
                 $contact->custom = $custom_field;
             }
