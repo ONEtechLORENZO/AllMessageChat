@@ -203,7 +203,7 @@ class ContactController extends Controller
         if($parent_module=='Category')
         {
             $query = $submod::join('categorables', 'categorable_id', 'contacts.id')
-                ->where('categorable_id', $request->id);
+                ->where('category_id', $request->id);
         }
 
         if($parent_module=='Contact')
@@ -219,6 +219,7 @@ class ContactController extends Controller
               $query = $submod::where('organization_id', $request->id);
         }
         $subPanelData = $this->getSubPanelRecords($parent_module, $submod, $query,$parent_name);  
+      
         echo json_encode($subPanelData);
        die;
       }
