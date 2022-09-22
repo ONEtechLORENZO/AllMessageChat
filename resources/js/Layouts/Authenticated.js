@@ -40,52 +40,63 @@ const navigation = [
         show: ['all'],
     },
     {
-        name: "Contacts",
-        href: route("listContact"),
+        name: "Conversation",
+        href: '#',
+        icon: ChatAlt2Icon,
+        show: ['all'],
+        subMenu : [{
+            name: 'Chats',
+            href : route('chat_list')
+        },]
+    },   
+    {
+        name: "CRM",
+        href: '#',
         icon: IdentificationIcon,
         show: ['all'],
         subMenu : [{
-                name: 'Tag',
+            name: 'Contacts',
+            href : route('listContact')
+        },{
+                name: 'Tags',
                 href : route("listTag")
             },{
-                name: 'List',
+                name: 'Lists',
                 href : route("listCategory")
             },{
             name: 'Field',
             href : route("listField")
+        },{
+            name: 'Leads',
+            href : route("listLead")
+        },{
+            name: 'Organizations',
+            href : route("listOrganization")
         }]
-    },    
+    },  
+    
     {
-        name: "Product",
-        href: route("listProduct"),
+        name: "Sales",
+        href: '#',
         icon: ShoppingCartIcon,
         show: ['all'],
-    },   
-    {
-        name: "Opportunity",
-        href: route("listOpportunity"),
-        icon: EyeIcon,
-        show: ['all'],
+        subMenu : [
+            {
+                name: 'Opportunities',
+                href : route('listOpportunity')
+            },
+            {
+                name: 'Campaigns',
+                href : route('listCampaign')
+            },            
+            {
+            name: 'Orders',
+            href : route('listOrder')
+        },{
+            name: 'Products',
+            href : route('listProduct')
+        },]
     },  
-    {
-        name: "Orders",
-        href: route("listOrder"),
-        icon: ShoppingBagIcon,
-        show: ['all'],
-    },    
-    {
-        name: "Chat",
-        href: route("chat_list"),
-        icon: ChatAlt2Icon,
-        show: ['all'],
-        
-    },
-    {
-        name: "Organization",
-        href: route("listOrganization"),
-        icon: OfficeBuildingIcon,
-        show: ['all'],
-    },
     /*{
         name: "Company",
         href: route("listCompany"),
@@ -93,28 +104,24 @@ const navigation = [
         show: ['admin'],
     },*/
     {
-        name: "Leads",
-        href: route("listLead"),
-        icon: ServerIcon,
+        name: "Wallet",
+        href: route("wallet"),
+        icon: BriefcaseIcon,
         show: ['all'],
-    },
+    },    
+    
     {
-        name: "Campaigns",
-        href: route("listCampaign"),
-        icon: SpeakerphoneIcon,
-        show: ['all'],
-    },{
         name: "Automations",
         href: route("listAutomation"),
         icon: ChipIcon,
         show: ['all'],
     },
     {
-        name: "Wallet",
-        href: route("wallet"),
-        icon: BriefcaseIcon,
+        name: "Reports",
+        href: route("listMessage"),
+        icon: ChatAltIcon,
         show: ['all'],
-    },    
+    },
     {
         name: "Users",
         href: route("show_Users"),
@@ -122,12 +129,7 @@ const navigation = [
         show: ['admin'],
     },
 
-    {
-        name: "Reports",
-        href: route("listMessage"),
-        icon: ChatAltIcon,
-        show: ['all'],
-    },
+   
 ];
 
 const bottomNavigation = [
@@ -427,7 +429,10 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                 <ul>
 
                                                     { item.subMenu.map((subItem,index) => {
-                                                    return <li><Link href={subItem.href}>{subItem.name}</Link></li>                          
+                                                    return <li><Link className={classNames(
+                                                        "text-[#3D4459]  hover:text-primary",
+                                                            "group flex items-center px-2 py-1 text-sm font-medium rounded-md gio-menu-item"
+                                                    )} href={subItem.href}>{subItem.name}</Link></li>                          
                                                         }) }
 
                                                 </ul> : ''
