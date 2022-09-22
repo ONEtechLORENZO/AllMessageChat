@@ -143,11 +143,11 @@ class ContactController extends Controller
         $user = User::where('id', $contact->assigned_to)->first();
 
         if($organization){
-            $contact['organization_id'] = $organization['name'];
+            $contact['organization_id'] = [ 'label' => $organization['name'], 'value' => $organization['id'], 'module' => 'Organization'];
         }
 
         if($user){
-            $contact['assigned_to'] = $user['name'];
+            $contact['assigned_to'] = [ 'label' => $user['name'] , 'value' => $user['id'], 'module' => 'User'];
         }
 
         return Inertia::render('Contacts/Detail', [
