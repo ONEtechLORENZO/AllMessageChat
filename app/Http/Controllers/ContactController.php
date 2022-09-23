@@ -143,11 +143,11 @@ class ContactController extends Controller
         $user = User::where('id', $contact->assigned_to)->first();
 
         if($organization){
-            $contact['organization_id'] = $organization['name'];
+            $contact['organization_id'] = [ 'label' => $organization['name'], 'value' => $organization['id'], 'module' => 'Organization'];
         }
 
         if($user){
-            $contact['assigned_to'] = $user['name'];
+            $contact['assigned_to'] = [ 'label' => $user['name'] , 'value' => $user['id'], 'module' => 'User'];
         }
 
         return Inertia::render('Contacts/Detail', [
@@ -200,6 +200,11 @@ class ContactController extends Controller
             $query = $submod::join('taggables', 'taggable_id', 'contacts.id')
                 ->where('tag_id', $request->id);
         }
+        if($parent_module=='Category')
+        {
+            $query = $submod::join('categorables', 'categorable_id', 'contacts.id')
+                ->where('category_id', $request->id);
+        }
 
         if($parent_module=='Contact')
         {
@@ -214,6 +219,7 @@ class ContactController extends Controller
               $query = $submod::where('organization_id', $request->id);
         }
         $subPanelData = $this->getSubPanelRecords($parent_module, $submod, $query,$parent_name);  
+      
         echo json_encode($subPanelData);
        die;
       }
@@ -348,9 +354,11 @@ class ContactController extends Controller
             ]);
             $contact = new Contact();
         }
+
+        $company_id = Cache::get('selected_company_'. $request->user()->id);
      
         $fields = Field::where('module_name', 'Contact')
-            ->where('user_id', $request->user()->id)
+            ->where('company_id', $company_id)
             ->get(['field_name', 'is_custom']);
 
         if ($fields) {
@@ -359,8 +367,6 @@ class ContactController extends Controller
                 $field = $record['field_name'];
                 $custom = $record['is_custom'];
                          
-                
-
                 if($request->has($field) && ($custom == '0' || !$custom)) {
                     if(($field == 'assigned_to' || $field == 'organization_id')) {
 
@@ -374,14 +380,15 @@ class ContactController extends Controller
                         $contact->$field = $request->$field;
                     }
                 }
-            if($custom == '1'){
-                    if($request->custom){
-                        foreach($request->custom as $key => $value){
-                            $custom_field[$key] = $value;
+                if($custom == '1'){
+                        if($request->custom){
+                            foreach($request->custom as $key => $value){
+                                $custom_field[$key] = $value;
+                            }
                         }
                     }
-                }
             }
+            
             if ($custom_field) {
                 $contact->custom = $custom_field;
             }

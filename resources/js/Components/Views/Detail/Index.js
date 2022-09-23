@@ -3,7 +3,7 @@ import { PencilIcon, UserIcon } from "../../../Pages/icons";
 import { Inertia } from "@inertiajs/inertia";
 import ReactSelect from "./ReactSelect";
 import Notes from '@/Components/Notes';
-import { Head } from "@inertiajs/inertia-react";
+import { Head, Link } from "@inertiajs/inertia-react";
 import SubPanels from "./SubPanels";
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
@@ -340,7 +340,7 @@ export default function Index(props)
                                            <>
                                             <div className="bg-gray-50">
                                                 <dl className="text-gray-200 divide-y">
-                                                    <Disclosure as="div" key='General' className="">
+                                                    <Disclosure as="div" key='General' className="" defaultOpen>
                                                         {({ open }) => (
                                                         <>
                                                             <dt className="pt-2">
@@ -376,6 +376,16 @@ export default function Index(props)
                                                                         }
                                                                         else if(field.type == 'multiselect') {
                                                                             value =  (value) ? value.join(', ') : '-';
+                                                                        }
+
+                                                                        if(field.type == 'relate') {
+                                                                            let relate_value = record[key] ? record[key] : '';
+                                                                            if(relate_value) {
+                                                                                let relate_module = relate_value['module'];
+                                                                                value = <Link href={route('detail' + relate_module, {id: record.id})} className='cursor-pointer underline'>
+                                                                                    {relate_value['label']}
+                                                                                </Link>;
+                                                                            }
                                                                         }
                                                                     
                                                                         if(showField) {
@@ -444,7 +454,7 @@ export default function Index(props)
                                                 <div className="bg-gray-50">
                                                 <dl className="text-gray-200 divide-y">
                                                     {Object.entries(customHeader).map(([group, fields]) => (
-                                                    <Disclosure as="div" key={group} className="">
+                                                    <Disclosure as="div" key={group} className="" defaultOpen>
                                                         {({ open }) => (
                                                         <>
                                                             <dt className="pt-2">

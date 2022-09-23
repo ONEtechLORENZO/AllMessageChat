@@ -10,6 +10,7 @@ import DateTime from "@/Components/Forms/DateTime";
 import PhoneInput2 from 'react-phone-input-2';
 import Time from "@/Components/Forms/DateTime";
 import Relate from '@/Components/Relate';
+import 'react-phone-input-2/lib/style.css';
 
 export default function Element(props) {
 
@@ -72,14 +73,8 @@ export default function Element(props) {
      * Phone number change event
      */
      function changePhoneNumber(value , name){
-        let newState = Object.assign({}, fieldInfo);
-        value = '+'+value;
-        newState[name] = value;
-        if(value && parsePhoneNumber(value) ){
-            newState['country_code'] = parsePhoneNumber(value).countryCallingCode;
-        }
-       
-        setFieldInfo(newState);
+        let phoneNumber = '+'+value;
+        props.tempDataHandler(name, phoneNumber);
     }
  
     // Change Date & Time Format
