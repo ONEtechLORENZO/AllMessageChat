@@ -54,25 +54,30 @@ const navigation = [
         href: '#',
         icon: IdentificationIcon,
         show: ['all'],
-        subMenu : [{
+        subMenu : [
+            {
+                name: 'Leads',
+                href : route("listLead")
+            },
+            {
             name: 'Contacts',
             href : route('listContact')
-        },{
+            },
+            {
+            name: 'Organizations',
+            href : route("listOrganization")
+            },
+            {
+                name: 'Fields',
+                href : route("listField")
+            },
+            {
                 name: 'Tags',
                 href : route("listTag")
             },{
                 name: 'Lists',
                 href : route("listCategory")
-            },{
-            name: 'Field',
-            href : route("listField")
-        },{
-            name: 'Leads',
-            href : route("listLead")
-        },{
-            name: 'Organizations',
-            href : route("listOrganization")
-        }]
+            },]
     },  
     
     {

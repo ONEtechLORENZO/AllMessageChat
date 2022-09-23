@@ -329,11 +329,11 @@ class CategoryController extends Controller
       
         if($newCategories){
             // Process flow functions 
-            $user_id = $contact->user_id;
+            $user_id = $contact->creater_id;
             $companyId = Cache::get('selected_company_' . $user_id);
             $automations = Automation::where('trigger_mode', 'contact_list_related')
+                ->where('status', true)
             //    ->where('company_id', $companyId)
-            //    ->where('trigger_mode', 'contact_list_related')
                 ->get();
            
             foreach($automations as $automation){
