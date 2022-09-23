@@ -297,18 +297,18 @@ class AutomationController extends Controller
                 $flow = json_decode($automation->flow);
                 
                 if( isset( $_POST['id']) ){
-                    // Update contact
-                    $contact = Lead::where([
+                    // Update Lead
+                    $lead = Lead::where([
                             'id' => $_POST['id'],
                             'company_id' => $automation->company_id
                         ])->first();
                 } else {
-                    // Create contact
-                    $contact = new Lead;
+                    // Create lead
+                    $lead = new Lead;
                 }
-                $contact->company_id = $automation->company_id;
-                $contact->creater_id = 1;
-                $result = $automation->getFlowResult($flow , $contact);
+                $lead->company_id = $automation->company_id;
+                $lead->creater_id = 1;
+                $result = $automation->getFlowResult($flow , $lead);
               
             }
             return response()->json(['status' => true , 'result' => $result]);
