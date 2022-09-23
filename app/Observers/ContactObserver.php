@@ -104,10 +104,11 @@ class ContactObserver
     public function runFlowActions($contact , $mode)
     {
         
-        $user_id = $contact->user_id;
+        $user_id = $contact->creater_id;
         $companyId = Cache::get('selected_company_' . $user_id);
         $automations = Automation::where('company_id', $companyId)
             ->where('trigger_mode', $mode)
+            ->where('status', true)
             ->get();
         
         foreach($automations as $automation){

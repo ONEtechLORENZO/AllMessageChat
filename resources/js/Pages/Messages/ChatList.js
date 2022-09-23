@@ -210,6 +210,7 @@ function ChatList(props)
                 } else if(result.status == 'Queued' || response.data.status == 'Send') {
                     let newState = Object.assign({}, data);
                     newState['content'] = '';
+                    newState['template_id'] = '';
                     setData(newState);
                 }
                 
