@@ -6,6 +6,7 @@ use App\Models\Contact;
 use App\Models\Organization;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\Serviceable;
 use Cache;
@@ -53,6 +54,14 @@ class ContactController extends Controller
      */
     public function index(Request $request)
     {
+        if ($request->is('api/*'))
+        {
+            $module = Contact::all();
+            return response()->json($module);
+        }
+        else
+        {
+           
         $module = new Contact();
         $list_view_columns = $module->getListViewFields();
         $listViewData = $this->listView($request, $module, $list_view_columns);
@@ -79,6 +88,14 @@ class ContactController extends Controller
         
         $data = array_merge($moduleData, $listViewData);
         return Inertia::render('Contacts/List', $data);
+        }
+
+       
+       
+      
+           
+        
+
     }
 
     /**
@@ -100,17 +117,30 @@ class ContactController extends Controller
     public function store(Request $request)
     {
         $contact_id = $this->saveContact($request);
-        
-        if($request->parent_module == 'Chat') {
-            return Redirect::route('chat_list');
-        } else if($request->parent_id){
-            $url = route('detail'. $request->parent_module).'?id='.$request->parent_id.'&page=1';
-            return Redirect::to($url);
-        } else {
-            $url = route('detailContact').'?id='.$contact_id;
-            return Redirect::to($url);
-        }
+        if($request->is('api/*')){
+            $contact=Contact::find($contact_id);
+            return response()->json($contact);
     }
+
+        else
+        {
+            if($request->parent_module == 'Chat') {
+                return Redirect::route('chat_list');
+            } else if($request->parent_id){
+                $url = route('detail'. $request->parent_module).'?id='.$request->parent_id.'&page=1';
+                return Redirect::to($url);
+            } else {
+                $url = route('detailContact').'?id='.$contact_id;
+                return Redirect::to($url);
+            }
+            
+        }
+
+         
+   
+        
+    }
+
 
     /**
      * Display the specified resource.
@@ -246,23 +276,38 @@ class ContactController extends Controller
     public function update(Request $request)
     {
         $contact_id = $this->saveContact($request);
-        
-        $url = route('detailContact').'?id='.$contact_id;
-        return Redirect::to($url);
+       
+        if($request->is('api/*')){
+            $contact = Contact::findOrFail($contact_id);
+                return response()->json($contact);
+            }
+            else
+              {
+                $url = route('detailContact').'?id='.$contact_id;
+                return Redirect::to($url);               
+              }          
        
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Contact  $contact
+     * @param  \App\Models\Contact  
      * @return \Illuminate\Http\Response
      */
     public function destroy(Request $request, $contactId)
     {
         $contact = Contact::find($contactId);
         $contact->delete();
-        return Redirect::route('listContact');
+        
+        if($request->is('api/*')){          
+            return response()->json($contact);
+            }
+            else
+              {
+                return Redirect::route('listContact');
+              }
+        
     }
 
     /**
@@ -285,8 +330,14 @@ class ContactController extends Controller
             
             $contact['assigned_to'] = ['value' => $user->id, 'label' => $name];
         }
-        echo json_encode(['record' => $contact]);
-        die;
+        if( $request->is('api/*') ){
+            return response()->json($contact);
+             }
+        else{
+            echo json_encode(['record' => $contact]);
+            die;
+        
+          }
     }
 
     public function getTagOption($user_id)
@@ -408,8 +459,9 @@ class ContactController extends Controller
                 // }
             }
         }
-
+        
         return $contact->id;
+        
     }
 
     /**

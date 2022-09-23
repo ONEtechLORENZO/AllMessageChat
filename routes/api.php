@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\MessageLogController;
 use App\Http\Controllers\MsgController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\AutomationController;
 
 /*
@@ -30,5 +31,14 @@ Route::middleware(['auth:sanctum'])->group(function() {
 
     // Create new template
     Route::post('/v1/{account_id}/create-wa-template', [TemplateController::class, 'createWhatsAppTemplateViaAPI']);
+
+    //CRUD Contact
+    Route::post('/updateContact', [ContactController::class, 'store']);
+    Route::get('/contacts', [ContactController::class, 'index']);
+    Route::get('/contact/{id}', [ContactController::class, 'getContactData']);
+    Route::post('/updateContact/{id}', [ContactController::class, 'update']);
+    Route::delete('/contactdelete/{id}', [ContactController::class, 'destroy']);
+
+
 
 });
