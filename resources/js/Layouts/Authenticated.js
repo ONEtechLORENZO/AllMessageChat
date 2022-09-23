@@ -108,12 +108,7 @@ const navigation = [
         icon: OfficeBuildingIcon,
         show: ['admin'],
     },*/
-    {
-        name: "Wallet",
-        href: route("wallet"),
-        icon: BriefcaseIcon,
-        show: ['all'],
-    },    
+    
     
     {
         name: "Automations",
@@ -127,6 +122,12 @@ const navigation = [
         icon: ChatAltIcon,
         show: ['all'],
     },
+    {
+        name: "Wallet",
+        href: route("wallet"),
+        icon: BriefcaseIcon,
+        show: ['all'],
+    },    
     {
         name: "Users",
         href: route("show_Users"),

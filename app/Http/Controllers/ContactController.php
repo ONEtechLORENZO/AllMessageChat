@@ -54,48 +54,40 @@ class ContactController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->is('api/*'))
-        {
-            $module = Contact::all();
-            return response()->json($module);
-        }
-        else
-        {
-           
         $module = new Contact();
         $list_view_columns = $module->getListViewFields();
         $listViewData = $this->listView($request, $module, $list_view_columns);
 
-        $moduleData = [
-            'singular' => __('Contact'),
-            'plural' => __('Contacts'),
-            'module' => 'Contact',
-            'current_page' => 'Contacts', 
-            // Actions
-            'actions' => [
-                'create' => true,
-                'detail' => true,
-                'edit' => true,
-                'delete' => true,
-                'export' => true,
-                'import' => true,
-                'search' => true,
-                'filter' => true,
-                'select_field'=>true,
-                'mass_edit' => true
-            ],
-        ];
-        
-        $data = array_merge($moduleData, $listViewData);
-        return Inertia::render('Contacts/List', $data);
-        }
-
-       
-       
-      
-           
-        
-
+        if ($request->is('api/*')) // API call check
+            {            
+                unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
+                return response()->json($listViewData);
+            }
+        else
+            {      
+            $moduleData = [
+                'singular' => __('Contact'),
+                'plural' => __('Contacts'),
+                'module' => 'Contact',
+                'current_page' => 'Contacts', 
+                // Actions
+                'actions' => [
+                    'create' => true,
+                    'detail' => true,
+                    'edit' => true,
+                    'delete' => true,
+                    'export' => true,
+                    'import' => true,
+                    'search' => true,
+                    'filter' => true,
+                    'select_field'=>true,
+                    'mass_edit' => true
+                ],
+            ];
+            
+            $data = array_merge($moduleData, $listViewData);
+            return Inertia::render('Contacts/List', $data);
+            }  
     }
 
     /**
@@ -117,11 +109,11 @@ class ContactController extends Controller
     public function store(Request $request)
     {
         $contact_id = $this->saveContact($request);
-        if($request->is('api/*')){
-            $contact=Contact::find($contact_id);
-            return response()->json($contact);
-    }
-
+       
+        if($request->is('api/*'))
+        {            
+            return response()->json($contact_id);
+        }
         else
         {
             if($request->parent_module == 'Chat') {
@@ -135,10 +127,6 @@ class ContactController extends Controller
             }
             
         }
-
-         
-   
-        
     }
 
 
@@ -300,7 +288,7 @@ class ContactController extends Controller
         $contact = Contact::find($contactId);
         $contact->delete();
         
-        if($request->is('api/*')){          
+           if($request->is('api/*')){          
             return response()->json($contact);
             }
             else
