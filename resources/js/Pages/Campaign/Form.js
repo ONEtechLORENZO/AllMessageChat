@@ -16,7 +16,7 @@ export default function Campaign(props) {
   const [recordCount, setRecordCount] = useState(null);
   const [companyName, setCompanyName] = useState(null);
   const [templates , setTemplates] = useState({});
-  const [scheduleTime, setScheduleTime] = useState();
+  const [scheduleTime, setScheduleTime] = useState(new Date());
   
   useEffect(() => {
     setOpenTab(props.campaign.current_page);

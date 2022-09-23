@@ -98,7 +98,7 @@ function FilterGroups (props) {
             setFilter(props.filterCondition);
         }
         fetchModuleFields();
-    }, [props]);
+    }, []);
 
      /**
      * Add condition group
