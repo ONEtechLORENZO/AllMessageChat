@@ -112,7 +112,12 @@ class ContactController extends Controller
        
         if($request->is('api/*'))
         {            
+            if($contact_id){
             return response()->json($contact_id);
+            }
+            else{
+                abort(422);
+            }
         }
         else
         {
@@ -287,8 +292,9 @@ class ContactController extends Controller
         $contact_id = $this->saveContact($request);
        
         if($request->is('api/*')){
-            $contact = Contact::findOrFail($contact_id);
-                return response()->json($contact);
+            
+                $contact = Contact::findOrFail($contact_id);
+                return response()->json($contact);           
             }
             else
               {

@@ -218,9 +218,9 @@ class LeadController extends Controller
             ]);
             $lead = new Lead();
         }
-     
+        $company_id = Cache::get('selected_company_'. $request->user()->id);
         $fields = Field::where('module_name', 'Lead')
-            ->where('user_id', $request->user()->id)
+            ->where('company_id', $company_id)
             ->get(['field_name', 'is_custom']);
     
         if ($fields) {

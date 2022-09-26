@@ -60,7 +60,7 @@ class OpportunityController extends Controller
     public function store(Request $request)
     {
         $opportunity_id = $this->saveOpportunity($request);
-        
+                
         return Redirect::route('detailOpportunity', $opportunity_id);
     }
 
@@ -119,7 +119,8 @@ class OpportunityController extends Controller
 
         if($user){
             $opportunity['assigned_to'] = $user['name'];
-        }
+        }  
+        
        
         return Inertia::render('Opportunity/Detail', [
             'record' => $opportunity,            
@@ -181,9 +182,9 @@ class OpportunityController extends Controller
             ]);
             $opportunity = new Opportunity();
         }
-     
+        $company_id = Cache::get('selected_company_'. $request->user()->id);
         $fields = Field::where('module_name', 'Opportunity')
-            ->where('user_id', $request->user()->id)
+            ->where('company_id', $company_id)
             ->get(['field_name', 'is_custom', 'field_type']);
 
         if ($fields) {
