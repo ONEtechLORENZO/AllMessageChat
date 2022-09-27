@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddNewfieldMasseditInFields extends Migration
+class AddMsgTypeAndPathMsgTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,9 @@ class AddNewfieldMasseditInFields extends Migration
      */
     public function up()
     {
-        Schema::table('fields', function (Blueprint $table) {
-            $table->string('mass_edit')->nullable()->default('0');
+        Schema::table('msgs', function (Blueprint $table) {
+            $table->string('msg_type')->nullable();
+            $table->string('file_path')->nullable();
         });
     }
 
@@ -25,8 +26,8 @@ class AddNewfieldMasseditInFields extends Migration
      */
     public function down()
     {
-        Schema::table('fields', function (Blueprint $table) {
-            //
+        Schema::table('msgs', function (Blueprint $table) {
+            $table->dropColumn('file_path', 'file_path');
         });
     }
 }

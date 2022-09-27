@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddUserStep extends Migration
+class AddMassEditFieldTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddUserStep extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('step')->nullable();
+        Schema::table('fields', function (Blueprint $table) {
+            $table->boolean('mass_edit')->nullable();
         });
     }
 
@@ -25,8 +25,8 @@ class AddUserStep extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            //
+        Schema::table('fields', function (Blueprint $table) {
+            $table->dropColumn('mass_edit');
         });
     }
 }
