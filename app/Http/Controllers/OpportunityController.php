@@ -114,11 +114,11 @@ class OpportunityController extends Controller
         $user = User::where('id', $opportunity->assigned_to)->first();
 
         if($contact){
-            $opportunity['contact_id'] = $contact['first_name'].' '.$contact['last_name'];
+            $opportunity['contact_id'] = ['label' =>$contact['first_name'].' '.$contact['last_name'], 'value' => $contact['id'], 'module' => 'Contact'];
         }
 
         if($user){
-            $opportunity['assigned_to'] = $user['name'];
+            $opportunity['assigned_to'] = [ 'label' => $user['name'] , 'value' => $user['id'], 'module' => 'User'];
         }  
         
        

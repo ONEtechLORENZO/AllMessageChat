@@ -126,11 +126,11 @@ class OrderController extends Controller
         $Opportunity = Opportunity::where('id', $order->opportunity)->first();
 
         if($contact){
-            $order['contact'] = $contact['first_name'].' '.$contact['last_name'];
+            $order['contact'] = ['label' =>$contact['first_name'].' '.$contact['last_name'], 'value' => $contact['id'], 'module' => 'Contact'];
         }
 
         if($Opportunity){
-            $order['opportunity'] = $Opportunity['name'];
+            $order['opportunity'] = ['label' => $Opportunity['name'],'value' => $Opportunity['id'], 'module' => 'Opportunity'];
         }
 
         return Inertia::render('Order/Detail', [

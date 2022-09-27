@@ -102,11 +102,11 @@ class LeadController extends Controller
         $user = User::where('id', $lead->assigned_to)->first();
 
         if($organization){
-            $lead['organization_id'] = $organization['name'];
+            $lead['organization_id'] = [ 'label' => $organization['name'], 'value' => $organization['id'], 'module' => 'Organization'];
         }
 
         if($user){
-            $lead['assigned_to'] = $user['name'];
+            $lead['assigned_to'] = [ 'label' => $user['name'] , 'value' => $user['id'], 'module' => 'User'];
         }
 
         return Inertia::render('Leads/Detail', [
