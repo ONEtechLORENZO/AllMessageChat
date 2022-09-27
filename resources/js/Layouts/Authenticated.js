@@ -6,6 +6,7 @@ import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link } from "@inertiajs/inertia-react";
 import { Dialog, Transition } from "@headlessui/react";
 import UserRegistration from '@/Components/UserRegistration';
+import { UserIcon } from '../Pages/icons'
 
 import {
     HomeIcon,
@@ -498,7 +499,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                 <div className="flex justify-between h-16">
                                     <div className="flex">
                                     </div>
-
+                                    
                                     <div className="hidden sm:flex sm:items-center sm:ml-6"> 
                                         <div className="ml-3 relative">
                                             <Notification 
@@ -508,7 +509,14 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                 notifications={notifications}
                                             />
                                         </div>
+                                        {auth && auth.user && auth.user.role == 'global_admin' ?
                                         <div className="ml-3 relative">
+                                        <span className="inline-flex rounded-md">                        
+                                        <span class="relative inline-block">
+                                    <Link className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150" href={route('show_GlobalUsers')}>
+                                    <UserIcon /></Link></span></span></div>:''}
+                                          
+                                        <div className="ml-3 relative z-10">
                                             <Dropdown>
                                                 <Dropdown.Trigger>
                                                     <span className="inline-flex rounded-md">

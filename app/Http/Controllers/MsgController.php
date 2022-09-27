@@ -17,6 +17,8 @@ use App\Models\Price;
 use App\Models\Wallet;
 use App\Models\Filter;
 use Cache;
+use URL;
+use Storage;
 use App\Models\ChatListContact;
 use Illuminate\Support\Facades\DB;
 
@@ -469,6 +471,8 @@ class MsgController extends Controller
         foreach($contact->messages->whereIn('service', $category) as $message){
             $messages[] = [
                 'content' => $message->message,
+                'type' => $message->msg_type,
+                'path' => $message->file_path,
                 'status' => $message->status,
                 'date' => date_format( $message->created_at , $this->dateChatView),
                 'mode' => $message->msg_mode,
@@ -551,7 +555,8 @@ class MsgController extends Controller
         $user = $request->user();
         $account = Account::find($request->account_id);
         $msg = new Msg();
-       
+        $attachment = isset($_FILES['attachment']) ? $_FILES['attachment'] : '';
+
         if($request->channel == 'instagram'){
             // TODO Get correct account based on instagram id
             
@@ -566,8 +571,35 @@ class MsgController extends Controller
         } else {
            
             $template = ($request->template_id) ? $request->template_id : '';
-            $result = $msg->sendWhatsAppMessage($request->content , $request->destination, $account , $template);
-            if($result['result'] ){
+            $document = '';
+            if($attachment){
+              //  $path = $request->file('attachment')->store('sent_files');
+
+                $attachment = $request->file('attachment');
+                $attachment_name = 'ba_'.time().$attachment->getClientOriginalExtension();
+                $path = public_path('/uploads/sent_files');
+                $attachment->move($path, $attachment_name);
+                $mimeType = $request->file('attachment')->getClientMimeType();
+                
+                $type = explode('/', $mimeType);
+                $document = [
+                    'type' => $type[0], // $attachment->getClientOriginalExtension(),
+                    'originalUrl' =>  $path,
+                    'previewUrl' => $path,
+                    'caption' => $request->content,
+                ];
+
+                // $document = [
+                //     'type' => 'image',// $attachment->getClientOriginalExtension(),
+                //     'originalUrl' => 'https://img.freepik.com/free-vector/professional-sd-logotype-template_23-2149228241.jpg?w=2000',// $path,
+                //     'previewUrl' => 'https://img.freepik.com/free-vector/professional-sd-logotype-template_23-2149228241.jpg?w=2000', // $path,
+                //     'caption' => $request->content,
+                // ];
+            }
+           
+            $result = $msg->sendWhatsAppMessage($request->content , $request->destination, $account , $template, $document);
+          
+            if($result['result'] &&  $result['result']['status'] != 'error' ){
                 if( $result['result']['status'] == 'submitted'){
                     $result['status'] = 'Queued';
                 }
@@ -591,6 +623,7 @@ class MsgController extends Controller
         $account = Account::find($accountId);
         $user_id = $account->user_id;
         $companyId = $account->company_id;
+//dd($data);
 
         $_REQUEST['is_sent'] = 'sent';
         $msgable_id = $this->getInfoUsingContactUniqueId($request->destination, $request->channel, $companyId, $user_id);
@@ -604,6 +637,8 @@ class MsgController extends Controller
             'msgable_type' => $msgable_type,
             'msg_mode' => 'outgoing',
             'status' => $data['status'],
+            'msg_type' => isset($data['result']['msg_type']) ? $data['result']['msg_type'] : '',
+            'file_path' => isset($data['result']['file_path']) ? $data['result']['file_path'] : '',
             'is_delivered' => 0,
             'is_read' => 0
         ];
@@ -740,6 +775,8 @@ class MsgController extends Controller
      */
     public function handleWhatsAppMessage($data)
     {
+        log::info([ 'handle message data: ', $data ]);
+
         $account = Account::where('phone_number', $_GET['origin'])->first();
         $companyId = $account->company_id;
 
@@ -748,10 +785,15 @@ class MsgController extends Controller
 
         if ( isset($data['sender']) &&  $_GET['origin'] != $data['sender']['phone']) {
             $msgable_id = $this->getInfoUsingContactUniqueId($data['sender']['phone'], 'whatsapp', $companyId, $user_id, $data['sender']['name']);
+            
+            $content = isset($data['payload']['text']) ? $data['payload']['text'] : '';
+            $content = ( $content == '' && isset($data['payload']['name'])) ? $data['payload']['name'] : '';
+
             $messageData = [
                 'service_id' => $data['id'],
                 'service' => 'whatsapp',
-                'message' => $data['payload']['text'],
+                'message' => $content,
+                'msg_type' => isset($data['payload']['text']) ? 'text' : '',
                 'account_id' => $account->id,
                 'msgable_id' => $msgable_id,
                 'msgable_type' => $msgable_type,
@@ -760,6 +802,11 @@ class MsgController extends Controller
                 'is_delivered' => 0,
                 'is_read' => 0
             ];
+            if(isset($data['payload']['contentType'])){
+                $type = explode('/' , $data['payload']['contentType']);
+                $messageData['msg_type'] = $type[0];
+                $messageData['file_path'] = $data['payload']['url'];
+            }
         } else {
             if(!isset($data['gsId'])){
                 return false;

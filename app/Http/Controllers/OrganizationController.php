@@ -160,9 +160,10 @@ class OrganizationController extends Controller
             ]);
             $organization = new Organization();
         }
+        $company_id = Cache::get('selected_company_'. $request->user()->id);
      
         $fields = Field::where('module_name', 'Organization')
-            ->where('user_id', $request->user()->id)
+            ->where('company_id', $company_id)
             ->get(['field_name', 'is_custom', 'field_type']);
 
         if ($fields) {
