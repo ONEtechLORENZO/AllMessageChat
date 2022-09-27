@@ -20,7 +20,11 @@ export default function MessageList(props) {
                                             <div className="flex flex-col space-y-2 text-sm max-w-xs mx-2 order-2 items-start">
                                                 <div className="text-[#3D4459] px-4 py-2 rounded-lg rounded-bl-none bg-white">
                                                     <span className="inline-block  ">
-                                                        {message.content}
+                                                        {message.type == 'image/webp' ?
+                                                            <img src="{message.path}"></img>
+                                                        :
+                                                            <>{message.content}</>
+                                                        }
                                                     </span>
                                                     <div className='flex w-full'>
                                                     <span className="text-xs text-left mt-2 mx-2">

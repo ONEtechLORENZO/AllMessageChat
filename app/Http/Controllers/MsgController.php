@@ -469,6 +469,8 @@ class MsgController extends Controller
         foreach($contact->messages->whereIn('service', $category) as $message){
             $messages[] = [
                 'content' => $message->message,
+                'type' => $message->msg_type,
+                'path' => $message->file_path,
                 'status' => $message->status,
                 'date' => date_format( $message->created_at , $this->dateChatView),
                 'mode' => $message->msg_mode,
@@ -567,7 +569,8 @@ class MsgController extends Controller
            
             $template = ($request->template_id) ? $request->template_id : '';
             $result = $msg->sendWhatsAppMessage($request->content , $request->destination, $account , $template);
-            if($result['result'] ){
+          
+            if($result['result'] &&  $result['result']['status'] != 'error' ){
                 if( $result['result']['status'] == 'submitted'){
                     $result['status'] = 'Queued';
                 }
@@ -740,6 +743,8 @@ class MsgController extends Controller
      */
     public function handleWhatsAppMessage($data)
     {
+        log::info([ 'handle message data: ', $data ]);
+
         $account = Account::where('phone_number', $_GET['origin'])->first();
         $companyId = $account->company_id;
 
@@ -751,7 +756,8 @@ class MsgController extends Controller
             $messageData = [
                 'service_id' => $data['id'],
                 'service' => 'whatsapp',
-                'message' => $data['payload']['text'],
+                'message' => isset($data['payload']['text']) ? $data['payload']['text'] : '',
+                'msg_type' => isset($data['payload']['text']) ? 'text' : '',
                 'account_id' => $account->id,
                 'msgable_id' => $msgable_id,
                 'msgable_type' => $msgable_type,
@@ -760,6 +766,10 @@ class MsgController extends Controller
                 'is_delivered' => 0,
                 'is_read' => 0
             ];
+            if(isset($data['payload']['contentType'])){
+                $messageData['msg_type'] = $data['payload']['contentType'];
+                $messageData['file_path'] = $data['payload']['url'];
+            }
         } else {
             if(!isset($data['gsId'])){
                 return false;
