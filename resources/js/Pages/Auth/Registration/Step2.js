@@ -45,7 +45,7 @@ export default function Step2 (props) {
               field_value = workspace[list];
               if(validate && !field_value ) {
                 notie.alert({type: 'error', text: 'Please enter the required field value', time: 5});
-                 validate = false;
+                validate = false;
               }
          } );
         }
