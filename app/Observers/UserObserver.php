@@ -30,6 +30,7 @@ class UserObserver
       //       //add amount in wallet 
       //       $wallet = $this->addWalletAmount($user->id, $company_id);
       //   }
+      $user->createAsStripeCustomer();
     }
 
     /**

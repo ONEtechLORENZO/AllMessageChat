@@ -28,12 +28,21 @@ class RegisteredUserController extends Controller
     {
         $uuid = isset($_GET['unique_id']) ? $_GET['unique_id'] : '';
 
+        $stripe_public_key = config('stripe.stripe_key');
         $invitation = UserInvite::where('unique_id' , $uuid)->first();
         $email = '';
         if($invitation){
             $email = $invitation->email;
         }
-        return Inertia::render('Auth/Registration/RegisterForm', ['email' => $email , 'uuid' => $uuid]);
+        return Inertia::render('Auth/Registration/RegisterForm', [
+                'email' => $email , 
+                'uuid' => $uuid,
+                'stripe_public_key' => $stripe_public_key,
+                'translator' => [
+                    'Add a Payment Method' => __('Add a Payment Method'),
+                    'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount')
+                ]
+            ]);
     }
 
     /**

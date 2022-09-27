@@ -23,80 +23,59 @@ export default function RegisterForm (props) {
 
     return (
        <div>
-            <div
-                className={
-                    openTab === 0 ? "block" : "hidden"
-                }
-                id="UserRegistration"
-            >
+
+            {openTab === 0 &&
                 <UserRegistration 
-                userMail={userMail}
-                setUserMail={setUserMail}
-                setOpenTab={setOpenTab}
+                    userMail={userMail}
+                    setUserMail={setUserMail}
+                    setOpenTab={setOpenTab}
                 />
-            </div>
-
-            <div
-                className={
-                    openTab === 1 ? "block" : "hidden"
-                }
-                id="UserDetail"
-            >
+            }
+                
+            {openTab === 1 &&
+                // User creation form
                 <Step1 
-                userMail={userMail}
-                setOpenTab={setOpenTab}
+                    userMail={userMail}
+                    setOpenTab={setOpenTab}
                 />
-            </div>
-
-            <div
-                className={
-                    openTab === 2 ? "block" : "hidden"
-                }
-                id="Workspace"
-            >
+            }
+           
+            {openTab === 2 &&
+                // Create workspace form
                 <Step2 
-                setOpenTab={setOpenTab}
+                    setOpenTab={setOpenTab}
                 />
-            </div>
-
-            <div
-                className={
-                    openTab === 3 ? "block" : "hidden"
-                }
-                id="Organization"
-            >
+            }
+                
+            {openTab === 3 &&
+                // Organization form
                 <Step3 
-                setOpenTab={setOpenTab}
+                    setOpenTab={setOpenTab}
                 />
-            </div>
-
-            <div
-                className={
-                    openTab === 4 ? "block" : "hidden"
-                }
-                id="Payment Method"
-            >
+            }
+                
+            {openTab === 4 &&
+                //  Stripe integration
                 <Step4 
-                setOpenTab={setOpenTab}
+                    setOpenTab={setOpenTab}
+                    stripe_public_key={props.stripe_public_key}
+                    translator={props.translator}
+                    setAddStrip={setAddStrip}
                 />
-            </div>
-
-            <div
-                className={
-                    openTab === 5 ? "block" : "hidden"
-                }
-                id="Subscribe plan"
-            >
+            }
+               
+            {openTab === 5 &&
+                // Choose Plan
                 <Step5 
-                addStripe={addStripe}
-                setOpenTab={setOpenTab}
-                />
-            </div>
+                    addStripe={addStripe}
+                    setOpenTab={setOpenTab}
+                /> 
+            }
 
             {openTab === 6 && 
-              <Step6 />
+              // DashBoard
+               <Step6 />
             }
-            
        </div>
     );
 }
