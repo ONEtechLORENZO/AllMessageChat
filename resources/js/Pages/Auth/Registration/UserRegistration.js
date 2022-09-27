@@ -73,12 +73,12 @@ export default function UserRegistration (props) {
                                 </svg>
                             </div>
                             <div className="flex flex-col flex-1">
-                                <label>Email <span className="text-red-500">  * </span> </label>
+                                <label>Register with Email<span className="text-red-500">  * </span> </label>
                                 <input
                                     type="text"
                                     name="email"
                                     className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
-                                    placeholder="email"
+                                    placeholder="example@email.com"
                                     autoComplete="off"
                                     value={props.userMail['email'] ? props.userMail['email'] : ''}
                                     onChange={(e) => registerMail(e)}
