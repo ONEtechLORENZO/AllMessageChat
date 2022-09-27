@@ -253,4 +253,33 @@ class CompanyController extends Controller
         }
         return $return;
     }
+
+    public function saveWorkspace(Request $request) {
+        
+        $request->validate([
+            'name' => 'required|max:255',
+            'currency' => 'required',
+            'time_zone' => 'required'
+        ]);
+
+        $company = new Company;
+
+        $company->name = $request->name;
+        $company->currency = $request->currency;
+        $company->time_zone = $request->time_zone;
+        $company->save();
+
+       if($request->user()){
+            DB::table('company_user')->insert([
+                'user_id' => $request->user()->id,
+                'company_id' => $company->id
+            ]);
+       }
+
+       if($company->id){
+          Cache::put('selected_company_'. $request->user()->id  , $company->id);
+       }
+
+       return response()->json(['status' => true]);
+    }
 }

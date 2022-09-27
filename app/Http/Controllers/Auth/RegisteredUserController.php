@@ -28,12 +28,21 @@ class RegisteredUserController extends Controller
     {
         $uuid = isset($_GET['unique_id']) ? $_GET['unique_id'] : '';
 
+        $stripe_public_key = config('stripe.stripe_key');
         $invitation = UserInvite::where('unique_id' , $uuid)->first();
         $email = '';
         if($invitation){
             $email = $invitation->email;
         }
-        return Inertia::render('Auth/Register', ['email' => $email , 'uuid' => $uuid]);
+        return Inertia::render('Auth/Registration/RegisterForm', [
+                'email' => $email , 
+                'uuid' => $uuid,
+                'stripe_public_key' => $stripe_public_key,
+                'translator' => [
+                    'Add a Payment Method' => __('Add a Payment Method'),
+                    'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount')
+                ]
+            ]);
     }
 
     /**
@@ -98,5 +107,33 @@ class RegisteredUserController extends Controller
             }
         }
         return redirect(RouteServiceProvider::HOME);
+    }
+
+    public function newUserRegistration (Request $request) {
+        
+        $request->validate([
+            'first_name' => 'string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => ['required', Rules\Password::defaults()],
+        ]);
+
+        $userData = [
+            'name' => $request->first_name . ' ' .$request->last_name,
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'email' => $request->email,
+            'role' => 'admin',
+            'status' => true,
+            'password' => Hash::make($request->password),
+        ];
+
+        $user = User::create($userData);
+
+        event(new Registered($user));
+
+        Auth::login($user);
+
+        return response()->json(['status' => true]);
     }
 }

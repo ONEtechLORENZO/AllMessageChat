@@ -126,11 +126,11 @@ class OrderController extends Controller
         $Opportunity = Opportunity::where('id', $order->opportunity)->first();
 
         if($contact){
-            $order['contact'] = $contact['first_name'].' '.$contact['last_name'];
+            $order['contact'] = ['label' =>$contact['first_name'].' '.$contact['last_name'], 'value' => $contact['id'], 'module' => 'Contact'];
         }
 
         if($Opportunity){
-            $order['opportunity'] = $Opportunity['name'];
+            $order['opportunity'] = ['label' => $Opportunity['name'],'value' => $Opportunity['id'], 'module' => 'Opportunity'];
         }
 
         return Inertia::render('Order/Detail', [
@@ -262,9 +262,10 @@ class OrderController extends Controller
             ]);
             $order = new Order();
         }
+        $company_id = Cache::get('selected_company_'. $request->user()->id);
      
         $fields = Field::where('module_name', 'Order')
-            ->where('user_id', $request->user()->id)
+            ->where('company_id', $company_id)
             ->get('field_name');
           
         if($fields){

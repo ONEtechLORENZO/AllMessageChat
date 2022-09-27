@@ -38,6 +38,7 @@
         "notie": "^4.3.1",
         "nprogress": "^0.2.0",
         "pristinejs": "^0.1.9",
+        "react-audio-player": "^0.17.0",
         "react-beautiful-dnd": "^13.1.0",
         "react-confirm-alert": "^2.7.0",
         "react-datepicker": "^4.8.0",

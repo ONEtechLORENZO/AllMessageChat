@@ -112,7 +112,7 @@ class CampaignController extends Controller
                     $campaign->scheduled_at = $scheduledTime;
                 } 
             }
-                
+        
             if($currentPage == 4){
                 $campaign->offset = 0;
                 $campaign->current_page = $currentPage;
@@ -256,7 +256,7 @@ class CampaignController extends Controller
             'last_name' =>  ['label' => __('Last Name'), 'type' => 'text'],
             'email' =>  ['label' => __('Email'), 'type' => 'text'],
             'phone_number' => ['label' => __('Phone number'), 'type' => 'phone_number'],
-            'instagram_id' =>  ['label' => 'Instagram Id', 'type' => 'text'],
+            'instagram_username' => ['label' =>_('Instagram Username'), 'type' => 'text'],
         ];       
         
         $contacts = $this->getContactRecords($module, $fields, $searchData, '', '');
@@ -290,7 +290,7 @@ class CampaignController extends Controller
         $templateList = [];
         $templates = Template::where('account_id', $account)->get();
         foreach($templates as $template){
-            $templateList[$template->id] = $template->name;
+            $templateList[$template->template_uid] = $template->name;
         }
         return response()->json(['templates' => $templateList]);
     }

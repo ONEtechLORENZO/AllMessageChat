@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 function Schedule(props){
 
@@ -135,17 +137,14 @@ function Schedule(props){
                         {openDatepick ? 
                         <>
                             <div className="w-1/2">
-                                {/*<LocalizationProvider dateAdapter={AdapterDateFns}>
-                                    <Stack spacing={3}>
-                                        <DateTimePicker
-                                        label="Date&Time"
-                                        name='scheduled_at'
-                                        value={props.scheduleTime}
-                                        onChange={props.setScheduleTime}
-                                        renderInput={(params) => <TextField {...params} />}
-                                        />
-                                    </Stack>
-                                </LocalizationProvider> */}
+                                <DatePicker
+                                    selected={props.scheduleTime == 'now' ? new Date() : props.scheduleTime}
+                                    onChange={(date) => props.setScheduleTime(date)}
+                                    dateFormat="MM/dd/yyyy h:mm aa"
+                                    showTimeSelect
+                                    timeIntervals={15}
+                                    timeCaption="Time"
+                                />
                             </div> 
                         </> : ''}  
                         </dd>

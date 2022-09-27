@@ -90,7 +90,14 @@ function ChatList(props)
     // Update content 
     function handleChange(e){
         let newState = Object.assign({}, data);
-        newState[e.target.name] = e.target.value;
+
+        if(e.target.type == 'file' && e.target.files) {
+            newState[e.target.name] = e.target.files[0];
+            newState['content'] = e.target.files[0].name;
+        } else {
+            newState[e.target.name] = e.target.value;
+        }
+
         setData(newState);
     }
 
@@ -185,21 +192,29 @@ function ChatList(props)
 
     // Send content to selected contact
     function sendMessage(){
-        
+        var formData = new FormData();
+
         if(containerCategory == 'all' || !selectedAccount){
             notie.alert({type: 'warning', text: 'Please select the correct account & channel ', time: 5});
         }
-        data['destination'] = (containerCategory == 'whatsapp') ? chatList[selectedContact].number : chatList[selectedContact].insta_id;
-        data['account_id'] = selectedAccount;
+        var destination = (containerCategory == 'whatsapp') ? chatList[selectedContact].number : chatList[selectedContact].insta_id;
+        
+        // Append form data
+        formData.append('account_id' , selectedAccount);
+        formData.append('destination' , destination);
+        formData.append('channel' , data.channel);
+        formData.append('content', data.content);
+        formData.append('attachment', data.attachment);
 
-        if(data.content && data.destination && selectedAccount ){
+        if(data.content && destination && selectedAccount ){
             nProgress.start(0.5);
             nProgress.inc(0.2);
-
+            
             axios({
                 method: 'post',
+                headers: {'Content-Type': 'multipart/form-data'},
                 url: route('send_message_to_contact'),
-                data: data
+                data: formData
             })
             .then( (response) =>{
                 var result = response.data;
@@ -211,6 +226,7 @@ function ChatList(props)
                     let newState = Object.assign({}, data);
                     newState['content'] = '';
                     newState['template_id'] = '';
+                    newState['attachment'] = '';
                     setData(newState);
                 }
                 
@@ -642,7 +658,22 @@ function ChatList(props)
                                             <SmileEmoji />
                                         </div>
                                         <div className="flex rounded-md bg-white h-7 w-7 justify-center items-center cursor-pointer">
-                                            <AttachIcon />
+                                           
+                                            <Popover className="relative">
+                                                <Popover.Button>
+                                                    <AttachIcon />
+                                                </Popover.Button>
+                                                <Popover.Panel className="absolute z-10">
+                                                    <div class="flex justify-center">
+                                                        <input 
+                                                            type={'file'} 
+                                                            name="attachment" 
+                                                        //    value={data.attachment} 
+                                                            onChange={(e) => handleChange(e)} 
+                                                        />
+                                                    </div>
+                                                </Popover.Panel>
+                                            </Popover>
                                         </div>
                                     </div>
 

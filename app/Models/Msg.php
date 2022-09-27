@@ -24,13 +24,13 @@ class Msg extends Model
     /**
      * Send message to WhatsApp
      */
-    public function sendWhatsAppMessage($content, $destination, $account, $template = '')
+    public function sendWhatsAppMessage($content, $destination, $account, $template = '' , $attachment = '')
     {        
         $url = config('app.api_url');
         if(strpos($destination, '+') === true){
             $destination = str_replace('+', '' , $destination);
         }
-        
+
         $post_data = [
             'channel' => 'whatsapp',
             'source' => $account->phone_number,
@@ -40,23 +40,27 @@ class Msg extends Model
         ];
 
         if(isset($_POST['template']) || $template) {
-
-            $message = [
+            // Set template type object
+           $message = [
                 'id' => $template,
                 'params' => []
             ];
-
             $post_data['template'] = (json_encode($message));
-
             $url = str_replace('msg', 'template/msg', $url);
+        } else if($attachment) { 
+            // Set attachment
+            $post_data['message'] = (json_encode($attachment));
+            $data['msg_type'] = $attachment['type'];
+            $data['file_path'] = $attachment['originalUrl'];
         } else {
+            // Set text type object
             $message = [
                 "type" => "text",
                 "text" => $content
             ];
             $post_data['message'] = (json_encode($message));
         }
-        
+
         $headers = [
             'Accept' => 'application/json',
             'apikey' => config('app.apiKey')
@@ -71,6 +75,11 @@ class Msg extends Model
             $data['account_id'] = $account->id;
             $data['content'] = $content;
         } 
+        if($attachment) { 
+            $response_body['msg_type'] = $attachment['type'];
+            $response_body['file_path'] = $attachment['originalUrl'];
+        }
+        
         $data['result'] = $response_body;
         return $data;
     }

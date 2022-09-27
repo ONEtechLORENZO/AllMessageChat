@@ -167,9 +167,9 @@ class ProductController extends Controller
             ]);
             $product = new Product();
         }
-     
+        $company_id = Cache::get('selected_company_'. $request->user()->id);
         $fields = Field::where('module_name', 'Product')
-            ->where('user_id', $request->user()->id)
+            ->where('company_id', $company_id)
             ->get(['field_name', 'is_custom']);
 
         if ($fields) {

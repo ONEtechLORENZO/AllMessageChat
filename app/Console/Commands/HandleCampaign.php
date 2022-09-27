@@ -61,11 +61,11 @@ class HandleCampaign extends Command
             $channel = $campaign->service;
             $template = $campaign->template_id;
             $conditions = $campaign->conditions;
-            $offset = $campaign->offset;
+            $offset = $campaign->offset; 
             $searchData = json_decode($conditions);
             $schedulingTime = $campaign->scheduled_at;
             $today = time(); //Today time
-
+            
             if($today >= strtotime($schedulingTime)){
 
                 $count = 0;
@@ -78,12 +78,12 @@ class HandleCampaign extends Command
                     'last_name' =>  ['label' => __('Last Name'), 'type' => 'text'],
                     'email' =>  ['label' => __('Email'), 'type' => 'text'],
                     'phone_number' => ['label' => __('Phone number'), 'type' => 'phone_number'],
-                    'instagram_id' =>  ['label' => 'Instagram Id', 'type' => 'text'],
+                    'instagram_username' => ['label' =>_('Instagram Username'), 'type' => 'text'],
                 ];       
                 
                 $Controller = new Controller;
                 $contacts = $Controller->getContactRecords($module, $fields, $searchData, $limit, $offset);
-                
+            
                 if(count($contacts)){
                     foreach($contacts as $contact){  
                         $count++;
@@ -105,7 +105,7 @@ class HandleCampaign extends Command
                             }
                         }    
                     }
-
+                   
                      // Next offset
                      $nextOffset = $offset + $count;
 

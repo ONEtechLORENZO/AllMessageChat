@@ -54,48 +54,40 @@ class ContactController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->is('api/*'))
-        {
-            $module = Contact::all();
-            return response()->json($module);
-        }
-        else
-        {
-           
         $module = new Contact();
         $list_view_columns = $module->getListViewFields();
         $listViewData = $this->listView($request, $module, $list_view_columns);
 
-        $moduleData = [
-            'singular' => __('Contact'),
-            'plural' => __('Contacts'),
-            'module' => 'Contact',
-            'current_page' => 'Contacts', 
-            // Actions
-            'actions' => [
-                'create' => true,
-                'detail' => true,
-                'edit' => true,
-                'delete' => true,
-                'export' => true,
-                'import' => true,
-                'search' => true,
-                'filter' => true,
-                'select_field'=>true,
-                'mass_edit' => true
-            ],
-        ];
-        
-        $data = array_merge($moduleData, $listViewData);
-        return Inertia::render('Contacts/List', $data);
-        }
-
-       
-       
-      
-           
-        
-
+        if ($request->is('api/*')) // API call check
+            {            
+                unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
+                return response()->json($listViewData);
+            }
+        else
+            {      
+            $moduleData = [
+                'singular' => __('Contact'),
+                'plural' => __('Contacts'),
+                'module' => 'Contact',
+                'current_page' => 'Contacts', 
+                // Actions
+                'actions' => [
+                    'create' => true,
+                    'detail' => true,
+                    'edit' => true,
+                    'delete' => true,
+                    'export' => true,
+                    'import' => true,
+                    'search' => true,
+                    'filter' => true,
+                    'select_field'=>true,
+                    'mass_edit' => true
+                ],
+            ];
+            
+            $data = array_merge($moduleData, $listViewData);
+            return Inertia::render('Contacts/List', $data);
+            }  
     }
 
     /**
@@ -117,11 +109,16 @@ class ContactController extends Controller
     public function store(Request $request)
     {
         $contact_id = $this->saveContact($request);
-        if($request->is('api/*')){
-            $contact=Contact::find($contact_id);
-            return response()->json($contact);
-    }
-
+       
+        if($request->is('api/*'))
+        {            
+            if($contact_id){
+            return response()->json($contact_id);
+            }
+            else{
+                abort(422);
+            }
+        }
         else
         {
             if($request->parent_module == 'Chat') {
@@ -135,10 +132,6 @@ class ContactController extends Controller
             }
             
         }
-
-         
-   
-        
     }
 
 
@@ -151,6 +144,14 @@ class ContactController extends Controller
     public function show(Request $request)
     {
         $contact = Contact::findOrFail($request->id);
+
+        $currentUser = $request->user();
+        
+        $flag = $this->checkPermission($currentUser, $request->id,'Contact');
+        if($flag === false) {
+            abort(401);
+        }
+
         $tagOptions = $this->getTagOptionList($request->user()->id);
 
         $serviceOptions = $this->getServiceList();
@@ -179,6 +180,12 @@ class ContactController extends Controller
         if($user){
             $contact['assigned_to'] = [ 'label' => $user['name'] , 'value' => $user['id'], 'module' => 'User'];
         }
+        if ($request->is('api/*')) // API call check
+            {            
+                return response()->json($contact);
+            }
+        else
+            {    
 
         return Inertia::render('Contacts/Detail', [
             'contact' => $contact,
@@ -195,6 +202,7 @@ class ContactController extends Controller
                 'Edit'  =>__('Edit')
             ]
         ]);
+    }
     }
 
 // Get Sub panel data
@@ -275,11 +283,18 @@ class ContactController extends Controller
      */
     public function update(Request $request)
     {
+        $currentUser = $request->user();        
+        $flag = $this->checkPermission($currentUser, $request->id,'Contact');
+        if($flag === false) {
+            abort(401);
+        }
+
         $contact_id = $this->saveContact($request);
        
         if($request->is('api/*')){
-            $contact = Contact::findOrFail($contact_id);
-                return response()->json($contact);
+            
+                $contact = Contact::findOrFail($contact_id);
+                return response()->json($contact);           
             }
             else
               {
@@ -300,7 +315,7 @@ class ContactController extends Controller
         $contact = Contact::find($contactId);
         $contact->delete();
         
-        if($request->is('api/*')){          
+           if($request->is('api/*')){          
             return response()->json($contact);
             }
             else
@@ -316,6 +331,14 @@ class ContactController extends Controller
     public function getContactData(Request $request)
     {
         $contact = Contact::findOrFail($request->id);
+        
+        //checking access permission 
+        $currentUser = $request->user();        
+        $flag = $this->checkPermission($currentUser, $request->id,'Contact');
+        if($flag === false) {
+            abort(401);
+        }
+
          //related field pre-fill
          if($contact->organization_id){
             $organization = organization::findOrFail($contact->organization_id);
@@ -338,6 +361,43 @@ class ContactController extends Controller
             die;
         
           }
+    }
+
+
+     /**
+     * Check whether user has permission to access the record
+     */
+    public function checkPermission($currentUser, $user_id, $module_name)
+    {
+        if(!$user_id) {
+            return false;
+        }
+
+        // If user is trying to access his own record, allow
+        if($currentUser->id == $user_id) {
+            return true;
+        }
+        if($module_name== 'Contact')
+        {
+        $contact = Contact::where('id',$user_id)->first();
+        $companies []= $contact->company_id;              
+        }
+        $flag = false;
+        if($currentUser->role == 'global_admin') {
+            $flag = true;
+        }
+        else {
+            $selectedCompany = Cache::has('selected_company_' . $currentUser->id) ? Cache::get('selected_company_' . $currentUser->id) : '';
+             
+            foreach($companies as $company) {
+                if($company == $selectedCompany) {
+                    $flag = true;
+                    break;
+                }
+            }
+        }
+    
+        return $flag;
     }
 
     public function getTagOption($user_id)

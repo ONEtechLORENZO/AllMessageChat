@@ -152,6 +152,7 @@ const Form = (props) => {
                 if(response.data.status == true) {
                     props.setPaymentMethodForm(false);
                     props.refreshPaymentMethods();
+                    props.setPlanPage();
                 }
             });
         }

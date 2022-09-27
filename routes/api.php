@@ -33,12 +33,9 @@ Route::middleware(['auth:sanctum'])->group(function() {
     Route::post('/v1/{account_id}/create-wa-template', [TemplateController::class, 'createWhatsAppTemplateViaAPI']);
 
     //CRUD Contact
-    Route::post('/updateContact', [ContactController::class, 'store']);
+    Route::post('/contact', [ContactController::class, 'store']);
     Route::get('/contacts', [ContactController::class, 'index']);
     Route::get('/contact/{id}', [ContactController::class, 'getContactData']);
-    Route::post('/updateContact/{id}', [ContactController::class, 'update']);
+    Route::post('/contact/{id}', [ContactController::class, 'update']);
     Route::delete('/contactdelete/{id}', [ContactController::class, 'destroy']);
-
-
-
 });
