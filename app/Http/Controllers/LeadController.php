@@ -102,11 +102,11 @@ class LeadController extends Controller
         $user = User::where('id', $lead->assigned_to)->first();
 
         if($organization){
-            $lead['organization_id'] = $organization['name'];
+            $lead['organization_id'] = [ 'label' => $organization['name'], 'value' => $organization['id'], 'module' => 'Organization'];
         }
 
         if($user){
-            $lead['assigned_to'] = $user['name'];
+            $lead['assigned_to'] = [ 'label' => $user['name'] , 'value' => $user['id'], 'module' => 'User'];
         }
 
         return Inertia::render('Leads/Detail', [
@@ -218,9 +218,9 @@ class LeadController extends Controller
             ]);
             $lead = new Lead();
         }
-     
+        $company_id = Cache::get('selected_company_'. $request->user()->id);
         $fields = Field::where('module_name', 'Lead')
-            ->where('user_id', $request->user()->id)
+            ->where('company_id', $company_id)
             ->get(['field_name', 'is_custom']);
     
         if ($fields) {
