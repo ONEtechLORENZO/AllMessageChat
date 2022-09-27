@@ -65,6 +65,7 @@ export default function Step1 (props) {
            validateList.map( (list) => {
              field_value = user[list];
              if(validate && !field_value ) {
+                notie.alert({type: 'error', text: 'Please enter the required field value', time: 5});
                 validate = false;
              }
         } );
@@ -118,7 +119,7 @@ export default function Step1 (props) {
                                <UserIcon className="h-6 w-6" />
                             </div>
                             <div className="flex flex-col flex-1">
-                                <label>First Name</label>
+                                <label>First Name <span className="text-red-500">  * </span>  </label>
                                 <input
                                     type="text"
                                     name="first_name"
@@ -135,7 +136,7 @@ export default function Step1 (props) {
                                <UserAddIcon className="h-6 w-6" />
                             </div>
                             <div className="flex flex-col flex-1">
-                                <label>Last Name</label>
+                                <label>Last Name <span className="text-red-500">  * </span>  </label>
                                 <input
                                     type="text"
                                     name="last_name"
@@ -152,7 +153,7 @@ export default function Step1 (props) {
                                <MailIcon className="h-6 w-6" />
                             </div>
                             <div className="flex flex-col flex-1">
-                                <label>Email</label>
+                                <label>Email <span className="text-red-500">  * </span>  </label>
                                 <input
                                     type="email"
                                     name="email"
@@ -170,7 +171,7 @@ export default function Step1 (props) {
                                <PhoneIcon className="h-6 w-6" />
                             </div>
                             <div className="flex flex-col flex-1">
-                                <label>Telephone Number</label>
+                                <label>Telephone Number <span className="text-red-500">  * </span>  </label>
                                 <input
                                     type="text"
                                     name="phone_number"
@@ -188,7 +189,7 @@ export default function Step1 (props) {
                                <KeyIcon className="h-6 w-6" />
                             </div>
                             <div className="flex flex-col flex-1">
-                                <label>Password</label>
+                                <label>Password <span className="text-red-500">  * </span>  </label>
                                 <input
                                     type={passwordType}
                                     name="password"

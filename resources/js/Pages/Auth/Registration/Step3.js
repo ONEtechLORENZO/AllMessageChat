@@ -4,6 +4,7 @@ import {countries} from '@/Pages/Constants';
 import Dropdown from "@/Components/Forms/Dropdown";
 import axios from "axios";
 import { Link } from "@inertiajs/inertia-react";
+import notie from 'notie';
 
 export default function Step3 (props) {
 
@@ -34,6 +35,7 @@ export default function Step3 (props) {
     function saveOrganization () {
       
         if(organization && !organization['name']) {
+            notie.alert({type: 'error', text: 'Please enter the required field value', time: 5});
             return false;
         }
 
@@ -77,7 +79,7 @@ export default function Step3 (props) {
                            <UserCircleIcon className="h-6 w-6" />
                         </div>
                         <div className="flex flex-col flex-1">
-                            <label>Your Organization Name</label>
+                            <label>Your Organization Name <span className="text-red-500"> * </span> </label>
                             <input
                                 type="text"
                                 name="name"

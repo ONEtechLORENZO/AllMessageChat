@@ -4,6 +4,7 @@ import {currencies} from '@/Pages/Constants';
 import Dropdown from "@/Components/Forms/Dropdown";
 import { Link } from "@inertiajs/inertia-react";
 import axios from "axios";
+import notie from 'notie';
 
 const validateList = [
     'name', 'currency', 'time_zone'
@@ -43,6 +44,7 @@ export default function Step2 (props) {
             validateList.map( (list) => {
               field_value = workspace[list];
               if(validate && !field_value ) {
+                notie.alert({type: 'error', text: 'Please enter the required field value', time: 5});
                  validate = false;
               }
          } );
@@ -97,7 +99,7 @@ export default function Step2 (props) {
                             <HomeIcon className="h-6 w-6" />
                             </div>
                             <div className="flex flex-col flex-1">
-                                <label>Workspace Name</label>
+                                <label>Workspace Name <span className="text-red-500">  * </span>  </label>
                                 <input
                                     type="text"
                                     name="name"
@@ -114,7 +116,7 @@ export default function Step2 (props) {
                             <CurrencyPoundIcon className="h-6 w-6" />
                             </div>
                             <div className="flex flex-col flex-1">
-                                <label>Workspace Currency</label>
+                                <label>Workspace Currency <span className="text-red-500">  * </span>  </label>
                                 <Dropdown
                                     name="currency"
                                     options={currencies}
@@ -130,7 +132,7 @@ export default function Step2 (props) {
                             <ClockIcon className="h-6 w-6" />
                             </div>
                             <div className="flex flex-col flex-1">
-                                <label>Workspace Time Zone</label>
+                                <label>Workspace Time Zone <span className="text-red-500">  * </span>  </label>
                                 <Dropdown
                                     name="time_zone"
                                     options={timeZone}
