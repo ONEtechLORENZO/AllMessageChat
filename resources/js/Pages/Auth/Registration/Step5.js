@@ -73,7 +73,7 @@ export default function Step5 (props) {
 
                         <div>
                           <div className="bg-white">
-                            <div className="mx-auto max-w-7xl bg-white py-16 sm:py-24 sm:px-6 lg:px-8">
+                            <div className="mx-auto max-w-7xl bg-white py-16 sm:py-8 sm:px-6 lg:px-8">
                                 <div className="hidden lg:block">
                                 <table className="h-px w-full table-fixed">
                                     <caption className="sr-only">Pricing plan comparison</caption>
@@ -145,7 +145,7 @@ export default function Step5 (props) {
                                         <th className="px-6 pt-5" scope="row">
                                         <Link
                                                 href={route('showPlan')}
-                                                className="w-full inline-flex justify-end rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-300 hover:bg-primary/80 text-semibold font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm "
+                                                className="w-full inline-flex justify-end rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-300 hover:bg-primary hover:text-white text-semibold font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm "
                                                 >
                                                 See plan and prices in detiles
                                                 <span className="flex justify-end pt-1"><ChevronRightIcon className="h-4 w-4"/></span>
@@ -173,6 +173,16 @@ export default function Step5 (props) {
                           </div>
                         </div>
             
+                        <div className="flex justify-end mr-6">
+                            <button
+                                type="button"
+                                className="w-full inline-flex justify-start rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-900 hover:bg-gray-200 hover:text-gray-900 text-semibold font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+                                onClick={() => props.setOpenTab(6)}
+                            >
+                                Skip
+                                <span className="flex justify-end pt-1"><ChevronRightIcon className="h-4 w-4"/></span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
