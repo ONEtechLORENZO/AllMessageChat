@@ -33,7 +33,7 @@ class RegisteredUserController extends Controller
         if($invitation){
             $email = $invitation->email;
         }
-        return Inertia::render('Auth/Register', ['email' => $email , 'uuid' => $uuid]);
+        return Inertia::render('Auth/Registration/RegisterForm', ['email' => $email , 'uuid' => $uuid]);
     }
 
     /**
@@ -98,5 +98,33 @@ class RegisteredUserController extends Controller
             }
         }
         return redirect(RouteServiceProvider::HOME);
+    }
+
+    public function newUserRegistration (Request $request) {
+        
+        $request->validate([
+            'first_name' => 'string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => ['required', Rules\Password::defaults()],
+        ]);
+
+        $userData = [
+            'name' => $request->first_name . ' ' .$request->last_name,
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'email' => $request->email,
+            'role' => 'admin',
+            'status' => true,
+            'password' => Hash::make($request->password),
+        ];
+
+        $user = User::create($userData);
+
+        event(new Registered($user));
+
+        Auth::login($user);
+
+        return response()->json(['status' => true]);
     }
 }

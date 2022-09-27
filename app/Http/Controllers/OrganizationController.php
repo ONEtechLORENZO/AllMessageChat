@@ -197,5 +197,32 @@ class OrganizationController extends Controller
         }
 
         return $organization->id;
-    }  
+    } 
+    
+    public function newOrganization(Request $request) {
+
+        $request->validate([
+            'name' => 'required'
+        ]);
+
+        $organization = new Organization;
+
+        $fields = Field::where('module_name', 'Organization')
+            ->where('user_id', $request->user()->id)
+            ->get();
+        
+        if($fields) {
+            foreach($fields as $field) {
+                $field_name = $field['field_name'];
+                
+                if($request->has($field_name)) {
+                    $organization->$field_name = $request->$field_name;
+                }
+            }
+            $organization->company_id = Cache::get('selected_company_'. $request->user()->id);
+            $organization->save();
+        }   
+        
+        return response()->json(['status' => true]);
+    }
 }

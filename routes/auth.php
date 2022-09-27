@@ -9,6 +9,10 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\SettingsController;
 
 Route::get('/register', [RegisteredUserController::class, 'create'])
                 ->middleware('guest')
@@ -62,3 +66,21 @@ Route::post('/confirm-password', [ConfirmablePasswordController::class, 'store']
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
                 ->middleware('auth')
                 ->name('logout');
+
+Route::post('/user/register', [RegisteredUserController::class, 'newUserRegistration'])
+                ->middleware('guest')           
+                ->name('new_user');     
+
+Route::get('company/timezone',[UserController::class, 'getUserTimeZone'])
+                ->name('get_timezone');
+
+Route::post('/storeWorkspace', [CompanyController::class, 'saveWorkspace'])
+                ->name('saveWorkspace');     
+
+Route::post('/store/new/organization', [OrganizationController::class, 'newOrganization'])
+               ->name('newOrganization');
+
+Route::get('/company/plan', [SettingsController::class, 'updateSubscription'])
+               ->name('showPlan');
+
+                

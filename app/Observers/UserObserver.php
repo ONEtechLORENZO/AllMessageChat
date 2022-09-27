@@ -19,17 +19,17 @@ class UserObserver
      */
     public function created(User $user)
     {
-        $company_id = $_REQUEST['company_id'];
+      //   $company_id = $_REQUEST['company_id'];
        
-        // Check whether field entries are already added for this company
-        $isAdded = Field::where('company_id', $company_id)->first();
-        if(!$isAdded) {
-            $fields = $this->getModuleFields($user->id, $company_id);
-            Field::insert($fields);
+      //   // Check whether field entries are already added for this company
+      //   $isAdded = Field::where('company_id', $company_id)->first();
+      //   if(!$isAdded) {
+      //       $fields = $this->getModuleFields($user->id, $company_id);
+      //       Field::insert($fields);
             
-            //add amount in wallet 
-            $wallet = $this->addWalletAmount($user->id, $company_id);
-        }
+      //       //add amount in wallet 
+      //       $wallet = $this->addWalletAmount($user->id, $company_id);
+      //   }
     }
 
     /**
