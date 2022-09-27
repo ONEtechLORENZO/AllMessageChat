@@ -1990,6 +1990,10 @@ select {
 	--tw-bg-opacity: 1;
 	background-color: rgba(124, 58, 237, var(--tw-bg-opacity));
 }
+.bg-purple-300 {
+	--tw-bg-opacity: 1;
+	background-color: rgba(196, 181, 253, var(--tw-bg-opacity));
+}
 .bg-opacity-75 {
 	--tw-bg-opacity: 0.75;
 }
@@ -2015,6 +2019,10 @@ select {
 }
 .fill-current {
 	fill: currentColor;
+}
+.object-contain {
+	-o-object-fit: contain;
+	   object-fit: contain;
 }
 .object-cover {
 	-o-object-fit: cover;

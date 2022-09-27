@@ -753,10 +753,14 @@ class MsgController extends Controller
 
         if ( isset($data['sender']) &&  $_GET['origin'] != $data['sender']['phone']) {
             $msgable_id = $this->getInfoUsingContactUniqueId($data['sender']['phone'], 'whatsapp', $companyId, $user_id, $data['sender']['name']);
+            
+            $content = isset($data['payload']['text']) ? $data['payload']['text'] : '';
+            $content = ( $content == '' && isset($data['payload']['name'])) ? $data['payload']['name'] : '';
+
             $messageData = [
                 'service_id' => $data['id'],
                 'service' => 'whatsapp',
-                'message' => isset($data['payload']['text']) ? $data['payload']['text'] : '',
+                'message' => $content,
                 'msg_type' => isset($data['payload']['text']) ? 'text' : '',
                 'account_id' => $account->id,
                 'msgable_id' => $msgable_id,
@@ -767,7 +771,8 @@ class MsgController extends Controller
                 'is_read' => 0
             ];
             if(isset($data['payload']['contentType'])){
-                $messageData['msg_type'] = $data['payload']['contentType'];
+                $type = explode('/' , $data['payload']['contentType']);
+                $messageData['msg_type'] = $type[0];
                 $messageData['file_path'] = $data['payload']['url'];
             }
         } else {
