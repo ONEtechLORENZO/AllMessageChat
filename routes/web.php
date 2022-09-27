@@ -285,6 +285,7 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::get('/user/edit/{id}', [UserController::class, 'editUser'])->name('editUser');
     Route::delete('/user/delete', [UserController::class, 'deleteUser'])->name('deleteUser');
     Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('detailUser');
+    Route::get('/globalusers', [UserController::class, 'globalusersListing'])->name('show_GlobalUsers');
 
     // Field Group
     Route::post('/storeFieldGroup', [FieldGroupController::class, 'store'])->name('storeFieldGroup');

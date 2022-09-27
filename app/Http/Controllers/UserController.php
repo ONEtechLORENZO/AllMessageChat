@@ -255,6 +255,56 @@ class UserController extends Controller
         return Inertia::render('Admin/User/UserList2', $data);
     }
 
+      /**
+     * Show User list
+     */
+    public function globalusersListing(Request $request)
+    {
+        $list_view_columns = [
+            'name' => [ 'label' => ' Name' , 'type' => 'text'],
+            'email' =>  [ 'label' => 'Email' , 'type' => 'text'],
+            'role' => [ 'label' => 'Role' , 'type' => 'text'],
+            'status' =>  [ 'label' => 'Status' , 'type' => 'checkbox'],
+            'created_at' =>  [ 'label' => 'Created at' , 'type' => 'datetime'],
+        ];
+
+        $module = new User();
+        
+        $listViewData = $this->listView($request, $module, $list_view_columns);
+        
+        $moduleData = [
+            'singular' => 'User',
+            'plural' => 'Users',
+            'module' => 'User',
+            'add_link' => route('create_user'),
+            'edit_link' => 'editUser',
+            'add_button_text' => 'Add User',
+            'current_page' => 'Users',
+            // Actions
+            'actions' => [
+                'create' => true,
+                'detail' => true,
+                'edit' => true,
+                'delete' => true,
+                'export' => false,
+                'import' => false,
+                'search' => true,
+                'filter' => false,
+                'invite_user' => true,
+                'select_field'=>true
+
+            ],
+            'translator' => [
+                'No records' =>__('No records'),
+                'Search' =>__('Search'),
+                'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?')
+            ],
+        ];
+
+        $data = array_merge($moduleData, $listViewData);
+        return Inertia::render('Admin/User/UserList2', $data);
+    }
+
     /**
      * Show User Form (Create View)
      */
