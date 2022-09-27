@@ -1533,6 +1533,9 @@ class UserController extends Controller
            
         $return['total_messages'] = 0;
         $return['total_amount'] = 0;
+        if(! $price){
+            return $return;
+        }
         foreach($messages as $message){
           
             $return['total_messages'] = $message->messages + $return['total_messages'];
