@@ -216,7 +216,7 @@ export default function Index(props)
         return false;
        }
     }
- 
+
     return (            
             <div>
                 <Head title={props.module}/>
@@ -382,9 +382,15 @@ export default function Index(props)
                                                                             let relate_value = record[key] ? record[key] : '';
                                                                             if(relate_value) {
                                                                                 let relate_module = relate_value['module'];
-                                                                                value = <Link href={route('detail' + relate_module, {id: record.id})} className='cursor-pointer underline'>
-                                                                                    {relate_value['label']}
-                                                                                </Link>;
+                                                                                let related_id = relate_value['value'];
+                                                                                if(relate_module) {
+                                                                                    value = <Link href={route('detail' + relate_module, {id: related_id})} className='cursor-pointer underline'>
+                                                                                       {relate_value['label']}
+                                                                                    </Link>;
+                                                                                }else {
+                                                                                    value = '';
+                                                                                }
+                                                                                
                                                                             }
                                                                         }
                                                                     

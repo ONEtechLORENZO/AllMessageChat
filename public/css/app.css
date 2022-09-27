@@ -1963,10 +1963,6 @@ select {
 	--tw-bg-opacity: 1;
 	background-color: rgba(237, 233, 254, var(--tw-bg-opacity));
 }
-.bg-purple-300 {
-	--tw-bg-opacity: 1;
-	background-color: rgba(196, 181, 253, var(--tw-bg-opacity));
-}
 .bg-\[\#3D4459\] {
 	--tw-bg-opacity: 1;
 	background-color: rgba(61, 68, 89, var(--tw-bg-opacity));
@@ -2264,9 +2260,6 @@ select {
 }
 .pr-2 {
 	padding-right: 0.5rem;
-}
-.pr-6 {
-	padding-right: 1.5rem;
 }
 .text-left {
 	text-align: left;
