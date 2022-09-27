@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import {UserIcon, UserAddIcon, PhoneIcon, KeyIcon, MailIcon, ChevronRightIcon, EyeIcon}from "@heroicons/react/outline";
 import { Link } from "@inertiajs/inertia-react";
 import axios from "axios";
+import notie from 'notie';
 
 const validateList = [
     'first_name','last_name','email','phone_number','password'
@@ -11,11 +12,20 @@ export default function Step1 (props) {
 
     const [user, setUser] = useState({});
     const [passwordType, setPasswordType] = useState("password");
-
-    useEffect( () => {
-        setUser(props.userMail);
+    
+    useEffect( () => { 
+        updateUserData();
     },[]);
-
+    
+    /**
+     * Update user data
+     */
+    function updateUserData(){
+        let newUser = Object.assign({}, user);
+        newUser['email'] = props.userMail.email;
+        setUser(newUser);
+    }
+    
     // User detail Handling
     function userHandler (event) {
         let newUser = Object.assign({}, user);

@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "@inertiajs/inertia-react";
+import notie from 'notie';
 
 export default function UserRegistration (props) {
 
@@ -18,10 +19,12 @@ export default function UserRegistration (props) {
         if(email) {
             let regEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
             if(!regEmail.test(email)){
-              return false;
+                notie.alert({type: 'error', text: 'Please enter the valid email', time: 5});
+                return false;
             }
-
             props.setOpenTab(1);
+        } else {
+            notie.alert({type: 'warning', text: 'Email field required.', time: 5});
         }
         return false;
     }
@@ -70,7 +73,7 @@ export default function UserRegistration (props) {
                                 </svg>
                             </div>
                             <div className="flex flex-col flex-1">
-                                <label>Email</label>
+                                <label>Email <span className="text-red-500">  * </span> </label>
                                 <input
                                     type="text"
                                     name="email"

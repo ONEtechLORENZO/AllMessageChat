@@ -1,8 +1,19 @@
 import React, {useState} from "react";
 import {CreditCardIcon , ChevronRightIcon}from "@heroicons/react/outline";
 import { Link } from "@inertiajs/inertia-react";
+import PaymentMethodForm from "@/Pages/Wallet/PaymentMethodForm";
 
 export default function Step4 (props) {
+
+    const [stripeForm, setStripeForm] = useState(false);
+
+    /**
+     * Show plans page after stripe saved.
+     */
+    function setPlanPage(){
+        props.setAddStrip(true);
+        props.setOpenTab(5);
+    }
 
     return (
         <div className="h-screen w-full bg-blue-50 flex justify-center items-center">
@@ -33,17 +44,27 @@ export default function Step4 (props) {
                         </div>
 
                         <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
-                            <div className="text-gray-500">
+                             <div className="text-gray-500">
                                <CreditCardIcon className="h-6 w-6" />
                             </div>
-                            <div className="flex flex-col flex-1">
+                            <div className="flex flex-col flex-1" onClick={() => setStripeForm(true)}>
                                 <label>Add a Credit Card or a Bank Account</label>
                                 <input
                                     type="text"
                                     className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
                                     autoComplete="off"
                                 />
-                            </div>
+                            </div> 
+                            {stripeForm &&
+                                <PaymentMethodForm
+                                    stripe_public_key={props.stripe_public_key}
+                                    refreshPaymentMethods={() => {}}
+                                    setPaymentMethodForm={setStripeForm}
+                                    translator={props.translator}
+                                    setPlanPage={setPlanPage}
+                                />
+                            }
+                            
                         </div>
 
                         <div className="mt-4 flex justify-end">

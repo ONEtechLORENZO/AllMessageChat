@@ -578,23 +578,17 @@ class MsgController extends Controller
                 $attachment = $request->file('attachment');
                 $attachment_name = 'ba_'.time().$attachment->getClientOriginalExtension();
                 $path = public_path('/uploads/sent_files');
+                $url = url('public/uploads/sent_files/'.$attachment_name);
                 $attachment->move($path, $attachment_name);
                 $mimeType = $request->file('attachment')->getClientMimeType();
                 
                 $type = explode('/', $mimeType);
                 $document = [
-                    'type' => $type[0], // $attachment->getClientOriginalExtension(),
-                    'originalUrl' =>  $path,
-                    'previewUrl' => $path,
+                    'type' => $type[0], 
+                    'originalUrl' =>  $url,
+                    'previewUrl' => $url,
                     'caption' => $request->content,
                 ];
-
-                // $document = [
-                //     'type' => 'image',// $attachment->getClientOriginalExtension(),
-                //     'originalUrl' => 'https://img.freepik.com/free-vector/professional-sd-logotype-template_23-2149228241.jpg?w=2000',// $path,
-                //     'previewUrl' => 'https://img.freepik.com/free-vector/professional-sd-logotype-template_23-2149228241.jpg?w=2000', // $path,
-                //     'caption' => $request->content,
-                // ];
             }
            
             $result = $msg->sendWhatsAppMessage($request->content , $request->destination, $account , $template, $document);
@@ -787,7 +781,7 @@ class MsgController extends Controller
             $msgable_id = $this->getInfoUsingContactUniqueId($data['sender']['phone'], 'whatsapp', $companyId, $user_id, $data['sender']['name']);
             
             $content = isset($data['payload']['text']) ? $data['payload']['text'] : '';
-            $content = ( $content == '' && isset($data['payload']['name'])) ? $data['payload']['name'] : '';
+            $content = ( $content == '' && isset($data['payload']['name'])) ? $data['payload']['name'] : $content;
 
             $messageData = [
                 'service_id' => $data['id'],
@@ -805,6 +799,7 @@ class MsgController extends Controller
             if(isset($data['payload']['contentType'])){
                 $type = explode('/' , $data['payload']['contentType']);
                 $messageData['msg_type'] = $type[0];
+                $messageData['message'] = isset($data['payload']['caption']) ?  $data['payload']['caption'] : '';
                 $messageData['file_path'] = $data['payload']['url'];
             }
         } else {
