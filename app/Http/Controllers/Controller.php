@@ -422,15 +422,15 @@ class Controller extends BaseController
             ->where('company_id', $company_id)
             ->orderBy('sequence', 'asc')
             ->groupBy('field_name')
-            ->get(['field_label', 'field_name', 'field_type', 'is_custom', 'field_group']);
+            ->get(['field_label', 'field_name', 'field_type', 'is_custom', 'field_group', 'is_mandatory']);
 
         $header = [];
         foreach ($fields as $field) {           
             $is_custom = ($field->field_group) ? $groupList[$field->field_group] : 'default';
             if($field->field_group) {
-                $header['custom'][$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type'], 'custom' => $field['is_custom'], 'name' => $field['field_name']];
+                $header['custom'][$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type'], 'custom' => $field['is_custom'], 'name' => $field['field_name'], 'mandatory' => $field['is_mandatory']];
             } else {
-                $header[$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type'], 'custom' => $field['is_custom'], 'name' => $field['field_name']];
+                $header[$is_custom][$field['field_name']] = ['label' => $field['field_label'], 'type' => $field['field_type'], 'custom' => $field['is_custom'], 'name' => $field['field_name'], 'mandatory' => $field['is_mandatory']];
             }
         }
 

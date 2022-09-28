@@ -390,22 +390,26 @@ export default function Index(props)
                                                                                 }else {
                                                                                     value = '';
                                                                                 }
-                                                                                
                                                                             }
                                                                         }
-                                                                    
+
+                                                                        
+                                                                        if(field.type == 'checkbox') {
+                                                                            value = (value) ? 'checked': 'unchecked';
+                                                                        }
+
                                                                         if(showField) {
                                                                             return(
                                                                                 <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                                                                     <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
                                                                                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex"> 
-                                                                                    <InlineEdit 
-                                                                                    module={props.module}
-                                                                                    field={field}
-                                                                                    value={value}
-                                                                                    record={record}
-                                                                                    fieldOptions={fieldOptions}
-                                                                                    />
+                                                                                      <InlineEdit 
+                                                                                        module={props.module}
+                                                                                        field={field}
+                                                                                        value={value}
+                                                                                        record={record}
+                                                                                        fieldOptions={fieldOptions}
+                                                                                      />
                                                                                     </dd>
                                                                                 </div>
                                                                             )
@@ -477,19 +481,53 @@ export default function Index(props)
                                                             <Disclosure.Panel as="dd" className="mt-2 pr-12">
                                                             <div>
                                                                 {Object.entries(fields).map(([key,field]) => { 
+                                                                    var field_name = key;
                                                                     var value = (record[key]) ? record[key] : (record.custom && record.custom[key]) ? record.custom[key] : '-';
-                                                                    if(field.type == 'checkbox') {
-                                                                        value = (value) ? 'On': 'Off';
+
+                                                                    if(field.type == 'dropdown') {
+                                                                        if(!fieldOptions[field_name]){
+                                                                            getFieldOptions(field_name);
+                                                                        }
+
+                                                                        if(record.hasOwnProperty(key)){
+                                                                            value = (fieldOptions[field_name]) ? fieldOptions[field_name][value] : value;
+                                                                        }
                                                                     }
                                                                     else if(field.type == 'multiselect') {
-                                                                        value = value.join(', ');
+                                                                        value =  (value) ? value.join(', ') : '-';
+                                                                    }
+
+                                                                    if(field.type == 'checkbox') {
+                                                                        value = (value) ? 'checked': 'unchecked';
+                                                                    }
+
+                                                                    if(field.type == 'relate') {
+                                                                        let relate_value = record[key] ? record[key] : '';
+                                                                        if(relate_value) {
+                                                                            let relate_module = relate_value['module'];
+                                                                            let related_id = relate_value['value'];
+                                                                            if(relate_module) {
+                                                                                value = <Link href={route('detail' + relate_module, {id: related_id})} className='cursor-pointer underline'>
+                                                                                   {relate_value['label']}
+                                                                                </Link>;
+                                                                            }else {
+                                                                                value = '';
+                                                                            }
+                                                                            
+                                                                        }
                                                                     }
 
                                                                     return(
                                                                         <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                                                             <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
-                                                                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                                                {value}
+                                                                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex">
+                                                                              <InlineEdit 
+                                                                                module={props.module}
+                                                                                field={field}
+                                                                                value={value}
+                                                                                record={record}
+                                                                                fieldOptions={fieldOptions}
+                                                                              />
                                                                             </dd>
                                                                         </div>
                                                                     )

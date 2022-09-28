@@ -244,7 +244,7 @@ export default function Element(props) {
                             element = <Checkbox
                                 id={fieldInfo.field_name}
                                 name={fieldInfo.field_name}
-                                value={props.temp.value}
+                                value={props.temp.value && (props.temp.value == 'checked' || props.temp.value == true ) ? 1 : '' }
                                 handleChange={handleChange}
                             />
                             break;

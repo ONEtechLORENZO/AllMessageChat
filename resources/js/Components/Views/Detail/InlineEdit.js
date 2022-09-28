@@ -3,6 +3,7 @@ import { PencilIcon, CheckIcon, XIcon } from "@heroicons/react/solid";
 import Element from "./Element";
 import Axios from "axios";
 import { Inertia } from "@inertiajs/inertia";
+import notie from 'notie';
 
 export default function InlineEdit(props) {
     
@@ -61,24 +62,44 @@ export default function InlineEdit(props) {
         newTemp['value'] =value;
         setTemp(newTemp);
     }
+
+    // Check the edit field is mandatory or not 
+    function checkIsMandatory (temp) {
+        let check = true;
+        let is_mandatory = currentInfo.mandatory;
+
+        if(is_mandatory == 1) {
+            let tempValue = temp.value;
+            if(!tempValue) {
+                check = false;
+                notie.alert({type: 'error', text: 'This field is mandatory', time: 5});  
+                cancelEdit();              
+            }
+        }
+        return check;
+    }
     
     // Save the record changes
     function saveEdit(){
-        let customfields = (record.custom) ? record.custom : {};
-        let Iscustom = currentInfo.custom;
-        if(!Iscustom) {
-            record[temp.name] = temp.value;
-        }else {
-            customfields[temp.name] = temp.value;
-            record['custom'] = customfields;
-        }
+        let Ismandatory = checkIsMandatory(temp);
         
-        Inertia.post(route('update' + props.module, {id: record.id}), record, {
-            onSuccess: (response) => {
-                cancelEdit();
-            }           
-        });
- 
+        if (Ismandatory) {
+            let customfields = (record.custom) ? record.custom : {};
+            let Iscustom = currentInfo.custom;
+           
+            if(!Iscustom) {
+                record[temp.name] = temp.value;
+            }else {
+                customfields[temp.name] = temp.value;
+                record['custom'] = customfields;
+            }
+    
+            Inertia.post(route('update' + props.module, {id: record.id}), record, {
+                onSuccess: (response) => {
+                    cancelEdit();
+                }           
+            });
+        }
     }
 
     return (
