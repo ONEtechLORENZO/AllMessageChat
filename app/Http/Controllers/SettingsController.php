@@ -191,6 +191,11 @@ class SettingsController extends Controller
         $flag = false;
         $user_id = $request->get('user_id');
 
+        if($request->is_register_step){
+            Cache::put('user_steps_status_'. $request->user()->id , 6 );
+            return Redirect::route('dashboard');
+        }
+
         // If Logged in user and passed user is different, check logged in user is global admin
         if($user_id != $request->user()->id) {
             // Check whether user is global admin

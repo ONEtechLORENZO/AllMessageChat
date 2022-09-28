@@ -24,9 +24,14 @@ class RegisteredUserController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function create()
+    public function create(Request $request)
     {
         $uuid = isset($_GET['unique_id']) ? $_GET['unique_id'] : '';
+        $step = $user_id = 0;
+        if($request->step){
+            $step = $request->step;
+            $user_id = $request->user_id;
+        }
 
         $stripe_public_key = config('stripe.stripe_key');
         $invitation = UserInvite::where('unique_id' , $uuid)->first();
@@ -37,6 +42,8 @@ class RegisteredUserController extends Controller
         return Inertia::render('Auth/Registration/RegisterForm', [
                 'email' => $email , 
                 'uuid' => $uuid,
+                'step' => $step,
+                'user_id' => $user_id,
                 'stripe_public_key' => $stripe_public_key,
                 'translator' => [
                     'Add a Payment Method' => __('Add a Payment Method'),
@@ -134,6 +141,8 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return response()->json(['status' => true]);
+        Cache::put('user_steps_status_'.  $user->id , 2 );
+
+        return response()->json(['status' => true , 'user_id' => $user->id ]);
     }
 }

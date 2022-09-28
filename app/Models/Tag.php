@@ -14,6 +14,6 @@ class Tag extends Model
 
     public function contact()
     {
-        return $this->morphToMany(Contact::class, 'taggable');
+        return $this->morphToMany(Contact::class, 'taggables');
     }
 }

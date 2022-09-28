@@ -17,10 +17,14 @@ export default function RegisterForm (props) {
         let newMail = Object.assign({}, userMail);
         let mail = props.email ? props.email : '';
         newMail['email'] = mail;
+        if(props.step < 3 ){
+            newMail['user_id'] = props.user_id;
+            setOpenTab(props.step);
+        }
         setUserMail(newMail);
         
     },[]);
-
+    //console.log('regiter_fomr', props);
     return (
        <div>
 
@@ -36,6 +40,7 @@ export default function RegisterForm (props) {
                 // User creation form
                 <Step1 
                     userMail={userMail}
+                    setUserMail={setUserMail}
                     setOpenTab={setOpenTab}
                 />
             }
@@ -67,6 +72,7 @@ export default function RegisterForm (props) {
             {openTab === 5 &&
                 // Choose Plan
                 <Step5 
+                    user={userMail}
                     addStripe={addStripe}
                     setOpenTab={setOpenTab}
                 /> 

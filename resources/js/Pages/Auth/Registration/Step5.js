@@ -4,6 +4,7 @@ import { CheckIcon, XIcon, ChevronRightIcon} from "@heroicons/react/solid";
 import { Link } from "@inertiajs/inertia-react";
 import { get } from "lodash";
 import axios from "axios";
+import { Inertia } from '@inertiajs/inertia';
 
 const tiers = [
     { name: 'Lite', href: '#', priceMonthly: 0, currency: '€',description: '' , original: 'lite'},
@@ -45,15 +46,20 @@ function classNames(...classes) {
 
 export default function Step5 (props) {
 
-    function Subscribe(name) {
-        if(props.addStripe === false) {
-            props.setOpenTab(4)
-        }else{
-            axios.get(route('showPlan')).then( (response) => {
-
-            });
+    function Subscribe(plan){
+        let confirm = window.confirm(['Are you sure to subscribe this plan']);
+        if(!confirm) {
+            return;
         }
+   
+        Inertia.post(route('subscribe_plan',{'plan': plan}), {user_id: props.user_id, is_register_step: true }, {
+            onSuccess: (response) => {
+                props.setOpenTab(6);
+            }
+        });
+        props.setOpenTab(6);
     }
+//console.log( 'Step 5 proops:' , props);
 
     return (
         <div className="h-full w-full bg-blue-50 flex justify-center items-center">

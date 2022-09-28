@@ -36,7 +36,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Models\Contact;
 use App\Models\Service;
 use App\Models\Notification;
-
+use App\Http\Controllers\Auth\RegisteredUserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -74,6 +74,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
     Route::get('/getCompanyId', [UserController::class, 'getSelectedCompany'])->name('get_selected_company');
     Route::get('/user/timezone',[UserController::class, 'getUserTimeZone'])->name('get_time_zone');
+    Route::post('/show_register_step',[RegisteredUserController:: class, 'create'])->name('show_register_step');
 
     // Wallet
     Route::get('/wallet', [UserController::class, 'wallet'])->name('wallet');
