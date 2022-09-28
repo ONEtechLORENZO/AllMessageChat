@@ -157,6 +157,7 @@ class ContactController extends Controller
         $serviceOptions = $this->getServiceList();
         
         $tagSelectedRecords = $this->getSelectedTag($contact);
+
         $ListOptions = $this->getListOption($request->user()->id);
         $ListSelectRecords = $this->getSelectedList($contact);
 
@@ -180,29 +181,25 @@ class ContactController extends Controller
         if($user){
             $contact['assigned_to'] = [ 'label' => $user['name'] , 'value' => $user['id'], 'module' => 'User'];
         }
-        if ($request->is('api/*')) // API call check
-            {            
+        if ($request->is('api/*')) { // API call check             
                 return response()->json($contact);
-            }
-        else
-            {    
-
-        return Inertia::render('Contacts/Detail', [
-            'contact' => $contact,
-            'tagOptions' => $tagOptions,
-            'serviceOptions' => $serviceOptions,
-            'tagData' => $tagSelectedRecords,
-            'listOptions' => $ListOptions,
-            'listData' => $ListSelectRecords,
-            'headers' => $headers,
-            'subscribedServices' => $subscribedServices,
-            'translator' => [
-                'Detail' => __('Detail'),
-                'Notes' => __('Notes'),
-                'Edit'  =>__('Edit')
-            ]
-        ]);
-    }
+        } else {    
+            return Inertia::render('Contacts/Detail', [
+                'contact' => $contact,
+                'tagOptions' => $tagOptions,
+                'serviceOptions' => $serviceOptions,
+                'tagData' => $tagSelectedRecords,
+                'listOptions' => $ListOptions,
+                'listData' => $ListSelectRecords,
+                'headers' => $headers,
+                'subscribedServices' => $subscribedServices,
+                'translator' => [
+                    'Detail' => __('Detail'),
+                    'Notes' => __('Notes'),
+                    'Edit'  =>__('Edit')
+                ]
+            ]);
+        }
     }
 
 // Get Sub panel data
@@ -359,7 +356,6 @@ class ContactController extends Controller
         else{
             echo json_encode(['record' => $contact]);
             die;
-        
           }
     }
 
@@ -414,8 +410,8 @@ class ContactController extends Controller
 
     public function getSelectedTag($contact)
     {
-
-        $taggableRecords = $contact->tags;        
+        $taggableRecords = $contact->tags()->get(); //$contact->tags;
+       
         $tagSelectedRecords = [];
         if ($taggableRecords) {
             foreach ($taggableRecords as $tag) {

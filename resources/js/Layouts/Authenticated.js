@@ -294,6 +294,10 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
         let url = route('get_selected_company');
         axios.get(url).then( (response) => {
             if(response) {
+                if(response.data.register_step && response.data.register_step < 2){
+                    
+                    Inertia.post(route('show_register_step'), {'step' : response.data.register_step, 'user_id': auth.user.id});
+                }
                 const companies = response.data.companies;
                 if(companies[0].currency == null) {
                     setshowModal(true)

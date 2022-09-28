@@ -308,6 +308,7 @@ class TagController extends Controller
     public function syncHandling($data, $id) {
         
         $contact = Contact::find($id);
+      
         $tag_id = [];
         foreach($data as $value){
             $where = ['name' => $value];  
@@ -318,12 +319,13 @@ class TagController extends Controller
         }
 
         // Compare exist and current tags
-        $existTags = $contact->tags;
+        $existTags = ($contact->tags) ? $contact->tags : [];
         $existTagIds = [];
         foreach($existTags as $tag){
             $existTagIds[] = $tag->id;
         }
-        $newTags = array_diff($tag_id , $existTagIds);
+
+        $newTags = array_diff($tag_id , $existTagIds);  // For automation new tag relate event
         $contact->tags()->sync($tag_id);
       
         if($newTags){

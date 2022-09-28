@@ -1568,10 +1568,14 @@ class UserController extends Controller
             Cache::put('selected_company_' . $user->id, $companies[0]->id);
         }
 
+        // Get register step 
+        $registerStep = Cache::get('user_steps_status_'. $request->user()->id );
+
         return response()->json([
             'success' => true,
             'selected_company' => $selectedCompany,
-            'companies' => $companies
+            'companies' => $companies,
+            'register_step' => $registerStep,
         ], 200);
     }
 

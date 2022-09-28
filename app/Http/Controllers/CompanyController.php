@@ -280,6 +280,8 @@ class CompanyController extends Controller
           Cache::put('selected_company_'. $request->user()->id  , $company->id);
        }
 
+       Cache::put('user_steps_status_'. $request->user()->id , 3 );
+
        return response()->json(['status' => true]);
     }
 }
