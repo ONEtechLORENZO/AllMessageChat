@@ -1,5 +1,7 @@
 import React, {useState} from "react";
 import Input from "@/Components/Forms/Input";
+import PhoneInput2 from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 const notificationMethods = [
   { id: 'yes', title: 'Yes' },
@@ -16,16 +18,23 @@ export default function Source3(props){
                     <tr>
                       <td className="whitespace-initial px-3 py-4 text-sm text-gray-500">
                         Which Phone number do you want to link to this WABA Account? 
+                        <span className="text-red-600 px-2">*</span>
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        <Input 
-                            type="text" 
-                            className={`mt-1 appearance-none block w-3/4 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
-                            id='phone_number'
-                            name='phone_number'
-                            value={props.data['phone_number']} 
-                            handleChange={props.formHandler}
-                            required={true}
+                          <PhoneInput2
+                          inputProps={{
+                              name:'phone_number',
+                              required: true,
+                              autoFocus: true
+                            }}
+                          containerStyle={{ marginTop: "15px" }}
+                          searchClass="search-class"
+                          searchStyle={{ margin: "0", width: "97%", height: "30px" }}
+                          enableSearchField
+                          disableSearchIcon
+                          placeholder="Enter phone number"
+                          value={props.data['phone_number']} 
+                          onChange={(value) => props.changePhoneNumber(value, 'phone_number')}
                         />
                       </td>
                     </tr>
@@ -33,6 +42,7 @@ export default function Source3(props){
                       <td className="whitespace-initial px-3 py-4 text-sm text-gray-500">
                           What is your offical Legal Entity Name
                          (Business Registered Name, e.g. One Srl)
+                         <span className="text-red-600 px-2">*</span>
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                         <Input 
@@ -66,6 +76,7 @@ export default function Source3(props){
                     <tr>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                         Legal Business Name
+                        <span className="text-red-600 px-2">*</span>  
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                         <Input 
@@ -83,6 +94,7 @@ export default function Source3(props){
                     <tr>
                       <td className="whitespace-initial px-3 py-4 text-sm text-gray-500">
                         Do you want to use a Display Name that matches your Legal Entity Name?
+                        <span className="text-red-600 px-2">*</span>
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 w-1/5">
                         <fieldset className="mt-4">

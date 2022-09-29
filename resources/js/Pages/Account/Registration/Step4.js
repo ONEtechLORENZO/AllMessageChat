@@ -27,17 +27,18 @@ export default function Step4(props){
                     Thank You
                 </p>
                 <div className="w-full justify-center flex mt-10">
-                    <button
-                        type="button"
-                        className="inline-flex justify-center border border-transparent shadow-sm text-sm rounded-md text-white hover:bg-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2  px-8 py-4 mr-2 mr-4 font-bold text-base bg-gray-900"
-                        onClick={''}
-                    >
-                        Go to My Request
-                    </button>
+                    {props.accountId ? 
+                     <Link
+                        href={route('account_view', props.accountId)}
+                        className="inline-flex justify-center border border-transparent shadow-sm text-sm rounded-md text-white bg-gray-900 hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2  px-8 py-4 mr-2 mr-4 font-bold text-base"
+                     >
+                       Go to My Request
+                     </Link>
+                    :''}
+
                     <Link
                       href={route('dashboard')}
-                      className="inline-flex justify-center border border-transparent shadow-sm text-sm rounded-md text-white bg-primary hover:bg-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2  px-8 py-4 mr-2 mr-4 font-bold text-base"
-
+                      className="inline-flex justify-center border border-transparent shadow-sm text-sm rounded-md text-white bg-primary hover:bg-primary-200 focus:outline-none focus:ring-2 focus:ring-offset-2  px-8 py-4 mr-2 mr-4 font-bold text-base"
                     >
                      Go to Dashboard
                     </Link>

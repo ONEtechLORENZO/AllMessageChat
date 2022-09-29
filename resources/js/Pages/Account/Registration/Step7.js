@@ -2,6 +2,7 @@ import React, { useState }  from "react";
 import { Link } from "@inertiajs/inertia-react";
 import Input from "@/Components/Forms/Input";
 import axios from "axios";
+import nProgress from 'nprogress';
 
 const events = [
     { id: 'yes', title: 'Yes' },
@@ -23,9 +24,13 @@ export default function Step7(props) {
 
     function sendMigrationRequest(){
         if(migrate){
+            nProgress.start(0.5);
+            nProgress.inc(0.2);
+
             currentBusiness['migrate'] = migrate
             
             axios.post(route('migrate_request'), currentBusiness).then( (response) => {
+                nProgress.done(true);
                 props.setCurrentPage(4);
             });
         }
@@ -51,6 +56,7 @@ export default function Step7(props) {
             <div>
                 <label className="text-base font-medium text-gray-900">
                     Do you want to migrate number from your actual provider to OneMessage provider?
+                    <span className="text-red-500"> * </span>
                 </label>
 
                 <fieldset className="mt-4">

@@ -9,6 +9,10 @@ import Step5 from './Step5';
 import Step6 from './Step6';
 import Step7 from './Step7';
 import axios from 'axios';
+import notie from 'notie';
+import nProgress from 'nprogress';
+
+const mandatoryField = ['display_name', 'phone_number', 'company_name'];
 
 export default function AccountRegistration(props){
 
@@ -18,6 +22,7 @@ export default function AccountRegistration(props){
     const [data, setData] = useState({});
     const [addfield, setAddField] = useState(false);
     const [checkPermission, setPermission] = useState({});
+    const [accountId, setAccountid] = useState();
     
     useEffect(() => {
       setData({});
@@ -31,7 +36,7 @@ export default function AccountRegistration(props){
         return false;
     }
 
-    //get all the value in the form page
+    // Get all the value in the form page
     function formHandler(event){
       let newData = Object.assign({}, data);
       const field_name = event.target.name;  
@@ -44,6 +49,16 @@ export default function AccountRegistration(props){
       newData[field_name] = value;
       setData(newData);
     }
+
+    /**
+     * Phone number change event
+     */
+     function changePhoneNumber(value , name){
+      let newData = Object.assign({}, data);
+      let phoneNumber = '+'+value;
+      newData[name] = phoneNumber;
+      setData(newData);
+     }
     
     //check the conditions
     function checkAllPermissioin(event){
@@ -64,8 +79,12 @@ export default function AccountRegistration(props){
                validate = false;
             }
          });
-        }else{
-          return false;
+        }else {
+          validate = false;
+        }
+
+        if(!validate || checklength != 3) {
+          notie.alert({type: 'warning', text: 'Please check the terms & condiitions', time: 5});
         }
 
         return validate;
@@ -77,13 +96,38 @@ export default function AccountRegistration(props){
       setData(newUser);
     }
 
+    function mandatoryfieldCheck() {
+      let check = true;
+      
+      if(data) {
+        mandatoryField.map( (field) => {
+           if(!data[field]) {
+             check = false;
+           }
+        });
+      }else {
+        check = false;
+      }
+
+      if (!data || !check) {
+        notie.alert({type: 'warning', text: 'Please fill the mandatory field', time: 5});
+      }
+      return check;
+    }
+
     //save the account details
     function saveAccount(){
+      let checkfield = mandatoryfieldCheck();
       let validate = validateRequest();
       
-      if(validate){
+      if(validate && checkfield) {
+        nProgress.start(0.5);
+        nProgress.inc(0.2);
+
         let url = route('store_account_registration');
         axios.post(url, data).then((response) => {
+            nProgress.done(true);
+            setAccountid(response.data.account_id);
             setCurrentPage(4);
         });
       }
@@ -148,6 +192,7 @@ export default function AccountRegistration(props){
                                         setCurrentPage={setCurrentPage}
                                         setAddField={setAddField}
                                         legalEntityName={legalEntityName}
+                                        changePhoneNumber={changePhoneNumber}
                                         />
                                     </div>
 
@@ -164,6 +209,7 @@ export default function AccountRegistration(props){
                                         checkAllPermissioin={checkAllPermissioin}
                                         validateRequest={validateRequest}
                                         saveAccount={saveAccount}
+                                        changePhoneNumber={changePhoneNumber}
                                        />
                                     </div>
 
@@ -173,6 +219,7 @@ export default function AccountRegistration(props){
                                       }
                                     >
                                        <Step4 
+                                       accountId={accountId}
                                        saveAccount={saveAccount}
                                        />
                                     </div>

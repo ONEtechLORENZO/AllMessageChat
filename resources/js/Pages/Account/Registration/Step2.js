@@ -3,12 +3,15 @@ import Source2 from './Source2';
 import Source1 from './Source1';
 import Source3 from './Source3';
 import { Link } from "@inertiajs/inertia-react";
+import notie from 'notie';
 
 const events = [
     { id: 'yes', title: 'Yes' },
     { id: 'no', title: 'No' },
     { id: 'not_sure', title: 'I am not sure' },
 ];
+
+const validateForm = ['legal_entity', 'phone_number', 'company_name'];
 
 export default function Step2(props){
     
@@ -34,6 +37,11 @@ export default function Step2(props){
         }
         if(step == 3){
             let ifcheckDisplayName = validateCheck();
+            
+            if(!ifcheckDisplayName) {
+                notie.alert({type: 'warning', text: 'Please fill the mandatory field', time: 5});
+            }
+
             if(ifcheckDisplayName){
                 props.setCurrentPage(3);
             }
@@ -41,15 +49,27 @@ export default function Step2(props){
         return false;
     }
 
+    // Validate the form 
     function validateCheck(){
+        let validate = true;
         let record = props.data;
-        if(record){
-            let value = record['legal_entity'];
-            if(value){
-                return true;
+
+        if(record) {
+            validateForm.map( (field) => {
+                if(validate && !record[field]) {
+                    validate = false;
+                }
+            });
+            if(record['legal_entity'] == 'no') {
+                if(!record['display_name']) {
+                    validate = false;
+                }
             }
+        }else {
+            validate = false;
         }
-        return false;
+
+        return validate;
     }
 
     return(
@@ -131,6 +151,7 @@ export default function Step2(props){
                data={props.data}
                formHandler={props.formHandler}
                legalEntityName={props.legalEntityName}
+               changePhoneNumber={props.changePhoneNumber}
               />
             </div>
                 

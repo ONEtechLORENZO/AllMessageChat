@@ -3,6 +3,8 @@ import Dropdown from '@/Components/Forms/Dropdown';
 import Input from "@/Components/Forms/Input";
 import Checkbox from "@/Components/Forms/Checkbox";
 import { Link } from "@inertiajs/inertia-react";
+import PhoneInput2 from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 const categoryOption = {
     'cat1' : 'Category1',
@@ -21,9 +23,9 @@ const formField = [
 ];
 
 const addformField = [
-  {'label':'Business Phone Number', 'name':'phone_number', 'type':'text'},
-  {'label':'Legal Entity Name', 'name':'company_name', 'type':'text'},
-  {'label':'Legal Business Name', 'name':'display_name', 'type':'text'},
+  {'label':'Business Phone Number', 'name':'phone_number', 'type':'phone_number', 'mandatory':1},
+  {'label':'Legal Entity Name', 'name':'company_name', 'type':'text', 'mandatory':1},
+  {'label':'Legal Business Name', 'name':'display_name', 'type':'text', 'mandatory':1},
 ];
 
 export default function Step3(props){
@@ -64,6 +66,7 @@ export default function Step3(props){
                   <tr>
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                     {field.label}
+                    {field.mandatory == 1 && <span className="text-red-600 px-2">*</span>}
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                     {field.type == 'text' ? 
@@ -88,7 +91,25 @@ export default function Step3(props){
                         required={true}
                       />
                       </div>
-                    : ''}
+                    : field.type == 'phone_number'?
+                     <div className="w-3/4">
+                      <PhoneInput2
+                        inputProps={{
+                            name:field_name,
+                            required: true,
+                            autoFocus: true
+                          }}
+                        containerStyle={{ marginTop: "15px" }}
+                        searchClass="search-class"
+                        searchStyle={{ margin: "0", width: "97%", height: "30px" }}
+                        enableSearchField
+                        disableSearchIcon
+                        placeholder="Enter phone number"
+                        value={field_value} 
+                        onChange={(value) => props.changePhoneNumber(value, field_name)}
+                      />
+                     </div>
+                    :''}
                   
                     {field.name == 'display_name' ? 
                     <span>if different from legal entity name, add a link that shows that you own that brand</span>

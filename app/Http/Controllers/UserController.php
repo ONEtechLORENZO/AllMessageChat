@@ -930,7 +930,7 @@ class UserController extends Controller
         if($id){
             return Redirect::route('dashboard');
         }else{
-            return response()->json(['status' => true]);
+            return response()->json(['status' => true, 'account_id' => $account->id]);
         }
 
     }
