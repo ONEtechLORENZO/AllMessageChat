@@ -27,10 +27,11 @@ class RegisteredUserController extends Controller
     public function create(Request $request)
     {
         $uuid = isset($_GET['unique_id']) ? $_GET['unique_id'] : '';
-        $step = $user_id = 0;
+        $step = $user_id = $company_id = 0;
         if($request->step){
             $step = $request->step;
             $user_id = $request->user_id;
+            $company_id = $request->company_id;
         }
 
         $stripe_public_key = config('stripe.stripe_key');
@@ -44,6 +45,7 @@ class RegisteredUserController extends Controller
                 'uuid' => $uuid,
                 'step' => $step,
                 'user_id' => $user_id,
+                'company_id' => $company_id,
                 'stripe_public_key' => $stripe_public_key,
                 'translator' => [
                     'Add a Payment Method' => __('Add a Payment Method'),

@@ -6,25 +6,27 @@ import Step3 from "./Step3";
 import Step4 from "./Step4";
 import Step5 from "./Step5";
 import Step6 from "./Step6";
+import BillingInformation from "./BillingInformation";
 
 export default function RegisterForm (props) {
 
     const [openTab, setOpenTab] = useState(0);
     const [userMail, setUserMail] = useState({});
     const [addStripe, setAddStrip] = useState(false);
+    const [companyId, setCompanyId] = useState();
 
     useEffect( () => {
         let newMail = Object.assign({}, userMail);
         let mail = props.email ? props.email : '';
         newMail['email'] = mail;
-        if(props.step < 3 ){
+        if(props.step < 4 ){
             newMail['user_id'] = props.user_id;
             setOpenTab(props.step);
+            setCompanyId(props.company_id);
         }
         setUserMail(newMail);
-        
     },[]);
-    //console.log('regiter_fomr', props);
+
     return (
        <div>
 
@@ -49,17 +51,27 @@ export default function RegisterForm (props) {
                 // Create workspace form
                 <Step2 
                     setOpenTab={setOpenTab}
+                    setCompanyId={setCompanyId}
+                />
+            }
+
+            {openTab === 3 && 
+                // Billing Information
+                <BillingInformation 
+                companyId={companyId}
+                setOpenTab={setOpenTab}
+                userMail={userMail}
                 />
             }
                 
-            {openTab === 3 &&
+            {openTab === 4 &&
                 // Organization form
                 <Step3 
                     setOpenTab={setOpenTab}
                 />
             }
                 
-            {openTab === 4 &&
+            {openTab === 5 &&
                 //  Stripe integration
                 <Step4 
                     setOpenTab={setOpenTab}
@@ -69,7 +81,7 @@ export default function RegisterForm (props) {
                 />
             }
                
-            {openTab === 5 &&
+            {openTab === 6 &&
                 // Choose Plan
                 <Step5 
                     user={userMail}
@@ -78,10 +90,12 @@ export default function RegisterForm (props) {
                 /> 
             }
 
-            {openTab === 6 && 
+            {openTab === 7 && 
               // DashBoard
                <Step6 />
             }
+
+            
        </div>
     );
 }

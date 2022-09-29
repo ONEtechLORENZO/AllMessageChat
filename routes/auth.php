@@ -83,4 +83,6 @@ Route::post('/store/new/organization', [OrganizationController::class, 'newOrgan
 Route::get('/company/plan', [SettingsController::class, 'updateSubscription'])
                ->name('showPlan');
 
+Route::post('/billingInformation', [CompanyController::class, 'billingInformation'])
+               ->name('billing_information');               
                 

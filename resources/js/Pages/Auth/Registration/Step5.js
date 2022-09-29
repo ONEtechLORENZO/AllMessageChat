@@ -54,12 +54,11 @@ export default function Step5 (props) {
    
         Inertia.post(route('subscribe_plan',{'plan': plan}), {user_id: props.user_id, is_register_step: true }, {
             onSuccess: (response) => {
-                props.setOpenTab(6);
+                props.setOpenTab(7);
             }
         });
-        props.setOpenTab(6);
+        props.setOpenTab(7);
     }
-//console.log( 'Step 5 proops:' , props);
 
     return (
         <div className="h-full w-full bg-blue-50 flex justify-center items-center">
@@ -183,7 +182,7 @@ export default function Step5 (props) {
                             <button
                                 type="button"
                                 className="w-full inline-flex justify-start rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-900 hover:bg-gray-200 hover:text-gray-900 text-semibold font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-                                onClick={() => props.setOpenTab(6)}
+                                onClick={() => props.setOpenTab(7)}
                             >
                                 Skip
                                 <span className="flex justify-end pt-1"><ChevronRightIcon className="h-4 w-4"/></span>

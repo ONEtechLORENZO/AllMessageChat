@@ -41,7 +41,7 @@ export default function Step3 (props) {
 
         let url = route('newOrganization');
         axios.post(url, organization).then( (response) => {
-            props.setOpenTab(4);
+            props.setOpenTab(5);
         });
 
     }
@@ -70,7 +70,7 @@ export default function Step3 (props) {
                     </div> 
 
                     <div className="grid grid-cols-2 mt-5">
-                        <div className="flex justify-start font-semibold text-lg text-primary">Step 3 </div>
+                        <div className="flex justify-start font-semibold text-lg text-primary">Step 4 </div>
                         <div className="flex justify-end font-semibold text-lg">About Your Organization</div>
                     </div>
 
@@ -184,7 +184,7 @@ export default function Step3 (props) {
                             <button
                                 type="button"
                                 className="w-full inline-flex justify-start rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-500 hover:bg-gray-900 text-semibold font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm mt-4"
-                                onClick={() => props.setOpenTab(4)}
+                                onClick={() => props.setOpenTab(5)}
                            >
                                 Skip
                                 <span className="flex justify-end pt-1"><ChevronRightIcon className="h-4 w-4"/></span>

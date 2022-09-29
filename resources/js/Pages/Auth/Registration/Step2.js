@@ -61,6 +61,7 @@ export default function Step2 (props) {
         let url = route('saveWorkspace');
         axios.post(url, workspace).then( (response) => {
             if (response) {
+                props.setCompanyId(response.data.company_id);
                 props.setOpenTab(3);
             }
         });
