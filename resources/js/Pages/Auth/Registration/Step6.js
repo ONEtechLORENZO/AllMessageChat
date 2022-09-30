@@ -33,10 +33,10 @@ export default function Step6 (props) {
                         </div>
 
                         <div className="bg-white w-full py-2 items-center mt-8 ">
-                          <div className="text-gray-900 py-2">You account has been RegisterForm!</div>
-                          <div className="text-gray-500 font-small py-2">We've been accredited $1,000 so you can start using OneMessage right now!</div>
-                          <div className="text-gray-500 font-small py-2">You can change your wallet anytime and send more messages:<span className="text-indigo-500 font-semibold pl-2">Check Rates</span></div>
-                          <div className="text-gray-500 font-small py-2">You registered with<span className="text-indigo-500 font-semibold px-2"> Lite plan</span>witch is monthly free and you have: </div>
+                          <div className="text-gray-900 py-2 font-semibold text-lg">You Account has been registered!</div>
+                          <div className="text-gray-500 font-small py-2">We've been accredited $1.00 so you can start using OneMessage right now!</div>
+                          <div className="text-gray-500 font-small py-2">You can charge your wallet anytime and send more messages:<span className="text-indigo-500 font-semibold pl-2">Check Rates</span></div>
+                          <div className="text-gray-500 font-small py-2">You registered with<span className="text-indigo-500 font-semibold px-2"> Lite plan</span>which is monthly free and you have: </div>
                           <div className="text-gray-500 font-small py-2">
                             <ul className="list-disc ml-6">
                                 <li>1 workspace</li>
@@ -64,7 +64,7 @@ export default function Step6 (props) {
                                     href={route('dashboard')}
                                     className="w-full inline-flex justify-end rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary hover:bg-primary/80 text-semibold font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm mt-4"
                                     >
-                                        Start Usign OneMessage
+                                        Start Using OneMessage
                                     <span className="flex justify-end pt-1"><ChevronRightIcon className="h-4 w-4"/></span>
                                 </Link>
                             </div>
