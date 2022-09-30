@@ -267,4 +267,17 @@ class SettingsController extends Controller
         }
         return Redirect::route('wallet_subscription');
     }
+
+    public function planChanger () {
+
+        $planRecords = DB::table('plans')->get();
+         
+        $plans = [];
+
+        foreach ($planRecords as $record) {
+            $plans[$record->plan] = $record;
+        }
+
+        return Inertia::render('Subscription/plan',['plans' => $plans]);
+    }
 }
