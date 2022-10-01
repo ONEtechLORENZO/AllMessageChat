@@ -43,6 +43,7 @@ export default function Dashboard(props) {
           ]
         });
     }
+//console.log(props.auth.user);
 
     return (
         <Authenticated
@@ -54,7 +55,7 @@ export default function Dashboard(props) {
                     <h2 className="font-semibold text-xl text-gray-800 leading-tight">{props.translator['Dashboard']}</h2>
                 </div> 
                 <div className='flex'>
-                    {props.auth.user.fb_token ? 
+                    {props.auth.user.fb_token != '' ? 
                         <a
                             href={route('connect_face_book')}
                             className='ml-3 inline-flex align-middle justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
@@ -64,7 +65,7 @@ export default function Dashboard(props) {
                                 alt="FB"
                                 className="pr-2 h-7 w-8"
                             />
-                            <span className='mt-1'>   Connect with Facebook </span>
+                            <span className='mt-1'> Connect with Facebook </span>
                         </a>
                     :
                         <>
