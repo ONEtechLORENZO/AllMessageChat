@@ -51,8 +51,6 @@ export default function Index(props)
        
     },[props]);
 
-    
-        
     function saveTag()
     {
         var data = {
@@ -544,16 +542,16 @@ export default function Index(props)
 
                                             {tab.linktab == 'lineItem' && props.lineItems.length != 0? 
                                                 <div className="divide-y pt-4">
-                                                <ItemTable 
-                                                lineItems={props.lineItems}
-                                                view={'Detail'}
-                                                totalPrice={props.totalPrice}
-                                                getProductName={''}
-                                                addQuantity={''}
-                                                deleteItem={''}
-                                                addItem={''}
-                                                productList={''}
-                                                />
+                                                    <ItemTable 
+                                                        lineItems={props.lineItems}
+                                                        view={'Detail'}
+                                                        totalPrice={props.totalPrice}
+                                                        getProductName={''}
+                                                        addQuantity={''}
+                                                        deleteItem={''}
+                                                        addItem={''}
+                                                        productList={''}
+                                                    />
                                                 </div>
                                             :''}
                                             </>
@@ -599,6 +597,16 @@ export default function Index(props)
                                             </>
                                         }
                                         {activeTab == 'Order' &&
+                                            <>
+                                                <SubPanels 
+                                                    module={tab.name}
+                                                    parent_id={props.record.id}
+                                                    parent_module={props.module}
+                                                    parent_name={props.record.name}
+                                                />
+                                            </>
+                                        }
+                                        {activeTab == 'Document' &&
                                             <>
                                                 <SubPanels 
                                                     module={tab.name}

@@ -211,13 +211,11 @@ class ContactController extends Controller
 
         $contact = $parent_mod::findOrFail($request->id);
 
-        if($parent_module == 'Contact')
-        {
+        if($parent_module == 'Contact'){
             $parent_name = $contact->first_name. ' '. $contact->last_name;
-        }
-        else {
+        } else {
              $parent_name = $contact->name;
-             }
+        }
          
         $companyId = Cache::get('selected_company_'. $request->user()->id);
         $headers = $this->getModuleHeader($companyId , 'Contact');
@@ -247,6 +245,9 @@ class ContactController extends Controller
               $query = $submod::where('contact_id', $request->id);
             if($subModule=='Order')
               $query = $submod::where('contact', $request->id);
+
+            if($subModule=='Document')
+              $query = $submod::where('parent_id', $request->id);
         }
         if($parent_module=='Organization')
         {

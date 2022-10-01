@@ -8,6 +8,7 @@ use Inertia\Inertia;
 use Auth;
 use App\Models\Account;
 use App\Models\Contact;
+use App\Models\Document;
 use App\Models\Template;
 use Illuminate\Support\Facades\Redirect;
 use App\Http\Controllers\MessageLogController;
@@ -294,7 +295,8 @@ class MsgController extends Controller
             $category = ($request->category) ? $request->category : $contactChaneel->channel;
             $messages = $this->getMessageList($request);
         }
-        $accounts = Account::where('user_id', $user->id )
+        
+        $accounts = Account::where('company_id', $companyId )
             ->where(function($query) use ($category) {
                 if($category != 'all' && $category != ''){
                     $query->where('service' , $category);
@@ -477,6 +479,9 @@ class MsgController extends Controller
                 'date' => date_format( $message->created_at , $this->dateChatView),
                 'mode' => $message->msg_mode,
                 'category' => $message->service,
+                'error' => $message->error_response,
+                'delivered' => $message->is_delivered,
+                'read' => $message->is_read,
             ];
         }
         return ( $messages);
@@ -617,11 +622,11 @@ class MsgController extends Controller
         $account = Account::find($accountId);
         $user_id = $account->user_id;
         $companyId = $account->company_id;
-//dd($data);
 
         $_REQUEST['is_sent'] = 'sent';
         $msgable_id = $this->getInfoUsingContactUniqueId($request->destination, $request->channel, $companyId, $user_id);
         $msgable_type = 'App\Models\Contact';
+
         $messageData = [
             'service_id' => $data['messageId'],
             'service' => $request->channel,
@@ -797,16 +802,24 @@ class MsgController extends Controller
                 'is_read' => 0
             ];
             if(isset($data['payload']['contentType'])){
+                // Store document
+                $document = new Document();
+                $filePath = $document->storeDocument( $data['payload']['contentType'], $data['payload']['url'] , $msgable_id);
+        
                 $type = explode('/' , $data['payload']['contentType']);
                 $messageData['msg_type'] = $type[0];
                 $messageData['message'] = isset($data['payload']['caption']) ?  $data['payload']['caption'] : '';
                 $messageData['file_path'] = $data['payload']['url'];
             }
         } else {
-            if(!isset($data['gsId'])){
+            
+            $serviceId = isset($data['gsId']) ? $data['gsId'] : '';
+            $serviceId = ($serviceId == '' && isset($data['id'])) ? $data['id'] : $serviceId;
+            if(! $serviceId)
                 return false;
-            }
-            $message = Msg::where('service_id', $data['gsId'])->first();
+
+            $messageData['service_id'] = $serviceId;
+            $message = Msg::where('service_id', $serviceId)->first();
             if(!$message){
                 return false;
             }
@@ -814,23 +827,19 @@ class MsgController extends Controller
             $is_delivered = $is_read = 0;
             $status = 'Sent';
             if (isset($data['type']) && str_contains($data['type'], 'failed')) {
-                $status = 'Failed';
+                $messageData['status'] = 'Failed';
+                $messageData['error_response'] = $data['payload']['reason'];
             } else if(isset($data['type']) && $data['type'] == 'sent'){
-                $status = 'Sent';
+                $messageData['status'] = 'Sent';
             }
             else if(isset($data['type']) && $data['type'] == 'delivered'){
-                $is_delivered = 1;
+                $messageData['is_delivered'] = 1;
             }
             else if(isset($data['type']) && $data['type'] == 'read'){
-                $is_read = 1;
+                $messageData['is_read'] = 1;
             }
-            $messageData = [
-                'service_id' => $data['gsId'],
-                'status' => $status,
-                'is_delivered' => $is_delivered,
-                'is_read' => $is_read
-            ];
         }
+
         if(isset($data['pricing'])){
             $messageData['policy'] = $data['pricing']['category'];
             $price = $this->handlePrice($data['destination'], $data['pricing']['category'] ,$user_id);

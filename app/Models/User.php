@@ -28,7 +28,8 @@ class User extends Authenticatable
         'password',
         'role',
         'status',
-        'language'
+        'language',
+        'fb_token'
     ];
 
     /**

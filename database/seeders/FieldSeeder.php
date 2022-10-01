@@ -91,6 +91,11 @@ class FieldSeeder extends Seeder
             // Msg 
             ['module_name' => 'Message', 'field_name' => 'message', 'field_label' => 'Content', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false'],
             
+            // Documennt
+            ['module_name' => 'Document', 'field_name' => 'title', 'field_label' => 'Title', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true'],
+            ['module_name' => 'Document', 'field_name' => 'type', 'field_label' => 'Type', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true'],
+            ['module_name' => 'Document', 'field_name' => 'size', 'field_label' => 'Size', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true'],
+
         ]);
 
         DB::table('plans')->insert([

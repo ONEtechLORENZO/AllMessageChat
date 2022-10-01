@@ -3,7 +3,6 @@ import Authenticated from '@/Layouts/Authenticated';
 import { Head, Link } from '@inertiajs/inertia-react';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
-import UserRegistration from '@/Components/UserRegistration';
 
 export default function Dashboard(props) {
     
@@ -54,7 +53,29 @@ export default function Dashboard(props) {
                 <div> 
                     <h2 className="font-semibold text-xl text-gray-800 leading-tight">{props.translator['Dashboard']}</h2>
                 </div> 
-                <div>
+                <div className='flex'>
+                    {props.auth.user.fb_token ? 
+                        <a href='#' className="rounded-md bg-blue-50 p-4 flex">
+                            <div className="ml-3 flex-1 md:flex md:justify-between">
+                                <p className="text-sm text-blue-700">Connected with Facebook</p>
+                            </div>
+                        </a>
+                    :
+                        <>
+                            <a
+                                href={route('connect_face_book')}
+                                className='ml-3 inline-flex align-middle justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                            >
+                                <img
+                                    src="./img/fb-Icon.png"
+                                    alt="FB"
+                                    className="pr-2 h-7 w-8"
+                                />
+                                <span className='mt-1'> Connect with Facebook </span>
+                            </a> 
+                        </>
+                    }
+
                 <Link
                     href={route('account_registration')}
                     className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
@@ -134,7 +155,7 @@ export default function Dashboard(props) {
                                     <p className="mt-1 text-sm text-gray-500">{props.translator['Get started by creating a new social profile.']}</p>
                                     <div className="mt-6">
                                         <Link href={route('account_registration')} className="underline text-sm text-indigo-600 hover:text-indigo-900">
-                                        {props.translator['Click here to create a new social profile']}
+                                            {props.translator['Click here to create a new social profile']}
                                         </Link>
                                     </div>
                               </div>

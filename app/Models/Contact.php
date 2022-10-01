@@ -18,7 +18,7 @@ class Contact extends Model
 
     protected $with = [
         '0' => 'tags',
-        '1' => 'categorys'
+        '1' => 'categorys',
     ];
 
     protected $casts = [
@@ -51,6 +51,11 @@ class Contact extends Model
     {
         return $this->morphMany(Note::class, 'notable');
     }
+
+    public function document()  
+    {  
+      return $this->hasOne('App\Models\Document', 'parent_id');  
+    }  
 
     /**
      * Return list view fields
