@@ -54,7 +54,7 @@ export default function Dashboard(props) {
                     <h2 className="font-semibold text-xl text-gray-800 leading-tight">{props.translator['Dashboard']}</h2>
                 </div> 
                 <div>
-                <Link
+                <a
                     href={route('connect_face_book')}
                     className='ml-3 inline-flex align-middle justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 >
@@ -63,8 +63,8 @@ export default function Dashboard(props) {
                         alt="FB"
                         className="pr-2 h-7 w-8"
                     />
-                    <span className='mt-1'> Connect with Facebook </span>
-                </Link>
+                    <span className='mt-1'> {props.auth.user.fb_token ?  <> Connected </>  : <> Connect </>}  with Facebook </span>
+                </a>
 
                 <Link
                     href={route('account_registration')}
@@ -145,7 +145,7 @@ export default function Dashboard(props) {
                                     <p className="mt-1 text-sm text-gray-500">{props.translator['Get started by creating a new social profile.']}</p>
                                     <div className="mt-6">
                                         <Link href={route('account_registration')} className="underline text-sm text-indigo-600 hover:text-indigo-900">
-                                        {props.translator['Click here to create a new social profile']}
+                                            {props.translator['Click here to create a new social profile']}
                                         </Link>
                                     </div>
                               </div>
