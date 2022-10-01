@@ -2,6 +2,7 @@ import React ,{useEffect, useState}from "react";
 import Authenticated from "../../Layouts/Authenticated";
 import Input from "@/Components/Forms/Input";
 import { PencilIcon, CheckIcon, XIcon } from "@heroicons/react/solid";
+import { Inertia } from "@inertiajs/inertia";
 
 const planfields = [
     { name: 'price', label: 'Plan price'},
@@ -23,7 +24,7 @@ export default function PlanController (props) {
 
     useEffect ( () => {
         setPlans(props.plans)
-    },[]);
+    },[props]);
 
     function placeHandler (event) {
         let newPlan = Object.assign({} ,temp);
@@ -46,7 +47,13 @@ export default function PlanController (props) {
     }
 
     function savePlan() {
-       console.log(temp)
+       
+        Inertia.post(route('subscription_save'), temp, {
+            onSuccess: (response) => {
+                setTemp({});
+            }
+        });
+
     }
 
     return (
@@ -61,12 +68,7 @@ export default function PlanController (props) {
                     <h1 className="text-xl font-semibold text-gray-900">Plan Details</h1>
                     </div>
                     <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-                    <button
-                        type="button"
-                        className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
-                    >
-                        Save
-                    </button>
+                   
                     </div>
                 </div>
                 <div className="mt-8 flex flex-col">
@@ -114,9 +116,13 @@ export default function PlanController (props) {
                                                     <div className="px-2 py-4 text-gray-900"><XIcon className="h-4 w-4 text-red-900"  onClick={() => cancelPlan()}/></div>
                                                 </div> 
                                             : 
-                                                <div className="flex">
-                                                  {plan[field.name]}
-                                                  <span className="px-2"><PencilIcon className="h-4 w-4" onClick={() => editPlan(key, field.name, plan[field.name])}/></span>
+                                                <div className="flex w-40">
+                                                  <div className="flex truncate">
+                                                   {plan[field.name]}
+                                                  </div>   
+                                                  <div className="flex">
+                                                     <span className="px-2"><PencilIcon className="h-4 w-4" onClick={() => editPlan(key, field.name, plan[field.name])}/></span>
+                                                  </div>
                                                 </div>
                                             }
                                             </td>
