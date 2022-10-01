@@ -11,6 +11,7 @@ export default function Detail(props)
         { label: (props.translator['Notes']), name: 'Notes', href: '#' },
         { label: 'Opportunity', name: 'Opportunity', href: '#' },
         { label: 'Order', name: 'Order', href: '#' },
+        { label: 'Document', name: 'Document', href: '#' },
     ];
     
     const [showForm, setShowForm] = useState(false);

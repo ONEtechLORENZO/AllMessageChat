@@ -34,6 +34,7 @@ use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsGlobalAdmin;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Models\Contact;
+use App\Models\Document;
 use App\Models\Service;
 use App\Models\Notification;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -57,8 +58,8 @@ Route::middleware('guest')->group(function () {
 });
 
 // Test
-Route::get('/test_stripe', function(){
-    Log::info('stirple');
+Route::get('/test', function(){
+   echo "Test";
 });
 
 // Invite User
@@ -75,6 +76,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/getCompanyId', [UserController::class, 'getSelectedCompany'])->name('get_selected_company');
     Route::get('/user/timezone',[UserController::class, 'getUserTimeZone'])->name('get_time_zone');
     Route::post('/show_register_step',[RegisteredUserController:: class, 'create'])->name('show_register_step');
+
+    // FaceBook
+    Route::get('/connect/fb',[UserController::class, 'dashboard'])->name('connect_face_book');
 
     // Wallet
     Route::get('/wallet', [UserController::class, 'wallet'])->name('wallet');
@@ -143,7 +147,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
     
-    Route::get('/subpanelrecords', [ContactController::class, 'show_subpanel'])->name('subpanel_list');
+    Route::get('/subpanelRecords', [ContactController::class, 'show_subpanel'])->name('subpanel_list');
 
     // Opportunity
     Route::get('/opportunities', [OpportunityController::class, 'index'])->name('listOpportunity');

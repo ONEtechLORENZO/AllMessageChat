@@ -3,7 +3,6 @@ import Authenticated from '@/Layouts/Authenticated';
 import { Head, Link } from '@inertiajs/inertia-react';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
-import UserRegistration from '@/Components/UserRegistration';
 
 export default function Dashboard(props) {
     
@@ -55,6 +54,18 @@ export default function Dashboard(props) {
                     <h2 className="font-semibold text-xl text-gray-800 leading-tight">{props.translator['Dashboard']}</h2>
                 </div> 
                 <div>
+                <Link
+                    href={route('connect_face_book')}
+                    className='ml-3 inline-flex align-middle justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                >
+                    <img
+                        src="./img/fb-Icon.png"
+                        alt="FB"
+                        className="pr-2 h-7 w-8"
+                    />
+                    <span className='mt-1'> Connect with Facebook </span>
+                </Link>
+
                 <Link
                     href={route('account_registration')}
                     className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'

@@ -608,7 +608,18 @@ class Controller extends BaseController
             $moduleName = class_basename($module);
             $currentTab = $moduleName;
         }
-       
+        if($moduleName == 'Document'){
+            $actions = [
+                'detail' => false,
+                'create' => false,
+            ];
+        } else {
+            $actions = [
+                'detail' => true,
+                'create' => true,
+            ];
+        }
+
         $return = [
             'related_records' => $records->items(),
             'related_records_header' => $headers,
@@ -628,10 +639,7 @@ class Controller extends BaseController
             ],
             
             // Actions
-            'sub_panbel_actions' => [
-                'detail' => true,
-                'create' => true,
-            ],
+            'sub_panbel_actions' => $actions,
         ];
         return $return;
     }

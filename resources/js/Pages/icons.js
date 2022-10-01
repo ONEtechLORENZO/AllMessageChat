@@ -210,8 +210,55 @@ export const PencilIcon = () => (
         fill="none" 
         viewBox="0 0 24 24" 
         stroke="currentColor" 
-        className="text-red-500 mr-3"
+        className="text-red-500"
         stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   );
+
+  export const QueueIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" 
+        fill="none" 
+        viewBox="0 0 24 24" 
+        stroke-width="1.5" 
+        stroke="currentColor" 
+        width={18}
+        height={18}
+        >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+
+  export const SentIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" 
+        width={18}
+        height={18}
+        fill="none" 
+        viewBox="0 0 24 24" 
+        stroke="currentColor" 
+        stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  );
+  export const DeliveredIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" 
+        width={18}
+        height={18}
+        fill="none" 
+        viewBox="0 0 24 24" 
+        stroke="currentColor" 
+        stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+  export const ReadIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" 
+        width={18}
+        height={18}
+        viewBox="0 0 20 20" 
+        className="text-blue-500"
+        fill="currentColor">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+    </svg>
+  );
+
