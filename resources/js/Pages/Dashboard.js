@@ -43,7 +43,7 @@ export default function Dashboard(props) {
           ]
         });
     }
-//console.log(props.auth.user);
+console.log(props.auth.user);
 
     return (
         <Authenticated
