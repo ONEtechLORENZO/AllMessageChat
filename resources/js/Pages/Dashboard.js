@@ -53,7 +53,7 @@ export default function Dashboard(props) {
                 <div> 
                     <h2 className="font-semibold text-xl text-gray-800 leading-tight">{props.translator['Dashboard']}</h2>
                 </div> 
-                <div>
+                <div className='flex'>
                     {props.auth.user.fb_token ? 
                         <a
                             href={route('connect_face_book')}
@@ -68,11 +68,11 @@ export default function Dashboard(props) {
                         </a>
                     :
                         <>
-                            <div className="rounded-md bg-blue-50 p-4">
+                            <a href='#' className="rounded-md bg-blue-50 p-4 flex">
                                 <div className="ml-3 flex-1 md:flex md:justify-between">
                                     <p className="text-sm text-blue-700">Connected with Facebook</p>
                                 </div>
-                            </div>
+                            </a>
                         </>
                     }
 
