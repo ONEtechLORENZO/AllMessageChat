@@ -22,6 +22,7 @@ use App\Models\Price;
 use App\Models\WebhookEvent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Facebook\Facebook;
 use Session;
 use PDF;
 use Schema;
@@ -1799,5 +1800,104 @@ class UserController extends Controller
         }
         
         return response()->json(['status' => true]);
+    }
+
+    /**
+     * Connect FaceBook
+     */
+    public function connectFaceBook(Request $request)
+    {
+        $fb = new Facebook([
+            'app_id' => config('app.fb.api_id'),
+            'app_secret' => config('app.fb.app_secret'),
+            'default_graph_version' => config('app.fb.app_graph_version'),
+            ]);
+          
+          $helper = $fb->getRedirectLoginHelper();
+          $permissions = ['email', 'whatsapp_business_management', 'whatsapp_business_messaging', 'public_profile'];
+          $loginUrl = $helper->getLoginUrl( config('app.fb.call_back_url'), $permissions);
+       
+         return Redirect::to($loginUrl);
+    }
+
+    /**
+     * Get facebook unique code and store user table 
+     */
+    public function storeFaceBookCode(Request $request)
+    {
+        Session::put('fb_access_token', '');
+        session_start();
+        
+        $user = User::find($request->user()->id);
+
+        $fb = new Facebook([
+            'app_id' => config('app.fb.api_id'),
+            'app_secret' => config('app.fb.app_secret'),
+            'default_graph_version' => config('app.fb.app_graph_version'),
+            ]);
+          
+          $helper = $fb->getRedirectLoginHelper();
+          
+          try {
+            $accessToken = $helper->getAccessToken();
+          } catch(Facebook\Exceptions\FacebookResponseException $e) {
+            Log::info('Graph returned an error: ' . $e->getMessage());
+            exit;
+          } catch(Facebook\Exceptions\FacebookSDKException $e) {
+            Log::info(  'Facebook SDK returned an error: ' . $e->getMessage());
+            exit;
+          }
+          
+          if (! isset($accessToken)) {
+            if ($helper->getError()) {
+              header('HTTP/1.0 401 Unauthorized');
+              echo "Error: " . $helper->getError() . "\n";
+              echo "Error Code: " . $helper->getErrorCode() . "\n";
+              echo "Error Reason: " . $helper->getErrorReason() . "\n";
+              echo "Error Description: " . $helper->getErrorDescription() . "\n";
+            } else {
+              header('HTTP/1.0 400 Bad Request');
+              echo 'Bad request';
+            }
+            exit;
+          }
+          
+          // Logged in
+          
+          $token = ($accessToken->getValue());
+          $user->fb_token = $token;
+          $user->save();
+          return Redirect::route('dashboard');
+          /*
+          // The OAuth 2.0 client handler helps us manage access tokens
+          $oAuth2Client = $fb->getOAuth2Client();
+          
+          // Get the access token metadata from /debug_token
+          $tokenMetadata = $oAuth2Client->debugToken($accessToken);
+          echo '<h3>Metadata</h3>';
+          echo '<pre>';print_r($tokenMetadata);echo '</pre>';
+          
+          // Validation (these will throw FacebookSDKException's when they fail)
+          $tokenMetadata->validateAppId($config['app_id']);
+          // If you know the user ID this access token belongs to, you can validate it here
+          //$tokenMetadata->validateUserId('123');
+          $tokenMetadata->validateExpiration();
+          
+          if (! $accessToken->isLongLived()) {
+            // Exchanges a short-lived access token for a long-lived one
+            try {
+              $accessToken = $oAuth2Client->getLongLivedAccessToken($accessToken);
+            } catch (Facebook\Exceptions\FacebookSDKException $e) {
+              echo "<p>Error getting long-lived access token: " . $e->getMessage() . "</p>\n\n";
+              exit;
+            }
+          
+            echo '<h3>Long-lived</h3>';
+            var_dump($accessToken->getValue());
+          }
+          
+          $_SESSION['fb_access_token'] = (string) $accessToken;
+          */
+
     }
 }

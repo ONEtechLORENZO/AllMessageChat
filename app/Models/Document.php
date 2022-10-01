@@ -37,10 +37,6 @@ class Document extends Model
     public function storeDocument($type , $url , $parent)
     {
 
-        //  $type = 'image/jpeg';
-        //  $url = 'https://filemanager.gupshup.io/fm/wamedia/onemessage/a5c47ebd-c2c9-4e5c-9590-3d895e94f029';
-        //  $parent = 1;
-
         $extension = explode('/', $type)[1];
         $file = file_get_contents($url);
         $name = 'ba_document_'.time().'-'. uniqid().'.'.$extension;

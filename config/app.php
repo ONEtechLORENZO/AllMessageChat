@@ -265,5 +265,13 @@ return [
         'pro' => env('PRO'),
         'business' => env('BUSINESS'),
         'enterprise' => env('ENTERPRISE'),
-    ]
+    ],
+
+    // FaceBook
+    'fb' => [
+        'api_id' => env('API_ID'),
+        'app_secret' => env('APP_SECRET'),
+        'app_graph_version' => env('DEFAULT_GRAPH_VERSION'),
+        'call_back_url' => env('CALL_BACK_URL')
+    ],
 ];

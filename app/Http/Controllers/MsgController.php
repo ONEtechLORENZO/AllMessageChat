@@ -809,7 +809,7 @@ class MsgController extends Controller
                 $type = explode('/' , $data['payload']['contentType']);
                 $messageData['msg_type'] = $type[0];
                 $messageData['message'] = isset($data['payload']['caption']) ?  $data['payload']['caption'] : '';
-                $messageData['file_path'] = $filePath;
+                $messageData['file_path'] = $data['payload']['url'];
             }
         } else {
             
