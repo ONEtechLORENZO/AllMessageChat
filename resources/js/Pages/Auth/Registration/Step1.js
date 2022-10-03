@@ -73,6 +73,12 @@ export default function Step1 (props) {
        return validate;
     }
 
+    function errorHandler(message) {
+        Object.entries(message.errors).map( ([key,error]) => {
+            notie.alert({type: 'error', text: error[0], time: 5});
+        } )
+    }
+
     function saveUserDetail () {
         let is_validate = userValidation(user);
         if(!is_validate) {
@@ -87,6 +93,9 @@ export default function Step1 (props) {
             props.setUserMail(newUser);
 
             props.setOpenTab(2)
+        })
+        .catch((error) => {
+            errorHandler(error.response.data)
         });
     }
  
