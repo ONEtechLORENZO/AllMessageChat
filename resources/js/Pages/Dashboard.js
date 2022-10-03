@@ -54,25 +54,25 @@ export default function Dashboard(props) {
                     <h2 className="font-semibold text-xl text-gray-800 leading-tight">{props.translator['Dashboard']}</h2>
                 </div> 
                 <div className='flex'>
-                    {props.auth.user.fb_token == '' ? 
-                        <a
-                            href={route('connect_face_book')}
-                            className='ml-3 inline-flex align-middle justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-                        >
-                            <img
-                                src="./img/fb-Icon.png"
-                                alt="FB"
-                                className="pr-2 h-7 w-8"
-                            />
-                            <span className='mt-1'> Connect with Facebook </span>
+                    {props.auth.user.fb_token ? 
+                        <a href='#' className="rounded-md bg-blue-50 p-4 flex">
+                            <div className="ml-3 flex-1 md:flex md:justify-between">
+                                <p className="text-sm text-blue-700">Connected with Facebook</p>
+                            </div>
                         </a>
                     :
                         <>
-                            <a href='#' className="rounded-md bg-blue-50 p-4 flex">
-                                <div className="ml-3 flex-1 md:flex md:justify-between">
-                                    <p className="text-sm text-blue-700">Connected with Facebook</p>
-                                </div>
-                            </a>
+                            <a
+                                href={route('connect_face_book')}
+                                className='ml-3 inline-flex align-middle justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                            >
+                                <img
+                                    src="./img/fb-Icon.png"
+                                    alt="FB"
+                                    className="pr-2 h-7 w-8"
+                                />
+                                <span className='mt-1'> Connect with Facebook </span>
+                            </a> 
                         </>
                     }
 

@@ -159,7 +159,16 @@ class SettingsController extends Controller
         // Get current company details
         $currentCompany =  Company::where('id', $company_id)->first();
 
-        return Inertia::render('Subscription/subscription', ['plan' => $currentCompany->plan, 'user_id' => $user_id]);
+        // Plan details
+        $planRecords = DB::table('plans')->get();
+         
+        $plans = [];
+
+        foreach ($planRecords as $record) {
+            $plans[$record->plan] = $record;
+        }
+
+        return Inertia::render('Subscription/subscription', ['current_plan' => $currentCompany->plan, 'user_id' => $user_id, 'plans' => $plans]);
     }
 
     public function saveCompany(Request $request)
@@ -268,7 +277,7 @@ class SettingsController extends Controller
         return Redirect::route('wallet_subscription');
     }
 
-    public function planChanger () {
+    public function getPlanDetails () {
 
         $planRecords = DB::table('plans')->get();
          
@@ -279,5 +288,16 @@ class SettingsController extends Controller
         }
 
         return Inertia::render('Subscription/plan',['plans' => $plans]);
+    }
+
+    public function saveSubscriptionChange (Request $request) {
+        
+        if($request->id) {
+            $plan = DB::table('plans')
+                        ->where('plan', $request->id)
+                        ->update([$request->name => $request->value]);
+            
+            return Redirect::route('plan_editor');                   
+        }
     }
 }

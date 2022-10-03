@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import Authenticated from "@/Layouts/Authenticated";
 import { Fragment } from 'react';
 import { CheckIcon, XIcon  } from "@heroicons/react/solid";
@@ -29,45 +29,45 @@ const sections = [
 {
     name: 'Features',
     features: [
-    { name: 'Target', tiers: { Lite: 'Freelance', Pro: 'Small Business',Business: 'Medium Business', Enterprise:'Large Business' } },
-    { name: 'Setup per Workspace', tiers: { Lite: '0€', Pro: '0€',Business: '0€', Enterprise:'Custom' } },
-    { name: 'Monthly Fee per Workspace', tiers: { Lite: '0€', Pro: '49€',Business: '99€', Enterprise:'350€/Max 10.000 messages month 500€ /max 25.000 messages month' } },
-    { name: 'Included Channels', tiers: { Lite: 'Whatsapp, Instagram, Facebook', Pro: 'Whatsapp, Instagram, Facebook',Business: 'Whatsapp, Instagram, Facebook', Enterprise:'Whatsapp, Instagram, Facebook,custom' } },
-    { name: 'Max Social Accounts per Channel (e.g 1 WABA, 1 IG, 1 FB)', tiers: { Lite: '1', Pro: '2',Business: '3', Enterprise:'custom' } },
-    { name: 'Official Whatsapp Business API', tiers: { Lite: '0€/month/number', Pro: '0€/month/number',Business: '0€/month/number', Enterprise:'0€/month/number'} },
-    { name: 'Unofficial Whatsapp Business API', tiers: { Lite: '45€/month/number', Pro: '45€/month/number',Business: '45€/month/number', Enterprise:'NO'} },
-    { name: 'Account Facebook e Instagram', tiers: { Lite: '0€/mese/account', Pro: '0€/mese/account',Business: '0€/mese/account', Enterprise:'0€/mese/numero'} },
-    { name: 'Max Users per Workspace', tiers: { Lite: '1', Pro: '10',Business: '25', Enterprise:'infinite' } },
-    { name: 'Users included in the workspace', tiers: { Lite: '1', Pro: '3',Business: '5', Enterprise:'custom' } },
-    { name: 'Cost for Extra Users', tiers: { Lite: '-', Pro: '5€/user/month',Business: '5€/user/month', Enterprise:'custom' } },
-    { name: 'CRM Contacts', tiers: { Lite: 'infinite', Pro: 'infinite',Business: 'infinite', Enterprise:'infinite' } }
+    { name: 'Target', tiers: { Lite: 'Freelance', Pro: 'Small Business',Business: 'Medium Business', Enterprise:'Large Business', 'category':'' } },
+    { name: 'Setup per Workspace', tiers: { Lite: '0€', Pro: '0€',Business: '0€', Enterprise:'Custom', 'category': 'monthly_workspace' } },
+    { name: 'Monthly Fee per Workspace', tiers: { Lite: '0€', Pro: '49€',Business: '99€', Enterprise:'350€/Max 10.000 messages month 500€ /max 25.000 messages month', 'category': 'monthly_workspace'  } },
+    { name: 'Included Channels', tiers: { Lite: 'Whatsapp, Instagram, Facebook', Pro: 'Whatsapp, Instagram, Facebook',Business: 'Whatsapp, Instagram, Facebook', Enterprise:'Whatsapp, Instagram, Facebook,custom', 'category': '' } },
+    { name: 'Max Social Accounts per Channel (e.g 1 WABA, 1 IG, 1 FB)', tiers: { Lite: '1', Pro: '2',Business: '3', Enterprise:'custom', 'category': 'accounts'  } },
+    { name: 'Official Whatsapp Business API', tiers: { Lite: '0€/month/number', Pro: '0€/month/number',Business: '0€/month/number', Enterprise:'0€/month/number', 'category': '' } },
+    { name: 'Unofficial Whatsapp Business API', tiers: { Lite: '45€/month/number', Pro: '45€/month/number',Business: '45€/month/number', Enterprise:'NO', 'category': '' } },
+    { name: 'Account Facebook e Instagram', tiers: { Lite: '0€/mese/account', Pro: '0€/mese/account',Business: '0€/mese/account', Enterprise:'0€/mese/numero', 'category': '' } },
+    { name: 'Max Users per Workspace', tiers: { Lite: '1', Pro: '10',Business: '25', Enterprise:'infinite', 'category': 'users'  } },
+    { name: 'Users included in the workspace', tiers: { Lite: '1', Pro: '3',Business: '5', Enterprise:'custom', 'category': 'include_users'  } },
+    { name: 'Cost for Extra Users', tiers: { Lite: '-', Pro: '5€/user/month',Business: '5€/user/month', Enterprise:'custom', 'category': 'extra_users'  } },
+    { name: 'CRM Contacts', tiers: { Lite: 'infinite', Pro: 'infinite',Business: 'infinite', Enterprise:'infinite', 'category': ''  } }
     ],
 },
 {
     name: 'Message Costs',
     features: [
-    { name: 'Chat Cost (for WABA Only)', tiers: { Lite: 'Different from Country to Country', Pro: true, Business: true, Enterprise: true } },
-    { name: 'Cost per Message', tiers: { Lite: '0.0017€', Pro: '0.0017€',Business: '0.0017€', Enterprise:'custom' } },
-    { name: 'Cost per Allegato', tiers: { Lite: '0.0027€', Pro: '0.0027€',Business: '0.0027€', Enterprise:'custom' } },
-    { name: 'Ciclo di fatturazione', tiers: { Lite: 'Prepagato', Pro: 'Prepagato',Business: 'Prepagato', Enterprise:'Postpagato' } },
+    { name: 'Chat Cost (for WABA Only)', tiers: { Lite: 'Different from Country to Country', Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'Cost per Message', tiers: { Lite: '0.0017€', Pro: '0.0017€',Business: '0.0017€', Enterprise:'custom', 'category': 'per_message' } },
+    { name: 'Cost per Allegato', tiers: { Lite: '0.0027€', Pro: '0.0027€',Business: '0.0027€', Enterprise:'custom', 'category': 'per_allegato' } },
+    { name: 'Ciclo di fatturazione', tiers: { Lite: 'Prepagato', Pro: 'Prepagato',Business: 'Prepagato', Enterprise:'Postpagato', 'category': '' } },
     ],
 },
 {
     name: 'Altre Funzionalità',
     features: [
-    { name: 'Contacts', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true } },
-    { name: 'Lists & Tags', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true } },
-    { name: 'Custom Fields', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true } },
-    { name: 'MultiChannel Chat', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true } },
-    { name: 'Broadcast Campaigns', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true } },
-    { name: 'Automations - Workflow Builder', tiers: { Lite: false, Pro: '10000', Business: '25000', Enterprise: true } },
-    { name: 'Sales Opportunities', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true } },
-    { name: 'Sales Category', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true } },
-    { name: 'Sales Orders', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true } },
-    { name: 'Receive Lead Via Webhook', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true } },
-    { name: 'Zapier Integrations', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true } },
-    { name: 'API', tiers: { Lite: false, Pro: false, Business: false, Enterprise: true } },
-    { name: 'Custom Integrations', tiers: { Lite: false, Pro: false, Business: false, Enterprise: true } },
+    { name: 'Contacts', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'Lists & Tags', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true , 'category': ''} },
+    { name: 'Custom Fields', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'MultiChannel Chat', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'Broadcast Campaigns', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'Automations - Workflow Builder', tiers: { Lite: false, Pro: '10000', Business: '25000', Enterprise: true, 'category': 'workflow' } },
+    { name: 'Sales Opportunities', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'Sales Category', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'Sales Orders', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'Receive Lead Via Webhook', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'Zapier Integrations', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'API', tiers: { Lite: false, Pro: false, Business: false, Enterprise: true, 'category': '' } },
+    { name: 'Custom Integrations', tiers: { Lite: false, Pro: false, Business: false, Enterprise: true, 'category': '' } },
     ],
 },
 ];
@@ -77,6 +77,12 @@ function classNames(...classes) {
 }
 
 export default function Subscription(props){
+
+    const [plans, setPlans] = useState(props.plans);
+
+    useEffect( () => {
+        setPlans(props.plans);
+    },[]);
 
     function Subscribe(plan){
         let confirm = window.confirm(['Are you sure to subscribe this plan']);
@@ -128,13 +134,23 @@ export default function Subscription(props){
                     <td key={tier.name} className="h-full py-8 px-6 align-top">
                         <div className="relative table h-full">
                         <p>
-                            <span className="text-4xl font-bold tracking-tight text-gray-900">{tier.priceMonthly}{tier.currency}</span>{' '}
-                            <span className="text-base font-medium text-gray-500">/mo</span>
+                            {Object.entries(plans).map( ([key,plan]) => {
+                               return (
+                                 <>
+                                    {tier.original == key ?
+                                      <>
+                                        <span className="text-4xl font-bold tracking-tight text-gray-900">{plan.price}{tier.currency}</span>{' '}
+                                        <span className="text-base font-medium text-gray-500">/mo</span>
+                                      </>
+                                    : ''}
+                                 </>
+                               ) 
+                            })}
                         </p>
                         <p className="mt-4 mb-16 text-sm text-gray-500">{tier.description}</p>
                         <button
                             className={classNames(
-                                props.plan == tier.original
+                                props.current_plan == tier.original
                                 ?"5 absolute bottom-0 block w-full flex-grow rounded-md border border-indigo-600 bg-indigo-600 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
                                 :"5 absolute bottom-0 block w-full flex-grow rounded-md border border-gray-800 bg-gray-800 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
                             )}
@@ -160,7 +176,7 @@ export default function Subscription(props){
                     {section.features.map((feature) => (
                         <tr key={feature.name}>
                         <th className="py-5 px-6 text-left text-sm font-normal text-gray-500" scope="row">
-                            {feature.name}
+                            {feature.name} 
                         </th>
                         {tiers.map((tier) => (
                             <td key={tier.name} className="py-5 px-6">
@@ -194,7 +210,7 @@ export default function Subscription(props){
                     <td key={tier.name} className="px-6 pt-5">
                         <button
                             className={classNames(
-                                props.plan == tier.original
+                                props.current_plan == tier.original
                                 ?"block w-full rounded-md border border-indigo-800 bg-indigo-600 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
                                 :"block w-full rounded-md border border-gray-800 bg-gray-800 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
                             )}

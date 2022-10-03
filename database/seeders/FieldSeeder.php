@@ -97,6 +97,15 @@ class FieldSeeder extends Seeder
             ['module_name' => 'Document', 'field_name' => 'size', 'field_label' => 'Size', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true'],
 
         ]);
+
+        DB::table('plans')->insert([
+            
+            // Subscription plan entires
+            ['plan' => 'lite', 'price' => '0', 'setup_workspace' => '0', 'monthly_workspace' => '0', 'accounts' => '1', 'users' => '1', 'include_users'=> '1', 'extra_users' => '-', 'per_message' => '0.0017', 'per_allegato' => '0.0027', 'workflow' => false , 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['plan' => 'pro', 'price' => '49', 'setup_workspace' => '0', 'monthly_workspace' => '49', 'accounts' => '2', 'users' =>'10', 'include_users' => '3', 'extra_users' => '5', 'per_message' => '0.0017', 'per_allegato' => '0.0027', 'workflow' => '10000', 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['plan' => 'business', 'price' => '99', 'setup_workspace' => '0', 'monthly_workspace' => '99', 'accounts' => '3', 'users' =>'25', 'include_users'=> '5', 'extra_users' => '5', 'per_message' => '0.0017', 'per_allegato' => '0.0027', 'workflow' => '25000', 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+            ['plan' => 'enterprise', 'price' => 'Custom', 'setup_workspace' => 'Custom', 'monthly_workspace' => '350€/Max 10.000 messages month 500€ /max 25.000 messages month', 'accounts' => 'Custom', 'users' =>'infinite', 'include_users'=> 'custom', 'extra_users' => 'custom', 'per_message' => 'custom', 'per_allegato' => 'custom', 'workflow' => true, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
+        ]);
     }
 
     /**

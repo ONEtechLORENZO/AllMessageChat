@@ -1696,9 +1696,12 @@ select {
 .break-words {
 	overflow-wrap: break-word;
 }
+<<<<<<< HEAD
 .break-all {
 	word-break: break-all;
 }
+=======
+>>>>>>> 3dd55600b4e6e16a47e818d23aa42ef77d8d6ec2
 .rounded-md {
 	border-radius: 0.375rem;
 }
@@ -2489,14 +2492,24 @@ select {
 	--tw-text-opacity: 1;
 	color: rgba(146, 64, 14, var(--tw-text-opacity));
 }
+<<<<<<< HEAD
 .text-yellow-400 {
 	--tw-text-opacity: 1;
 	color: rgba(251, 191, 36, var(--tw-text-opacity));
 }
+=======
+>>>>>>> 3dd55600b4e6e16a47e818d23aa42ef77d8d6ec2
 .text-blue-500 {
 	--tw-text-opacity: 1;
 	color: rgba(59, 130, 246, var(--tw-text-opacity));
 }
+<<<<<<< HEAD
+=======
+.text-yellow-400 {
+	--tw-text-opacity: 1;
+	color: rgba(251, 191, 36, var(--tw-text-opacity));
+}
+>>>>>>> 3dd55600b4e6e16a47e818d23aa42ef77d8d6ec2
 .text-green-600 {
 	--tw-text-opacity: 1;
 	color: rgba(5, 150, 105, var(--tw-text-opacity));
