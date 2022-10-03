@@ -23,6 +23,7 @@ export default function Step1 (props) {
     function updateUserData(){
         let newUser = Object.assign({}, user);
         newUser['email'] = props.userMail.email;
+        newUser['uuid'] = props.userMail.uuid ? props.userMail.uuid : '';
         setUser(newUser);
     }
     
@@ -87,12 +88,15 @@ export default function Step1 (props) {
 
         let url = route('new_user');
         axios.post(url, user).then( (response) => {
-           
-            let newUser = Object.assign({}, user);
-            newUser['user_id'] = response.data.user_id;
-            props.setUserMail(newUser);
-
-            props.setOpenTab(2)
+            if(response.data.step) {
+                props.setOpenTab(7)
+            }else {
+                let newUser = Object.assign({}, user);
+                newUser['user_id'] = response.data.user_id;
+                props.setUserMail(newUser);
+    
+                props.setOpenTab(2)
+            }
         })
         .catch((error) => {
             errorHandler(error.response.data)
