@@ -43,33 +43,33 @@ const sections = [
     { name: 'CRM Contacts', tiers: { Lite: 'infinite', Pro: 'infinite',Business: 'infinite', Enterprise:'infinite', 'category': ''  } }
     ],
 },
-// {
-//     name: 'Message Costs',
-//     features: [
-//     { name: 'Chat Cost (for WABA Only)', tiers: { Lite: 'Different from Country to Country', Pro: true, Business: true, Enterprise: true, 'category': '' } },
-//     { name: 'Cost per Message', tiers: { Lite: '0.0017€', Pro: '0.0017€',Business: '0.0017€', Enterprise:'custom', 'category': 'per_message' } },
-//     { name: 'Cost per Allegato', tiers: { Lite: '0.0027€', Pro: '0.0027€',Business: '0.0027€', Enterprise:'custom', 'category': 'per_allegato' } },
-//     { name: 'Ciclo di fatturazione', tiers: { Lite: 'Prepagato', Pro: 'Prepagato',Business: 'Prepagato', Enterprise:'Postpagato', 'category': '' } },
-//     ],
-// },
-// {
-//     name: 'Altre Funzionalità',
-//     features: [
-//     { name: 'Contacts', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true, 'category': '' } },
-//     { name: 'Lists & Tags', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true , 'category': ''} },
-//     { name: 'Custom Fields', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true, 'category': '' } },
-//     { name: 'MultiChannel Chat', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true, 'category': '' } },
-//     { name: 'Broadcast Campaigns', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true, 'category': '' } },
-//     { name: 'Automations - Workflow Builder', tiers: { Lite: false, Pro: '10000', Business: '25000', Enterprise: true, 'category': 'workflow' } },
-//     { name: 'Sales Opportunities', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true, 'category': '' } },
-//     { name: 'Sales Category', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true, 'category': '' } },
-//     { name: 'Sales Orders', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true, 'category': '' } },
-//     { name: 'Receive Lead Via Webhook', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true, 'category': '' } },
-//     { name: 'Zapier Integrations', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true, 'category': '' } },
-//     { name: 'API', tiers: { Lite: false, Pro: false, Business: false, Enterprise: true, 'category': '' } },
-//     { name: 'Custom Integrations', tiers: { Lite: false, Pro: false, Business: false, Enterprise: true, 'category': '' } },
-//     ],
-// },
+{
+    name: 'Message Costs',
+    features: [
+    { name: 'Chat Cost (for WABA Only)', tiers: { Lite: 'Different from Country to Country', Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'Cost per Message', tiers: { Lite: '0.0017€', Pro: '0.0017€',Business: '0.0017€', Enterprise:'custom', 'category': 'per_message' } },
+    { name: 'Cost per Allegato', tiers: { Lite: '0.0027€', Pro: '0.0027€',Business: '0.0027€', Enterprise:'custom', 'category': 'per_allegato' } },
+    { name: 'Ciclo di fatturazione', tiers: { Lite: 'Prepagato', Pro: 'Prepagato',Business: 'Prepagato', Enterprise:'Postpagato', 'category': '' } },
+    ],
+},
+{
+    name: 'Altre Funzionalità',
+    features: [
+    { name: 'Contacts', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'Lists & Tags', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true , 'category': ''} },
+    { name: 'Custom Fields', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'MultiChannel Chat', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'Broadcast Campaigns', tiers: { Lite: true, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'Automations - Workflow Builder', tiers: { Lite: false, Pro: '10000', Business: '25000', Enterprise: true, 'category': 'workflow' } },
+    { name: 'Sales Opportunities', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'Sales Category', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'Sales Orders', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'Receive Lead Via Webhook', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'Zapier Integrations', tiers: { Lite: false, Pro: true, Business: true, Enterprise: true, 'category': '' } },
+    { name: 'API', tiers: { Lite: false, Pro: false, Business: false, Enterprise: true, 'category': '' } },
+    { name: 'Custom Integrations', tiers: { Lite: false, Pro: false, Business: false, Enterprise: true, 'category': '' } },
+    ],
+},
 ];
 
 function classNames(...classes) {
