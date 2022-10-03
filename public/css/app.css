@@ -1517,6 +1517,9 @@ select {
 .content-center {
 	align-content: center;
 }
+.content-start {
+	align-content: flex-start;
+}
 .items-start {
 	align-items: flex-start;
 }
@@ -2927,6 +2930,10 @@ select {
 	--tw-bg-opacity: 1;
 	background-color: rgba(209, 213, 219, var(--tw-bg-opacity));
 }
+.hover\:bg-gray-500:hover {
+	--tw-bg-opacity: 1;
+	background-color: rgba(107, 114, 128, var(--tw-bg-opacity));
+}
 .hover\:bg-gray-900:hover {
 	--tw-bg-opacity: 1;
 	background-color: rgba(17, 24, 39, var(--tw-bg-opacity));
@@ -2938,10 +2945,6 @@ select {
 .hover\:bg-gray-700:hover {
 	--tw-bg-opacity: 1;
 	background-color: rgba(55, 65, 81, var(--tw-bg-opacity));
-}
-.hover\:bg-gray-500:hover {
-	--tw-bg-opacity: 1;
-	background-color: rgba(107, 114, 128, var(--tw-bg-opacity));
 }
 .hover\:text-gray-500:hover {
 	--tw-text-opacity: 1;
@@ -3391,10 +3394,6 @@ select {
 		flex: 1 1 auto;
 	}
 
-	.sm\:flex-none {
-		flex: none;
-	}
-
 	.sm\:translate-y-0 {
 		--tw-translate-y: 0px;
 		transform: var(--tw-transform);
@@ -3597,11 +3596,6 @@ select {
 	.sm\:px-8 {
 		padding-left: 2rem;
 		padding-right: 2rem;
-	}
-
-	.sm\:py-24 {
-		padding-top: 6rem;
-		padding-bottom: 6rem;
 	}
 
 	.sm\:py-8 {
