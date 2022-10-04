@@ -69,6 +69,10 @@ Route::get('/invitedUserRelation', [UserInviteController::class, 'relateUser']);
 Route::post('/incoming', [MsgController::class, 'incoming']);
 Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
 
+Route::get('/fb-whatsapp',[MsgController::class, 'incomingFBWhatsApp']);
+Route::post('/fb-whatsapp',[MsgController::class, 'incomingFBWhatsApp']);
+
+
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
      
