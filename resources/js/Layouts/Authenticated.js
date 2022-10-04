@@ -140,24 +140,28 @@ const navigation = [
 ];
 
 const bottomNavigation = [
-    {
-        name: "Pricing",
-        href: route("listPrice"),
-        icon: CurrencyDollarIcon,
-        show: ['global_admin'],
-    },
-    {
-        name: "Users",
-        href: route("list_global_user"),
-        icon: UsersIcon,
-        show: ['global_admin'],
-    },
+
     {
         name: "Settings",
         href: route("wallet_subscription"),
         icon: CogIcon,
         show: ['admin', 'global_admin'],
     },
+];
+const adminNavigation = [
+    {
+        name: "Users",
+        href: route("list_global_user"),
+        icon: UsersIcon,
+        show: ['global_admin'],
+    },    
+    {
+        name: "Pricing",
+        href: route("listPrice"),
+        icon: CurrencyDollarIcon,
+        show: ['global_admin'],
+    },
+    
 ];
 
 function classNames(...classes) {
@@ -171,6 +175,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const [showSidebarText, setShowSidebarText] = useState(true);
+    const [showAdminNav , setshowAdminNav] = useState(false);
 
     const [selectCompanyModal, setSelectedCompany] = useState(false);
 
@@ -183,6 +188,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
     const [count, setCount] = useState();
     const [id, setId] = useState();
     const [company, setCompany] = useState({});
+    const pathname = window.location.pathname;
 
     useEffect(() => {
         getUserCompany();
@@ -196,6 +202,13 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
 
        // drownDownToggleAction();
     },[])
+
+    useEffect(() => {
+        if(pathname.includes('admin/'))
+        {
+            setshowAdminNav(true)
+        }
+     }, [pathname])
 
     // function drownDownToggleAction(){
 
@@ -276,6 +289,11 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
         axios.get(url).then((response) => {
     
         });
+    }
+
+    function showadminpage(e){     
+        Inertia.visit(route('list_global_user')); 
+        e.preventDefault();           
     }
 
     function showMore(){
@@ -403,61 +421,114 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                         <div className="mt-2 flex-grow flex flex-col">
                             <nav className="flex-1 px-2 pb-4 space-y-1 gio-navbar">
                                 <ul>
-                                {navigation.map((item,index) => {
-                                    if(item.show != 'all' && !item.show.includes(auth.user.role)) {
-                                        return;
-                                    }
-
-                                    return (
-                                        <li data-index={index}  onClick={(e)=>{drownDownToggleAction(e,item)}}>
-                                            <Link
-                                                preserveState
-                                                key={item.name}
-                                                href={item.href}
+                            {showAdminNav ?                                                     
+                                 adminNavigation.map((item,index) => {
+                                if(item.show != 'all' && !item.show.includes(auth.user.role)) {
+                                    
+                                    return;
+                                }
+                                return (
+                                           
+                                    <li data-index={index}  onClick={(e)=>{drownDownToggleAction(e,item)}}>
+                                        <Link
+                                            preserveState
+                                            key={item.name}
+                                            href={item.href}
+                                            className={classNames(
+                                                (item.name == current_page)
+                                                    ? "text-primary"                                                    
+                                                    :"text-[#3D4459]  hover:text-primary",
+                                                    "group flex items-center px-2 py-2 text-sm font-medium rounded-md gio-menu-item"
+                                            )}                                                
+                                        >
+                                            <item.icon
                                                 className={classNames(
                                                     (item.name == current_page)
-                                                        ? "text-primary"                                                    
-                                                        :"text-[#3D4459]  hover:text-primary",
-                                                        "group flex items-center px-2 py-2 text-sm font-medium rounded-md gio-menu-item"
-                                                )}                                                
-                                            >
-                                                <item.icon
-                                                    className={classNames(
-                                                        (item.name == current_page)
-                                                            ? "text-primary"
-                                                            : "text-[#3D4459] group-hover:text-primary",
-                                                        "mr-3 flex-shrink-0 h-6 w-6"
-                                                        
-                                                    )}
+                                                        ? "text-primary"
+                                                        : "text-[#3D4459] group-hover:text-primary",
+                                                    "mr-3 flex-shrink-0 h-6 w-6"
                                                     
-                                                    aria-hidden="true"
-                                                   
-                                                />
-                                                {showSidebarText ? <div data-index={index} className="flex justify-between items-center flex-1">{item.name} {item.subMenu ? <ChevronDownIcon data-index={index} className={` ${(menuDropdownActive[item.name] ? 'rotate-180' : '')} h-6 w-6 gio-dropdown-icon  transition-all`} /> : '' }  </div>: ""}
-                                            </Link>
-                                            {
-                                                showSidebarText && menuDropdownActive[item.name] == true && item.subMenu ?
+                                                )}
+                                                
+                                                aria-hidden="true"
+                                               
+                                            />
+                                            {showSidebarText ? <div data-index={index} className="flex justify-between items-center flex-1">{item.name} {item.subMenu ? <ChevronDownIcon data-index={index} className={` ${(menuDropdownActive[item.name] ? 'rotate-180' : '')} h-6 w-6 gio-dropdown-icon  transition-all`} /> : '' }  </div>: ""}
+                                        </Link>
+                                        {
+                                            showSidebarText && menuDropdownActive[item.name] == true && item.subMenu ?
 
-                                                <ul>
+                                            <ul>
 
-                                                    { item.subMenu.map((subItem,index) => {
-                                                    return <li><Link className={classNames(
-                                                        "text-[#3D4459]  hover:text-primary",
-                                                            "group flex items-center px-2 py-1 text-sm font-medium rounded-md gio-menu-item"
-                                                    )} href={subItem.href}>{subItem.name}</Link></li>                          
-                                                        }) }
+                                                { item.subMenu.map((subItem,index) => {
+                                                return <li><Link className={classNames(
+                                                    "text-[#3D4459]  hover:text-primary",
+                                                        "group flex items-center px-2 py-1 text-sm font-medium rounded-md gio-menu-item"
+                                                )} href={subItem.href}>{subItem.name}</Link></li>                          
+                                                    }) }
 
-                                                </ul> : ''
+                                            </ul> : ''
 
-                                            }
-                                           
-                                        </li>
-                                    );
-                                })}
+                                        }
+                                       
+                                    </li>
+                                );
+                            }):
+                            navigation.map((item,index) => {
+                                if(item.show != 'all' && !item.show.includes(auth.user.role)) {
+                                    return;
+                                }
+                                return (
+                                    <li data-index={index}  onClick={(e)=>{drownDownToggleAction(e,item)}}>
+                                        <Link
+                                            preserveState
+                                            key={item.name}
+                                            href={item.href}
+                                            className={classNames(
+                                                (item.name == current_page)
+                                                    ? "text-primary"                                                    
+                                                    :"text-[#3D4459]  hover:text-primary",
+                                                    "group flex items-center px-2 py-2 text-sm font-medium rounded-md gio-menu-item"
+                                            )}                                                
+                                        >
+                                            <item.icon
+                                                className={classNames(
+                                                    (item.name == current_page)
+                                                        ? "text-primary"
+                                                        : "text-[#3D4459] group-hover:text-primary",
+                                                    "mr-3 flex-shrink-0 h-6 w-6"
+                                                    
+                                                )}
+                                                
+                                                aria-hidden="true"
+                                               
+                                            />
+                                            {showSidebarText ? <div data-index={index} className="flex justify-between items-center flex-1">{item.name} {item.subMenu ? <ChevronDownIcon data-index={index} className={` ${(menuDropdownActive[item.name] ? 'rotate-180' : '')} h-6 w-6 gio-dropdown-icon  transition-all`} /> : '' }  </div>: ""}
+                                        </Link>
+                                        {
+                                            showSidebarText && menuDropdownActive[item.name] == true && item.subMenu ?
+
+                                            <ul>
+
+                                                { item.subMenu.map((subItem,index) => {
+                                                return <li><Link className={classNames(
+                                                    "text-[#3D4459]  hover:text-primary",
+                                                        "group flex items-center px-2 py-1 text-sm font-medium rounded-md gio-menu-item"
+                                                )} href={subItem.href}>{subItem.name}</Link></li>                          
+                                                    }) }
+
+                                            </ul> : ''
+
+                                        }
+                                       
+                                    </li>
+                                );
+                            })  
+                            }
                                 </ul>
                             </nav>
                         </div>
-
+                        
                         
                         <div className="flex-shrink-0 flex">
                             <nav className="flex-1 px-2 pb-4 space-y-1 gio-navbar">
@@ -513,13 +584,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                 count={count}
                                                 notifications={notifications}
                                             />
-                                        </div>
-                                        {auth && auth.user && auth.user.role == 'global_admin' ?
-                                        <div className="ml-3 relative">
-                                        <span className="inline-flex rounded-md">                        
-                                        <span class="relative inline-block">
-                                    <Link className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150" href={route('show_GlobalUsers')}>
-                                    <UserIcon /></Link></span></span></div>:''}
+                                        </div>                                       
                                           
                                         <div className="ml-3 relative z-10">
                                             <Dropdown>
@@ -559,10 +624,13 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                         Switch Workspace
                                                     </button>
 
-                                                    {auth && auth.user && auth.user.role == 'global_admin' ?
-                                                        <Dropdown.Link href={route('settings')} method="get" as="button">
-                                                            Settings
-                                                        </Dropdown.Link>
+                                                    {auth && auth.user && auth.user.role == 'global_admin' ? 
+                                                        <>  <Dropdown.Link href={route('settings')} method="get" as="button">
+                                                                Settings
+                                                            </Dropdown.Link> 
+                                                    <button className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" onClick={(e)=>{showadminpage(e)}} as="button">
+                                                                Global Admin page                                                                                                                                                                                                           
+                                                    </button></>
                                                     : ''}
 
                                                     {returnMainUser &&

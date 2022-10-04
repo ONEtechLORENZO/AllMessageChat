@@ -18,7 +18,9 @@ export default function RegisterForm (props) {
     useEffect( () => {
         let newMail = Object.assign({}, userMail);
         let mail = props.email ? props.email : '';
+        let uuid = props.uuid ? props.uuid : '';
         newMail['email'] = mail;
+        newMail['uuid'] = uuid;
         if(props.step < 4 ){
             newMail['user_id'] = props.user_id;
             setOpenTab(props.step);

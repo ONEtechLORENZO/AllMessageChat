@@ -120,6 +120,8 @@ class RegisteredUserController extends Controller
 
     public function newUserRegistration (Request $request) {
         
+        $company_id = '';
+
         $request->validate([
             'first_name' => 'string|max:255',
             'last_name' => 'required|string|max:255',
@@ -137,11 +139,27 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ];
 
+        if ($request->uuid){
+            $invitation = UserInvite::where('unique_id' , $request->uuid)->first();
+            $company_id = $invitation->company_id;
+            $userData['role'] = 'regular';
+        } 
+
         $user = User::create($userData);
 
         event(new Registered($user));
 
         Auth::login($user);
+
+        if ($request->uuid) {
+            $invitation = UserInvite::where('unique_id' , $request->uuid)->first();
+            Cache::put('user_steps_status_'.  $user->id , 7 );
+
+            if( $invitation ){
+                $user->company()->syncWithoutDetaching([$company_id]);
+                return response()->json(['status' => true, 'step' => 7]);
+            }
+        }
 
         Cache::put('user_steps_status_'.  $user->id , 2 );
 
