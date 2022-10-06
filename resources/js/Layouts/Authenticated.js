@@ -188,6 +188,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
     const [count, setCount] = useState();
     const [id, setId] = useState();
     const [company, setCompany] = useState({});
+    const [adminMenuText, setadminMenuText] = useState("Global Admin page");
     const pathname = window.location.pathname;
 
     useEffect(() => {
@@ -207,6 +208,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
         if(pathname.includes('admin/'))
         {
             setshowAdminNav(true)
+            setadminMenuText("Go to Dashboard")
         }
      }, [pathname])
 
@@ -291,8 +293,15 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
         });
     }
 
-    function showadminpage(e){     
-        Inertia.visit(route('list_global_user')); 
+    function showadminpage(e){
+        if(adminMenuText=='Global Admin page') 
+        {    
+        Inertia.visit(route('list_global_user'));
+        }
+        else
+        {
+            Inertia.visit(route('dashboard'));
+        }
         e.preventDefault();           
     }
 
@@ -629,7 +638,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                                 Settings
                                                             </Dropdown.Link> 
                                                     <button className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" onClick={(e)=>{showadminpage(e)}} as="button">
-                                                                Global Admin page                                                                                                                                                                                                           
+                                                          {adminMenuText}                                                                                                                                                                                                          
                                                     </button></>
                                                     : ''}
 
