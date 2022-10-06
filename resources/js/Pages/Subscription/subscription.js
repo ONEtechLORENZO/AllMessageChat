@@ -102,14 +102,16 @@ export default function Subscription(props){
         <div>
          <div className="bg-white">
           <div className="mx-auto max-w-7xl bg-white py-16 sm:py-8 sm:px-6 lg:px-8">
-          <div className="flex justify-end">
-            <Link
-                href={route('plan_editor')}
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-200 hover:bg-gray-500 hover:text-white text-base font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-                >
-                Plan Configuration
-            </Link>
-          </div>
+            {props.auth.user.role == 'global_admin' &&
+                <div className="flex justify-end">
+                    <Link
+                        href={route('plan_editor')}
+                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-200 hover:bg-gray-500 hover:text-white text-base font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+                        >
+                        Plan Configuration
+                    </Link>
+                </div>  
+            }
             <div className="hidden lg:block mt-10">
             <table className="h-px w-full table-fixed">
                 <caption className="sr-only">Pricing plan comparison</caption>
