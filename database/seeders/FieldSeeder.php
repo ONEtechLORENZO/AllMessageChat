@@ -23,11 +23,15 @@ class FieldSeeder extends Seeder
         $moduleOptions = $this->getModuleName();
         $fieldTypes = $this->getFieldType();
         $msgMode = $this->getMessageMode();
+        $billing_period = $this->getBillingPeriod();
+        $price_model = $this->getPriceModel();
         
-        $this->createField('Price', 'country_code', 'Country', 'dropdown', '1', $countryCodes, 'false');
-        $this->createField('Field', 'module_name', 'Module Name', 'dropdown', '1', $moduleOptions, 'true');
-        $this->createField('Field', 'field_type', 'Field Type', 'dropdown', '1', $fieldTypes, 'true');
-        $this->createField('Message', 'msg_mode', 'Mode', 'dropdown', '1', $msgMode, 'true');
+        $this->createField('Price', 'country_code', 'Country', 'dropdown', '1', $countryCodes, 'false', '');
+        $this->createField('Field', 'module_name', 'Module Name', 'dropdown', '1', $moduleOptions, 'true', '');
+        $this->createField('Field', 'field_type', 'Field Type', 'dropdown', '1', $fieldTypes, 'true', '');
+        $this->createField('Message', 'msg_mode', 'Mode', 'dropdown', '1', $msgMode, 'true', '');
+        $this->createField('Plan', 'billing_period', 'Billing Period', 'dropdown', '1', $billing_period, 'false', '4');
+        $this->createField('Plan', 'pricing_model', 'Price Model', 'dropdown', '1', $price_model, 'false', '5');
 
         // Add Service entries
         DB::table('services')->insert([
@@ -96,6 +100,10 @@ class FieldSeeder extends Seeder
             ['module_name' => 'Document', 'field_name' => 'type', 'field_label' => 'Type', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true'],
             ['module_name' => 'Document', 'field_name' => 'size', 'field_label' => 'Size', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true'],
 
+            //Plans
+            ['module_name' => 'Plan', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'sequence' => '1','is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true'],
+            ['module_name' => 'Plan', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'sequence' => '2', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true'],
+            ['module_name' => 'Plan', 'field_name' => 'amount', 'field_label' => 'Amount', 'field_type' => 'number', 'sequence' => '3', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true'],
         ]);
 
         DB::table('plans')->insert([
@@ -417,7 +425,28 @@ class FieldSeeder extends Seeder
         return $orderList;
     }
 
-    public function createField($module, $name, $label, $type, $mandatory, $options, $readOnly)
+    public function getBillingPeriod() {
+
+        $billing_period = array(
+            'daily' => 'Daily',
+            'weekly' => 'Weekly',
+            'monthly' => 'Monthly'
+        );
+
+        return $billing_period;
+
+    }
+
+    public function getPriceModel() {
+
+        $price_model = array(
+            'standard' => 'Standard'
+        );
+
+        return $price_model;
+    }
+
+    public function createField($module, $name, $label, $type, $mandatory, $options, $readOnly, $sequence)
     {
         $current_datetime = gmdate('Y-m-d H:i:s');
 
@@ -434,6 +463,7 @@ class FieldSeeder extends Seeder
         $field->updated_at = $current_datetime;
         $field->options = $options;
         $field->readonly_on_edit = $readOnly;
+        $field->sequence = $sequence;
         $field->save();
     }
 }
