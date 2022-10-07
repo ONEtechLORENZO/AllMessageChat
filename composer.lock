@@ -5609,6 +5609,7 @@
         },
         {
             "name": "symfony/string",
+<<<<<<< HEAD
             "version": "v6.1.5",
             "source": {
                 "type": "git",
@@ -5619,6 +5620,18 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/symfony/string/zipball/17c08b068176996a1d7db8d00ffae3c248267016",
                 "reference": "17c08b068176996a1d7db8d00ffae3c248267016",
+=======
+            "version": "v6.0.13",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/string.git",
+                "reference": "65e99fb179e7241606377e4042cd2161f3dd1c05"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/string/zipball/65e99fb179e7241606377e4042cd2161f3dd1c05",
+                "reference": "65e99fb179e7241606377e4042cd2161f3dd1c05",
+>>>>>>> a4829787fb19cb7887789f7664d212e31d15bc68
                 "shasum": ""
             },
             "require": {
@@ -5674,7 +5687,11 @@
                 "utf8"
             ],
             "support": {
+<<<<<<< HEAD
                 "source": "https://github.com/symfony/string/tree/v6.1.5"
+=======
+                "source": "https://github.com/symfony/string/tree/v6.0.13"
+>>>>>>> a4829787fb19cb7887789f7664d212e31d15bc68
             },
             "funding": [
                 {
@@ -5690,7 +5707,11 @@
                     "type": "tidelift"
                 }
             ],
+<<<<<<< HEAD
             "time": "2022-09-02T08:05:20+00:00"
+=======
+            "time": "2022-09-02T08:05:03+00:00"
+>>>>>>> a4829787fb19cb7887789f7664d212e31d15bc68
         },
         {
             "name": "symfony/translation",
