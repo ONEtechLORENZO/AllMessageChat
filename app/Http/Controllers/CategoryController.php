@@ -55,12 +55,11 @@ class CategoryController extends Controller
         else {
             $query = Category::orderBy($sort_by, $sort_order);
         }
-        if( $user->role == 'admin'){
+        if( $user->role != 'reqular'){
             $companyId = Cache::get('selected_company_'. $user->id );
-            
             $query->where('company_id' , $companyId);
         } else if($user->role = 'regular' ){
-            $query->where('user_id', $user_id)->get();
+            $query->where('user_id', $user_id);
         }
        
         $records = $query->paginate($this->limit);

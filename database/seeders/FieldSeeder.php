@@ -23,7 +23,7 @@ class FieldSeeder extends Seeder
         $moduleOptions = $this->getModuleName();
         $fieldTypes = $this->getFieldType();
         $msgMode = $this->getMessageMode();
-        
+       
         $this->createField('Price', 'country_code', 'Country', 'dropdown', '1', $countryCodes, 'false');
         $this->createField('Field', 'module_name', 'Module Name', 'dropdown', '1', $moduleOptions, 'true');
         $this->createField('Field', 'field_type', 'Field Type', 'dropdown', '1', $fieldTypes, 'true');
