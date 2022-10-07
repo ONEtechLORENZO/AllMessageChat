@@ -17,6 +17,7 @@ function List(props)
             <ListView
                 headers={props.list_view_columns}
                 setInviteUser={setInviteUser}
+                current_user={props.current_user}
                 {...props}
             />
             
