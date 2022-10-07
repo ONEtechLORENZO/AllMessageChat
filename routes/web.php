@@ -30,14 +30,15 @@ use App\Http\Controllers\LeadController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\LineItemController;
 use App\Http\Controllers\AutomationController;
+use App\Http\Controllers\PlanController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsGlobalAdmin;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Models\Contact;
 use App\Models\Document;
 use App\Models\Service;
 use App\Models\Notification;
-use App\Http\Controllers\Auth\RegisteredUserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -284,6 +285,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');
     Route::get('/create/lineitem', [LineItemController::class, 'create'])->name('createLineItem');
 
+    //plans
+    Route::get('/plans', [PlanController::class, 'index'])->name('listPlan');
+    Route::post('/plan/store', [PlanController::class, 'store'])->name('storePlan');
+    Route::get('/plan/edit/{id}', [PlanController::class, 'edit'])->name('editPlan');
+    Route::get('plan/detail/{id}', [PlanController::class, 'show'])->name('detailPlan');
 });
 
 // Check user is admin
@@ -320,8 +326,8 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/admin/users', [UserController::class, 'usersListing'])->name('list_global_user');
     Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_global_user');
     Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_global_user');
-    Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_global_user');
     Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detail_global_user');
+    Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_global_user');
     Route::post('/wallet/amount', [UserController::class, 'addWalletAmount'])->name('wallet_amount');
 
     // Settings

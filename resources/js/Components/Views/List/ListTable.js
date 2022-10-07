@@ -103,10 +103,12 @@ function ListTable(props){
                             }
                                 {Object.entries(props.headers).map(([name, field],index) => { 
                                     let column_value = record[name]; 
-                                    if(props.actions.detail === true && index === 0) {
-                                        column_value = <Link href={route('detail' + props.module, {id: record.id})} className='cursor-pointer underline'>
-                                            {column_value} 
-                                        </Link>;
+                                    if(props.actions.detail === true && index === 0) {                                        
+                                        var url = props.module === 'User' && props.current_user.role === 'global_admin'?  'detail_global_user' : 'detail'+props.module                                        
+                                            column_value = <Link href={route(url, {id: record.id})} className='cursor-pointer underline'>
+                                             {column_value} 
+                                        </Link>;                                          
+                                            
                                     } 
                                     if(record.tags && name == 'tag'){
                                         var tagName = '';
