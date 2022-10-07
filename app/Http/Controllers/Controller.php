@@ -422,6 +422,7 @@ class Controller extends BaseController
             ->where('company_id', $company_id)
             ->orderBy('sequence', 'asc')
             ->groupBy('field_name')
+            ->orderBy('sequence')
             ->get(['field_label', 'field_name', 'field_type', 'is_custom', 'field_group', 'is_mandatory']);
 
         $header = [];

@@ -23,6 +23,7 @@ class FieldSeeder extends Seeder
         $moduleOptions = $this->getModuleName();
         $fieldTypes = $this->getFieldType();
         $msgMode = $this->getMessageMode();
+
         $billing_period = $this->getBillingPeriod();
         $price_model = $this->getPriceModel();
         

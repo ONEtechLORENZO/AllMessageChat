@@ -501,6 +501,23 @@ class MsgController extends Controller
     }
 
     /**
+     * Handle FB webhook
+     */
+	public function incomingFBWhatsApp() 
+    {
+        $verification_token = 'dlyvwEIZ17PluJoNP5i71alU&o6crJl8*#Tnw2bKANFB8HZm0N';
+        if(isset($_GET['hub_mode']) && $_GET['hub_mode'] == 'subscribe' && $_GET['hub_verify_token'] == $verification_token) {
+            return $_GET['hub_challenge'];
+        }
+
+        $post_data = file_get_contents("php://input");
+        $response = json_decode($post_data, true);
+        log::info([ 'Incoming message (or) response' => $post_data]);
+
+        return true;
+	}
+
+    /**
      * Handle incoming request coming from Gupshup service
      */
     public function incoming()
