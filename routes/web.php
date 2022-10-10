@@ -309,7 +309,7 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::post('/storeFieldOrder', [FieldGroupController::class, 'storeFieldOrder'])->name('store_field_order');
     
     //Company
-   // Route::get('/workspaces', [CompanyController::class, 'index'])->name('listCompany');
+    Route::get('/workspaces', [CompanyController::class, 'index'])->name('listCompany');
     Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');
     Route::get('/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
     Route::get('/company/edit/{id}', [CompanyController::class, 'edit'])->name('editCompany');

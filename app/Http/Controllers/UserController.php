@@ -351,6 +351,7 @@ class UserController extends Controller
     {
         // Check whether user has permission to view the record.
         $currentUser = $request->user();
+       
         $flag = $this->checkPermission($currentUser, $id);
         
         if($flag === false) {
@@ -358,14 +359,16 @@ class UserController extends Controller
         }
 
         $user = User::find($id);
+        $companies = $user->company;
 
         $related_Company = $this->UserRelatedCompany($id);
-
-        $token = $user->api_token;
+        
+        $token = $user->api_token;        
         if($currentUser->role != 'regular' || $user->id == $currentUser->id) {
             return Inertia::render('Admin/User/UserDetail', [
                 'user' => $user, 
                 'token' => $token,
+                'companies' => $companies,
                 'current_user' => $request->user(),
                 'time_zone' => $this->timezones,
                 'related_company' => $related_Company,
@@ -1511,8 +1514,10 @@ class UserController extends Controller
         $user = $request->user();
         // Get companies related to the User
         $companies = $user->company;
+        
 
         $selectedCompany = Cache::has('selected_company_' . $user->id) ? Cache::get('selected_company_' . $user->id) : '';
+       
         // If user has single company related to him, set the company as default
         if($companies && !$selectedCompany && count($companies) == 1) {
             $selectedCompany = $companies[0]->id;
@@ -1521,7 +1526,7 @@ class UserController extends Controller
 
         // Get register step 
         $registerStep = Cache::get('user_steps_status_'. $request->user()->id );
-
+        
         return response()->json([
             'success' => true,
             'selected_company' => $selectedCompany,
@@ -1668,8 +1673,7 @@ class UserController extends Controller
         
         if($user_id){
             //related company details
-            $userCompany = DB::table('company_user')->where('user_id', $user_id)->get('company_id');
-            
+            $userCompany = DB::table('company_user')->where('user_id', $user_id)->get('company_id');            
             foreach($userCompany as $company){
                 $company =  Company::where('id', $company->company_id)->first();
                 $related_company[$company['id']] = $company['name'];
