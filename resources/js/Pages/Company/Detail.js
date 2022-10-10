@@ -2,13 +2,14 @@ import React, {useState} from "react";
 import Authenticated from "../../Layouts/Authenticated";
 import DetailView from "@/Components/Views/Detail/Index";
 import Form from '@/Components/Forms/Form';
+//import Wallet from '../../Pages/Wallet';
 
 function Detail(props){
     const [showForm, setShowForm] = useState(false);
 
     const tabs = [
         { label:(props.translator['Detail']),name: 'Detail', href: '#'  },
-        { label:(['Users']),name: 'Users', href: '#'  },
+     //   { label:(['Users']),name: 'Users', href: '#'  },
       ];
 
     /**
