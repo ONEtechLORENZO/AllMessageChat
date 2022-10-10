@@ -57,6 +57,10 @@ function Registration(props) {
          'whatsapp': 'WhatsApp',
         };
     
+    const service_engine = {
+        'gupshup': 'GupShup',
+        'facebook': 'FaceBook'
+    }
     
     const [checked, setChecked] = useState(false);  
       
@@ -164,8 +168,27 @@ function Registration(props) {
                                             <InputError message={errors.company_name} />
                                         </div>
 
+                                        {props.auth.user.role == 'global_admin' &&
+                                            <div className="form-group col-span-6 sm:col-span-4">
+                                                <label htmlFor="service_engine" className="block text-sm font-medium text-gray-700" >
+                                                    Service Engine
+                                                    <span className="text-sm text-red-700 mx-1"> * </span>
+                                                </label>
+                                                <div className="mt-1">
+                                                    <Dropdown
+                                                        required={true}
+                                                        id="service_engine"
+                                                        name="service_engine"
+                                                        handleChange={handleChange}
+                                                        options={service_engine}
+                                                        value={data.service_engine}
+                                                    />
+                                                </div>
+                                                <InputError message={errors.service} />
+                                            </div>
+                                        }
                                         <div className="form-group col-span-6 sm:col-span-4">
-                                            <label htmlFor="type_of_integration" className="block text-sm font-medium text-gray-700" >
+                                            <label htmlFor="services" className="block text-sm font-medium text-gray-700" >
                                                 {props.translator["Service"]}
                                                 <span className="text-sm text-red-700 mx-1"> * </span>
                                             </label>
