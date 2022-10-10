@@ -27,10 +27,10 @@ class FieldSeeder extends Seeder
         $billing_period = $this->getBillingPeriod();
         $price_model = $this->getPriceModel();
         
-        $this->createField('Price', 'country_code', 'Country', 'dropdown', '1', $countryCodes, 'false', '');
-        $this->createField('Field', 'module_name', 'Module Name', 'dropdown', '1', $moduleOptions, 'true', '');
-        $this->createField('Field', 'field_type', 'Field Type', 'dropdown', '1', $fieldTypes, 'true', '');
-        $this->createField('Message', 'msg_mode', 'Mode', 'dropdown', '1', $msgMode, 'true', '');
+        $this->createField('Price', 'country_code', 'Country', 'dropdown', '1', $countryCodes, 'false');
+        $this->createField('Field', 'module_name', 'Module Name', 'dropdown', '1', $moduleOptions, 'true');
+        $this->createField('Field', 'field_type', 'Field Type', 'dropdown', '1', $fieldTypes, 'true');
+        $this->createField('Message', 'msg_mode', 'Mode', 'dropdown', '1', $msgMode, 'true');
         $this->createField('Plan', 'billing_period', 'Billing Period', 'dropdown', '1', $billing_period, 'false', '4');
         $this->createField('Plan', 'pricing_model', 'Price Model', 'dropdown', '1', $price_model, 'false', '5');
 
@@ -447,7 +447,7 @@ class FieldSeeder extends Seeder
         return $price_model;
     }
 
-    public function createField($module, $name, $label, $type, $mandatory, $options, $readOnly, $sequence)
+    public function createField($module, $name, $label, $type, $mandatory, $options, $readOnly, $sequence = 0)
     {
         $current_datetime = gmdate('Y-m-d H:i:s');
 
