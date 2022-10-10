@@ -572,12 +572,8 @@ class MsgController extends Controller
                     $price = $this->handlePrice($data['value']['statuses']['0']['recipient_id'], $data['value']['statuses']['0']['pricing']['category'], $account->user_id);
                     $this->reduceMessageAmount($price, $message->account_id);
                     $messageData['amount'] = $price;
-                    
                 }
-
-                Log::info(['store Messages function start.', $messageData ]);
-                $this->processMessage($messageData);
-                Log::info('Messages stored successfully.');
+                
             } else if( isset($data['value']['contacts']) ){
 
                 // TODO Get account based on receiver phone number
@@ -603,12 +599,15 @@ class MsgController extends Controller
                     'is_delivered' => 0,
                     'is_read' => 0
                 ];
-                $this->processMessage($messageData);
+               
             }
+
+            Log::info(['store Messages function start.', $messageData ]);
+            $this->processMessage($messageData);
+            Log::info('Messages stored successfully.');
         }
 
         log::info([ 'Incoming message (or) response' => $data ]);
-
         return true;
 	}
 
