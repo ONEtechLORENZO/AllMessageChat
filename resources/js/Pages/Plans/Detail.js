@@ -7,7 +7,9 @@ function Detail(props){
     const [showForm, setShowForm] = useState(false);
 
     const tabs = [
-        { label:(props.translator['Detail']),name: 'Detail', href: '#'  },       
+        { label:(props.translator['Detail']),name: 'Detail', href: '#'  },    
+        { label:(props.translator['Plan Detail']),name: 'company_plan', href: '#'  },
+        { label:(props.translator['Workspace']),name: 'workspacePlan', href: '#'  },    
       ];
 
     /**
@@ -36,6 +38,8 @@ function Detail(props){
                 tabs = {tabs}
                 headers = {props.headers}
                 translator={props.translator}
+                subscriptionPlan={props.subscription_plan}
+                workspaces={props.workspaces}
             />
             
             {showForm ?
