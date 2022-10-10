@@ -135,7 +135,6 @@ const navigation = [
         icon: UsersIcon,
         show: ['admin'],
     },
-
    
 ];
 
@@ -159,6 +158,12 @@ const adminNavigation = [
         name: "Pricing",
         href: route("listPrice"),
         icon: CurrencyDollarIcon,
+        show: ['global_admin'],
+    },
+    {
+        name: "Workspaces",
+        href: route("listCompany"),
+        icon: OfficeBuildingIcon,
         show: ['global_admin'],
     },
     
