@@ -24,27 +24,65 @@ class TemplateController extends Controller
      **/
     public function submitTemplate($data)
     {
+        
         if(isset($data['account_id'])){
             $this->account_id = $data['account_id'];
-        }
-        
-        $partnerToken = $this->getPartnerToken();
-        if(!$partnerToken) {
-            return ['status' => 'failed', 'message' => $this->result];
+            $account = Account::find($data['account_id']);
         }
 
-        $appId = $this->getAppId($partnerToken);
-        if(!$appId) {
-            return ['status' => 'failed', 'message' => $this->result];
-        }
+        if($account->service_engine == 'facebook'){
+            $template = Template::find($data['template_id']);
 
-        $appToken = $this->getAppToken($partnerToken, $appId);
-        if($appToken) {
-            $response = $this->applyTemplate($appToken, $appId, $data);
-            return $response;
-        }
-        else {
-            return ['status' => 'failed', 'message' => $this->result];
+            $endPoint = config('app.fb.api_url');
+            $endPoint .= config('app.fb.whatsapp_account_id') . '/message_templates' ;
+            $headers = [
+                'Authorization' => 'Bearer '. config('app.fb.access_token'),
+                'Content-Type' => 'application/json',
+            ];
+            $postData = [
+                'category' => 'TRANSACTIONAL',
+                'components' => [
+                    json_encode(['type' => 'BODY', 'text' => $data['data']->body])
+                ],
+                'name' => strtolower(str_replace( ' ', '_', $template->name)),
+                'language' => 'en_US',
+            ];
+          
+            $response = Http::withHeaders($headers)->post($endPoint, ($postData))->json();
+            //log::info(['temoplate responee: ', $response]);
+
+            // store template id
+            if(isset($response['id'])){
+                $template->template_uid = $response['id'];
+                $template->type = 'text';
+                $template->status = 'SUBMITTED';
+                $template->save();
+                $return = ['status' => true, 'template_id' => $response['id'], 'template_status' => 'SUBMITTED'];
+            } else {
+                $return = ['status' => 'failed' , 'message' => $response['error']['error_user_title']];
+            }
+            return $return;
+
+        } else {
+
+            $partnerToken = $this->getPartnerToken();
+            if(!$partnerToken) {
+                return ['status' => 'failed', 'message' => $this->result];
+            }
+
+            $appId = $this->getAppId($partnerToken);
+            if(!$appId) {
+                return ['status' => 'failed', 'message' => $this->result];
+            }
+
+            $appToken = $this->getAppToken($partnerToken, $appId);
+            if($appToken) {
+                $response = $this->applyTemplate($appToken, $appId, $data);
+                return $response;
+            }
+            else {
+                return ['status' => 'failed', 'message' => $this->result];
+            }
         }
     }
 
