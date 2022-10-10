@@ -505,6 +505,7 @@ class MsgController extends Controller
      */
 	public function incomingFBWhatsApp() 
     {
+        log::info([ 'Request' , $_REQUEST]);
         $verification_token = 'dlyvwEIZ17PluJoNP5i71alU&o6crJl8*#Tnw2bKANFB8HZm0N';
         if(isset($_GET['hub_mode']) && $_GET['hub_mode'] == 'subscribe' && $_GET['hub_verify_token'] == $verification_token) {
             return $_GET['hub_challenge'];

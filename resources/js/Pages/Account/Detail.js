@@ -187,6 +187,9 @@ function Detail(props)
                                     if(!props.field_info[key]['label']){
                                         return;
                                     }
+                                    if( key == 'service_engine' && props.auth.user.role != 'global_admin'){
+                                        return;
+                                    }
 
                                     return (
                                         <div key={key} className={`${bg_color} px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>

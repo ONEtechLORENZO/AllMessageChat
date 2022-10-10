@@ -647,6 +647,7 @@ class UserController extends Controller
 
         $field_info = [
             'company_name' => ['label' => __('Name')],
+            'service_engine' => ['label' => 'Service Engine'],
             'service' => ['label' => __('Service')],
             // 'company_type' => ['label' => 'Company type'],
             // 'website' => ['label' => 'Website'],
@@ -858,6 +859,7 @@ class UserController extends Controller
         }
 
         $account->service = $request->service;
+        $account->service_engine = $request->service_engine;
         $account->phone_number = $request->phone_number;
         $account->src_name = $request->company_name;
         $account->company_name = $request->company_name;
