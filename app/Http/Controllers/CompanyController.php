@@ -17,12 +17,11 @@ class CompanyController extends Controller
 
     public $list_view_columns = [
         'name' => ['label' => 'Name', 'type' => 'text'],
-        'address_line_1' =>  ['label' => 'Address 1', 'type' => 'text'],
-        'address_line_2' =>  ['label' => 'Address 2', 'type' => 'text'],
-        'city' => ['label' =>'City', 'type' => 'text'],
-        'state' => ['label' =>'State', 'type' => 'text'],
-        'country' => ['label' =>'Country', 'type' => 'text'],
-       
+        'company_address' =>  ['label' => 'Address', 'type' => 'text'],
+        'company_country' =>  ['label' => 'Country', 'type' => 'text'],
+        'admin_email' => ['label' =>'Email', 'type' => 'text'],
+        'currency' => ['label' =>'Currency', 'type' => 'text'],
+        'plan' => ['label' =>'Plan', 'type' => 'text'],       
     ];
 
     /**
@@ -31,22 +30,21 @@ class CompanyController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
-    {
-      
+    {      
         $module = new Company();
         $columnlist=Cache::get('Company'.'selected_column_list_'. $request->user()->id);       
         $listViewData = $this->listView($request, $module, $this->list_view_columns);
         $moduleData = [
             'singular' => 'Company',
-            'plural' => 'Companies',
+            'plural' => 'Workspaces',
             'module' => 'Company',
             'current_page' => 'Company', 
             // Actions
             'actions' => [
-                'create' => true,
+              //  'create' => true,
                 'detail' => true,
-                'edit' => true,
-                'delete' => true,
+              //  'edit' => true,
+              //  'delete' => true,
                 'export' => false,
                 'import' => false,
                 'search' => true,
@@ -129,10 +127,9 @@ class CompanyController extends Controller
         if(!$access){
             abort('401');
         }
-
+     
         $companyId = Cache::get('selected_company_'. $user->id);
-        $headers = $this->getModuleHeader(1 , 'Company');
-        
+        $headers = $this->getModuleHeader(1 , 'Company');        
         $data = [
             'record' => $company,
             'users' => $users,
@@ -143,8 +140,7 @@ class CompanyController extends Controller
                 'Edit'  =>__('Edit')
                 ]
         ];
-        return Inertia::render('Company/Detail', $data);
-       
+        return Inertia::render('Company/Detail', $data);       
     }
 
     /**

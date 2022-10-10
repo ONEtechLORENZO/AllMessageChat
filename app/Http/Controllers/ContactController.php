@@ -152,13 +152,13 @@ class ContactController extends Controller
             abort(401);
         }
 
-        $tagOptions = $this->getTagOptionList($request->user()->id);
+        $tagOptions = $this->getTagOption($request->user());
 
         $serviceOptions = $this->getServiceList();
         
         $tagSelectedRecords = $this->getSelectedTag($contact);
 
-        $ListOptions = $this->getListOption($request->user()->id);
+        $ListOptions = $this->getListOption($request->user());
         $ListSelectRecords = $this->getSelectedList($contact);
 
         $companyId = Cache::get('selected_company_'. $request->user()->id);
@@ -397,9 +397,19 @@ class ContactController extends Controller
         return $flag;
     }
 
-    public function getTagOption($user_id)
+    public function getTagOption($user)
     {
-        $tags = Tag::where('user_id', $user_id)->get();
+     
+        $query = Tag::select('name');
+
+        if( $user->role != 'reqular'){
+            $companyId = Cache::get('selected_company_'. $user->id );
+            $query->where('company_id' , $companyId);
+        } else if($user->role = 'regular' ){
+            $query->where('user_id', $user_id);
+        }
+       $tags = $query->get();
+
         $tagOptions = [];
         if ($tags) {
             foreach ($tags as $tag) {
@@ -422,9 +432,18 @@ class ContactController extends Controller
         return $tagSelectedRecords;
     }
 
-    public function getListOption($user_id)
+    public function getListOption($user)
     {
-        $categorys = Category::where('user_id', $user_id)->get();
+        $query = Category::select('name');
+
+        if( $user->role != 'reqular'){
+            $companyId = Cache::get('selected_company_'. $user->id );
+            $query->where('company_id' , $companyId);
+        } else if($user->role = 'regular' ){
+            $query->where('user_id', $user_id);
+        }
+       $categorys = $query->get();
+
         $categoryOptions = [];
         if ($categorys) {
             foreach ($categorys as $category) {

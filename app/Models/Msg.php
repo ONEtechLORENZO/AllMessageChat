@@ -26,60 +26,110 @@ class Msg extends Model
      */
     public function sendWhatsAppMessage($content, $destination, $account, $template = '' , $attachment = '')
     {        
-        $url = config('app.api_url');
-        if(strpos($destination, '+') === true){
-            $destination = str_replace('+', '' , $destination);
-        }
+        if($account->service_engine == 'facebook'){
 
-        $post_data = [
-            'channel' => 'whatsapp',
-            'source' => $account->phone_number,
-            'destination' => $destination,
-            'src.name' => $account->src_name,
-            'disablePreview' => null
-        ];
+            // remove + (plus) symbol
+            $destination = str_replace('+' , '', $destination);
 
-        if(isset($_POST['template']) || $template) {
-            // Set template type object
-           $message = [
-                'id' => $template,
-                'params' => []
+            // create URL
+            $url = config('app.fb.api_url');
+            $url .= config('app.fb.phone_number_id') . '/messages' ;
+
+            // set headers
+            $headers = [
+                'Authorization' => 'Bearer '. config('app.fb.access_token'),
+                'Content-Type' => 'application/json',
+            ];
+          
+            // set data if is template    
+            $message = [
+                'name' => 'hello_world',
+                'language' => [ 'code' => 'en_US']
+            ];
+            
+            $post_data = [
+                'messaging_product' => 'whatsapp',
+                'to' => $destination,
+                'type' => 'template'
             ];
             $post_data['template'] = (json_encode($message));
-            $url = str_replace('msg', 'template/msg', $url);
-        } else if($attachment) { 
-            // Set attachment
-            $post_data['message'] = (json_encode($attachment));
-            $data['msg_type'] = $attachment['type'];
-            $data['file_path'] = $attachment['originalUrl'];
+            $post_data = (($post_data));
+           
+            // send message 
+            $response = Http::asForm()->withHeaders($headers)->post($url, $post_data);
+            $response_body = json_decode($response->body(), true);
+            if(isset($response_body['messages'][0]['id'])) {
+                $messageId = $response_body['messages'][0]['id'];
+                $response_body = [ 
+                    'status' => 'submitted',
+                    'messageId' => $messageId
+                ];
+                $data['result'] = $response_body;
+            } else {
+                $response_body = [ 
+                    'status' => 'error',
+                    'messageId' => $messageId
+                ];
+                $data['result'] = $response_body;
+            }
+            
+            return $data;
+
         } else {
-            // Set text type object
-            $message = [
-                "type" => "text",
-                "text" => $content
+            $url = config('app.api_url');
+            if(strpos($destination, '+') === true){
+                $destination = str_replace('+', '' , $destination);
+            }
+
+            $post_data = [
+                'channel' => 'whatsapp',
+                'source' => $account->phone_number,
+                'destination' => $destination,
+                'src.name' => $account->src_name,
+                'disablePreview' => null
             ];
-            $post_data['message'] = (json_encode($message));
-        }
 
-        $headers = [
-            'Accept' => 'application/json',
-            'apikey' => config('app.apiKey')
-        ];
+            if(isset($_POST['template']) || $template) {
+                // Set template type object
+                $message = [
+                    'id' => $template,
+                    'params' => []
+                ];
+                $post_data['template'] = (json_encode($message));
+                $url = str_replace('msg', 'template/msg', $url);
+            } else if($attachment) { 
+                // Set attachment
+                $post_data['message'] = (json_encode($attachment));
+                $data['msg_type'] = $attachment['type'];
+                $data['file_path'] = $attachment['originalUrl'];
+            } else {
+                // Set text type object
+                $message = [
+                    "type" => "text",
+                    "text" => $content
+                ];
+                $post_data['message'] = (json_encode($message));
+            }
 
-        log::info(['send_message_info', $post_data]);
-        $response = Http::asForm()->withHeaders($headers)->post($url, $post_data);
-        $response_body = json_decode($response->body(), true);
-    
-        if( $response_body && $response_body['status'] != 'error') {
-            $data = $post_data;
-            $data['account_id'] = $account->id;
-            $data['content'] = $content;
-        } 
-        if($attachment) { 
-            $response_body['msg_type'] = $attachment['type'];
-            $response_body['file_path'] = $attachment['originalUrl'];
-        }
+            $headers = [
+                'Accept' => 'application/json',
+                'apikey' => config('app.apiKey')
+            ];
+
+            log::info(['send_message_info', $post_data]);
+            $response = Http::asForm()->withHeaders($headers)->post($url, $post_data);
+            $response_body = json_decode($response->body(), true);
         
+            if( $response_body && $response_body['status'] != 'error') {
+                $data = $post_data;
+                $data['account_id'] = $account->id;
+                $data['content'] = $content;
+            } 
+            if($attachment) { 
+                $response_body['msg_type'] = $attachment['type'];
+                $response_body['file_path'] = $attachment['originalUrl'];
+            }
+        }
         $data['result'] = $response_body;
         return $data;
     }

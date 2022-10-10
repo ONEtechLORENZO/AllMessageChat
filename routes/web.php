@@ -70,6 +70,10 @@ Route::get('/invitedUserRelation', [UserInviteController::class, 'relateUser']);
 Route::post('/incoming', [MsgController::class, 'incoming']);
 Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
 
+Route::get('/fb-whatsapp',[MsgController::class, 'incomingFBWhatsApp']);
+Route::post('/fb-whatsapp',[MsgController::class, 'incomingFBWhatsApp']);
+
+
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
      
@@ -308,10 +312,9 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::get('/getFieldsGroup', [FieldGroupController::class, 'getFieldsGroup'])->name('get_fields_group');
     Route::post('/storeFieldOrder', [FieldGroupController::class, 'storeFieldOrder'])->name('store_field_order');
     
-    //Company
-   // Route::get('/workspaces', [CompanyController::class, 'index'])->name('listCompany');
+    //Company   
     Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');
-    Route::get('/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
+   // Route::get('/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
     Route::get('/company/edit/{id}', [CompanyController::class, 'edit'])->name('editCompany');
     Route::post('/company/update/{id}', [CompanyController::class, 'store'])->name('updateCompany');
     Route::delete('/company/delete/{id}', [CompanyController::class, 'destroy'])->name('deleteCompany');
@@ -326,9 +329,13 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/admin/users', [UserController::class, 'usersListing'])->name('list_global_user');
     Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_global_user');
     Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_global_user');
-    Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_global_user');
     Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detail_global_user');
+    Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_global_user');
     Route::post('/wallet/amount', [UserController::class, 'addWalletAmount'])->name('wallet_amount');
+
+    //Workspaces
+    Route::get('/admin/workspaces', [CompanyController::class, 'index'])->name('listCompany');
+    Route::get('/admin/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
 
     // Settings
     Route::get('/admin/settings/outgoing_server', [SettingsController::class, 'settings'])->name('settings');

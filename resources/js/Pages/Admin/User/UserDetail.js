@@ -24,6 +24,7 @@ export default function UserDetail(props) {
            // 'time_zone': {'value': props.user.time_zone, 'label':(props.translator['Time Zone']), 'type': 'select', 'required': false , 'options': props.time_zone },
             'token': {'value': props.token, 'label': (props.translator['Token']) , action:'regenarate', 'type': 'text', 'required': false },
             'status': {'value': (props.user.status == 1) ? 'Active': 'Inactive', 'label': (props.translator['Active Status']), 'type': 'checkbox', 'required': false },
+         
         },
         // 'Billing Information': {
         //     'company_address': {'value': props.user.company_address, 'label': (props.translator['Company Address']), 'type': 'textarea', 'required': false },
@@ -34,7 +35,8 @@ export default function UserDetail(props) {
         // }
     };
 
-    const [spinClass , setSpinClass] = useState([]);
+    const [spinClass , setSpinClass] = useState([]);    
+    const [relatedCompanies, setrelatedCompanies]= useState(props.companies);
     const [token , setToken ]= useState(props.token);
     const [errors, setErrors] = useState({});
     const { data, setData, post, processing, reset } = useForm({});
@@ -42,6 +44,7 @@ export default function UserDetail(props) {
     const [addCash, setAddCash] = useState(false);
     const [walletCash, setWalletCash] = useState({});
     const cancelButtonRef = useRef(null);
+    
 
     /**
      * Handle input change
@@ -265,11 +268,35 @@ export default function UserDetail(props) {
                                             );
                                         }
                                     })}
+                                    
                                 </dl>
                             </div>
                         </div>
                     </div>
                 )})}
+                   <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4">
+                        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                            <div className="px-4 py-5 sm:px-6">
+                                <h3 className="text-lg leading-6 font-medium text-gray-900">User Related Workspaces</h3>
+                            </div>
+                            <div className="border-t border-gray-200">
+                                <dl>
+               
+                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                <ul class="bg-white rounded-lg border border-gray-200 w-full text-gray-900">
+                    {relatedCompanies && Object.entries(relatedCompanies).map(([key ,company]) =>
+                        <li                                                            
+                           class="cursor-pointer px-6 py-2 border-b border-gray-200 w-full rounded-t-lg"
+                            >
+                                {company.name}                                                                
+                        </li>
+                    )}
+                </ul>
+                </dd>          
+                  </dl>  
+                  </div>
+                  </div>   
+                  </div>     
             </div>
 
 

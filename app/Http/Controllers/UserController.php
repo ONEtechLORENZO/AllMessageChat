@@ -182,9 +182,9 @@ class UserController extends Controller
         $companyId = Cache::get('selected_company_' . $user_id);
 
         $query = Account::select('company_name', 'service', 'accounts.id', 'accounts.status');
-        if($user->role != 'global_admin') {
+    //    if($user->role != 'global_admin') {
             $query->where('company_id', $companyId);
-        }
+    //    }
 
         $accounts = $query->get();
         
@@ -227,10 +227,11 @@ class UserController extends Controller
             'singular' => 'User',
             'plural' => 'Users',
             'module' => 'User',
-            'add_link' => route('create_user'),
+            'add_link' => ( $request->user()->role == 'global_admin' ) ?  route('create_global_user') : route('create_user'),
             'edit_link' => 'editUser',
             'add_button_text' => 'Add User',
             'current_page' => 'Users',
+            'current_user' => $request->user(),
             // Actions
             'actions' => [
                 'create' => true,
@@ -250,62 +251,11 @@ class UserController extends Controller
                 'Search' =>__('Search'),
                 'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?')
             ],
-        ];
+        ];        
 
         $data = array_merge($moduleData, $listViewData);
         return Inertia::render('Admin/User/UserList2', $data);
     }
-
-      /**
-     * Show User list
-     */
-    public function globalusersListing(Request $request)
-    {
-        $list_view_columns = [
-            'name' => [ 'label' => ' Name' , 'type' => 'text'],
-            'email' =>  [ 'label' => 'Email' , 'type' => 'text'],
-            'role' => [ 'label' => 'Role' , 'type' => 'text'],
-            'status' =>  [ 'label' => 'Status' , 'type' => 'checkbox'],
-            'created_at' =>  [ 'label' => 'Created at' , 'type' => 'datetime'],
-        ];
-
-        $module = new User();
-        
-        $listViewData = $this->listView($request, $module, $list_view_columns);
-        
-        $moduleData = [
-            'singular' => 'User',
-            'plural' => 'Users',
-            'module' => 'User',
-            'add_link' => route('create_user'),
-            'edit_link' => 'editUser',
-            'add_button_text' => 'Add User',
-            'current_page' => 'Users',
-            // Actions
-            'actions' => [
-                'create' => true,
-                'detail' => true,
-                'edit' => true,
-                'delete' => true,
-                'export' => false,
-                'import' => false,
-                'search' => true,
-                'filter' => false,
-                'invite_user' => true,
-                'select_field'=>true
-
-            ],
-            'translator' => [
-                'No records' =>__('No records'),
-                'Search' =>__('Search'),
-                'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?')
-            ],
-        ];
-
-        $data = array_merge($moduleData, $listViewData);
-        return Inertia::render('Admin/User/UserList2', $data);
-    }
-
     /**
      * Show User Form (Create View)
      */
@@ -401,6 +351,7 @@ class UserController extends Controller
     {
         // Check whether user has permission to view the record.
         $currentUser = $request->user();
+       
         $flag = $this->checkPermission($currentUser, $id);
         
         if($flag === false) {
@@ -408,14 +359,16 @@ class UserController extends Controller
         }
 
         $user = User::find($id);
+        $companies = $user->company;
 
         $related_Company = $this->UserRelatedCompany($id);
-
-        $token = $user->api_token;
+        
+        $token = $user->api_token;        
         if($currentUser->role != 'regular' || $user->id == $currentUser->id) {
             return Inertia::render('Admin/User/UserDetail', [
                 'user' => $user, 
                 'token' => $token,
+                'companies' => $companies,
                 'current_user' => $request->user(),
                 'time_zone' => $this->timezones,
                 'related_company' => $related_Company,
@@ -694,6 +647,7 @@ class UserController extends Controller
 
         $field_info = [
             'company_name' => ['label' => __('Name')],
+            'service_engine' => ['label' => 'Service Engine'],
             'service' => ['label' => __('Service')],
             // 'company_type' => ['label' => 'Company type'],
             // 'website' => ['label' => 'Website'],
@@ -905,6 +859,7 @@ class UserController extends Controller
         }
 
         $account->service = $request->service;
+        $account->service_engine = $request->service_engine;
         $account->phone_number = $request->phone_number;
         $account->src_name = $request->company_name;
         $account->company_name = $request->company_name;
@@ -1561,8 +1516,10 @@ class UserController extends Controller
         $user = $request->user();
         // Get companies related to the User
         $companies = $user->company;
+        
 
         $selectedCompany = Cache::has('selected_company_' . $user->id) ? Cache::get('selected_company_' . $user->id) : '';
+       
         // If user has single company related to him, set the company as default
         if($companies && !$selectedCompany && count($companies) == 1) {
             $selectedCompany = $companies[0]->id;
@@ -1571,7 +1528,7 @@ class UserController extends Controller
 
         // Get register step 
         $registerStep = Cache::get('user_steps_status_'. $request->user()->id );
-
+        
         return response()->json([
             'success' => true,
             'selected_company' => $selectedCompany,
@@ -1718,8 +1675,7 @@ class UserController extends Controller
         
         if($user_id){
             //related company details
-            $userCompany = DB::table('company_user')->where('user_id', $user_id)->get('company_id');
-            
+            $userCompany = DB::table('company_user')->where('user_id', $user_id)->get('company_id');            
             foreach($userCompany as $company){
                 $company =  Company::where('id', $company->company_id)->first();
                 $related_company[$company['id']] = $company['name'];
@@ -1807,17 +1763,18 @@ class UserController extends Controller
      */
     public function connectFaceBook(Request $request)
     {
+	session_start();
         $fb = new Facebook([
             'app_id' => config('app.fb.api_id'),
             'app_secret' => config('app.fb.app_secret'),
             'default_graph_version' => config('app.fb.app_graph_version'),
-            ]);
+     	]);
           
-          $helper = $fb->getRedirectLoginHelper();
-          $permissions = ['email', 'whatsapp_business_management', 'whatsapp_business_messaging', 'public_profile'];
-          $loginUrl = $helper->getLoginUrl( config('app.fb.call_back_url'), $permissions);
-       
-         return Redirect::to($loginUrl);
+	$helper = $fb->getRedirectLoginHelper();
+	$permissions = ['email', 'whatsapp_business_management', 'whatsapp_business_messaging', 'public_profile'];
+	$loginUrl = $helper->getLoginUrl( config('app.fb.call_back_url'), $permissions);
+
+	return redirect()->away($loginUrl);
     }
 
     /**

@@ -501,6 +501,117 @@ class MsgController extends Controller
     }
 
     /**
+     * Handle FB webhook
+     */
+	public function incomingFBWhatsApp() 
+    {
+        $verification_token = config('app.fb.verification_code');
+        if(isset($_GET['hub_mode']) && $_GET['hub_mode'] == 'subscribe' && $_GET['hub_verify_token'] == $verification_token) {
+            return $_GET['hub_challenge'];
+        }
+
+        $post_data = file_get_contents("php://input");
+        $response = json_decode($post_data, true);
+
+        $data = isset($response['entry'][0]['changes'][0]) ? $response['entry'][0]['changes'][0] : [];
+        
+        Log::info(['Incoming message (or) response ' => $data ]);
+
+        // Update template status
+        if(isset($data['field']) && $data['field'] == 'message_template_status_update'){
+            $tempId = $data['value']['message_template_id'];
+            $template = Template::where('template_uid', $tempId)
+                ->first();
+            if($template){
+                $status = strtoupper($data['value']['event']);
+                if($status == 'REJECTED'){
+                    $status = $status. ' ( Reason: '.$data['value']['reason']. ' )';
+                }
+                $template->status = $status;
+                $template->save();
+            }
+        }
+        if( isset($data['field']) && $data['field'] == 'messages'){
+            if(isset($data['value']['statuses']) && isset($data['value']['statuses']['0']['id']) ) {
+                $serviceId = $data['value']['statuses']['0']['id'];
+
+                $messageData['service_id'] = $serviceId;
+                $message = Msg::where('service_id', $serviceId)->first();
+
+                if(!$message){
+                    return false;
+                }
+                $status = $data['value']['statuses']['0']['status'];
+                $statusUC = strtoupper($status);
+                
+               
+                switch ($status){
+                    case 'failed':
+                        $messageData['status'] = $statusUC;
+                        $messageData['error_response'] = '';
+                        break;
+
+                    case 'sent':
+                        $messageData['status'] = $statusUC;
+                        break;
+                    
+                    case 'delivered':
+                        $messageData['is_delivered'] = true;
+                        break;
+
+                    case 'read':
+                        $messageData['is_read'] = true;
+                        break;
+                }
+
+                if($status == 'sent' && isset($data['value']['statuses']['0']['pricing'])){
+                    // TODO Get account based on receiver phone number
+                    $account = Account::find(1);
+
+                    $messageData['policy'] = $data['value']['statuses']['0']['pricing']['category'];
+                    $price = $this->handlePrice($data['value']['statuses']['0']['recipient_id'], $data['value']['statuses']['0']['pricing']['category'], $account->user_id);
+                    $this->reduceMessageAmount($price, $message->account_id);
+                    $messageData['amount'] = $price;
+                }
+                
+            } else if( isset($data['value']['contacts']) ){
+
+                // TODO Get account based on receiver phone number
+                $account = Account::find(1);
+
+                $data['id'] = $data['value']['messages'][0]['id'];
+                $msgable_id = $this->getInfoUsingContactUniqueId($data['value']['contacts'][0]['wa_id'], 'whatsapp', $account->company_id,  $account->user_id, $data['value']['contacts'][0]['profile']['name']);
+            
+                $content = isset($data['value']['messages'][0]['text']['body']) ? $data['value']['messages'][0]['text']['body'] : '';
+                // $content = ( $content == '' && isset($data['payload']['name'])) ? $data['payload']['name'] : $content;
+                $msgable_type = 'App\Models\Contact';
+
+                $messageData = [
+                    'service_id' => $data['id'],
+                    'service' => 'whatsapp',
+                    'message' => $content,
+                    'msg_type' => 'text' ,
+                    'account_id' => $account->id,
+                    'msgable_id' => $msgable_id,
+                    'msgable_type' => $msgable_type,
+                    'msg_mode' => 'incoming',
+                    'status' => 'received',
+                    'is_delivered' => 0,
+                    'is_read' => 0
+                ];
+               
+            }
+
+            Log::info(['store Messages function start.', $messageData ]);
+            $this->processMessage($messageData);
+            Log::info('Messages stored successfully.');
+        }
+
+        log::info([ 'Incoming message (or) response' => $data ]);
+        return true;
+	}
+
+    /**
      * Handle incoming request coming from Gupshup service
      */
     public function incoming()
