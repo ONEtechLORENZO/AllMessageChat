@@ -181,6 +181,26 @@ class FormController extends Controller
                     $records[] = ['label' => $record->name, 'value' => $record->id];
                 }
             }
+        } else if ($key && $module == 'Company') {
+            
+            $class_name = "App\Models\\$module";
+            $moduleBean = new $class_name();
+
+            $baseTable = $moduleBean->getTable();
+            
+            $query = $moduleBean->orderBy("{$baseTable}.created_at", 'DESC');
+
+            if($module == 'Company') {
+                $query->select(['id', 'name']);
+                $query->where('name', 'like', '%' . $key . '%');
+            }
+
+            $response = $query->limit(5)->get();
+
+            foreach($response as $record) {
+                    $records[] = ['label' => $record->name, 'value' => $record->id];
+            }
+
         }
         
         return response()->json(['records' => $records]);

@@ -289,10 +289,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/create/lineitem', [LineItemController::class, 'create'])->name('createLineItem');
 
     //plans
-    Route::get('/plans', [PlanController::class, 'index'])->name('listPlan');
-    Route::post('/plan/store', [PlanController::class, 'store'])->name('storePlan');
-    Route::get('/plan/edit/{id}', [PlanController::class, 'edit'])->name('editPlan');
-    Route::get('plan/detail/{id}', [PlanController::class, 'show'])->name('detailPlan');
+    Route::get('/admin/plans', [PlanController::class, 'index'])->name('listPlan');
+    Route::post('/admin/plan/store', [PlanController::class, 'store'])->name('storePlan');
+    Route::get('/admin/plan/edit/{id}', [PlanController::class, 'edit'])->name('editPlan');
+    Route::get('/admin/plan/detail/{id}', [PlanController::class, 'show'])->name('detailPlan');
+    Route::post('/admin/plan/update/{id}', [PlanController::class, 'update'])->name('updatePlan');
+    Route::delete('/admin/plan/delete/{id}', [PlanController::class, 'destroy'])->name('deletePlan');
+    Route::post('/admin/plan/create', [PlanController::class, 'create'])->name('plan_save');
+    Route::post('/admin/workspace/plan', [PlanController::class, 'workspacePlan'])->name('workspace_plan');
 });
 
 // Check user is admin

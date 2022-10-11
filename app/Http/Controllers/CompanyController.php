@@ -8,9 +8,15 @@ use Illuminate\Support\Str;
 use App\Models\Company;
 use App\Models\UserInvite;
 use Inertia\Inertia;
+use App\Http\Controllers\UserController;
+use App\Models\Price;
+use App\Models\Wallet;
+use App\Models\Msg;
 use Cache;
 use Mail;
 use DB;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class CompanyController extends Controller
 {
@@ -127,17 +133,55 @@ class CompanyController extends Controller
         if(!$access){
             abort('401');
         }
-     
+        $wallet = Wallet::where('user_id', $user->id)->first();
+        
+        $balance = 0.00;
+        if($wallet) {
+            $balance = $wallet->balance_amount;
+        }
+        
         $companyId = Cache::get('selected_company_'. $user->id);
+        //get current company details
+        $currentCompany =  Company::where('id', $companyId)->first();
+        
+        // Get message amount deduction
+        $messageDeduction = (new UserController)->getAmountDeduction($user->id);
+        $paymentMethods = (new UserController)->getPaymentMethods($request , 'direct');
+
+        $stripe_public_key = config('stripe.stripe_key');
         $headers = $this->getModuleHeader(1 , 'Company');        
         $data = [
             'record' => $company,
             'users' => $users,
             'headers' => $headers,
+            'name' => $user->name,
+            'balance' => $balance,
+            'message_deduction' => $messageDeduction,
+            'paymentMethods' => $paymentMethods,
+            'stripe_public_key' => $stripe_public_key,
+            'currentPlan' => $currentCompany,
             'translator' => [
                 'Detail' => __('Detail'),
                 'Notes' => __('Notes'),
-                'Edit'  =>__('Edit')
+                'Edit'  =>__('Edit'),
+                'Wallet' => __('Wallet'),
+                'Hi' => __('Hi'),
+                'Welcome to your Wallet' => __('Welcome to your Wallet'),
+                'Here you can see your payments, change your payment method and get your invoices.' => __('Here you can see your payments, change your payment method and get your invoices.'),
+                'Available Balance' => __('Available Balance'),
+                'Add Balance' => __('Add Balance'),
+                'This Month' => __('This Month'),
+                'Total Spent' => __('Total Spent'),
+                'Business Initiated Chat' => __('Business Initiated Chat'),
+                'User Initiated Chat' => __('User Initiated Chat'),
+                'Free Entry Point Chats' => __('Free Entry Point Chats'),
+                'Messages' => __('Messages'),
+                'Your Payment Method' => __('Your Payment Method'),
+                'Add a Payment Method' => __('Add a Payment Method'),
+                'See Transactions History' => __('See Transactions History'),
+                'See Details' => __('See Details'),
+                'Download your VAT Invoices' => __('Download your VAT Invoices'),'Go to Invoices'=>__('Go to Invoices'),
+                'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount')
                 ]
         ];
         return Inertia::render('Company/Detail', $data);       

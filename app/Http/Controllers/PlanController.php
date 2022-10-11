@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use App\Models\Plan;
+use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
+use DB;
 
 class PlanController extends Controller
 {
@@ -56,9 +58,29 @@ class PlanController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
-        //
+        $field_name = [
+           'plan', 'price', 'target', 'setup_workspace', 'monthly_workspace', 'channels', 'accounts', 'offical_whatsapp', 'unoffical_whatsapp', 'facebook', 'users', 'include_users', 'extra_users', 'crm_contacts', 'chat_cost', 'per_message', 'per_allegato', 'fatturazione', 'contacts', 'lists_tags', 'custom_fields', 'multichannel_chat', 'campaigns', 'workflow', 'opportunities', 'category', 'orders', 'lead_webhook', 'integrations', 'api', 'custom_integrations', 'plan_id'
+        ];
+
+        if($request->plan) {
+            
+            $plans = [];
+            
+            foreach ($field_name as $field) {
+                $plans[$field] = $request->$field;
+            }
+            
+            // Insert record value into the table
+            if($request->id) {
+                DB::table('plans')->where('id', $request->id)->update($plans);
+            } else {
+                DB::table('plans')->insert($plans);
+            }
+        }
+
+        return Redirect::route('detailPlan', ['id' => $request->plan_id]);
     }
 
     /**
@@ -70,11 +92,27 @@ class PlanController extends Controller
     public function store(Request $request,Plan $plan)
     {
         $request->validate([
-            'name' => 'required|max:255|unique:stripe_plans',
+            'name' => 'required|max:255',
             'description' => 'required',
             'amount' => 'required',
             'billing_period' => 'required',
             'pricing_model' => 'required',
+        ]);
+
+        $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
+
+        // Create a Plan
+        $create_plan = $stripe->products->create([
+          'name' => $request->name,
+          'description' => $request->description,
+        ]);
+
+        // Attach plan price details
+        $plan_price = $stripe->prices->create([
+            'unit_amount' => $request->amount * 100,
+            'currency' => 'usd',
+            'recurring' => ['interval' => $request->billing_period],
+            'product' => $create_plan->id,
         ]);
 
         $plan->name = $request->name;
@@ -82,14 +120,15 @@ class PlanController extends Controller
         $plan->amount = $request->amount;
         $plan->billing_period = $request->billing_period;
         $plan->pricing_model = $request->pricing_model;
+        $plan->stripe_id =  $create_plan->id;
+        $plan->price_id = $plan_price->id;
         $plan->save();
-        
-        $url = route('detailPlan').'id?='. $plan->id;
-        return Redirect::to($url);
+
+        return Redirect::route('detailPlan', ['id' => $plan->id]);
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified resource. 
      *
      * @param  \App\Models\Plan  $plan
      * @return \Illuminate\Http\Response
@@ -98,6 +137,9 @@ class PlanController extends Controller
     {
         if($request->id) {
 
+           $subscription_plan = '';
+           $workspaces = [];
+
            $plan = Plan::findOrFail($request->id);
            
            if(!$plan) {
@@ -105,13 +147,29 @@ class PlanController extends Controller
            }
            $headers = $this->getModuleHeader(1 , 'Plan');
 
+           // Get plan record value
+           $subscription_plan = DB::table('plans')->where('plan_id', $request->id)->first();
+
+           // Get all related plan workspace
+           $plan_workspace = DB::table('plan_workspaces')->where('plan_id', $request->id)->get(['company_id']);
+
+           if($plan_workspace) {
+              foreach($plan_workspace as $workspace) {
+                $workspaces[] = Company::find($workspace->company_id);
+              }
+           }
+           
            return Inertia::render('Plans/Detail', [
             'record' => $plan,            
             'headers' => $headers,
+            'subscription_plan' => $subscription_plan,
+            'workspaces' => $workspaces,
 
             'translator' => [
                 'Detail' => __('Detail'),
-                'Edit'  =>__('Edit')
+                'Edit'  =>__('Edit'),
+                'Plan Detail' => _('Plan Detail'),
+                'Workspace' => _('Workspace'),
             ],       
 
           ]);
@@ -124,9 +182,15 @@ class PlanController extends Controller
      * @param  \App\Models\Plan  $plan
      * @return \Illuminate\Http\Response
      */
-    public function edit(Plan $plan)
+    public function edit(Request $request, $id)
     {
-        //
+        $plan = Plan::find($id);
+
+        if(!$plan) {
+            abort(401);
+        }
+
+        return response()->json(['status' => true, 'record' => $plan]);
     }
 
     /**
@@ -136,9 +200,32 @@ class PlanController extends Controller
      * @param  \App\Models\Plan  $plan
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Plan $plan)
+    public function update(Request $request, $id)
     {
-        //
+        $plan = Plan::find($id);
+        
+        $request->validate([
+            'name' => 'required|max:255',
+            'description' => 'required',
+            'amount' => 'required',
+            'billing_period' => 'required',
+            'pricing_model' => 'required',
+        ]);
+
+        if($plan) {
+            $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
+
+            $update_plan = $stripe->products->update($plan->stripe_id, [
+                'name' => $request->name,
+                'description' => $request->description
+            ]);
+  
+            $plan->name = $request->name;
+            $plan->description = $request->description;
+            $plan->save();
+
+            return Redirect::route('listPlan');
+        }
     }
 
     /**
@@ -147,8 +234,47 @@ class PlanController extends Controller
      * @param  \App\Models\Plan  $plan
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Plan $plan)
+    public function destroy(Request $request, $id)
     {
-        //
+        $plan = Plan::find($id);
+        $errors = '';
+    
+        if($plan->stripe_id) {
+           
+            $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
+
+            // Delete the Plan
+            try {
+                $stripe->products->delete(
+                    $plan->stripe_id,  
+                    []
+                 );
+              }  catch (\Stripe\Exception\InvalidRequestException $e) {
+                  $errors = $e->getMessage();
+              } catch (Exception $e) {
+                $errors = $e->getMessage();
+              }
+        }
+
+        if($errors) {
+            return redirect()->back()->withErrors(['message' => $errors]);
+        }
+
+        $plan->delete();
+
+        return Redirect::route('listPlan');
+    }
+
+    public function workspacePlan(Request $request) {
+        
+        if($request->plan_id) {
+            
+            $plan['plan_id'] = $request->plan_id;
+            $plan['company_id'] = $request->value;
+            
+            DB::table('plan_workspaces')->insert($plan);
+
+            return Redirect::route('detailPlan', ['id' => $request->plan_id]);
+        }
     }
 }

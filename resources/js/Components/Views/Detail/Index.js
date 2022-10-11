@@ -12,7 +12,9 @@ import ItemTable from "@/Pages/Order/itemTable";
 import InlineEdit from "./InlineEdit";
 import { Disclosure } from '@headlessui/react'
 import { ChevronDownIcon }  from "@heroicons/react/outline";
- 
+import SubscriptionPlan from "./PlanEdit";
+import WorkspacePlan from "./WorkspacePlan";
+
 export default function Index(props) 
 {
     const [record , setRecord] = useState(props.record);
@@ -48,7 +50,6 @@ export default function Index(props)
             setActiveTab(props.current_tab);
         }      
         setSubscribedServices(props.subscribedServices);
-       
     },[props]);
 
     function saveTag()
@@ -271,7 +272,7 @@ export default function Index(props)
                                         <>
                                         <div className="pl-3 w-full">
                                             <div className="text-gray-600">{record.name}  </div>
-                                            {props.module == 'Tag' || props.module == 'Category' ? 
+                                            {props.module == 'Tag' || props.module == 'Category' ||props.module == 'Plan' ? 
                                               <div className={classNames(
                                                 addClass ? 'text-gray-600 break-words w-3/4':'text-gray-600 w-1/2 truncate'
                                               )} onClick={() => removeClass()}>{record.description} </div>
@@ -283,18 +284,18 @@ export default function Index(props)
                                 
                             </h3>
                             {(props.module == 'Lead')?
-                            <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
-                            <div>
-                                <button
-                                    type="button"
-                                    onClick={ () => lead_to_contact()}
-                                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                >                                    
-                                    Convert Lead to Contact
-                                </button>
-                            </div>
-                        </div>                                      
-                                            :''}
+                                <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
+                                    <div>
+                                        <button
+                                            type="button"
+                                            onClick={ () => lead_to_contact()}
+                                            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                        >                                    
+                                            Convert Lead to Contact
+                                        </button>
+                                    </div>
+                                </div>                                      
+                            :''}
 
                             <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
                                 <div>
@@ -615,6 +616,22 @@ export default function Index(props)
                                                     parent_name={props.record.name}
                                                 />
                                             </>
+                                        }
+                                        {activeTab == 'company_plan' && 
+                                          <>
+                                            <SubscriptionPlan 
+                                             record={props.record}
+                                             subscriptionPlan={props.subscriptionPlan}
+                                            />
+                                          </>
+                                        }
+                                        {activeTab == 'workspacePlan' && 
+                                          <>
+                                            <WorkspacePlan 
+                                             plan_id={props.record.id}
+                                             workspaces={props.workspaces}
+                                            />
+                                          </>
                                         }
                                     </div>
                                 )
