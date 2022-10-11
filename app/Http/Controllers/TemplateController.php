@@ -50,7 +50,7 @@ class TemplateController extends Controller
                 'name' => strtolower(str_replace( ' ', '_', $template->name)),
                 'language' => 'en_US',
             ];   
-            //dd($postData);       
+            
             $response = Http::withHeaders($headers)->post($endPoint, ($postData))->json();
             log::info(['template respone' => $response]);
 
