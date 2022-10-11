@@ -7,8 +7,23 @@ import PhoneInput2 from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
 const categoryOption = {
-    'cat1' : 'Category1',
-    'cat2' : 'Category2'
+    'Automotive' : 'Automotive',
+    'Beauty, Spa and Salon' : 'Beauty, Spa and Salon',
+    'Clothing and Apparel':'Clothing and Apparel',
+    'Education':'Education',
+    'Entertainment':'Entertainment',
+    'Event Planning and Service' : 'Event Planning and Service',
+    'Finance and Banking':'Finance and Banking',
+    'Food and Grocery':'Food and Grocery',
+    'Public Service' :'Public Service',
+    'Hotel and Lodging':'Hotel and Lodging',
+    'Medical and Health':'Medical and Health',
+    'Non-profit':'Non-profit',
+    'Professional Services':'Professional Services',
+    'Shopping and Retail':'Shopping and Retail',
+    'Travel and Transportation':'Travel and Transportation',
+    'Restaurant':'Restaurant',
+    'Other':'Other',
 }
 
 const checklist = [
