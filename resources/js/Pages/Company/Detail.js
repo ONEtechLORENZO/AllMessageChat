@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import Authenticated from "../../Layouts/Authenticated";
 import DetailView from "@/Components/Views/Detail/Index";
 import Form from '@/Components/Forms/Form';
-//import Wallet from '../../Pages/Wallet';
+import Wallet from "@/Pages/Wallet/Index"
 
 function Detail(props){
     const [showForm, setShowForm] = useState(false);
@@ -29,6 +29,7 @@ function Detail(props){
         <Authenticated
             auth={props.auth}
             errors={props.errors}
+            current_page='Company'
         >
             <DetailView
                 record = {props.record}
@@ -43,7 +44,16 @@ function Detail(props){
                 listData={props.listData}
                 translator={props.translator}
             />
-            
+            <Wallet
+              module ='Company'
+              name={props.name}
+              balance={props.balance}
+              message_deduction = {props.message_deduction}
+              paymentMethods ={props.paymentMethods}
+              stripe_public_key= {props.stripe_public_key}
+              currentPlan = {props.currentPlan}
+              translator={props.translator}
+            />
             {showForm ?
                 <Form 
                     module={'Company'}
