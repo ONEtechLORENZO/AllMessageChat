@@ -613,6 +613,7 @@ class Controller extends BaseController
             $actions = [
                 'detail' => false,
                 'create' => false,
+                'download' => true,
             ];
         } else {
             $actions = [

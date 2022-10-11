@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Document;
+use App\Models\Contact;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
+use Cache;
 
 class DocumentController extends Controller
 {
@@ -81,5 +84,37 @@ class DocumentController extends Controller
     public function destroy(Document $document)
     {
         //
+    }
+
+    /**
+     * Download document 
+     */
+    public function downloadDocument(Request $request, $documentId)
+    {
+        $canDownload = false;
+        $currentUser = $request->user();
+        $companyId = Cache::get('selected_company_'. $currentUser->id);
+        $document = Document::find($documentId);
+
+        if($document->parent_module == 'Contact'){
+            $contact = Contact::where([
+                'id' => $document->parent_id,
+                'company_id' => $companyId,
+            ])->first();
+
+            if($contact){
+                $canDownload = true;
+            }
+        }
+        if($canDownload){
+            try {
+                $result = Storage::download($document->path);
+                return $result;
+            } catch (\Exception $e) {
+                abort( 403 , $e->getMessage());
+            }
+        } else {
+            abort('401');
+        }
     }
 }

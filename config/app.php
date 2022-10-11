@@ -274,10 +274,7 @@ return [
         'app_graph_version' => env('DEFAULT_GRAPH_VERSION'),
         'call_back_url' => env('CALL_BACK_URL'),
         
-        'access_token' => env('FB_SYSTEM_ACCESS_TOKEN'),
         'verification_code' => env('VERIFICATION_CODE'),
         'api_url' => env('FB_API_URL'),
-        'phone_number_id' => env('PHONE_NUMBER_ID'),
-        'whatsapp_account_id' => env('WABA_IP'),
     ],
 ];

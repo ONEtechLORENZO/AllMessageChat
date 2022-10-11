@@ -34,22 +34,23 @@ class TemplateController extends Controller
             $template = Template::find($data['template_id']);
 
             $endPoint = config('app.fb.api_url');
-            $endPoint .= config('app.fb.whatsapp_account_id') . '/message_templates' ;
+            $endPoint .= $account->fb_whatsapp_account_id . '/message_templates' ;
             $headers = [
-                'Authorization' => 'Bearer '. config('app.fb.access_token'),
+                'Authorization' => 'Bearer '. $account->service_token,
                 'Content-Type' => 'application/json',
             ];
             $postData = [
                 'category' => 'TRANSACTIONAL',
                 'components' => [
-                    json_encode(['type' => 'BODY', 'text' => $data['data']->body])
+                    json_encode(['type' => 'BODY', 'text' => $data['data']->body]),
+                    json_encode(['type' => 'HEADER', 'format' => 'TEXT', 'text' => $data['data']->header_text]),
+                    json_encode(['type' => 'FOOTER', 'text' => $data['data']->body_footer])
                 ],
                 'name' => strtolower(str_replace( ' ', '_', $template->name)),
                 'language' => 'en_US',
             ];
           
             $response = Http::withHeaders($headers)->post($endPoint, ($postData))->json();
-            //log::info(['temoplate responee: ', $response]);
 
             // store template id
             if(isset($response['id'])){

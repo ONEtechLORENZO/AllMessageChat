@@ -648,6 +648,9 @@ class UserController extends Controller
         $field_info = [
             'company_name' => ['label' => __('Name')],
             'service_engine' => ['label' => 'Service Engine'],
+            'service_token' => ['label' => 'Service token'],
+            'fb_phone_number_id' => ['label' => 'FaceBook phone number ID'],
+            'fb_whatsapp_account_id' => ['label' => 'FaceBook whatsapp account ID'],
             'service' => ['label' => __('Service')],
             // 'company_type' => ['label' => 'Company type'],
             // 'website' => ['label' => 'Website'],
@@ -860,10 +863,14 @@ class UserController extends Controller
 
         $account->service = $request->service;
         $account->service_engine = $request->service_engine;
+        $account->service_token = $request->service_token;
+        $account->fb_phone_number_id = $request->fb_phone_number_id;
+        $account->fb_whatsapp_account_id = $request->fb_whatsapp_account_id;
         $account->phone_number = $request->phone_number;
         $account->src_name = $request->company_name;
         $account->company_name = $request->company_name;
-
+        $account->business_manager_id = $request->business_manager_id;
+        
         if($displayName == 'yes'){
            $account->display_name = $request->company_name;
         }else{

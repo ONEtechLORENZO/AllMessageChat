@@ -44,7 +44,7 @@ class Document extends Model
         $path = "public/document/{$name}";
         $file = Storage::put($path  , $file);
      
-        $fileUrl = url(Storage::url($path));
+        $fileUrl = $path;
         $fileSize = Storage::size($path);
 
         $document = new Document();
