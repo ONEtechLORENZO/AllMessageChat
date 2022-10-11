@@ -40,20 +40,25 @@ class TemplateController extends Controller
                 'Content-Type' => 'application/json',
             ];
 
+            $components = [];
+            if($data['data']->body){
+                $components[] = json_encode(['type' => 'BODY', 'text' => $data['data']->body]);
+            }
+            if($data['data']->header_text){
+                $components[] = json_encode(['type' => 'HEADER', 'format' => 'TEXT', 'text' => $data['data']->header_text]);
+            }
+            if($data['data']->body_footer){
+                $components[] = json_encode(['type' => 'FOOTER', 'text' => $data['data']->body_footer]);
+            }
+
             $postData = [
                 'category' => $template->category,
-                'components' => [
-                    json_encode(['type' => 'BODY', 'text' => $data['data']->body]),
-                    json_encode(['type' => 'HEADER', 'format' => 'TEXT', 'text' => $data['data']->header_text]),
-                    json_encode(['type' => 'FOOTER', 'text' => $data['data']->body_footer])
-                ],
+                'components' => $components,
                 'name' => strtolower(str_replace( ' ', '_', $template->name)),
                 'language' => 'en_US',
             ];   
             
             $response = Http::withHeaders($headers)->post($endPoint, ($postData))->json();
-            log::info(['template respone' => $response]);
-
 
             // store template id
             if(isset($response['id'])){
@@ -68,7 +73,6 @@ class TemplateController extends Controller
             return $return;
 
         } else {
-
             $partnerToken = $this->getPartnerToken();
             if(!$partnerToken) {
                 return ['status' => 'failed', 'message' => $this->result];

@@ -1092,18 +1092,19 @@ class UserController extends Controller
         }
         if($account->service_engine == 'facebook'){
             $validation_array = [
-                'body' => 'max:1024',
+                'body' => 'required|max:1024',
             ];
         } else {
             $validation_array = [
                 'header_type' => 'required',
-                'body' => 'max:1024',
-                'body_footer' => 'max:60',
+                'body' => 'required|max:1024',
+                'body_footer' => 'required|max:60',
             ];
             if ($request->get('header_type') == 'text') {
                 $validation_array['header_text'] = 'required|max:60';
             }
         }
+       
         $request->validate($validation_array);
         
         
@@ -1254,6 +1255,7 @@ class UserController extends Controller
             'message' => $message,
             'language' => $language,
             'buttons' => $message_buttons,
+            'result' => $result,
         ]);
     }
 

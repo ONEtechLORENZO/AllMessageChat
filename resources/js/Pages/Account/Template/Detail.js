@@ -10,6 +10,7 @@ import {defaultPristineConfig, header_templates} from '@/Pages/Constants';
 import languages from '@/Pages/languages';
 import TemplateButton from './TemplateButton';
 import { Inertia } from '@inertiajs/inertia';
+import notie from 'notie';
 
 import { Dialog, Transition } from '@headlessui/react'
 
@@ -26,7 +27,7 @@ function NewTemplate(props)
 
     const url_max_length = 2000;
 
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, reset } = useForm({
         language: props.message.language ? props.message.language : props.language,
         header_type: props.message.header_type ? props.message.header_type : '',
         header_text: props.message.header_content ? props.message.header_content : '',
@@ -40,6 +41,8 @@ function NewTemplate(props)
     });
 
     const [buttons, setButtons] = useState([]);
+    
+    const [errors, setError] = useState({});
    
     const [temp_status, setStatus] = useState(props.template.status);
 
@@ -77,24 +80,28 @@ function NewTemplate(props)
      */
     function validateAndSubmitForm() 
     {
-        var pristine = new PristineJS(document.getElementById("template_form"), defaultPristineConfig);
-        let is_template_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required], textarea[data-pristine-required]'));
+        // var pristine = new PristineJS(document.getElementById("template_form"), defaultPristineConfig);
+        // let is_template_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required], textarea[data-pristine-required]'));
         
-        var pristine = new PristineJS(document.getElementById("button_form"), defaultPristineConfig);
-        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required], textarea[data-pristine-required]'));
-        if(!is_validated || !is_template_validated) {
-            return false;
-        }
+        // var pristine = new PristineJS(document.getElementById("button_form"), defaultPristineConfig);
+        // let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required], textarea[data-pristine-required]'));
+        // if(!is_validated || !is_template_validated) {
+        // //    return false;
+        // }
 
         let post_data = Object.assign({}, data);
         post_data['buttons'] = buttons;
         Inertia.post(route('store_template', [props.template.account_id, props.template.id]), post_data, {
             onSuccess: (response) => {
-                console.log('succed' , response);
-            //  window.location.reload();
+                if(response.props.result.status == 'failed'){
+                    var error = (response.props.result.message) ? response.props.result.message : 'Template format is incorrect';
+                    notie.alert({type: 'warning', text: error, time: 5});
+                }else {         
+                    window.location.reload();
+                }
             },
             onError: (errors) => {
-                console.log('errors'  , errors);
+                setError(errors);
              },
             onComplete: (response) => {
                 console.log(response);
@@ -117,7 +124,6 @@ function NewTemplate(props)
         }
         Inertia.post(route('template_status_form', [props.template.account_id, props.template.id]), data, {
             onSuccess: (response) => {
-                
                 setTemplateModalOpen(false);
             },
         });
