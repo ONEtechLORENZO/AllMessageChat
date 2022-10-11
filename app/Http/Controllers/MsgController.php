@@ -565,9 +565,11 @@ class MsgController extends Controller
                 }
 
                 if($status == 'sent' && isset($data['value']['statuses']['0']['pricing'])){
-                    // TODO Get account based on receiver phone number
-                    $account = Account::find(1);
-
+                    $phone_number_id = $data['value']['metadata']['phone_number_id'];
+                    $account = Account::where('fb_phone_number_id' , $phone_number_id)->first();
+                    if(!$account){
+                        return true;
+                    }
                     $messageData['policy'] = $data['value']['statuses']['0']['pricing']['category'];
                     $price = $this->handlePrice($data['value']['statuses']['0']['recipient_id'], $data['value']['statuses']['0']['pricing']['category'], $account->user_id);
                     $this->reduceMessageAmount($price, $message->account_id);
@@ -576,8 +578,11 @@ class MsgController extends Controller
                 
             } else if( isset($data['value']['contacts']) ){
 
-                // TODO Get account based on receiver phone number
-                $account = Account::find(1);
+                $phone_number_id = $data['value']['metadata']['phone_number_id'];
+                $account = Account::where('fb_phone_number_id' , $phone_number_id)->first();
+                if(!$account){
+                    return true;
+                }
 
                 $data['id'] = $data['value']['messages'][0]['id'];
                 $msgable_id = $this->getInfoUsingContactUniqueId($data['value']['contacts'][0]['wa_id'], 'whatsapp', $account->company_id,  $account->user_id, $data['value']['contacts'][0]['profile']['name']);
