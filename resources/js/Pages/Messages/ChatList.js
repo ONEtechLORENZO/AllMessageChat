@@ -568,7 +568,6 @@ function ChatList(props)
                                             <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
                                                 {Object.entries(accountList).map(([id, name]) => (
                                                     <Menu.Item key={id}>
-                                                        
                                                             <div 
                                                                 className={classNames(
                                                                     (selectedAccount ==  id)
@@ -723,6 +722,9 @@ function ChatList(props)
                                                     <div class="flex justify-center">
                                                         <ul class="bg-white rounded-lg border border-gray-200 w-96 text-gray-900">
                                                             {props.templates && Object.entries(props.templates).map(([key, template]) => {
+                                                                if(template.account_id != selectedAccount) {
+                                                                    return false;
+                                                                }
                                                                 return(
                                                                     <li class="px-6 py-2 rounded-b-lg" onClick={()=> setTemplateInfo(template)}> {template.name} </li>
                                                                 )
