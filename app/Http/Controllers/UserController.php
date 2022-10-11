@@ -1030,10 +1030,14 @@ class UserController extends Controller
      */
     public function templateDetailView(Request $request, $account_id, $template_id)
     {
-        $user_id = $request->user()->id;
-        $account = Account::where('user_id', $user_id)
-            ->where('id', $account_id)
-            ->first();
+        $user = $request->user();
+        $companyId = Cache::get('selected_company_'. $user->id);
+
+        $query = Account::where('id', $account_id);
+        if($user->role != 'global_admin') {
+            $query->where('company_id', $companyId);
+        }
+        $account = $query->first();
 
         if (!$account) {
             abort(401, 'You are not authorised to view this template');
@@ -1075,26 +1079,33 @@ class UserController extends Controller
      */
     public function storeTemplate(Request $request, $account_id, $template_id)
     {
-        $validation_array = [
-            'header_type' => 'required',
-            'body' => 'max:1024',
-            'body_footer' => 'max:60',
-        ];
-
-        if ($request->get('header_type') == 'text') {
-            $validation_array['header_text'] = 'required|max:60';
+        $user = $request->user();
+        $companyId = Cache::get('selected_company_'. $user->id);
+        $query = Account::where('id', $account_id);
+        if($user->role != 'global_admin') {
+            $query->where('company_id', $companyId);
         }
-
-        $request->validate($validation_array);
-
-        $user_id = $request->user()->id;
-        $account = Account::where('user_id', $user_id)
-            ->where('id', $account_id)
-            ->first();
+        $account = $query->first();
 
         if (!$account) {
             abort(401, 'You are not authorised to view this');
         }
+        if($account->service_engine == 'facebook'){
+            $validation_array = [
+                'body' => 'max:1024',
+            ];
+        } else {
+            $validation_array = [
+                'header_type' => 'required',
+                'body' => 'max:1024',
+                'body_footer' => 'max:60',
+            ];
+            if ($request->get('header_type') == 'text') {
+                $validation_array['header_text'] = 'required|max:60';
+            }
+        }
+        $request->validate($validation_array);
+        
         
         // Store Template Attachment
         $attachFilePath = '';
