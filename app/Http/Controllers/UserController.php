@@ -1270,7 +1270,7 @@ class UserController extends Controller
 
         $stripe_public_key = config('stripe.stripe_key');
 
-        return Inertia::render('Wallet/Index', [
+        return Inertia::render('Wallet/WalletIndex', [
             'name' => $user->name,
             'balance' => $balance,
             'message_deduction' => $messageDeduction,
@@ -1297,8 +1297,6 @@ class UserController extends Controller
                 'See Details' => __('See Details'),
                 'Download your VAT Invoices' => __('Download your VAT Invoices'),'Go to Invoices'=>__('Go to Invoices'),
                 'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount')
-                
-                
             ]
         ]);
     }
