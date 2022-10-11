@@ -44,18 +44,18 @@ class Document extends Model
         $path = "public/document/{$name}";
         $file = Storage::put($path  , $file);
      
-        $fileUrl = url(Storage::url($path));
         $fileSize = Storage::size($path);
 
         $document = new Document();
         $document->title = $name;
         $document->type = $extension;
         $document->size = $fileSize;
-        $document->path = $fileUrl;
+        $document->path = $path;
         $document->parent_id = $parent;
         $document->parent_module = 'Contact';
         $document->save();
 
+        $fileUrl = url(Storage::url($path));
         return ($fileUrl);
     }
 }

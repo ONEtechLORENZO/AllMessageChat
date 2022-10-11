@@ -169,23 +169,25 @@ function Registration(props) {
                                         </div>
 
                                         {props.auth.user.role == 'global_admin' &&
-                                            <div className="form-group col-span-6 sm:col-span-4">
-                                                <label htmlFor="service_engine" className="block text-sm font-medium text-gray-700" >
-                                                    Service Engine
-                                                    <span className="text-sm text-red-700 mx-1"> * </span>
-                                                </label>
-                                                <div className="mt-1">
-                                                    <Dropdown
-                                                        required={true}
-                                                        id="service_engine"
-                                                        name="service_engine"
-                                                        handleChange={handleChange}
-                                                        options={service_engine}
-                                                        value={data.service_engine}
-                                                    />
+                                            <>
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor="service_engine" className="block text-sm font-medium text-gray-700" >
+                                                        Service Engine
+                                                        <span className="text-sm text-red-700 mx-1"> * </span>
+                                                    </label>
+                                                    <div className="mt-1">
+                                                        <Dropdown
+                                                            required={true}
+                                                            id="service_engine"
+                                                            name="service_engine"
+                                                            handleChange={handleChange}
+                                                            options={service_engine}
+                                                            value={data.service_engine}
+                                                        />
+                                                    </div>
+                                                    <InputError message={errors.service_engine} />
                                                 </div>
-                                                <InputError message={errors.service} />
-                                            </div>
+                                            </>
                                         }
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label htmlFor="services" className="block text-sm font-medium text-gray-700" >
@@ -204,75 +206,80 @@ function Registration(props) {
                                             </div>
                                             <InputError message={errors.service} />
                                         </div>
-                                        {/*                                     
-                                        <div className="form-group col-span-6 sm:col-span-4">
-                                            <label htmlFor="company_type" className="block text-sm font-medium text-gray-700">
-                                                Company type
-                                            </label>
-                                            <div className="mt-1">
-                                                <Dropdown 
-                                                    required={true} 
-                                                    id="company_type"
-                                                    name="company_type"
-                                                    handleChange={handleChange}
-                                                    options={company_types}
-                                                    value={data.company_type}
-                                               />
-                                            </div>
-                                            <InputError message={errors.company_type} />
-                                        </div>
-
-                                        <div className="form-group col-span-6 sm:col-span-4">
-                                            <label htmlFor="website" className="block text-sm font-medium text-gray-700">
-                                                Company website
-                                            </label>
-                                            <div className="mt-1 flex rounded-md shadow-sm">
-                                                <Input required={true} name='website' value={data.website} id='website' placeholder='Enter your company website' handleChange={handleChange} />
-                                            </div>
-                                            <InputError message={errors.website} />
-                                        </div>
-
-                                        <div className="form-group col-span-6 sm:col-span-4">
-                                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                                                Email (Technical point of contact)
-                                            </label>
-                                            <div className="mt-1 flex rounded-md shadow-sm">
-                                                <Input required={true} type='email' name='email' value={data.email}  id='email' placeholder='Email'  handleChange={handleChange}/>
-                                            </div>
-                                            <InputError message={errors.email} />
-                                        </div>
-
-                                        <div className="form-group col-span-6 sm:col-span-4">
-                                            <label htmlFor="estimated_launch_date" className="block text-sm font-medium text-gray-700">
-                                                Estimated launch date
-                                            </label>
-                                            <div className="mt-1 flex rounded-md shadow-sm">
-                                                <Input required={true} type='date' name='estimated_launch_date' value={data.estimated_launch_date} id='estimated_launch_date' placeholder='' handleChange={handleChange} />
-                                            </div>
-                                            <InputError message={errors.estimated_launch_date} />
-                                        </div>
-
-                                        <div className="form-group col-span-6 sm:col-span-4">
-                                            <label htmlFor="type_of_integration" className="block text-sm font-medium text-gray-700">
-                                                Type of integration
-                                            </label>
-                                            <div className="mt-1">
-                                                <Dropdown 
-                                                    required={true} 
-                                                    id="type_of_integration"
-                                                    name="type_of_integration"
-                                                    handleChange={handleChange}
-                                                    options={integrations}
-                                                    value={data.type_of_integration}
-                                                />
-                                            </div>
-                                            <InputError message={errors.type_of_integration} />
-                                        </div>
-                                         */}
+                                        
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        {(data.service_engine == 'facebook' && props.auth.user.role == 'global_admin' ) &&
+                            <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
+                                <div className="md:grid md:grid-cols-3 md:gap-6">
+                                    <div className="md:col-span-1">
+                                        <h3 className="text-lg font-medium leading-6 text-gray-900">
+                                            FaceBook Information
+                                        </h3>
+                                        <p className="mt-1 text-sm text-gray-500">
+                                            Information will be used to create your facebook business account
+                                        </p>
+                                    </div>
+                                    <div className="mt-5 md:mt-0 md:col-span-2">
+                                        <div className="grid grid-cols-6 gap-6">
+
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor="service_token" className="block text-sm font-medium text-gray-700" >
+                                                        Service token
+                                                        <span className="text-sm text-red-700 mx-1"> * </span>
+                                                    </label>
+                                                    <div className="mt-1">
+                                                        <Input
+                                                            required={true}
+                                                            id="service_token"
+                                                            name="service_token"
+                                                            handleChange={handleChange}
+                                                            value={data.service_token}
+                                                        />
+                                                    </div>
+                                                    <InputError message={errors.service_token} />
+                                                </div>
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor="fb_phone_number_id" className="block text-sm font-medium text-gray-700" >
+                                                        FaceBook phone number ID
+                                                        <span className="text-sm text-red-700 mx-1"> * </span>
+                                                    </label>
+                                                    <div className="mt-1">
+                                                        <Input
+                                                            required={true}
+                                                            id="fb_phone_number_id"
+                                                            name="fb_phone_number_id"
+                                                            handleChange={handleChange}
+                                                            value={data.fb_phone_number_id}
+                                                        />
+                                                    </div>
+                                                    <InputError message={errors.fb_phone_number_id} />
+                                                </div>
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor="fb_whatsapp_account_id" className="block text-sm font-medium text-gray-700" >
+                                                        FaceBook whatsapp account ID
+                                                        <span className="text-sm text-red-700 mx-1"> * </span>
+                                                    </label>
+                                                    <div className="mt-1">
+                                                        <Input
+                                                            required={true}
+                                                            id="fb_whatsapp_account_id"
+                                                            name="fb_whatsapp_account_id"
+                                                            handleChange={handleChange}
+                                                            value={data.fb_whatsapp_account_id}
+                                                        />
+                                                    </div>
+                                                    <InputError message={errors.fb_whatsapp_account_id} />
+                                                </div>
+                                                
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
 
                         {data.service == "whatsapp" ? (
                             <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">

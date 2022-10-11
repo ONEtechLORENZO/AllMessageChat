@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import StripeForm from "./StripeForm";
 import PaymentMethodForm from "./PaymentMethodForm";
-import Authenticated from "@/Layouts/Authenticated";
 import Axios from "axios";
 import notie from 'notie';
 import nProgress from 'nprogress';
@@ -104,13 +103,7 @@ function Wallet(props)
     }
 
     return (
-        <Authenticated
-            auth={props.auth}
-            errors={props.errors}
-            current_page= {props.current_page}
-        >
-            <Head title={props.translator['Wallet']} />
-
+        <>
             <div className="px-4 sm:px-6 lg:px-8 text-[#3D4459]">
                 <div className="sm:grid grid grid-cols-2 gap-4 ">
                     <div className="flex border border-solid rounded-lg h-40 p-4 gap-4 shadow">
@@ -471,7 +464,7 @@ function Wallet(props)
                 />
             : ''}
 
-        </Authenticated>
+        </>
     );
 }
 

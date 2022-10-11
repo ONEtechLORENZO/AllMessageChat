@@ -648,6 +648,9 @@ class UserController extends Controller
         $field_info = [
             'company_name' => ['label' => __('Name')],
             'service_engine' => ['label' => 'Service Engine'],
+            'service_token' => ['label' => 'Service token'],
+            'fb_phone_number_id' => ['label' => 'FaceBook phone number ID'],
+            'fb_whatsapp_account_id' => ['label' => 'FaceBook whatsapp account ID'],
             'service' => ['label' => __('Service')],
             // 'company_type' => ['label' => 'Company type'],
             // 'website' => ['label' => 'Website'],
@@ -860,10 +863,14 @@ class UserController extends Controller
 
         $account->service = $request->service;
         $account->service_engine = $request->service_engine;
+        $account->service_token = $request->service_token;
+        $account->fb_phone_number_id = $request->fb_phone_number_id;
+        $account->fb_whatsapp_account_id = $request->fb_whatsapp_account_id;
         $account->phone_number = $request->phone_number;
         $account->src_name = $request->company_name;
         $account->company_name = $request->company_name;
-
+        $account->business_manager_id = $request->business_manager_id;
+        
         if($displayName == 'yes'){
            $account->display_name = $request->company_name;
         }else{
@@ -1023,10 +1030,14 @@ class UserController extends Controller
      */
     public function templateDetailView(Request $request, $account_id, $template_id)
     {
-        $user_id = $request->user()->id;
-        $account = Account::where('user_id', $user_id)
-            ->where('id', $account_id)
-            ->first();
+        $user = $request->user();
+        $companyId = Cache::get('selected_company_'. $user->id);
+
+        $query = Account::where('id', $account_id);
+        if($user->role != 'global_admin') {
+            $query->where('company_id', $companyId);
+        }
+        $account = $query->first();
 
         if (!$account) {
             abort(401, 'You are not authorised to view this template');
@@ -1068,26 +1079,34 @@ class UserController extends Controller
      */
     public function storeTemplate(Request $request, $account_id, $template_id)
     {
-        $validation_array = [
-            'header_type' => 'required',
-            'body' => 'max:1024',
-            'body_footer' => 'max:60',
-        ];
-
-        if ($request->get('header_type') == 'text') {
-            $validation_array['header_text'] = 'required|max:60';
+        $user = $request->user();
+        $companyId = Cache::get('selected_company_'. $user->id);
+        $query = Account::where('id', $account_id);
+        if($user->role != 'global_admin') {
+            $query->where('company_id', $companyId);
         }
-
-        $request->validate($validation_array);
-
-        $user_id = $request->user()->id;
-        $account = Account::where('user_id', $user_id)
-            ->where('id', $account_id)
-            ->first();
+        $account = $query->first();
 
         if (!$account) {
             abort(401, 'You are not authorised to view this');
         }
+        if($account->service_engine == 'facebook'){
+            $validation_array = [
+                'body' => 'required|max:1024',
+            ];
+        } else {
+            $validation_array = [
+                'header_type' => 'required',
+                'body' => 'required|max:1024',
+                'body_footer' => 'required|max:60',
+            ];
+            if ($request->get('header_type') == 'text') {
+                $validation_array['header_text'] = 'required|max:60';
+            }
+        }
+       
+        $request->validate($validation_array);
+        
         
         // Store Template Attachment
         $attachFilePath = '';
@@ -1236,6 +1255,7 @@ class UserController extends Controller
             'message' => $message,
             'language' => $language,
             'buttons' => $message_buttons,
+            'result' => $result,
         ]);
     }
 
@@ -1263,7 +1283,7 @@ class UserController extends Controller
 
         $stripe_public_key = config('stripe.stripe_key');
 
-        return Inertia::render('Wallet/Index', [
+        return Inertia::render('Wallet/WalletIndex', [
             'name' => $user->name,
             'balance' => $balance,
             'message_deduction' => $messageDeduction,
@@ -1290,8 +1310,6 @@ class UserController extends Controller
                 'See Details' => __('See Details'),
                 'Download your VAT Invoices' => __('Download your VAT Invoices'),'Go to Invoices'=>__('Go to Invoices'),
                 'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount')
-                
-                
             ]
         ]);
     }
