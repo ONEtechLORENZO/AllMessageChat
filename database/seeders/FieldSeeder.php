@@ -429,9 +429,9 @@ class FieldSeeder extends Seeder
     public function getBillingPeriod() {
 
         $billing_period = array(
-            'daily' => 'Daily',
-            'weekly' => 'Weekly',
-            'monthly' => 'Monthly'
+            'day' => 'Daily',
+            'week' => 'Weekly',
+            'month' => 'Monthly'
         );
 
         return $billing_period;
