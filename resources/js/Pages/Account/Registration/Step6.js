@@ -51,7 +51,7 @@ export default function Step6(props){
                                 name="notification-method"
                                 type="radio"
                                 className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                defaultChecked={useAPI}
+                                defaultChecked={useAPI == event.id ? true : false}
                                 onClick={() => setAPI(event.id)}
                             />
                             <label htmlFor={event.id} className="ml-3 block text-sm font-medium text-gray-700">

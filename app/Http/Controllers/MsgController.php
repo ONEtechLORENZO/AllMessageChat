@@ -445,7 +445,7 @@ class MsgController extends Controller
     {
         $templates = Template::join('messages', 'templates.id', 'template_id')
             ->where('company_id', $companyId)
-            ->get(['template_uid', 'body', 'name']);
+            ->get(['template_uid', 'account_id', 'body', 'name']);
         
         return $templates;
     }

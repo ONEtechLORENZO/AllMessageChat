@@ -68,7 +68,7 @@ export default function Step7(props) {
                             name="migrate"
                             type="radio"
                             className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                            defaultChecked={migrate}
+                            defaultChecked={migrate == event.id ? true : false }
                             onClick={() => setMigrate(event.id)}
                         />
                         <label htmlFor={event.id} className="ml-3 block text-sm font-medium text-gray-700">
