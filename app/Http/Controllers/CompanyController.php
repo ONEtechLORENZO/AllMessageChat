@@ -184,6 +184,7 @@ class CompanyController extends Controller
                 'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount')
                 ]
         ];
+
         return Inertia::render('Company/Detail', $data);       
     }
 

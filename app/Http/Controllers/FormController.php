@@ -90,6 +90,10 @@ class FormController extends Controller
         }
 
         $options = Field::where($whereCondition)->first('options');
+        if(!$options['options']) {
+            $options['options'] = [];
+        }
+
         // return response()->json($options);
         echo json_encode($options);
         die;

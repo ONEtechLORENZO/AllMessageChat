@@ -44,16 +44,12 @@ function Detail(props){
                 listData={props.listData}
                 translator={props.translator}
             />
+
             <Wallet
-              module ='Company'
-              name={props.name}
-              balance={props.balance}
-              message_deduction = {props.message_deduction}
-              paymentMethods ={props.paymentMethods}
-              stripe_public_key= {props.stripe_public_key}
-              currentPlan = {props.currentPlan}
-              translator={props.translator}
+                module ='Company'
+                {...props}
             />
+
             {showForm ?
                 <Form 
                     module={'Company'}
