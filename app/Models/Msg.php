@@ -26,35 +26,39 @@ class Msg extends Model
      */
     public function sendWhatsAppMessage($content, $destination, $account, $template = '' , $attachment = '')
     {        
+        
         if($account->service_engine == 'facebook'){
-
             // remove + (plus) symbol
             $destination = str_replace('+' , '', $destination);
 
             // create URL
             $url = config('app.fb.api_url');
-            $url .= config('app.fb.phone_number_id') . '/messages' ;
+            $url .= $account->fb_phone_number_id . '/messages' ;
 
             // set headers
             $headers = [
-                'Authorization' => 'Bearer '. config('app.fb.access_token'),
+                'Authorization' => 'Bearer '. $account->service_token,
                 'Content-Type' => 'application/json',
             ];
-          
-            // set data if is template    
-            $message = [
-                'name' => 'hello_world',
-                'language' => [ 'code' => 'en_US']
-            ];
-            
             $post_data = [
                 'messaging_product' => 'whatsapp',
                 'to' => $destination,
-                'type' => 'template'
             ];
-            $post_data['template'] = (json_encode($message));
-            $post_data = (($post_data));
-           
+
+            // set data if is template  
+            if($template && $template != "undefined" ){  
+                $template = Template::where('template_uid' , $template)->first();
+                $message = [
+                    'name' => strtolower(str_replace( ' ', '_', $template->name)),
+                    'language' => [ 'code' => 'en_US']
+                ];
+                $post_data['type'] = 'template';
+                $post_data['template'] = (json_encode($message));
+            } else {
+                $post_data['type'] = 'text'; 
+                $post_data['text'] = (json_encode(['body' => $content]));
+            }
+
             // send message 
             $response = Http::asForm()->withHeaders($headers)->post($url, $post_data);
             $response_body = json_decode($response->body(), true);

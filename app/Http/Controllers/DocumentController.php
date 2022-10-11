@@ -82,4 +82,12 @@ class DocumentController extends Controller
     {
         //
     }
+
+    /**
+     * Download document 
+     */
+    public function downloadDocument(Request $request, $documentId)
+    {
+        dd($documentId);
+    }
 }

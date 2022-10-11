@@ -155,6 +155,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::get('/subpanelRecords', [ContactController::class, 'show_subpanel'])->name('subpanel_list');
 
+    // Document
+    Route::get('/download_document/{id}', [DocumentController::class, 'downloadDocument'])->name('download_document');
+
     // Opportunity
     Route::get('/opportunities', [OpportunityController::class, 'index'])->name('listOpportunity');
     Route::delete('/opportunity/delete/{id}', [OpportunityController::class, 'destroy'])->name('deleteOpportunity');

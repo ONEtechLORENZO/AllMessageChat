@@ -205,7 +205,8 @@ function ChatList(props)
         formData.append('channel' , data.channel);
         formData.append('content', data.content);
         formData.append('attachment', data.attachment);
-
+        formData.append('template_id', data.template_id);
+        
         if(data.content && destination && selectedAccount ){
             nProgress.start(0.5);
             nProgress.inc(0.2);
