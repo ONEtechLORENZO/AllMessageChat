@@ -277,4 +277,40 @@ class PlanController extends Controller
             return Redirect::route('detailPlan', ['id' => $request->plan_id]);
         }
     }
+
+    public function setDefaultPlan(Request $request, $id) {
+        
+        if($id) {
+            
+            $flag = '';
+            $subscriptionRecords = DB::table('plans')->get();
+            $plans = [];
+            $count = [];
+
+            foreach($subscriptionRecords as $record) {
+                $plans[] = $record;
+
+                if($id == $record->id){
+                    $flag = $record->default_plan;
+                }
+                if($record->default_plan == 'true') {
+                    $count[] = $record->default_plan;
+                }
+            }
+            
+            if($flag == 'true'){
+                DB::table('plans')->where('id', $id)->update(['default_plan' => 'false']);
+
+                return response()->json(['status' => true, 'show' => false]);
+            }
+
+            if (count($count) < 4) {
+                DB::table('plans')->where('id', $id)->update(['default_plan' => 'true']);
+
+                return response()->json(['status' => true, 'show' => true]);
+            }
+            
+            return response()->json(['status' => true, 'message' => true]);
+        }
+    }
 }

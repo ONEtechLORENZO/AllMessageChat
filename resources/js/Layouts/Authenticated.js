@@ -26,7 +26,8 @@ import {
     ShoppingCartIcon,
     ShoppingBagIcon,
     ChevronDownIcon,
-    OfficeBuildingIcon
+    OfficeBuildingIcon,
+    ClipboardIcon
 } from "@heroicons/react/outline";                                                                      
 import SelectCompany from "@/Pages/Company/SelectCompany";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
@@ -164,6 +165,12 @@ const adminNavigation = [
         name: "Workspaces",
         href: route("listCompany"),
         icon: OfficeBuildingIcon,
+        show: ['global_admin'],
+    },
+    {
+        name: "Plans",
+        href: route("listPlan"),
+        icon: ClipboardIcon,
         show: ['global_admin'],
     },
     

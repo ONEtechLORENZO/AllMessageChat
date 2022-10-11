@@ -119,7 +119,9 @@ export default function InlineEdit(props) {
              :
               <>
                 {props.value} 
-              <span className="px-3"><PencilIcon className="h-4 w-4"  onClick={() => editCurrentField(currentInfo.name, currentInfo.type)}/></span>
+                {props.module != 'Plan' ? 
+                    <span className="px-3"><PencilIcon className="h-4 w-4"  onClick={() => editCurrentField(currentInfo.name, currentInfo.type)}/></span>
+                : ''}
               </>
             } 
         </>        
