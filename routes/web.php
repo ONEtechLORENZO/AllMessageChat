@@ -31,6 +31,7 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\LineItemController;
 use App\Http\Controllers\AutomationController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsGlobalAdmin;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;

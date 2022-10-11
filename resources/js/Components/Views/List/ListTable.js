@@ -184,7 +184,7 @@ function ListTable(props){
                                         {props.actions.download === true && record.status === 'success' ? 
                                                 <a href={route('invoices',record.id)} ><DownloadIcon className='h-4 w-4 cursor-pointer' /></a>
                                         : ''}
-                                        {props.actions.download === true && props.module === 'DocumentDocument' && 
+                                        {props.actions.download === true && props.module === 'Document' && 
                                                 <a href={route('download_document',record.id)} ><DownloadIcon className='h-4 w-4 cursor-pointer' /></a>
                                         }
                                     </div>
