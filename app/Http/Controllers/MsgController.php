@@ -604,7 +604,11 @@ class MsgController extends Controller
                     'is_delivered' => 0,
                     'is_read' => 0
                 ];
-               
+
+                $messageData['policy'] = 'business_initiated';
+                $price = $this->handlePrice($data['value']['messages']['0']['from'], 'business_initiated' , $account->user_id);
+                $this->reduceMessageAmount($price, $account->id);
+                $messageData['amount'] = $price;
             }
 
             Log::info(['store Messages function start.', $messageData ]);
