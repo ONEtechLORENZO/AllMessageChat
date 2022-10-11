@@ -39,8 +39,9 @@ class TemplateController extends Controller
                 'Authorization' => 'Bearer '. $account->service_token,
                 'Content-Type' => 'application/json',
             ];
+
             $postData = [
-                'category' => 'TRANSACTIONAL',
+                'category' => $template->category,
                 'components' => [
                     json_encode(['type' => 'BODY', 'text' => $data['data']->body]),
                     json_encode(['type' => 'HEADER', 'format' => 'TEXT', 'text' => $data['data']->header_text]),
@@ -48,9 +49,11 @@ class TemplateController extends Controller
                 ],
                 'name' => strtolower(str_replace( ' ', '_', $template->name)),
                 'language' => 'en_US',
-            ];
-          
+            ];   
+            //dd($postData);       
             $response = Http::withHeaders($headers)->post($endPoint, ($postData))->json();
+            log::info(['template respone' => $response]);
+
 
             // store template id
             if(isset($response['id'])){

@@ -89,9 +89,15 @@ function NewTemplate(props)
         let post_data = Object.assign({}, data);
         post_data['buttons'] = buttons;
         Inertia.post(route('store_template', [props.template.account_id, props.template.id]), post_data, {
-            onSuccess: () => {
-              //  setStatus('submitted');
-              window.location.reload();
+            onSuccess: (response) => {
+                console.log('succed' , response);
+            //  window.location.reload();
+            },
+            onError: (errors) => {
+                console.log('errors'  , errors);
+             },
+            onComplete: (response) => {
+                console.log(response);
             }
         });
         
@@ -110,7 +116,8 @@ function NewTemplate(props)
             return false;
         }
         Inertia.post(route('template_status_form', [props.template.account_id, props.template.id]), data, {
-            onSuccess: () => {
+            onSuccess: (response) => {
+                
                 setTemplateModalOpen(false);
             },
         });

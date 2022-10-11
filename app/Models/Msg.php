@@ -62,6 +62,7 @@ class Msg extends Model
             // send message 
             $response = Http::asForm()->withHeaders($headers)->post($url, $post_data);
             $response_body = json_decode($response->body(), true);
+           
             if(isset($response_body['messages'][0]['id'])) {
                 $messageId = $response_body['messages'][0]['id'];
                 $response_body = [ 
@@ -72,7 +73,7 @@ class Msg extends Model
             } else {
                 $response_body = [ 
                     'status' => 'error',
-                    'messageId' => $messageId
+                    'error' => $response_body['error']['message'],
                 ];
                 $data['result'] = $response_body;
             }
