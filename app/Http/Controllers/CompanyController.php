@@ -130,7 +130,7 @@ class CompanyController extends Controller
 
         // Check user can access the record
         $access = $this->checkPermissin($id, $user);
-        if(!$access){
+        if(!$access && $user->role != 'global_admin'){
             abort('401');
         }
         $wallet = Wallet::where('user_id', $user->id)->first();
@@ -145,8 +145,8 @@ class CompanyController extends Controller
         $currentCompany =  Company::where('id', $companyId)->first();
         
         // Get message amount deduction
-        $messageDeduction = (new UserController)->getAmountDeduction($user->id);
-        $paymentMethods = (new UserController)->getPaymentMethods($request , 'direct');
+        $messageDeduction = []; //(new UserController)->getAmountDeduction($user->id);
+        $paymentMethods = []; //(new UserController)->getPaymentMethods($request , 'direct');
 
         $stripe_public_key = config('stripe.stripe_key');
         $headers = $this->getModuleHeader(1 , 'Company');        
