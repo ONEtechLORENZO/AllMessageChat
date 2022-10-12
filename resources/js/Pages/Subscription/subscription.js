@@ -4,6 +4,7 @@ import { Fragment } from 'react';
 import { CheckIcon, XIcon  } from "@heroicons/react/solid";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-react";
+import notie from 'notie';
 
 const tiers = [
     { name: 'Lite', href: '#', priceMonthly: 0, currency: '€',description: '' , original: 'lite'},
@@ -90,6 +91,11 @@ export default function Subscription(props){
         Inertia.post(route('subscribe_plan',{'plan': plan}), {user_id: props.user_id}, {
             onSuccess: (response) => {
 
+            },
+            onError: (errors) => {
+               if(errors) {
+                notie.alert({type: 'error', text: errors.message, time: 5});
+               }
             }
         });
     }

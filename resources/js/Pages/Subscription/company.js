@@ -91,7 +91,7 @@ export default function CompanyDetail(props)
                 </div>
               </div>
               <div className="border border-solid rounded-lg p-4">
-                <div className="font-bold capitalize">{props.currentCompany && props.currentCompany.plan} Plan</div>
+                <div className="font-bold capitalize">{props.currentCompany && props.currentCompany.plan} - Plan</div>
                 <div className="grid grid-cols-2 p-2">
                     <div className="">
                         <p className="flex text-gray-500 gap-2"><span className="w-5 h-5"><CheckIcon/></span>Monthly Fee</p>

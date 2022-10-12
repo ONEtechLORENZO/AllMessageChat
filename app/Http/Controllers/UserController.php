@@ -1277,6 +1277,15 @@ class UserController extends Controller
         //get current company details
         $currentCompany =  Company::where('id', $company_id)->first();
         
+        // Get Company Subscription Plan name
+        if($currentCompany->plan != 'lite') {
+            $plan = DB::table('stripe_plans')->where('id', $currentCompany->plan)->first();
+
+            if($plan){
+                $currentCompany['plan'] = $plan->name;
+            }
+        }
+
         // Get message amount deduction
         $messageDeduction = $this->getAmountDeduction($user->id);
         $paymentMethods = $this->getPaymentMethods($request , 'direct');

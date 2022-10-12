@@ -10,6 +10,7 @@ use App\Models\Company;
 use App\Models\Field;
 use App\Models\User;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Log;
 
 use Cache;
 use DB;
@@ -115,15 +116,24 @@ class SettingsController extends Controller
 
         // Get current company details
         $currentCompany =  Company::where('id', $company_id)->first();
-
+        
         // Get related company details
         $userCompany = DB::table('company_user')->where('user_id', $user_id)->get('company_id');
-        
+    
         foreach($userCompany as $company){
             $company =  Company::where('id', $company->company_id)->first();
             $related_company[$company['id']] = $company['name'];
         }
-       
+        
+        // Get Company Subscription Plan name
+        if($currentCompany->plan != 'lite') {
+            $plan = DB::table('stripe_plans')->where('id', $currentCompany->plan)->first();
+
+            if($plan){
+                $currentCompany['plan'] = $plan->name;
+            }
+        }
+    
         return $return = [
               'currentCompany' => $currentCompany,
               'relatedCompany' => $related_company
@@ -272,6 +282,8 @@ class SettingsController extends Controller
                         }
                         catch(\Exception $e) {
                             // Log the issue
+                            Log::info( ['Subscription not created' => $e->getMessage()]);
+                            return redirect()->back()->withErrors(['message' => $e->getMessage()]);
                         }
 
                     }
@@ -283,7 +295,8 @@ class SettingsController extends Controller
                         }
                         catch(\Exception $e) {
                             // Log the issue
-
+                            Log::info( ['Subscription not created' => $e->getMessage()]);
+                            return redirect()->back()->withErrors(['message' => $e->getMessage()]);
                         }
                     }
                 }
