@@ -79,7 +79,7 @@ class OrganizationController extends Controller
         $Organization = Organization::findOrFail($id);
       
         if(!$Organization){
-            about(401);
+            abort(404);
         }
     
         

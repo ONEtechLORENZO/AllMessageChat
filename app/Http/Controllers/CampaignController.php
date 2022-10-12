@@ -164,7 +164,7 @@ class CampaignController extends Controller
                    ->first();
          
         if(!$campaign){
-            about(401);
+            abort(404);
         } 
         
         $count = '';
