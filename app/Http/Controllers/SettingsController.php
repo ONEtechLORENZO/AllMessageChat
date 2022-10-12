@@ -229,11 +229,6 @@ class SettingsController extends Controller
         $user_id = $request->get('user_id');
         $stripe = '';
 
-        if($request->is_register_step){
-            Cache::put('user_steps_status_'. $request->user()->id , 6 );
-            return Redirect::route('dashboard');
-        }
-
         // If Logged in user and passed user is different, check logged in user is global admin
         if($user_id != $request->user()->id) {
             // Check whether user is global admin
@@ -307,11 +302,17 @@ class SettingsController extends Controller
                 $company->save();
             }
         }
+        
+        if($request->is_register_step){
+            Cache::put('user_steps_status_'. $request->user()->id , 6 );
+            return response()->json(['status' => true]);
+        }
 
         // Redirect to the Subscription page if global admin is changing
         if($user_id != $request->user()->id && $request->user()->role == 'global_admin') {
             return Redirect::route('updateUserSubscription', ['user_id' => $user_id]);    
         }
+
         return Redirect::route('wallet_subscription');
     }
 

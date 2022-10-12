@@ -14,6 +14,7 @@ import { Disclosure } from '@headlessui/react'
 import { ChevronDownIcon }  from "@heroicons/react/outline";
 import SubscriptionPlan from "./PlanEdit";
 import WorkspacePlan from "./WorkspacePlan";
+import WorkspacePaid from "./WorkspacePaid";
 
 export default function Index(props) 
 {
@@ -293,6 +294,16 @@ export default function Index(props)
                                         >                                    
                                             Convert Lead to Contact
                                         </button>
+                                    </div>
+                                </div>                                      
+                            :''}
+                            
+                            {(props.module == 'Company' && props.role == 'global_admin') ?
+                                <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
+                                    <div>
+                                        <WorkspacePaid 
+                                          company={record}
+                                        />
                                     </div>
                                 </div>                                      
                             :''}

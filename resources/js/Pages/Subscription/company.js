@@ -117,8 +117,9 @@ export default function CompanyDetail(props)
                      Profile
                     </div>
                     <div className="w-full">
-                        <div className="p-2">
-                          {props.currentCompany && props.currentCompany.name}
+                        <div className="p-2 flex">
+                          <div>{props.currentCompany && props.currentCompany.name}</div>
+                          <div className="px-4 text-sm text-gray-600 font-bold">{props.currentCompany && props.currentCompany.payment_method == 'Postpaid' ? '( Postpaid )' : ''}</div>
                         </div>
                         <div className="p-2">
                             <Dropdown 

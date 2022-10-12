@@ -332,6 +332,7 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     //Workspaces
     Route::get('/admin/workspaces', [CompanyController::class, 'index'])->name('listCompany');
     Route::get('/admin/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
+    Route::post('/admin/paymentmethod', [CompanyController::class, 'paymentMethod'])->name('payment_method');
 
     // Settings
     Route::get('/admin/settings/outgoing_server', [SettingsController::class, 'settings'])->name('settings');

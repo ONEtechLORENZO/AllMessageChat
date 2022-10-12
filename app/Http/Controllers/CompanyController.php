@@ -139,7 +139,7 @@ class CompanyController extends Controller
         if($wallet) {
             $balance = $wallet->balance_amount;
         }
-        
+       
         $companyId = Cache::get('selected_company_'. $user->id);
         //get current company details
         $currentCompany =  Company::where('id', $companyId)->first();
@@ -156,6 +156,7 @@ class CompanyController extends Controller
             'headers' => $headers,
             'name' => $user->name,
             'balance' => $balance,
+            'role' => $user->role,
             'message_deduction' => $messageDeduction,
             'paymentMethods' => $paymentMethods,
             'stripe_public_key' => $stripe_public_key,
@@ -343,5 +344,18 @@ class CompanyController extends Controller
         Cache::put('user_steps_status_'. $request->user_id, 4 );
 
         return response()->json(['status' => true]);
+    }
+
+    public function paymentMethod(Request $request) {
+        
+        if($request->id) {
+
+            $company = Company::findOrFail($request->id);
+
+            $company->payment_method = $request->method;
+            $company->save();
+
+            return Redirect::route('detailCompany', ['id' => $request->id]);
+        }
     }
 }

@@ -97,6 +97,7 @@ class PlanController extends Controller
             'amount' => 'required',
             'billing_period' => 'required',
             'pricing_model' => 'required',
+            'currency' => 'required',
         ]);
 
         $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
@@ -110,8 +111,7 @@ class PlanController extends Controller
         // Attach plan price details
         $plan_price = $stripe->prices->create([
             'unit_amount' => $request->amount * 100,
-           // 'currency' => 'usd',
-            'currency' => 'inr',
+            'currency' => strtolower($request->currency),
             'recurring' => ['interval' => $request->billing_period],
             'product' => $create_plan->id,
         ]);
@@ -119,6 +119,7 @@ class PlanController extends Controller
         $plan->name = $request->name;
         $plan->description = $request->description;
         $plan->amount = $request->amount;
+        $plan->currency = $request->currency;
         $plan->billing_period = $request->billing_period;
         $plan->pricing_model = $request->pricing_model;
         $plan->stripe_id =  $create_plan->id;
