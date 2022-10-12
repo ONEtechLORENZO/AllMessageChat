@@ -98,7 +98,7 @@ class OrderController extends Controller
         $order = Order::findOrFail($order_id);
 
         if(!$order){
-            about(401);
+            abort(404);
         }
      
         $companyId = Cache::get('selected_company_'. $request->user()->id);
@@ -158,7 +158,7 @@ class OrderController extends Controller
         $order = Order::with('lineItem')->whereId($id)->first();
 
         if(!$order){
-            about(401);
+            abort(404);
         }
         
         //related field pre-fill 

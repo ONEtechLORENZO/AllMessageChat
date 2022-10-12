@@ -76,7 +76,7 @@ class OpportunityController extends Controller
         $Opportunity = Opportunity::findOrFail($id);
       
         if(!$Opportunity){
-            about(401);
+            abort(404);
         }
 
         //related field pre-fill

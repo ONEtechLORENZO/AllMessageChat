@@ -139,7 +139,7 @@ class FieldController extends Controller
         if ($request->id) {
             $field = Field::findOrFail($request->id);
         } else {
-           about(401);
+           abort(404);
         }
 
         $status = 'edit';
