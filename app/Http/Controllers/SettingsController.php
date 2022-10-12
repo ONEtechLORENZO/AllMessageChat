@@ -259,11 +259,11 @@ class SettingsController extends Controller
                         $paymentMethod = $paymentMethods[0];
                     }
                 }
-
                 if($paymentMethod) {
                     // Create new Subscription
                     if(!$company->subscription_id) {
                         $paymentMethodId = $paymentMethod->id;
+                  
                         // New Subscription
                         try {
                             $subscription = $user->newSubscription('default', $plan_id)->create($paymentMethodId);
@@ -272,8 +272,8 @@ class SettingsController extends Controller
                         }
                         catch(\Exception $e) {
                             // Log the issue
-
                         }
+
                     }
                     else {
                         // Update Subscription

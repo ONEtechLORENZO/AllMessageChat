@@ -1781,18 +1781,19 @@ class UserController extends Controller
      */
     public function connectFaceBook(Request $request)
     {
-	session_start();
+	    session_start();
+        
         $fb = new Facebook([
             'app_id' => config('app.fb.api_id'),
             'app_secret' => config('app.fb.app_secret'),
             'default_graph_version' => config('app.fb.app_graph_version'),
      	]);
           
-	$helper = $fb->getRedirectLoginHelper();
-	$permissions = ['email', 'whatsapp_business_management', 'whatsapp_business_messaging', 'public_profile'];
-	$loginUrl = $helper->getLoginUrl( config('app.fb.call_back_url'), $permissions);
+        $helper = $fb->getRedirectLoginHelper();
+        $permissions = ['email', 'whatsapp_business_management', 'whatsapp_business_messaging', 'public_profile'];
+        $loginUrl = $helper->getLoginUrl( config('app.fb.call_back_url'), $permissions);
 
-	return redirect()->away($loginUrl);
+        return redirect()->away($loginUrl);
     }
 
     /**
@@ -1843,6 +1844,7 @@ class UserController extends Controller
           $user->fb_token = $token;
           $user->save();
           return Redirect::route('dashboard');
+          
           /*
           // The OAuth 2.0 client handler helps us manage access tokens
           $oAuth2Client = $fb->getOAuth2Client();

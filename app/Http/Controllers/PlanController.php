@@ -110,7 +110,8 @@ class PlanController extends Controller
         // Attach plan price details
         $plan_price = $stripe->prices->create([
             'unit_amount' => $request->amount * 100,
-            'currency' => 'usd',
+           // 'currency' => 'usd',
+            'currency' => 'inr',
             'recurring' => ['interval' => $request->billing_period],
             'product' => $create_plan->id,
         ]);
