@@ -155,7 +155,7 @@ export default function Subscription(props){
                         <p className="mt-4 mb-16 text-sm text-gray-500">{''}</p>
                         <button
                             className={classNames(
-                                props.current_plan == plan.plan
+                                (props.current_plan == plan.plan || props.current_plan == plan.plan_id)
                                 ?"5 absolute bottom-0 block w-full flex-grow rounded-md border border-indigo-600 bg-indigo-600 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
                                 :"5 absolute bottom-0 block w-full flex-grow rounded-md border border-gray-800 bg-gray-800 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
                             )}
