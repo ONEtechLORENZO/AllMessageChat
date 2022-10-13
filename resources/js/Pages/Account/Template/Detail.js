@@ -302,6 +302,7 @@ function NewTemplate(props)
                                                     <div className="mt-1">
                                                         <Input type="file" name='attach_file' required={true} id='attach_file' placeholder='' handleChange={handleChange} />
                                                     </div>
+                                                    <InputError message={errors.attach_file} />
                                                 </div>
                                             : ''}                                            
 

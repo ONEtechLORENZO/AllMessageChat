@@ -91,6 +91,7 @@ class PlanController extends Controller
      */
     public function store(Request $request,Plan $plan)
     {
+        
         $request->validate([
             'name' => 'required|max:255',
             'description' => 'required',
