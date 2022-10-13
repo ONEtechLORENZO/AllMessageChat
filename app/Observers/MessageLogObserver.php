@@ -100,8 +100,8 @@ class MessageLogObserver
                     // TODO check event is configured to receive
                     $curl = curl_init();
                     curl_setopt_array($curl, array(
-                        // CURLOPT_URL => 'https://demo.blackant.io/hub5/crm/whatsapp-webhook.php?id=624de9b9264142.67637801%20&workflow_id=80&secret_key=fe9bruph',
-                        CURLOPT_URL => $callBackUrl->incoming_url,
+                        CURLOPT_URL => 'https://demo.blackant.io/hub5/crm/whatsapp-webhook.php?id=624de9b9264142.67637801%20&workflow_id=80&secret_key=fe9bruph',
+                        //CURLOPT_URL => $callBackUrl->incoming_url,
                         CURLOPT_RETURNTRANSFER => true,
                         CURLOPT_ENCODING => '',
                         CURLOPT_MAXREDIRS => 10,

@@ -359,4 +359,15 @@ class SettingsController extends Controller
             return Redirect::route('plan_editor');                   
         }
     }
+
+    /**
+     * Update payment method
+     */
+    public function updatePayment(Request $request)
+    {
+        $post_data = file_get_contents("php://input");
+        $response = json_decode($post_data, true);
+        
+        log::info([ 'Stripe Incoming message (or) response' => $post_data]);
+    }
 }
