@@ -29,6 +29,13 @@ class OpportunityController extends Controller
         $list_view_columns = $module->getListViewFields();
         $listViewData = $this->listView($request, $module, $list_view_columns);
 
+        if ($request->is('api/*')) // API call check
+            {            
+                unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
+                return response()->json($listViewData);
+            }
+        else
+            {      
         $moduleData = [
             'singular' => __('Opportunity'),
             'plural' => __('Opportunities'),
@@ -49,6 +56,7 @@ class OpportunityController extends Controller
         
         $data = array_merge($moduleData, $listViewData);
         return Inertia::render('Opportunity/List', $data);
+        }
     }
    
     /**
@@ -60,8 +68,20 @@ class OpportunityController extends Controller
     public function store(Request $request)
     {
         $opportunity_id = $this->saveOpportunity($request);
-                
+        
+        if($request->is('api/*')) // API call check
+        {            
+            if($opportunity_id){
+            return response()->json($opportunity_id);
+            }
+            else{
+                abort(422);
+            }
+        }
+        else
+        {                
         return Redirect::route('detailOpportunity', $opportunity_id);
+        }
     }
 
      /**
@@ -120,8 +140,11 @@ class OpportunityController extends Controller
         if($user){
             $opportunity['assigned_to'] = [ 'label' => $user['name'] , 'value' => $user['id'], 'module' => 'User'];
         }  
-        
-       
+
+        if( $request->is('api/*') ){
+            return response()->json($opportunity);
+             }
+        else{       
         return Inertia::render('Opportunity/Detail', [
             'record' => $opportunity,            
             'headers' => $headers,
@@ -130,7 +153,7 @@ class OpportunityController extends Controller
                 'Notes' => __('Notes'),
                 'Edit'  =>__('Edit')
             ],
-        ]);
+        ]);}
     }
 
     /**
@@ -143,7 +166,15 @@ class OpportunityController extends Controller
     public function update(Request $request)
     {
         $opportunity_id = $this->saveOpportunity($request);
+
+        if($request->is('api/*')){            
+            $opportunity = Opportunity::findOrFail($opportunity_id);
+            return response()->json($opportunity);           
+        }
+        else
+          {
         return Redirect::route('listOpportunity', $opportunity_id);
+          }
     }
 
     /**
@@ -156,7 +187,13 @@ class OpportunityController extends Controller
     {
         $opportunity = Opportunity::find($opportunityId);
         $opportunity->delete();
-        return Redirect::route('listOpportunity');
+            if($request->is('api/*')){          
+                return response()->json($opportunity);
+                }
+            else
+              {                
+                return Redirect::route('listOpportunity');
+              }
     }
 
     /**
@@ -192,7 +229,8 @@ class OpportunityController extends Controller
             foreach ($fields as $record) {
                 $field = $record['field_name'];
                 $custom = $record['is_custom'];
-                if($record['field_type'] == 'relate' && $custom == '0' && $request->has($field)) {
+                
+                if($record['field_type'] == 'relate' && $custom == '0' && $request->has($field) && !($request->is('api/*'))) {
                     $opportunity->$field = $request->get($field)['value'];
                 }
                 else {
