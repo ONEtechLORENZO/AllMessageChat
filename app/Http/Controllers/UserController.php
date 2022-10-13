@@ -1104,9 +1104,11 @@ class UserController extends Controller
                 $validation_array['header_text'] = 'required|max:60';
             }
         }
-       
+        if($request->get('header_type') != 'text' ){
+            $validation_array['attach_file'] = 'required';
+        }
+    
         $request->validate($validation_array);
-        
         
         // Store Template Attachment
         $attachFilePath = '';

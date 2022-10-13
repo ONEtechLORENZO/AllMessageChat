@@ -157,12 +157,15 @@ class CampaignController extends Controller
      */
     public function show(Request $request, $id)
     {
-        $user_id = $request->user()->id;
+        $user = $request->user();
+        $user_id = $user->id;
         $company_id = Cache::get('selected_company_'.$user_id);
-        $campaign = Campaign::where('id',$request->id)
-                   ->where('company_id', $company_id)
-                   ->first();
-         
+        $query = Campaign::where('id',$request->id);
+        if($user->role != 'global_admin'){
+            $query->where('company_id', $company_id);
+        }
+        $campaign = $query->first();
+
         if(!$campaign){
             abort(404);
         } 
