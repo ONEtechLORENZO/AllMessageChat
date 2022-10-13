@@ -3,6 +3,7 @@ import Input from "@/Components/Forms/Input";
 import { PencilIcon } from "@heroicons/react/outline";
 import notie from 'notie';
 import { Inertia } from "@inertiajs/inertia";
+import axios from "axios";
 
 const planfields = [
     {
@@ -62,10 +63,14 @@ export default function SubscriptionPlan (props) {
     const [view, setView] = useState('detail');
     const [subscriptionPlan, setSubscriptionPlan] = useState(props.subscriptionPlan);
     const [data, setData] = useState({});
+    const [show, setShow] = useState(false);
 
     useEffect( () => {
         if(props.subscriptionPlan) {
             setData(props.subscriptionPlan);
+        }
+        if(subscriptionPlan && subscriptionPlan.default_plan == 'true'){
+            setShow(true);
         }
     },[subscriptionPlan])
 
@@ -122,7 +127,27 @@ export default function SubscriptionPlan (props) {
                 setView('detail');
             }
         });
+    }
+
+    function classNames(...classes) {
+        return classes.filter(Boolean).join(' ')
+    }
+
+    function setDefaultPlan(id) {
         
+        axios.get(route('set_defaultPlan', {'id':id})).then((response) => {
+            if(response.data){
+                setShow(response.data.show);
+                if(response.data.show){
+                    notie.alert({type: 'success', text: 'Successfully set plan as default', time: 5});
+                }else {
+                    notie.alert({type: 'success', text: 'Remove the plan as default', time: 5});
+                }
+                if(response.data.message) {
+                    notie.alert({type: 'error', text: 'Maximum default plan is full', time: 5});
+                }
+            }
+        });
     }
 
     return(
@@ -130,14 +155,31 @@ export default function SubscriptionPlan (props) {
             <div className="flex justify-end">
                 {view == 'detail' ? 
                   <div className="flex">
-                    <button
-                        type="button"
-                        className="inline-flex items-center rounded-md border border-transparent bg-indigo-500 hover:bg-indigo-700 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        onClick={() => viewHandler('edit')}
-                    >
-                        Edit
-                        <span className="pl-2"><PencilIcon className="h-4 w-4"/></span>
-                    </button>
+                    {subscriptionPlan && subscriptionPlan.id ? 
+                    <div> 
+                        <button
+                            type="button"
+                            className={classNames(
+                                show
+                                ?"inline-flex items-center rounded-md border border-transparent bg-primary hover:bg-gray-900 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                :"inline-flex items-center rounded-md border border-transparent bg-gray-200 hover:bg-gray-700 px-3 py-2 text-sm font-medium leading-4 text-gray-900 hover:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                )}                            
+                            onClick={() => setDefaultPlan(subscriptionPlan.id)}
+                        >
+                            {show ? 'Default Plan': 'Set as Default Plan'}
+                        </button>
+                    </div>
+                    :''}
+                    <div className="px-4">
+                        <button
+                            type="button"
+                            className="inline-flex items-center rounded-md border border-transparent bg-indigo-500 hover:bg-indigo-700 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            onClick={() => viewHandler('edit')}
+                        >
+                            Edit
+                            <span className="pl-2"><PencilIcon className="h-4 w-4"/></span>
+                        </button>
+                    </div>
                   </div>  
                 : 
                   <div className="flex">

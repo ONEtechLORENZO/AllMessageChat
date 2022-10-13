@@ -69,6 +69,7 @@ export default function WorkspacePlan (props) {
             {showWorkspace &&
              <Workspace 
               plan_id={props.plan_id}
+              setWorkspaces={setWorkspaces}
               setShowWorkSpace={setShowWorkSpace}
              />
             }

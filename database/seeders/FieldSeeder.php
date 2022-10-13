@@ -26,6 +26,7 @@ class FieldSeeder extends Seeder
 
         $billing_period = $this->getBillingPeriod();
         $price_model = $this->getPriceModel();
+        $stripeCurrency = $this->currencyType();
         
         $this->createField('Price', 'country_code', 'Country', 'dropdown', '1', $countryCodes, 'false');
         $this->createField('Field', 'module_name', 'Module Name', 'dropdown', '1', $moduleOptions, 'true');
@@ -33,6 +34,7 @@ class FieldSeeder extends Seeder
         $this->createField('Message', 'msg_mode', 'Mode', 'dropdown', '1', $msgMode, 'true');
         $this->createField('Plan', 'billing_period', 'Billing Period', 'dropdown', '1', $billing_period, 'false', '4');
         $this->createField('Plan', 'pricing_model', 'Price Model', 'dropdown', '1', $price_model, 'false', '5');
+        $this->createField('Plan', 'currency', 'Currency Type', 'dropdown', '1', $stripeCurrency, 'false', '6');
 
         // Add Service entries
         DB::table('services')->insert([
@@ -76,7 +78,7 @@ class FieldSeeder extends Seeder
             ['module_name' => 'Company', 'field_name' => 'company_address', 'field_label' => 'Company Address', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
             ['module_name' => 'Company', 'field_name' => 'company_country', 'field_label' => 'Company Country', 'field_type' => 'dropdown', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
             ['module_name' => 'Company', 'field_name' => 'company_vat_id', 'field_label' => 'Company VAT ID', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
-            ['module_name' => 'Company', 'field_name' => 'admin_email', 'field_label' => 'Admin email for invoices', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'], 
+            ['module_name' => 'Company', 'field_name' => 'admin_email', 'field_label' => 'Admin email for invoices', 'field_type' => 'email', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'], 
             ['module_name' => 'Company', 'field_name' => 'codice_destinatario', 'field_label' => 'Company Codice Destinatario', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
 
             // Campaign
@@ -107,14 +109,14 @@ class FieldSeeder extends Seeder
             ['module_name' => 'Plan', 'field_name' => 'amount', 'field_label' => 'Amount', 'field_type' => 'number', 'sequence' => '3', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true'],
         ]);
 
-        DB::table('plans')->insert([
+        // DB::table('plans')->insert([
             
-            // Subscription plan entires
-            ['plan' => 'lite', 'price' => '0', 'setup_workspace' => '0', 'monthly_workspace' => '0', 'accounts' => '1', 'users' => '1', 'include_users'=> '1', 'extra_users' => '-', 'per_message' => '0.0017', 'per_allegato' => '0.0027', 'workflow' => false , 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-            ['plan' => 'pro', 'price' => '49', 'setup_workspace' => '0', 'monthly_workspace' => '49', 'accounts' => '2', 'users' =>'10', 'include_users' => '3', 'extra_users' => '5', 'per_message' => '0.0017', 'per_allegato' => '0.0027', 'workflow' => '10000', 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-            ['plan' => 'business', 'price' => '99', 'setup_workspace' => '0', 'monthly_workspace' => '99', 'accounts' => '3', 'users' =>'25', 'include_users'=> '5', 'extra_users' => '5', 'per_message' => '0.0017', 'per_allegato' => '0.0027', 'workflow' => '25000', 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-            ['plan' => 'enterprise', 'price' => 'Custom', 'setup_workspace' => 'Custom', 'monthly_workspace' => '350€/Max 10.000 messages month 500€ /max 25.000 messages month', 'accounts' => 'Custom', 'users' =>'infinite', 'include_users'=> 'custom', 'extra_users' => 'custom', 'per_message' => 'custom', 'per_allegato' => 'custom', 'workflow' => true, 'created_at' => $current_datetime, 'updated_at' => $current_datetime],
-        ]);
+        //     // Subscription plan entires
+        //     ['plan' => 'lite', 'price' => '0','target' => 'Freelance', 'setup_workspace' => '0', 'monthly_workspace' => '0' ,'channels' => 'Whatsapp, Instagram, Facebook', 'accounts' => '1', 'offical_whatsapp' => '0', 'unoffical_whatsapp' => '45', 'facebook' => '0', 'users' => '1', 'include_users' => '1', 'extra_users' => '-', 'crm_contacts' => 'infinite','chat_cost' => 'Different from Country to Country','per_message' => '0.0017', 'per_allegato' => '0.0027', 'fatturazione' => 'Prepagato', 'contacts' => 'true', 'lists_tags' => 'true', 'custom_fields' => 'true', 'multichannel_chat' => 'true', 'campaigns' => 'true', 'workflow' => 'false', 'opportunities' => 'false', 'category' => 'false','orders' => 'false', 'lead_webhook' => 'false', 'integrations' => 'false', 'api' => 'false', 'custom_integrations'=>'false', 'created_at' => $current_datetime, 'updated_at' => $current_datetime ], 
+        //     ['plan' => 'pro', 'price' => '49','target' => 'Small business', 'setup_workspace' => '49', 'monthly_workspace' => '49' ,'channels' => 'Whatsapp, Instagram, Facebook', 'accounts' => '2', 'offical_whatsapp' => '0', 'unoffical_whatsapp' => '45', 'facebook' => '0', 'users' => '10', 'include_users' => '3', 'extra_users' => '5', 'crm_contacts' => 'infinite','chat_cost' => 'Different from Country to Country','per_message' => '0.0017', 'per_allegato' => '0.0027', 'fatturazione' => 'Prepagato', 'contacts' => 'true', 'lists_tags' => 'true', 'custom_fields' => 'true', 'multichannel_chat' => 'true', 'campaigns' => 'true', 'workflow' => '10000', 'opportunities' => 'true', 'category' => 'true','orders' => 'true', 'lead_webhook' => 'true', 'integrations' => 'true', 'api' => 'false', 'custom_integrations'=>'false', 'created_at' => $current_datetime, 'updated_at' => $current_datetime ], 
+        //     ['plan' => 'business', 'price' => '99','target' => 'Medium Business', 'setup_workspace' => '99', 'monthly_workspace' => '99' ,'channels' => 'Whatsapp, Instagram, Facebook', 'accounts' => '3', 'offical_whatsapp' => '0', 'unoffical_whatsapp' => '45', 'facebook' => '0', 'users' => '25', 'include_users' => '5', 'extra_users' => '5', 'crm_contacts' => 'infinite','chat_cost' => 'Different from Country to Country','per_message' => '0.0017', 'per_allegato' => '0.0027', 'fatturazione' => 'Prepagato', 'contacts' => 'true', 'lists_tags' => 'true', 'custom_fields' => 'true', 'multichannel_chat' => 'true', 'campaigns' => 'true', 'workflow' => '25000', 'opportunities' => 'true', 'category' => 'true','orders' => 'true', 'lead_webhook' => 'true', 'integrations' => 'true', 'api' => 'false', 'custom_integrations'=>'false', 'created_at' => $current_datetime, 'updated_at' => $current_datetime ], 
+        //     ['plan' => 'enterprise', 'price' => 'Custom','target' => 'Large Business', 'setup_workspace' => '350€/Max 10.000 messages month 500€ /max 25.000 messages month', 'monthly_workspace' => '350€/Max 10.000 messages month 500€ /max 25.000 messages month' ,'channels' => 'Whatsapp, Instagram, Facebook, Custom', 'accounts' => 'Custom', 'offical_whatsapp' => '0', 'unoffical_whatsapp' => 'NO', 'facebook' => '0', 'users' => 'Custom', 'include_users' => 'Custom', 'extra_users' => 'Custom', 'crm_contacts' => 'infinite','chat_cost' => 'Different from Country to Country','per_message' => 'Custom', 'per_allegato' => 'Custom', 'fatturazione' => 'Postpagato', 'contacts' => 'true', 'lists_tags' => 'true', 'custom_fields' => 'true', 'multichannel_chat' => 'true', 'campaigns' => 'true', 'workflow' => 'true', 'opportunities' => 'true', 'category' => 'true','orders' => 'true', 'lead_webhook' => 'true', 'integrations' => 'true', 'api' => 'true', 'custom_integrations'=>'true', 'created_at' => $current_datetime, 'updated_at' => $current_datetime ], 
+        // ]);
     }
 
     /**
@@ -466,5 +468,127 @@ class FieldSeeder extends Seeder
         $field->readonly_on_edit = $readOnly;
         $field->sequence = $sequence;
         $field->save();
+    }
+
+    public function currencyType () {
+
+        $currency = array (
+            'ALL' => 'Albania Lek',
+            'AFN' => 'Afghanistan Afghani',
+            'ARS' => 'Argentina Peso',
+            'AWG' => 'Aruba Guilder',
+            'AUD' => 'Australia Dollar',
+            'AZN' => 'Azerbaijan New Manat',
+            'BSD' => 'Bahamas Dollar',
+            'BBD' => 'Barbados Dollar',
+            'BDT' => 'Bangladeshi taka',
+            'BYR' => 'Belarus Ruble',
+            'BZD' => 'Belize Dollar',
+            'BMD' => 'Bermuda Dollar',
+            'BOB' => 'Bolivia Boliviano',
+            'BAM' => 'Bosnia and Herzegovina Convertible Marka',
+            'BWP' => 'Botswana Pula',
+            'BGN' => 'Bulgaria Lev',
+            'BRL' => 'Brazil Real',
+            'BND' => 'Brunei Darussalam Dollar',
+            'KHR' => 'Cambodia Riel',
+            'CAD' => 'Canada Dollar',
+            'KYD' => 'Cayman Islands Dollar',
+            'CLP' => 'Chile Peso',
+            'CNY' => 'China Yuan Renminbi',
+            'COP' => 'Colombia Peso',
+            'CRC' => 'Costa Rica Colon',
+            'HRK' => 'Croatia Kuna',
+            'CUP' => 'Cuba Peso',
+            'CZK' => 'Czech Republic Koruna',
+            'DKK' => 'Denmark Krone',
+            'DOP' => 'Dominican Republic Peso',
+            'XCD' => 'East Caribbean Dollar',
+            'EGP' => 'Egypt Pound',
+            'SVC' => 'El Salvador Colon',
+            'EEK' => 'Estonia Kroon',
+            'EUR' => 'Euro Member Countries',
+            'FKP' => 'Falkland Islands (Malvinas) Pound',
+            'FJD' => 'Fiji Dollar',
+            'GHC' => 'Ghana Cedis',
+            'GIP' => 'Gibraltar Pound',
+            'GTQ' => 'Guatemala Quetzal',
+            'GGP' => 'Guernsey Pound',
+            'GYD' => 'Guyana Dollar',
+            'HNL' => 'Honduras Lempira',
+            'HKD' => 'Hong Kong Dollar',
+            'HUF' => 'Hungary Forint',
+            'ISK' => 'Iceland Krona',
+            'INR' => 'India Rupee',
+            'IDR' => 'Indonesia Rupiah',
+            'IRR' => 'Iran Rial',
+            'IMP' => 'Isle of Man Pound',
+            'ILS' => 'Israel Shekel',
+            'JMD' => 'Jamaica Dollar',
+            'JPY' => 'Japan Yen',
+            'JEP' => 'Jersey Pound',
+            'KZT' => 'Kazakhstan Tenge',
+            'KPW' => 'Korea (North) Won',
+            'KRW' => 'Korea (South) Won',
+            'KGS' => 'Kyrgyzstan Som',
+            'LAK' => 'Laos Kip',
+            'LVL' => 'Latvia Lat',
+            'LBP' => 'Lebanon Pound',
+            'LRD' => 'Liberia Dollar',
+            'LTL' => 'Lithuania Litas',
+            'MKD' => 'Macedonia Denar',
+            'MYR' => 'Malaysia Ringgit',
+            'MUR' => 'Mauritius Rupee',
+            'MXN' => 'Mexico Peso',
+            'MNT' => 'Mongolia Tughrik',
+            'MZN' => 'Mozambique Metical',
+            'NAD' => 'Namibia Dollar',
+            'NPR' => 'Nepal Rupee',
+            'ANG' => 'Netherlands Antilles Guilder',
+            'NZD' => 'New Zealand Dollar',
+            'NIO' => 'Nicaragua Cordoba',
+            'NGN' => 'Nigeria Naira',
+            'NOK' => 'Norway Krone',
+            'OMR' => 'Oman Rial',
+            'PKR' => 'Pakistan Rupee',
+            'PAB' => 'Panama Balboa',
+            'PYG' => 'Paraguay Guarani',
+            'PEN' => 'Peru Nuevo Sol',
+            'PHP' => 'Philippines Peso',
+            'PLN' => 'Poland Zloty',
+            'QAR' => 'Qatar Riyal',
+            'RON' => 'Romania New Leu',
+            'RUB' => 'Russia Ruble',
+            'SHP' => 'Saint Helena Pound',
+            'SAR' => 'Saudi Arabia Riyal',
+            'RSD' => 'Serbia Dinar',
+            'SCR' => 'Seychelles Rupee',
+            'SGD' => 'Singapore Dollar',
+            'SBD' => 'Solomon Islands Dollar',
+            'SOS' => 'Somalia Shilling',
+            'ZAR' => 'South Africa Rand',
+            'LKR' => 'Sri Lanka Rupee',
+            'SEK' => 'Sweden Krona',
+            'CHF' => 'Switzerland Franc',
+            'SRD' => 'Suriname Dollar',
+            'SYP' => 'Syria Pound',
+            'TWD' => 'Taiwan New Dollar',
+            'THB' => 'Thailand Baht',
+            'TTD' => 'Trinidad and Tobago Dollar',
+            'TRY' => 'Turkey Lira',
+            'TRL' => 'Turkey Lira',
+            'TVD' => 'Tuvalu Dollar',
+            'UAH' => 'Ukraine Hryvna',
+            'GBP' => 'United Kingdom Pound',
+            'USD' => 'United States Dollar',
+            'UYU' => 'Uruguay Peso',
+            'UZS' => 'Uzbekistan Som',
+            'VEF' => 'Venezuela Bolivar',
+            'VND' => 'Viet Nam Dong',
+            'YER' => 'Yemen Rial',
+            'ZWD' => 'Zimbabwe Dollar'
+        );
+
+        return $currency;
     }
 }

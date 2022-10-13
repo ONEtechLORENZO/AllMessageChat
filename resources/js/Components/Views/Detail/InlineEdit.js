@@ -78,12 +78,30 @@ export default function InlineEdit(props) {
         }
         return check;
     }
+
+    function checkFieldType(temp){
+        let check = true;
+        let mail = temp.value;
+        if(temp.type == 'email') {
+            if(mail) {
+                let regEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                if(!regEmail.test(mail)){
+                    notie.alert({type: 'error', text: 'Please enter the valid email', time: 5});
+                    check = false;
+                    return false;
+                }
+            }
+        }
+
+        return check;
+    }
     
     // Save the record changes
     function saveEdit(){
         let Ismandatory = checkIsMandatory(temp);
+        let checkType = checkFieldType(temp);
         
-        if (Ismandatory) {
+        if (Ismandatory && checkType) {
             let customfields = (record.custom) ? record.custom : {};
             let Iscustom = currentInfo.custom;
            
@@ -119,7 +137,9 @@ export default function InlineEdit(props) {
              :
               <>
                 {props.value} 
-              <span className="px-3"><PencilIcon className="h-4 w-4"  onClick={() => editCurrentField(currentInfo.name, currentInfo.type)}/></span>
+                {props.module != 'Plan' ? 
+                    <span className="px-3"><PencilIcon className="h-4 w-4"  onClick={() => editCurrentField(currentInfo.name, currentInfo.type)}/></span>
+                : ''}
               </>
             } 
         </>        

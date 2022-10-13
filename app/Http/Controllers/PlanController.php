@@ -91,12 +91,14 @@ class PlanController extends Controller
      */
     public function store(Request $request,Plan $plan)
     {
+        
         $request->validate([
             'name' => 'required|max:255',
             'description' => 'required',
             'amount' => 'required',
             'billing_period' => 'required',
             'pricing_model' => 'required',
+            'currency' => 'required',
         ]);
 
         $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
@@ -110,7 +112,7 @@ class PlanController extends Controller
         // Attach plan price details
         $plan_price = $stripe->prices->create([
             'unit_amount' => $request->amount * 100,
-            'currency' => 'usd',
+            'currency' => strtolower($request->currency),
             'recurring' => ['interval' => $request->billing_period],
             'product' => $create_plan->id,
         ]);
@@ -118,6 +120,7 @@ class PlanController extends Controller
         $plan->name = $request->name;
         $plan->description = $request->description;
         $plan->amount = $request->amount;
+        $plan->currency = $request->currency;
         $plan->billing_period = $request->billing_period;
         $plan->pricing_model = $request->pricing_model;
         $plan->stripe_id =  $create_plan->id;
@@ -275,6 +278,42 @@ class PlanController extends Controller
             DB::table('plan_workspaces')->insert($plan);
 
             return Redirect::route('detailPlan', ['id' => $request->plan_id]);
+        }
+    }
+
+    public function setDefaultPlan(Request $request, $id) {
+        
+        if($id) {
+            
+            $flag = '';
+            $subscriptionRecords = DB::table('plans')->get();
+            $plans = [];
+            $count = [];
+
+            foreach($subscriptionRecords as $record) {
+                $plans[] = $record;
+
+                if($id == $record->id){
+                    $flag = $record->default_plan;
+                }
+                if($record->default_plan == 'true') {
+                    $count[] = $record->default_plan;
+                }
+            }
+            
+            if($flag == 'true'){
+                DB::table('plans')->where('id', $id)->update(['default_plan' => 'false']);
+
+                return response()->json(['status' => true, 'show' => false]);
+            }
+
+            if (count($count) < 4) {
+                DB::table('plans')->where('id', $id)->update(['default_plan' => 'true']);
+
+                return response()->json(['status' => true, 'show' => true]);
+            }
+            
+            return response()->json(['status' => true, 'message' => true]);
         }
     }
 }

@@ -74,6 +74,22 @@ Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
 Route::get('/fb-whatsapp',[MsgController::class, 'incomingFBWhatsApp']);
 Route::post('/fb-whatsapp',[MsgController::class, 'incomingFBWhatsApp']);
 
+Route::get('/stripe-incoming',[SettingsController::class, 'updatePayment']);
+Route::post('/stripe-incoming',[SettingsController::class, 'updatePayment']);
+
+
+Route::get('/add-stripe', function(){
+    $stripe = Stripe\Stripe::setApiKey(config('stripe.stripe_secret'));
+    $endpoint = \Stripe\WebhookEndpoint::create([
+        'url' => 'https://www.onemessage.chat/app/stripe-incoming',
+        'enabled_events' => [
+            'charge.failed',
+            'charge.succeeded',
+        ],
+    ]);
+    dd($endpoint);
+});
+
 
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -289,15 +305,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');
     Route::get('/create/lineitem', [LineItemController::class, 'create'])->name('createLineItem');
 
-    //plans
-    Route::get('/admin/plans', [PlanController::class, 'index'])->name('listPlan');
-    Route::post('/admin/plan/store', [PlanController::class, 'store'])->name('storePlan');
-    Route::get('/admin/plan/edit/{id}', [PlanController::class, 'edit'])->name('editPlan');
-    Route::get('/admin/plan/detail/{id}', [PlanController::class, 'show'])->name('detailPlan');
-    Route::post('/admin/plan/update/{id}', [PlanController::class, 'update'])->name('updatePlan');
-    Route::delete('/admin/plan/delete/{id}', [PlanController::class, 'destroy'])->name('deletePlan');
-    Route::post('/admin/plan/create', [PlanController::class, 'create'])->name('plan_save');
-    Route::post('/admin/workspace/plan', [PlanController::class, 'workspacePlan'])->name('workspace_plan');
+
 });
 
 // Check user is admin
@@ -340,6 +348,7 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     //Workspaces
     Route::get('/admin/workspaces', [CompanyController::class, 'index'])->name('listCompany');
     Route::get('/admin/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
+    Route::post('/admin/paymentmethod', [CompanyController::class, 'paymentMethod'])->name('payment_method');
 
     // Settings
     Route::get('/admin/settings/outgoing_server', [SettingsController::class, 'settings'])->name('settings');
@@ -358,6 +367,17 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::post('/admin/pricing', [PriceController::class, 'store'])->name('storePrice');
     Route::post('/admin/pricing/{id}', [PriceController::class, 'update'])->name('updatePrice');
     Route::delete('/admin/pricing/{id}', [PriceController::class, 'destroy'])->name('deletePrice');
+
+    // Plans
+    Route::get('/admin/plans', [PlanController::class, 'index'])->name('listPlan');
+    Route::post('/admin/plan/store', [PlanController::class, 'store'])->name('storePlan');
+    Route::get('/admin/plan/edit/{id}', [PlanController::class, 'edit'])->name('editPlan');
+    Route::get('/admin/plan/detail/{id}', [PlanController::class, 'show'])->name('detailPlan');
+    Route::post('/admin/plan/update/{id}', [PlanController::class, 'update'])->name('updatePlan');
+    Route::delete('/admin/plan/delete/{id}', [PlanController::class, 'destroy'])->name('deletePlan');
+    Route::post('/admin/plan/create', [PlanController::class, 'create'])->name('plan_save');
+    Route::post('/admin/workspace/plan', [PlanController::class, 'workspacePlan'])->name('workspace_plan');
+    Route::get('/admin/plan/default/{id}', [PlanController::class, 'setDefaultPlan'])->name('set_defaultPlan');
 
     // Impersonate User 
     Route::post('/admin/user/impersonate', [UserController::class, 'changeLogInUser'])->name('change_log_in_user');

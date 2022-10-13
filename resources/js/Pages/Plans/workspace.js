@@ -3,7 +3,8 @@ import { Dialog, Transition } from '@headlessui/react'
 import nProgress, { settings } from 'nprogress';
 import Relate from '@/Components/Relate';
 import { Inertia } from '@inertiajs/inertia';
-            
+import notie from 'notie';
+       
 function Workspace(props) 
 {
     const [open, setOpen] = useState(true)
@@ -28,7 +29,11 @@ function Workspace(props)
             Inertia.post(route('workspace_plan'), workspace, {
                 onSuccess: (response) =>{
                     nProgress.done(true);
+                    props.setWorkspaces(response.props.workspaces)
                     props.setShowWorkSpace(false)
+                    if(response){
+                        notie.alert({type: 'success', text: 'Successfully assign plan to workspace', time: 5});
+                    }
                 }
             });
         }

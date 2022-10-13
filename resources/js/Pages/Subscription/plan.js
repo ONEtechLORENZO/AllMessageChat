@@ -6,16 +6,36 @@ import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-react";
 
 const planfields = [
-    { name: 'price', label: 'Plan price'},
+    { label: 'Target', name:'target'},
     { name: 'setup_workspace', label: 'Setup per Workspace'},
     { name: 'monthly_workspace', label: 'Fee per Workspace'},
+    { label: 'Included Channels', name:'channels'},
     { name: 'accounts', label: 'Max Accounts'},
+    { label: 'Official Whatsapp Business API', name:'offical_whatsapp'},
+    { label: 'UnOfficial Whatsapp Business API', name:'unoffical_whatsapp'},
+    { label: 'Account Facebook e Instagram', name:'facebook'},
     { name: 'users', label: 'Max Users'},
     { name: 'include_users', label: 'User Include'},
     { name: 'extra_users', label: 'Extra Users'},
+    { label: 'CRM Contacts', name:'crm_contacts'},
+    { label: 'Chat Cost (for WABA Only)', name:'chat_cost'},
     { name: 'per_message', label: 'Per Message'},
     { name: 'per_allegato', label: 'Per Allegato'},
+    { label: 'Ciclo di fatturazione', name:'fatturazione'},
+    { label: 'Contacts', name:'contacts'},
+    { label: 'Lists & Tags', name:'lists_tags'},
+    { label: 'Custom Fields', name:'custom_fields'},
+    { label: 'MultiChannel Chat', name:'multichannel_chat'},
+    { label: 'Broadcast Campaigns', name:'campaigns'},
     { name: 'workflow', label: 'Workflow Builder'},
+    { label: 'Sales Opportunities', name:'opportunities'},
+    { label: 'Sales Category', name:'category'},
+    { label: 'Sales Orders', name:'orders'},
+    { label: 'Receive Lead Via Webhook', name:'lead_webhook'},
+    { label: 'Zapier Integrations', name:'integrations'},
+    { label: 'API', name:'api'},
+    { label: 'Custom Integrations', name:'custom_integrations'}
+    
 ];
 
 export default function PlanController (props) {
@@ -31,8 +51,6 @@ export default function PlanController (props) {
         let newPlan = Object.assign({} ,temp);
         let value = event.target.value;
        
-        value = value == 'true' ? value = true : value == 'false' ? value = false : value = value;
-
         newPlan['value'] = value;
         setTemp(newPlan);
     }
@@ -114,7 +132,7 @@ export default function PlanController (props) {
                                     {Object.entries(plans).map(([key,plan]) => {
                                         return (
                                          <td key={key} className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 w-56">
-                                           {temp && temp['id'] == key && temp['name'] == field.name?
+                                           {temp && temp['id'] == plan.id && temp['name'] == field.name?
                                                 <div className="flex w-full">
                                                     <Input
                                                         type="text"
@@ -133,7 +151,7 @@ export default function PlanController (props) {
                                                    {plan[field.name]}
                                                   </div>   
                                                   <div className="flex">
-                                                     <span className="px-2"><PencilIcon className="h-4 w-4" onClick={() => editPlan(key, field.name, plan[field.name])}/></span>
+                                                     <span className="px-2"><PencilIcon className="h-4 w-4" onClick={() => editPlan(plan.id, field.name, plan[field.name])}/></span>
                                                   </div>
                                                 </div>
                                             }

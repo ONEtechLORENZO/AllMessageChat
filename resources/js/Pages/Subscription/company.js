@@ -91,7 +91,7 @@ export default function CompanyDetail(props)
                 </div>
               </div>
               <div className="border border-solid rounded-lg p-4">
-                <div className="font-bold capitalize">{props.currentCompany && props.currentCompany.plan} Plan</div>
+                <div className="font-bold capitalize">{props.currentCompany && props.currentCompany.plan} - Plan</div>
                 <div className="grid grid-cols-2 p-2">
                     <div className="">
                         <p className="flex text-gray-500 gap-2"><span className="w-5 h-5"><CheckIcon/></span>Monthly Fee</p>
@@ -117,8 +117,9 @@ export default function CompanyDetail(props)
                      Profile
                     </div>
                     <div className="w-full">
-                        <div className="p-2">
-                          {props.currentCompany && props.currentCompany.name}
+                        <div className="p-2 flex">
+                          <div>{props.currentCompany && props.currentCompany.name}</div>
+                          <div className="px-4 text-sm text-gray-600 font-bold">{props.currentCompany && props.currentCompany.payment_method == 'Postpaid' ? '( Postpaid )' : ''}</div>
                         </div>
                         <div className="p-2">
                             <Dropdown 

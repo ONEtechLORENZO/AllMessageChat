@@ -10,6 +10,7 @@ use App\Models\Company;
 use App\Models\Field;
 use App\Models\User;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Log;
 
 use Cache;
 use DB;
@@ -113,17 +114,26 @@ class SettingsController extends Controller
         $user_id = $request->user()->id;
         $company_id = Cache::get('selected_company_'.$user_id);
 
-        //get current company details
+        // Get current company details
         $currentCompany =  Company::where('id', $company_id)->first();
-
-        //get related company details
-        $userCompany = DB::table('company_user')->where('user_id', $user_id)->get('company_id');
         
+        // Get related company details
+        $userCompany = DB::table('company_user')->where('user_id', $user_id)->get('company_id');
+    
         foreach($userCompany as $company){
             $company =  Company::where('id', $company->company_id)->first();
             $related_company[$company['id']] = $company['name'];
         }
-       
+        
+        // Get Company Subscription Plan name
+        if($currentCompany->plan != 'lite') {
+            $plan = DB::table('stripe_plans')->where('id', $currentCompany->plan)->first();
+
+            if($plan){
+                $currentCompany['plan'] = $plan->name;
+            }
+        }
+    
         return $return = [
               'currentCompany' => $currentCompany,
               'relatedCompany' => $related_company
@@ -154,18 +164,36 @@ class SettingsController extends Controller
             $user_id = $request->user()->id;
         }
 
+        $flag = false;
         $company_id = Cache::get('selected_company_' . $user_id);
 
         // Get current company details
         $currentCompany =  Company::where('id', $company_id)->first();
 
-        // Plan details
-        $planRecords = DB::table('plans')->get();
+        //Check the company has assign any custom plan
+        $customPlan = DB::table('plan_workspaces')->where('company_id', $company_id)->first();
+       
+        // Get all Plan details
+        $plan_record = DB::table('plans')->where('default_plan', 'true')->get(); 
          
         $plans = [];
 
-        foreach ($planRecords as $record) {
+        foreach ($plan_record as $record) {
             $plans[$record->plan] = $record;
+        }
+
+        // If the company has custom plan, change the plan records
+        if($customPlan) {
+            $customSubscription = DB::table('plans')->where('plan_id', $customPlan->plan_id)->get();
+           
+            foreach ($customSubscription as $subscription){
+                $plans[$subscription->plan] = $subscription;
+                $flag = true;
+            }
+            
+            if($flag) {
+                unset($plans['enterprise']);
+            }
         }
 
         return Inertia::render('Subscription/subscription', ['current_plan' => $currentCompany->plan, 'user_id' => $user_id, 'plans' => $plans]);
@@ -199,11 +227,7 @@ class SettingsController extends Controller
     {    
         $flag = false;
         $user_id = $request->get('user_id');
-
-        if($request->is_register_step){
-            Cache::put('user_steps_status_'. $request->user()->id , 6 );
-            return Redirect::route('dashboard');
-        }
+        $stripe = '';
 
         // If Logged in user and passed user is different, check logged in user is global admin
         if($user_id != $request->user()->id) {
@@ -217,13 +241,19 @@ class SettingsController extends Controller
         
         // Get current company
         $company = Company::findOrFail($company_id);
-      
-        if($company && $plan) {
+        
+        if($plan) {
+            $stripe = DB::table('stripe_plans')->where('id', $plan)->first();
+        }
+        
+        if($company && $plan && $stripe) {
             /** 
              * Create/Update Subscription.
              * If exception occurs, plan update will be skipped.
              **/ 
-            $plan_id = config('stripe.stripe_' . $plan);
+            //$plan_id = config('stripe.stripe_' . $plan);
+            $plan_id = $stripe->price_id;
+            
             if($plan_id) {
                 $user = User::find($user_id);
                 // Get Default Payment Method or Use the first Payment Method
@@ -234,11 +264,11 @@ class SettingsController extends Controller
                         $paymentMethod = $paymentMethods[0];
                     }
                 }
-
                 if($paymentMethod) {
                     // Create new Subscription
                     if(!$company->subscription_id) {
                         $paymentMethodId = $paymentMethod->id;
+                  
                         // New Subscription
                         try {
                             $subscription = $user->newSubscription('default', $plan_id)->create($paymentMethodId);
@@ -247,8 +277,10 @@ class SettingsController extends Controller
                         }
                         catch(\Exception $e) {
                             // Log the issue
-
+                            Log::info( ['Subscription not created' => $e->getMessage()]);
+                            return redirect()->back()->withErrors(['message' => $e->getMessage()]);
                         }
+
                     }
                     else {
                         // Update Subscription
@@ -258,7 +290,8 @@ class SettingsController extends Controller
                         }
                         catch(\Exception $e) {
                             // Log the issue
-
+                            Log::info( ['Subscription not created' => $e->getMessage()]);
+                            return redirect()->back()->withErrors(['message' => $e->getMessage()]);
                         }
                     }
                 }
@@ -269,22 +302,48 @@ class SettingsController extends Controller
                 $company->save();
             }
         }
+        
+        if($request->is_register_step){
+            Cache::put('user_steps_status_'. $request->user()->id , 6 );
+            return response()->json(['status' => true]);
+        }
 
         // Redirect to the Subscription page if global admin is changing
         if($user_id != $request->user()->id && $request->user()->role == 'global_admin') {
             return Redirect::route('updateUserSubscription', ['user_id' => $user_id]);    
         }
+
         return Redirect::route('wallet_subscription');
     }
 
-    public function getPlanDetails () {
+    public function getPlanDetails (Request $request) {
 
-        $planRecords = DB::table('plans')->get();
+        $company_id = Cache::get('selected_company_' . $request->user()->id);
+
+        $planRecords = DB::table('plans')->where('plan_id')->get();
          
         $plans = [];
+        $flag = false;
 
         foreach ($planRecords as $record) {
             $plans[$record->plan] = $record;
+        }
+
+        // Check the company has assign any custom plan
+        $customPlan = DB::table('plan_workspaces')->where('company_id', $company_id)->first();
+       
+        // If the company has custom plan, change the plan records
+        if($customPlan) {
+            $customSubscription = DB::table('plans')->where('plan_id', $customPlan->plan_id)->get();
+            
+            foreach ($customSubscription as $subscription) {
+                $plans[$subscription->plan] = $subscription;
+                $flag = true;
+            }
+
+            if($flag){
+                unset($plans['enterprise']);
+            }
         }
 
         return Inertia::render('Subscription/plan',['plans' => $plans]);
@@ -294,10 +353,21 @@ class SettingsController extends Controller
         
         if($request->id) {
             $plan = DB::table('plans')
-                        ->where('plan', $request->id)
+                        ->where('id', $request->id)
                         ->update([$request->name => $request->value]);
             
             return Redirect::route('plan_editor');                   
         }
+    }
+
+    /**
+     * Update payment method
+     */
+    public function updatePayment(Request $request)
+    {
+        $post_data = file_get_contents("php://input");
+        $response = json_decode($post_data, true);
+        
+        log::info([ 'Stripe Incoming message (or) response' => $post_data]);
     }
 }

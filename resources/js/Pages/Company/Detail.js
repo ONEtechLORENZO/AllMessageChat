@@ -43,6 +43,7 @@ function Detail(props){
                 listOptions={props.listOptions}
                 listData={props.listData}
                 translator={props.translator}
+                role={props.role}
             />
 
             <Wallet
