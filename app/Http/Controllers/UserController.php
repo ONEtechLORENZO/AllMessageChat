@@ -1750,7 +1750,13 @@ class UserController extends Controller
     public function getPaymentMethods(Request $request , $mode) 
     {
         $user = $request->user();
-        $paymentMethods = $user->paymentMethods();
+        $paymentMethods = '';
+        try{
+            $paymentMethods = $user->paymentMethods();
+        }
+        catch(error $e){
+            log::info(['Payment method issue ' => $e->getMessage()]);
+        }
         if($mode){
             return $paymentMethods; 
         } else {

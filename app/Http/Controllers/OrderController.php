@@ -34,6 +34,13 @@ class OrderController extends Controller
         $listViewData = $this->listView($request, $module, $list_view_columns);
         $companyId = Cache::get('selected_company_'. $request->user()->id);
 
+        if ($request->is('api/*')) // API call check
+            {            
+                unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
+                return response()->json($listViewData);
+            }
+        else
+            {    
         //get Product List
         $productList = $this->getProductList($companyId);
 
@@ -57,6 +64,7 @@ class OrderController extends Controller
         $data = array_merge($moduleData, $listViewData);
         return Inertia::render('Order/List', $data);
     }
+    }
   /**
      * Show the form for creating a new resource.
      *
@@ -78,12 +86,23 @@ class OrderController extends Controller
         $companyId = Cache::get('selected_company_'. $request->user()->id);
 
         //save the Order
-        $order_id = $this->saveOrder($request);
+        $order_id = $this->saveOrder($request);       
 
         //save the lineItems
         $lineItems = $this->saveLineItems($request->lineItems, $order_id, $companyId);
-
+        if($request->is('api/*'))     // API call check
+        {            
+            if($order_id){
+            return response()->json($order_id);
+            }
+            else{
+                abort(422);
+            }
+        }
+        else
+        {
         return Redirect::route('detailOrder', $order_id);
+        }
       
     }
 
@@ -134,6 +153,10 @@ class OrderController extends Controller
             $order['opportunity'] = ['label' => $Opportunity['name'],'value' => $Opportunity['id'], 'module' => 'Opportunity'];
         }
 
+        if ($request->is('api/*')) { // API call check             
+            return response()->json($order);
+    } else {    
+
         return Inertia::render('Order/Detail', [
             'record' => $order,            
             'headers' => $headers,
@@ -144,7 +167,7 @@ class OrderController extends Controller
             ],
             'lineItems' => $lineItems,
             'totalPrice' => $totalPrice
-        ]);
+        ]);}
     }
 
     /**
@@ -220,11 +243,19 @@ class OrderController extends Controller
         
         //delete the old lineItem
         $sync = LineItem::where('order_id', $order_id)->delete();
-
+        dd($request->lineItems);
         //save the lineItems
         $lineItems = $this->saveLineItems($request->lineItems, $order_id, $companyId);
-
+        
+        if($request->is('api/*')){
+            
+            $order = Order::OrFail($order_id);
+            return response()->json($order);           
+        }
+        else
+          {
         return Redirect::route('listOrder', $order_id);
+          }
     }
 
     /**
@@ -237,7 +268,13 @@ class OrderController extends Controller
     {
         $order = Order::find($orderId);
         $order->delete();
+        if($request->is('api/*')){          
+            return response()->json($contact);
+            }
+            else
+              {
         return Redirect::route('listOrder');
+              }
     }
 
     /**
@@ -275,14 +312,14 @@ class OrderController extends Controller
                 $name = $field->field_name;
                 
                 if($request->has($name)){
-                    if($name == 'opportunity'){
+                    if($name == 'opportunity' && !($request->is('api/*'))){
                         $Opportunity = $request->opportunity;
                         if($Opportunity && $Opportunity['value']){
                             $order->$name = $Opportunity['value'];
                         }else{
                             $order->$name = NULL;
                         }
-                    }else if($name == 'contact'){
+                    }else if($name == 'contact' && !($request->is('api/*'))){
                         $contact = $request->contact;
                         if($contact && $contact['value']){
                             $order->$name = $contact['value'];

@@ -14,6 +14,7 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         '/incoming',
         '/incoming-cm',
-        '/fb-whatsapp'
+        '/fb-whatsapp',
+        '/stripe-incoming',
     ];
 }

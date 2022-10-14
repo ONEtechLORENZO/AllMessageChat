@@ -74,6 +74,33 @@ Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
 Route::get('/fb-whatsapp',[MsgController::class, 'incomingFBWhatsApp']);
 Route::post('/fb-whatsapp',[MsgController::class, 'incomingFBWhatsApp']);
 
+Route::get('/stripe-incoming',[SettingsController::class, 'updatePayment']);
+Route::post('/stripe-incoming',[SettingsController::class, 'updatePayment']);
+
+
+// // Add stripe Hook on  stripe
+// Route::get('/add-stripe', function(){
+//     $stripe = Stripe\Stripe::setApiKey(config('stripe.stripe_secret'));
+//     $endpoint = \Stripe\WebhookEndpoint::create([
+//         'url' => 'https://www.onemessage.chat/app/stripe-incoming',
+//         'enabled_events' => [
+//             'invoice.paid',
+//             'invoice.payment_failed',
+//         ],
+//     ]);
+//     // Webhook id: we_1LsRDXEI934XwyqtK8NBwD0B
+//     dd($endpoint);
+// });
+
+// // Delete hook
+// Route::get('/delete-stripe', function(){
+//     $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
+//     $endpoint =$stripe->webhookEndpoints->delete(
+//             'we_1LsQoBEI934Xwyqt4OK9yq8L',
+//             []
+//             );
+//     dd($endpoint);
+// });
 
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
