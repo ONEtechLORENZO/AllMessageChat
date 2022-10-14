@@ -27,7 +27,13 @@ class ProductController extends Controller
         $module = new Product();
         $list_view_columns = $module->getListViewFields();
         $listViewData = $this->listView($request, $module, $list_view_columns);
-
+        if ($request->is('api/*')) // API call check
+            {            
+                unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
+                return response()->json($listViewData);
+            }
+        else
+            {    
         $moduleData = [
             'singular' => __('Product'),
             'plural' => __('Products'),
@@ -46,6 +52,7 @@ class ProductController extends Controller
         
         $data = array_merge($moduleData, $listViewData);
         return Inertia::render('Product/List', $data);
+    }
     }
 
     /**
@@ -67,6 +74,17 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $product_id = $this->saveProduct($request);
+        if($request->is('api/*'))     // API call check
+        {            
+            if($product_id){
+            return response()->json($product_id);
+            }
+            else{
+                abort(422);
+            }
+        }
+        else
+        {
         
         if($request->parent_module == 'Chat') {
             return Redirect::route('chat_list');
@@ -76,6 +94,7 @@ class ProductController extends Controller
         } else {
             return Redirect::route('listProduct', $product_id);
         }
+    }
     }
 
     public function getContactData(Request $request)
@@ -98,6 +117,10 @@ class ProductController extends Controller
         $companyId = Cache::get('selected_company_'. $request->user()->id);
         $headers = $this->getModuleHeader($companyId , 'Product');
         
+        if( $request->is('api/*') ){
+            return response()->json($product);
+             }
+        else{
         return Inertia::render('Product/Detail', [
             'record' => $product,            
             'headers' => $headers,
@@ -107,7 +130,7 @@ class ProductController extends Controller
                 'Edit'  =>__('Edit')
                 ]
 
-        ]);
+        ]);}
     }
 
     /**
@@ -128,7 +151,15 @@ class ProductController extends Controller
     public function update(Request $request)
     {
         $product_id = $this->saveProduct($request);
+        if($request->is('api/*')){
+            
+            $product = Product::findOrFail($product_id);
+            return response()->json($product);           
+        }
+        else
+          {
         return Redirect::route('listProduct', $product_id);
+          }
     }
 
     /**
@@ -141,7 +172,13 @@ class ProductController extends Controller
     {
         $product = Product::find($productId);
         $product->delete();
+        if($request->is('api/*')){          
+            return response()->json($product);
+            }
+            else
+              {
         return Redirect::route('listProduct');
+              }
     }
 
     /**

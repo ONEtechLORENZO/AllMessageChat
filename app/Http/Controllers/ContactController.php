@@ -110,7 +110,7 @@ class ContactController extends Controller
     {
         $contact_id = $this->saveContact($request);
        
-        if($request->is('api/*'))
+        if($request->is('api/*'))     // API call check
         {            
             if($contact_id){
             return response()->json($contact_id);
@@ -495,7 +495,7 @@ class ContactController extends Controller
                 $custom = $record['is_custom'];
                          
                 if($request->has($field) && ($custom == '0' || !$custom)) {
-                    if(($field == 'assigned_to' || $field == 'organization_id')) {
+                    if(($field == 'assigned_to' || $field == 'organization_id') && !($request->is('api/*'))) {
 
                         $related_id = $request->$field;
                         if(isset($related_id['value'])){
