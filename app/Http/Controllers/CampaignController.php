@@ -157,18 +157,14 @@ class CampaignController extends Controller
      */
     public function show(Request $request, $id)
     {
-        $user = $request->user();
-        $user_id = $user->id;
-        $company_id = Cache::get('selected_company_'.$user_id);
-        $query = Campaign::where('id',$request->id);
-        if($user->role != 'global_admin'){
-            $query->where('company_id', $company_id);
-        }
-        $campaign = $query->first();
+        $module = new Campaign();
+        $campaign = $this->checkAccessPermission($request, $module, $id);
 
         if(!$campaign){
-            abort(404);
+            abort('404');
         } 
+
+        $company_id = Cache::get('selected_company_'.$request->user()->id);
         
         $count = '';
         $companyName = [];

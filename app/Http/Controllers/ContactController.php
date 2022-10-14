@@ -143,8 +143,12 @@ class ContactController extends Controller
      */
     public function show(Request $request)
     {
-        $contact = Contact::findOrFail($request->id);
+        $module = new Contact();
+        $contact = $this->checkAccessPermission($request, $module, $request->id);
 
+        if(!$contact) {
+            abort('404');
+        }
         $currentUser = $request->user();
         
         $flag = $this->checkPermission($currentUser, $request->id,'Contact');
@@ -202,8 +206,7 @@ class ContactController extends Controller
         }
     }
 
-// Get Sub panel data
-
+    // Get Sub panel data
     public function show_subpanel(Request $request)
     {
         $parent_module= $request->has('module') && $request->get('module') ? $request->get('module') : '';
@@ -266,10 +269,43 @@ class ContactController extends Controller
      *
      * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Http\Response
-     */
-    public function edit(Contact $contact)
+     */ 
+    public function edit(Request $request)
     {
-        //
+        $module = new Contact();
+        $contact = $this->checkAccessPermission($request, $module, $request->id);
+
+        if(!$contact) {
+            return response()->json(['status' => false, 'message' => 'Record not found']);   
+        }
+        
+        //checking access permission 
+        $currentUser = $request->user();        
+        $flag = $this->checkPermission($currentUser, $request->id,'Contact');
+        if($flag === false) {
+            abort(401);
+        }
+
+         //related field pre-fill
+         if($contact->organization_id){
+            $organization = organization::findOrFail($contact->organization_id);
+            $name = $organization->name;
+            $contact['organization_id'] = ['value' => $organization->id, 'label' => $name];
+        }
+        
+
+        if($contact->assigned_to){
+            $user = User::findOrFail($contact->assigned_to);
+            $name = $user->name;
+            
+            $contact['assigned_to'] = ['value' => $user->id, 'label' => $name];
+        }
+        if( $request->is('api/*') ){
+            return response()->json($contact);
+             }
+        else{
+            return response()->json(['status' => true, 'record' => $contact]);
+        }
     }
 
     /**
@@ -322,44 +358,6 @@ class ContactController extends Controller
               }
         
     }
-
-    /**
-     * Return Contact Detail
-     */
-    public function getContactData(Request $request)
-    {
-        $contact = Contact::findOrFail($request->id);
-        
-        //checking access permission 
-        $currentUser = $request->user();        
-        $flag = $this->checkPermission($currentUser, $request->id,'Contact');
-        if($flag === false) {
-            abort(401);
-        }
-
-         //related field pre-fill
-         if($contact->organization_id){
-            $organization = organization::findOrFail($contact->organization_id);
-            $name = $organization->name;
-            $contact['organization_id'] = ['value' => $organization->id, 'label' => $name];
-        }
-        
-
-        if($contact->assigned_to){
-            $user = User::findOrFail($contact->assigned_to);
-            $name = $user->name;
-            
-            $contact['assigned_to'] = ['value' => $user->id, 'label' => $name];
-        }
-        if( $request->is('api/*') ){
-            return response()->json($contact);
-             }
-        else{
-            echo json_encode(['record' => $contact]);
-            die;
-          }
-    }
-
 
      /**
      * Check whether user has permission to access the record

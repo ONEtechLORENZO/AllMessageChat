@@ -95,7 +95,8 @@ class OrderController extends Controller
      */
     public function show(Request $request, $order_id) 
     {
-        $order = Order::findOrFail($order_id);
+        $module = new Order();
+        $order = $this->checkAccessPermission($request, $module, $order_id);
 
         if(!$order){
             abort(404);
@@ -155,10 +156,11 @@ class OrderController extends Controller
     
     public function edit(Request $request, $id)
     {
-        $order = Order::with('lineItem')->whereId($id)->first();
+        $module = new Order();
+        $order = $this->checkAccessPermission($request, $module, $id);
 
         if(!$order){
-            abort(404);
+            return response()->json(['status' => false, 'message' => 'Record not founded']);
         }
         
         //related field pre-fill 

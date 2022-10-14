@@ -189,23 +189,20 @@ class TagController extends Controller
      */
     public function show(Request $request)
     {
-        $id = $request->id;
-        $user = $request->user();
-        $companyId = Cache::get('selected_company_'. $user->id);
+        $module = new Tag();
+        $record = $this->checkAccessPermission($request, $module, $request->id);
 
-        $query = Tag::where('id', $id);
-        $query->where('company_id', $companyId );
-        $record = $query->first();
+        $companyId = Cache::get('selected_company_'. $request->user()->id);
 
         $headers = $this->getModuleHeader(1 , 'Tag');
         if(!$record){
-            abort('401');
+            abort('404');
         }
 
         // Get Sub module data
         $supModule = new Contact();
         $query = $supModule->join('taggables', 'taggable_id', 'contacts.id')
-            ->where('tag_id', $id);
+            ->where('tag_id', $request->id);
            
         $subPanelData = $this->getSubPanelRecords('Tag', $supModule, $query, $record->name);        
 
@@ -231,11 +228,13 @@ class TagController extends Controller
      * @param  \App\Models\Tag  $tag
      * @return \Illuminate\Http\Response
      */
-    public function edit(Tag $tag, $id)
+    public function edit(Request $request, $id)
     {
-        $record = Tag::find($id);
+        $module = new Tag();
+        $record = $this->checkAccessPermission($request, $module, $id);
+
         if(!$record) {
-            abort(401);
+            return response()->json(['status' => false, 'message' => 'Record not found']);   
         }
 
         return response()->json(['status' => true, 'record' => $record]);

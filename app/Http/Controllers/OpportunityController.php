@@ -73,10 +73,11 @@ class OpportunityController extends Controller
     
     public function edit(Request $request, $id)
     {
-        $Opportunity = Opportunity::findOrFail($id);
-      
-        if(!$Opportunity){
-            abort(404);
+        $module = new Opportunity();
+        $Opportunity = $this->checkAccessPermission($request, $module, $id);
+
+        if(!$Opportunity) {
+            return response()->json(['status' => false, 'message' => 'Record not found']);   
         }
 
         //related field pre-fill
@@ -102,8 +103,13 @@ class OpportunityController extends Controller
      */
     public function show(Request $request, $opportunity_id)
     {
-        $opportunity = Opportunity::findOrFail($request->id);
+        $module = new Opportunity();
+        $opportunity = $this->checkAccessPermission($request, $module, $request->id);
        
+        if(!$opportunity) {
+            abort('404');
+        }
+
         $companyId = Cache::get('selected_company_'. $request->user()->id);
         $headers = $this->getModuleHeader($companyId, 'Opportunity');
 
