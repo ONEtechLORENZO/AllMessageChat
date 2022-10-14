@@ -365,9 +365,53 @@ class SettingsController extends Controller
      */
     public function updatePayment(Request $request)
     {
-        $post_data = file_get_contents("php://input");
-        $response = json_decode($post_data, true);
+        $endpoint_secret = config('stripe.stripe_webhook');
+        $payload = file_get_contents("php://input");
+        $response = json_decode($payload, true);
         
-        log::info([ 'Stripe Incoming message (or) response' => $post_data]);
+        $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
+        $event = null;
+
+
+        try {
+            $event = \Stripe\Webhook::constructEvent(
+                $payload, $sig_header, $endpoint_secret
+            );
+        } catch(\UnexpectedValueException $e) {
+            log::info([ 'Invalid payload' =>  $e->getMessage()]);
+
+            // Invalid payload
+            http_response_code(400);
+            exit();
+        } catch(\Stripe\Exception\SignatureVerificationException $e) {
+            log::info([ 'Invalid signature' =>  $e->getMessage()]);
+
+            // Invalid signature
+            http_response_code(400);
+            exit();
+        }
+
+        $invoice = $event->data->object;
+        $order_id = $invoice->metadata->woocommerce_order_id;
+        $subscription_id = $invoice->subscription;
+
+        $company = Company::where('subscription_id' , $subscription_id );
+        if($company){
+            switch ($event->type) {
+                case 'invoice.paid':
+                
+                    $status = 'completed';
+
+                    break;
+                case 'invoice.payment_failed':
+                
+                    // Update the order status
+                    $status = 'failed';
+
+
+                    break;
+            }
+        }
+        log::info([ 'Stripe Incoming message (or) response' => $post_data , 'Payload' => $payload , 'Header' => $sig_header ]);
     }
 }
