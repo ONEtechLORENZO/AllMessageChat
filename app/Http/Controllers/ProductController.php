@@ -112,7 +112,8 @@ class ProductController extends Controller
      */
     public function show(Request $request, $product_id)
     {
-        $product = Product::findOrFail($request->id);
+        $module = new Product();
+        $product = $this->checkAccessPermission($request, $module, $request->id);
        
         $companyId = Cache::get('selected_company_'. $request->user()->id);
         $headers = $this->getModuleHeader($companyId , 'Product');
@@ -139,6 +140,17 @@ class ProductController extends Controller
      * @param  \App\Models\Product  $product
      * @return \Illuminate\Http\Response
      */
+    public function edit(Request $request) 
+    {
+        $module = new Product();
+        $record = $this->checkAccessPermission($request, $module, $request->id);
+
+        if(!$record) {
+            return response()->json(['status' => false, 'message' => 'Record not found']);   
+        }
+
+        return response()->json(['status' => true, 'record' => $record]);
+    }
    
 
     /**

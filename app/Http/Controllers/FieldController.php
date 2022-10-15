@@ -116,11 +116,13 @@ class FieldController extends Controller
      * @param  \App\Models\Field  $field
      * @return \Illuminate\Http\Response
      */
-    public function edit(Field $field, $id)
+    public function edit(Request $request, $id)
     {
-        $record = Field::find($id);
-        if (!$record) {
-            abort(401);
+        $module = new Field();
+        $record = $this->checkAccessPermission($request, $module, $id);
+
+        if(!$record) {
+            return response()->json(['status' => false, 'message' => 'Record not found']);   
         }
 
         return response()->json(['status' => true, 'record' => $record]);

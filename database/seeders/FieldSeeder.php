@@ -412,7 +412,8 @@ class FieldSeeder extends Seeder
             'date' => 'Date',
             'time' => 'Time',
             'multiselect' => 'Multi Select',
-            'relate' => 'Relate'
+            'relate' => 'Relate',
+            'email' => 'Email'
         );
         return $type;
     }

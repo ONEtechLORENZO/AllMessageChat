@@ -9,6 +9,7 @@ use App\Models\MailToAddress;
 use App\Models\Company;
 use App\Models\Field;
 use App\Models\User;
+use App\Models\Plan;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Log;
 
@@ -175,10 +176,15 @@ class SettingsController extends Controller
        
         // Get all Plan details
         $plan_record = DB::table('plans')->where('default_plan', 'true')->get(); 
-         
+
         $plans = [];
 
         foreach ($plan_record as $record) {
+            // Insert current plan currency type and payment interval time
+            $plan = Plan::find($record->id);
+            $record->period = $plan->billing_period;
+            $record->currency = $plan->currency;
+
             $plans[$record->plan] = $record;
         }
 
@@ -365,9 +371,53 @@ class SettingsController extends Controller
      */
     public function updatePayment(Request $request)
     {
-        $post_data = file_get_contents("php://input");
-        $response = json_decode($post_data, true);
+        $endpoint_secret = config('stripe.stripe_webhook');
+        $payload = file_get_contents("php://input");
+        $response = json_decode($payload, true);
         
-        log::info([ 'Stripe Incoming message (or) response' => $post_data]);
+        $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
+        $event = null;
+
+
+        try {
+            $event = \Stripe\Webhook::constructEvent(
+                $payload, $sig_header, $endpoint_secret
+            );
+        } catch(\UnexpectedValueException $e) {
+            log::info([ 'Invalid payload' =>  $e->getMessage()]);
+
+            // Invalid payload
+            http_response_code(400);
+            exit();
+        } catch(\Stripe\Exception\SignatureVerificationException $e) {
+            log::info([ 'Invalid signature' =>  $e->getMessage()]);
+
+            // Invalid signature
+            http_response_code(400);
+            exit();
+        }
+
+        $invoice = $event->data->object;
+        $order_id = $invoice->metadata->woocommerce_order_id;
+        $subscription_id = $invoice->subscription;
+
+        $company = Company::where('subscription_id' , $subscription_id );
+        if($company){
+            switch ($event->type) {
+                case 'invoice.paid':
+                
+                    $status = 'completed';
+
+                    break;
+                case 'invoice.payment_failed':
+                
+                    // Update the order status
+                    $status = 'failed';
+
+
+                    break;
+            }
+        }
+        log::info([ 'Stripe Incoming message (or) response' => $post_data , 'Payload' => $payload , 'Header' => $sig_header ]);
     }
 }

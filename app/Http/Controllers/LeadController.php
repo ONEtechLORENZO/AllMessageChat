@@ -89,8 +89,13 @@ class LeadController extends Controller
      */
     public function show(Request $request)
     {
-        $lead = Lead::findOrFail($request->id);
-        
+        $module = new Lead();
+        $lead = $this->checkAccessPermission($request, $module, $request->id);
+
+        if(!$lead) {
+            abort('404');
+        }
+
         $companyId = Cache::get('selected_company_'. $request->user()->id);
         $headers = $this->getModuleHeader($companyId , 'Lead');
 
@@ -126,9 +131,28 @@ class LeadController extends Controller
      * @param  \App\Models\Lead  $lead
      * @return \Illuminate\Http\Response
      */
-    public function edit(Lead $lead)
+    public function edit(Request $request)
     {
-        //
+        $module = new Lead();
+        $lead = $this->checkAccessPermission($request, $module, $request->id);
+
+        if(!$lead) {
+            return response()->json(['status' => false, 'message' => 'Record not founded']);
+        }
+
+        //related field pre-fill
+        if($lead->organization_id){
+            $organization = Organization::findOrFail($lead->organization_id);
+            $name = $organization->name;
+            $lead['organization_id'] = ['value' => $organization->id, 'label' => $name];
+        }
+
+        if($lead->creater_id){
+            $user = User::findOrFail($lead->creater_id);
+            $lead['assigned_to'] = ['value' => $user->id, 'label' => $user->name];
+        }
+
+        return response()->json(['status' => true, 'record' => $lead]);
     }
 
     /**
@@ -159,9 +183,7 @@ class LeadController extends Controller
         return Redirect::route('listLead');
     }
 
-
-
-    //convert a lead to contact
+    // Convert a lead to contact
     public function convert_lead(Lead $lead,$leadId)
     {
         $lead = Lead::find($leadId);
@@ -180,28 +202,6 @@ class LeadController extends Controller
         return Redirect::route('listLead');
 
     }
-   
-    /**
-     * Return Lead Detail
-     */
-    public function getLeadData(Request $request)
-    {
-        $lead = Lead::findOrFail($request->id);
-         //related field pre-fill
-         if($lead->organization_id){
-            $organization = organization::findOrFail($lead->organization_id);
-            $name = $organization->name;
-            $lead['organization_id'] = ['value' => $organization->id, 'label' => $name];
-        }
-
-        if($lead->creater_id){
-            $user = User::findOrFail($lead->creater_id);
-            $lead['assigned_to'] = ['value' => $user->id, 'label' => $user->name];
-        }
-        echo json_encode(['record' => $lead]);
-        die;
-    }
-
     
     public function saveLead($request){
 

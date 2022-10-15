@@ -148,9 +148,9 @@ export default function Subscription(props){
                         <div className="relative table h-full">
                         <p>
                             <span className="text-4xl font-bold tracking-tight text-gray-900">{plan.price}
-                            {plan.price.toLowerCase() != 'custom' ? '€':'' }
+                            {/* {plan.price.toLowerCase() != 'custom' ? '€':'' } */}
                             </span>{' '}
-                            <span className="text-base font-medium text-gray-500">/mo</span>
+                            <span className="text-base font-small text-gray-500">{plan.currency} /{plan.period}</span>
                         </p>
                         <p className="mt-4 mb-16 text-sm text-gray-500">{''}</p>
                         <button

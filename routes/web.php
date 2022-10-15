@@ -78,18 +78,29 @@ Route::get('/stripe-incoming',[SettingsController::class, 'updatePayment']);
 Route::post('/stripe-incoming',[SettingsController::class, 'updatePayment']);
 
 
-Route::get('/add-stripe', function(){
-    $stripe = Stripe\Stripe::setApiKey(config('stripe.stripe_secret'));
-    $endpoint = \Stripe\WebhookEndpoint::create([
-        'url' => 'https://www.onemessage.chat/app/stripe-incoming',
-        'enabled_events' => [
-            'charge.failed',
-            'charge.succeeded',
-        ],
-    ]);
-    dd($endpoint);
-});
+// // Add stripe Hook on  stripe
+// Route::get('/add-stripe', function(){
+//     $stripe = Stripe\Stripe::setApiKey(config('stripe.stripe_secret'));
+//     $endpoint = \Stripe\WebhookEndpoint::create([
+//         'url' => 'https://www.onemessage.chat/app/stripe-incoming',
+//         'enabled_events' => [
+//             'invoice.paid',
+//             'invoice.payment_failed',
+//         ],
+//     ]);
+//     // Webhook id: we_1LsRDXEI934XwyqtK8NBwD0B
+//     dd($endpoint);
+// });
 
+// // Delete hook
+// Route::get('/delete-stripe', function(){
+//     $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
+//     $endpoint =$stripe->webhookEndpoints->delete(
+//             'we_1LsQoBEI934Xwyqt4OK9yq8L',
+//             []
+//             );
+//     dd($endpoint);
+// });
 
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -167,7 +178,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/contact', [ContactController::class, 'show'])->name('detailContact');
     Route::post('/updateContact/{id}', [ContactController::class, 'update'])->name('updateContact');
     Route::post('/updateContact', [ContactController::class, 'store'])->name('storeContact');
-    Route::get('/getContactDetail', [ContactController::class, 'getContactData'])->name('editContact');
+    Route::get('/getContactDetail', [ContactController::class, 'edit'])->name('editContact');
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
     
     Route::get('/subpanelRecords', [ContactController::class, 'show_subpanel'])->name('subpanel_list');
@@ -189,7 +200,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/lead', [LeadController::class, 'show'])->name('detailLead');
     Route::post('/updateLead/{id}', [LeadController::class, 'update'])->name('updateLead');
     Route::post('/updateLead', [LeadController::class, 'store'])->name('storeLead');
-    Route::get('/getLeadDetail', [LeadController::class, 'getLeadData'])->name('editLead');
+    Route::get('/getLeadDetail', [LeadController::class, 'edit'])->name('editLead');
     Route::post('/convertLead/{id}', [LeadController::class, 'convert_lead'])->name('convertLead');
     
     
@@ -207,7 +218,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/product/{id}', [ProductController::class, 'show'])->name('detailProduct');
     Route::post('/updateProduct/{id}', [ProductController::class, 'update'])->name('updateProduct');
     Route::post('/updateProduct', [ProductController::class, 'store'])->name('storeProduct');
-    Route::get('/getProductDetail', [ProductController::class, 'getContactData'])->name('editProduct');
+    Route::get('/getProductDetail', [ProductController::class, 'edit'])->name('editProduct');
    
     // Order
     Route::get('/orders', [OrderController::class, 'index'])->name('listOrder');
