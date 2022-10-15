@@ -9,6 +9,7 @@ use App\Models\MailToAddress;
 use App\Models\Company;
 use App\Models\Field;
 use App\Models\User;
+use App\Models\Plan;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Log;
 
@@ -175,10 +176,15 @@ class SettingsController extends Controller
        
         // Get all Plan details
         $plan_record = DB::table('plans')->where('default_plan', 'true')->get(); 
-         
+
         $plans = [];
 
         foreach ($plan_record as $record) {
+            // Insert current plan currency type and payment interval time
+            $plan = Plan::find($record->id);
+            $record->period = $plan->billing_period;
+            $record->currency = $plan->currency;
+
             $plans[$record->plan] = $record;
         }
 

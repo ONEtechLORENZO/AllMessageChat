@@ -645,4 +645,21 @@ class Controller extends BaseController
         ];
         return $return;
     }
+
+    /**
+     * Check who can show the record
+     */
+    public function checkAccessPermission($request, $module, $id) {
+        
+        $user = $request->user();
+        
+        // Get current user company id
+        $companyId = Cache::get('selected_company_'. $user->id);
+
+        $record = $module->whereId($id)
+                  ->where('company_id', $companyId) 
+                  ->first();           
+
+        return $record;
+    }
 }

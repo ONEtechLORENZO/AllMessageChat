@@ -76,12 +76,12 @@ class OrganizationController extends Controller
     
     public function edit(Request $request, $id)
     {
-        $Organization = Organization::findOrFail($id);
+        $module = new Organization();
+        $Organization = $this->checkAccessPermission($request, $module, $id);
       
         if(!$Organization){
-            abort(404);
+            return response()->json(['status' => false, 'message' => 'Record not found']);   
         }
-    
         
         return response()->json(['record' => $Organization]);
     }
@@ -94,8 +94,13 @@ class OrganizationController extends Controller
      */
     public function show(Request $request)
     {
-        $organization = Organization::findOrFail($request->id);
+        $module = new Organization();
+        $organization = $this->checkAccessPermission($request, $module, $request->id);
        
+        if(!$organization) {
+            abort('404');
+        }
+
         $companyId = Cache::get('selected_company_'. $request->user()->id);
         $headers = $this->getModuleHeader($companyId, 'Organization');
         return Inertia::render('Organization/Detail', [

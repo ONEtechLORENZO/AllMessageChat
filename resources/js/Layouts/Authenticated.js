@@ -50,7 +50,12 @@ const navigation = [
         subMenu : [{
             name: 'Chats',
             href : route('chat_list')
-        },]
+        },
+        {
+            name: 'Campaigns',
+            href : route('listCampaign')
+        },  
+    ]
     },   
     {
         name: "CRM",
@@ -92,11 +97,7 @@ const navigation = [
             {
                 name: 'Opportunities',
                 href : route('listOpportunity')
-            },
-            {
-                name: 'Campaigns',
-                href : route('listCampaign')
-            },            
+            },                      
             {
             name: 'Orders',
             href : route('listOrder')

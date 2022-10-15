@@ -13,6 +13,8 @@ class Order extends Model
     protected $table = 'orders';
 
     protected $fillable = ['name', 'due_date', 'status','opportunity','company_id', 'description','created_at', 'updated_at'];
+
+    protected $with = ['lineItem'];
   
     /**
      * Return list view fields

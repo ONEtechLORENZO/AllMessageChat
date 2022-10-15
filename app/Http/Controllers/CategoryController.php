@@ -189,23 +189,21 @@ class CategoryController extends Controller
      */
     public function show(Request $request)
     {
-        $id = $request->id;
-        $user = $request->user();
-        $companyId = Cache::get('selected_company_'. $user->id);
+     
+        $module = new Category();
+        $record = $this->checkAccessPermission($request, $module, $request->id);
 
-        $query = Category::where('id', $id);
-        $query->where('company_id', $companyId );
-        $record = $query->first();
+        $companyId = Cache::get('selected_company_'. $request->user()->id);
 
         $headers = $this->getModuleHeader(1 , 'Tag');
         if(!$record){
-            abort('401');
+            abort('404');
         }
 
         // Get Sub module data
         $supModule = new Contact();
         $query = $supModule->join('categorables', 'categorable_id', 'contacts.id')
-            ->where('category_id', $id);
+            ->where('category_id', $request->id);
            
         $subPanelData = $this->getSubPanelRecords('Category', $supModule, $query, $record->name);        
 
@@ -233,9 +231,11 @@ class CategoryController extends Controller
      */
     public function edit(Category $category, $id)
     {
-        $record = Category::find($id);
+        $module = new Category();
+        $record = $this->checkAccessPermission($request, $module, $id);
+
         if(!$record) {
-            abort(401);
+            return response()->json(['status' => false, 'message' => 'Record not founded']);
         }
 
         return response()->json(['status' => true, 'record' => $record]);
