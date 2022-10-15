@@ -20,21 +20,21 @@ class CompanyObserver
      */
     public function created(Company $company)
     {
-        // Create user in Stripe
-        // $this->createStripeCustomer($company);
+         // Create user in Stripe
+          $this->createStripeCustomer($company);
 
-        $user_id = Auth::id();
-        $user = User::find($user_id);
-          
-        // Check whether field entries are already added for this company
-        $isAdded = Field::where('company_id', $company->id)->first();
-        if(!$isAdded) {
-            $fields = $this->getModuleFields($user_id, $company->id);
-            Field::insert($fields);
+         $user_id = Auth::id();
+         $user = User::find($user_id);
             
-            //add amount in wallet 
-            $wallet = $this->addWalletAmount($user_id, $company->id);
-        }
+         // Check whether field entries are already added for this company
+         $isAdded = Field::where('company_id', $company->id)->first();
+         if(!$isAdded) {
+               $fields = $this->getModuleFields($user_id, $company->id);
+               Field::insert($fields);
+               
+               //add amount in wallet 
+               $wallet = $this->addWalletAmount($user_id, $company->id);
+         }
     }
 
     /**
@@ -45,7 +45,8 @@ class CompanyObserver
      */
     public function updated(Company $company)
     {
-        //
+      if(! isset($_REQUEST['is_stripe_action'])) 
+         $this->createStripeCustomer($company, 'update');
     }
 
     /**
@@ -97,13 +98,19 @@ class CompanyObserver
         else if($mode == 'update') {
             $result = $stripe->customers->update(
                 $company->stripe_id,
-                []
+                ['email' => $company->email]
             );
         }
-        
-        /*$company->stripe_id = $result->id;
+        $company->stripe_id = $result->id;
         $_REQUEST['is_stripe_action'] = true;
-        $company->save();*/
+        $company->save();
+
+        $users = $company->user;
+        foreach($users as $user){
+            $user->stripe_id = $company->stripe_id;
+            $user->save();
+        }
+        
         return true;
     }
 

@@ -15,7 +15,7 @@ class AddFieldGroupFieldTable extends Migration
     {
         Schema::table('fields', function (Blueprint $table) {
             $table->string('field_group')->nullable();
-            $table->integer('sequence')->nullable();
+            $table->integer('sequence')->nullable()->default('1');;
         });
     }
 

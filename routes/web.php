@@ -39,6 +39,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Models\Contact;
 use App\Models\Document;
 use App\Models\Service;
+use App\Models\Company;
 use App\Models\Notification;
 
 /*
@@ -76,7 +77,6 @@ Route::post('/fb-whatsapp',[MsgController::class, 'incomingFBWhatsApp']);
 
 Route::get('/stripe-incoming',[SettingsController::class, 'updatePayment']);
 Route::post('/stripe-incoming',[SettingsController::class, 'updatePayment']);
-
 
 // // Add stripe Hook on  stripe
 // Route::get('/add-stripe', function(){
