@@ -92,7 +92,7 @@ export default function MessageList(props) {
                                                         }  
                                                 </span>
                                                 <span className="text-xs text-right  mt-2">
-                                                    {content}
+                                                    {message.date} 
                                                 </span>
                                                 </div>
                                             </div>
