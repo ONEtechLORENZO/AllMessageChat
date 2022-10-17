@@ -135,7 +135,7 @@ const navigation = [
         name: "Users",
         href: route("show_Users"),
         icon: UsersIcon,
-        show: ['admin'],
+        show: ['admin', 'global_admin'],
     },
    
 ];

@@ -221,13 +221,13 @@ class UserController extends Controller
 
         $module = new User();
 
-        $listViewData = $this->listView($request, $module, $list_view_columns);
+        $listViewData = $this->listView($request, $module, $list_view_columns);        
 
         $moduleData = [
             'singular' => 'User',
             'plural' => 'Users',
             'module' => 'User',
-            'add_link' => ( $request->user()->role == 'global_admin' ) ?  route('create_global_user') : route('create_user'),
+            'add_link' => ( $request->is('admin/*') ) ?  route('create_global_user') : route('create_user'),
             'edit_link' => 'editUser',
             'add_button_text' => 'Add User',
             'current_page' => 'Users',
