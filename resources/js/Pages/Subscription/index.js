@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import Authenticated from "@/Layouts/Authenticated";
 import CompanyDetail from "./company";
 import axios from "axios";
+import Accounts from "../Wallet/Accounts";
+import ListView from "@/Components/Views/List/Index2";
 
 const tabs = [
   { name: 'Workspace Settings', href: '#', current: true, page: 1 },
-  { name: 'Channels', href: '#', current: false , page: 2 },
+  { name: 'Social Profilie', href: '#', current: false , page: 2 },
   { name: 'Users', href: '#', current: false , page: 3 },
 ];
 
@@ -48,7 +50,7 @@ export default function Subscription(props)
                 key={tab.name}
                 href={tab.href}
                 className={classNames(
-                tab.current
+                tab.page == page
                     ? 'border-indigo-500 text-indigo-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
                 'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
@@ -63,32 +65,33 @@ export default function Subscription(props)
          </div>
 
          <div className="p-4">
-            <div 
-             className={
-             page == 1 ? "block" : "hidden"
-             }
-            >
-                <CompanyDetail 
-                 currentCompany={currentCompany}
-                 relatedCompany={relatedCompany}
-                 changeCompany={changeCompany}
-                 setCurrentCompany={setCurrentCompany}
-                />
-            </div>
-            <div 
-             className={
-             page == 2 ? "block" : "hidden"
-             }
-            >
-                channel
-            </div>
-            <div 
-             className={
-             page == 3 ? "block" : "hidden"
-             }
-            >
-                Users
-            </div>
+            
+            {page && page == 1 ? 
+               <CompanyDetail 
+               currentCompany={currentCompany}
+               relatedCompany={relatedCompany}
+               changeCompany={changeCompany}
+               setCurrentCompany={setCurrentCompany}
+              />
+            : ''}
+            
+            {page && page == 2 ? 
+              <Accounts 
+               accounts={props.accounts}
+               createAccount={false}
+               {...props}
+              /> 
+            : ''}
+
+            {page && page == 3 ? 
+               
+              <ListView 
+                headers={props.list_view_columns}
+                current_user={props.current_user}
+                {...props}
+              />
+            : ''}
+                 
          </div>
        </div>
       </div>
