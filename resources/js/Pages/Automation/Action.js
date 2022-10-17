@@ -631,6 +631,27 @@ function Action(props){
                                                             </div>
                                                         </div>
                                                     }
+                                                    {actionData.type == 'send_request' &&
+                                                        <div>
+                                                            <div class="flex flex-wrap mx-3 mb-6">
+                                                                <div className="w-3/4">
+                                                                    <div className='form-group' >
+                                                                        <label htmlFor={'post_url'} className="block text-sm font-medium text-gray-700">
+                                                                            Post URL
+                                                                        </label>
+                                                                        <Input
+                                                                            id={'post_url'}
+                                                                            name={'post_url'}
+                                                                            handleChange={handleChange}
+                                                                            value={actionData.post_url}
+                                                                            required={ true }
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                               
+                                                            </div>
+                                                        </div>
+                                                    }
                                               </div>
                                           </div>
                                       </form>

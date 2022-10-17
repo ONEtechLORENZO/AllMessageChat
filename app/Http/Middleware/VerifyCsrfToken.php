@@ -16,5 +16,7 @@ class VerifyCsrfToken extends Middleware
         '/incoming-cm',
         '/fb-whatsapp',
         '/stripe-incoming',
+        '/v1/send-wa-message',
+
     ];
 }

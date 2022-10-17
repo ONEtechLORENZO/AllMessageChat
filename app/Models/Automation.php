@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\Controller;
+use App\Models\Field;
 use Log;
 
 class Automation extends Model
@@ -221,6 +223,12 @@ class Automation extends Model
                 }
                 break;
 
+            case 'send_request':
+                if($action->post_url){
+                    $this->sendData($action->post_url);
+                }
+                break;
+
         }
     }   
 
@@ -258,7 +266,7 @@ class Automation extends Model
         }
         catch(\Exception $e){
             Log::info([ 'status' => 'Failed', 'messgae' => 'Record not stored, Please check mapping configuration']);
-            Log::info('Cannot store the record for : ' . $e->getMessage());
+            Log::info('Cannot store the record ' . $e->getMessage());
         }
         
     }
@@ -289,4 +297,62 @@ class Automation extends Model
         }
         return $fieldValue;
   	}
+
+    /**
+     * Post data to action url
+     */
+    public function sendData($postUrl)
+    {
+        try {
+            $postData = [];
+            $recordModal = $this->recordModal;
+            $moduleName = class_basename($recordModal);
+
+            $fields = $this->fetchModuleFields($moduleName);
+            foreach($fields as $field){
+                $fieldName = $field->field_name;
+                if($field->field_type != 'relate' ){
+                    $postData[$fieldName] = $recordModal->$fieldName;
+                }
+            }
+            $postData['module_name'] = $moduleName;
+            
+            $response = Http::post($postUrl, $postData);
+            Log::info(['Post data ' => $postData]);
+            
+        }
+        catch(Exception $e){
+            Log::info('Cannot send the record data' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Fetch module fields
+     */
+    public function fetchModuleFields( $module)
+    {
+        $whereCondition = [
+            'module_name' => $module, 
+            'company_id' => $this->recordModal->company_id
+        ];
+
+        $fields = Field::where($whereCondition)->groupBy('field_name')->orderBy('sequence')->orderBy('id')->get();
+        foreach($fields as $field) {
+            if(($field['is_custom'] == '1' && $field['field_type'] == 'dropdown') 
+                || $field['field_name'] == 'field_group'
+                || ($field['is_custom'] == '1' && $field['field_type'] == 'multiselect')) {
+
+                $option = $field['options'];
+                $options = [];
+                if ($option) {
+                    foreach ($option as $key) {
+                        $options[$key['value']] = $key['value'];
+                    }
+                }
+               
+                $field->options = $options;
+            } 
+        }
+        return $fields;
+    }   
 }

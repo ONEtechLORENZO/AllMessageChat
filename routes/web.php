@@ -111,7 +111,6 @@ Route::post('/stripe-incoming',[SettingsController::class, 'updatePayment']);
 //     dd($response);
 // });
 
-
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {
      
