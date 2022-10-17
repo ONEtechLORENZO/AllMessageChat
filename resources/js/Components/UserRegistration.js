@@ -24,7 +24,7 @@ export default function UserRegistration(props) {
             'company_country': {'value': props.company.company_country, 'label': 'Company Country', 'type': 'select', 'required': true, 'options': countries },
             'company_vat_id': {'value': props.company.company_vat_id, 'label': 'Company VAT ID', 'type': 'text', 'required': true },
             'codice_destinatario': {'value': props.company.codice_destinatario, 'label': 'Company Codice Destinatario', 'type': 'text', 'required': true },
-            'admin_email': {'value': props.company.admin_email, 'label': 'Admin email for invoices', 'type': 'email', 'required': true },
+            'email': {'value': props.company.email, 'label': 'Admin email for invoices', 'type': 'email', 'required': true },
         }
     };
 

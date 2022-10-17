@@ -7,6 +7,7 @@ import { Link } from "@inertiajs/inertia-react";
 import { Dialog, Transition } from "@headlessui/react";
 import UserRegistration from '@/Components/UserRegistration';
 import { UserIcon } from '../Pages/icons'
+import nProgress, { settings } from 'nprogress';
 
 import {
     HomeIcon,
@@ -331,6 +332,8 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
     }
 
     function getUserCompany() {
+        nProgress.start(0.5);
+        nProgress.inc(0.2);
         let url = route('get_selected_company');
         axios.get(url).then( (response) => {
             if(response) {
@@ -344,6 +347,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                     setshowModal(true)
                     setCompany(companies[0]);  
                 }
+                nProgress.done();
             }
         });
     }

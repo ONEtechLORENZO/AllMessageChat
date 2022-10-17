@@ -505,7 +505,7 @@ class UserController extends Controller
             // $user->company_country = $request->get('company_country');
             // $user->company_vat_id = $request->get('company_vat_id');
             // $user->codice_destinatario = $request->get('codice_destinatario');
-            // $user->admin_email = $request->get('admin_email');
+            // $user->email = $request->get('email');
 
             // Only admin and global admin can able to set the user role
             if($currentUser->role == 'admin' || $currentUser->role == 'global_admin') {
@@ -1747,7 +1747,7 @@ class UserController extends Controller
     /**
      * Get Payment Methods
      */
-    public function getPaymentMethods(Request $request , $mode) 
+    public function getPaymentMethods(Request $request , $mode = '') 
     {
         $user = $request->user();
         $paymentMethods = '';
@@ -1757,6 +1757,7 @@ class UserController extends Controller
         catch(error $e){
             log::info(['Payment method issue ' => $e->getMessage()]);
         }
+
         if($mode){
             return $paymentMethods; 
         } else {

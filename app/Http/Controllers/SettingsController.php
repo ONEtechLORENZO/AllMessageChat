@@ -182,10 +182,11 @@ class SettingsController extends Controller
         foreach ($plan_record as $record) {
             // Insert current plan currency type and payment interval time
             $plan = Plan::find($record->id);
-            $record->period = $plan->billing_period;
-            $record->currency = $plan->currency;
-
-            $plans[$record->plan] = $record;
+            if(isset($plan)){
+                $record->period = $plan->billing_period;
+                $record->currency = $plan->currency;
+                $plans[$record->plan] = $record;
+            }
         }
 
         // If the company has custom plan, change the plan records
@@ -264,12 +265,14 @@ class SettingsController extends Controller
                 $user = User::find($user_id);
                 // Get Default Payment Method or Use the first Payment Method
                 $paymentMethod = $user->defaultPaymentMethod();
+              
                 if(!$paymentMethod) {
                     $paymentMethods = $user->paymentMethods();
                     if(count($paymentMethods) > 0) {
                         $paymentMethod = $paymentMethods[0];
                     }
                 }
+              
                 if($paymentMethod) {
                     // Create new Subscription
                     if(!$company->subscription_id) {
@@ -278,7 +281,7 @@ class SettingsController extends Controller
                         // New Subscription
                         try {
                             $subscription = $user->newSubscription('default', $plan_id)->create($paymentMethodId);
-                            $company->subscription_id = $subscription->id;
+                            $company->subscription_id = $subscription->stripe_id;
                             $flag = true;
                         }
                         catch(\Exception $e) {
@@ -373,11 +376,11 @@ class SettingsController extends Controller
     {
         $endpoint_secret = config('stripe.stripe_webhook');
         $payload = file_get_contents("php://input");
-        $response = json_decode($payload, true);
+        //$response = json_decode($payload, true);
+        log::info([ 'Stripe Incoming message (or) response' =>  $payload ]);
         
         $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
         $event = null;
-
 
         try {
             $event = \Stripe\Webhook::constructEvent(
@@ -401,22 +404,22 @@ class SettingsController extends Controller
         $order_id = $invoice->metadata->woocommerce_order_id;
         $subscription_id = $invoice->subscription;
 
-        $company = Company::where('subscription_id' , $subscription_id );
+        $company = Company::where('subscription_id' , $subscription_id )->first();
         if($company){
             switch ($event->type) {
                 case 'invoice.paid':
-                
-                    $status = 'completed';
 
+                    $status = 'completed';
                     break;
                 case 'invoice.payment_failed':
                 
-                    // Update the order status
                     $status = 'failed';
-
-
                     break;
             }
+            // Update the order status
+            if($company->status != $status)
+                $company->status = $status;
+
         }
         log::info([ 'Stripe Incoming message (or) response' => $post_data , 'Payload' => $payload , 'Header' => $sig_header ]);
     }

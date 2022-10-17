@@ -28,7 +28,7 @@ class CreateCompaniesTable extends Migration
             $table->text('company_address')->nullable();
             $table->string('company_country')->nullable();
             $table->string('company_vat_id')->nullable();
-            $table->string('admin_email')->nullable();
+            $table->string('email')->nullable();
             $table->string('codice_destinatario')->nullable();
 
             $table->timestamps();

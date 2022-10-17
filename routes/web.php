@@ -39,6 +39,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Models\Contact;
 use App\Models\Document;
 use App\Models\Service;
+use App\Models\Company;
 use App\Models\Notification;
 
 /*
@@ -77,7 +78,6 @@ Route::post('/fb-whatsapp',[MsgController::class, 'incomingFBWhatsApp']);
 Route::get('/stripe-incoming',[SettingsController::class, 'updatePayment']);
 Route::post('/stripe-incoming',[SettingsController::class, 'updatePayment']);
 
-
 // // Add stripe Hook on  stripe
 // Route::get('/add-stripe', function(){
 //     $stripe = Stripe\Stripe::setApiKey(config('stripe.stripe_secret'));
@@ -94,13 +94,23 @@ Route::post('/stripe-incoming',[SettingsController::class, 'updatePayment']);
 
 // // Delete hook
 // Route::get('/delete-stripe', function(){
-//     $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
-//     $endpoint =$stripe->webhookEndpoints->delete(
+//      $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
+//      $response = $stripe->webhookEndpoints->retrieve('we_1LsRDXEI934XwyqtK8NBwD0B', []);
+
+//     $response =$stripe->webhookEndpoints->delete(
 //             'we_1LsQoBEI934Xwyqt4OK9yq8L',
 //             []
 //             );
-//     dd($endpoint);
+//      dd($response);
 // });
+
+// Route Stripe Test
+// Route::get('/stripe-test', function(){
+//     $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
+//     $response = $stripe->subscriptions->retrieve('sub_1LtBmPEI934XwyqtgIEjbWWp', []);
+//     dd($response);
+// });
+
 
 // Check user login
 Route::middleware(['auth', 'verified'])->group(function () {

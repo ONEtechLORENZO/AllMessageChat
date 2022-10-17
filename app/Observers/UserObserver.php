@@ -30,7 +30,7 @@ class UserObserver
       //       //add amount in wallet 
       //       $wallet = $this->addWalletAmount($user->id, $company_id);
       //   }
-      $user->createAsStripeCustomer();
+      //$user->createAsStripeCustomer();
     }
 
     /**
@@ -41,12 +41,12 @@ class UserObserver
      */
     public function updated(User $user)
     {
-         if(!$user->stripe_id) {
-            $user->createAsStripeCustomer();
-         }
-         else {
-            $user->updateStripeCustomer();
-         }
+         // if(!$user->stripe_id) {
+         //    $user->createAsStripeCustomer();
+         // }
+         // else {
+         //    $user->updateStripeCustomer();
+         // }
     }
 
     /**

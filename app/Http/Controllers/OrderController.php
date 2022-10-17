@@ -244,13 +244,12 @@ class OrderController extends Controller
         
         //delete the old lineItem
         $sync = LineItem::where('order_id', $order_id)->delete();
-       
         //save the lineItems
         $lineItems = $this->saveLineItems($request->lineItems, $order_id, $companyId);
         
         if($request->is('api/*')){
             
-            $order = Order::OrFail($order_id);
+            $order = Order::findOrFail($order_id);
             return response()->json($order);           
         }
         else

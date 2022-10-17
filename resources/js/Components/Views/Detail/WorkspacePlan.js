@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import Workspace from "@/Pages/Plans/workspace";
 
 const workspacefield = [
-    'name', 'admin_email', 'company_country', 'currency'
+    'name', 'email', 'company_country', 'currency'
 ];
 
 export default function WorkspacePlan (props) {
