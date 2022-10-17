@@ -702,7 +702,8 @@ class MsgController extends Controller
               //  $path = $request->file('attachment')->store('sent_files');
 
                 $attachment = $request->file('attachment');
-                $attachment_name = 'ba_'.time().$attachment->getClientOriginalExtension();
+                $extention =  $attachment->getClientOriginalExtension();
+                $attachment_name = 'ba_'.time().$extention.'.'.$extention;
                 $path = public_path('/uploads/sent_files');
                 $url = url('public/uploads/sent_files/'.$attachment_name);
                 $attachment->move($path, $attachment_name);
@@ -714,6 +715,7 @@ class MsgController extends Controller
                     'originalUrl' =>  $url,
                     'previewUrl' => $url,
                     'caption' => $request->content,
+                    'file_url' => url('uploads/sent_files/'.$attachment_name),
                 ];
             }
            
