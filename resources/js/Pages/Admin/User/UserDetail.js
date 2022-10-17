@@ -31,7 +31,7 @@ export default function UserDetail(props) {
         //     'company_country': {'value': props.user.company_country, 'label': (props.translator['Company Country']), 'type': 'select', 'required': false, 'options': countries },
         //     'company_vat_id': {'value': props.user.company_vat_id, 'label': (props.translator['Company VAT ID']), 'type': 'text', 'required': false },
         //     'codice_destinatario': {'value': props.user.codice_destinatario, 'label': 'Company Codice Destinatario', 'type': 'text', 'required': false },
-        //     'admin_email': {'value': props.user.admin_email, 'label': (props.translator['Admin email for invoices']), 'type': 'email', 'required': false },
+        //     'email': {'value': props.user.email, 'label': (props.translator['Admin email for invoices']), 'type': 'email', 'required': false },
         // }
     };
 

@@ -113,7 +113,7 @@ class Controller extends BaseController
             }
 
             // Show Users who are all related to selected company
-            if($user->role != 'global_admin' && $moduleName == 'User') {
+            if(!($request->is('admin/*')) && $moduleName == 'User') {
                 $query->join('company_user', 'user_id', 'users.id');
                 $query->where('company_user.company_id', $companyId);
             }

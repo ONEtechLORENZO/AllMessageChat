@@ -29,7 +29,7 @@ class AddUserFiedls extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn(['phone_number', 'language', 'currency']);
             $table->dropColumn(['time_zone', 'company_address', 'company_country', 'company_vat_id']);
-            $table->dropColumn(['codice_destinatario', 'admin_email']);
+            $table->dropColumn(['codice_destinatario', 'email']);
         });
     }
 }

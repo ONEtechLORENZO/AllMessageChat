@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\Controller;
+use App\Models\Field;
 use Log;
 
 class Automation extends Model
@@ -37,7 +39,7 @@ class Automation extends Model
     {
         $return['triggers'] = array('contact_created' => array('name' => 'contact_created', 'label' => 'New contact is added'), 'contact_list_related' => array('name' => 'contact_list_related', 'label' => 'New contact is added to list'), 'contact_tag_related' => array('name' => 'contact_tag_related', 'label' => 'New contact is added to tag'), 'received_webhook' => array('name' => 'received_webhook', 'label' => 'Webhook is received'));
         $return['processTypes'] = array('action' => array('label' => 'Action', 'name' => 'action'), 'condition' => array('label' => 'Condition', 'name' => 'condition'), 'exit' => array('label' => 'Exit', 'name' => 'exit'));        
-        $return['actions'] = array('send_message' => array('label' => 'Send Message', 'name' => 'send_message'), 'tag_contact' => array('label' => 'Add a tag to a contact', 'name' => 'tag_contact'), 'list_contact' => array('label' => 'Add a list to a contact', 'name' => 'list_contact'), 'custom_field' => array('label' => 'Set a custom field', 'name' => 'custom_field'));
+        $return['actions'] = array('send_message' => array('label' => 'Send Message', 'name' => 'send_message'), 'tag_contact' => array('label' => 'Add a tag to a contact', 'name' => 'tag_contact'), 'list_contact' => array('label' => 'Add a list to a contact', 'name' => 'list_contact'), 'custom_field' => array('label' => 'Set a custom field', 'name' => 'custom_field'), 'send_request' => array('label' => 'Send HTTP Request', 'name' => 'send_request'));
         $return['webHookActions'] = array('create_contact' => array('label' => 'Create Lead', 'name' => 'create_contact'), 'update_contact' => array('label' => 'Update Lead', 'name' => 'update_contact'));
 
         return $return;
@@ -221,6 +223,12 @@ class Automation extends Model
                 }
                 break;
 
+            case 'send_request':
+                if($action->post_url){
+                    $this->sendData($action->post_url);
+                }
+                break;
+
         }
     }   
 
@@ -258,7 +266,7 @@ class Automation extends Model
         }
         catch(\Exception $e){
             Log::info([ 'status' => 'Failed', 'messgae' => 'Record not stored, Please check mapping configuration']);
-            Log::info('Cannot store the record for : ' . $e->getMessage());
+            Log::info('Cannot store the record ' . $e->getMessage());
         }
         
     }
@@ -289,4 +297,62 @@ class Automation extends Model
         }
         return $fieldValue;
   	}
+
+    /**
+     * Post data to action url
+     */
+    public function sendData($postUrl)
+    {
+        try {
+            $postData = [];
+            $recordModal = $this->recordModal;
+            $moduleName = class_basename($recordModal);
+
+            $fields = $this->fetchModuleFields($moduleName);
+            foreach($fields as $field){
+                $fieldName = $field->field_name;
+                if($field->field_type != 'relate' ){
+                    $postData[$fieldName] = $recordModal->$fieldName;
+                }
+            }
+            $postData['module_name'] = $moduleName;
+            
+            $response = Http::post($postUrl, $postData);
+            Log::info(['Post data ' => $postData]);
+            
+        }
+        catch(Exception $e){
+            Log::info('Cannot send the record data' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Fetch module fields
+     */
+    public function fetchModuleFields( $module)
+    {
+        $whereCondition = [
+            'module_name' => $module, 
+            'company_id' => $this->recordModal->company_id
+        ];
+
+        $fields = Field::where($whereCondition)->groupBy('field_name')->orderBy('sequence')->orderBy('id')->get();
+        foreach($fields as $field) {
+            if(($field['is_custom'] == '1' && $field['field_type'] == 'dropdown') 
+                || $field['field_name'] == 'field_group'
+                || ($field['is_custom'] == '1' && $field['field_type'] == 'multiselect')) {
+
+                $option = $field['options'];
+                $options = [];
+                if ($option) {
+                    foreach ($option as $key) {
+                        $options[$key['value']] = $key['value'];
+                    }
+                }
+               
+                $field->options = $options;
+            } 
+        }
+        return $fields;
+    }   
 }

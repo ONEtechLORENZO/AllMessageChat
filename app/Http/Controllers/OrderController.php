@@ -87,9 +87,10 @@ class OrderController extends Controller
 
         //save the Order
         $order_id = $this->saveOrder($request);       
-
+     
         //save the lineItems
         $lineItems = $this->saveLineItems($request->lineItems, $order_id, $companyId);
+        
         if($request->is('api/*'))     // API call check
         {            
             if($order_id){
@@ -101,7 +102,7 @@ class OrderController extends Controller
         }
         else
         {
-        return Redirect::route('detailOrder', $order_id);
+          return Redirect::route('detailOrder', $order_id);
         }
       
     }
@@ -118,7 +119,7 @@ class OrderController extends Controller
         $order = $this->checkAccessPermission($request, $module, $order_id);
 
         if(!$order){
-            abort(404);
+            about(401);
         }
      
         $companyId = Cache::get('selected_company_'. $request->user()->id);
@@ -243,13 +244,12 @@ class OrderController extends Controller
         
         //delete the old lineItem
         $sync = LineItem::where('order_id', $order_id)->delete();
-        dd($request->lineItems);
         //save the lineItems
         $lineItems = $this->saveLineItems($request->lineItems, $order_id, $companyId);
         
         if($request->is('api/*')){
             
-            $order = Order::OrFail($order_id);
+            $order = Order::findOrFail($order_id);
             return response()->json($order);           
         }
         else

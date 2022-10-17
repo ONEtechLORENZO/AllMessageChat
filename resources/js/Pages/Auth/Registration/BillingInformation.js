@@ -6,7 +6,7 @@ import axios from "axios";
 import { Link } from "@inertiajs/inertia-react";
 import notie from 'notie';
 
-const billingFields = ['company_country', 'company_vat_id', 'admin_email', 'company_address'];
+const billingFields = ['company_country', 'company_vat_id', 'email', 'company_address'];
 
 export default function BillingInformation (props) {
 
@@ -23,7 +23,7 @@ export default function BillingInformation (props) {
 
     function mailHandler () {
         let check_mail = true;
-        let mail = billingInformation['admin_email'];
+        let mail = billingInformation['email'];
         if(mail) {
             let AdminEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
             if(!AdminEmail.test(mail)){
@@ -137,10 +137,10 @@ export default function BillingInformation (props) {
                             <label>Admin email for invoices<span className="text-red-500"> * </span></label>
                             <input
                                 type="text"
-                                name="admin_email"
+                                name="email"
                                 className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
                                 autoComplete="off"
-                                value={billingInformation['admin_email'] ? billingInformation['admin_email'] : ''}
+                                value={billingInformation['email'] ? billingInformation['email'] : ''}
                                 onChange={(e) => handleChange(e)}
                             />
                         </div>

@@ -980,10 +980,14 @@ class MsgController extends Controller
     /**
      * Send WhatsApp message (Function will be called from OneMessage API)
      */
-    public function sendAPIMessage(Request $request, $account_id)
+    public function sendAPIMessage(Request $request)
     {
+        if($request->from_crm){
+            $_REQUEST['FROM_CRM'] = true;
+        }
         $current_user = $request->user();
-        $account = Account::find($account_id);
+        $account_id = $request->account_number;
+        $account = Account::where('id' , $account_id)->orWhere('phone_number', $account_id )->first();
         if($account) {
             // Check whether current user can access this account
             if($current_user->id != $account->user_id) {
