@@ -489,7 +489,17 @@ class Controller extends BaseController
             'Greater than' =>__('Greater than'),
             'Not equal' => __('Not equal'),
             'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?'),
-            'No records' =>__('No records')
+            'No records' =>__('No records'),
+            'No profile'=>__('No profile'),
+            'Get started by creating a new social profile.'=>__('Get started by creating a new social profile.'),
+            'Click here to create a new social profile'=>__('Click here to create a new social profile'),
+            'Confirm to Delete' =>  __('Confirm to Delete'),
+            'Are you sure to do this?' => __('Are you sure to do this?'),
+            'Yes' =>__('Yes'),
+            'No' =>__('No'), 
+            'No records' =>__('No records'),
+            'Search' =>__('Search'),
+            'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?'),
         ];
         return $translator;
     }
