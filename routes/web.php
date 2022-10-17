@@ -326,6 +326,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');
     Route::get('/create/lineitem', [LineItemController::class, 'create'])->name('createLineItem');
 
+    // Company
+    Route::post('/company/setBaseCompany', [CompanyController::class, 'setBaseCompany'])->name('setBaseCompany');
 
 });
 
@@ -352,7 +354,6 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::post('/company/update/{id}', [CompanyController::class, 'store'])->name('updateCompany');
     Route::delete('/company/delete/{id}', [CompanyController::class, 'destroy'])->name('deleteCompany');
     Route::post('/company/sendInvitation', [CompanyController::class, 'sendInvitation'])->name('send_invite_link');
-    Route::post('/company/setBaseCompany', [CompanyController::class, 'setBaseCompany'])->name('setBaseCompany');
 
 });
 

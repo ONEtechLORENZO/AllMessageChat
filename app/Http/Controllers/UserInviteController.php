@@ -16,11 +16,14 @@ class UserInviteController extends Controller
     {
         $uuid = $_GET['unique_id'];
         $invitation = UserInvite::where('unique_id' , $uuid)->first();
+     
         if($invitation){
             $user = User::where('email' , $invitation->email)->first();
             if(! $user){
                 return redirect('/register?unique_id='.$uuid); 
             } else {
+                // Relate user to the company
+                $user->company()->syncWithoutDetaching([$invitation->company_id]);
                 $invitation->delete();
                 $data['result'] = 'success';
             }
