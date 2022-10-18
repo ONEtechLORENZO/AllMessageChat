@@ -18,24 +18,7 @@ function classNames(...classes) {
 export default function Subscription(props)
 {  
   const [page, setPage] = useState(1);
-  const [currentCompany, setCurrentCompany] = useState(props.company.currentCompany);
-  const [relatedCompany, setRelatedCompany] = useState(props.company.relatedCompany);
-
-  function currentUserCompany() {
-    axios.get(route('user_company')).then((response) => {
-      setCurrentCompany(response.data.currentCompany);
-      setRelatedCompany(response.data.relatedCompany);
-    });  
-  }
-
-  function changeCompany(event){
-    const id = event.target.value;
-    let url = route('change_company', {'id': id});
-    axios.get(url).then((response) => {
-      currentUserCompany()
-    });
-  }
-
+  
   return(
     <Authenticated
       auth={props.auth}
@@ -68,10 +51,8 @@ export default function Subscription(props)
             
             {page && page == 1 ? 
                <CompanyDetail 
-               currentCompany={currentCompany}
-               relatedCompany={relatedCompany}
-               changeCompany={changeCompany}
-               setCurrentCompany={setCurrentCompany}
+               currentCompany={props.company.currentCompany}
+               relatedCompany={props.company.relatedCompany}
               />
             : ''}
             

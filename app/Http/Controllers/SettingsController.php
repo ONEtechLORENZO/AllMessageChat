@@ -109,7 +109,7 @@ class SettingsController extends Controller
         $companyId = Cache::get('selected_company_' . $request->user()->id);
 
         // GET Account records
-        $accounts = Account::where('user_id', $request->user()->id)->get();
+        $accounts = Account::where('company_id', $companyId)->get(); 
 
         $columns = [
             'name' => [ 'label' => ' Name' , 'type' => 'text'],
@@ -170,7 +170,9 @@ class SettingsController extends Controller
 
         foreach($userCompany as $company){
             $company =  Company::where('id', $company->company_id)->first();
-            $related_company[$company['id']] = $company['name'];
+            if($company) {
+                $related_company[$company['id']] = $company['name'];
+            }
         }
         
         // Get Company Subscription Plan name
