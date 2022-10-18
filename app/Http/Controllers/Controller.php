@@ -108,7 +108,7 @@ class Controller extends BaseController
 
         if($moduleName != 'Price' && $moduleName != 'Company' && $moduleName != 'Plan') {
             // For tenancy
-            if($user->role != 'global_admin' && $moduleName != 'User') {
+            if( $moduleName != 'User') {
                 $query->where("{$baseTable}.company_id", $companyId);
             }
 

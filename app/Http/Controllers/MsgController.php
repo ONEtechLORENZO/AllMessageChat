@@ -743,7 +743,7 @@ class MsgController extends Controller
                 $result['result']['file_path'] = $docId;
 
                 // Delete public storage file
-                File::delete($path.'/'.$attachment_name);
+               // File::delete($path.'/'.$attachment_name);
             }
 
             if($result['result'] &&  $result['result']['status'] != 'error' ){
