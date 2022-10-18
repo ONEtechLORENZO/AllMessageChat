@@ -9,7 +9,7 @@ function Detail(props){
 
     const tabs = [
         { label:(props.translator['Detail']),name: 'Detail', href: '#'  },
-     //   { label:(['Users']),name: 'Users', href: '#'  },
+       { label:(['Users']),name: 'Users', href: '#'  },
       ];
 
     /**
@@ -31,25 +31,21 @@ function Detail(props){
             errors={props.errors}
             current_page='Company'
         >
-            <DetailView
-                record = {props.record}
+       <DetailView
+                record={props.record}
                 users={props.users}
-                module = 'Company'
-                updateRecord = {showEditForm}
-                tabs = {tabs}
-                headers = {props.headers}
+                current_user={props.current_user}
+                module='Company'
+                updateRecord={showEditForm}
+                tabs={tabs}
+                headers={props.headers}
                 tagData={props.tagData}
                 tagOptions={props.tagOptions}
                 listOptions={props.listOptions}
                 listData={props.listData}
                 translator={props.translator}
-                role={props.role}
-            />
-
-            <Wallet
-                module ='Company'
-                {...props}
-            />
+                role={props.role} 
+                {...props}/>      
 
             {showForm ?
                 <Form 

@@ -25,7 +25,7 @@ class CompanyController extends Controller
         'name' => ['label' => 'Name', 'type' => 'text'],
         'company_address' =>  ['label' => 'Address', 'type' => 'text'],
         'company_country' =>  ['label' => 'Country', 'type' => 'text'],
-        'email' => ['label' =>'Email', 'type' => 'text'],
+        'admin_email' => ['label' =>'Email', 'type' => 'text'],
         'currency' => ['label' =>'Currency', 'type' => 'text'],
         'plan' => ['label' =>'Plan', 'type' => 'text'],       
     ];
@@ -38,12 +38,15 @@ class CompanyController extends Controller
     public function index(Request $request)
     {      
         $module = new Company();
+        $currentUser = $request->user();
+        
         $columnlist=Cache::get('Company'.'selected_column_list_'. $request->user()->id);       
         $listViewData = $this->listView($request, $module, $this->list_view_columns);
         $moduleData = [
             'singular' => 'Company',
             'plural' => 'Workspaces',
             'module' => 'Company',
+            'current_user' => $request->user(),
             'current_page' => 'Company', 
             // Actions
             'actions' => [
@@ -103,7 +106,7 @@ class CompanyController extends Controller
         $company->company_country = $request->get('company_country');
         $company->company_vat_id = $request->get('company_vat_id');
         $company->codice_destinatario = $request->get('codice_destinatario');
-        $company->email = $request->get('email');
+        $company->admin_email = $request->get('admin_email');
 
         $company->save();
         if(!$request->id){
@@ -143,7 +146,6 @@ class CompanyController extends Controller
         $companyId = Cache::get('selected_company_'. $user->id);
         //get current company details
         $currentCompany =  Company::where('id', $companyId)->first();
-        
         // Get message amount deduction
         $messageDeduction = []; //(new UserController)->getAmountDeduction($user->id);
         $paymentMethods = []; //(new UserController)->getPaymentMethods($request , 'direct');
@@ -152,6 +154,7 @@ class CompanyController extends Controller
         $headers = $this->getModuleHeader(1 , 'Company');        
         $data = [
             'record' => $company,
+            'current_user' => $user,
             'users' => $users,
             'headers' => $headers,
             'name' => $user->name,
@@ -185,7 +188,6 @@ class CompanyController extends Controller
                 'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount')
                 ]
         ];
-
         return Inertia::render('Company/Detail', $data);       
     }
 
@@ -337,7 +339,7 @@ class CompanyController extends Controller
             $company->company_country = $request->company_country;
             $company->company_address = $request->company_address;
             $company->company_vat_id = $request->company_vat_id;
-            $company->email = $request->email;
+            $company->admin_email = $request->admin_email;
             $company->save();
         }
 

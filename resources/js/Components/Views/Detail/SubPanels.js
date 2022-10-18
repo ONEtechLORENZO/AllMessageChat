@@ -86,6 +86,7 @@ function SubPanels(props){
                                 actions={actions}
                                 fieldOptions={fieldOptions}
                                 getFieldOptions={getFieldOptions}
+                                current_user={props.current_user}
                                 paginator={paginateDetail}
                             />
                             {Object.entries(recordDetails).length == 0 ?         
