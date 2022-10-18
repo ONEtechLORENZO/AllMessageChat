@@ -11,6 +11,7 @@ use App\Models\Contact;
 use App\Models\Document;
 use App\Models\Template;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\MessageLogController;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
@@ -591,12 +592,20 @@ class MsgController extends Controller
                 $content = isset($data['value']['messages'][0]['text']['body']) ? $data['value']['messages'][0]['text']['body'] : '';
                 // $content = ( $content == '' && isset($data['payload']['name'])) ? $data['payload']['name'] : $content;
                 $msgable_type = 'App\Models\Contact';
+                $type = $data['value']['messages'][0]['type'];
+                $is_media = false;
+                if($type != 'text'){
+                    $is_media = true;
+                    $document = new Document();
+                    $fileData = $document->storeFBDocument( $account , $msgable_id , $data['value']['messages'][0][$type] );
+                }
+                log::info(['msg type' => $type]);
 
                 $messageData = [
                     'service_id' => $data['id'],
                     'service' => 'whatsapp',
                     'message' => $content,
-                    'msg_type' => 'text' ,
+                    'msg_type' => $type ,
                     'account_id' => $account->id,
                     'msgable_id' => $msgable_id,
                     'msgable_type' => $msgable_type,
@@ -605,6 +614,11 @@ class MsgController extends Controller
                     'is_delivered' => 0,
                     'is_read' => 0
                 ];
+
+                if($type != 'text'){
+                    $messageData['message'] = $fileData['message'];
+                    $messageData = array_merge($messageData, $fileData);
+                }
 
                 $messageData['policy'] = 'business_initiated';
                 $price = $this->handlePrice($data['value']['messages']['0']['from'], 'business_initiated' , $account->user_id);
