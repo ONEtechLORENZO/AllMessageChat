@@ -25,7 +25,7 @@ class CompanyController extends Controller
         'name' => ['label' => 'Name', 'type' => 'text'],
         'company_address' =>  ['label' => 'Address', 'type' => 'text'],
         'company_country' =>  ['label' => 'Country', 'type' => 'text'],
-        'admin_email' => ['label' =>'Email', 'type' => 'text'],
+        'email' => ['label' =>'Email', 'type' => 'text'],
         'currency' => ['label' =>'Currency', 'type' => 'text'],
         'plan' => ['label' =>'Plan', 'type' => 'text'],       
     ];
@@ -106,7 +106,7 @@ class CompanyController extends Controller
         $company->company_country = $request->get('company_country');
         $company->company_vat_id = $request->get('company_vat_id');
         $company->codice_destinatario = $request->get('codice_destinatario');
-        $company->admin_email = $request->get('admin_email');
+        $company->email = $request->get('email');
 
         $company->save();
         if(!$request->id){
@@ -339,7 +339,7 @@ class CompanyController extends Controller
             $company->company_country = $request->company_country;
             $company->company_address = $request->company_address;
             $company->company_vat_id = $request->company_vat_id;
-            $company->admin_email = $request->admin_email;
+            $company->email = $request->email;
             $company->save();
         }
 
