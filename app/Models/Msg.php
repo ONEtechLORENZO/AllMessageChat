@@ -24,13 +24,13 @@ class Msg extends Model
     /**
      * Send message to WhatsApp
      */
-    public function sendWhatsAppMessage($content, $destination, $account, $template = '' , $attachment = '')
+    public function sendWhatsAppMessage($content, $to, $account, $template = '' , $attachment = '')
     {        
+        // remove + (plus) symbol       
+        $destination = str_replace('+', '' , $to);
         
         if($account->service_engine == 'facebook'){
-            // remove + (plus) symbol
-            $destination = str_replace('+' , '', $destination);
-
+            
             // create URL
             $url = config('app.fb.api_url');
             $url .= $account->fb_phone_number_id . '/messages' ;
@@ -92,9 +92,6 @@ class Msg extends Model
 
         } else {
             $url = config('app.api_url');
-            if(strpos($destination, '+') === true){
-                $destination = str_replace('+', '' , $destination);
-            }
 
             $post_data = [
                 'channel' => 'whatsapp',
@@ -104,7 +101,7 @@ class Msg extends Model
                 'disablePreview' => null
             ];
 
-            if(isset($_POST['template']) || $template) {
+            if($template && $template != "undefined" ){  
                 // Set template type object
                 $message = [
                     'id' => $template,
@@ -116,7 +113,7 @@ class Msg extends Model
                 // Set attachment
                 $post_data['message'] = (json_encode($attachment));
                 $data['msg_type'] = $attachment['type'];
-                $data['file_path'] = $attachment['originalUrl'];
+                $data['file_path'] = $attachment['file_url'];
             } else {
                 // Set text type object
                 $message = [
@@ -142,7 +139,7 @@ class Msg extends Model
             } 
             if($attachment) { 
                 $response_body['msg_type'] = $attachment['type'];
-                $response_body['file_path'] = $attachment['originalUrl'];
+                $response_body['file_path'] = $attachment['file_url'];
             }
         }
         $data['result'] = $response_body;

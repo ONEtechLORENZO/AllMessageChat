@@ -35,12 +35,12 @@ class Document extends Model
     /**
      * Store Document and return file path
      */
-    public function storeDocument($type , $url , $parent)
+    public function storeDocument($type , $url , $parent, $account)
     {
-
         $file = file_get_contents($url);
-        $fileUrl = $this->saveDocument($type , $file, $parent, $account, 'incoming');
-        return ($fileUrl);
+        $docId = $this->saveDocument($type , $file, $parent, $account, 'incoming');
+
+        return ($docId);
     }
 
     /**
@@ -67,10 +67,10 @@ class Document extends Model
         $file = $response->body();
 
         $type = $mediaData->mime_type;
-        $path = $this->saveDocument($type , $file , $parent, $account, 'incoming');
+        $docId = $this->saveDocument($type , $file , $parent, $account, 'incoming');
         
         $return['msg_type'] = explode('/', $type)[0];
-        $return['file_path'] = $path;
+        $return['file_path'] = $docId;
         $return['message'] = isset($mediaData->caption) ? $mediaData->caption : '';
         return ($return);
     }
@@ -98,7 +98,7 @@ class Document extends Model
         $document->parent_module = 'Contact';
         $document->save();
 
-        return $path;
+        return $document->id;
     }
 
 }

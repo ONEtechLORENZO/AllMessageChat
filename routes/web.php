@@ -194,6 +194,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Document
     Route::get('/download_document/{id}', [DocumentController::class, 'downloadDocument'])->name('download_document');
+    Route::get('/preview_document/{id}', [DocumentController::class, 'previewDocument'])->name('preview_document');
 
     // Opportunity
     Route::get('/opportunities', [OpportunityController::class, 'index'])->name('listOpportunity');

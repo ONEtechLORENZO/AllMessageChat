@@ -19,11 +19,11 @@ class MsgObserver
      */
     public function created(Msg $msg)
     {
-        if(! isset($_REQUEST['FROM_CRM'])){
+       
             Log::info('MessageLogObserver Message Created - '.$msg);
             $status =  $this->sendMessageResponse($msg);
             Log::info('Send message log status - '. $status);
-        }
+        
     }
 
     /**

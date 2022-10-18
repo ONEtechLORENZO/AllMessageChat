@@ -22,6 +22,7 @@ import Date from './Date';
 import Time from './Time';
 import MultiSelect from './MultiSelect';
 import LineItem from '@/Pages/Order/Form';
+import InputError from './InputError';
 
 const defaultConfig = {
     // class of the parent element where the error/success class is added
@@ -609,6 +610,7 @@ function Form(props)
                                                     <div className="mt-1">
                                                         {element}
                                                     </div>
+                                                    <InputError message={formErrors[field_info.field_name]} />
                                                 </div>
                                             )
                                         })}
