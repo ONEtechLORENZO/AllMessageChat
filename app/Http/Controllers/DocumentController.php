@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Document;
 use App\Models\Contact;
+use Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Cache;
@@ -91,7 +92,45 @@ class DocumentController extends Controller
      */
     public function downloadDocument(Request $request, $documentId)
     {
-        $canDownload = false;
+   
+        $document = $this->checkCanAccess($request , $documentId);
+        if($document){
+            try {
+                $result = Storage::download($document->path);
+                return $result;
+            } catch (\Exception $e) {
+                abort( 403 , $e->getMessage());
+            }
+        } else {
+            abort('401');
+        }
+    }
+
+    /**
+     * Preview Document
+     */
+    public function previewDocument(Request $request, $documentId)
+    {
+        $document = $this->checkCanAccess( $request, $documentId );
+        if($document){
+          
+            $docContent = Storage::get($document->path);
+            $type       = Storage::mimeType($document->path);
+      
+         
+            return Response::make($docContent, 200, [
+              'Content-Type'        => $type,
+              'Content-Disposition' => 'inline; filename="'.$document->title.'"',
+            ]);
+        }
+    }
+
+    /**
+     * Check can access the Document
+     */
+    public function checkCanAccess( $request, $documentId )
+    {
+        $return = false;
         $currentUser = $request->user();
         $companyId = Cache::get('selected_company_'. $currentUser->id);
         $document = Document::find($documentId);
@@ -103,18 +142,10 @@ class DocumentController extends Controller
             ])->first();
 
             if($contact){
-                $canDownload = true;
+                $return = $document;
             }
         }
-        if($canDownload){
-            try {
-                $result = Storage::download($document->path);
-                return $result;
-            } catch (\Exception $e) {
-                abort( 403 , $e->getMessage());
-            }
-        } else {
-            abort('401');
-        }
+
+        return $return;
     }
 }

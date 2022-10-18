@@ -334,7 +334,6 @@ class ContactController extends Controller
         $contact_id = $this->saveContact($request);
        
         if($request->is('api/*')){
-            
                 $contact = Contact::findOrFail($contact_id);
                 return response()->json($contact);           
             }

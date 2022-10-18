@@ -27,7 +27,7 @@ Route::post('/webhook/v1/', [AutomationController::class , 'storeWebActionData']
 Route::middleware(['auth:sanctum'])->group(function() {
 
     // Send whatsapp message
-    Route::post('/v1/{account_id}/send-wa-message', [MsgController::class, 'sendAPIMessage']);
+    Route::post('/v1/send-wa-message', [MsgController::class, 'sendAPIMessage']);
 
     // Return list of templates
     Route::get('/v1/{account_id}/get-wa-templates', [TemplateController::class, 'getTemplates']);

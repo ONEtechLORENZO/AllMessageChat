@@ -10,6 +10,7 @@ use App\Models\Company;
 use App\Models\Field;
 use App\Models\User;
 use App\Models\Plan;
+use App\Models\Account;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Log;
 
@@ -105,9 +106,55 @@ class SettingsController extends Controller
     {    
         $userCompany = $this->UserCompanyDetail($request);
 
-        return Inertia::render('Subscription/index', [
-            'company' => $userCompany
-        ]);
+        $companyId = Cache::get('selected_company_' . $request->user()->id);
+
+        // GET Account records
+        $accounts = Account::where('company_id', $companyId)->get(); 
+
+        $columns = [
+            'name' => [ 'label' => ' Name' , 'type' => 'text'],
+            'email' =>  [ 'label' => 'Email' , 'type' => 'text'],
+            'role' => [ 'label' => 'Role' , 'type' => 'text'],
+            'status' =>  [ 'label' => 'Status' , 'type' => 'checkbox'],
+            'created_at' =>  [ 'label' => 'Created at' , 'type' => 'datetime'],
+        ];
+
+        $module = new User();
+        
+        // GET Company related Users
+        $userList = $this->listView($request, $module, $columns);
+
+        $moduleData = [
+            'singular' => 'User',
+            'plural' => 'Users',
+            'module' => 'User',
+            'add_link' => ( $request->user()->role == 'global_admin' ) ?  route('create_global_user') : route('create_user'),
+            'edit_link' => 'editUser',
+            'add_button_text' => 'Add User',
+            'current_page' => 'Users',
+            'current_user' => $request->user(),
+            // Actions
+            'actions' => [
+                'create' => true,
+                'detail' => true,
+                'edit' => true,
+                'delete' => true,
+                'export' => false,
+                'import' => false,
+                'search' => true,
+                'filter' => false,
+                'invite_user' => true,
+                'select_field'=>true
+
+            ],
+            'accounts' => $accounts,
+            'company' => $userCompany,
+            'show_header' => false
+        ];        
+
+        $data = array_merge($moduleData, $userList);
+
+        return Inertia::render('Subscription/index', $data);
     }
 
     public function UserCompanyDetail($request){
@@ -120,10 +167,12 @@ class SettingsController extends Controller
         
         // Get related company details
         $userCompany = DB::table('company_user')->where('user_id', $user_id)->get('company_id');
-    
+
         foreach($userCompany as $company){
             $company =  Company::where('id', $company->company_id)->first();
-            $related_company[$company['id']] = $company['name'];
+            if($company) {
+                $related_company[$company['id']] = $company['name'];
+            }
         }
         
         // Get Company Subscription Plan name

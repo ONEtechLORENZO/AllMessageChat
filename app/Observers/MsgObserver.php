@@ -19,9 +19,11 @@ class MsgObserver
      */
     public function created(Msg $msg)
     {
-        Log::info('MessageLogObserver Message Created - '.$msg);
-        $status =  $this->sendMessageResponse($msg);
-        Log::info('Send message log status - '. $status);
+       
+            Log::info('MessageLogObserver Message Created - '.$msg);
+            $status =  $this->sendMessageResponse($msg);
+            Log::info('Send message log status - '. $status);
+        
     }
 
     /**

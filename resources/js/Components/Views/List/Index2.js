@@ -199,7 +199,8 @@ function ListView(props)
     return (
         <>
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
-                <div className="flex min-w-0 justify-between">
+                {(props.show_header && props.show_header === true) || (props.show_header == undefined)? 
+                 <div className="flex min-w-0 justify-between">
                     <Head title={props.module} />
                     <div className='flex gap-6'>
                         <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">{props.plural}</h2>
@@ -270,26 +271,26 @@ function ListView(props)
                                 </Link>
                             </>
                         : ''}
-                         {props.actions && props.actions.export === true ?
+                        {props.actions && props.actions.export === true ?
                             <>
                                 <a href={route('export',{'exportmod':props.module})} 
-                                   className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
+                                    className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
                                 >
-                                   <DownloadIcon className='h-4 w-4' /> Export 
+                                    <DownloadIcon className='h-4 w-4' /> Export 
                                 </a>
                             </>
                         : ''}
-                         {props.actions && props.actions.mass_edit === true ?
+                        {props.actions && props.actions.mass_edit === true ?
                             <>
                                 <button
-                                   className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
-                                   onClick={() => massEdit()}
+                                    className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
+                                    onClick={() => massEdit()}
                                 >
-                                   <PencilAltIcon className='h-4 w-4' /> Mass edit
+                                    <PencilAltIcon className='h-4 w-4' /> Mass edit
                                 </button>
                             </>
                         : ''}
-                         
+                        
                         {props.actions && props.actions.create === true &&
                             <>
                                 {props.add_link &&
@@ -367,8 +368,8 @@ function ListView(props)
                                                                 </li>
                                                             );
                                                     })}
-                                               </ul>
-                                               <Menu.Item>
+                                                </ul>
+                                                <Menu.Item>
                                                     <div className='content-center justify-center'>
                                                         <Button  
                                                             onClick={() => saveSelectedColumn()}
@@ -377,7 +378,7 @@ function ListView(props)
                                                             Save
                                                         </Button>
                                                     </div>
-                                               </Menu.Item>
+                                                </Menu.Item>
                                             </Menu.Items>
                                         </Transition>
                                     </Menu>
@@ -386,6 +387,8 @@ function ListView(props)
                         }
                     </div>
                 </div>
+                : ''}
+                
                 <div className="mt-2 flex flex-col">
                     <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
                         <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">

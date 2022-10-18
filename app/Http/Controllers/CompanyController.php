@@ -271,7 +271,7 @@ class CompanyController extends Controller
     {
         $companyId = $request->company_id;
         Cache::put('selected_company_'. $request->user()->id  , $companyId);
-        
+       
         return Redirect::to(url()->previous());
     }
     public function showColumn(Request $request,$module)
