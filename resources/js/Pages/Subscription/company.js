@@ -12,6 +12,8 @@ export default function CompanyDetail(props)
 {
   const [fields, setFields] = useState();
   const [temp, setTemp] = useState({});
+  const [currentCompany, setCurrentCompany] = useState(props.currentCompany);
+  const [relatedCompany, setRelatedCompany] = useState(props.relatedCompany);
 
   useEffect(() => {
     fetchModuleFields();
@@ -37,7 +39,7 @@ export default function CompanyDetail(props)
     setTemp(newTemp);
 
     //new value
-    newTemp[field_name] = props.currentCompany[field_name];
+    newTemp[field_name] = currentCompany[field_name];
     setTemp(newTemp);
   }
 
@@ -61,6 +63,19 @@ export default function CompanyDetail(props)
         }
       });
     } 
+  }
+
+  function changeCompany(event){
+    const id = event.target.value;
+    
+    if(id) {
+      var data = { 'company_id': id};
+      Inertia.post(route('setBaseCompany'), data, {
+        onSuccess: (response) => {
+          window.location.reload();
+        }
+      });
+    }
   }
 
     return (
@@ -91,7 +106,7 @@ export default function CompanyDetail(props)
                 </div>
               </div>
               <div className="border border-solid rounded-lg p-4">
-                <div className="font-bold capitalize">{props.currentCompany && props.currentCompany.plan} - Plan</div>
+                <div className="font-bold capitalize">{currentCompany && currentCompany.plan} - Plan</div>
                 <div className="grid grid-cols-2 p-2">
                     <div className="">
                         <p className="flex text-gray-500 gap-2"><span className="w-5 h-5"><CheckIcon/></span>Monthly Fee</p>
@@ -118,15 +133,15 @@ export default function CompanyDetail(props)
                     </div>
                     <div className="w-full">
                         <div className="p-2 flex">
-                          <div>{props.currentCompany && props.currentCompany.name}</div>
-                          <div className="px-4 text-sm text-gray-600 font-bold">{props.currentCompany && props.currentCompany.payment_method == 'Postpaid' ? '( Postpaid )' : ''}</div>
+                          <div>{currentCompany && currentCompany.name}</div>
+                          <div className="px-4 text-sm text-gray-600 font-bold">{currentCompany && currentCompany.payment_method == 'Postpaid' ? '( Postpaid )' : ''}</div>
                         </div>
                         <div className="p-2">
                             <Dropdown 
-                            id='swithc_company'
+                            id='switch_company'
                             name='switch_company'
-                            options={props.relatedCompany}
-                            handleChange={props.changeCompany}
+                            options={relatedCompany}
+                            handleChange={changeCompany}
                             emptyOption='Switch Company'
                             />
                         </div>
@@ -155,8 +170,8 @@ export default function CompanyDetail(props)
                             let field_value = '';
                             let options = '';
                             let field_name = field.field_name;
-                            if(props.currentCompany){
-                              let company = props.currentCompany;
+                            if(currentCompany){
+                              let company = currentCompany;
                               field_value = company[field_name];
                             }
                             if(!field_value){
