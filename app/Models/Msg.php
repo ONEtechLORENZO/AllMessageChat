@@ -54,6 +54,11 @@ class Msg extends Model
                 ];
                 $post_data['type'] = 'template';
                 $post_data['template'] = (json_encode($message));
+            } else if($attachment) { 
+                // set attachment
+                $post_data['type'] = $attachment['type'];
+                $post_data[$attachment['type']] = ['link' => $attachment['file_url']];
+               
             } else {
                 $post_data['type'] = 'text'; 
                 $post_data['text'] = (json_encode(['body' => $content]));
@@ -69,15 +74,20 @@ class Msg extends Model
                     'status' => 'submitted',
                     'messageId' => $messageId
                 ];
+                if($attachment) { 
+                    $response_body['msg_type'] = $attachment['type'];
+                    $response_body['file_path'] = $attachment['file_url'];
+                }
                 $data['result'] = $response_body;
             } else {
                 $response_body = [ 
                     'status' => 'error',
                     'error' => $response_body['error']['message'],
                 ];
+                
                 $data['result'] = $response_body;
             }
-            
+        
             return $data;
 
         } else {
