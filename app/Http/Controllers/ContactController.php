@@ -12,6 +12,7 @@ use App\Models\Serviceable;
 use Cache;
 use App\Models\Tag;
 use App\Models\Category;
+use App\Models\Company;
 use App\Models\Field;
 use App\Models\Service;
 use App\Models\User;
@@ -241,14 +242,20 @@ class ContactController extends Controller
             $query = $submod::join('categorables', 'categorable_id', 'contacts.id')
                 ->where('category_id', $request->id);
         }
-
+        if($parent_module=='Company')
+         {            
+            if($subModule=='User')
+            {         
+                $query = $submod::join('company_user', 'user_id', 'users.id')
+                          ->where('company_user.company_id', $request->id);                 
+            }
+        }
         if($parent_module=='Contact')
         {
             if($subModule=='Opportunity')
               $query = $submod::where('contact_id', $request->id);
             if($subModule=='Order')
               $query = $submod::where('contact', $request->id);
-
             if($subModule=='Document')
               $query = $submod::where('parent_id', $request->id);
         }
@@ -257,6 +264,7 @@ class ContactController extends Controller
             if($subModule=='Contact')
               $query = $submod::where('organization_id', $request->id);
         }
+        
         $subPanelData = $this->getSubPanelRecords($parent_module, $submod, $query,$parent_name);  
       
         echo json_encode($subPanelData);

@@ -58,4 +58,17 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsToMany(Company::class);
     }
+
+    public function getListViewFields()
+    {
+        $list_view_columns = [
+            'first_name'  => ['label' => 'First Name', 'type' => 'text'],
+            'last_name' => ['label' => 'Last Name', 'type' => 'text'],
+            'email' => ['label' => 'Email', 'type' => 'text'],
+            'phone_number'=> ['label' => 'Phone number', 'type' => 'phone_number'],  
+            'role' => ['label' => 'Role' ,'type' => 'text'],
+            
+        ];
+        return $list_view_columns;
+    }
 }
