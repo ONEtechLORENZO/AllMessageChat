@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from "react";
 import { PencilIcon, CheckIcon, XIcon } from "@heroicons/react/solid";
 import Element from "./Element";
-import Axios from "axios";
 import { Inertia } from "@inertiajs/inertia";
 import notie from 'notie';
 
@@ -10,28 +9,7 @@ export default function InlineEdit(props) {
     const [record, setRecord] = useState(props.record);
     const [currentInfo, setCurrentInfo] = useState(props.field);
     const [temp, setTemp] = useState({});
-    const [fields, setFields] = useState();
     const [showEditView, setShowEditView] = useState(false);
-
-    useEffect( () => {
-        fetchModuleFields();
-    },[]);
-    
-    /**
-     * Fetch module fields
-     */
-     function fetchModuleFields() {
-
-        let endpoint_url = route('fetchModuleFields', {'module': props.module});
-        Axios.get(endpoint_url).then((response) => {
-            if (response.data.status !== false) {
-                setFields(response.data.fields);
-            }
-            else {
-                notie.alert({type: 'error', text: response.data.message, time: 5});
-            }
-        });
-    }
 
     // Get which field you want to edit 
     function editCurrentField(field_name, field_type) {
@@ -126,10 +104,10 @@ export default function InlineEdit(props) {
               <>
                 <Element
                   record={props.record}
-                  fields={fields}
                   temp={temp}
                   fieldOptions={props.fieldOptions}
                   tempDataHandler={tempDataHandler}
+                  moduleFields={props.moduleFields}
                 />
                 <div className="p-2 text-gray-900"><CheckIcon className="h-6 w-6 text-green-900"  onClick={() => saveEdit()}/></div>
                 <div className="p-2 text-gray-900"><XIcon className="h-6 w-6 text-red-900"  onClick={() => cancelEdit()}/></div>

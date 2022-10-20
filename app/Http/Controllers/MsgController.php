@@ -728,7 +728,8 @@ class MsgController extends Controller
                 $result['messageId'] = $result['result']['messageId'];
             } else {
                 $result['status'] = 'Failed';
-                $result['error'] = isset($result['result']['error']) ? $result['result']['error'] : 'Please check the configuration';
+                $error = isset($result['result']['error']) ? ($result['result']['error']) : ($result['result']['message']);
+                $result['error'] = $error ? $error : 'Please check the configuration';
             }
         }
         if(isset($result['messageId']))

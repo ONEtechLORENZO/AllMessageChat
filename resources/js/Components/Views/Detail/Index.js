@@ -15,6 +15,7 @@ import { ChevronDownIcon }  from "@heroicons/react/outline";
 import SubscriptionPlan from "./PlanEdit";
 import WorkspacePlan from "./WorkspacePlan";
 import WorkspacePaid from "./WorkspacePaid";
+import axios from "axios";
 
 export default function Index(props) 
 {
@@ -36,8 +37,10 @@ export default function Index(props)
 
     const [subscribedServices, setSubscribedServices] = useState([]);
     const [addClass, setAddClass] = useState(false);
+    const [moduleFields, setModuleFields] = useState();
 
     useEffect(() => {
+        fetchModuleFields();
         setRecord(props.record);
         setTagOption(props.tagOptions);
 
@@ -186,22 +189,6 @@ export default function Index(props)
         });
     }
 
-    /**
-     * Get dropdown field options
-     */
-    function getFieldOptions(name)
-    {
-        let newFieldOptions = Object.assign({}, fieldOptions);
-        axios({
-            method: 'get',
-            url: route('get_field_options', {'field_name': name, 'module_name': props.module}),
-        })
-        .then((response) => {
-            newFieldOptions[name] = response.data.options;
-            setFieldOptions(newFieldOptions);
-        });
-    }
-
     function classNames(...classes) {
         return classes.filter(Boolean).join(' ')
     }
@@ -215,6 +202,39 @@ export default function Index(props)
         setAddClass(false);
         return false;
        }
+    }
+
+     /**
+     * Fetch module fields
+     */
+    function fetchModuleFields() {
+
+        axios({
+            method : 'get',
+            url:  route('fetchModuleFields', {'module': props.module}),
+        })
+        .then((response) => {
+            if (response.data.status !== false) {
+                setModuleFields(response.data.fields);
+                optionFields(response.data.fields);
+            }
+            else {
+                notie.alert({type: 'error', text: response.data.message, time: 5});
+            }
+        });
+    }
+
+    function optionFields(fields) {
+        
+        if(fields) {
+            Object.entries(fields).map( ([key,field]) => {
+                let newFieldOptions = Object.assign({}, fieldOptions);
+                if(field.field_type == 'dropdown') {
+                    newFieldOptions[field.field_name] = field.options;
+                    setFieldOptions(newFieldOptions);  
+                }
+            });
+        }
     }
 
     return (            
@@ -339,314 +359,287 @@ export default function Index(props)
                         </ul>
 
                         <div id="tab-contents">
-                            {Object.entries(props.tabs).map(([key, tab])=>{
-                                var hideClass = "p-4 divide-y";
-                                if(activeTab != tab.name){
-                                    hideClass += ' hidden';
-                                }
-                                return(
-                                    <div id={tab.name} className={hideClass}>
-                                        {tab.name == 'Detail' &&
+                            
+                            {activeTab == 'Detail' && 
+                               <>
+                               <div className="bg-gray-50">
+                                   <dl className="text-gray-200 divide-y">
+                                       <Disclosure as="div" key='General' className="" defaultOpen>
+                                           {({ open }) => (
                                            <>
-                                            <div className="bg-gray-50">
-                                                <dl className="text-gray-200 divide-y">
-                                                    <Disclosure as="div" key='General' className="" defaultOpen>
-                                                        {({ open }) => (
-                                                        <>
-                                                            <dt className="pt-2">
-                                                                <Disclosure.Button className="flex w-full items-start justify-between text-left text-gray-500">
-                                                                    <span className="px-2 -mb-px font-semibold text-gray-800 rounded-t opacity-70">General</span>
-                                                                    <span className="ml-6 flex h-7 items-center">
-                                                                    <ChevronDownIcon
-                                                                        className={classNames(open ? '-rotate-180' : 'rotate-0', 'h-4 w-4 transform')}
-                                                                        aria-hidden="true"
-                                                                    />
-                                                                    </span>
-                                                                </Disclosure.Button>
-                                                            </dt>
-                                                                <Disclosure.Panel as="dd" className="mt-2 pr-12">
-                                                                <div>
-                                                                    {Object.entries(defaultHeader).map( ([key, field]) => {
-                                                                        var field_name = key;
-                                                                        let showField = true;
+                                               <dt className="pt-2">
+                                                   <Disclosure.Button className="flex w-full items-start justify-between text-left text-gray-500">
+                                                       <span className="px-2 -mb-px font-semibold text-gray-800 rounded-t opacity-70">General</span>
+                                                       <span className="ml-6 flex h-7 items-center">
+                                                       <ChevronDownIcon
+                                                           className={classNames(open ? '-rotate-180' : 'rotate-0', 'h-4 w-4 transform')}
+                                                           aria-hidden="true"
+                                                       />
+                                                       </span>
+                                                   </Disclosure.Button>
+                                               </dt>
+                                                   <Disclosure.Panel as="dd" className="mt-2 pr-12">
+                                                   <div>
+                                                       {Object.entries(defaultHeader).map( ([key, field]) => {
+                                                           var field_name = key;
+                                                           let showField = true;
 
-                                                                        if(key == 'id' || key == 'tag' || key == 'list') {
-                                                                            showField = false;
-                                                                        }
+                                                           if(key == 'id' || key == 'tag' || key == 'list') {
+                                                               showField = false;
+                                                           }
 
-                                                                        var value = field.custom == 0 ? record[key] : record['custom'] ? record['custom'][key] : '';
-                                                                        if(field.type == 'dropdown') {
-                                                                            if(!fieldOptions[field_name]){
-                                                                                getFieldOptions(field_name);
-                                                                            }
+                                                           var value = field.custom == 0 ? record[key] : record['custom'] ? record['custom'][key] : '';
+                                                           if(field.type == 'dropdown') {
+                                                               if(fieldOptions[field_name]){
+                                                                   if(record.hasOwnProperty(key)){
+                                                                       value = (fieldOptions[field_name]) ? fieldOptions[field_name][value] : value;
+                                                                   }
+                                                               }
+                                                           }
+                                                           else if(field.type == 'multiselect') {
+                                                               value =  (value) ? value.join(', ') : '-';
+                                                           }
 
-                                                                            if(record.hasOwnProperty(key)){
-                                                                                value = (fieldOptions[field_name]) ? fieldOptions[field_name][value] : value;
-                                                                            }
-                                                                        }
-                                                                        else if(field.type == 'multiselect') {
-                                                                            value =  (value) ? value.join(', ') : '-';
-                                                                        }
+                                                           if(field.type == 'relate') {
+                                                               let relate_value = record[key] ? record[key] : '';
+                                                               if(relate_value) {
+                                                                   let relate_module = relate_value['module'];
+                                                                   let related_id = relate_value['value'];
+                                                                   if(relate_module) {
+                                                                       value = <Link href={route('detail' + relate_module, {id: related_id})} className='cursor-pointer underline'>
+                                                                          {relate_value['label']}
+                                                                       </Link>;
+                                                                   }else {
+                                                                       value = '';
+                                                                   }
+                                                               }
+                                                           }
+                                                           
+                                                           if(field.type == 'checkbox') {
+                                                               value = (value) ? 'checked': 'unchecked';
+                                                           }
 
-                                                                        if(field.type == 'relate') {
-                                                                            let relate_value = record[key] ? record[key] : '';
-                                                                            if(relate_value) {
-                                                                                let relate_module = relate_value['module'];
-                                                                                let related_id = relate_value['value'];
-                                                                                if(relate_module) {
-                                                                                    value = <Link href={route('detail' + relate_module, {id: related_id})} className='cursor-pointer underline'>
-                                                                                       {relate_value['label']}
-                                                                                    </Link>;
-                                                                                }else {
-                                                                                    value = '';
-                                                                                }
-                                                                            }
-                                                                        }
+                                                           if(showField) {
+                                                               return(
+                                                                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                                       <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
+                                                                       <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex"> 
+                                                                         <InlineEdit 
+                                                                           module={props.module}
+                                                                           field={field}
+                                                                           value={value}
+                                                                           record={record}
+                                                                           fieldOptions={fieldOptions}
+                                                                           moduleFields={moduleFields}
+                                                                         />
+                                                                       </dd>
+                                                                   </div>
+                                                               )
+                                                           }
 
-                                                                        
-                                                                        if(field.type == 'checkbox') {
-                                                                            value = (value) ? 'checked': 'unchecked';
-                                                                        }
+                                                           if(key == 'tag'){
+                                                               return(
+                                                                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                                       <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
+                                                                       <dd className="flex"> 
+                                                                           <ReactSelect
+                                                                           value={tagSelectedOption}
+                                                                           defaultValue={tagSelectedOption}
+                                                                           onChange={setTagSelectedOption}
+                                                                           options={tagOption}
+                                                                           setOpen={setTagOpen}
+                                                                           save={saveTag}
+                                                                           openTag={tagOpen}
+                                                                           />
+                                                                       </dd>
+                                                                   </div>    
+                                                               )   
+                                                           }   
+                                                           if(key == 'list'){
+                                                               return(
+                                                                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                                       <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
+                                                                       <dd className="flex"> 
+                                                                           <ReactSelect
+                                                                           value={ListSelectedOption}
+                                                                           defaultValue={ListSelectedOption}
+                                                                           onChange={setListSelectedOption}
+                                                                           options={listOption}
+                                                                           setOpen={setListOpen}
+                                                                           save={saveList}
+                                                                           openTag={listOpen}
+                                                                           />
+                                                                       </dd>
+                                                                   </div>    
+                                                               )
+                                                           } 
+                                                       })}
+                                                   </div>
+                                                   </Disclosure.Panel>
+                                           </>
+                                           )}
+                                       </Disclosure>
+                                   </dl>
+                               </div>
 
-                                                                        if(showField) {
-                                                                            return(
-                                                                                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                                                                    <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
-                                                                                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex"> 
-                                                                                      <InlineEdit 
-                                                                                        module={props.module}
-                                                                                        field={field}
-                                                                                        value={value}
-                                                                                        record={record}
-                                                                                        fieldOptions={fieldOptions}
-                                                                                      />
-                                                                                    </dd>
-                                                                                </div>
-                                                                            )
-                                                                        }
+                               {customHeader &&
+                                   <div className="bg-gray-50">
+                                   <dl className="text-gray-200 divide-y">
+                                       {Object.entries(customHeader).map(([group, fields]) => (
+                                       <Disclosure as="div" key={group} className="" defaultOpen>
+                                           {({ open }) => (
+                                           <>
+                                               <dt className="pt-2">
+                                               <Disclosure.Button className="flex w-full items-start justify-between text-left text-gray-500">
+                                                   <span className="px-2 -mb-px font-semibold text-gray-800 rounded-t opacity-70">{group}</span>
+                                                   <span className="ml-6 flex h-7 items-center">
+                                                   <ChevronDownIcon
+                                                       className={classNames(open ? '-rotate-180' : 'rotate-0', 'h-4 w-4 transform')}
+                                                       aria-hidden="true"
+                                                   />
+                                                   </span>
+                                               </Disclosure.Button>
+                                               </dt>
+                                               <Disclosure.Panel as="dd" className="mt-2 pr-12">
+                                               <div>
+                                                   {Object.entries(fields).map(([key,field]) => { 
+                                                       var field_name = key;
+                                                       var value = (record[key]) ? record[key] : (record.custom && record.custom[key]) ? record.custom[key] : '-';
 
-                                                                        if(key == 'tag'){
-                                                                            return(
-                                                                                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                                                                    <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
-                                                                                    <dd className="flex"> 
-                                                                                        <ReactSelect
-                                                                                        value={tagSelectedOption}
-                                                                                        defaultValue={tagSelectedOption}
-                                                                                        onChange={setTagSelectedOption}
-                                                                                        options={tagOption}
-                                                                                        setOpen={setTagOpen}
-                                                                                        save={saveTag}
-                                                                                        openTag={tagOpen}
-                                                                                        />
-                                                                                    </dd>
-                                                                                </div>    
-                                                                            )   
-                                                                        }   
-                                                                        if(key == 'list'){
-                                                                            return(
-                                                                                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                                                                    <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
-                                                                                    <dd className="flex"> 
-                                                                                        <ReactSelect
-                                                                                        value={ListSelectedOption}
-                                                                                        defaultValue={ListSelectedOption}
-                                                                                        onChange={setListSelectedOption}
-                                                                                        options={listOption}
-                                                                                        setOpen={setListOpen}
-                                                                                        save={saveList}
-                                                                                        openTag={listOpen}
-                                                                                        />
-                                                                                    </dd>
-                                                                                </div>    
-                                                                            )
-                                                                        } 
-                                                                    })}
-                                                                </div>
-                                                                </Disclosure.Panel>
-                                                        </>
-                                                        )}
-                                                    </Disclosure>
-                                                </dl>
-                                            </div>
+                                                       if(field.type == 'dropdown') {
+                                                           if(fieldOptions[field_name]){
+                                                               if(record.hasOwnProperty(key)){
+                                                                   value = (fieldOptions[field_name]) ? fieldOptions[field_name][value] : value;
+                                                               }
+                                                           }
+                                                       }
+                                                       else if(field.type == 'multiselect') {
+                                                           value =  (value) ? value.join(', ') : '-';
+                                                       }
 
-                                            {customHeader &&
-                                                <div className="bg-gray-50">
-                                                <dl className="text-gray-200 divide-y">
-                                                    {Object.entries(customHeader).map(([group, fields]) => (
-                                                    <Disclosure as="div" key={group} className="" defaultOpen>
-                                                        {({ open }) => (
-                                                        <>
-                                                            <dt className="pt-2">
-                                                            <Disclosure.Button className="flex w-full items-start justify-between text-left text-gray-500">
-                                                                <span className="px-2 -mb-px font-semibold text-gray-800 rounded-t opacity-70">{group}</span>
-                                                                <span className="ml-6 flex h-7 items-center">
-                                                                <ChevronDownIcon
-                                                                    className={classNames(open ? '-rotate-180' : 'rotate-0', 'h-4 w-4 transform')}
-                                                                    aria-hidden="true"
-                                                                />
-                                                                </span>
-                                                            </Disclosure.Button>
-                                                            </dt>
-                                                            <Disclosure.Panel as="dd" className="mt-2 pr-12">
-                                                            <div>
-                                                                {Object.entries(fields).map(([key,field]) => { 
-                                                                    var field_name = key;
-                                                                    var value = (record[key]) ? record[key] : (record.custom && record.custom[key]) ? record.custom[key] : '-';
+                                                       if(field.type == 'checkbox') {
+                                                           value = (value) ? 'checked': 'unchecked';
+                                                       }
 
-                                                                    if(field.type == 'dropdown') {
-                                                                        if(!fieldOptions[field_name]){
-                                                                            getFieldOptions(field_name);
-                                                                        }
+                                                       if(field.type == 'relate') {
+                                                           let relate_value = record[key] ? record[key] : '';
+                                                           if(relate_value) {
+                                                               let relate_module = relate_value['module'];
+                                                               let related_id = relate_value['value'];
+                                                               if(relate_module) {
+                                                                   value = <Link href={route('detail' + relate_module, {id: related_id})} className='cursor-pointer underline'>
+                                                                      {relate_value['label']}
+                                                                   </Link>;
+                                                               }else {
+                                                                   value = '';
+                                                               }
+                                                               
+                                                           }
+                                                       }
 
-                                                                        if(record.hasOwnProperty(key)){
-                                                                            value = (fieldOptions[field_name]) ? fieldOptions[field_name][value] : value;
-                                                                        }
-                                                                    }
-                                                                    else if(field.type == 'multiselect') {
-                                                                        value =  (value) ? value.join(', ') : '-';
-                                                                    }
+                                                       return(
+                                                           <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                               <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
+                                                               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex">
+                                                                 <InlineEdit 
+                                                                   module={props.module}
+                                                                   field={field}
+                                                                   value={value}
+                                                                   record={record}
+                                                                   fieldOptions={fieldOptions}
+                                                                   moduleFields={moduleFields}
+                                                                 />
+                                                               </dd>
+                                                           </div>
+                                                       )
+                                                   }) }
+                                               </div>
+                                               </Disclosure.Panel>
+                                           </>
+                                           )}
+                                       </Disclosure>
+                                       ))}
+                                   </dl>
+                                   </div>
+                               }
 
-                                                                    if(field.type == 'checkbox') {
-                                                                        value = (value) ? 'checked': 'unchecked';
-                                                                    }
-
-                                                                    if(field.type == 'relate') {
-                                                                        let relate_value = record[key] ? record[key] : '';
-                                                                        if(relate_value) {
-                                                                            let relate_module = relate_value['module'];
-                                                                            let related_id = relate_value['value'];
-                                                                            if(relate_module) {
-                                                                                value = <Link href={route('detail' + relate_module, {id: related_id})} className='cursor-pointer underline'>
-                                                                                   {relate_value['label']}
-                                                                                </Link>;
-                                                                            }else {
-                                                                                value = '';
-                                                                            }
-                                                                            
-                                                                        }
-                                                                    }
-
-                                                                    return(
-                                                                        <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                                                            <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
-                                                                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex">
-                                                                              <InlineEdit 
-                                                                                module={props.module}
-                                                                                field={field}
-                                                                                value={value}
-                                                                                record={record}
-                                                                                fieldOptions={fieldOptions}
-                                                                              />
-                                                                            </dd>
-                                                                        </div>
-                                                                    )
-                                                                }) }
-                                                            </div>
-                                                            </Disclosure.Panel>
-                                                        </>
-                                                        )}
-                                                    </Disclosure>
-                                                    ))}
-                                                </dl>
-                                                </div>
-                                            }
-
-                                            {tab.linktab == 'lineItem' && props.lineItems.length != 0? 
-                                                <div className="divide-y pt-4">
-                                                    <ItemTable 
-                                                        lineItems={props.lineItems}
-                                                        view={'Detail'}
-                                                        totalPrice={props.totalPrice}
-                                                        getProductName={''}
-                                                        addQuantity={''}
-                                                        deleteItem={''}
-                                                        addItem={''}
-                                                        productList={''}
-                                                    />
-                                                </div>
-                                            :''}
-                                            </>
-                                        }
-                                        {activeTab == 'Notes' &&
-                                                <Notes
-                                                    module={props.module}                                                                                
-                                                    recordId={props.record.id} 
-                                                />
-                                        }
-                                        {activeTab == 'Users' &&
-                                            <>
-                                            
-                                               <ul role="list" className="divide-y divide-gray-200">
-                                                    {Object.entries(props.users).map(([key, user]) => (
-                                                        <li key={''} className="py-4 flex border-2 m-1 border-gray-100 p-4">
-                                                            <span><UserIcon /> </span> 
-                                                            <span className="ml-3">{user.name}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </>
-                                        }
-                                        {activeTab == 'Contact' &&
-                                            <>
-                                                <SubPanels 
-                                                    module={tab.name}
-                                                    parent_id={props.record.id}
-                                                    parent_name={props.record.name}
-                                                    parent_module={props.module}
-                                                  
-                                                />
-                                            </>
-                                        }
-                                        {activeTab == 'Opportunity' &&
-                                            <>
-                                                <SubPanels 
-                                                    module={tab.name}
-                                                    parent_id={props.record.id}
-                                                    parent_module={props.module}
-                                                    parent_name={props.record.name}
-                                                />
-                                            </>
-                                        }
-                                        {activeTab == 'Order' &&
-                                            <>
-                                                <SubPanels 
-                                                    module={tab.name}
-                                                    parent_id={props.record.id}
-                                                    parent_module={props.module}
-                                                    parent_name={props.record.name}
-                                                />
-                                            </>
-                                        }
-                                        {activeTab == 'Document' &&
-                                            <>
-                                                <SubPanels 
-                                                    module={tab.name}
-                                                    parent_id={props.record.id}
-                                                    parent_module={props.module}
-                                                    parent_name={props.record.name}
-                                                />
-                                            </>
-                                        }
-                                        {activeTab == 'company_plan' && 
-                                          <>
-                                            <SubscriptionPlan 
-                                             record={props.record}
-                                             subscriptionPlan={props.subscriptionPlan}
-                                            />
-                                          </>
-                                        }
-                                        {activeTab == 'workspacePlan' && 
-                                          <>
-                                            <WorkspacePlan 
-                                             plan_id={props.record.id}
-                                             workspaces={props.workspaces}
-                                            />
-                                          </>
-                                        }
-                                    </div>
-                                )
-                            })}
+                               {props.lineItems && props.lineItems.length != 0? 
+                                   <div className="divide-y pt-4">
+                                       <ItemTable 
+                                           lineItems={props.lineItems}
+                                           view={'Detail'}
+                                           totalPrice={props.totalPrice}
+                                           getProductName={''}
+                                           addQuantity={''}
+                                           deleteItem={''}
+                                           addItem={''}
+                                           productList={''}
+                                       />
+                                   </div>
+                               :''}
+                               </>
+                            }
+                            {activeTab == 'Notes' && 
+                                <Notes
+                                  module={props.module}                                                                                
+                                  recordId={props.record.id} 
+                                />
+                            }
+                            {activeTab == 'Users' &&
+                                <ul role="list" className="divide-y divide-gray-200">
+                                    {Object.entries(props.users).map(([key, user]) => (
+                                        <li key={''} className="py-4 flex border-2 m-1 border-gray-100 p-4">
+                                            <span><UserIcon /> </span> 
+                                            <span className="ml-3">{user.name}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            }
+                            {activeTab == 'Contact' &&
+                                <SubPanels 
+                                    module={'Contact'}
+                                    parent_id={props.record.id}
+                                    parent_name={props.record.name}
+                                    parent_module={props.module}
+                                
+                                />
+                            }
+                            {activeTab == 'Opportunity' &&
+                                <SubPanels 
+                                    module={'Opportunity'}
+                                    parent_id={props.record.id}
+                                    parent_module={props.module}
+                                    parent_name={props.record.name}
+                                />
+                            }
+                            {activeTab == 'Order' &&
+                                <SubPanels 
+                                    module={'Order'}
+                                    parent_id={props.record.id}
+                                    parent_module={props.module}
+                                    parent_name={props.record.name}
+                                />
+                            }
+                            {activeTab == 'Document' &&
+                                <SubPanels 
+                                    module={'Document'}
+                                    parent_id={props.record.id}
+                                    parent_module={props.module}
+                                    parent_name={props.record.name}
+                                />
+                            }
+                            {activeTab == 'company_plan' &&
+                                <SubscriptionPlan 
+                                  record={props.record}
+                                  subscriptionPlan={props.subscriptionPlan}
+                                />
+                            }
+                            {activeTab == 'workspacePlan' &&
+                                <WorkspacePlan 
+                                  plan_id={props.record.id}
+                                  workspaces={props.workspaces}
+                                />
+                            }
                         </div>
                     </li>
                 </ul>

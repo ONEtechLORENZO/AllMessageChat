@@ -6,8 +6,8 @@ import Checkbox from '@/Components/Forms/Checkbox';
 
 function ListTable(props){
 
-    const fieldOptions = props.fieldOptions;
     const [fields, setFields] = useState([]);
+    const [fieldOptions, setFieldOptions ] = useState({});
 
     useEffect(() => {
         fetchModuleFields();
@@ -17,7 +17,8 @@ function ListTable(props){
         let endpoint_url = route('fetchModuleFields', {'module': props.module});
         Axios.get(endpoint_url).then((response) => {             
             if (response.data.status !== false) {               
-                setFields(response.data.fields);               
+                setFields(response.data.fields); 
+                optionFields(response.data.fields);              
             }
             else {
                 notie.alert({type: 'error', text: response.data.message, time: 5});
@@ -25,22 +26,35 @@ function ListTable(props){
         })      
     }
 
+    function optionFields(fields) {
+        
+        if(fields) {
+            Object.entries(fields).map( ([key,field]) => {
+                let newFieldOptions = Object.assign({}, fieldOptions);
+                if(field.field_type == 'dropdown') {
+                    newFieldOptions[field.field_name] = field.options;
+                    setFieldOptions(newFieldOptions);  
+                }
+            });
+        }
+    }
+ 
     return(
         <>
             <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg my-4">
                 <table className="min-w-full divide-y divide-[#D9D9D9]">
                     <thead>
                         <tr>
-                        {props.actions.mass_edit === true &&  
-                            <th>
-                                <Checkbox
-                                    id={'checkall'}
-                                    name={'checkall'}
-                                    value={props.checkAll === true ? 1 : ''}
-                                    handleChange={() => props.selectCheckAll()}
-                                />
-                           </th>
-                        }
+                            {props.actions.mass_edit === true &&  
+                                <th>
+                                    <Checkbox
+                                        id={'checkall'}
+                                        name={'checkall'}
+                                        value={props.checkAll === true ? 1 : ''}
+                                        handleChange={() => props.selectCheckAll()}
+                                    />
+                            </th>
+                            }
                             {Object.entries(props.headers).map(([name, field]) => {
                                 let visibility = 'invisible';
                                 let sort_order = 'desc';
@@ -53,11 +67,6 @@ function ListTable(props){
                                 }
                                 if(name == 'tag' || name == 'list'){
                                     sortable = false;                                       
-                                }
-                                if(field.type == 'dropdown'){
-                                    if(!fieldOptions[name]){
-                                        props.getFieldOptions(name);
-                                    }
                                 }
 
                                 return (
@@ -88,21 +97,31 @@ function ListTable(props){
                         </tr>
                     </thead>
                     <tbody className=" bg-white">
-                       
                         {Object.entries(props.records).map(([key, record]) => ( 
                             <tr key={key}> 
-                            {props.actions.mass_edit === true && 
-                              <td className='px-2 py-2'>
-                                    <Checkbox
-                                        id={record.id}
-                                        name={record.id}
-                                        value={props.checkedId.includes(record.id) ? 1 :''}
-                                        handleChange={() => props.getCheckId(key, record.id)}
-                                    />
-                               </td>
-                            }
+                                {props.actions.mass_edit === true && 
+                                    <td className='px-2 py-2'>
+                                        <Checkbox
+                                            id={record.id}
+                                            name={record.id}
+                                            value={props.checkedId.includes(record.id) ? 1 :''}
+                                            handleChange={() => props.getCheckId(key, record.id)}
+                                        />
+                                    </td>
+                                }
+
                                 {Object.entries(props.headers).map(([name, field],index) => { 
-                                    let column_value = record[name]; 
+
+                                    let column_value = record[name];
+
+                                    if(fields) {
+                                        Object.entries(fields).map(([key, field])=> {
+                                            if((field.field_name == name) && field.is_custom && record.custom){
+                                                column_value = record.custom[name];
+                                            }
+                                        });
+                                    }
+                                    
                                     if(props.actions.detail === true && index === 0) {                                        
                                         var url = props.module === 'User' && props.current_user.role === 'global_admin'?  'detail_global_user' : 'detail'+props.module                                        
                                             column_value = <Link href={route(url, {id: record.id})} className='cursor-pointer underline'>
@@ -110,6 +129,7 @@ function ListTable(props){
                                         </Link>;                                          
                                             
                                     } 
+
                                     if(record.tags && name == 'tag'){
                                         var tagName = '';
                                         (record.tags).map((tag,tagIndex) => {
@@ -122,6 +142,7 @@ function ListTable(props){
                                         })
                                         column_value = tagName;
                                     }
+
                                     if(record.categorys && name == 'list'){
                                         var listName = '';
                                         (record.categorys).map((list,listIndex) => {
@@ -136,25 +157,21 @@ function ListTable(props){
                                     }
 
                                     if(field.type == 'dropdown'){
-                                        column_value = (fieldOptions[name]) ? fieldOptions[name][column_value] : column_value;
+                                        if(fieldOptions[name]) {
+                                            column_value = (fieldOptions[name]) ? fieldOptions[name][column_value] : column_value;
+                                        }
+                                    }else if(field.type == 'multiselect') {
+                                        column_value =  (column_value) ? column_value.join(', ') : '';
+                                    }
+
+                                    if (field.type == 'checkbox' ) {
+                                        if(name == 'status'){
+                                            column_value = (column_value == 1) ? 'Active' : 'Inactive'
+                                        } else {
+                                            column_value = (column_value == 1) ? 'Yes' : 'No';
+                                        }
                                     }
                                     
-                                    if(field.type == 'checkbox' && name == 'status'){
-                                        column_value = (column_value == 1) ? 'Active' : 'Inactive'
-                                    }
-
-                                    if (field.type == 'checkbox' && name == 'is_mandatory') {
-                                        column_value = (column_value == 1) ? 'Yes' : 'No'
-                                    }
-
-                                    if(fields) {
-                                        Object.entries(fields).map(([key, field])=> {
-                                            if((field.field_name == name) && field.is_custom && record.custom){
-                                                column_value = record.custom[name];
-                                            }
-                                        });
-                                    }
-
                                     return (
                                         <td key={name} className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]">
                                             {column_value}

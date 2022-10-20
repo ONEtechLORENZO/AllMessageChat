@@ -5,12 +5,9 @@ import Pagination from '@/Components/Pagination';
 import Button from '@/Components/Forms/Button';
 import ContactSelection from '@/Components/ContactSelection';
 import Form from '@/Components/Forms/Form';
-import Axios from "axios";
-import notie from 'notie';
 
 function SubPanels(props){
     const [showForm, setShowForm] = useState(false);
-    const [fieldOptions, setFieldOptions ] = useState([]);
     const [recordDetails, setrecordDetails ] = useState([]);
     const [headers, setHeaders ] = useState([]);
     const [actions, setActions ] = useState([]);
@@ -20,12 +17,12 @@ function SubPanels(props){
 
     useEffect(() => {
         getData();
-       }, [props]);
+    }, [props]);
 
 
-     //Get subpanel records
-       function getData()
-       {
+    // Get subpanel records
+    function getData()
+    {
         let endpoint_url = route("subpanel_list" , {'module':props.parent_module,'id': props.parent_id,'submodule':props.module});   
         axios({
             method: 'get',
@@ -37,7 +34,7 @@ function SubPanels(props){
           setpaginateDetail(response.data.sub_panel_pagination);
           setActions(response.data.sub_panbel_actions);
           setparentName(response.data.parent_name);
-      });
+        });
     }
 
     /**
@@ -47,20 +44,7 @@ function SubPanels(props){
         setShowForm(false);
         setRecordId('');
     }
-    /**
-     * Get dropdown field options
-     */
-     function getFieldOptions(name){
-        let newFieldOptions = Object.assign({}, fieldOptions);
-        axios({
-            method: 'get',
-            url: route('get_field_options', {'field_name': name, 'module_name': props.module}),
-        })
-        .then( (response) =>{
-            newFieldOptions[name] = response.data.options;          
-          setFieldOptions(newFieldOptions);
-        });
-    }
+
     return(
         <div className="">
             <div className="flex min-w-0 justify-between">
@@ -78,43 +62,40 @@ function SubPanels(props){
             </div>
             <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-                           
-                            <ListTable 
-                                module={props.module}
-                                headers={headers}
-                                records={recordDetails}
-                                actions={actions}
-                                fieldOptions={fieldOptions}
-                                getFieldOptions={getFieldOptions}
-                                paginator={paginateDetail}
-                            />
-                            {Object.entries(recordDetails).length == 0 ?         
-                                <Alert type='info' message= {'No record related yet.'} hideClose={true} />
-                            : 
-                                <Pagination paginator={paginateDetail} />
-                            }
-                            
-                            
+                    <ListTable 
+                        module={props.module}
+                        headers={headers}
+                        records={recordDetails}
+                        actions={actions}
+                        paginator={paginateDetail}
+                    />
+                    {Object.entries(recordDetails).length == 0 ?         
+                        <Alert type='info' message= {'No record related yet.'} hideClose={true} />
+                    : 
+                        <Pagination paginator={paginateDetail} />
+                    }
                 </div>
             </div>
 
             {showForm && (props.module==='Contact'?
-            <ContactSelection
+                <ContactSelection
                     setShowForm={setShowForm}
                     parent_module={props.parent_module}
                     parent_id={props.parent_id}
                     parent_name={parentName}
-                /> :<Form 
-                module={props.module}
-                heading={props.heading}
-                hideForm={hideForm}
-                recordId={recordId}
-                translator={props.translator}
-                parent_name={parentName}
-                parent_module={props.parent_module} 
-                parent_id={props.parent_id} 
-            />)
-           }
+                /> 
+                :
+                <Form 
+                    module={props.module}
+                    heading={props.heading}
+                    hideForm={hideForm}
+                    recordId={recordId}
+                    translator={props.translator}
+                    parent_name={parentName}
+                    parent_module={props.parent_module} 
+                    parent_id={props.parent_id} 
+                />
+            )}
             {/* {showForm ?
                 <Form 
                     module={props.module}
