@@ -19,11 +19,11 @@ class MsgObserver
      */
     public function created(Msg $msg)
     {
-        if(! isset($_REQUEST['FROM_CRM'])){
+       
             Log::info('MessageLogObserver Message Created - '.$msg);
             $status =  $this->sendMessageResponse($msg);
             Log::info('Send message log status - '. $status);
-        }
+        
     }
 
     /**
@@ -83,10 +83,15 @@ class MsgObserver
             $account = Account::find($messageLog->account_id);
             $contact = Contact::find($messageLog->msgable_id);
 
+            
             $from = ($account->service_engine == 'facebook') ? $account->fb_phone_number_id : $account->phone_number;
             $to = $contact->phone_number;
             $to = str_replace('+' , '', $to);
             
+            if($messageLog->msg_mode != 'outgoing'){
+                list($from , $to) = array($to , $from);
+            }
+
             $msgType = ($messageLog->msg_type) ? $messageLog->msg_type : 'TEXT';
             
             $date = new DateTime();

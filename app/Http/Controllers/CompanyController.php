@@ -38,19 +38,22 @@ class CompanyController extends Controller
     public function index(Request $request)
     {      
         $module = new Company();
+        $currentUser = $request->user();
+        
         $columnlist=Cache::get('Company'.'selected_column_list_'. $request->user()->id);       
         $listViewData = $this->listView($request, $module, $this->list_view_columns);
         $moduleData = [
             'singular' => 'Company',
             'plural' => 'Workspaces',
             'module' => 'Company',
+            'current_user' => $request->user(),
             'current_page' => 'Company', 
             // Actions
             'actions' => [
-              //  'create' => true,
+                'create' => true,
                 'detail' => true,
-              //  'edit' => true,
-              //  'delete' => true,
+                'edit' => true,
+                'delete' => true,
                 'export' => false,
                 'import' => false,
                 'search' => true,
@@ -143,7 +146,6 @@ class CompanyController extends Controller
         $companyId = Cache::get('selected_company_'. $user->id);
         //get current company details
         $currentCompany =  Company::where('id', $companyId)->first();
-        
         // Get message amount deduction
         $messageDeduction = []; //(new UserController)->getAmountDeduction($user->id);
         $paymentMethods = []; //(new UserController)->getPaymentMethods($request , 'direct');
@@ -152,6 +154,7 @@ class CompanyController extends Controller
         $headers = $this->getModuleHeader(1 , 'Company');        
         $data = [
             'record' => $company,
+            'current_user' => $user,
             'users' => $users,
             'headers' => $headers,
             'name' => $user->name,
@@ -185,7 +188,6 @@ class CompanyController extends Controller
                 'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount')
                 ]
         ];
-
         return Inertia::render('Company/Detail', $data);       
     }
 

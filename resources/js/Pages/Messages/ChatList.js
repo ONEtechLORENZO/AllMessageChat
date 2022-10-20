@@ -9,6 +9,7 @@ import notie from 'notie';
 import Filter from '@/Components/Views/List/Filter2';
 import { Inertia } from '@inertiajs/inertia';
 import nProgress from 'nprogress';
+import ChatBox from './ChatBox';
 
 import {
     DotsVerticalIcon,
@@ -17,7 +18,7 @@ import {
     MenuIcon
 } from "@heroicons/react/outline";
 
-import { Menu, Popover, Transition } from "@headlessui/react";
+import { Menu, Popover, Transition } from '@headlessui/react';
 
 import {
     SmileEmoji,
@@ -652,6 +653,16 @@ function ChatList(props)
                             />
 
                             <div className="border-t-2  border-gray-200 px-4 pt-4 mb-2 sm:mb-0">
+                                <ChatBox 
+                                    handleChange = {handleChange}
+                                    handleKeyUp = {handleKeyUp}
+                                    templates = {props.templates}
+                                    setTemplateInfo = {setTemplateInfo}
+                                    data = {data}
+                                    sendMessage = {sendMessage}
+                                    logo = { (selectedContact)? (chatList[selectedContact].name).substring(0,2) : ''}
+                                />
+{/* 
                                 <div className="flex gap-4 items-end">
                                     <div className="flex flex-col gap-1 ">
                                         <div className="flex rounded-md bg-white h-7 w-7 justify-center items-center cursor-pointer">
@@ -668,7 +679,6 @@ function ChatList(props)
                                                         <input 
                                                             type={'file'} 
                                                             name="attachment" 
-                                                        //    value={data.attachment} 
                                                             onChange={(e) => handleChange(e)} 
                                                         />
                                                     </div>
@@ -736,6 +746,7 @@ function ChatList(props)
                                         </div>
                                     </div>
                                 </div>
+                                 */}
                             </div>
                             </>
                         }

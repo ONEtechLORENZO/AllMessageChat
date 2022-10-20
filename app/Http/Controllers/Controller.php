@@ -5,7 +5,6 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
-
 use App\Models\Filter;
 use App\Models\Tag;
 use App\Models\Category;
@@ -13,6 +12,7 @@ use App\Models\Field;
 use App\Models\FieldGroup;
 use Cache;
 use App\Models\Contact;
+use App\Models\User;
 use App\Models\Opportunity;
 use App\Models\Service;
 
@@ -108,7 +108,7 @@ class Controller extends BaseController
 
         if($moduleName != 'Price' && $moduleName != 'Company' && $moduleName != 'Plan') {
             // For tenancy
-            if($user->role != 'global_admin' && $moduleName != 'User') {
+            if( $moduleName != 'User') {
                 $query->where("{$baseTable}.company_id", $companyId);
             }
 
@@ -608,10 +608,8 @@ class Controller extends BaseController
         unset($headers['tag']);
         unset($headers['list']);
 
-        // Set custom url for Paginate
-        $parentId = $_GET['id'];
-        
-        $url = route('detail'. $parent). '?id=' . $_GET['id'];
+        // Set custom url for Paginate  
+        $url = route(('detail'. $parent),['id' => $_GET['id']]);
         $records->withPath($url);
 
         $currentTab = 'Detail';

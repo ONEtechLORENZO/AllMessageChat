@@ -11,29 +11,29 @@ import notie from 'notie';
 import ItemTable from "@/Pages/Order/itemTable";
 import InlineEdit from "./InlineEdit";
 import { Disclosure } from '@headlessui/react'
-import { ChevronDownIcon }  from "@heroicons/react/outline";
+import { ChevronDownIcon } from "@heroicons/react/outline";
 import SubscriptionPlan from "./PlanEdit";
 import WorkspacePlan from "./WorkspacePlan";
 import WorkspacePaid from "./WorkspacePaid";
 import axios from "axios";
+import Wallet from "@/Pages/Wallet/Index"
 
-export default function Index(props) 
-{
-    const [record , setRecord] = useState(props.record);
-    const [activeTab , setActiveTab] = useState('Detail');
+export default function Index(props) {
+    const [record, setRecord] = useState(props.record);
+    const [activeTab, setActiveTab] = useState('Detail');
 
     const [tagSelectedOption, setTagSelectedOption] = useState(null);
     const [ListSelectedOption, setListSelectedOption] = useState(null);
 
-    const [tagOption ,setTagOption] = useState();
+    const [tagOption, setTagOption] = useState();
     const [listOption, setListOption] = useState();
     const [recordId, setRecordId] = useState();
     const [tagOpen, setTagOpen] = useState(false);
 
     const [listOpen, setListOpen] = useState(false);
-    const [defaultHeader , setDefaultHeader] = useState(props.headers.default);
+    const [defaultHeader, setDefaultHeader] = useState(props.headers.default);
     const [customHeader, setCustomHeader] = useState(props.headers.custom);
-    const [fieldOptions, setFieldOptions ] = useState({});
+    const [fieldOptions, setFieldOptions] = useState({});
 
     const [subscribedServices, setSubscribedServices] = useState([]);
     const [addClass, setAddClass] = useState(false);
@@ -47,21 +47,20 @@ export default function Index(props)
         setListOption(props.listOptions);
         setTagSelectedOption(props.tagData);
 
-        setListSelectedOption(props.listData);        
+        setListSelectedOption(props.listData);
         setRecordId(props.record.id);
-        
-        if(props.current_tab){
-            setActiveTab(props.current_tab);
-        }      
-        setSubscribedServices(props.subscribedServices);
-    },[props]);
 
-    function saveTag()
-    {
+        if (props.current_tab) {
+            setActiveTab(props.current_tab);
+        }
+        setSubscribedServices(props.subscribedServices);
+    }, [props]);
+
+    function saveTag() {
         var data = {
-            'name': tagSelectedOption ,
-             'id' : recordId,
-             'view': 'Detail',
+            'name': tagSelectedOption,
+            'id': recordId,
+            'view': 'Detail',
         }
 
         Inertia.post(route('storeTag'), data, {
@@ -76,10 +75,9 @@ export default function Index(props)
      * 
      * @param {object} event
      */
-    function handleSubscription(event) 
-    {
+    function handleSubscription(event) {
         let service_name = event.target.name;
-        if(subscribedServices.includes(service_name)) {
+        if (subscribedServices.includes(service_name)) {
             removeSubscription(event);
         }
         else {
@@ -92,31 +90,30 @@ export default function Index(props)
      * 
      * @param {object} e 
      */
-    function saveSubscription(e)
-    {
+    function saveSubscription(e) {
         confirmAlert({
             message: ('Please confirm your Subscription'),
             buttons: [{
                 label: ('Confirm'),
-                onClick: () => {                      
+                onClick: () => {
                     var data = {
                         'service_name': e.target.value,
                         'service_id': e.target.id,
                         'id': recordId
                     }
-        
+
                     Inertia.post(route('saveSubscription'), data, {
                         onSuccess: (response) => {
                             let tmpState = Object.assign([], subscribedServices);
                             tmpState.push(e.target.name);
                             setSubscribedServices(tmpState);
 
-                            notie.alert({type: 'success', text: 'Subscribed successfully', time: 5});                
+                            notie.alert({ type: 'success', text: 'Subscribed successfully', time: 5 });
                         },
                     });
                 }
             }, {
-                label: 'No',            
+                label: 'No',
             }]
         });
     }
@@ -126,61 +123,61 @@ export default function Index(props)
      * 
      * @param {object} e 
      */
-    function removeSubscription(e)
-    {
+    function removeSubscription(e) {
         confirmAlert({
             message: ('Are you sure you want to cancel the subscription?'),
             buttons: [
-            {
-                label: ('Confirm'),
-                onClick: () => {                      
-                    var data = {
-                        'service_name': e.target.name ,
-                        'service_id' : e.target.id,
-                        'id' : recordId            
-                    }
+                {
+                    label: ('Confirm'),
+                    onClick: () => {
+                        var data = {
+                            'service_name': e.target.name,
+                            'service_id': e.target.id,
+                            'id': recordId
+                        }
 
-                    Inertia.post(route('removeSubscription'), data, {
-                        onSuccess: (response) => {
-                            let tmpState = Object.assign([], subscribedServices);
-                            const index = tmpState.indexOf(e.target.name);
-                            if (index > -1) { 
-                                tmpState.splice(index, 1); 
-                            }
-                            setSubscribedServices(tmpState);
-                            
-                            notie.alert({type: 'success', text: 'Subscription removed successfully', time: 5});
-                        },
-                    });
-                }
-            }, {
-                label: 'No',            
-            }]
+                        Inertia.post(route('removeSubscription'), data, {
+                            onSuccess: (response) => {
+                                let tmpState = Object.assign([], subscribedServices);
+                                const index = tmpState.indexOf(e.target.name);
+                                if (index > -1) {
+                                    tmpState.splice(index, 1);
+                                }
+                                setSubscribedServices(tmpState);
+
+                                notie.alert({ type: 'success', text: 'Subscription removed successfully', time: 5 });
+                            },
+                        });
+                    }
+                }, {
+                    label: 'No',
+                }]
         });
     }
-    function lead_to_contact()
-    {
+    function lead_to_contact() {
         confirmAlert({
             message: ('Are you sure you want to convert the Lead to a Contact?'),
             buttons: [
-            {
-                label: ('Confirm'),
-                onClick: () => {   
-                    Inertia.post(route('convertLead',{id: record.id})), {
-                        onSuccess: (response) => {
-                            notie.alert({type: 'success', text: 'Moved successfully', time: 5});
-                }}}
-            }, {
-                label: 'No',            
-            }]
+                {
+                    label: ('Confirm'),
+                    onClick: () => {
+                        Inertia.post(route('convertLead', { id: record.id })), {
+                            onSuccess: (response) => {
+                                notie.alert({ type: 'success', text: 'Moved successfully', time: 5 });
+                            }
+                        }
+                    }
+                }, {
+                    label: 'No',
+                }]
         });
     }
 
     function saveList() {
         var data = {
-            'name': ListSelectedOption ,
-             'id' : recordId,
-             'view': 'Detail',
+            'name': ListSelectedOption,
+            'id': recordId,
+            'view': 'Detail',
         }
         Inertia.post(route('storeCategory'), data, {
             onSuccess: (response) => {
@@ -193,15 +190,15 @@ export default function Index(props)
         return classes.filter(Boolean).join(' ')
     }
 
-    function removeClass(){
-       if(!addClass){
-        setAddClass(true);
-        return false;
-       }
-       if(addClass){
-        setAddClass(false);
-        return false;
-       }
+    function removeClass() {
+        if (!addClass) {
+            setAddClass(true);
+            return false;
+        }
+        if (addClass) {
+            setAddClass(false);
+            return false;
+        }
     }
 
      /**
@@ -251,112 +248,108 @@ export default function Index(props)
                                                 {(props.module == 'Contact' || props.module == 'Lead')  ?
                                                     <> {(record.first_name).substring(0,2)} </>
                                                 :
-                                                    <> {(record.name).substring(0,2)} </>
-                                                }
-                                              
-                                            </span>
+                                                <> {(record.name).substring(0, 2)} </>
+                                            }
+
                                         </span>
                                     </span>
-                                </div>
-                                     
-                                    
-                                    {(props.module == 'Contact' || props.module == 'Lead')?
-                                        <>
-                                            <div>
-                                                <div className="text-gray-600"> {record.first_name} {record.last_name} </div>
-                                                <div className="text-gray-600"> {record.phone_number} </div>
-                                                <div className="text-gray-600"> {record.email} </div>
-                                            </div>
-                                            {props.module == 'Contact'?
-                                            <div>
-                                                {Object.entries(props.serviceOptions).map(([key, service]) => {
-                                                    return (
-                                                        <>
-                                                            <button
-                                                                type="button"
-                                                                onClick={handleSubscription}
-                                                                name={service.name}
-                                                                id={service.value}                                       
-                                                                value={service.name}                         
-                                                                className={`inline-flex items-left ml-2 px-4 py-2 h-10 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${
-                                                                    subscribedServices.includes(service.name) ? "bg-green-600" : "bg-gray-700"
-                                                                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
-                                                            >
-                                                                {service.name}
-                                                            </button>
-                                                        </>
-                                                    );
-                                                })}
-                                            </div>:''}
-                                        </>
-                                        :
-                                        <>
-                                        <div className="pl-3 w-full">
-                                            <div className="text-gray-600">{record.name}  </div>
-                                            {props.module == 'Tag' || props.module == 'Category' ||props.module == 'Plan' ? 
-                                              <div className={classNames(
-                                                addClass ? 'text-gray-600 break-words w-3/4':'text-gray-600 w-1/2 truncate'
-                                              )} onClick={() => removeClass()}>{record.description} </div>
-                                            : ''}
-                                        </div>
-                                        </>
-                                    }
-                                
-                                
-                            </h3>
-                            {(props.module == 'Lead')?
-                                <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
-                                    <div>
-                                        <button
-                                            type="button"
-                                            onClick={ () => lead_to_contact()}
-                                            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                        >                                    
-                                            Convert Lead to Contact
-                                        </button>
-                                    </div>
-                                </div>                                      
-                            :''}
-                            
-                            {(props.module == 'Company' && props.role == 'global_admin') ?
-                                <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
-                                    <div>
-                                        <WorkspacePaid 
-                                          company={record}
-                                        />
-                                    </div>
-                                </div>                                      
-                            :''}
+                                </span>
+                            </div>
 
+
+                            {(props.module == 'Contact' || props.module == 'Lead') ?
+                                <>
+                                    <div>
+                                        <div className="text-gray-600"> {record.first_name} {record.last_name} </div>
+                                        <div className="text-gray-600"> {record.phone_number} </div>
+                                        <div className="text-gray-600"> {record.email} </div>
+                                    </div>
+                                    {props.module == 'Contact' ?
+                                        <div>
+                                            {Object.entries(props.serviceOptions).map(([key, service]) => {
+                                                return (
+                                                    <>
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleSubscription}
+                                                            name={service.name}
+                                                            id={service.value}
+                                                            value={service.name}
+                                                            className={`inline-flex items-left ml-2 px-4 py-2 h-10 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${subscribedServices.includes(service.name) ? "bg-green-600" : "bg-gray-700"
+                                                                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+                                                        >
+                                                            {service.name}
+                                                        </button>
+                                                    </>
+                                                );
+                                            })}
+                                        </div> : ''}
+                                </>
+                                :
+                                <>
+                                    <div className="pl-3 w-full">
+                                        <div className="text-gray-600">{record.name}  </div>
+                                        {props.module == 'Tag' || props.module == 'Category' || props.module == 'Plan' ?
+                                            <div className={classNames(
+                                                addClass ? 'text-gray-600 break-words w-3/4' : 'text-gray-600 w-1/2 truncate'
+                                            )} onClick={() => removeClass()}>{record.description} </div>
+                                            : ''}
+                                    </div>
+                                </>
+                            }
+                        </h3>
+                        {(props.module == 'Lead') ?
                             <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
                                 <div>
                                     <button
                                         type="button"
-                                        onClick={ () => props.updateRecord(record.id)}
+                                        onClick={() => lead_to_contact()}
                                         className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                     >
-                                        <PencilIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-                                        {props.translator['Edit']}
+                                        Convert Lead to Contact
                                     </button>
                                 </div>
                             </div>
+                            : ''}
+                         {(props.module == 'Company' && props.role == 'global_admin') ?
+                            <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
+                                <div>
+                                    <WorkspacePaid
+                                        company={record}
+                                    />
+                                </div>
+                            </div>
+                            : ''}
+
+                        <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
+                            <div>
+                                <button
+                                    type="button"
+                                    onClick={() => props.updateRecord(record.id)}
+                                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                >
+                                    <PencilIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+                                    {props.translator['Edit']}
+                                </button>
+                            </div>
                         </div>
-                    </li>
-                    <li className="bg-white px-4 py-6 shadow sm:rounded-lg sm:px-6">
-                        <ul id="props.tabs" className="inline-flex w-full px-1 pt-2 ">
-                            {Object.entries(props.tabs).map(([key, tab])=>{
-                                var activeClassName = "px-4 py-2 -mb-px font-semibold text-gray-800 rounded-t opacity-50";
-                                if(activeTab == tab.name){
-                                    activeClassName += ' border-b-2 border-blue-400';
-                                }
-                                return(
-                                   
-                                    <li className={activeClassName} onClick={() => setActiveTab(tab.name)}>
-                                       <a id="default-tab" href={"#"+tab.name}> {tab.label} </a>
-                                    </li>
-                                )
-                            })}
-                        </ul>
+                    </div>
+                </li> 
+                <li className="bg-white px-4 py-6 shadow sm:rounded-lg sm:px-6">
+                    <ul id="props.tabs" className="inline-flex w-full px-1 pt-2 ">
+                        {Object.entries(props.tabs).map(([key, tab]) => {
+                            var activeClassName = "px-4 py-2 -mb-px font-semibold text-gray-800 rounded-t opacity-50";
+                            if (activeTab == tab.name) {
+                                activeClassName += ' border-b-2 border-blue-400';
+                            }
+                            return (
+
+                                <li className={activeClassName} onClick={() => setActiveTab(tab.name)}>
+                                    <a id="default-tab" href={"#" + tab.name}> {tab.label} </a>
+                                </li>
+                            )
+                        })}
+                    </ul>    
 
                         <div id="tab-contents">
                             
