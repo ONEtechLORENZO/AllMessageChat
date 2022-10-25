@@ -10,6 +10,8 @@ use App\Http\Controllers\AutomationController;
 use App\Http\Controllers\OpportunityController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\LeadController;
+use App\Http\Controllers\OrganizationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,31 +38,46 @@ Route::middleware(['auth:sanctum'])->group(function() {
     Route::post('/v1/{account_id}/create-wa-template', [TemplateController::class, 'createWhatsAppTemplateViaAPI']);
 
     //CRUD Contact
-    Route::post('/contact', [ContactController::class, 'store']);
-    Route::get('/contact', [ContactController::class, 'index']);
-    Route::get('/contact/{id}', [ContactController::class, 'getContactData']);
-    Route::post('/contact/{id}', [ContactController::class, 'update']);
-    Route::delete('/contact/{id}', [ContactController::class, 'destroy']);
+    Route::get('/v1/{account_id}/contact', [ContactController::class, 'index']);
+    Route::post('/v1/{account_id}/contact', [ContactController::class, 'store']);    
+    Route::get('/v1/{account_id}/contact/{id}', [ContactController::class, 'show']);
+    Route::post('/v1/{account_id}/contact/{id}', [ContactController::class, 'update']);
+    Route::delete('/v1/{account_id}/contact/{id}', [ContactController::class, 'destroy']);
 
     //CRUD Opportunities
-    Route::get('/opportunity', [OpportunityController::class, 'index']);
-    Route::post('/opportunity', [OpportunityController::class, 'store']);
-    Route::get('/opportunity/{id}', [OpportunityController::class, 'show']);
-    Route::post('/opportunity/{id}', [OpportunityController::class, 'update']);
-    Route::delete('/opportunity/{id}', [OpportunityController::class, 'destroy']);
+    Route::get('/v1/{account_id}/opportunity', [OpportunityController::class, 'index']);
+    Route::post('/v1/{account_id}/opportunity', [OpportunityController::class, 'store']);
+    Route::get('/v1/{account_id}/opportunity/{id}', [OpportunityController::class, 'show']);
+    Route::post('/v1/{account_id}/opportunity/{id}', [OpportunityController::class, 'update']);
+    Route::delete('/v1/{account_id}/opportunity/{id}', [OpportunityController::class, 'destroy']);
 
     //CRUD Products
-    Route::get('/product', [ProductController::class, 'index']);
-    Route::get('/product/{id}', [ProductController::class, 'show']);
-    Route::post('/product', [ProductController::class, 'store']);
-    Route::post('/product/{id}', [ProductController::class, 'update']);
-    Route::delete('/product/{id}', [ProductController::class, 'destroy']);
+    Route::get('/v1/{account_id}/product', [ProductController::class, 'index']);
+    Route::get('/v1/{account_id}/product/{id}', [ProductController::class, 'show']);
+    Route::post('/v1/{account_id}/product', [ProductController::class, 'store']);
+    Route::post('/v1/{account_id}/product/{id}', [ProductController::class, 'update']);
+    Route::delete('/v1/{account_id}/product/{id}', [ProductController::class, 'destroy']);
 
     //CRUD Orders
-    Route::get('/order', [OrderController::class, 'index']);
-    Route::get('/order/{id}', [OrderController::class, 'show']);
-    Route::post('/order', [OrderController::class, 'store']);
-    Route::post('/order/{id}', [OrderController::class, 'update']);
-    Route::delete('/order/{id}', [OrderController::class, 'destroy']);
+    Route::get('/v1/{account_id}/order', [OrderController::class, 'index']);
+    Route::get('/v1/{account_id}/order/{id}', [OrderController::class, 'show']);
+    Route::post('/v1/{account_id}/order', [OrderController::class, 'store']);
+    Route::post('/v1/{account_id}/order/{id}', [OrderController::class, 'update']);
+    Route::delete('/v1/{account_id}/order/{id}', [OrderController::class, 'destroy']);
+
+     //CRUD Leads
+     Route::get('/v1/{account_id}/lead', [LeadController::class, 'index']);
+     Route::get('/v1/{account_id}/lead/{id}', [LeadController::class, 'show']);
+     Route::post('/v1/{account_id}/lead', [LeadController::class, 'store']);
+     Route::post('/v1/{account_id}/lead/{id}', [LeadController::class, 'update']);
+     Route::delete('/v1/{account_id}/lead/{id}', [LeadController::class, 'destroy']);
+     Route::post('/v1/{account_id}/convertLead/{id}', [LeadController::class, 'convert_lead']);
+
+      //CRUD Ordganizations
+    Route::get('/v1/{account_id}/organization', [OrganizationController::class, 'index']);
+    Route::get('/v1/{account_id}/organization/{id}', [OrganizationController::class, 'show']);
+    Route::post('/v1/{account_id}/organization', [OrganizationController::class, 'store']);
+    Route::post('/v1/{account_id}/organization/{id}', [OrganizationController::class, 'update']);
+    Route::delete('/v1/{account_id}/organization/{id}', [OrganizationController::class, 'destroy']);
 
 });

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\Field;
+use App\Models\Account;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
 use Cache;
@@ -22,8 +23,7 @@ class ProductController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
-    {
-        
+    {        
         $module = new Product();
         $list_view_columns = $module->getListViewFields();
         $listViewData = $this->listView($request, $module, $list_view_columns);
@@ -114,8 +114,19 @@ class ProductController extends Controller
     {
         $module = new Product();
         $product = $this->checkAccessPermission($request, $module, $request->id);
-       
-        $companyId = Cache::get('selected_company_'. $request->user()->id);
+
+        if($request->is('api/*')) //api call check
+            {
+                if ($request->account_id)
+                {
+                $account = Account::find($request->account_id);                
+                $companyId = $account->company_id;                
+                }            
+            }
+        else
+            {        
+            $companyId = Cache::get('selected_company_'. $request->user()->id);
+            }
         $headers = $this->getModuleHeader($companyId , 'Product');
         
         if( $request->is('api/*') ){
@@ -161,7 +172,13 @@ class ProductController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request)
-    {
+    {        
+        $currentUser = $request->user();    
+        $module = new Product(); 
+        $product = $this->checkAccessPermission($request, $module, $request->id);
+        if(!$product) {
+            abort('404');
+        }   
         $product_id = $this->saveProduct($request);
         if($request->is('api/*')){
             
@@ -182,15 +199,27 @@ class ProductController extends Controller
      */
     public function destroy(Request $request, $productId)
     {
-        $product = Product::find($productId);
-        $product->delete();
-        if($request->is('api/*')){          
-            return response()->json($product);
+        if($request->is('api/*')){
+            $account = Account::findorFail($request->account_id);                
+            $company_id = $account->company_id;   
+            $product = Product::where('id',$request->id)->where('company_id', $company_id);
+            $module = new Product();
+            $product = $this->checkAccessPermission($request, $module, $request->id);
+            if(!$product) {
+                return response()->json(['status' => false, 'message' => 'Record not found']);   
             }
-            else
-              {
-        return Redirect::route('listProduct');
-              }
+           else
+           {
+            $product->delete();        
+            return response()->json(['record'=>$request->id,'message'=>'deleted']);
+           }
+        }
+        else
+            {
+            $product = Product::find($productId);
+            $product->delete();
+            return Redirect::route('listProduct');
+            }
     }
 
     /**
@@ -216,7 +245,18 @@ class ProductController extends Controller
             ]);
             $product = new Product();
         }
-        $company_id = Cache::get('selected_company_'. $request->user()->id);
+        if($request->is('api/*'))
+        {
+            if ($request->account_id)
+            {
+              $account = Account::findorFail($request->account_id);                
+              $company_id = $account->company_id;                
+            }
+        }
+        else
+         {   
+            $company_id = Cache::get('selected_company_'. $request->user()->id);
+         }
         $fields = Field::where('module_name', 'Product')
             ->where('company_id', $company_id)
             ->get(['field_name', 'is_custom']);
@@ -241,8 +281,7 @@ class ProductController extends Controller
             if ($custom_field) {
                 $product->custom = $custom_field;
             }
-            
-            $product->company_id = Cache::get('selected_company_'. $request->user()->id);
+            $product->company_id = $company_id;                
             $product->save();
 
             if($request->parent_id){

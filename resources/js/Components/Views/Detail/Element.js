@@ -22,7 +22,7 @@ export default function Element(props) {
 
     // Selected field details
     function setSelectedFieldInfo(){
-        Object.entries(props.fields).map(([key, field]) => {
+        Object.entries(props.moduleFields).map(([key, field]) => {
             if(props.temp.name == field.field_name){
                 setFieldInfo(field);
             }
