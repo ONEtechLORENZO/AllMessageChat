@@ -472,4 +472,26 @@ class SettingsController extends Controller
         }
         log::info([ 'Stripe Incoming message (or) response' => $post_data , 'Payload' => $payload , 'Header' => $sig_header ]);
     }
+
+    public function navigationField(Request $request) {
+        
+        $plan = $this->currentCompanyPlan($request);
+          
+        $navigationField = [
+           'Contacts' => 'contacts','Tags' =>  'lists_tags', 'Lists' => 'lists_tags','Campaigns' => 'campaigns','Automations' => 'workflow','Opportunities' => 'opportunities','Orders' => 'orders',
+        ];
+
+        $navigate = [];
+
+        if($plan) 
+        {
+            foreach($navigationField as $label => $name) {
+                if($plan->$name == 'false') {
+                    $navigate[$label] = $name; 
+                }
+            }
+        }
+        
+        return response()->json(['status' => true, 'navigate' => $navigate]);
+    }
 }

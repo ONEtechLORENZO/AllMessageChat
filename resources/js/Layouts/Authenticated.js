@@ -34,6 +34,7 @@ import SelectCompany from "@/Pages/Company/SelectCompany";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
 import axios from "axios";
 import Notification from "./Notification";
+import notie from 'notie';
 
 const navigation = [
     {
@@ -182,7 +183,7 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
 
-export default function Authenticated({ auth, header, children, hideHeader , current_page}) 
+export default function Authenticated({ auth, header, children, hideHeader , current_page, message}) 
 {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
@@ -203,6 +204,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
     const [id, setId] = useState();
     const [company, setCompany] = useState({});
     const [adminMenuText, setadminMenuText] = useState("Global Admin page");
+    const [navigateField, setNavigateField] = useState();
     const pathname = window.location.pathname;
 
     useEffect(() => {
@@ -214,7 +216,10 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                 setReturnMainUser(response.data.session_value);
             }
         });
-
+        if(message) {
+            alertMessage(message);
+        }
+        getNavigationfield();
        // drownDownToggleAction();
     },[])
 
@@ -237,6 +242,16 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
     //     });
 
     // }
+
+    function alertMessage(message) {
+        notie.alert({type: 'warning', text: message, time: 5});
+    }
+
+    function getNavigationfield() {
+        axios.get(route('navigation_field')).then( (response) => {
+            setNavigateField(response.data.navigate);
+        })
+    }
 
     function drownDownToggleAction(e,item){
         e.preventDefault();
@@ -504,6 +519,10 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                 if(item.show != 'all' && !item.show.includes(auth.user.role)) {
                                     return;
                                 }
+                                if(navigateField && navigateField.hasOwnProperty(item.name)){
+                                    return;
+                                }
+                            
                                 return (
                                     <li data-index={index}  onClick={(e)=>{drownDownToggleAction(e,item)}}>
                                         <Link
@@ -535,18 +554,17 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                             showSidebarText && menuDropdownActive[item.name] == true && item.subMenu ?
 
                                             <ul>
-
-                                                { item.subMenu.map((subItem,index) => {
-                                                return <li><Link className={classNames(
-                                                    "text-[#3D4459]  hover:text-primary",
-                                                        "group flex items-center px-2 py-1 text-sm font-medium rounded-md gio-menu-item"
-                                                )} href={subItem.href}>{subItem.name}</Link></li>                          
-                                                    }) }
-
+                                                {item.subMenu.map( (subItem, index) => {
+                                                    if(!navigateField.hasOwnProperty(subItem.name)) {
+                                                        return (
+                                                            <li>
+                                                                <Link className={classNames("text-[#3D4459]  hover:text-primary","group flex items-center px-2 py-1 text-sm font-medium rounded-md gio-menu-item")} href={subItem.href}>{subItem.name}</Link>
+                                                            </li> 
+                                                        );
+                                                    }
+                                                })}
                                             </ul> : ''
-
                                         }
-                                       
                                     </li>
                                 );
                             })  

@@ -15,6 +15,8 @@ use App\Models\Contact;
 use App\Models\User;
 use App\Models\Opportunity;
 use App\Models\Service;
+use App\Models\Company;
+use DB;
 
 class Controller extends BaseController
 {
@@ -669,5 +671,24 @@ class Controller extends BaseController
                   ->first();           
 
         return $record;
+    }
+
+    public function currentCompanyPlan($request) {
+        
+        $user = $request->user();
+        $company_id = Cache::get('selected_company_' . $user->id);
+
+        $company = Company::find($company_id);
+        
+        // Get company plan details
+        $companyPlan = DB::table('plans')->where('plan_id', $company->plan)->get();
+
+        $currentPlan = '';
+
+        foreach($companyPlan as $company) {
+            $currentPlan = $company;
+        }
+
+        return $currentPlan;
     }
 }
