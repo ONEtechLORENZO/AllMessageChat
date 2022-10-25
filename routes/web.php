@@ -105,6 +105,7 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/getPaymentMethods', [UserController::class, 'getPaymentMethods'])->name('getPaymentMethods');
         Route::get('/getPlanDetail/{plan}', [PlanController::class, 'getPlanDetail'])->name('get_plan_data');
 
+
         // Stripe
         Route::get('/createStripeSetupIntent', [UserController::class, 'createStripeSetupIntent'])->name('createStripeSetupIntent');
         Route::post('/relatePaymentMethod', [UserController::class, 'relatePaymentMethod'])->name('relatePaymentMethod');
@@ -296,7 +297,7 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/getActionData', [AutomationController::class, 'getActionData'])->name('get_action_data');
         Route::get('/webhook/sample/{id}/{uuid}', [AutomationController::class , 'getSampleData'])->name('get_webhook_data');
         Route::post('/testCall', [AutomationController::class, 'testPostData'])->name('test_post_data');
-        
+
         // LineItem
         Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');
         Route::get('/create/lineitem', [LineItemController::class, 'create'])->name('createLineItem');
