@@ -37,8 +37,14 @@ class Document extends Model
      */
     public function storeDocument($type , $url , $parent, $account)
     {
-        $file = file_get_contents($url);
-        $docId = $this->saveDocument($type , $file, $parent, $account, 'incoming');
+        $fileUrl = explode('?', $url);
+        $query_str = parse_url($url, PHP_URL_QUERY);
+        parse_str($query_str, $query_params);
+        $name = ($query_params['fileName']);
+
+        $file = file_get_contents($fileUrl[0]);
+        
+        $docId = $this->saveDocument($type , $file, $parent, $account, 'incoming', $name);
 
         return ($docId);
     }
@@ -78,11 +84,12 @@ class Document extends Model
     /**
      * Save Document
      */
-    public function saveDocument($type, $file, $parent, $account, $mode)
+    public function saveDocument($type, $file, $parent, $account, $mode , $name = '')
     {
         $extension = explode('/', $type)[1];
-        
-        $name = 'ba_document_'.time().'-'. uniqid().'.'.$extension;
+        if($name == '')
+            $name = 'onemessage'. uniqid(). '.' .$extension;
+
         $path = "public/document/{$account->company_id}/{$account->id}/{$parent}/{$mode}/{$name}";
         
         $file = Storage::put($path  , $file);

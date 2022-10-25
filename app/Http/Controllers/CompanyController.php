@@ -50,10 +50,10 @@ class CompanyController extends Controller
             'current_page' => 'Company', 
             // Actions
             'actions' => [
-              //  'create' => true,
+                'create' => true,
                 'detail' => true,
-              //  'edit' => true,
-              //  'delete' => true,
+                'edit' => true,
+                'delete' => true,
                 'export' => false,
                 'import' => false,
                 'search' => true,

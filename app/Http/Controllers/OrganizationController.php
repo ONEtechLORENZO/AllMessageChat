@@ -191,10 +191,11 @@ class OrganizationController extends Controller
             $module = new Organization();
             $organization = $this->checkAccessPermission($request, $module, $request->id);
 
-        if(!$organization) {
+        if(!$organization) 
+            {
             return response()->json(['status' => false, 'message' => 'Record not found']);   
             }           
-            else
+        else
             {   Schema::disableForeignKeyConstraints();
                 $organization->delete();        
                 return response()->json(['record'=>$request->id,'message'=>'deleted']);
