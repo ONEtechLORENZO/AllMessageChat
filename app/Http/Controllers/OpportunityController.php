@@ -7,8 +7,11 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
 use Cache;
 use App\Models\Field;
+use App\Models\Account;
 use App\Models\Contact;
 use App\Models\User;
+use App\Http\Controllers\ContactController;
+
 
 class OpportunityController extends Controller
 {
@@ -129,8 +132,18 @@ class OpportunityController extends Controller
         if(!$opportunity) {
             abort('404');
         }
-
+        if($request->is('api/*'))
+            {
+                if ($request->account_id)
+                {
+                $account = Account::find($request->account_id);                
+                $companyId = $account->company_id;                
+                }            
+            }
+        else
+            { 
         $companyId = Cache::get('selected_company_'. $request->user()->id);
+            }
         $headers = $this->getModuleHeader($companyId, 'Opportunity');
 
         //related contact details
@@ -171,8 +184,14 @@ class OpportunityController extends Controller
      */
     public function update(Request $request)
     {
+        $currentUser = $request->user();         
+        $module = new Opportunity();
+       
+        $opportunity = $this->checkAccessPermission($request, $module, $request->id);
+        if(!$opportunity) {
+            abort('404');
+        }
         $opportunity_id = $this->saveOpportunity($request);
-
         if($request->is('api/*')){            
             $opportunity = Opportunity::findOrFail($opportunity_id);
             return response()->json($opportunity);           
@@ -190,16 +209,29 @@ class OpportunityController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy(Request $request, $opportunityId)
-    {
-        $opportunity = Opportunity::find($opportunityId);
-        $opportunity->delete();
-            if($request->is('api/*')){          
-                return response()->json($opportunity);
-                }
+    {                  
+        if($request->is('api/*')){
+            $account = Account::findorFail($request->account_id);                
+            $company_id = $account->company_id;  
+            $opportunity = Opportunity::where('id',$request->id)->where('company_id', $company_id);
+            $module = new Opportunity();
+            $Opportunity = $this->checkAccessPermission($request, $module, $request->id);
+
+        if(!$Opportunity) {
+            return response()->json(['status' => false, 'message' => 'Record not found']);   
+            }           
             else
-              {                
-                return Redirect::route('listOpportunity');
-              }
+            {
+                $opportunity->delete();        
+                return response()->json(['record'=>$request->id,'message'=>'deleted']);
+            }
+         }
+        else
+          {
+            $opportunity = Opportunity::find($opportunityId);
+            $opportunity->delete();                   
+            return Redirect::route('listOpportunity');              
+          }
     }
 
     /**
@@ -213,6 +245,7 @@ class OpportunityController extends Controller
     }
     
     public function saveOpportunity($request){
+        $current_user = $request->user();      
 
         if ($request->id) {
             $request->validate([
@@ -225,7 +258,20 @@ class OpportunityController extends Controller
             ]);
             $opportunity = new Opportunity();
         }
+
+        if($request->is('api/*'))
+        {   
+            $current_user = $request->user();
+            $account = Account::find($request->account_id);
+            if ($request->account_id)
+            {                           
+              $company_id = $account->company_id;                
+            }           
+        }
+        else
+         {    
         $company_id = Cache::get('selected_company_'. $request->user()->id);
+         }
         $fields = Field::where('module_name', 'Opportunity')
             ->where('company_id', $company_id)
             ->get(['field_name', 'is_custom', 'field_type']);
@@ -253,15 +299,13 @@ class OpportunityController extends Controller
                     }
                 }
             }
-
             if ($custom_field) {
                 $opportunity->custom = $custom_field;
-            }
-
-            $opportunity->company_id = Cache::get('selected_company_'. $request->user()->id);
+            }            
+            $opportunity->company_id = $company_id;
+            
             $opportunity->save();
         }
-
         return $opportunity->id;
     }  
 }

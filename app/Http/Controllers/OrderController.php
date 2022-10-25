@@ -8,6 +8,7 @@ use App\Models\Field;
 use App\Models\Order;
 use App\Models\Contact;
 use App\Models\Product;
+use App\Models\Account;
 use App\Models\LineItem;
 use App\Models\Opportunity;
 use Illuminate\Http\Request;
@@ -116,13 +117,23 @@ class OrderController extends Controller
     public function show(Request $request, $order_id) 
     {
         $module = new Order();
-        $order = $this->checkAccessPermission($request, $module, $order_id);
+        $order = $this->checkAccessPermission($request, $module, $request->id);
 
         if(!$order){
-            about(401);
+            abort('401');
         }
-     
-        $companyId = Cache::get('selected_company_'. $request->user()->id);
+        if($request->is('api/*')) //api call check
+        {
+            if ($request->account_id)
+            {
+            $account = Account::find($request->account_id);                
+            $companyId = $account->company_id;                
+            }            
+        }
+        else
+        {      
+            $companyId = Cache::get('selected_company_'. $request->user()->id);
+        }
         $headers = $this->getModuleHeader($companyId , 'Order');
         $lineItems = [];
         $totalPrice = 0;
@@ -238,6 +249,13 @@ class OrderController extends Controller
     public function update(Request $request)
     {
         $companyId = Cache::get('selected_company_'. $request->user()->id);
+        $currentUser = $request->user();         
+        $module = new Order();
+       
+        $order = $this->checkAccessPermission($request, $module, $request->id);
+        if(!$order) {
+            abort('404');
+        }
 
         //save the Order
         $order_id = $this->saveOrder($request);
@@ -266,15 +284,28 @@ class OrderController extends Controller
      */
     public function destroy(Request $request, $orderId)
     {
-        $order = Order::find($orderId);
-        $order->delete();
-        if($request->is('api/*')){          
-            return response()->json($contact);
-            }
+        if($request->is('api/*')){
+            $account = Account::findorFail($request->account_id);                
+            $company_id = $account->company_id;  
+            $order = Order::where('id',$request->id)->where('company_id', $company_id);
+            $module = new Order();
+            $order = $this->checkAccessPermission($request, $module, $request->id);
+
+        if(!$order) {
+            return response()->json(['status' => false, 'message' => 'Record not found']);   
+            }           
             else
-              {
+            {
+                $order->delete();        
+                return response()->json(['record'=>$request->id,'message'=>'deleted']);
+            }
+         }
+        else
+          {
+        $order = Order::find($orderId);
+        $order->delete();       
         return Redirect::route('listOrder');
-              }
+         }
     }
 
     /**
@@ -301,7 +332,19 @@ class OrderController extends Controller
             ]);
             $order = new Order();
         }
+        if($request->is('api/*'))
+        {   
+            $current_user = $request->user();
+            $account = Account::find($request->account_id);
+            if ($request->account_id)
+            {                           
+              $company_id = $account->company_id;                
+            }           
+        }
+        else
+         {    
         $company_id = Cache::get('selected_company_'. $request->user()->id);
+         }
      
         $fields = Field::where('module_name', 'Order')
             ->where('company_id', $company_id)
@@ -332,7 +375,7 @@ class OrderController extends Controller
                 }
             }
             
-            $order->company_id = Cache::get('selected_company_'. $request->user()->id);
+            $order->company_id = $company_id;
             $order->save();
         } 
         return $order->id;

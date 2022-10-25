@@ -14,6 +14,7 @@ use App\Models\Category;
 use App\Models\Field;
 use App\Models\Service;
 use App\Models\User;
+use App\Models\Account;
 use App\Models\Note;
 use App\Models\Contact;
 class LeadController extends Controller
@@ -28,7 +29,13 @@ class LeadController extends Controller
         $module = new Lead();
         $list_view_columns = $module->getListViewFields();
         $listViewData = $this->listView($request, $module, $list_view_columns);
-
+        if ($request->is('api/*')) // API call check
+        {            
+            unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
+            return response()->json($listViewData);
+        }
+    else
+        {     
         $moduleData = [
             'singular' => 'Lead',
             'plural' => 'Leads',
@@ -48,6 +55,7 @@ class LeadController extends Controller
         
         $data = array_merge($moduleData, $listViewData);
         return Inertia::render('Leads/List', $data);
+    }
     }
 
     /**
@@ -69,7 +77,17 @@ class LeadController extends Controller
     public function store(Request $request)
     {
         $lead_id = $this->saveLead($request);
-        
+        if($request->is('api/*'))     // API call check
+        {            
+            if($lead_id){
+            return response()->json($lead_id);
+            }
+            else{
+                abort(422);
+            }
+        }
+        else
+        {        
         if($request->parent_module == 'Chat') {
             return Redirect::route('chat_list');
         } else if($request->parent_id){
@@ -79,6 +97,7 @@ class LeadController extends Controller
             $url = route('detailLead').'?id='.$lead_id;
             return Redirect::to($url);
         }
+       }
     }
 
     /**
@@ -95,10 +114,19 @@ class LeadController extends Controller
         if(!$lead) {
             abort('404');
         }
-
+        if($request->is('api/*')) //api call check
+        {
+            if ($request->account_id)
+            {
+            $account = Account::find($request->account_id);                
+            $companyId = $account->company_id;                
+            }            
+        }
+        else
+        { 
         $companyId = Cache::get('selected_company_'. $request->user()->id);
+        }        
         $headers = $this->getModuleHeader($companyId , 'Lead');
-
        
         //related organization details
         $organization = Organization::where('id', $lead->organization_id)->first();
@@ -113,6 +141,9 @@ class LeadController extends Controller
         if($user){
             $lead['assigned_to'] = [ 'label' => $user['name'] , 'value' => $user['id'], 'module' => 'User'];
         }
+        if ($request->is('api/*')) { // API call check             
+            return response()->json($lead);
+         } else {   
 
         return Inertia::render('Leads/Detail', [
             'record' => $lead,
@@ -123,6 +154,7 @@ class LeadController extends Controller
                 'Edit'  =>__('Edit')
             ]
         ]);
+    }
     }
 
     /**
@@ -164,10 +196,23 @@ class LeadController extends Controller
      */
     public function update(Request $request, Lead $lead)
     {
+        $currentUser = $request->user();    
+        $module = new Lead();  
+        $lead = $this->checkAccessPermission($request, $module, $request->id);
+        if(!$lead) {
+            abort('404');
+        }   
+
         $lead_id = $this->saveLead($request);
-        
+
+        if($request->is('api/*')){
+            $lead = Lead::findOrFail($lead_id);
+            return response()->json($lead);           
+        }
+        else
+          {        
         $url = route('detailLead').'?id='.$lead_id;
-        return Redirect::to($url);
+        return Redirect::to($url);}
     }
 
     /**
@@ -176,20 +221,37 @@ class LeadController extends Controller
      * @param  \App\Models\Lead  $lead
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Lead $lead,$leadId)
+    public function destroy(Request $request,Lead $lead,$leadId)
     {
+        if($request->is('api/*')){
+            $account = Account::findorFail($request->account_id);                
+            $company_id = $account->company_id;   
+           $lead = Lead::where('id',$request->id)->where('company_id', $company_id);
+           $module = new Lead();
+           $lead = $this->checkAccessPermission($request, $module, $request->id);
+
+            if(!$lead) {
+                return response()->json(['status' => false, 'message' => 'Record not found']);   
+            }
+           else
+           {
+           $lead->delete();        
+           return response()->json(['record'=>$request->id,'message'=>'deleted']);
+           }
+       }
+       else{
         $lead = Lead::find($leadId);
         $lead->delete();
-        return Redirect::route('listLead');
+        return Redirect::route('listLead');}
     }
 
     // Convert a lead to contact
-    public function convert_lead(Lead $lead,$leadId)
+    public function convert_lead(Request $request,Lead $lead,$leadId)
     {
         $lead = Lead::find($leadId);
         $new_contact=new Contact();
         $new_contact=$lead->replicate(['id']);       
-        $new_contact->setTable('contacts');        
+        $new_contact->setTable('contacts'); 
         $new_contact->save();
         $lead->delete();     
         $contact_note=Contact::find($new_contact->id);
@@ -198,8 +260,12 @@ class LeadController extends Controller
             $note->notable_id=$new_contact->id;           
             $contact_note->notes()->save($note);
         }
-        
-        return Redirect::route('listLead');
+        if($request->is('api/*')){          
+            return response()->json($new_contact->id);
+            }
+            else
+              {
+        return Redirect::route('listLead');}
 
     }
     
@@ -218,7 +284,18 @@ class LeadController extends Controller
             ]);
             $lead = new Lead();
         }
+        if($request->is('api/*'))
+        {
+            if ($request->account_id)
+            {
+              $account = Account::findorFail($request->account_id);                
+              $company_id = $account->company_id;                
+            }  
+        }
+        else
+         {  
         $company_id = Cache::get('selected_company_'. $request->user()->id);
+         }
         $fields = Field::where('module_name', 'Lead')
             ->where('company_id', $company_id)
             ->get(['field_name', 'is_custom']);
@@ -227,11 +304,10 @@ class LeadController extends Controller
             $custom_field = [];
             foreach ($fields as $record) {
                 $field = $record['field_name'];
-                $custom = $record['is_custom'];
-                
+                $custom = $record['is_custom'];               
 
                 if($request->has($field) && ($custom == '0' || !$custom)) {
-                    if(($field == 'assigned_to' || $field == 'organization_id')) {
+                    if(($field == 'assigned_to' || $field == 'organization_id') && !($request->is('api/*'))) {
                          
                         $related_id = $request->$field;
                         
@@ -258,7 +334,7 @@ class LeadController extends Controller
             }
   
             $lead->creater_id= $request->user()->id;
-            $lead->company_id = Cache::get('selected_company_'. $request->user()->id);
+            $lead->company_id =  $company_id;
            
             $lead->save();
 

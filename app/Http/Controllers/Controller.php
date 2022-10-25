@@ -11,6 +11,7 @@ use App\Models\Category;
 use App\Models\Field;
 use App\Models\FieldGroup;
 use Cache;
+use App\Models\Account;
 use App\Models\Contact;
 use App\Models\User;
 use App\Models\Opportunity;
@@ -51,11 +52,24 @@ class Controller extends BaseController
 
         $user = $request->user();
         $user_id = $user->id;
-
-        // Get company selected by the user.
-        $companyId = Cache::get('selected_company_'. $user->id);
+        if ($request->is('api/*'))
+           { 
+             if($request->account_id)
+              {
+                $account = Account::find($request->account_id);                
+                $companyId = $account->company_id;                
+              }           
+              else
+              {
+                abort(403);
+              }   
+           }
+        else{
+            // Get company selected by the user.
+            $companyId = Cache::get('selected_company_'. $user->id);
+            }        
         
-        // If user is not related to any company, abort the below process      
+       // If user is not related to any company, abort the below process      
         if(!$companyId) {
             abort(403);
         }
@@ -662,10 +676,19 @@ class Controller extends BaseController
     public function checkAccessPermission($request, $module, $id) {
         
         $user = $request->user();
-        
-        // Get current user company id
-        $companyId = Cache::get('selected_company_'. $user->id);
-
+        if($request->is('api/*') )
+            {
+                if ($request->account_id)
+                {
+                    $account = Account::find($request->account_id);                
+                    $companyId = $account->company_id;                
+                }            
+            }
+        else
+            {         
+                // Get current user company id
+                $companyId = Cache::get('selected_company_'. $user->id);
+            }
         $record = $module->whereId($id)
                   ->where('company_id', $companyId) 
                   ->first();           
