@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use App\Models\Plan;
 use App\Models\Company;
+use App\Models\Account;
+use App\Models\Msg;
 use Illuminate\Http\Request;
+use App\Models\Automation;
 use Illuminate\Support\Facades\Redirect;
 use DB;
+use Cache;
 
 class PlanController extends Controller
 {
@@ -315,5 +319,47 @@ class PlanController extends Controller
             
             return response()->json(['status' => true, 'message' => true]);
         }
+    }
+
+    /**
+     * Return plan usage data
+     */
+    public function getPlanDetail(Request $request, $plan)
+    {
+        
+        $user = $request->user();
+        $companyId = Cache::get('selected_company_'. $user->id);
+        $company =  Company::find($companyId);
+        $accounts = Account::where(['company_id' => $companyId])->select('id')->get();
+        $accountId = [];
+        foreach($accounts as $account){
+            $accountId[] = $account->id;
+        }
+
+        $users = $company->user->count();
+        $activeUsers = $company->user->where('status', true)->count();
+        $automations = Automation::where(['company_id' => $companyId])->count();
+        
+        $plan = DB::table('plans')->where('plan_id', $company->plan)->first();
+        $messages = Msg::select(DB::raw('count(distinct(msgable_id)) as category_count, service '))
+            ->where(['account_id' => $accountId ])
+            ->groupBy(['service'])
+            ->get();
+        $category = [ 'whatsapp' => 0 , 'instagram' => 0];
+        foreach($messages as $message){
+            $category[$message->service] = $message->category_count + $category[$message->service] ;
+        } 
+       
+        $planData = [
+
+            'user' => ['label' => 'Users', 'current' => $users , 'limit' => $plan->users , 'percentage' => ($users / $plan->users)*100  ] ,
+            'monthly_active_user' => ['label' => 'Active users', 'current' => $activeUsers , 'limit' => $plan->users, 'percentage' => ($activeUsers / $plan->users)*100],
+            'automations' => ['label' => 'Automations', 'current' => $automations , 'limit' => $plan->fatturazione, 'percentage' => ($automations / $plan->fatturazione)*100],
+            'whatsapp' => ['label' => 'Whatsapp number' , 'current' => $category['whatsapp'] , 'limit' => $plan->offical_whatsapp , 'percentage' => ($category['whatsapp'] / $plan->offical_whatsapp)*100],
+            'instagram' => ['label' => 'Instagram accounts' , 'current' => $category['instagram'] , 'limit' => $plan->offical_whatsapp , 'percentage' => ($category['instagram'] / $plan->offical_whatsapp)*100],
+            ];
+        //dd($planData);
+        return response()->json([ 'price' => $plan->price, 'plan_data' => $planData]);
+ 
     }
 }

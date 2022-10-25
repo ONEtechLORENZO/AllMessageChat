@@ -130,6 +130,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/transactions', [UserController::class, 'transactions'])->name('listTransaction');
     Route::get('/invoices/{id}', [UserController::class, 'invoices'])->name('invoices');    
     Route::get('/getPaymentMethods', [UserController::class, 'getPaymentMethods'])->name('getPaymentMethods');
+    Route::get('/getPlanDetail/{plan}', [PlanController::class, 'getPlanDetail'])->name('get_plan_data');
 
     // Stripe
     Route::get('/createStripeSetupIntent', [UserController::class, 'createStripeSetupIntent'])->name('createStripeSetupIntent');
@@ -321,7 +322,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/getActionData', [AutomationController::class, 'getActionData'])->name('get_action_data');
     Route::get('/webhook/sample/{id}/{uuid}', [AutomationController::class , 'getSampleData'])->name('get_webhook_data');
-    
+    Route::post('/testCall', [AutomationController::class, 'testPostData'])->name('test_post_data');
+
+
     // LineItem
     Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');
     Route::get('/create/lineitem', [LineItemController::class, 'create'])->name('createLineItem');
@@ -348,6 +351,7 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::post('/storeFieldOrder', [FieldGroupController::class, 'storeFieldOrder'])->name('store_field_order');
     
     //Company   
+    Route::get('/admin/company', [CompanyController::class, 'index'])->name('listAdminCompany');
     Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');
    // Route::get('/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
     Route::get('/company/edit/{id}', [CompanyController::class, 'edit'])->name('editCompany');

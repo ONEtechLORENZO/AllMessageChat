@@ -487,8 +487,7 @@ class MsgController extends Controller
                 'read' => $message->is_read,
             ];
         }
-       // dd($messages);
-        return ( $messages);
+        return ($messages);
     }
 
     /**

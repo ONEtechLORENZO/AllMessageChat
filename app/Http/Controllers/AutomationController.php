@@ -342,4 +342,21 @@ class AutomationController extends Controller
             return response()->json(['status' => true, 'result' => $data]);
         }
     }
+
+    /**
+     * Test post data
+     */
+    public function testPostData(Request $request)
+    {
+        $headers[$request->headerType] = $request->header;
+        $url = $request->post_url;
+        $data = $mapField = [];
+        foreach($request->field_mapping as $fieldMap){
+            $data[$fieldMap['module_field']] = $fieldMap['map_field_value'];
+            $mapField[$fieldMap['module_field']] = $fieldMap;
+        }
+        $result = (new Automation)->sendData($url, $headers, $data, $mapField );
+        $result = $result->body();
+        return response()->json(['status' => true]);
+    }
 }

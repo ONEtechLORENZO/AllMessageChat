@@ -425,10 +425,9 @@ class SettingsController extends Controller
     {
         $endpoint_secret = config('stripe.stripe_webhook');
         $payload = file_get_contents("php://input");
-        //$response = json_decode($payload, true);
+        $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
         log::info([ 'Stripe Incoming message (or) response' =>  $payload ]);
         
-        $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
         $event = null;
 
         try {
@@ -470,6 +469,7 @@ class SettingsController extends Controller
                 $company->status = $status;
 
         }
+        $company->save();
         log::info([ 'Stripe Incoming message (or) response' => $post_data , 'Payload' => $payload , 'Header' => $sig_header ]);
     }
 }

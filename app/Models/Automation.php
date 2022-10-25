@@ -225,7 +225,14 @@ class Automation extends Model
 
             case 'send_request':
                 if($action->post_url){
-                    $this->sendData($action->post_url);
+                    $headers[$action->headerType] = $action->header;
+                    $url = $action->post_url;
+                    $mapField = [];
+        
+                    foreach($action->field_mapping as $fieldMap){
+                        $mapField[$fieldMap->module_field] = $fieldMap;
+                    }
+                    $this->postRecordData($url, $headers, $mapField);
                 }
                 break;
 
@@ -301,7 +308,7 @@ class Automation extends Model
     /**
      * Post data to action url
      */
-    public function sendData($postUrl)
+    public function postRecordData($postUrl, $header, $mapField)
     {
         try {
             $postData = [];
@@ -316,14 +323,27 @@ class Automation extends Model
                 }
             }
             $postData['module_name'] = $moduleName;
-            
-            $response = Http::post($postUrl, $postData);
-            Log::info(['Post data ' => $postData]);
+            $this->sendData($postUrl, $header, $postData, $mapField);
             
         }
         catch(Exception $e){
             Log::info('Cannot send the record data' . $e->getMessage());
         }
+    }
+    /**
+     * Send Data
+     */
+    public function sendData($url, $header, $data, $mapField)
+    {
+       
+        $postData = [];
+        foreach($data as $field => $value){
+            $postData[$mapField->$field['map_field']] = ($value) ? $value : $mapField->$field['map_field_value'];
+        }
+        Log::info(['Post data ' => $postData]);
+      
+        $response = Http::withHeaders($header)->post($url, $postData);
+        return $response;
     }
     
     /**

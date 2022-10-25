@@ -106,14 +106,12 @@ const navigation = [
             href : route('listProduct')
         },]
     },  
-    /*{
-        name: "Company",
-        href: route("listCompany"),
+    {
+        name: "Workspaces",
+        href: route("listAdminCompany"),
         icon: OfficeBuildingIcon,
-        show: ['admin'],
-    },*/
-    
-    
+        show: ['admin', 'global_admin'],
+    },    
     {
         name: "Automations",
         href: route("listAutomation"),
@@ -449,7 +447,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                 <ul>
                             {showAdminNav ?                                                     
                                  adminNavigation.map((item,index) => {
-                                if(item.show != 'all' && !item.show.includes(auth.user.role)) {
+                                if(!item.show.includes('all') && !item.show.includes(auth.user.role)) {
                                     
                                     return;
                                 }
@@ -501,7 +499,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                 );
                             }):
                             navigation.map((item,index) => {
-                                if(item.show != 'all' && !item.show.includes(auth.user.role)) {
+                                if(!item.show.includes('all') && !item.show.includes(auth.user.role)) {
                                     return;
                                 }
                                 return (
@@ -529,6 +527,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                 aria-hidden="true"
                                                
                                             />
+                                        {console.log([ index, item.name , showSidebarText])}
                                             {showSidebarText ? <div data-index={index} className="flex justify-between items-center flex-1">{item.name} {item.subMenu ? <ChevronDownIcon data-index={index} className={` ${(menuDropdownActive[item.name] ? 'rotate-180' : '')} h-6 w-6 gio-dropdown-icon  transition-all`} /> : '' }  </div>: ""}
                                         </Link>
                                         {
@@ -559,7 +558,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                         <div className="flex-shrink-0 flex">
                             <nav className="flex-1 px-2 pb-4 space-y-1 gio-navbar">
                                 {bottomNavigation.map((item) => {
-                                    if(item.show != 'all' && !item.show.includes(auth.user.role)) {
+                                    if(!item.show.includes('all') && !item.show.includes(auth.user.role)) {
                                         return;
                                     }
                                     

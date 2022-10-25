@@ -635,6 +635,7 @@ class Controller extends BaseController
             'related_records_header' => $headers,
             'current_tab' => $currentTab,
             'parent_name' => $parent_name,
+            
             // Paginator
             'sub_panel_pagination' => [
                 'firstPageUrl' => $records->url(1),

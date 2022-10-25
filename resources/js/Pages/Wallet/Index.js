@@ -7,6 +7,7 @@ import nProgress from 'nprogress';
 import { Link, Head } from "@inertiajs/inertia-react";
 import axios from "axios";
 import { CheckIcon } from "@heroicons/react/outline";
+import PlanUsage from "./PlanUsage";
 
 function Wallet(props)
 {
@@ -180,6 +181,12 @@ function Wallet(props)
                             </span>
                         </h4>
 
+                        <div class="grid gap-4 mt-4">
+                            <PlanUsage
+                                currentPlan = {props.currentPlan.plan}
+                                balance = {balance}
+                            />
+                        </div>
                         <div class="grid grid-cols-2 gap-4 mt-4">
                             <div class="bg-white rounded-md shadow w-full space-y-6 p-4 md:p-8 flex flex-col justify-center md:justify-start">
                                 <span className="font-semibold text-base">
