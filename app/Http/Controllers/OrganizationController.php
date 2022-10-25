@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Organization;
 use App\Models\Contact;
 use App\Models\User;
+use App\Models\Account;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
 use Cache;
@@ -31,6 +32,13 @@ class OrganizationController extends Controller
         $list_view_columns = $module->getListViewFields();
         $listViewData = $this->listView($request, $module, $list_view_columns);
 
+        if ($request->is('api/*')) // API call check
+            {            
+                unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
+                return response()->json($listViewData);
+            }
+        else
+            {      
         $moduleData = [
             'singular' => __('Organization'),
             'plural' => __('Organizations'),
@@ -51,6 +59,7 @@ class OrganizationController extends Controller
         
         $data = array_merge($moduleData, $listViewData);
         return Inertia::render('Organization/List', $data);
+          }
     }
    
     /**
@@ -62,9 +71,21 @@ class OrganizationController extends Controller
     public function store(Request $request)
     {
         $organization_id = $this->saveOrganization($request);
-        
+
+        if($request->is('api/*'))     // API call check
+        {            
+            if($organization_id){
+            return response()->json($organization_id);
+            }
+            else{
+                abort(422);
+            }
+        }
+        else
+        {        
         $url = route('detailOrganization').'?id='.$organization_id;
         return Redirect::to($url);
+        }
     }
 
      /**
@@ -100,9 +121,23 @@ class OrganizationController extends Controller
         if(!$organization) {
             abort('404');
         }
-
+        if($request->is('api/*'))
+            {
+                if ($request->account_id)
+                {
+                $account = Account::find($request->account_id);                
+                $companyId = $account->company_id;                
+                }            
+            }
+        else
+            { 
         $companyId = Cache::get('selected_company_'. $request->user()->id);
+            }
         $headers = $this->getModuleHeader($companyId, 'Organization');
+
+        if ($request->is('api/*')) { // API call check             
+            return response()->json($organization);
+        } else {    
         return Inertia::render('Organization/Detail', [
             'record' => $organization,            
             'headers' => $headers,
@@ -112,6 +147,7 @@ class OrganizationController extends Controller
                 'Edit'  =>__('Edit')
             ],
         ]);
+        }
     }
 
     /**
@@ -123,8 +159,21 @@ class OrganizationController extends Controller
      */
     public function update(Request $request)
     {
+        $currentUser = $request->user();         
+        $module = new Organization();       
+        $organization = $this->checkAccessPermission($request, $module, $request->id);
+        if(!$organization) {
+            abort('404');
+        }
         $organization_id = $this->saveOrganization($request);
-        return Redirect::route('listOrganization', $organization_id);
+        if($request->is('api/*')){
+            $organization = Organization::findOrFail($organization_id);
+            return response()->json($organization);           
+        }
+        else
+          {
+            return Redirect::route('listOrganization', $organization_id);
+          }
     }
 
     /**
@@ -135,11 +184,36 @@ class OrganizationController extends Controller
      */
     public function destroy(Request $request, $organizationId)
     {
+        if($request->is('api/*')){
+            $account = Account::findorFail($request->account_id);                
+            $company_id = $account->company_id;  
+            $organization = Organization::where('id',$request->id)->where('company_id', $company_id);
+            $module = new Organization();
+            $organization = $this->checkAccessPermission($request, $module, $request->id);
+
+        if(!$organization) {
+            return response()->json(['status' => false, 'message' => 'Record not found']);   
+            }           
+            else
+            {   Schema::disableForeignKeyConstraints();
+                $organization->delete();        
+                return response()->json(['record'=>$request->id,'message'=>'deleted']);
+            }
+         }
+        else
+          {
         $organization = Organization::find($organizationId);
         Schema::disableForeignKeyConstraints();
         $organization->delete();
+        if($request->is('api/*')){          
+            return response()->json($organization);
+            }
+            else
+              {
         return Redirect::route('listOrganization');
-        Schema::enableForeignKeyConstraints();
+              }
+        Schema::enableForeignKeyConstraints();              
+        }
     }
 
     /**
@@ -153,7 +227,7 @@ class OrganizationController extends Controller
     }
     
     public function saveOrganization($request){
-
+        $current_user = $request->user();  
         if ($request->id) {
             $request->validate([
                 'name' => 'required|max:255',                
@@ -165,8 +239,19 @@ class OrganizationController extends Controller
             ]);
             $organization = new Organization();
         }
+        if($request->is('api/*'))
+        {   
+            $current_user = $request->user();
+            $account = Account::find($request->account_id);
+            if ($request->account_id)
+            {                           
+              $company_id = $account->company_id;                
+            }           
+        }
+        else
+         {  
         $company_id = Cache::get('selected_company_'. $request->user()->id);
-     
+         }
         $fields = Field::where('module_name', 'Organization')
             ->where('company_id', $company_id)
             ->get(['field_name', 'is_custom', 'field_type']);
@@ -197,11 +282,9 @@ class OrganizationController extends Controller
             if ($custom_field) {
                 $organization->custom = $custom_field;
             }
-
-            $organization->company_id = Cache::get('selected_company_'. $request->user()->id);
+            $organization->company_id = $company_id;
             $organization->save();
         }
-
         return $organization->id;
     } 
     

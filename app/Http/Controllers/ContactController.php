@@ -12,6 +12,7 @@ use App\Models\Serviceable;
 use Cache;
 use App\Models\Tag;
 use App\Models\Category;
+use App\Models\Account;
 use App\Models\Company;
 use App\Models\Field;
 use App\Models\Service;
@@ -55,7 +56,8 @@ class ContactController extends Controller
      */
     public function index(Request $request)
     {
-        $module = new Contact();
+        $module = new Contact();       
+                
         $list_view_columns = $module->getListViewFields();
         $listViewData = $this->listView($request, $module, $list_view_columns);
 
@@ -166,7 +168,19 @@ class ContactController extends Controller
         $ListOptions = $this->getListOption($request->user());
         $ListSelectRecords = $this->getSelectedList($contact);
 
-        $companyId = Cache::get('selected_company_'. $request->user()->id);
+        if($request->is('api/*')) //api call check
+            {
+                if ($request->account_id)
+                {
+                $account = Account::find($request->account_id);                
+                $companyId = $account->company_id;                
+                }            
+            }
+        else
+            { 
+            $companyId = Cache::get('selected_company_'. $request->user()->id);
+            }
+        
         $headers = $this->getModuleHeader($companyId , 'Contact');
 
         $subscribedServices = [];
@@ -324,12 +338,17 @@ class ContactController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request)
-    {
-        $currentUser = $request->user();        
+    {        
+        $currentUser = $request->user();    
+        $module = new Contact();    
         $flag = $this->checkPermission($currentUser, $request->id,'Contact');
         if($flag === false) {
             abort(401);
         }
+        $contact = $this->checkAccessPermission($request, $module, $request->id);
+        if(!$contact) {
+            abort('404');
+        }   
 
         $contact_id = $this->saveContact($request);
        
@@ -352,15 +371,27 @@ class ContactController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy(Request $request, $contactId)
-    {
-        $contact = Contact::find($contactId);
-        $contact->delete();
-        
-           if($request->is('api/*')){          
-            return response()->json($contact);
+    {               
+           if($request->is('api/*')){
+                 $account = Account::findorFail($request->account_id);                
+                 $company_id = $account->company_id;   
+                $contact = Contact::where('id',$request->id)->where('company_id', $company_id);
+                $module = new Contact();
+                $contact = $this->checkAccessPermission($request, $module, $request->id);
+
+        if(!$contact) {
+            return response()->json(['status' => false, 'message' => 'Record not found']);   
+        }
+                else
+                {
+                $contact->delete();        
+                return response()->json(['record'=>$request->id,'message'=>'deleted']);
+                }
             }
             else
               {
+                $contact = Contact::find($contactId);
+                $contact->delete();
                 return Redirect::route('listContact');
               }
         
@@ -479,6 +510,7 @@ class ContactController extends Controller
                 'email' => 'required|max:255',
             ]);
             $contact = Contact::findOrFail($request->id);
+
         } else {
             $request->validate([
                 'last_name' => 'required|max:255',
@@ -487,7 +519,19 @@ class ContactController extends Controller
             $contact = new Contact();
         }
 
+        if($request->is('api/*'))
+        {
+            if ($request->account_id)
+            {
+              $account = Account::findorFail($request->account_id);                
+              $company_id = $account->company_id;                
+            }         
+           
+        }
+        else
+         {        
         $company_id = Cache::get('selected_company_'. $request->user()->id);
+         }
      
         $fields = Field::where('module_name', 'Contact')
             ->where('company_id', $company_id)
@@ -526,7 +570,9 @@ class ContactController extends Controller
             }
   
             $contact->creater_id= $request->user()->id;
-            $contact->company_id = Cache::get('selected_company_'. $request->user()->id);
+            
+            $contact->company_id = $company_id;
+               
             $contact->save();
 
             if($request->parent_id){
