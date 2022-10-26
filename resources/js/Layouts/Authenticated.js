@@ -28,7 +28,9 @@ import {
     ShoppingBagIcon,
     ChevronDownIcon,
     OfficeBuildingIcon,
-    ClipboardIcon
+    ClipboardIcon,
+    SupportIcon,
+    QuestionMarkCircleIcon
 } from "@heroicons/react/outline";                                                                      
 import SelectCompany from "@/Pages/Company/SelectCompany";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
@@ -173,6 +175,12 @@ const adminNavigation = [
         name: "Plans",
         href: route("listPlan"),
         icon: ClipboardIcon,
+        show: ['global_admin'],
+    },
+    {
+        name: "SupportRequests",
+        href: route("list_global_SupportRequest"),
+        icon: QuestionMarkCircleIcon,
         show: ['global_admin'],
     },
     
@@ -610,7 +618,25 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                 count={count}
                                                 notifications={notifications}
                                             />
-                                        </div>                                       
+                                        </div>
+                                        {auth && auth.user && (auth.user.role == 'global_admin' || auth.user.role == 'admin') ? 
+                                        <div className="ml-3 relative">
+                                        <Link
+                                            preserveState
+                                            key="supportrequest"
+                                            href={route("listSupportRequest")}  
+                                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"                                                                                    
+                                        >
+                                            <span class="relative inline-block">
+                                            <QuestionMarkCircleIcon
+                                                className= "mr-3 flex-shrink-0 h-6 w-6"
+                                                 
+                                    aria-hidden="true"
+                                               
+                                            />
+                                            </span>
+                                        </Link>
+                                        </div> :''}                                            
                                           
                                         <div className="ml-3 relative z-10">
                                             <Dropdown>

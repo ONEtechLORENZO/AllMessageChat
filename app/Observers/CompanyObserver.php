@@ -334,6 +334,14 @@ class CompanyObserver
                     ['module_name' => 'Lead', 'field_name' => 'content', 'field_label' => 'Content', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $Lead_source_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
                     ['module_name' => 'Lead', 'field_name' => 'term', 'field_label' => 'Term', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $Lead_source_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
 
+
+                  // SupportRequest
+                  ['module_name' => 'SupportRequest', 'field_name' => 'subject', 'field_label' => 'Subject', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'SupportRequest', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+               //   ['module_name' => 'SupportRequest', 'field_name' => 'status', 'field_label' => 'Status', 'field_type' => 'dropdown', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => json_encode(['New'=>'New', 'In Progress'=>'In Progress' ,'Closed'=>'Closed'])],
+                  ['module_name' => 'SupportRequest', 'field_name' => 'type', 'field_label' => 'Type', 'field_type' => 'dropdown', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => json_encode(['Workspace'=>'Workspace', 'Order'=>'Order' ,'Channel'=>'Channel',])],
+                 // ['module_name' => 'SupportRequest','field_name' => 'assigned_to' ,'field_label' =>'Assigned to','field_type' => 'relate','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' => json_encode(['module' => 'User']), ],
+                 
          ];
        
         return $fields;

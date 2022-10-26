@@ -25,6 +25,7 @@ use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\UserInviteController;
 use App\Http\Controllers\FieldGroupController;
 use App\Http\Controllers\ChatListContactController;
+use App\Http\Controllers\SupportRequestController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\OrganizationController;
@@ -191,7 +192,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
     
     Route::get('/subpanelRecords', [ContactController::class, 'show_subpanel'])->name('subpanel_list');
-
+    
     // Document
     Route::get('/download_document/{id}', [DocumentController::class, 'downloadDocument'])->name('download_document');
     Route::get('/preview_document/{id}', [DocumentController::class, 'previewDocument'])->name('preview_document');
@@ -347,6 +348,14 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::get('/getFieldsGroup', [FieldGroupController::class, 'getFieldsGroup'])->name('get_fields_group');
     Route::post('/storeFieldOrder', [FieldGroupController::class, 'storeFieldOrder'])->name('store_field_order');
     
+     //SupportRequests  
+     Route::get('/supportrequests', [SupportRequestController::class, 'index'])->name('listSupportRequest');
+     Route::delete('/supportrequests/delete/{id}', [SupportRequestController::class, 'destroy'])->name('deleteSupportRequest');
+     Route::get('/supportrequests/{id}', [SupportRequestController::class, 'show'])->name('detailSupportRequest');
+     Route::post('/supportrequests/{id}', [SupportRequestController::class, 'update'])->name('updateSupportRequest');
+     Route::post('/supportrequests', [SupportRequestController::class, 'store'])->name('storeSupportRequest');
+     Route::post('/supportrequests/{id}', [SupportRequestController::class, 'edit'])->name('editSupportRequest');
+    
     //Company   
     Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');
    // Route::get('/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
@@ -366,13 +375,20 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detail_global_user');
     Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_global_user');
     Route::post('/wallet/amount', [UserController::class, 'addWalletAmount'])->name('wallet_amount');
-
+    //SupportRequests  
+    Route::get('/admin/supportrequests', [SupportRequestController::class, 'index'])->name('list_global_SupportRequest');
+    Route::delete('/admin/supportrequests/delete/{id}', [SupportRequestController::class, 'destroy'])->name('delete_global_SupportRequest');
+    Route::get('/admin/supportrequests/{id}', [SupportRequestController::class, 'show'])->name('detail_global_SupportRequest');
+    Route::post('/admin/supportrequests/{id}', [SupportRequestController::class, 'update'])->name('update_global_SupportRequest');
+    Route::post('/admin/supportrequests', [SupportRequestController::class, 'store'])->name('store_global_SupportRequest');
+    Route::post('/admin/supportrequests/{id}', [SupportRequestController::class, 'edit'])->name('edit_global_SupportRequest');
+   
     //Workspaces
     Route::get('/admin/workspaces', [CompanyController::class, 'index'])->name('listCompany');
     Route::get('/admin/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
     Route::post('/admin/paymentmethod', [CompanyController::class, 'paymentMethod'])->name('payment_method');
 
-    // Settings
+     // Settings
     Route::get('/admin/settings/outgoing_server', [SettingsController::class, 'settings'])->name('settings');
     Route::get('/admin/settings/template_notification', [SettingsController::class, 'toMail'])->name('template_notification');
     Route::post('/admin/settings/saveSMTP', [SettingsController::class, 'saveOutgoingServerData'])->name('store_smtp_data');
