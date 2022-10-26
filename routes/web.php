@@ -25,13 +25,13 @@ use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\UserInviteController;
 use App\Http\Controllers\FieldGroupController;
 use App\Http\Controllers\ChatListContactController;
-use App\Http\Controllers\SupportRequestController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\LineItemController;
 use App\Http\Controllers\AutomationController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\SupportRequestController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsGlobalAdmin;
@@ -206,30 +206,6 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/updateProduct', [ProductController::class, 'store'])->name('storeProduct');
         Route::get('/getProductDetail', [ProductController::class, 'edit'])->name('editProduct');
     
-<<<<<<< HEAD
-    Route::get('/subpanelRecords', [ContactController::class, 'show_subpanel'])->name('subpanel_list');
-    
-    // Document
-    Route::get('/download_document/{id}', [DocumentController::class, 'downloadDocument'])->name('download_document');
-    Route::get('/preview_document/{id}', [DocumentController::class, 'previewDocument'])->name('preview_document');
-
-    // Opportunity
-    Route::get('/opportunities', [OpportunityController::class, 'index'])->name('listOpportunity');
-    Route::delete('/opportunity/delete/{id}', [OpportunityController::class, 'destroy'])->name('deleteOpportunity');
-    Route::get('/opportunity/detail/{id}', [OpportunityController::class, 'show'])->name('detailOpportunity');
-    Route::post('/updateOpportunity/{id}', [OpportunityController::class, 'update'])->name('updateOpportunity');
-    Route::post('/updateOpportunity', [OpportunityController::class, 'store'])->name('storeOpportunity');
-    Route::get('/opportunity/edit/{id}', [OpportunityController::class, 'edit'])->name('editOpportunity');
-   
-    //Leads
-    Route::get('/leads', [LeadController::class, 'index'])->name('listLead');
-    Route::delete('/lead/delete/{id}', [LeadController::class, 'destroy'])->name('deleteLead');
-    Route::get('/lead', [LeadController::class, 'show'])->name('detailLead');
-    Route::post('/updateLead/{id}', [LeadController::class, 'update'])->name('updateLead');
-    Route::post('/updateLead', [LeadController::class, 'store'])->name('storeLead');
-    Route::get('/getLeadDetail', [LeadController::class, 'edit'])->name('editLead');
-    Route::post('/convertLead/{id}', [LeadController::class, 'convert_lead'])->name('convertLead');
-=======
         // Order
         Route::get('/orders', [OrderController::class, 'index'])->name('listOrder');
         Route::delete('/order/delete/{id}', [OrderController::class, 'destroy'])->name('deleteOrder');
@@ -238,7 +214,6 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/order/store', [OrderController::class, 'store'])->name('storeOrder');
         Route::get('/order/detail/{id}', [OrderController::class, 'edit'])->name('editOrder');
         Route::get('/productPrice/{id}', [OrderController::class , 'getProductPrice'])->name('get_product_price');
->>>>>>> 19bb506efd11f4dc3e378d2cec0a4dac2ef3ba35
     
         // Filter
         Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');
@@ -353,14 +328,13 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::get('/getFieldsGroup', [FieldGroupController::class, 'getFieldsGroup'])->name('get_fields_group');
     Route::post('/storeFieldOrder', [FieldGroupController::class, 'storeFieldOrder'])->name('store_field_order');
     
-     //SupportRequests  
+    //SupportRequests  
      Route::get('/supportrequests', [SupportRequestController::class, 'index'])->name('listSupportRequest');
      Route::delete('/supportrequests/delete/{id}', [SupportRequestController::class, 'destroy'])->name('deleteSupportRequest');
      Route::get('/supportrequests/{id}', [SupportRequestController::class, 'show'])->name('detailSupportRequest');
      Route::post('/supportrequests/{id}', [SupportRequestController::class, 'update'])->name('updateSupportRequest');
      Route::post('/supportrequests', [SupportRequestController::class, 'store'])->name('storeSupportRequest');
      Route::post('/supportrequests/{id}', [SupportRequestController::class, 'edit'])->name('editSupportRequest');
-    
     //Company   
     Route::get('/workspaces', [CompanyController::class, 'index'])->name('listAdminCompany');
     Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');
@@ -381,6 +355,12 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detail_global_user');
     Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_global_user');
     Route::post('/wallet/amount', [UserController::class, 'addWalletAmount'])->name('wallet_amount');
+
+    //Workspaces
+    Route::get('/admin/workspaces', [CompanyController::class, 'index'])->name('listCompany');
+    Route::get('/admin/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
+    Route::post('/admin/paymentmethod', [CompanyController::class, 'paymentMethod'])->name('payment_method');
+
     //SupportRequests  
     Route::get('/admin/supportrequests', [SupportRequestController::class, 'index'])->name('list_global_SupportRequest');
     Route::delete('/admin/supportrequests/delete/{id}', [SupportRequestController::class, 'destroy'])->name('delete_global_SupportRequest');
@@ -388,13 +368,8 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::post('/admin/supportrequests/{id}', [SupportRequestController::class, 'update'])->name('update_global_SupportRequest');
     Route::post('/admin/supportrequests', [SupportRequestController::class, 'store'])->name('store_global_SupportRequest');
     Route::post('/admin/supportrequests/{id}', [SupportRequestController::class, 'edit'])->name('edit_global_SupportRequest');
-   
-    //Workspaces
-    Route::get('/admin/workspaces', [CompanyController::class, 'index'])->name('listCompany');
-    Route::get('/admin/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
-    Route::post('/admin/paymentmethod', [CompanyController::class, 'paymentMethod'])->name('payment_method');
-
-     // Settings
+    
+    // Settings
     Route::get('/admin/settings/outgoing_server', [SettingsController::class, 'settings'])->name('settings');
     Route::get('/admin/settings/template_notification', [SettingsController::class, 'toMail'])->name('template_notification');
     Route::post('/admin/settings/saveSMTP', [SettingsController::class, 'saveOutgoingServerData'])->name('store_smtp_data');
