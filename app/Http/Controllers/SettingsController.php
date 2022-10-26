@@ -11,6 +11,7 @@ use App\Models\Field;
 use App\Models\User;
 use App\Models\Plan;
 use App\Models\Account;
+use App\Models\Template;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Log;
 
@@ -494,7 +495,7 @@ class SettingsController extends Controller
         
         return response()->json(['status' => true, 'navigate' => $navigate]);
     }
-
+    
     public function recordMerger(Request $request) {
 
         $parent_module = $request->module;
@@ -538,5 +539,29 @@ class SettingsController extends Controller
             'records' => $records,
             'fields' => $fields
         ]);
+    }
+
+    /**
+     * Return user based company & company based accounts
+     */
+    public function fetchUserAccountData(Request $request)
+    {
+        $user = $request->user();
+        $userData = [];
+       // $companyList = $accountList = $templateList = [];
+        $companys = $user->company;
+        
+        foreach($companys as $company){
+            $userData['company_list'][$company->id] = $company->name;
+            $accounts = Account::where('company_id', $company->id)->get(); 
+            foreach($accounts as $account){
+                $userData['account_list'][$account->id] = $account->company_name;
+                $templates = Template::where('account_id', $account->id)->get();
+                foreach($templates as $template){
+                    $userData['template_list'][$account->id][$template->template_uid] = $template->name;
+                }
+            }
+        }
+        return response()->json(['status' => true, 'data' => $userData]);
     }
 }
