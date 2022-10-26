@@ -11,6 +11,7 @@ use App\Http\Controllers\OpportunityController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\LeadController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\OrganizationController;
 
 /*
@@ -27,6 +28,9 @@ use App\Http\Controllers\OrganizationController;
 Route::post('/webhook/v1/', [AutomationController::class , 'storeWebActionData'])->name('web_hook_event');
 
 Route::middleware(['auth:sanctum'])->group(function() {
+
+    // Fetch user account data
+    Route::get('/vtFetchData', [SettingsController::class , 'fetchUserAccountData']);
 
     // Send whatsapp message
     Route::post('/v1/send-wa-message', [MsgController::class, 'sendAPIMessage']);

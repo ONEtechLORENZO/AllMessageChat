@@ -14,6 +14,7 @@ import Time from "@/Components/Forms/Time";
 import MultiSelect from "@/Components/Forms/MultiSelect";
 import Relate from "@/Components/Relate";
 import { TrashIcon } from '@heroicons/react/solid';
+import notie from 'notie';
 
 function Action(props){
 
@@ -21,6 +22,17 @@ function Action(props){
             module_field: '',
             map_field: '',
         };
+
+    const methodOptions = {
+        GET: 'GET',
+        POST: 'POST',
+        PUT: 'PUT'
+    };
+
+    const headerType = {
+        'apiKey': 'API key',
+        'Authorization': 'Bearer token',
+    };
 
     const cancelButtonRef = useRef(null);
     const [actionData , setActionData] = useState({});
@@ -32,7 +44,7 @@ function Action(props){
 
     useEffect(()=>{
       
-        if(props.actionData.type == 'create_contact' || props.actionData.type == 'update_contact'){
+        if(props.actionData.type == 'create_contact' || props.actionData.type == 'update_contact' || props.actionData.type == 'send_request'){
             fetchModuleFields( );
             addMoreMapFields();
         }
@@ -218,6 +230,17 @@ function Action(props){
         });
     }
     
+    /**
+     * Test request call
+     */
+    function testRequestCall(){
+        let endpoint_url = route('test_post_data');
+        Axios.post(endpoint_url, props.actionData.node_data).then((response) => {
+            if(response.data.status !== false) {
+                notie.alert({type: 'success', text: 'Test call send successfully!', time: 5});
+            }
+        });
+    }
     
     return(
         <Transition.Root show={true} as={Fragment}>
@@ -548,7 +571,69 @@ function Action(props){
                                                             </div>
                                                         </div>
                                                     }
-                                                    {(actionData.type == 'create_contact' || 'update_contact' == actionData.type) &&
+                                                    
+                                                    {actionData.type == 'send_request' &&
+                                                        <div>
+                                                            <div class="flex flex-wrap mx-3 mb-6">
+                                                                <div className="w-3/4">
+                                                                    <div className='form-group mb-2' >
+                                                                        <label htmlFor={'method'} className="block text-sm font-medium text-gray-700">
+                                                                            Method
+                                                                        </label>
+                                                                        <Dropdown
+                                                                            id={'method'}
+                                                                            name={'method'}
+                                                                            options={methodOptions}
+                                                                            handleChange={handleChange}
+                                                                            emptyOption={'Select'}
+                                                                            value={actionData.method}
+                                                                            required={ true }
+                                                                        />
+                                                                    </div>
+                                                                    <div className='form-group mb-2' >
+                                                                        <label htmlFor={'post_url'} className="block text-sm font-medium text-gray-700">
+                                                                            Post URL
+                                                                        </label>
+                                                                        <Input
+                                                                            id={'post_url'}
+                                                                            name={'post_url'}
+                                                                            handleChange={handleChange}
+                                                                            value={actionData.post_url}
+                                                                            required={ true }
+                                                                        />
+                                                                    </div>
+                                                                    <div className='form-group mb-2' >
+                                                                        <label htmlFor={'headerType'} className="block text-sm font-medium text-gray-700">
+                                                                            Header type
+                                                                        </label>
+                                                                        <Dropdown
+                                                                            id={'headerType'}
+                                                                            name={'headerType'}
+                                                                            options={headerType}
+                                                                            handleChange={handleChange}
+                                                                            emptyOption={'Select'}
+                                                                            value={actionData.headerType}
+                                                                            required={ true }
+                                                                        />
+                                                                    </div>
+                                                                    <div className='form-group mb-2' >
+                                                                        <label htmlFor={'header'} className="block text-sm font-medium text-gray-700">
+                                                                            Header
+                                                                        </label>
+                                                                        <Input
+                                                                            id={'header'}
+                                                                            name={'header'}
+                                                                            handleChange={handleChange}
+                                                                            value={actionData.header}
+                                                                            required={ true }
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                               
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                    {(actionData.type == 'create_contact' || 'update_contact' == actionData.type || actionData.type == 'send_request') &&
                                                         <div>
                                                             <div class="flex flex-wrap mx-3 mb-6">
                                                                 <div className="w-full">
@@ -586,21 +671,33 @@ function Action(props){
                                                                                                 value={field_map.map_field}
                                                                                             />
                                                                                         </div>
-                                                                                        <div className="flex-1 flex items-center ">
-                                                                                       
-                                                                                            <select
-                                                                                                onChange={ (e) => handleFieldMap(e)}
-                                                                                                map_index={key}
-                                                                                                value=''
-                                                                                                name="webhook_field"
-                                                                                                className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
-                                                                                            >
-                                                                                                <option value=""> {'{{}}'} </option>
-                                                                                                {options.sample_data && Object.entries(options.sample_data).map(([key, field]) => 
-                                                                                                    <option map_index={key} value={"{{"+key+'}}'}> {key} </option>
-                                                                                                )}
-                                                                                            </select>
-                                                                                        </div>
+                                                                                        {actionData.type != 'send_request' ?
+                                                                                            <div className="flex-1 flex items-center ">
+                                                                                                <select
+                                                                                                    onChange={ (e) => handleFieldMap(e)}
+                                                                                                    map_index={key}
+                                                                                                    value=''
+                                                                                                    name="webhook_field"
+                                                                                                    className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                                                >
+                                                                                                    <option value=""> {'{{}}'} </option>
+                                                                                                    {options.sample_data && Object.entries(options.sample_data).map(([key, field]) => 
+                                                                                                        <option map_index={key} value={"{{"+key+'}}'}> {key} </option>
+                                                                                                    )}
+                                                                                                </select>
+                                                                                            </div>
+                                                                                            :
+                                                                                            <div className="flex-1 flex items-center ">
+                                                                                                <input
+                                                                                                    className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                                                    type="text"
+                                                                                                    name={'map_field_value'}
+                                                                                                    map_index={key}
+                                                                                                    onChange={ (e) => handleFieldMap(e)}
+                                                                                                    value={field_map.map_field_value}
+                                                                                                />
+                                                                                            </div>
+                                                                                        }
                                                                                         <div className="flex items-center justify-between p-4 space-x-6">
                                                                                             <button
                                                                                                 type="button"
@@ -632,24 +729,14 @@ function Action(props){
                                                         </div>
                                                     }
                                                     {actionData.type == 'send_request' &&
-                                                        <div>
-                                                            <div class="flex flex-wrap mx-3 mb-6">
-                                                                <div className="w-3/4">
-                                                                    <div className='form-group' >
-                                                                        <label htmlFor={'post_url'} className="block text-sm font-medium text-gray-700">
-                                                                            Post URL
-                                                                        </label>
-                                                                        <Input
-                                                                            id={'post_url'}
-                                                                            name={'post_url'}
-                                                                            handleChange={handleChange}
-                                                                            value={actionData.post_url}
-                                                                            required={ true }
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                               
-                                                            </div>
+                                                        <div className='form-group' >
+                                                            <button
+                                                                type="button"
+                                                                className="mt-3 float-right w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                                                                onClick={ () => testRequestCall()}
+                                                            >
+                                                                Test
+                                                            </button>
                                                         </div>
                                                     }
                                               </div>

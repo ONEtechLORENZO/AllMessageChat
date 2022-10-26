@@ -45,6 +45,7 @@ export default function Dashboard(props) {
                 </Link>
                 </div> 
             </div>}
+            message={props.message}
         >
             
             <Head title={props.translator['Dashboard']} />
