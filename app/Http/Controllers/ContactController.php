@@ -88,6 +88,8 @@ class ContactController extends Controller
                     'merge' => true
                 ],
             ];
+
+            $record =  $this->listViewRecord($request, $listViewData, 'Contact');
             
             $data = array_merge($moduleData, $listViewData);
             return Inertia::render('Contacts/List', $data);
@@ -617,5 +619,44 @@ class ContactController extends Controller
         $service_id = $request->get('service_id');     
         Serviceable::where('serviceable_id', $contact_id)->where('service_id', $service_id)->delete(); 
         return Redirect::to(url()->previous());
+    }
+
+    public function listViewRecord($request, $moduleRecords, $parent_module) {
+
+        $records = $moduleRecords['records'];
+        $columns = $moduleRecords['list_view_columns'];
+
+        $company_id = Cache::get('selected_company_'. $request->user()->id);
+
+        $query = Field::where('module_name', $parent_module);
+        $entity_modules = ['Contact','Lead', 'Product', 'Opportunity', 'Order', 'Campaign', 'User','Organization'];
+
+        if(in_array($parent_module, $entity_modules)) {
+            $query->where('company_id', $company_id);
+        }
+
+        $fields = $query->get();
+              
+        if($fields) {
+            foreach($fields as $field) {
+                if($field['field_type'] == 'relate') {
+
+                    $field_name = $field['field_name'];
+                    $relateModule = $field['options']['module'];
+
+                    $module = "App\Models\\{$relateModule}";  // Related module
+
+                    foreach($records as $record) {
+                        $related = $module::where('id', $record->$field_name)->first(); // Related record details
+
+                        if($related) {
+                            $record[$field_name] =  $related['name'];
+                        }
+                    }
+                }
+            }
+        }            
+        
+        return $records;
     }
 }
