@@ -88,23 +88,41 @@ class MsgObserver
             $to = $contact->phone_number;
             $to = str_replace('+' , '', $to);
             
+            $fromName = $account->company_name;
+            $toName = $contact->first_name .' '.$contact->last_name;
+
+            $type = ($messageLog->msg_mode != 'outgoing') ? 'Recieved' : 'Send';
             if($messageLog->msg_mode != 'outgoing'){
                 list($from , $to) = array($to , $from);
+                list($fromName , $toName) = array($toName , $fromName);
             }
 
             $msgType = ($messageLog->msg_type) ? $messageLog->msg_type : 'TEXT';
             
             $date = new DateTime();
-            $postData['reference'] = '';//$messageLog->refId;
-            $postData['messageContext'] = $messageLog->message;
-            $postData['from'] = [ 'number' => $from , 'name' => $from ];
-            $postData['to'] = [ 'number' => $to ];
-            $postData['message'] = [ 'text' => $messageLog->message , 'media' => ['mediaUri' => '', 'contentType' => $msgType , 'title' => '' ]  ];
-            $postData['custom'] = (object)[];
-            $postData['groupings'] = ['', '', ''];
-            $postData['time'] = $date->format('Y-m-d H:i:s');
-            $postData['timeUtc'] = $date->format('Y-m-d\TH:i:s');
-            $postData['channel'] = 'WhatsApp';
+            // $postData['reference'] = '';//$messageLog->refId;
+            // $postData['messageContext'] = $messageLog->message;
+            // $postData['from'] = [ 'number' => $from , 'name' => $fromName ];
+            // $postData['to'] = [ 'number' => $to ];
+            // $postData['message'] = [ 'text' => $messageLog->message , 'media' => ['mediaUri' => '', 'contentType' => $msgType , 'title' => '' ]  ];
+            // $postData['custom'] = (object)[];
+            // $postData['groupings'] = ['', '', ''];
+            // $postData['time'] = $date->format('Y-m-d H:i:s');
+            // $postData['timeUtc'] = $date->format('Y-m-d\TH:i:s');
+            // $postData['channel'] = 'WhatsApp';
+
+
+            $postData = [
+                'content' => $messageLog->message,
+                'sender_name' => $fromName,
+                'whatsapp_chatid' => $messageLog->service_id,
+                'message_type' => $type,
+                'body' => $messageLog->message,
+                'onemessage_status' => '',
+                'customer_phone' => $contact->phone_number,
+                'message_id' => $messageLog->service_id,
+                'your_phone_number' => $from,
+            ];
                        
             // Get configured webhooks for the account
             $webhookEvents = WebhookEvent::where('account_id', $messageLog->account_id)->get();
@@ -125,12 +143,6 @@ class MsgObserver
                         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
                         CURLOPT_CUSTOMREQUEST => 'POST',
                         CURLOPT_POSTFIELDS => json_encode($postData),
-                        CURLOPT_HTTPHEADER => array(
-                            'Content-Type: application/json',
-                            'operation: login',
-                            'username: admin',
-                            'accessKey: wpfYKID7sbZGM61'
-                        ),
                     ));
 
                     $response = curl_exec($curl);
