@@ -135,7 +135,8 @@ class Controller extends BaseController
             }
         }
 
-        if($moduleName == 'Company' && $user->role != 'global_admin') {
+        //if($moduleName == 'Company' && $user->role != 'global_admin') {
+        if($moduleName == 'Company') {
             $query->join('company_user', 'company_id', 'companies.id');
             $query->where('company_user.user_id', $user_id);
         }
