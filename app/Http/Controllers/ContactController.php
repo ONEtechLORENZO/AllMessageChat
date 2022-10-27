@@ -84,7 +84,8 @@ class ContactController extends Controller
                     'search' => true,
                     'filter' => true,
                     'select_field'=>true,
-                    'mass_edit' => true
+                    'mass_edit' => true,
+                    'merge' => true
                 ],
             ];
             
@@ -200,6 +201,7 @@ class ContactController extends Controller
         if($user){
             $contact['assigned_to'] = [ 'label' => $user['name'] , 'value' => $user['id'], 'module' => 'User'];
         }
+        
         if ($request->is('api/*')) { // API call check             
                 return response()->json($contact);
         } else {    

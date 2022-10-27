@@ -495,6 +495,51 @@ class SettingsController extends Controller
         
         return response()->json(['status' => true, 'navigate' => $navigate]);
     }
+    
+    public function recordMerger(Request $request) {
+
+        $parent_module = $request->module;
+        $module = "App\Models\\{$parent_module}"; 
+        $company_id = Cache::get('selected_company_' . $request->user()->id);      
+        
+        $id = explode(',',$request->id);
+        $records = $module::find($id);
+
+        $query = Field::where('module_name', $parent_module);
+        $entity_modules = ['Contact','Lead', 'Product', 'Opportunity', 'Order', 'Campaign', 'User','Organization'];
+
+        if(in_array($parent_module, $entity_modules)) {
+            $query->where('company_id', $company_id);
+        }
+
+        $fields = $query->get();
+                  
+        if($fields) {
+            foreach($fields as $field) {
+                if($field['field_type'] == 'relate') {
+
+                    $field_name = $field['field_name'];
+                    $relateModule = $field['options']['module'];
+
+                    $module = "App\Models\\{$relateModule}";  // Related module
+
+                    foreach($records as $record) {
+                        $related = $module::where('id', $record->$field_name)->first(); // Related record details
+
+                        if($related) {
+                           $record[$field_name] =  [ 'label' => $related['name'], 'value' => $related['id'], 'module' => 'Organization'];
+                        }
+                    }
+                }
+            }
+        }          
+
+        return Inertia::render('RecordMerger', [
+            'module' => $parent_module,
+            'records' => $records,
+            'fields' => $fields
+        ]);
+    }
 
     /**
      * Return user based company & company based accounts

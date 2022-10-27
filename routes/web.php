@@ -31,6 +31,7 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\LineItemController;
 use App\Http\Controllers\AutomationController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\SupportRequestController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsGlobalAdmin;
@@ -306,6 +307,7 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/company/setBaseCompany', [CompanyController::class, 'setBaseCompany'])->name('setBaseCompany');
         
         Route::get('/navigate/fields', [SettingsController::class, 'navigationField'])->name('navigation_field');
+        Route::get('record/merge', [SettingsController::class, 'recordMerger'])->name('record_merge');
     });
 
 });
@@ -327,6 +329,13 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::get('/getFieldsGroup', [FieldGroupController::class, 'getFieldsGroup'])->name('get_fields_group');
     Route::post('/storeFieldOrder', [FieldGroupController::class, 'storeFieldOrder'])->name('store_field_order');
     
+    //SupportRequests  
+     Route::get('/supportrequests', [SupportRequestController::class, 'index'])->name('listSupportRequest');
+     Route::delete('/supportrequests/delete/{id}', [SupportRequestController::class, 'destroy'])->name('deleteSupportRequest');
+     Route::get('/supportrequests/{id}', [SupportRequestController::class, 'show'])->name('detailSupportRequest');
+     Route::post('/supportrequests/{id}', [SupportRequestController::class, 'update'])->name('updateSupportRequest');
+     Route::post('/supportrequests', [SupportRequestController::class, 'store'])->name('storeSupportRequest');
+     Route::post('/supportrequests/{id}', [SupportRequestController::class, 'edit'])->name('editSupportRequest');
     //Company   
     Route::get('/workspaces', [CompanyController::class, 'index'])->name('listAdminCompany');
     Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');
@@ -353,6 +362,14 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/admin/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
     Route::post('/admin/paymentmethod', [CompanyController::class, 'paymentMethod'])->name('payment_method');
 
+    //SupportRequests  
+    Route::get('/admin/supportrequests', [SupportRequestController::class, 'index'])->name('list_global_SupportRequest');
+    Route::delete('/admin/supportrequests/delete/{id}', [SupportRequestController::class, 'destroy'])->name('delete_global_SupportRequest');
+    Route::get('/admin/supportrequests/{id}', [SupportRequestController::class, 'show'])->name('detail_global_SupportRequest');
+    Route::post('/admin/supportrequests/{id}', [SupportRequestController::class, 'update'])->name('update_global_SupportRequest');
+    Route::post('/admin/supportrequests', [SupportRequestController::class, 'store'])->name('store_global_SupportRequest');
+    Route::post('/admin/supportrequests/{id}', [SupportRequestController::class, 'edit'])->name('edit_global_SupportRequest');
+    
     // Settings
     Route::get('/admin/settings/outgoing_server', [SettingsController::class, 'settings'])->name('settings');
     Route::get('/admin/settings/template_notification', [SettingsController::class, 'toMail'])->name('template_notification');
