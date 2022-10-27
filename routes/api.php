@@ -13,6 +13,8 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\OrganizationController;
+use Illuminate\Support\Facades\Log;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +30,7 @@ use App\Http\Controllers\OrganizationController;
 Route::post('/webhook/v1/', [AutomationController::class , 'storeWebActionData'])->name('web_hook_event');
 
 Route::middleware(['auth:sanctum'])->group(function() {
+  log::info(['API testing 1' ]);
 
     // Fetch user account data
     Route::get('/vtFetchData', [SettingsController::class , 'fetchUserAccountData']);
