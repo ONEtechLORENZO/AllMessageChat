@@ -30,7 +30,6 @@ use Illuminate\Support\Facades\Log;
 Route::post('/webhook/v1/', [AutomationController::class , 'storeWebActionData'])->name('web_hook_event');
 
 Route::middleware(['auth:sanctum'])->group(function() {
-  log::info(['API testing 1' ]);
 
     // Fetch user account data
     Route::get('/vtFetchData', [SettingsController::class , 'fetchUserAccountData']);

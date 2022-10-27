@@ -546,12 +546,19 @@ class MsgController extends Controller
                 }
                 $status = $data['value']['statuses']['0']['status'];
                 $statusUC = strtoupper($status);
-                
+
+                $phone_number_id = $data['value']['metadata']['phone_number_id'];
+                $account = Account::where('fb_phone_number_id' , $phone_number_id)->first();
                
                 switch ($status){
                     case 'failed':
                         $messageData['status'] = $statusUC;
-                        $messageData['error_response'] = '';
+                        $messageData['error_response'] = $data['value']['statuses']['0']['errors'][0]['title'];
+                        if( $data['value']['statuses']['0']['errors'][0]['code'] == 131047 ) {
+                            $user = User::find($account->user_id);
+                            $user->fb_token = '';
+                            $user->save();
+                        }
                         break;
 
                     case 'sent':
@@ -568,8 +575,7 @@ class MsgController extends Controller
                 }
 
                 if($status == 'sent' && isset($data['value']['statuses']['0']['pricing'])){
-                    $phone_number_id = $data['value']['metadata']['phone_number_id'];
-                    $account = Account::where('fb_phone_number_id' , $phone_number_id)->first();
+                    
                     if(!$account){
                         return true;
                     }
