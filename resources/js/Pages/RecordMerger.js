@@ -1,9 +1,9 @@
 import React, {useState, useEffect} from "react";
 import Authenticated from "@/Layouts/Authenticated";
-import axios from "axios";
 import notie from 'notie';
 import nProgress from 'nprogress';
 import { Inertia } from "@inertiajs/inertia";
+import { Head,Link } from '@inertiajs/inertia-react';
 
 export default function RecordMerger(props) {
 
@@ -98,6 +98,7 @@ export default function RecordMerger(props) {
             Inertia.post(route('update' + props.module, {id: mergeRecord.master_id}), data, {
                 onSuccess: (response) => {
                     nProgress.done(true);
+                    notie.alert({type: 'success', text: ' Your record has been merged', time: 5});
                 },
             });
 
@@ -120,10 +121,16 @@ export default function RecordMerger(props) {
                   Merge multi record as single record
                 </p>
             </div>
-            <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+            <div className="mt-4 px-2">
+                <Link 
+                    href={route('list'+props.module )}
+                    className='mr-2 inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
+                > 
+                    Back
+                </Link>
                 <button
                  type="button"
-                 className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+                 className="mr-2 inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
                  onClick={() => mergeHandler()}
                >
                 Merge

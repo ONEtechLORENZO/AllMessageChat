@@ -88,8 +88,10 @@ class ContactController extends Controller
                     'merge' => true
                 ],
             ];
+
+            $records =  $this->listViewRecord($request, $listViewData, 'Contact');
             
-            $data = array_merge($moduleData, $listViewData);
+            $data = array_merge($moduleData, $records);
             return Inertia::render('Contacts/List', $data);
             }  
     }
@@ -618,4 +620,5 @@ class ContactController extends Controller
         Serviceable::where('serviceable_id', $contact_id)->where('service_id', $service_id)->delete(); 
         return Redirect::to(url()->previous());
     }
+
 }

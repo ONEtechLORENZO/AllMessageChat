@@ -199,7 +199,7 @@ function ListView(props)
     function recordMerger() {
         const recordLength = checkedId.length;
 
-        if(recordLength > 2) {
+        if(recordLength >= 2) {
             
             let data = {
                 'id' : checkedId.join(','),
@@ -208,7 +208,7 @@ function ListView(props)
 
             Inertia.get(route('record_merge', data));
         } else {
-            notie.alert({type: 'warning', text: 'Please select more than three records', time: 5});
+            notie.alert({type: 'warning', text: 'Please select more than one records', time: 5});
         }
     }
  

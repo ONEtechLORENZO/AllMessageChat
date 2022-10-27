@@ -46,7 +46,6 @@ class HandleImport extends Command
      */
     public function handle()
     {   
-       
         // Look for import with in_progress status
         $status = 'Inprogress';
         $import = Import::where('status',$status)->first(); 
@@ -65,6 +64,7 @@ class HandleImport extends Command
             $current_date = date('Y-m-d H:i:s');
             $mapping_value = unserialize(base64_decode($import->mapping));
             $ImportName = $import->name;
+            $module_name = $import->module_name;
 
             $stream = fopen($file_path, 'r');
             $csv = Reader::createFromStream($stream);
@@ -79,21 +79,28 @@ class HandleImport extends Command
             //Query your records from the document
             $csvRecords = $stmt->process($csv);
 
-            $fields = Field::where('module_name', 'Contact')
-                    ->where('user_id', $user_id)
-                    ->where('is_custom', 1)
-                    ->get(['field_name']);
+            $fields = Field::where('module_name', $module_name)
+                     ->where('company_id', $company_id)
+                     ->get(['field_name', 'is_custom']);
 
             $customFields = []; 
             foreach($fields as $field){
-                $customFields[] = $field->field_name;
+                if($field->is_custom == 1) {
+                    $customFields[] = $field->field_name;
+                }
             }
 
             $records = [];
             $count = 0;
             foreach ($csvRecords as $index =>  $csvRecord) {
                 $count++;
-                $records[$index] = ['user_id' => $user_id,'created_at' => $current_date, 'updated_at' => $current_date, 'company_id' => $company_id ];
+                $records[$index] = ['created_at' => $current_date, 'updated_at' => $current_date, 'company_id' => $company_id ];
+
+                // Add user_id in Contact module
+                if($module_name == 'Contact') {  
+                    $records[$index]['user_id'] = $user_id;
+                }
+            
                 $customRecord = [];
                 foreach($mapping_value as $name => $label){
                     if($label){
@@ -108,8 +115,10 @@ class HandleImport extends Command
                     $records[$index]['custom'] = json_encode($customRecord);
                 }
             }
-         
-            Contact::insert($records);
+
+            $module = "App\Models\\{$module_name}"; 
+
+            $module::insert($records);
             // Next offset
             $nextOffset = $offset + $count; 
 

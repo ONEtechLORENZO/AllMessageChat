@@ -3,10 +3,11 @@ import Authenticated from "@/Layouts/Authenticated";
 import { Head,Link } from "@inertiajs/inertia-react";
 import { Inertia } from "@inertiajs/inertia";
 import { useForm } from "@inertiajs/inertia-react";
-import PristineJS from "pristinejs";
-import { defaultPristineConfig } from "../Constants";
 import Step1 from "./Step1";
 import Step2 from "./Step2";
+import notie from 'notie';
+
+const fields = ['name', 'module', 'fileUpload'];
 
 const Tabs = (props) => {
     const [openTab, setOpenTab] = useState(1);
@@ -37,17 +38,18 @@ const Tabs = (props) => {
     }, [props]);
 
     function importStep() {
-        var pristine = new PristineJS(
-            document.getElementById("update_csv"),
-            defaultPristineConfig
-        );
-        let is_validated = pristine.validate(
-            document.querySelectorAll(
-                'input[data-pristine-required="true"], input[data-pristine-required="required"]'
-            )
-        );
 
-        if (!is_validated) {
+        let validate = true;
+        
+        fields.map( (field) => {
+            console.log(field, data[field]);
+            if(!data[field] && validate) {
+                validate = false;
+            }
+        } )
+        
+        if (!validate) {
+            notie.alert({type: 'warning', text: 'Please fill the fields', time: 5});
             return false;
         } else {
             getFileRecord();
@@ -138,6 +140,7 @@ const Tabs = (props) => {
                                             handleChange = {handleChange}
                                             importStep = {importStep}
                                             errors = {errors}
+                                            data={data}
                                         />
                                     </div>
                                     <div

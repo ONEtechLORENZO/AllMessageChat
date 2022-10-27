@@ -115,9 +115,8 @@ class ImportController extends Controller
             'Upload a CSV file' => __('Upload a CSV file'),
             'Cancel' => __('Cancel'),
             'Next'=> __('Next'),
-            'No records' =>__('No records')
-
-
+            'No records' =>__('No records'),
+            'Module' => _('Module'),
             ]]);
     }
 
@@ -150,7 +149,7 @@ class ImportController extends Controller
     public function handleFileImport(Request $request) 
     {
 
-        $module_name = 'Contact';
+        $module_name = $request->module;
         $user_id = $request->user()->id;
         $company_id = Cache::get('selected_company_'.$user_id);
         $fields = Field::where('module_name', $module_name)
