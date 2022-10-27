@@ -554,6 +554,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                 aria-hidden="true"
                                                
                                             />
+
                                             {showSidebarText ? <div data-index={index} className="flex justify-between items-center flex-1">{item.name} {item.subMenu ? <ChevronDownIcon data-index={index} className={` ${(menuDropdownActive[item.name] ? 'rotate-180' : '')} h-6 w-6 gio-dropdown-icon  transition-all`} /> : '' }  </div>: ""}
                                         </Link>
                                         {

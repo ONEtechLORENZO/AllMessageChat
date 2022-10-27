@@ -1034,7 +1034,7 @@ class MsgController extends Controller
         }
 
         $msg = new Msg();
-        $result = $msg->sendWhatsAppMessage($request->content, $request->destination, $account);
+        $result = $msg->sendWhatsAppMessage($request->content, $request->destination, $account , $request->template);
         if($result['result']['status'] == 'submitted') {
             $result['status'] = 'Queued';
         }

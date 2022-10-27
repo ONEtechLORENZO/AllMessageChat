@@ -131,9 +131,12 @@ class Controller extends BaseController
             if(!($request->is('admin/*')) && $moduleName == 'User') {
                 $query->join('company_user', 'user_id', 'users.id');
                 $query->where('company_user.company_id', $companyId);
-            }   
-        }       
-        if($moduleName == 'Company' && $user->role != 'global_admin') {
+            }
+        }
+
+        //if($moduleName == 'Company' && $user->role != 'global_admin') {
+        if($moduleName == 'Company') {
+      
             $query->join('company_user', 'company_id', 'companies.id');
             $query->where('company_user.user_id', $user_id);
         }
@@ -721,5 +724,52 @@ class Controller extends BaseController
         }
 
         return $currentPlan;
+    }
+
+    public function listViewRecord($request, $moduleRecords, $parent_module) {
+
+        $records = $moduleRecords['records'];
+        $company_id = Cache::get('selected_company_'. $request->user()->id);
+
+        $query = Field::where('module_name', $parent_module);
+        $entity_modules = ['Contact','Lead', 'Product', 'Opportunity', 'Order', 'Campaign', 'User','Organization'];
+
+        if(in_array($parent_module, $entity_modules)) {
+            $query->where('company_id', $company_id);
+        }
+
+        $fields = $query->get();
+              
+        if($fields) {
+            foreach($fields as $field) {
+                if($field['field_type'] == 'relate') {
+
+                    $field_name = $field['field_name'];
+                    $relateModule = $field['options']['module'];
+
+                    $module = "App\Models\\{$relateModule}";  // Related module
+                 
+
+                    foreach($records as $record) {
+                       
+                        $related = $module::where('id', $record->$field_name)->first(); // Related record details
+                       
+                        if($related) {
+                            if($relateModule == 'Contact') {
+                                $record[$field_name] =  $related->first_name.' '.$related->last_name;
+                            } else {
+                                $record[$field_name] =  $related->name;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    
+        if($records) {
+            $moduleRecords['records'] = $records;
+        }
+        
+        return $moduleRecords;
     }
 }

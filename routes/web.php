@@ -307,6 +307,7 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/company/setBaseCompany', [CompanyController::class, 'setBaseCompany'])->name('setBaseCompany');
         
         Route::get('/navigate/fields', [SettingsController::class, 'navigationField'])->name('navigation_field');
+        Route::get('record/merge', [SettingsController::class, 'recordMerger'])->name('record_merge');
     });
 
 });

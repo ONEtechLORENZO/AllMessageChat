@@ -61,8 +61,9 @@ class OrderController extends Controller
             ],
             'productList' => $productList,
         ];
+        $records =  $this->listViewRecord($request, $listViewData, 'Order');
         
-        $data = array_merge($moduleData, $listViewData);
+        $data = array_merge($moduleData, $records);
         return Inertia::render('Order/List', $data);
     }
     }
@@ -292,7 +293,7 @@ class OrderController extends Controller
             $order = $this->checkAccessPermission($request, $module, $request->id);
 
         if(!$order) {
-            return response()->json(['status' => false, 'message' => 'Record not found']);   
+            return response()->json(['status' => false, 'message' => 'Record not found']);      
             }           
             else
             {
@@ -406,11 +407,11 @@ class OrderController extends Controller
 
     public function saveLineItems($lineItems, $order_id, $companyId){
         
-        if($order_id){
+        if($order_id && $lineItems){
          
             $lineItem = LineItem::where('order_id',$order_id);
        
-            foreach($lineItems as$key => $item){
+            foreach($lineItems as $key => $item){
             
                 if($item['name'] != ''){
 

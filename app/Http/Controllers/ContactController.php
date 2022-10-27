@@ -84,11 +84,14 @@ class ContactController extends Controller
                     'search' => true,
                     'filter' => true,
                     'select_field'=>true,
-                    'mass_edit' => true
+                    'mass_edit' => true,
+                    'merge' => true
                 ],
             ];
+
+            $records =  $this->listViewRecord($request, $listViewData, 'Contact');
             
-            $data = array_merge($moduleData, $listViewData);
+            $data = array_merge($moduleData, $records);
             return Inertia::render('Contacts/List', $data);
             }  
     }
@@ -200,6 +203,7 @@ class ContactController extends Controller
         if($user){
             $contact['assigned_to'] = [ 'label' => $user['name'] , 'value' => $user['id'], 'module' => 'User'];
         }
+        
         if ($request->is('api/*')) { // API call check             
                 return response()->json($contact);
         } else {    
@@ -616,4 +620,5 @@ class ContactController extends Controller
         Serviceable::where('serviceable_id', $contact_id)->where('service_id', $service_id)->delete(); 
         return Redirect::to(url()->previous());
     }
+
 }

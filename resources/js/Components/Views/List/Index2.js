@@ -4,7 +4,7 @@ import Alert from '@/Components/Alert';
 import Button from '@/Components/Forms/Button';
 import Axios from "axios";
 import Form from '@/Components/Forms/Form';
-import { ChevronDownIcon, ChevronUpIcon, UserAddIcon, PencilAltIcon, TrashIcon, UploadIcon, DownloadIcon } from '@heroicons/react/solid';
+import { ChevronDownIcon, ChevronUpIcon, UserAddIcon, PencilAltIcon, TrashIcon, UploadIcon, DownloadIcon, CollectionIcon } from '@heroicons/react/solid';
 import { Inertia } from '@inertiajs/inertia';
 import notie from 'notie';
 import Search from './Search';
@@ -195,6 +195,22 @@ function ListView(props)
         setCheckedId([]);
         setCheckAll(false);
     }
+
+    function recordMerger() {
+        const recordLength = checkedId.length;
+
+        if(recordLength >= 2) {
+            
+            let data = {
+                'id' : checkedId.join(','),
+                'module' : props.module
+            }
+
+            Inertia.get(route('record_merge', data));
+        } else {
+            notie.alert({type: 'warning', text: 'Please select more than one records', time: 5});
+        }
+    }
  
     return (
         <>
@@ -258,6 +274,16 @@ function ListView(props)
                                     className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
                                 > 
                                     Order fields 
+                                </button>
+                            </>
+                        : ''}
+                        {props.actions && props.actions.merge === true ?
+                            <>
+                                <button
+                                    className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
+                                    onClick={() => recordMerger()}
+                                >
+                                    <CollectionIcon className='h-4 w-4' /> Merge
                                 </button>
                             </>
                         : ''}
