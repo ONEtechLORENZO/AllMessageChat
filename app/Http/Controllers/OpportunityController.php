@@ -56,8 +56,9 @@ class OpportunityController extends Controller
 
             ],
         ];
+        $records =  $this->listViewRecord($request, $listViewData, 'Opportunity');
         
-        $data = array_merge($moduleData, $listViewData);
+        $data = array_merge($moduleData, $records);
         return Inertia::render('Opportunity/List', $data);
         }
     }
