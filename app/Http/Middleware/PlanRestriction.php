@@ -163,8 +163,6 @@ class PlanRestriction
             return $this->redirect($request, $message);
         }
 
-        
-
         return $next($request);
     }
 
@@ -173,18 +171,22 @@ class PlanRestriction
         $user = $request->user();
         $company_id = Cache::get('selected_company_' . $user->id);
 
-        $company = Company::find($company_id);
+        if($company_id) {
+            $company = Company::find($company_id);
         
-        // Get company plan details
-        $companyPlan = DB::table('plans')->where('plan_id', $company->plan)->get();
+            // Get company plan details
+            $companyPlan = DB::table('plans')->where('plan_id', $company->plan)->get();
+    
+            $currentPlan = '';
+    
+            foreach($companyPlan as $company) {
+                $currentPlan = $company;
+            }
+    
+            return $currentPlan;
+        } 
 
-        $currentPlan = '';
-
-        foreach($companyPlan as $company) {
-            $currentPlan = $company;
-        }
-
-        return $currentPlan;
+        return false;
     }
 
     public function checkPlanBalance($balance, $module, $company_id) {

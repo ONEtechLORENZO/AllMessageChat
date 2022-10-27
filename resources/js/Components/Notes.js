@@ -10,8 +10,7 @@ function classNames(...classes) {
 
 export default function Notes(props) {
 
-  const [notes, setNotes] = useState([]);
-  const [name, setName] = useState();
+  const [notes, setNotes] = useState([]);   
   const [data, setData] = useState({
        noteText: ''
 });
@@ -27,11 +26,10 @@ const [trans,setTrans]=useState([]);
 function fetchNote(){
   let endpoint_url = route('listNotes',{'module':props.module,'id':props.recordId});   
   Axios.get(endpoint_url).then((response) => { 
-    if(response.data.status !== false) {
-    setName(response.data.name); 
+    if(response.data.status !== false) {     
     setNotes(response.data.note_List);
     setTrans(response.data.translator);
-
+    
 }else {
   notie.alert({type: 'error', text: response.data.message, time: 5});
 }
@@ -67,7 +65,7 @@ function addNote(){
           data: data
       })
       .then( (response) =>{
-              setData({notetext:""})
+              setData({notetext:''})
               fetchNote();
       });
   }
@@ -77,7 +75,32 @@ function addNote(){
 return( 
   <div className="bg-white">
  
-  <div>
+ <div>
+      
+      <h2 className="sr-only">Notes</h2>      
+  
+      <div className="my-8 pt-3">
+            
+      {notes.map((note, index) => {
+        return (
+          <div key={index} className={`flex  ${(props.current_userid==note.user_id) ? "bg-blue-100  text-right" :""} text-sm text-gray-500 space-x-4 pb-4`}>
+           <span>{<br/>}</span>
+            <div className={classNames(index === 0 ? '' : 'border-t border-gray-200 pt-3', 'flex-1')}>
+              <h3 className="font-medium text-gray-900">{note.name}</h3>
+              <p>
+                <time >{note.date}</time>
+              </p>   
+              <div className="mt-4 prose prose-sm max-w-none text-gray-500">
+                  {note.note} 
+                </div> 
+                
+            </div>
+          </div>);
+        })} 
+      </div>
+    </div>
+                <div></div>
+                <div>
        <div className="mt-1 flex rounded-md shadow-sm my-8">
         
                          <TextArea
@@ -97,35 +120,12 @@ return(
                             id="add_note"
                             onClick={addNote}
                             className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >{trans['Add a new note']}</button>
+                        >{(props.module =="SupportRequest") ?<> Submit </> : <>{trans['Add a new note']}</>}</button>
                         </div>
       </div>     
       </div> 
-                <div></div>
                 
-    <div>
-      
-      <h2 className="sr-only">Notes</h2>      
-  
-      <div className="my-8 pt-3">
-            
-      {notes.map((note, index) => {
-        return (
-          <div key={index} className="flex text-sm text-gray-500 space-x-4 pb-4">
-           
-            <div className={classNames(index === 0 ? '' : 'border-t border-gray-200 pt-3', 'flex-1')}>
-              <h3 className="font-medium text-gray-900">{name}</h3>
-              <p>
-                <time >{note.date}</time>
-              </p>   
-              <div className="mt-4 prose prose-sm max-w-none text-gray-500">
-                  {note.note}
-                </div> 
-            </div>
-          </div>);
-})}
-      </div>
-    </div>
+    
   </div> 
     
   

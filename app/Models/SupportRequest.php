@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Note;
+
 
 class SupportRequest extends Model
 {
@@ -13,6 +15,11 @@ class SupportRequest extends Model
         'custom' => 'array',       
     ];
     protected $fillable = ['subject', 'description', 'status', 'type','assigned_to', 'created_at', 'updated_at', 'custom'];
+
+    public function notes()
+    {
+        return $this->morphMany(Note::class, 'notable');
+    }
 
      /**
      * Return list view fields

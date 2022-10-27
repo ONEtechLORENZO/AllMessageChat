@@ -28,7 +28,7 @@ class SupportRequestController extends Controller
 
         $moduleData = [
             'singular' => 'SupportRequest',
-            'plural' => 'SupportRequests',
+            'plural' => ( $request->is('admin/*') ) ?  'Global SupportRequests':'SupportRequests',
             'module' => 'SupportRequest',
             'current_page' => 'SupportRequests', 
             // Actions
@@ -80,7 +80,7 @@ class SupportRequestController extends Controller
     public function show(Request $request,$supportRequestID)
     {
         $module = new SupportRequest();
-        $supportRequest = $this->checkAccessPermission($request, $module, $request->id);       
+        $supportRequest = SupportRequest::findorFail($request->id);       
         if(!$supportRequest) {
             abort('404');
         }
@@ -95,6 +95,7 @@ class SupportRequestController extends Controller
         return Inertia::render('SupportRequest/Detail', [
             'record' => $supportRequest,            
             'headers' => $headers,
+            'current_userid' => $request->user()->id, 
             'translator' => [
                 'Detail' => __('Detail'),
                 'Notes' => __('Notes'),

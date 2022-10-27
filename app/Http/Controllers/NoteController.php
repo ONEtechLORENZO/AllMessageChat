@@ -17,8 +17,7 @@ class NoteController extends Controller
      */
     public $dateListView = 'd-m-Y h:m:s';
     public function list_notes(Request $request, $mod,$id)
-    {         
-        
+    {     
         $user_id = $request->user()->id;
         
         if($mod)     
@@ -27,29 +26,22 @@ class NoteController extends Controller
         }
         
         $module = $module_bean::findOrFail($id); 
-        
-        if($mod=='Contact' || $mod=='Lead')
-          {
-            $user = User::findorFail($module->creater_id);
-          }
-       else
-         {
-            $user = User::findorFail($module->user_id);
-         }
-       
         $note_List = [];
-        $name = $user->name;
+        
         foreach ($module->notes as $note) 
         {       
-            $note_id=$note->id;
+            $note_id=$note->id;    
+            $user_name=[];        
+            $user_name= User::where('id',$note->user_id)->pluck('name');           
             $note_List[] = [
                 'id' =>$note->id,
                 'note' => $note->note,
-                'date' => date_format($note->created_at,$this->dateListView)                     
+                'date' => date_format($note->created_at,$this->dateListView) , 
+                'user_id' => $note->user_id,
+                'name' => $user_name[0],     
             ];
         }       
-  return response()->json(['note_List' => $note_List,'name'=>$name,'translator' =>['Add a new note'=>__('Add a new note'),'Enter your new note here' => __('Enter your new note here')]]); 
-    
+        return response()->json(['note_List' => $note_List,'translator' =>['Add a new note'=>__('Add a new note'),'Enter your new note here' => __('Enter your new note here') , 'note_user_id' => $user_id]]); 
     }
 
     /**
@@ -69,6 +61,10 @@ class NoteController extends Controller
         if($mod=='Contact' || $mod=='Lead')
         {
             $note->user_id = $module->creater_id;
+        }
+        else if($mod=='SupportRequest')
+        {
+            $note->user_id = $request->user()->id;
         }
         else{
             $note->user_id = $module->user_id;

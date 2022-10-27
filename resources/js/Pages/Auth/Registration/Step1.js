@@ -3,6 +3,7 @@ import {UserIcon, UserAddIcon, PhoneIcon, KeyIcon, MailIcon, ChevronRightIcon, E
 import { Link } from "@inertiajs/inertia-react";
 import axios from "axios";
 import notie from 'notie';
+import nProgress from 'nprogress';
 
 const validateList = [
     'first_name','last_name','email','phone_number','password'
@@ -81,6 +82,9 @@ export default function Step1 (props) {
     }
 
     function saveUserDetail () {
+        nProgress.start(0.5);
+        nProgress.inc(0.2);
+
         let is_validate = userValidation(user);
         if(!is_validate) {
             return false;
@@ -89,13 +93,15 @@ export default function Step1 (props) {
         let url = route('new_user');
         axios.post(url, user).then( (response) => {
             if(response.data.step) {
-                props.setOpenTab(7)
+                props.setOpenTab(7);
+                nProgress.done(true);
             }else {
+                nProgress.done(true);
                 let newUser = Object.assign({}, user);
                 newUser['user_id'] = response.data.user_id;
                 props.setUserMail(newUser);
     
-                props.setOpenTab(2)
+                props.setOpenTab(2);
             }
         })
         .catch((error) => {

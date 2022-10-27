@@ -695,9 +695,14 @@ class Controller extends BaseController
                 // Get current user company id
                 $companyId = Cache::get('selected_company_'. $user->id);
             }
-        $record = $module->whereId($id)
+            if( $module == 'SupportRequest' && $user->role == 'global_admin')
+            { 
+                $record = $module->whereId($id);
+            }
+            else{
+                   $record = $module->whereId($id)
                   ->where('company_id', $companyId) 
-                  ->first();           
+                  ->first(); }          
 
         return $record;
     }
