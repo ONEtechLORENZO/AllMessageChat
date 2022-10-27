@@ -350,16 +350,21 @@ class PlanController extends Controller
             $category[$message->service] = $message->category_count + $category[$message->service] ;
         } 
        
-        $planData = [
+        $planUser = ($plan && $plan->users) ? $plan->users : 0;
+        $fatturazione = ($plan && $plan->fatturazione) ? $plan->fatturazione : 0;
+        $offical_whatsapp = ($plan && $plan->offical_whatsapp) ? $plan->offical_whatsapp : 0;
+       // $offical_whatsapp = ($plan && $plan->users) ? $plan->users : 0;
 
-            'user' => ['label' => 'Users', 'current' => $users , 'limit' => $plan->users , 'percentage' => ($users / $plan->users)*100  ] ,
-            'monthly_active_user' => ['label' => 'Active users', 'current' => $activeUsers , 'limit' => $plan->users, 'percentage' => ($activeUsers / $plan->users)*100],
-            'automations' => ['label' => 'Automations', 'current' => $automations , 'limit' => $plan->fatturazione, 'percentage' => ($automations / $plan->fatturazione)*100],
-            'whatsapp' => ['label' => 'Whatsapp number' , 'current' => $category['whatsapp'] , 'limit' => $plan->offical_whatsapp , 'percentage' => ($category['whatsapp'] / $plan->offical_whatsapp)*100],
-            'instagram' => ['label' => 'Instagram accounts' , 'current' => $category['instagram'] , 'limit' => $plan->offical_whatsapp , 'percentage' => ($category['instagram'] / $plan->offical_whatsapp)*100],
+        $planData = [
+            'user' => ['label' => 'Users', 'current' => $users , 'limit' => $planUser , 'percentage' => ($planUser != 0) ? ($users / $planUser)*100 : 0  ] ,
+            'monthly_active_user' => ['label' => 'Active users', 'current' => $activeUsers , 'limit' => $planUser, 'percentage' => ($planUser != 0) ? ($users / $planUser)*100 : 0],
+            'automations' => ['label' => 'Automations', 'current' => $automations , 'limit' => $fatturazione, 'percentage' => ($fatturazione != 0) ? ($automations / $plan->fatturazione)*100 : 0],
+            'whatsapp' => ['label' => 'Whatsapp number' , 'current' => $category['whatsapp'] , 'limit' => $offical_whatsapp , 'percentage' => ($offical_whatsapp != 0) ? ($category['whatsapp'] / $plan->offical_whatsapp)*100 : 0],
+            'instagram' => ['label' => 'Instagram accounts' , 'current' => $category['instagram'] , 'limit' => $offical_whatsapp , 'percentage' =>  ($offical_whatsapp != 0) ? ($category['instagram'] / $plan->offical_whatsapp)*100 : 0],
             ];
-        //dd($planData);
-        return response()->json([ 'price' => $plan->price, 'plan_data' => $planData]);
+        
+        return response()->json([ 'price' => ($plan) ? $plan->price : 0 , 'plan_data' => $planData]);
+ 
  
     }
 }

@@ -151,16 +151,16 @@ function ChatBox(props)
                             </Listbox>
                         </div>
                         <div className="flow-root">
-                        <Listbox >
+                        <Listbox  horizontal >
                             {({ open }) => (
                                 <>
-                                <Listbox.Label className="sr-only"> Your mood </Listbox.Label>
+                                <Listbox.Label className="sr-only">Templates</Listbox.Label>
                                     <div className="relative">
                                         <Listbox.Button className="relative -m-2 inline-flex h-10 w-10 items-center justify-center rounded-full text-gray-400 hover:text-gray-500">
                                             <span className="flex items-center justify-center">
                                                 <span>
                                                     <PlusIcon className="h-6 w-6 flex-shrink-0" aria-hidden="true" />
-                                                    <span className="sr-only"> Add your mood </span>
+                                                    <span className="sr-only"> Choose yoour template  </span>
                                                 </span>
                                             </span>
                                         </Listbox.Button>
