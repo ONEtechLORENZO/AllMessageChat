@@ -241,6 +241,7 @@ export default function Index(props) {
                     <li className="bg-white px-4 py-6 shadow sm:rounded-lg sm:px-6">
                         <div className="sm:flex sm:justify-between sm:items-baseline">
                             <h3 className="text-base font-medium flex w-full">
+                            {(props.module != 'SupportRequest') &&
                                 <div>
                                     <span className="text-gray-900 p-3">
                                         <span className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-gray-500">
@@ -254,7 +255,7 @@ export default function Index(props) {
                                         </span>
                                     </span>
                                 </span>
-                            </div>
+                            </div>}
 
 
                             {(props.module == 'Contact' || props.module == 'Lead') ?
@@ -287,13 +288,13 @@ export default function Index(props) {
                                 </>
                                 :
                                 <>
-                                    <div className="pl-3 w-full">
-                                        <div className="text-gray-600">{record.name}  </div>
+                                    <div className="pl-3 w-full">                                    
+                                        <div className="text-gray-600">{(props.module == 'SupportRequest') ? <>{record.subject}</>:<>{record.name}</>} </div>
                                         {props.module == 'Tag' || props.module == 'Category' || props.module == 'Plan' ?
                                             <div className={classNames(
                                                 addClass ? 'text-gray-600 break-words w-3/4' : 'text-gray-600 w-1/2 truncate'
                                             )} onClick={() => removeClass()}>{record.description} </div>
-                                            : ''}
+                                            : (props.module == 'SupportRequest') ?  <div className="text-gray-600"> Status:  {record.status} </div>: ''}
                                     </div>
                                 </>
                             }
@@ -343,17 +344,26 @@ export default function Index(props) {
                                 activeClassName += ' border-b-2 border-blue-400';
                             }
                             return (
-
                                 <li className={activeClassName} onClick={() => setActiveTab(tab.name)}>
                                     <a id="default-tab" href={"#" + tab.name}> {tab.label} </a>
                                 </li>
                             )
                         })}
                     </ul>    
-
+                     {(props.module == 'SupportRequest') &&
+                         <>
+                                <Notes
+                                  module={props.module}                                                                                
+                                  recordId={props.record.id} 
+                                  current_userid={props.current_userid}
+                                />
+                         
+                         </>}                      
+                     
+                        
                         <div id="tab-contents">
                             
-                            {activeTab == 'Detail' && 
+                            {activeTab == 'Detail' && (props.module != 'SupportRequest') &&
                                <>
                                <div className="bg-gray-50">
                                    <dl className="text-gray-200 divide-y">
