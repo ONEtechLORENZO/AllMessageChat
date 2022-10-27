@@ -47,6 +47,7 @@ class ProductController extends Controller
                 'search' => true,                
                 'select_field'=> true,
                 'detail' => true,
+                'import' => true
             ],
         ];
         
