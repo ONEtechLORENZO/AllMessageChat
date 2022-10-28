@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Cache;
 use App\Models\Field;
 use App\Models\User;
+use DB;
 
 
 class SupportRequestController extends Controller
@@ -171,36 +172,18 @@ class SupportRequestController extends Controller
         
         $company_id = Cache::get('selected_company_'. $request->user()->id);
          
-        $fields = Field::where('module_name', 'SupportRequest')
-            ->where('company_id', $company_id)
-            ->get(['field_name', 'is_custom', 'field_type']);
-
-            if ($fields) {
-                $custom_field = [];
-                foreach ($fields as $record) {
-                    $field = $record['field_name'];
-                    $custom = $record['is_custom'];
-                    if ($request->has($field) && ($custom == '0' || !$custom)) {
-                        $supportRequest->$field = $request->$field;
-                    }
-      
-                    if($custom == '1'){
-                        if($request->custom){
-                            foreach($request->custom as $key => $value){
-                                $custom_field[$key] = $value;
-                            }
-                        }
-                    }
-                }
-                if ($custom_field) {
-                    $supportRequest->custom = $custom_field;
-                }
-            $supportRequest->assigned_to=1;
+       
+            
+        
+            $supportRequest->subject= $request->subject;
+            $supportRequest->description = $request->description;
+            $supportRequest->type = $request->type;
+            $supportRequest->assigned_to =1;
             $supportRequest->status='New';
             $supportRequest->company_id = $company_id;
             $supportRequest->created_by = $request->user()->id;
             $supportRequest->save();
-        }
+       
         return  $supportRequest->id;
     }  
 }
