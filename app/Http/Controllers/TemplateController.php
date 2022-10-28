@@ -74,7 +74,7 @@ class TemplateController extends Controller
                 'name' => strtolower(str_replace( ' ', '_', $template->name)),
                 'language' => 'en_US',
             ];   
-    //    dd($postData , $data);
+        
             $response = Http::withHeaders($headers)->post($endPoint, ($postData))->json();
 
             // store template id
@@ -85,7 +85,7 @@ class TemplateController extends Controller
                 $template->save();
                 $return = ['status' => true, 'template_id' => $response['id'], 'template_status' => 'SUBMITTED'];
             } else {
-                $message = isset($response['error']['message']) ? $response['error']['message'] : $response['error']['error_user_title'] ;
+                $message = isset($response['error']['error_user_title']) ? $response['error']['error_user_title'] : $response['error']['message'] ;
                 $return = ['status' => 'failed' , 'message' => $message];
             }
             return $return;

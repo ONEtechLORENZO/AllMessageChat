@@ -555,9 +555,9 @@ class MsgController extends Controller
                         $messageData['status'] = $statusUC;
                         $messageData['error_response'] = $data['value']['statuses']['0']['errors'][0]['title'];
                         if( $data['value']['statuses']['0']['errors'][0]['code'] == 131047 ) {
-                            $user = User::find($account->user_id);
-                            $user->fb_token = '';
-                            $user->save();
+                            // $user = User::find($account->user_id);
+                            // $user->fb_token = '';
+                            // $user->save();
                         }
                         break;
 
