@@ -6,7 +6,7 @@ import axios from "axios";
 import { Link } from "@inertiajs/inertia-react";
 import notie from 'notie';
 
-const billingFields = ['company_country', 'company_vat_id', 'email', 'company_address'];
+const billingFields = ['company_country', 'email', 'company_address'];
 
 export default function BillingInformation (props) {
 
@@ -117,7 +117,7 @@ export default function BillingInformation (props) {
                            <UserCircleIcon className="h-6 w-6" />
                         </div>
                         <div className="flex flex-col flex-1">
-                            <label>Company VAT ID<span className="text-red-500"> * </span></label>
+                            <label>Company VAT ID </label>
                             <input
                                 type="text"
                                 name="company_vat_id"

@@ -84,6 +84,11 @@ function ListView(props)
      */
     function showEditForm(record_id)
     {
+        if(props.module == 'Automation'){
+            Inertia.get( route('createAutomation', record_id));
+            return false;
+        }
+
         setRecordId(record_id);
         setShowForm(true);
     }

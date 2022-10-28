@@ -124,7 +124,7 @@ export default function MessageList(props) {
                                                     <span className="text-xs text-right mt-2 flex" >
                                                         {message.date} 
                                                         <span className='pl-3' title={message.error}>
-                                                            {message.status == 'Failed' &&
+                                                            {(message.status == 'Failed' || message.status == 'FAILED') &&
                                                                 <ErrorIcon /> 
                                                             }
                                                             {(message.status == 'Queued' && message.delivered == 0 && message.read == 0) &&

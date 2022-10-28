@@ -10,7 +10,7 @@ import BillingInformation from "./BillingInformation";
 
 export default function RegisterForm (props) {
 
-    const [openTab, setOpenTab] = useState(0);
+    const [openTab, setOpenTab] = useState(1);
     const [userMail, setUserMail] = useState({});
     const [addStripe, setAddStrip] = useState(false);
     const [companyId, setCompanyId] = useState();

@@ -66,7 +66,7 @@ class LoginRequest extends FormRequest
     
         $selectedCompany = false;
         $selectedCompany = (Cache::has('selected_company_'. $user->id)) ? Cache::get('selected_company_'. $user->id) : '';
-        if( ($userCompanies && !in_array($selectedCompany ,$userCompanies) ) && count($companies) == 1 && isset($companies[0]) ) {
+        if( ($userCompanies && !in_array($selectedCompany ,$userCompanies) ) && count($companies) >= 1 && isset($companies[0]) ) {
             $selectedCompany = $companies[0]->id;
             Cache::put('selected_company_'. $user->id, $companies[0]->id );
         }

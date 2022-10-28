@@ -5,6 +5,7 @@ import Dropdown from "@/Components/Forms/Dropdown";
 import { Link } from "@inertiajs/inertia-react";
 import axios from "axios";
 import notie from 'notie';
+import nProgress from 'nprogress';
 
 const validateList = [
     'name', 'currency', 'time_zone'
@@ -53,6 +54,9 @@ export default function Step2 (props) {
     } 
 
     function saveWorkspace () {
+        nProgress.start(0.5);
+        nProgress.inc(0.2);
+
         let is_validate = validation(workspace);
         if(!is_validate) {
             return false;
@@ -61,6 +65,7 @@ export default function Step2 (props) {
         let url = route('saveWorkspace');
         axios.post(url, workspace).then( (response) => {
             if (response) {
+                nProgress.done(true);
                 props.setCompanyId(response.data.company_id);
                 props.setOpenTab(3);
             }

@@ -27,7 +27,9 @@ class RegisteredUserController extends Controller
     public function create(Request $request)
     {
         $uuid = isset($_GET['unique_id']) ? $_GET['unique_id'] : '';
-        $step = $user_id = $company_id = 0;
+        $step = 1;
+        $user_id = $company_id = 0;
+        
         if($request->step){
             $step = $request->step;
             $user_id = $request->user_id;
