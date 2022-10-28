@@ -35,9 +35,10 @@ class Msg extends Model
             $url = config('app.fb.api_url');
             $url .= $account->fb_phone_number_id . '/messages' ;
 
+            $user = User::find($account->user_id);
             // set headers
             $headers = [
-                'Authorization' => 'Bearer '. $account->service_token,
+                'Authorization' => 'Bearer '. $user->fb_token,
                 'Content-Type' => 'application/json',
             ];
             $post_data = [
@@ -67,7 +68,7 @@ class Msg extends Model
             // send message 
             $response = Http::asForm()->withHeaders($headers)->post($url, $post_data);
             $response_body = json_decode($response->body(), true);
-           
+
             if(isset($response_body['messages'][0]['id'])) {
                 $messageId = $response_body['messages'][0]['id'];
                 $response_body = [ 
