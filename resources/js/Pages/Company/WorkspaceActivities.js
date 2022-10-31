@@ -6,7 +6,7 @@ const workspaceDetails = [
     {label: 'Workspace ID', name: 'id'},
     {label: 'Workspace Name', name: 'name'},
     {label: 'Registered On', name: 'created_at'},
-    {label: 'Last Sign Up', name: 'sign_up'},
+    {label: 'Last Sign Up', name: 'last_signUp'},
     {label: 'Number of Admins', name: 'admin'},
     {label: 'Number of Users', name: 'users'},
 ];
@@ -14,7 +14,7 @@ const workspaceDetails = [
 const revenueDetails = [
     {label: 'Last Month Value', name: 'last_month'},
     {label: 'Last 3 Months Value', name: 'last_three_month'},
-    {label: 'Last 12 Months Value', name: 'last_twelve_month'},
+    {label: 'Last 12 Months Value', name: 'last_one_year'},
     {label: 'Lifetime Value', name: 'life_time'},
 ];
 
@@ -35,11 +35,11 @@ const paymentDetails = [
 const billingInfo = [
     {label: 'Currency', name: 'currency'},
     {label: 'Country', name: 'country'},
-    {label: 'State', name: 'state'},
+    //{label: 'State', name: 'state'},
     {label: 'Province', name: 'province'},
     {label: 'City', name: 'city'},
-    {label: 'Street', name: 'street'},
-    {label: 'Bulding Number', name: 'building_number'},
+    //{label: 'Street', name: 'street'},
+    //{label: 'Bulding Number', name: 'building_number'},
     {label: 'Vat Code', name: 'company_vat_id'},
     {label: 'Codice Destinatario', name: 'codice_destinatario'},
     {label: 'Email for Invoices', name: 'email'},
@@ -79,7 +79,7 @@ export default function WorkspaceActivities(props) {
                     <DetailContainer 
                      header={'Revenue Data'}
                      fields={revenueDetails}
-                     record={props.workspace}
+                     record={props.revenue}
                      default={false}
                     />
 

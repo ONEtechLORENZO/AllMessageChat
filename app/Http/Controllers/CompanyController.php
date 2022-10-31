@@ -18,6 +18,7 @@ use Mail;
 use DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Account;
 
 class CompanyController extends Controller
 {
@@ -371,8 +372,18 @@ class CompanyController extends Controller
 
         if($workspace) {
 
-            $users = DB::table('company_user')->where('company_id', $company_id)->count();
-            $workspace['users'] = $users;
+            $users = DB::table('company_user')->where('company_id', $company_id);
+            $user_count = $users->count();
+            $user_id = [];
+
+            foreach($users->get() as $user) {
+                $user_id[] = $user->user_id;
+            } 
+            
+            $last_signUp = User::whereIn('id',$user_id)->max('user_login');
+            
+            $workspace['last_signUp'] = $last_signUp;
+            $workspace['users'] = $user_count;
         }
 
         $plan = Plan::find($workspace->plan);
@@ -380,9 +391,45 @@ class CompanyController extends Controller
         if($plan) {
             $plan['payment_method'] = $workspace->payment_method;
         }
+        $account_id = [];
+        $accounts = Account::where('company_id',$company_id)->get();
+        
+        foreach($accounts as $account) {
+            $account_id[] = $account->id;
+        } 
+
+        $revenue_data = $this->getRevenueData($account_id);
+
         return Inertia::render('Company/WorkspaceActivities', [
             'workspace' => $workspace,
-            'plan' => $plan
+            'plan' => $plan,
+            'revenue' => $revenue_data
         ]);
+    }
+
+    public function getRevenueData($account_id) {
+
+        $query = Msg::whereIn('account_id', $account_id);
+
+        $fields = ['last_month' => 1, 'last_three_month' => 3, 'last_one_year' => 12, 'life_time' => 0];    
+  
+        foreach($fields as $key => $month) {
+            
+            $clone[$key] = clone $query;
+
+            if($month != 0) {
+                $avg = $clone[$key]->where('msgs.created_at', '>=', now()->startOfMonth()->subMonth($month))->avg('msgs.amount');
+            } else {
+                $avg = $clone[$key]->avg('msgs.amount');
+            }
+
+            if(!$avg) {
+                $return[$key] = '0';
+            } else {
+                $return[$key] = number_format($avg , 4, '.', '');
+            }
+        }
+
+        return $return; 
     }
 }
