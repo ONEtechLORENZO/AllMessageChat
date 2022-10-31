@@ -19,7 +19,7 @@ class AccountObserver
     public function created(Account $account)
     {   
         $currendUser = User::find(Auth::id());
-        $emailAddress = 'rajkumar@blackant.io';
+        $emailAddress = 'logs@onemessage.chat';
         $emailAddress = filter_var($emailAddress, FILTER_SANITIZE_EMAIL);
 
         $data = [
