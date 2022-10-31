@@ -12,6 +12,7 @@ use App\Http\Controllers\UserController;
 use App\Models\Price;
 use App\Models\Wallet;
 use App\Models\Msg;
+use App\Models\Plan;
 use Cache;
 use Mail;
 use DB;
@@ -359,5 +360,29 @@ class CompanyController extends Controller
 
             return Redirect::route('detailCompany', ['id' => $request->id]);
         }
+    }
+
+    public function workspaceActivities(Request $request) {
+
+        $user = $request->user();
+        $company_id = Cache::get('selected_company_'.$user->id);
+        
+        $workspace = Company::findOrFail($company_id);
+
+        if($workspace) {
+
+            $users = DB::table('company_user')->where('company_id', $company_id)->count();
+            $workspace['users'] = $users;
+        }
+
+        $plan = Plan::find($workspace->plan);
+        
+        if($plan) {
+            $plan['payment_method'] = $workspace->payment_method;
+        }
+        return Inertia::render('Company/WorkspaceActivities', [
+            'workspace' => $workspace,
+            'plan' => $plan
+        ]);
     }
 }

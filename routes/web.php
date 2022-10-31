@@ -362,6 +362,7 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/admin/workspaces', [CompanyController::class, 'index'])->name('listCompany');
     Route::get('/admin/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
     Route::post('/admin/paymentmethod', [CompanyController::class, 'paymentMethod'])->name('payment_method');
+    Route::get('/admin/workspace/activity', [CompanyController::class, 'workspaceActivities'])->name('worksapce_activities');
 
     //SupportRequests  
     Route::get('/admin/supportrequests', [SupportRequestController::class, 'index'])->name('list_global_SupportRequest');
