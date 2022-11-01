@@ -15,10 +15,10 @@ class CreateLeadsTable extends Migration
     {
         Schema::create('leads', function (Blueprint $table) {
             $table->id();
-            $table->string('first_name');
+            $table->string('first_name')->nullable();
             $table->string('last_name')->nullable();
             $table->string('email')->nullable();
-            $table->string('phone_number');
+            $table->string('phone_number')->nullable();
             $table->string('gender')->nullable();
             $table->date('birth_date')->nullable();
             $table->string('languages_spoken')->nullable();

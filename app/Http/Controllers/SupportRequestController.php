@@ -28,10 +28,10 @@ class SupportRequestController extends Controller
         $listViewData = $this->listView($request, $module, $list_view_columns);
 
         $moduleData = [
-            'singular' => 'SupportRequest',
-            'plural' => ( $request->is('admin/*') ) ?  'Global SupportRequests':'SupportRequests',
+            'singular' => 'Support Request',
+            'plural' => ( $request->is('admin/*') ) ?  'Global Support Requests':'Support Requests',
             'module' => 'SupportRequest',
-            'current_page' => 'SupportRequests', 
+            'current_page' => 'Support Requests', 
             // Actions
             'actions' => [
                 'create' => true,
