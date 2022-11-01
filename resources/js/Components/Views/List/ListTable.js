@@ -171,9 +171,14 @@ function ListTable(props){
                                             column_value = (column_value == 1) ? 'Yes' : 'No';
                                         }
                                     }
+                                    var title = '';
+                                    if (field.type == 'textarea' && column_value) {
+                                        title = column_value;
+                                        column_value = column_value.substring(0, 20);
+                                    }
                                     
                                     return (
-                                        <td key={name} className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]">
+                                        <td key={name} title={title} className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]">
                                             {column_value}
                                         </td>
                                     );

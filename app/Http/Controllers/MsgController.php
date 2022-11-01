@@ -130,16 +130,17 @@ class MsgController extends Controller
         // List view columns to show
         $list_view_columns = [
             'id' => ['label' => __('Id'), 'type' => 'text'],
-            'message' => ['label' => __('Content'), 'type' => 'text'],
+            'message' => ['label' => __('Content'), 'type' => 'textarea'],
             'company_name' => ['label' => __('Account name'), 'type' => 'text'],
             'msg_mode' =>['label' => __('Mode'), 'type' => 'text'],
             'sender' =>['label' => __('Sender'), 'type' => 'text'],
             'destination' =>['label' => __('Destination'), 'type' => 'text'],
             'status' => ['label' => __('Status'), 'type' => 'text'],
+            'error_response'=> ['label' => 'Error' , 'type' => 'textarea'] ,
             'created_at' => ['label' => __('Date'), 'type' => 'text'],
         ]; 
         
-        $query_columns = ['msgs.id', 'msgs.service', 'msgs.status', 'msgs.created_at', 'message', 'accounts.company_name', 'accounts.phone_number as account_phone_number', 'accounts.company_name', 'contacts.phone_number', 'contacts.instagram_username', 'msg_mode'];
+        $query_columns = ['msgs.id', 'msgs.service', 'msgs.status', 'error_response', 'msgs.created_at', 'message', 'accounts.company_name', 'accounts.phone_number as account_phone_number', 'accounts.company_name', 'contacts.phone_number', 'contacts.instagram_username', 'msg_mode'];
         $query = Msg::select($query_columns)
             ->join('accounts', 'account_id', 'accounts.id')
             ->join('contacts', 'contacts.id', 'msgable_id')
@@ -205,6 +206,7 @@ class MsgController extends Controller
                 'id' => $message->id,
                 'company_name' => $message->company_name,
                 'message' => $message->message,
+                'error_response' => $message->error_response,
                 'status' => ucfirst($message->status),
                 'msg_mode' => ucfirst($message->msg_mode),
                 'sender' => $sender,

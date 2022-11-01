@@ -12,8 +12,7 @@ const defaultStyle = {
   },
 
   "&multiLine": {
-    control: {
-      fontFamily: "monospace",
+    control: {      
       minHeight: 63,
     },
     highlighter: {
@@ -132,8 +131,9 @@ function handleChange(e){
               }
           })
           .then( (response) => {
+            notie.alert({ type: 'success', text: 'Marked as completed', time: 5 }); 
             (e.target.disabled) = true  
-            (e.target.id).display = 'none'        
+            (e.target.id).style.visibility = 'hidden'                    
           });      
           
     } 
@@ -200,14 +200,14 @@ return(
             
       {notes.map((note, index) => {
         return (
-          <div key={index} className={`flex  ${(props.current_userid==note.user_id) ? "bg-blue-100  text-right" :""} text-sm text-gray-500 space-x-4 pb-4`}>
+          <div key={index} className={`flex  ${(props.current_userid==note.user_id) ? "text-right" :""} text-sm text-gray-500 space-x-4 pb-4`}>
            <span>{<br/>}</span>
             <div className={classNames(index === 0 ? '' : 'border-t border-gray-200 pt-3', 'flex-1')}>
               <h3 className="font-medium text-gray-900">{note.name}</h3>
               { (note.current_user == note.assigned_to && !(note.status)) ?
               <div className="mt-1 text-sm  sm:mt-0 text-right content-right">
               <input
-                  className="rounded border-blue-400 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 "
+                  className="rounded border-green-400 text-green-600 shadow-sm focus:border-green-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 "
                   type="checkbox"
                   id={note.id}
                   name={note.id}
@@ -240,8 +240,7 @@ return(
                           trigger="@"                          
                           data={users} 
                           //onAdd={(id) => setMentions([...mentions, id])} 
-                           onAdd = {onAdd}
-                           markup="{__display__}"
+                           onAdd = {onAdd}                           
                           style={defaultMentionStyle} 
                           />
                         </MentionsInput>

@@ -178,13 +178,7 @@ const adminNavigation = [
         show: ['global_admin'],
     },
     {
-        name: "Activities",
-        href: route("worksapce_activities"),
-        icon: ChartSquareBarIcon,
-        show: ['global_admin'],
-    },
-    {
-        name: "SupportRequests",
+        name: "Support Requests",
         href: route("list_global_SupportRequest"),
         icon: QuestionMarkCircleIcon,
         show: ['global_admin'],
