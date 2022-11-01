@@ -73,6 +73,8 @@ class Automation extends Model
             
             $history = new AutomationResult();
             $history->automation_id = $this->id;
+            $history->company_id = $this->company_id;
+            $history->bean = class_basename($recordModal);
             $history->bean_id = $recordModal->id;
             $history->flow = base64_encode( serialize($this->duplicate));
             $history->status = true;
@@ -130,7 +132,7 @@ class Automation extends Model
                 }
 
                 // Upddadte duplicate flow 
-                $this->updateDuplicateFlow($node , $result);
+                $this->updateDuplicateFlow($node , $result, true);
 
                 $edge = $this->edges[$i];
                 $currentNode = $this->getNextNode($edge->target);
@@ -477,7 +479,7 @@ class Automation extends Model
      * @param {Object} $node
      * @param {Boolean} $flag
      */
-    public function updateDuplicateFlow($node , $flag)
+    public function updateDuplicateFlow($node , $flag, $isCondition = false)
     {
         $currentEdgeIndex = $this->getCurrentEdgeInex($node->id);
         $currentNodeIndex = '';
@@ -487,9 +489,25 @@ class Automation extends Model
             }
         }
         $status = false;
+        $style = [
+            'background' => "rgba(247, 16, 16, 0.42)",
+            'width'=> 150,
+            'color' => "#1a192b",
+            'fontSize'=> "16px",
+            'fontFamily' =>  "Helvetica",
+            'boxShadow'=> "5px 5px 5px 0px rgba(0,0,0,.10)"
+        ];
+
         if($flag){
             $status = true;
+            $style['background'] = "rgba(69, 170, 82, 0.52)"; 
         }
+
+        if($isCondition){
+            $style['background'] = "#434ccb"; 
+        }
+
+      //  $this->duplicate->nodes[$currentNodeIndex]->style = json_encode($style);
         $this->duplicate->nodes[$currentNodeIndex]->status = $status;
         $this->duplicate->edges[$currentEdgeIndex]->status = true;
 

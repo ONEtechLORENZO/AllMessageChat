@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Automation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
+use App\Models\AutomationResult;
 use App\Models\Account;
 use App\Models\Template;
 use App\Models\Tag;
@@ -110,12 +111,16 @@ class AutomationController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Automation  $automation
+     * @param  \App\Models\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function show(Automation $automation)
+    public function show(Request $request , $id )
     {
-        //
+        $result = AutomationResult::find($id);
+        $data['flow'] = unserialize(base64_decode($result->flow));
+        $data['parent'] = $result->automation_id;
+        
+        return Inertia::render('Automation/ResultPreview', $data);
     }
 
     /**
@@ -354,5 +359,36 @@ class AutomationController extends Controller
         $result = $automation->sendData( $request->method, $url, $headers, $data );
         
         return response()->json($result->body());
+    }
+
+    /**
+     * Return Automation History list
+     */
+    public function getHistoryList(Request $request , $id)
+    {
+        
+        $history = AutomationResult::select('automation_results.id', 'bean', 'bean_id' , 'automation_results.status' , 'automation_results.created_at')
+            ->join('automations' , 'automations.id' , 'automation_id')
+            ->where( 'automation_id', $id)
+            ->orderBy('automation_results.created_at' , 'desc')
+            ->get();
+
+        $records = [];
+        $name = '';
+        foreach($history as $record){
+            if($record->bean && $record->bean == 'Contact'){
+                $contact = Contact::find($record->bean_id);
+                $name = $contact->first_name. ' ' .$contact->last_name;
+            }
+            $records[] = [
+                'id' => $record->id,
+                'name' => $name,
+                'status' => $record->status,
+                'created_at' => date_format($record->created_at,"d-m-Y H:i:s"),
+            ];   
+        }
+    
+
+        return response()->json(['records' => $records]);
     }
 }
