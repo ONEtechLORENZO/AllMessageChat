@@ -233,7 +233,8 @@ class SettingsController extends Controller
 
         foreach ($plan_record as $record) {
             // Insert current plan currency type and payment interval time
-            $plan = Plan::find($record->id);
+            $plan = Plan::find($record->plan_id);
+            
             if(isset($plan)){
                 $record->period = $plan->billing_period;
                 $record->currency = $plan->currency;
