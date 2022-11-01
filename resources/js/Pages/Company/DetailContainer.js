@@ -12,7 +12,7 @@ export function DetailContainer(props) {
         <div id="tab-contents">
             <div className="bg-gray-50">
                 <dl className="text-gray-200 divide-y">
-                    <Disclosure as="div" key='General' className="" defaultOpen>
+                    <Disclosure as="div" key='General' className="" defaultOpen={props.default}>
                         {({ open }) => (
                         <>
                             <dt className="pt-2">

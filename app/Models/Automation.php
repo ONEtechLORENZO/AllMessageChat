@@ -16,7 +16,7 @@ class Automation extends Model
 {
     use HasFactory;
 
-    public $recordModal = '';
+    public $recordModal;
     public $enquiryNodes = [];
     public $nodes = [];
     public $edges = [];
@@ -205,23 +205,39 @@ class Automation extends Model
         // Currently created or updated record.
         $recordModal = $this->recordModal;
 
-        switch($action->type){
+        switch($action->type) {
             case 'send_message':
                 $this->sendMessage($action);
                 break;
             case 'tag_contact':
                 if($action->select_tag){
-                    $recordModal->tags()->sync(array($action->select_tag));
+                    $existTags = ($recordModal->tags()) ? $recordModal->tags()->get() : [];
+                    $existTagIds = [];
+                    foreach($existTags as $tag){
+                        $existTagIds[] = $tag->id;
+                    }
+                  
+                    $existTagIds[] = $action->select_tag;
+                
+                    $recordModal->tags()->sync($existTagIds);
+                   
                 }
                 break;
             case 'list_contact':
                 if($action->select_list){
-                    $recordModal->categorys()->sync(array($action->select_list));
+                    $existCategories = ($recordModal->categorys()) ? $recordModal->categorys()->get() : [];
+                    $existCategoryIds = [];
+                    foreach($existCategories as $category){
+                        $existCategoryIds[] = $category->id;
+                    }
+                  
+                    $existCategoryIds[] = $action->select_list;
+                    $recordModal->categorys()->sync($existCategoryIds);
                 }
                 break;
            
             case 'custom_field':
-                if($action->field_name){
+                if($action->field_name) {
                     $custom_field[$action->field_name] = $action->field_value;
                     $recordModal->custom = $custom_field;
                     $_REQUEST['isFlowAction'] = true;
@@ -230,14 +246,15 @@ class Automation extends Model
                 break;
 
             case  (in_array($action->type , ['create_contact', 'update_contact', 'create_lead', 'update_lead'])):
-                if($action->field_mapping){
-                    $bean = (str_contains( $action->type, 'lead'))? new Lead: new Contact;
-                    if( isset( $_POST['id']) ){
+                if($action->field_mapping) {
+                    $bean = (str_contains( $action->type, 'lead')) ? new Lead : new Contact;
+                    if( isset( $_POST['id']) ) {
                         $bean = $module->where([
                             'id' => $_POST['id'],
                             'company_id' => $this->company_id
                         ])->first();
                     }
+
                     $bean->creater_id = 1;
                     $bean->company_id = $this->company_id;
                     $this->recordModal = $bean;
@@ -247,20 +264,25 @@ class Automation extends Model
                 break;
 
             case 'send_request':
-                if($action->post_url){
+                if($action->post_url) {
                     $url = $action->post_url;
-                    $mapField = $headers = $data = [];
-                    foreach($action->data_headers as $header){
-                        $headers[$header->header_type] = $header->header_value; 
+                    $headers = $data = [];
+                    if(isset($action->data_headers) && $action->data_headers) {
+                        foreach($action->data_headers as $header) {
+                            $headers[$header->header_type] = $header->header_value; 
+                        }
                     }
-                    foreach($action->field_mapping as $fieldMap){
-                        $fieldValue = $this->replaceFieldValue($fieldMap->map_field);
-                        $data[$fieldMap->field_name] = $fieldValue;
+
+                    if(isset($action->field_mapping) && $action->field_mapping) {
+                        foreach($action->field_mapping as $fieldMap) {
+                            $fieldValue = $this->replaceFieldValue($fieldMap->map_field);
+                            $data[$fieldMap->field_name] = $fieldValue;
+                        }
                     }
+
                     $this->postRecordData($action->method, $url, $headers, $data);
                 }
-                break;
-
+            break;
         }
     }   
 
@@ -303,9 +325,9 @@ class Automation extends Model
         catch(\Exception $e){
             Log::info([ 'status' => 'Failed', 'messgae' => 'Record not stored, Please check mapping configuration']);
             Log::info('Cannot store the record ' . $e->getMessage());
-            $result = ['status' => false, 'result' => $e->getMessage()];
-           // dd($result);
-           echo json_encode($result); 
+            $result = ['status' => false, 'result' => 'Please fill the value or check automation mapping' , 'error' => $e->getMessage()];
+           
+           echo json_encode($result); die;
         }
         return $result;
        // return response()->json(['status' => true , 'result' => $result]);
@@ -404,19 +426,20 @@ class Automation extends Model
     /**
      * Send Data
      */
-    public function sendData($method, $url, $header, $data)
+    public function sendData($method, $url, $headers, $data)
     {
+        $time_out = 10;
         try {
-            log::info(['headers ' => $header, 'url' => $url, 'data' => $data]);
-            switch($method){
+            log::info(['headers ' => $headers, 'url' => $url, 'data' => $data]);
+            switch($method) {
                 case 'POST':
-                    $response = Http::withHeaders($header)->post($url, $data);
+                    $response = Http::timeout($time_out)->withHeaders($headers)->post($url, $data);
                     break;
                 case 'GET':
-                    $response = Http::withHeaders($header)->get($url, $data);
+                    $response = Http::timeout($time_out)->withHeaders($headers)->get($url, $data);
                     break;
                 case 'PUT':
-                    $response = Http::withHeaders($header)->put($url, $data);
+                    $response = Http::timeout($time_out)->withHeaders($headers)->put($url, $data);
                     break;
             }
         } catch(\Exception $e) {

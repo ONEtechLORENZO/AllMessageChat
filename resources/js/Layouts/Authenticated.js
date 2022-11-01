@@ -30,7 +30,8 @@ import {
     OfficeBuildingIcon,
     ClipboardIcon,
     SupportIcon,
-    QuestionMarkCircleIcon
+    QuestionMarkCircleIcon,
+    ChartSquareBarIcon
 } from "@heroicons/react/outline";                                                                      
 import SelectCompany from "@/Pages/Company/SelectCompany";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
