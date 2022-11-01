@@ -211,12 +211,28 @@ class Automation extends Model
                 break;
             case 'tag_contact':
                 if($action->select_tag){
-                    $recordModal->tags()->sync(array($action->select_tag));
+                    $existTags = ($recordModal->tags()) ? $recordModal->tags()->get() : [];
+                    $existTagIds = [];
+                    foreach($existTags as $tag){
+                        $existTagIds[] = $tag->id;
+                    }
+                  
+                    $existTagIds[] = $action->select_tag;
+                
+                    $recordModal->tags()->sync($existTagIds);
+                   
                 }
                 break;
             case 'list_contact':
                 if($action->select_list){
-                    $recordModal->categorys()->sync(array($action->select_list));
+                    $existCategories = ($recordModal->categorys()) ? $recordModal->categorys()->get() : [];
+                    $existCategoryIds = [];
+                    foreach($existCategories as $category){
+                        $existCategoryIds[] = $category->id;
+                    }
+                  
+                    $existCategoryIds[] = $action->select_list;
+                    $recordModal->categorys()->sync($existCategoryIds);
                 }
                 break;
            
