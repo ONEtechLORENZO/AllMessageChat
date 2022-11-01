@@ -72,7 +72,7 @@ class OpportunityController extends Controller
     public function store(Request $request)
     {
         $opportunity_id = $this->saveOpportunity($request);
-        
+
         if($request->is('api/*')) // API call check
         {            
             if($opportunity_id){
@@ -83,8 +83,13 @@ class OpportunityController extends Controller
             }
         }
         else
-        {                
-        return Redirect::route('detailOpportunity', $opportunity_id);
+        {        
+            if($request->parent_id){
+                $url = route('detail'. $request->parent_module).'?id='.$request->parent_id.'&page=1';
+                return Redirect::to($url);
+            } else {
+                return Redirect::route('detailOpportunity', $opportunity_id);
+            }        
         }
     }
 

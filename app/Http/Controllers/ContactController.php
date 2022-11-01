@@ -512,14 +512,14 @@ class ContactController extends Controller
         if ($request->id) {
             $request->validate([
                 'last_name' => 'required|max:255',
-                'email' => 'required|max:255',
+                'email' => 'max:255',
             ]);
             $contact = Contact::findOrFail($request->id);
 
         } else {
             $request->validate([
                 'last_name' => 'required|max:255',
-                'email' => 'required|unique:contacts|max:255',
+                'email' => 'unique:contacts|max:255',
             ]);
             $contact = new Contact();
         }
