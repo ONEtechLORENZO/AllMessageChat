@@ -311,7 +311,8 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/company/setBaseCompany', [CompanyController::class, 'setBaseCompany'])->name('setBaseCompany');
         
         Route::get('/navigate/fields', [SettingsController::class, 'navigationField'])->name('navigation_field');
-        Route::get('record/merge', [SettingsController::class, 'recordMerger'])->name('record_merge');
+        Route::get('/record/merge', [SettingsController::class, 'recordMerger'])->name('record_merge');
+        Route::post('/merge/remain', [SettingsController::class, 'deleteRemainRecords'])->name('remain_record');
     });
 
 });
@@ -365,6 +366,7 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/admin/workspaces', [CompanyController::class, 'index'])->name('listCompany');
     Route::get('/admin/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
     Route::post('/admin/paymentmethod', [CompanyController::class, 'paymentMethod'])->name('payment_method');
+    Route::get('/admin/workspace/activity', [CompanyController::class, 'workspaceActivities'])->name('worksapce_activities');
 
     //SupportRequests  
     Route::get('/admin/supportrequests', [SupportRequestController::class, 'index'])->name('list_global_SupportRequest');

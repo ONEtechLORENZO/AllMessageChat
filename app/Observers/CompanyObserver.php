@@ -8,6 +8,7 @@ use App\Models\Wallet;
 use App\Models\Field;
 use App\Models\FieldGroup;
 use Auth;
+use Mail;
 use Illuminate\Support\Facades\Log;
 
 class CompanyObserver
@@ -25,6 +26,8 @@ class CompanyObserver
 
          $user_id = Auth::id();
          $user = User::find($user_id);
+
+         $sendMail = $this->sendMailToAdmin($company);
             
          // Check whether field entries are already added for this company
          $isAdded = Field::where('company_id', $company->id)->first();
@@ -617,6 +620,23 @@ class CompanyObserver
          'ZW' =>   'Zimbabwe'
       );
       return $countryCode;
+    }
+
+    public function sendMailToAdmin($company) {
+
+      $emailAddress = 'logs@onemessage.chat';
+      $emailAddress = filter_var($emailAddress, FILTER_SANITIZE_EMAIL);
+
+      $data = [
+         'data' => $company
+      ];
+
+      if($emailAddress){
+          Mail::send('company',$data, function($message) use ($emailAddress){
+              $message->to($emailAddress)->subject
+              ('Welcome');
+          });
+      }
     }
 
 }

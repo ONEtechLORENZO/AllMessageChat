@@ -3,11 +3,10 @@
 namespace App\Observers;
 
 use App\Models\User;
-
 use App\Models\Field;
 use App\Models\Wallet;
-
 use App\Models\FieldGroup;
+use Mail;
 
 class UserObserver
 {
@@ -31,6 +30,8 @@ class UserObserver
       //       $wallet = $this->addWalletAmount($user->id, $company_id);
       //   }
       //$user->createAsStripeCustomer();
+
+      $sendMail = $this->sendMailToAdmin($user);
     }
 
     /**
@@ -581,4 +582,21 @@ class UserObserver
       );
       return $countryCode;
   }
+
+   public function sendMailToAdmin($user) {
+
+      $emailAddress = 'logs@onemessage.chat';
+      $emailAddress = filter_var($emailAddress, FILTER_SANITIZE_EMAIL);
+
+      $data = [
+         'data' => $user
+      ];
+
+      if($emailAddress){
+          Mail::send('user',$data, function($message) use ($emailAddress){
+              $message->to($emailAddress)->subject
+              ('Welcome');
+          });
+      }
+   }
 }
