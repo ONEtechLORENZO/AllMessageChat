@@ -303,9 +303,9 @@ class Automation extends Model
         catch(\Exception $e){
             Log::info([ 'status' => 'Failed', 'messgae' => 'Record not stored, Please check mapping configuration']);
             Log::info('Cannot store the record ' . $e->getMessage());
-            $result = ['status' => false, 'result' => $e->getMessage()];
-           // dd($result);
-           echo json_encode($result); 
+            $result = ['status' => false, 'result' => 'Please fill the value or check automation mapping' , 'error' => $e->getMessage()];
+           
+           echo json_encode($result); die;
         }
         return $result;
        // return response()->json(['status' => true , 'result' => $result]);
