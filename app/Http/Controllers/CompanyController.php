@@ -19,6 +19,7 @@ use DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Account;
+use App\Models\Automation;
 
 class CompanyController extends Controller
 {
@@ -367,7 +368,14 @@ class CompanyController extends Controller
 
         $user = $request->user();
         $company_id = Cache::get('selected_company_'.$user->id);
+
+        $account_id = [];
+        $accounts = Account::where('company_id',$company_id)->get();
         
+        foreach($accounts as $account) {
+            $account_id[] = $account->id;
+        } 
+
         $workspace = Company::findOrFail($company_id);
 
         if($workspace) {
@@ -390,14 +398,10 @@ class CompanyController extends Controller
         
         if($plan) {
             $plan['payment_method'] = $workspace->payment_method;
+            $plan['monthly_consumption'] =  $this->monthlyConsumptin($account_id, $company_id);
         }
-        $account_id = [];
-        $accounts = Account::where('company_id',$company_id)->get();
         
-        foreach($accounts as $account) {
-            $account_id[] = $account->id;
-        } 
-
+        // GET Company msg revenue data
         $revenue_data = $this->getRevenueData($account_id);
 
         return Inertia::render('Company/WorkspaceActivities', [
@@ -431,5 +435,15 @@ class CompanyController extends Controller
         }
 
         return $return; 
+    }
+
+    public function monthlyConsumptin($account_id, $company_id)
+    {
+        $messages = Msg::whereIn('account_id',$account_id)->count();
+        $automations = Automation::where('company_id', $company_id)->count();
+
+        $average = $messages + $automations;
+        
+        return $average;
     }
 }
