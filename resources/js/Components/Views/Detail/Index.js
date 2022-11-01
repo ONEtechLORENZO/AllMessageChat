@@ -17,6 +17,8 @@ import WorkspacePlan from "./WorkspacePlan";
 import WorkspacePaid from "./WorkspacePaid";
 import axios from "axios";
 import Wallet from "@/Pages/Wallet/Index"
+import Form from '@/Components/Forms/Form';
+
 
 export default function Index(props) {
     const [record, setRecord] = useState(props.record);
@@ -39,6 +41,8 @@ export default function Index(props) {
     const [addClass, setAddClass] = useState(false);
     const [moduleFields, setModuleFields] = useState();
 
+    const [showForm, setShowForm] = useState(false);
+
     useEffect(() => {
         fetchModuleFields();
         setRecord(props.record);
@@ -55,6 +59,14 @@ export default function Index(props) {
         }
         setSubscribedServices(props.subscribedServices);
     }, [props]);
+
+      /**
+     * Hide form and reset the Record ID
+     */
+       function hideForm() {
+        setShowForm(false);
+        setRecordId('');
+    }
 
     function saveTag() {
         var data = {
@@ -234,7 +246,8 @@ export default function Index(props) {
         }
     }
 
-    return (            
+    return (  
+        <>          
             <div>
                 <Head title={props.module}/>
                 <ul className="py-4 space-y-2 sm:px-6 sm:space-y-4 lg:px-8" role="list">
@@ -312,7 +325,7 @@ export default function Index(props) {
                                 </div>:<div>
                                     <button
                                         type="button"
-                                        onClick={() => lead_to_contact()}
+                                        onClick={() => setShowForm(true)}
                                         className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                     >
                                         Convert Opportunity to Order 
@@ -655,5 +668,18 @@ export default function Index(props) {
                     </li>
                 </ul>
             </div>
+            {showForm ?
+                <Form 
+                    module="Order"
+                    heading={props.heading}
+                    hideForm={hideForm}
+                    OpportunityrecordId = {recordId}
+                    opportunityname = {props.record.name}
+                    translator={props.translator}
+                    mod={props.mod}
+                    productList={props.productList}
+                />
+            : ''}
+            </>
     );
 }

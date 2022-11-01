@@ -63,7 +63,10 @@ function Form(props)
         fetchModuleFields();       
 
         //prefill the module_name in addfield form  
-       props.module=='Field' && props.mod!='' && setData('module_name',props.mod);  
+       props.module=='Field' && props.mod!='' && setData('module_name',props.mod);
+       
+       props.module=='Order' && props.OpportunityrecordId!='' && setData('opportunity',{'value':props.OpportunityrecordId,'label':props.opportunityname});;
+
         //prefill relate field in subpanel
        if(props.parent_module == 'Organization' && props.module == 'Contact')
         {                        
@@ -417,6 +420,7 @@ function Form(props)
                                             if(field_info.readonly_on_edit == 'true' && data.id){
                                                 readOnly = false;
                                             }
+                                       
                                             switch (field_info.field_type) {
                                                 case "text":
                                                     element = <Input
