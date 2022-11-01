@@ -19,10 +19,11 @@ class CreateNotesTable extends Migration
             $table->integer('notable_id');
             $table->string('notable_type');
             $table->string('note');
+            $table->foreignId('assigned_to')->nullable()->constrained('users');
+            $table->boolean('status')->nullable();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('company_id')->constrained('companies');            
-            $table->timestamps();
-            
+            $table->timestamps();            
         });
     }
 

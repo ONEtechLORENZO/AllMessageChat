@@ -158,6 +158,10 @@ Route::middleware('planrestriction')->group(function () {
         //Route::get('/contacts', [ContactController::class, 'index'])->name('contacts');
         Route::get('/notes/{module}/{id}', [NoteController::class, 'list_notes'])->name('listNotes');
         Route::post('/addnotes/{module}/{id}', [NoteController::class, 'addNotes'])->name('add_Notes');
+        Route::get('/getusers/{module}/{id}', [NoteController::class, 'getUsers'])->name('get_users');
+        Route::post('/taskupdate/{module}/{id}', [NoteController::class, 'updateTask'])->name('update_task');
+
+
         Route::get('/contacts', [ContactController::class, 'index'])->name('listContact');
         Route::delete('/contact/delete/{id}', [ContactController::class, 'destroy'])->name('deleteContact');
         Route::get('/contact', [ContactController::class, 'show'])->name('detailContact');
