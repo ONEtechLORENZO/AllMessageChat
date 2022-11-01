@@ -326,7 +326,7 @@ class TagController extends Controller
 
         $newTags = array_diff($tag_id , $existTagIds);  // For automation new tag relate event
         $contact->tags()->sync($tag_id);
-      
+
         if($newTags){
             // Process flow functions 
             $user_id = $contact->creater_id;

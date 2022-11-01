@@ -148,6 +148,7 @@ class LeadController extends Controller
         return Inertia::render('Leads/Detail', [
             'record' => $lead,
             'headers' => $headers,
+            'current_userid' => $request->user()->id,
             'translator' => [
                 'Detail' => __('Detail'),
                 'Notes' => __('Notes'),

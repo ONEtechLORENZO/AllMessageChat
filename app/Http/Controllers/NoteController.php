@@ -40,10 +40,14 @@ class NoteController extends Controller
                 'note' => $note->note,
                 'date' => date_format($note->created_at,$this->dateListView) , 
                 'user_id' => $note->user_id,
-                'name' => $user_name[0],     
+                'name' => $user_name[0],
+                'assigned_to' => $note->assigned_to,
+                'status' => $note->status,
+                'current_user' => $user_id,
             ];
         }       
-        return response()->json(['note_List' => $note_List,'translator' =>['Add a new note'=>__('Add a new note'),'Enter your new note here' => __('Enter your new note here') , 'note_user_id' => $user_id]]); 
+        
+        return response()->json(['note_List' => $note_List,'translator' =>['Add a new note'=>__('Add a new note'),'Enter your new note here' => __('Enter your new note here') , 'user_id' => $user_id]]); 
     }
 
     /**

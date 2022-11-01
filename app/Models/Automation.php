@@ -211,12 +211,28 @@ class Automation extends Model
                 break;
             case 'tag_contact':
                 if($action->select_tag){
-                    $recordModal->tags()->sync(array($action->select_tag));
+                    $existTags = ($recordModal->tags()) ? $recordModal->tags()->get() : [];
+                    $existTagIds = [];
+                    foreach($existTags as $tag){
+                        $existTagIds[] = $tag->id;
+                    }
+                  
+                    $existTagIds[] = $action->select_tag;
+                
+                    $recordModal->tags()->sync($existTagIds);
+                   
                 }
                 break;
             case 'list_contact':
                 if($action->select_list){
-                    $recordModal->categorys()->sync(array($action->select_list));
+                    $existCategories = ($recordModal->categorys()) ? $recordModal->categorys()->get() : [];
+                    $existCategoryIds = [];
+                    foreach($existCategories as $category){
+                        $existCategoryIds[] = $category->id;
+                    }
+                  
+                    $existCategoryIds[] = $action->select_list;
+                    $recordModal->categorys()->sync($existCategoryIds);
                 }
                 break;
            
@@ -303,9 +319,9 @@ class Automation extends Model
         catch(\Exception $e){
             Log::info([ 'status' => 'Failed', 'messgae' => 'Record not stored, Please check mapping configuration']);
             Log::info('Cannot store the record ' . $e->getMessage());
-            $result = ['status' => false, 'result' => $e->getMessage()];
-           // dd($result);
-           echo json_encode($result); 
+            $result = ['status' => false, 'result' => 'Please fill the value or check automation mapping' , 'error' => $e->getMessage()];
+           
+           echo json_encode($result); die;
         }
         return $result;
        // return response()->json(['status' => true , 'result' => $result]);

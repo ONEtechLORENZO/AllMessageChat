@@ -17,6 +17,7 @@ import WebHook from './WebHook';
 import {  PencilAltIcon, CheckIcon } from '@heroicons/react/solid';
 import Input from '@/Components/Input';
 import { Switch } from '@headlessui/react'
+import AutomationHistory from './AutomationHistory';
 
 const initialNodes = [{
     id: "1",
@@ -662,7 +663,11 @@ function AutomationFlow(props)
 
                         </>
                     :
-                        <> History</>
+                        <> 
+                            <AutomationHistory 
+                                record={props.record}
+                            />
+                        </>
                     }
                 </div>
             </div>

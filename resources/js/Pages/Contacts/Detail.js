@@ -48,6 +48,7 @@ export default function Detail(props)
                 translator={props.translator}
                 serviceOptions={props.serviceOptions}
                 subscribedServices={props.subscribedServices}
+                current_userid={props.current_userid}
                       
             />
             
