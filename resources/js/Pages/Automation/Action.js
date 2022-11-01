@@ -23,6 +23,11 @@ function Action(props){
             map_field: '',
         };
 
+    const initialHeader = {
+        header_type: '',
+        header_value:''
+    }
+
     const methodOptions = {
         GET: 'GET',
         POST: 'POST',
@@ -34,6 +39,8 @@ function Action(props){
         'Authorization': 'Bearer token',
     };
 
+    const webhookActions = ['create_contact' , 'update_contact' , 'send_request', 'create_lead' , 'update_lead'] ;
+
     const cancelButtonRef = useRef(null);
     const [actionData , setActionData] = useState({});
     const [options, setOptions] = useState({});
@@ -41,12 +48,14 @@ function Action(props){
 
     const [moduleFields, setModuleFields] = useState({});
     const [mappedField , setFieldMapping] = useState([]);
+    const [data_headers , setHeaders] = useState([]);
 
     useEffect(()=>{
-      
-        if(props.actionData.type == 'create_contact' || props.actionData.type == 'update_contact' || props.actionData.type == 'send_request'){
-            fetchModuleFields( );
+        //if(props.actionData.type == 'create_contact' || props.actionData.type == 'update_contact' || props.actionData.type == 'send_request'){
+        if(webhookActions.includes(props.actionData.type)){
+            fetchModuleFields( props.actionData.type );
             addMoreMapFields();
+            addMoreHeader();
         }
         if(props.actionData.node_data){
             setActionData(props.actionData.node_data);
@@ -66,10 +75,13 @@ function Action(props){
             setFieldInfo(options.field_info[actionData.field_name]);
        }
 
-       if(actionData && actionData.field_mapping){
+       if(actionData && actionData.field_mapping && actionData.field_mapping[0]){
             setFieldMapping(actionData.field_mapping);
        }
-    },[actionData, fieldInfo]);
+       if(actionData && actionData.data_headers && actionData.data_headers[0]){
+            setHeaders(actionData.data_headers);
+       }
+    },[actionData, fieldInfo, data_headers]);
 
     function dataHandler(name, value) 
     {
@@ -105,7 +117,26 @@ function Action(props){
 
         dataHandler('field_mapping', newMapField);
     }
+
+    /**
+     * Handle header data
+     * 
+     * @param {Element} event 
+     */
+    function handleHeader(event){
+        var newHeaders = Object.assign([], data_headers);
     
+        var value = event.target.value;
+        var name = event.target.name;
+        var key = event.target.getAttribute('header_index');
+
+        var header = newHeaders[key]
+        header[name] = value;
+        newHeaders[key] = header;
+        setHeaders(newHeaders);
+
+        dataHandler('data_headers', newHeaders);
+    }
     /**
      * Delete mapping 
      * 
@@ -119,6 +150,19 @@ function Action(props){
         dataHandler('field_mapping', newMapField);
     }
 
+    
+    /**
+     * Delete Header 
+     * 
+     * @param {Integer} index 
+     */
+    function deleteHeader(index){
+        var newHeader = Object.assign([], data_headers);
+        delete newHeader[index]; 
+        setHeaders(newHeader);
+
+        dataHandler('data_headers', newHeader);
+    }
     /**
      * Add more one field to mapping
      */
@@ -126,6 +170,15 @@ function Action(props){
         var newMapField = Object.assign([], mappedField);
         newMapField.push(inital_field);
         setFieldMapping(newMapField);
+    }
+
+    /**
+     * Add more header
+     */
+    function addMoreHeader(){
+        var newHeaders = Object.assign([], data_headers);
+        newHeaders.push(initialHeader);
+        setHeaders(newHeaders);
     }
 
     function handleChange(event){
@@ -220,9 +273,10 @@ function Action(props){
     /**
      * Fetch module fields
      */
-     function fetchModuleFields() {
+     function fetchModuleFields(type) {
       
-        let endpoint_url = route('fetchModuleFields', {'module': 'Contact'});
+        var moduleName = (type.indexOf("lead") !== -1)? 'Lead' : 'Contact';
+        let endpoint_url = route('fetchModuleFields', {'module': moduleName});
         Axios.get(endpoint_url).then((response) => {
             if(response.data.status !== false) {
                 setModuleFields(response.data.fields);
@@ -235,9 +289,11 @@ function Action(props){
      */
     function testRequestCall(){
         let endpoint_url = route('test_post_data');
-        Axios.post(endpoint_url, props.actionData.node_data).then((response) => {
+        Axios.post(endpoint_url, actionData).then((response) => {
             if(response.data.status !== false) {
                 notie.alert({type: 'success', text: 'Test call send successfully!', time: 5});
+            } else {
+                notie.alert({type: 'error', text: response.data.message, time: 5});
             }
         });
     }
@@ -604,36 +660,63 @@ function Action(props){
                                                                     </div>
                                                                     <div className='form-group mb-2' >
                                                                         <label htmlFor={'headerType'} className="block text-sm font-medium text-gray-700">
-                                                                            Header type
+                                                                            Headers
                                                                         </label>
-                                                                        <Dropdown
-                                                                            id={'headerType'}
-                                                                            name={'headerType'}
-                                                                            options={headerType}
-                                                                            handleChange={handleChange}
-                                                                            emptyOption={'Select'}
-                                                                            value={actionData.headerType}
-                                                                            required={ true }
-                                                                        />
-                                                                    </div>
-                                                                    <div className='form-group mb-2' >
-                                                                        <label htmlFor={'header'} className="block text-sm font-medium text-gray-700">
-                                                                            Header
-                                                                        </label>
-                                                                        <Input
-                                                                            id={'header'}
-                                                                            name={'header'}
-                                                                            handleChange={handleChange}
-                                                                            value={actionData.header}
-                                                                            required={ true }
-                                                                        />
+                                                                        <div className=' mb-2' >
+                                                                            {data_headers && Object.entries(data_headers).map(([key , header]) => {
+                                                                                return(
+                                                                                    <div className="flex items-center">
+                                                                                        
+                                                                                        <input
+                                                                                            className="p-2 m-2 focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                                            id={'header_type'}
+                                                                                            name={'header_type'}
+                                                                                            header_index={key}
+                                                                                            onChange={(e) => handleHeader(e)}
+                                                                                            value={header.header_type}
+                                                                                            required={ true }
+                                                                                        />
+                                                                                        <input
+                                                                                            className=" p-2 m-2 focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                                            id={'header_value'}
+                                                                                            name={'header_value'}
+                                                                                            header_index={key}
+                                                                                            onChange={ (e) => handleHeader(e)}
+                                                                                            value={header.header_value}
+                                                                                            required={ true }
+                                                                                        />
+                                                                                        <div className="flex items-center justify-between p-4 space-x-6">
+                                                                                            <button
+                                                                                                type="button"
+                                                                                                onClick={(e) => deleteHeader(key)}
+                                                                                                className="inline-flex  items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+                                                                                            >
+                                                                                                <TrashIcon 
+                                                                                                    className='h-4 w-4 text-red-600 cursor-pointer' 
+                                                                                                />
+
+                                                                                            </button>
+                                                                                        </div>     
+                                                                                    </div>
+                                                                                )
+                                                                            })}
+                                                                        </div>
+                                                                        <div className='form-group' >
+                                                                            <button
+                                                                                type="button"
+                                                                                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                                                                                onClick={ () => addMoreHeader()}
+                                                                            >
+                                                                                Add
+                                                                            </button>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                               
                                                             </div>
                                                         </div>
                                                     }
-                                                    {(actionData.type == 'create_contact' || 'update_contact' == actionData.type || actionData.type == 'send_request') &&
+                                                    {/* {(actionData.type == 'create_contact' || 'update_contact' == actionData.type || actionData.type == 'send_request') && */}
+                                                    { (webhookActions.includes(actionData.type)) &&
                                                         <div>
                                                             <div class="flex flex-wrap mx-3 mb-6">
                                                                 <div className="w-full">
@@ -647,19 +730,30 @@ function Action(props){
                                                                                 <div className="flex w-full">
                                                                                     <div className="flex flex-1  gap-2">
                                                                                         <div className="flex-1 flex items-center ">
-                                                                                            <select
-                                                                                                name="module_field"
-                                                                                                map_index={key}
-                                                                                                id="module_field"
-                                                                                                value={field_map.module_field}
-                                                                                                onChange={ (e) => handleFieldMap(e)}
-                                                                                                className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
-                                                                                            >
-                                                                                                <option value=""></option>
-                                                                                                {Object.entries(moduleFields).map(([key, field]) => 
-                                                                                                    <option map_index={key} value={field.field_name}  defaultValue={field_map.module_field === field.field_name} > {field.field_label} </option>
-                                                                                                )}
-                                                                                            </select>
+                                                                                            {actionData.type != 'send_request' ?
+                                                                                                <select
+                                                                                                    name="module_field"
+                                                                                                    map_index={key}
+                                                                                                    id="module_field"
+                                                                                                    value={field_map.module_field}
+                                                                                                    onChange={ (e) => handleFieldMap(e)}
+                                                                                                    className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                                                >
+                                                                                                    <option value=""></option>
+                                                                                                    {Object.entries(moduleFields).map(([key, field]) => 
+                                                                                                        <option map_index={key} value={field.field_name}  defaultValue={field_map.module_field === field.field_name} > {field.field_label} </option>
+                                                                                                    )}
+                                                                                                </select>
+                                                                                                :
+                                                                                                <input
+                                                                                                    className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                                                    type="text"
+                                                                                                    name={'field_name'}
+                                                                                                    map_index={key}
+                                                                                                    onChange={ (e) => handleFieldMap(e)}
+                                                                                                    value={field_map.field_name}
+                                                                                                />
+                                                                                            }
                                                                                         </div>
                                                                                         <div className="flex-2 flex items-center ">
                                                                                             <input
@@ -688,14 +782,19 @@ function Action(props){
                                                                                             </div>
                                                                                             :
                                                                                             <div className="flex-1 flex items-center ">
-                                                                                                <input
-                                                                                                    className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
-                                                                                                    type="text"
-                                                                                                    name={'map_field_value'}
-                                                                                                    map_index={key}
+                                                                                                 <select
                                                                                                     onChange={ (e) => handleFieldMap(e)}
-                                                                                                    value={field_map.map_field_value}
-                                                                                                />
+                                                                                                    map_index={key}
+                                                                                                    value=''
+                                                                                                    name="webhook_field"
+                                                                                                    className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                                                >
+                                                                                                    <option value=""> {'{{}}'} </option>
+                                                                                                    
+                                                                                                    {Object.entries(moduleFields).map(([key, field]) => 
+                                                                                                        <option map_index={key} value={"{{"+field.field_name+'}}'} defaultValue={field_map.module_field === field.field_name} > {field.field_label} </option>
+                                                                                                    )}
+                                                                                                </select>
                                                                                             </div>
                                                                                         }
                                                                                         <div className="flex items-center justify-between p-4 space-x-6">

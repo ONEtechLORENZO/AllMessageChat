@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\Controller;
 use App\Models\Field;
+use App\Models\Contact;
+use App\Models\AutomationResult;
+use App\Models\Lead;
 use Log;
 
 class Automation extends Model
@@ -17,6 +20,7 @@ class Automation extends Model
     public $enquiryNodes = [];
     public $nodes = [];
     public $edges = [];
+    public $duplicate = ''; 
 
     /**
      * Return List view field
@@ -37,10 +41,10 @@ class Automation extends Model
      */
     public function getTriggerOptions()
     {
-        $return['triggers'] = array('contact_created' => array('name' => 'contact_created', 'label' => 'New contact is added'), 'contact_list_related' => array('name' => 'contact_list_related', 'label' => 'New contact is added to list'), 'contact_tag_related' => array('name' => 'contact_tag_related', 'label' => 'New contact is added to tag'), 'received_webhook' => array('name' => 'received_webhook', 'label' => 'Webhook is received'));
+        $return['triggers'] = array('contact_created' => array('name' => 'contact_created', 'label' => 'New contact is added'), 'lead_created' => array('name' => 'lead_created', 'label' => 'New lead is added'), 'lead_updated' => array('name' => 'lead_updated', 'label' => 'Lead updated'),'contact_list_related' => array('name' => 'contact_list_related', 'label' => 'New contact is added to list'), 'contact_tag_related' => array('name' => 'contact_tag_related', 'label' => 'New contact is added to tag'), 'received_webhook' => array('name' => 'received_webhook', 'label' => 'Webhook is received'));
         $return['processTypes'] = array('action' => array('label' => 'Action', 'name' => 'action'), 'condition' => array('label' => 'Condition', 'name' => 'condition'), 'exit' => array('label' => 'Exit', 'name' => 'exit'));        
         $return['actions'] = array('send_message' => array('label' => 'Send Message', 'name' => 'send_message'), 'tag_contact' => array('label' => 'Add a tag to a contact', 'name' => 'tag_contact'), 'list_contact' => array('label' => 'Add a list to a contact', 'name' => 'list_contact'), 'custom_field' => array('label' => 'Set a custom field', 'name' => 'custom_field'), 'send_request' => array('label' => 'Send HTTP Request', 'name' => 'send_request'));
-        $return['webHookActions'] = array('create_contact' => array('label' => 'Create Lead', 'name' => 'create_contact'), 'update_contact' => array('label' => 'Update Lead', 'name' => 'update_contact'));
+        $return['webHookActions'] = array('create_contact' => array('label' => 'Create Contact', 'name' => 'create_contact' , 'module' => 'Contact'), 'update_contact' => array('label' => 'Update Contact', 'name' => 'update_contact' , 'module' => 'Contact'), 'create_lead' => array('label' => 'Create Lead', 'name' => 'create_lead', 'module' => 'Lead'),'update_lead' => array('label' => 'Update Lead', 'name' => 'update_lead', 'module' => 'Lead'));
 
         return $return;
     }
@@ -60,10 +64,20 @@ class Automation extends Model
             
             $this->nodes = $flow->nodes;
             $this->edges = $flow->edges;
+            $this->duplicate = $flow;
+
             $statnode = 0; 
             $edge = $this->edges[$statnode];
             $node = $this->getNextNode($edge->target);
             $this->processNodeAction($node, $statnode);
+            
+            $history = new AutomationResult();
+            $history->automation_id = $this->id;
+            $history->bean_id = $recordModal->id;
+            $history->flow = base64_encode( serialize($this->duplicate));
+            $history->status = true;
+         //   dd($history);
+            $history->save();
         }
     }
 
@@ -72,6 +86,7 @@ class Automation extends Model
      */
     public function processNodeAction($node, $i)
     {
+       
         // Check the node already visited
         if( isset($node->id) && ! in_array($node->id,$this->enquiryNodes)){ 
             // Store visited nodes
@@ -107,12 +122,15 @@ class Automation extends Model
                 
                 // Find current edge position
                 $i = $this->getCurrentEdgeInex($node->id);
-                
+
                 if($result){
                     $i ++; // If the condition is true, move next node
                 } else {
                     $i = $i + 2; // If the condition is false, move second node
                 }
+
+                // Upddadte duplicate flow 
+                $this->updateDuplicateFlow($node , $result);
 
                 $edge = $this->edges[$i];
                 $currentNode = $this->getNextNode($edge->target);
@@ -211,28 +229,35 @@ class Automation extends Model
                 }
                 break;
 
-            case 'create_contact':
+            case  (in_array($action->type , ['create_contact', 'update_contact', 'create_lead', 'update_lead'])):
                 if($action->field_mapping){
-                    $this->storeRecord($action->field_mapping);
-                }
-                break;
-
-            case 'update_contact':
-                if($action->field_mapping){
+                    $bean = (str_contains( $action->type, 'lead'))? new Lead: new Contact;
+                    if( isset( $_POST['id']) ){
+                        $bean = $module->where([
+                            'id' => $_POST['id'],
+                            'company_id' => $this->company_id
+                        ])->first();
+                    }
+                    $bean->creater_id = 1;
+                    $bean->company_id = $this->company_id;
+                    $this->recordModal = $bean;
+                    
                     $this->storeRecord($action->field_mapping);
                 }
                 break;
 
             case 'send_request':
                 if($action->post_url){
-                    $headers[$action->headerType] = $action->header;
                     $url = $action->post_url;
-                    $mapField = [];
-        
-                    foreach($action->field_mapping as $fieldMap){
-                        $mapField[$fieldMap->module_field] = $fieldMap;
+                    $mapField = $headers = $data = [];
+                    foreach($action->data_headers as $header){
+                        $headers[$header->header_type] = $header->header_value; 
                     }
-                    $this->postRecordData($url, $headers, $mapField);
+                    foreach($action->field_mapping as $fieldMap){
+                        $fieldValue = $this->replaceFieldValue($fieldMap->map_field);
+                        $data[$fieldMap->field_name] = $fieldValue;
+                    }
+                    $this->postRecordData($action->method, $url, $headers, $data);
                 }
                 break;
 
@@ -259,6 +284,7 @@ class Automation extends Model
     public function storeRecord($fieldMap)
     {
         try{
+           
             $recordModal = $this->recordModal;
         
             foreach($fieldMap as $map){
@@ -268,28 +294,36 @@ class Automation extends Model
                 $fieldName = $map->module_field;
                 $recordModal->$fieldName = $fieldValue;
             }
+            
             $recordModal->save();
+            $result = ['status' => true, 'result' => 'Record save successfully.'];
+
             Log::info([ 'status' => 'Success', 'messgae' => 'Record stored successfully.']);
         }
         catch(\Exception $e){
             Log::info([ 'status' => 'Failed', 'messgae' => 'Record not stored, Please check mapping configuration']);
             Log::info('Cannot store the record ' . $e->getMessage());
+            $result = ['status' => false, 'result' => $e->getMessage()];
+           // dd($result);
+           echo json_encode($result); 
         }
-        
+        return $result;
+       // return response()->json(['status' => true , 'result' => $result]);
     }
 
     /**
      * Find the field name between the curly braces
      */
-    public function checkMapFieldIsFieldName($str, $starting_word = "{{", $ending_word = "}}")
+    public function checkMapFieldIsFieldName($str)
 	{
         $fieldValue = $str;
         // Fetch substring between the curly braces
-        $subtring_start = strpos($str, $starting_word);
-        $subtring_start += strlen($starting_word);
-        $size = strpos($str, $ending_word, $subtring_start) - $subtring_start;
-        $fieldName = substr($str, $subtring_start, $size);
-
+        // $subtring_start = strpos($str, $starting_word);
+        // $subtring_start += strlen($starting_word);
+        // $size = strpos($str, $ending_word, $subtring_start) - $subtring_start;
+        // $fieldName = substr($str, $subtring_start, $size);
+        $fieldName = $this->getModuleFieldName($str);
+        
         // Check post data contain field name
         if($fieldName && in_array($fieldName , array_keys($_POST))) {
             
@@ -297,7 +331,7 @@ class Automation extends Model
             // Concat webhook value and input value
             $fieldValue = str_replace( "{{".$fieldName."}}", $value , $str );
         
-            // Replace other vaiable value 
+            // Replace other variable value 
             $fieldValue = $this->checkMapFieldIsFieldName($fieldValue);
            
             return $fieldValue;
@@ -306,25 +340,62 @@ class Automation extends Model
   	}
 
     /**
+     * Return field name from a sting
+     * 
+     * @param {String} $str  
+     */
+    public function getModuleFieldName($str)
+    {
+        $starting_word = "{{"; 
+        $ending_word = "}}";
+        $fieldName = $str;
+        if(strpos($str , '{{')  !== false && strpos($str , '}}')  !== false){
+            // Fetch substring between the curly braces
+            $subtring_start = strpos($str, $starting_word);
+            $subtring_start += strlen($starting_word);
+            $size = strpos($str, $ending_word, $subtring_start) - $subtring_start;
+            $fieldName = substr($str, $subtring_start, $size);
+        }
+        return $fieldName;
+    }
+
+    /**
+     * Relpace field value instand of field name
+     * 
+     * @param {String} $string 
+     */
+    public function replaceFieldValue($str)
+    {
+        $fieldValue = $str;
+        $fieldName = $this->getModuleFieldName($str);
+        if($fieldName && strpos($str , '{{')  !== false && strpos($str , '}}')  !== false ){
+            $value = $this->recordModal->$fieldName;
+            $fieldValue = str_replace( "{{".$fieldName."}}", $value, $str);
+            $fieldValue = $this->replaceFieldValue($fieldValue);
+            return $fieldValue;
+        }
+        return $fieldValue;
+    }
+
+    /**
      * Post data to action url
      */
-    public function postRecordData($postUrl, $header, $mapField)
+    public function postRecordData($method, $postUrl, $header, $postData)
     {
         try {
-            $postData = [];
-            $recordModal = $this->recordModal;
-            $moduleName = class_basename($recordModal);
+            // $recordModal = $this->recordModal;
+            // $moduleName = 
 
-            $fields = $this->fetchModuleFields($moduleName);
-            foreach($fields as $field){
-                $fieldName = $field->field_name;
-                if($field->field_type != 'relate' ){
-                    $postData[$fieldName] = $recordModal->$fieldName;
-                }
-            }
-            $postData['module_name'] = $moduleName;
-            $this->sendData($postUrl, $header, $postData, $mapField);
-            
+            // $fields = $this->fetchModuleFields($moduleName);
+            // foreach($fields as $field){
+            //     $fieldName = $field->field_name;
+            //     if($field->field_type != 'relate' ){
+            //         $postData[$fieldName] = $recordModal->$fieldName;
+            //     }
+            // }
+          
+            $postData['module_name'] = class_basename($this->recordModal);
+            $this->sendData($method, $postUrl, $header, $postData);
         }
         catch(Exception $e){
             Log::info('Cannot send the record data' . $e->getMessage());
@@ -333,16 +404,24 @@ class Automation extends Model
     /**
      * Send Data
      */
-    public function sendData($url, $header, $data, $mapField)
+    public function sendData($method, $url, $header, $data)
     {
-       
-        $postData = [];
-        foreach($data as $field => $value){
-            $postData[$mapField->$field['map_field']] = ($value) ? $value : $mapField->$field['map_field_value'];
+        try {
+            log::info(['headers ' => $header, 'url' => $url, 'data' => $data]);
+            switch($method){
+                case 'POST':
+                    $response = Http::withHeaders($header)->post($url, $data);
+                    break;
+                case 'GET':
+                    $response = Http::withHeaders($header)->get($url, $data);
+                    break;
+                case 'PUT':
+                    $response = Http::withHeaders($header)->put($url, $data);
+                    break;
+            }
+        } catch(\Exception $e) {
+            $response = ['status' => false, 'message' => $e->getMessage()];
         }
-        Log::info(['Post data ' => $postData]);
-      
-        $response = Http::withHeaders($header)->post($url, $postData);
         return $response;
     }
     
@@ -374,5 +453,30 @@ class Automation extends Model
             } 
         }
         return $fields;
-    }   
+    }
+    
+    /**
+     * Update duplicate flow for detail view
+     * 
+     * @param {Object} $node
+     * @param {Boolean} $flag
+     */
+    public function updateDuplicateFlow($node , $flag)
+    {
+        $currentEdgeIndex = $this->getCurrentEdgeInex($node->id);
+        $currentNodeIndex = '';
+        foreach($this->duplicate->nodes as $key => $element){
+            if($element->id == $node->id){
+                $currentNodeIndex = $key;
+            }
+        }
+        $status = false;
+        if($flag){
+            $status = true;
+        }
+        $this->duplicate->nodes[$currentNodeIndex]->status = $status;
+        $this->duplicate->edges[$currentEdgeIndex]->status = true;
+
+//        dd($this->duplicate->nodes);
+    }
 }

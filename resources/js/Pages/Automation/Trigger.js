@@ -3,7 +3,6 @@ import { Dialog, Transition } from '@headlessui/react'
 import { RadioGroup } from '@headlessui/react'
 
 function Trigger(props){
-
     const [open, setOpen] = useState(true);
     const cancelButtonRef = useRef(null);
     
@@ -69,19 +68,21 @@ function Trigger(props){
                                                  
                                                   <div className="space-y-4">
                                                     <ul class="grid gap-6 w-full md:grid-cols-2">
-                                                        {Object.entries(props.options).map(([key, plan]) => {
+                                                        {Object.entries(props.options).map(([key, option]) => {
+                                                           
+                                                            if(props.triggerType && (props.type == 'action' && (props.triggerType).indexOf("lead") !== -1) && (['tag_contact', 'list_contact', 'custom_field'].includes(key))){
+                                                                return true;
+                                                            }
                                                           return(
                                                             <li className="border-1 border-gray-100">
-                                                                <input type="radio" id={plan.name} name="trigger" value={plan.name} class="hidden peer" onClick={() => props.saveData( props.type, plan.name, props.nodeId)} required />
-                                                                <label for={plan.name} 
-                                                                    class={"inline-flex justify-between items-center p-5 w-full text-gray-500 bg-white rounded-lg border border-gray-200 cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700 " + (selected == plan.name  ? 'text-blue-500 border-blue-600' : '' )}          
+                                                                <input type="radio" id={option.name} name="trigger" value={option.name} class="hidden peer" onClick={() => props.saveData( props.type, option.name, props.nodeId)} required />
+                                                                <label for={option.name} 
+                                                                    class={"inline-flex justify-between items-center p-5 w-full text-gray-500 bg-white rounded-lg border border-gray-200 cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700 " + (selected == option.name  ? 'text-blue-500 border-blue-600' : '' )}          
                                                                     >                        
                                                                     <div class="block">
-                                                                        <div class="w-full "> {plan.label} </div>
+                                                                        <div class="w-full "> {option.label} </div>
                                                                     </div>
                                                                 </label>
-                                                         
-                                                            
                                                             </li>
                                                           )
                                                         })}

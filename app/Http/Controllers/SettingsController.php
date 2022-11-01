@@ -456,6 +456,7 @@ class SettingsController extends Controller
         $subscription_id = $invoice->subscription;
 
         $company = Company::where('subscription_id' , $subscription_id )->first();
+       
         if($company){
             switch ($event->type) {
                 case 'invoice.paid':
@@ -471,9 +472,12 @@ class SettingsController extends Controller
             if($company->status != $status)
                 $company->status = $status;
 
+            $company->save();
         }
-        $company->save();
-        log::info([ 'Stripe Incoming message (or) response' => $post_data , 'Payload' => $payload , 'Header' => $sig_header ]);
+    
+        log::info([ 'Stripe Incoming message (or) response' => $payload , 'Header' => $sig_header ]);
+        return response()->json(['status' => true, 'message' => 'Stripe data updated']);
+
     }
 
     public function navigationField(Request $request) {
@@ -559,9 +563,13 @@ class SettingsController extends Controller
             $accounts = Account::where('company_id', $company->id)->get(); 
             foreach($accounts as $account){
                 $userData['account_list'][$account->id] = $account->company_name;
-                $templates = Template::where('account_id', $account->id)->get();
+                $templates = Template::where('account_id', $account->id)
+                    ->where('status' , 'APPROVED')
+                    ->whereNotNull('template_uid')
+                    ->join('messages' , 'templates.id', 'template_id' )
+                    ->get();
                 foreach($templates as $template){
-                    $userData['template_list'][$account->id][$template->template_uid] = $template->name;
+                    $userData['template_list'][$account->id][$template->template_uid] = ['name' => $template->name , 'content' => $template->body];
                 }
             }
         }

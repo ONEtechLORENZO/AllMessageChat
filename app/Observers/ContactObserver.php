@@ -32,7 +32,6 @@ class ContactObserver
     public function updated(Contact $contact)
     {
       //  $this->runFlowActions($contact , 'contact_created');
-     
       if($contact->wasChanged('status'))
       {
          $this->set_Service_Subscription($contact);
