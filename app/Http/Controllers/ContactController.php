@@ -210,6 +210,7 @@ class ContactController extends Controller
             return Inertia::render('Contacts/Detail', [
                 'contact' => $contact,
                 'tagOptions' => $tagOptions,
+                'current_userid' => $request->user()->id,
                 'serviceOptions' => $serviceOptions,
                 'tagData' => $tagSelectedRecords,
                 'listOptions' => $ListOptions,

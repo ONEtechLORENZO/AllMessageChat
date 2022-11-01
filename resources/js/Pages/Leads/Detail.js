@@ -38,7 +38,8 @@ export default function Detail(props)
                 updateRecord={showEditForm}
                 tabs={tabs}
                 headers={props.headers}                
-                translator={props.translator}               
+                translator={props.translator}  
+                current_userid={props.current_userid}             
                       
             />
             

@@ -132,7 +132,8 @@ function handleChange(e){
               }
           })
           .then( (response) => {
-            (e.target.disabled)= true          
+            (e.target.disabled) = true  
+            (e.target.id).display = 'none'        
           });      
           
     } 
@@ -203,14 +204,14 @@ return(
            <span>{<br/>}</span>
             <div className={classNames(index === 0 ? '' : 'border-t border-gray-200 pt-3', 'flex-1')}>
               <h3 className="font-medium text-gray-900">{note.name}</h3>
-              { (props.current_userid === note.assigned_to) ?
+              { (note.current_user == note.assigned_to && !(note.status)) ?
               <div className="mt-1 text-sm  sm:mt-0 text-right content-right">
               <input
                   className="rounded border-blue-400 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 "
                   type="checkbox"
                   id={note.id}
                   name={note.id}
-                  checked = {(note.status) ?  true : ''}
+                  //checked = {(note.status) ?  true : ''}
                   onChange={ handleChange }
                   title = "Mark as completed"
                   value={note.id}
