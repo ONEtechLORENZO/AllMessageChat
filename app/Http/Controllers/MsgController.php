@@ -143,7 +143,7 @@ class MsgController extends Controller
         $query = Msg::select($query_columns)
             ->join('accounts', 'account_id', 'accounts.id')
             ->join('contacts', 'contacts.id', 'msgable_id')
-            ->where('accounts.user_id', $user->id);
+            ->where('accounts.company_id', $companyId);
 
 
         $searchData = '';
@@ -164,9 +164,7 @@ class MsgController extends Controller
                 foreach($list_view_columns as $field_name => $field_info) {
 
                     if($field_name == 'company_name'){
-                        
                         $query->orWhere('accounts.company_name', 'like', '%' . $search . '%');
-                        
                     } elseif($field_name  == 'sender') {
                         $query->orWhere('contacts.phone_number', 'like', '%' . $search . '%');
                         $query->orWhere('accounts.phone_number', 'like', '%' . $search . '%');
@@ -515,11 +513,9 @@ class MsgController extends Controller
 
         $post_data = file_get_contents("php://input");
         $response = json_decode($post_data, true);
+        Log::info(['Incoming message (or) response ' => $response ]);
 
         $data = isset($response['entry'][0]['changes'][0]) ? $response['entry'][0]['changes'][0] : [];
-        
-        Log::info(['Incoming message (or) response ' => $data ]);
-
         // Update template status
         if(isset($data['field']) && $data['field'] == 'message_template_status_update'){
             $tempId = $data['value']['message_template_id'];
@@ -834,9 +830,10 @@ class MsgController extends Controller
         if(!$contact) {
             // Create new contact if instagram id is not found
             $contact = new Contact();
-            $contact->last_name = $name;
+            $contact->last_name = ($name) ? $name : $_POST['last_name'];
+            $contact->first_name = ($name) ? $name : $_POST['first_name'];
             $contact->$field = $uniqueId;
-            $contact->user_id = $user_id;
+            $contact->creater_id = $user_id;
             $contact->company_id = $companyId;
             $contact->save();
         }

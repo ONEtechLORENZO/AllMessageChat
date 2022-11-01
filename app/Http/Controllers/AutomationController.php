@@ -13,6 +13,7 @@ use App\Models\Category;
 use App\Models\Contact;
 use App\Models\Lead;
 use Inertia\Inertia;
+use Log;
 use DB;
 use Cache;
 use Str;
@@ -151,11 +152,12 @@ class AutomationController extends Controller
         if(! $automation){
             abort('404');
         }
+        
         if(! $request->flow){
             $automation->name = $request->name;
             $automation->status = $request->status;
             $automation->save();
-            return Redirect::route('createAutomation', $automation->id);
+            return response()->json(['status' => true , 'result' => 'success']);
         }
  
         $automation->flow = $request->flow;
@@ -254,7 +256,7 @@ class AutomationController extends Controller
                 $return['field_info'][$field->field_name] = $field;
             }
             
-        } else if('create_contact' == $_GET['action_type'] || $_GET['action_type'] == 'update_contact' ){ 
+        } else if( in_array($_GET['action_type'] , ['create_contact', 'update_contact', 'create_lead', 'update_lead']) ){ 
 
             $automation = Automation::where([
                             'id' => $_GET['record'],
@@ -280,10 +282,10 @@ class AutomationController extends Controller
                 'uuid' => $uuid,
             ])
             ->first();
-        
+
         if($automation){
             $data = json_encode($_POST);
-          
+
             // Store post data 
             DB::table('webhook_data')
                 ->updateOrInsert(
@@ -295,23 +297,13 @@ class AutomationController extends Controller
                 unset($_REQUEST['isFlowAction']);   // Reset the flow action
                 
                 $flow = json_decode($automation->flow);
-                
-                if( isset( $_POST['id']) ){
-                    // Update Lead
-                    $lead = Lead::where([
-                            'id' => $_POST['id'],
-                            'company_id' => $automation->company_id
-                        ])->first();
-                } else {
-                    // Create lead
-                    $lead = new Lead;
-                }
-                $lead->company_id = $automation->company_id;
-                $lead->creater_id = 1;
-                $result = $automation->getFlowResult($flow , $lead);
+              
+                // by Default
+                $bean = new Lead;
+                $result = $automation->getFlowResult($flow , $bean);
               
             }
-            return response()->json(['status' => true , 'result' => $result]);
+            return response()->json(['status' => true , 'result' => 'Webhook process works successfully. ']);
         }
         abort(403, 'Unauthorized action.');
     }
@@ -348,15 +340,19 @@ class AutomationController extends Controller
      */
     public function testPostData(Request $request)
     {
-        $headers[$request->headerType] = $request->header;
+        $automation = new Automation;
         $url = $request->post_url;
-        $data = $mapField = [];
-        foreach($request->field_mapping as $fieldMap){
-            $data[$fieldMap['module_field']] = $fieldMap['map_field_value'];
-            $mapField[$fieldMap['module_field']] = $fieldMap;
+        $data = $mapField = $headers = [];
+        foreach($request->data_headers as $header){
+            $headers[$header['header_type']] = $header['header_value']; 
         }
-        $result = (new Automation)->sendData($url, $headers, $data, $mapField );
-        $result = $result->body();
-        return response()->json(['status' => true]);
+
+        foreach($request->field_mapping as $fieldMap){
+            $fieldName = $automation->getModuleFieldName($fieldMap['map_field']);            
+            $data[$fieldMap['field_name']] = $fieldMap['map_field'];
+        }
+        $result = $automation->sendData( $request->method, $url, $headers, $data );
+        
+        return response()->json($result->body());
     }
 }

@@ -34,7 +34,7 @@ class MsgObserver
      */
     public function updated(Msg $msg)
     {
-        //
+        $status =  $this->sendMessageResponse($msg);
     }
 
     /**
@@ -118,7 +118,7 @@ class MsgObserver
                 'whatsapp_chatid' => $messageLog->service_id,
                 'message_type' => $type,
                 'body' => $messageLog->message,
-                'onemessage_status' => '',
+                'onemessage_status' => $messageLog->status,
                 'customer_phone' => $contact->phone_number,
                 'message_id' => $messageLog->service_id,
                 'your_phone_number' => $from,

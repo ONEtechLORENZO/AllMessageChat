@@ -297,7 +297,6 @@ function AutomationFlow(props)
      * @param {Object} data 
      */
     function saveActionData(node_id, data){
-        console.log(node_id,data );
         if(data.node_data)
             delete data.node_data;
 
