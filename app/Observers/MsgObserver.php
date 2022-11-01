@@ -122,6 +122,7 @@ class MsgObserver
                 'customer_phone' => $contact->phone_number,
                 'message_id' => $messageLog->service_id,
                 'your_phone_number' => $from,
+                'error_response' => $messageLog->error_response,
             ];
                        
             // Get configured webhooks for the account
