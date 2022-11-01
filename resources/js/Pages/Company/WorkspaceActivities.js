@@ -7,7 +7,7 @@ const workspaceDetails = [
     {label: 'Workspace Name', name: 'name'},
     {label: 'Registered On', name: 'created_at'},
     {label: 'Last Sign Up', name: 'last_signUp'},
-    {label: 'Number of Admins', name: 'admin'},
+    //{label: 'Number of Admins', name: 'admin'},
     {label: 'Number of Users', name: 'users'},
 ];
 
@@ -21,22 +21,22 @@ const revenueDetails = [
 const planComsumptionData = [
     {label: 'Subscription Plan', name: 'name'},
     {label: 'Monthly Subscription Value', name: 'amount'},
-    {label: 'Average Monthly Consumption M&M', name: 'average'},
-    {label: 'Average Monthly Add-Ons Value', name: 'add_on'},
+    {label: 'Average Monthly Consumption M&M', name: 'monthly_consumption'},
+    //{label: 'Average Monthly Add-Ons Value', name: 'add_on'},
 ];
 
 const paymentDetails = [
-    {label: 'Payment Method', name: 'method'},
+   //{label: 'Payment Method', name: 'method'},
     {label: 'Payment Cycle', name: 'billing_period'},
     {label: 'Payment Terms', name: 'payment_method'},
-    {label: 'Tolerance Threshold', name: 'holds'},
+    //{label: 'Tolerance Threshold', name: 'holds'},
 ];
 
 const billingInfo = [
     {label: 'Currency', name: 'currency'},
     {label: 'Country', name: 'country'},
-    //{label: 'State', name: 'state'},
-    {label: 'Province', name: 'province'},
+    {label: 'State', name: 'state'},
+    //{label: 'Province', name: 'province'},
     {label: 'City', name: 'city'},
     //{label: 'Street', name: 'street'},
     //{label: 'Bulding Number', name: 'building_number'},

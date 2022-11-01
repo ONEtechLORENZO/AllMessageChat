@@ -347,15 +347,20 @@ class AutomationController extends Controller
     {
         $automation = new Automation;
         $url = $request->post_url;
-        $data = $mapField = $headers = [];
-        foreach($request->data_headers as $header){
-            $headers[$header['header_type']] = $header['header_value']; 
+        $data = $headers = [];
+        if($request->data_headers) {
+            foreach($request->data_headers as $header) {
+                $headers[$header['header_type']] = $header['header_value']; 
+            }
         }
 
-        foreach($request->field_mapping as $fieldMap){
-            $fieldName = $automation->getModuleFieldName($fieldMap['map_field']);            
-            $data[$fieldMap['field_name']] = $fieldMap['map_field'];
+        if($request->field_mapping) {
+            foreach($request->field_mapping as $fieldMap){
+                $fieldName = $automation->getModuleFieldName($fieldMap['map_field']);            
+                $data[$fieldMap['field_name']] = $fieldMap['map_field'];
+            }
         }
+
         $result = $automation->sendData( $request->method, $url, $headers, $data );
         
         return response()->json($result->body());

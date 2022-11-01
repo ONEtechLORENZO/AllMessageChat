@@ -50,10 +50,14 @@ class LeadController extends Controller
                 'export' => true,                
                 'search' => true,                
                 'select_field'=>true,
+                'check' => true,
+                'merge' => true,
             ],
         ];
+
+        $records =  $this->listViewRecord($request, $listViewData, 'Lead');
         
-        $data = array_merge($moduleData, $listViewData);
+        $data = array_merge($moduleData, $records);
         return Inertia::render('Leads/List', $data);
     }
     }
@@ -180,8 +184,8 @@ class LeadController extends Controller
             $lead['organization_id'] = ['value' => $organization->id, 'label' => $name];
         }
 
-        if($lead->creater_id){
-            $user = User::findOrFail($lead->creater_id);
+        if($lead->assigned_to){
+            $user = User::findOrFail($lead->assigned_to);
             $lead['assigned_to'] = ['value' => $user->id, 'label' => $user->name];
         }
 

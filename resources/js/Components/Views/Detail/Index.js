@@ -299,17 +299,25 @@ export default function Index(props) {
                                 </>
                             }
                         </h3>
-                        {(props.module == 'Lead') ?
+                        {(props.module == 'Lead') || (props.module == 'Opportunity')  ?
                             <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
-                                <div>
+                                {(props.module == 'Lead') ? <div>
                                     <button
                                         type="button"
                                         onClick={() => lead_to_contact()}
                                         className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                     >
-                                        Convert Lead to Contact
+                                        Convert Lead to Contact                                        
                                     </button>
-                                </div>
+                                </div>:<div>
+                                    <button
+                                        type="button"
+                                        onClick={() => lead_to_contact()}
+                                        className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                    >
+                                        Convert Opportunity to Order 
+                                    </button>
+                                </div>}
                             </div>
                             : ''}
                          {(props.module == 'Company' && props.role == 'global_admin') ?
