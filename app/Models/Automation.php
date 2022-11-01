@@ -210,13 +210,29 @@ class Automation extends Model
                 $this->sendMessage($action);
                 break;
             case 'tag_contact':
-                if($action->select_tag) {
-                    $recordModal->tags()->sync(array($action->select_tag));
+                if($action->select_tag){
+                    $existTags = ($recordModal->tags()) ? $recordModal->tags()->get() : [];
+                    $existTagIds = [];
+                    foreach($existTags as $tag){
+                        $existTagIds[] = $tag->id;
+                    }
+                  
+                    $existTagIds[] = $action->select_tag;
+                
+                    $recordModal->tags()->sync($existTagIds);
+                   
                 }
                 break;
             case 'list_contact':
-                if($action->select_list) {
-                    $recordModal->categorys()->sync(array($action->select_list));
+                if($action->select_list){
+                    $existCategories = ($recordModal->categorys()) ? $recordModal->categorys()->get() : [];
+                    $existCategoryIds = [];
+                    foreach($existCategories as $category){
+                        $existCategoryIds[] = $category->id;
+                    }
+                  
+                    $existCategoryIds[] = $action->select_list;
+                    $recordModal->categorys()->sync($existCategoryIds);
                 }
                 break;
            
@@ -417,9 +433,7 @@ class Automation extends Model
             log::info(['headers ' => $headers, 'url' => $url, 'data' => $data]);
             switch($method) {
                 case 'POST':
-                    $response = Http::withOptions([
-                        'debug' => true,
-                    ])->timeout($time_out)->withHeaders($headers)->post($url, $data);
+                    $response = Http::timeout($time_out)->withHeaders($headers)->post($url, $data);
                     break;
                 case 'GET':
                     $response = Http::timeout($time_out)->withHeaders($headers)->get($url, $data);

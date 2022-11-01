@@ -30,7 +30,8 @@ import {
     OfficeBuildingIcon,
     ClipboardIcon,
     SupportIcon,
-    QuestionMarkCircleIcon
+    QuestionMarkCircleIcon,
+    ChartSquareBarIcon
 } from "@heroicons/react/outline";                                                                      
 import SelectCompany from "@/Pages/Company/SelectCompany";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
@@ -174,6 +175,12 @@ const adminNavigation = [
         name: "Plans",
         href: route("listPlan"),
         icon: ClipboardIcon,
+        show: ['global_admin'],
+    },
+    {
+        name: "Activities",
+        href: route("worksapce_activities"),
+        icon: ChartSquareBarIcon,
         show: ['global_admin'],
     },
     {
