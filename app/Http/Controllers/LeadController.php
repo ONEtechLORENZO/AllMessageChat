@@ -279,13 +279,13 @@ class LeadController extends Controller
         if ($request->id) {
             $request->validate([
                 'last_name' => 'required|max:255',
-                'email' => 'required|max:255',
+                'email' => 'max:255',
             ]);
             $lead = Lead::findOrFail($request->id);
         } else {
             $request->validate([
                 'last_name' => 'required|max:255',
-                'email' => 'required|unique:leads|max:255',
+                'email' => 'unique:leads|max:255',
             ]);
             $lead = new Lead();
         }

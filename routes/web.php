@@ -302,6 +302,8 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/getActionData', [AutomationController::class, 'getActionData'])->name('get_action_data');
         Route::get('/webhook/sample/{id}/{uuid}', [AutomationController::class , 'getSampleData'])->name('get_webhook_data');
         Route::post('/testCall', [AutomationController::class, 'testPostData'])->name('test_post_data');
+        Route::get('/automationHistory/{id}', [AutomationController::class, 'getHistoryList'])->name('get_automation_history');
+        Route::get('/automation/result/{id}' , [AutomationController::class, 'show'])->name('automation_result');
 
         // LineItem
         Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');
