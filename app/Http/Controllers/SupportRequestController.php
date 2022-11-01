@@ -88,7 +88,7 @@ class SupportRequestController extends Controller
         $companyId = Cache::get('selected_company_'. $request->user()->id);
         $headers = $this->getModuleHeader($companyId, 'SupportRequest');
 
-         //assign user details
+        //assign user details
          $user = User::where('id', $supportRequest->assigned_to)->first();
          if($user){
             $supportRequest['assigned_to'] = [ 'label' => $user['name'] , 'value' => $user['id'], 'module' => 'User'];
@@ -111,7 +111,7 @@ class SupportRequestController extends Controller
      * @param  \App\Models\SupportRequest  $supportRequest
      * @return \Illuminate\Http\Response
      */
-    public function edit(SupportRequest $supportRequest)
+    public function edit(Request $request, $id)
     {
         $module = new SupportRequest();
         $SupportRequest = $this->checkAccessPermission($request, $module, $id);

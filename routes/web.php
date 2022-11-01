@@ -340,7 +340,7 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
      Route::get('/supportrequests/{id}', [SupportRequestController::class, 'show'])->name('detailSupportRequest');
      Route::post('/supportrequests/{id}', [SupportRequestController::class, 'update'])->name('updateSupportRequest');
      Route::post('/supportrequests', [SupportRequestController::class, 'store'])->name('storeSupportRequest');
-     Route::post('/supportrequests/{id}', [SupportRequestController::class, 'edit'])->name('editSupportRequest');
+     Route::get('/supportrequests/edit/{id}', [SupportRequestController::class, 'edit'])->name('editSupportRequest');
     //Company   
     Route::get('/workspaces', [CompanyController::class, 'index'])->name('listAdminCompany');
     Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');
