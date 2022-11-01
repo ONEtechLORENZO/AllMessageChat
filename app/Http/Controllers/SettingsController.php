@@ -578,7 +578,7 @@ class SettingsController extends Controller
     
     public function deleteRemainRecords(Request $request) {
         
-        $parent_module = "Contact";
+        $parent_module = $request->module;
         $master_id = $request->master_id;
         $record_id = explode(',', $request->record_id);
         
