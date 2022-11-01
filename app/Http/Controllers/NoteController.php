@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\ContactController;
 use App\Models\Contact;
 use App\Models\User;
+use App\Models\Company;
+use Cache;
+use Mail;
 
 class NoteController extends Controller
 {
@@ -19,7 +22,6 @@ class NoteController extends Controller
     public function list_notes(Request $request, $mod,$id)
     {     
         $user_id = $request->user()->id;
-        
         if($mod)     
         {  
         $module_bean = "App\Models\\{$mod}";
@@ -50,8 +52,9 @@ class NoteController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function addNotes(Request $request, $mod,$id)    
-    {               
+    {     
         $user_id = $request->user()->id;
+        $user_name= $request->user()->name;
         if($mod)     
         {  
         $module_bean = "App\Models\\{$mod}";
@@ -68,13 +71,66 @@ class NoteController extends Controller
         }
         else{
             $note->user_id = $module->user_id;
+        }          
+         //sends e-mail to all the mentioned users
+         if($request->get('mentions'))
+         {
+            foreach($request->get('mentions') as $email){
+                $email_id = $email['id'];
+                $email_address= User::where('id',$email_id)->pluck('email'); 
+                $email_address= trim($email_address,"[]");
+                $email_address = filter_var($email_address, FILTER_SANITIZE_EMAIL);
+                $data = [
+                    'data' => $request->get('noteText'),
+                    'name' => $user_name,
+                ];
+                if($email_address){
+                    Mail::send('note',$data, function($message) use ($email_address){
+                        $message->to($email_address)->subject
+                        ('Task Assigned');
+                    });
+                }}
         }
-          
+     
+      $assigned_to = $request->get('assignedTo');
+      /* $email_address= User::where('id',$assigned_to)->pluck('email'); 
+      
+       $email_address = filter_var($email_address, FILTER_SANITIZE_EMAIL);
+
+        $data = [
+            'data' => $request->get('noteText'),
+            'name' => $user_name,
+        ];
+        if($email_address){
+            Mail::send('note',$data, function($message) use ($email_address){
+                $message->to($email_address)->subject
+                ('Task Assigned');
+            });
+        }*/
         $note->company_id = $module->company_id;
-        $note->note=$request->get('noteText');
+        $note->note = $request->get('noteText');
+        $note->assigned_to = $assigned_to;
+        $note->status = 0;
         $module->notes()->save($note); 
     }
 
+    //get mention users list 
+    public function getUsers(Request $request, $mod,$id)
+    {     
+        $user_id = $request->user()->id;
+        $companyId = Cache::get('selected_company_'. $user_id);
+        $company = Company::find($companyId);
+        $users = $company->user;
+        $name=[];
+        foreach ($users as $user) 
+        {       
+          $name[] =[
+            'id' => $user->id,
+            'display' => $user->name,
+          ];
+        }
+        return response()->json(['users' => $name]);
+    }
     /**
      * Store a newly created resource in storage.
      *
@@ -115,9 +171,14 @@ class NoteController extends Controller
      * @param  \App\Models\Note  $note
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Note $note)
+    public function updateTask(Request $request, $mod,$id)  
     {
-        //
+        if ($request->get('noteId')) {            
+            $note = Note::findOrFail($request->get('noteId'));
+        }
+        $note->status = 1;
+        $note->save();
+        return response()->json(['response' => $note->status]);
     }
 
     /**

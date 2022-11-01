@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Cache;
+use App\Models\User;
 
 class LoginRequest extends FormRequest
 {
@@ -63,7 +64,9 @@ class LoginRequest extends FormRequest
         foreach($companies as $company){
             $userCompanies[] =  $company->id;
         }
-    
+        
+        $user_login = User::where('id', $user->id)->update(['user_login' => gmdate('Y-m-d h:i:s')]);
+
         $selectedCompany = false;
         $selectedCompany = (Cache::has('selected_company_'. $user->id)) ? Cache::get('selected_company_'. $user->id) : '';
         if( ($userCompanies && !in_array($selectedCompany ,$userCompanies) ) && count($companies) >= 1 && isset($companies[0]) ) {

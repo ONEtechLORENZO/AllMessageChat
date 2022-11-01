@@ -158,6 +158,10 @@ Route::middleware('planrestriction')->group(function () {
         //Route::get('/contacts', [ContactController::class, 'index'])->name('contacts');
         Route::get('/notes/{module}/{id}', [NoteController::class, 'list_notes'])->name('listNotes');
         Route::post('/addnotes/{module}/{id}', [NoteController::class, 'addNotes'])->name('add_Notes');
+        Route::get('/getusers/{module}/{id}', [NoteController::class, 'getUsers'])->name('get_users');
+        Route::post('/taskupdate/{module}/{id}', [NoteController::class, 'updateTask'])->name('update_task');
+
+
         Route::get('/contacts', [ContactController::class, 'index'])->name('listContact');
         Route::delete('/contact/delete/{id}', [ContactController::class, 'destroy'])->name('deleteContact');
         Route::get('/contact', [ContactController::class, 'show'])->name('detailContact');
@@ -307,7 +311,8 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/company/setBaseCompany', [CompanyController::class, 'setBaseCompany'])->name('setBaseCompany');
         
         Route::get('/navigate/fields', [SettingsController::class, 'navigationField'])->name('navigation_field');
-        Route::get('record/merge', [SettingsController::class, 'recordMerger'])->name('record_merge');
+        Route::get('/record/merge', [SettingsController::class, 'recordMerger'])->name('record_merge');
+        Route::post('/merge/remain', [SettingsController::class, 'deleteRemainRecords'])->name('remain_record');
     });
 
 });
@@ -361,6 +366,7 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/admin/workspaces', [CompanyController::class, 'index'])->name('listCompany');
     Route::get('/admin/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
     Route::post('/admin/paymentmethod', [CompanyController::class, 'paymentMethod'])->name('payment_method');
+    Route::get('/admin/workspace/activity', [CompanyController::class, 'workspaceActivities'])->name('worksapce_activities');
 
     //SupportRequests  
     Route::get('/admin/supportrequests', [SupportRequestController::class, 'index'])->name('list_global_SupportRequest');

@@ -2,6 +2,65 @@ import { Fragment, useEffect, useRef, useState } from 'react'
 import Axios from "axios";
 import notie from 'notie';
 import TextArea from '@/Components/Forms/TextArea';
+import { MentionsInput, Mention } from 'react-mentions';
+import { addSeconds } from 'date-fns/esm';
+const defaultStyle = {
+  control: {
+    backgroundColor: "#fff",
+    fontSize: 14,
+    fontWeight: "normal",
+  },
+
+  "&multiLine": {
+    control: {
+      fontFamily: "monospace",
+      minHeight: 63,
+    },
+    highlighter: {
+      padding: 9,
+      border: "1px solid transparent",
+    },
+    input: {
+      padding: 9,
+      border: "1px solid silver",
+    },
+  },
+
+  "&singleLine": {
+    display: "inline-block",
+    width: 180,
+
+    highlighter: {
+      padding: 1,
+      border: "2px inset transparent",
+    },
+    input: {
+      padding: 1,
+      border: "2px inset",
+    },
+  },
+
+  suggestions: {
+    list: {
+      backgroundColor: "white",
+      border: "1px solid rgba(0,0,0,0.15)",
+      fontSize: 14,
+    },
+    item: {
+      padding: "5px 15px",
+      borderBottom: "1px solid rgba(0,0,0,0.15)",
+      "&focused": {
+        backgroundColor: "#cee4e5",
+      },
+    },
+  },
+};
+
+const defaultMentionStyle = {
+  backgroundColor: "#cee4e5"
+  
+};
+
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -14,13 +73,22 @@ export default function Notes(props) {
   const [data, setData] = useState({
        noteText: ''
 });
+
 const [trans,setTrans]=useState([]);
+const [users, setUsers] = useState(); 
+const [value, setValue] = useState('');
+const [assginedTo, setAssignedTo] = useState();
+const [mentions,setMentions]=useState([]);
+const [check, setCheck] = useState(false);
+
 
   useEffect(() => {    
     if(props.recordId) {
         fetchNote();
+        getUsers();
     }
 }, [props]);
+
 
 
 function fetchNote(){
@@ -50,23 +118,72 @@ notie.alert({type: 'error', text: error_message, time: 5});
 }
 
 function handleChange(e){
-  let newState = Object.assign({}, data);
-  newState[e.target.name] = e.target.value;
-  setData(newState);
+  (e.target.value) = !(e.target.checked)  
+  
+  if(e.target.checked)
+    {
+      let endpoint_url = route('update_task',{'module':props.module,'id':props.recordId});      
+          Axios({           
+              method: 'post',
+              url: endpoint_url,
+              data: {
+                status : true,
+                noteId : e.target.id
+              }
+          })
+          .then( (response) => {
+            (e.target.disabled)= true          
+          });      
+          
+    } 
 }
 
-function addNote(){   
+function getUsers() {
+  let endpoint_url = route('get_users',{'module':props.module,'id':props.recordId});
+  Axios.get(endpoint_url).then((response) => { 
+    if(response.data.status !== false) {   
+      setUsers(response.data.users);
+    }
+    else {
+      notie.alert({type: 'error', text: response.data.message, time: 5});
+    }
+    }).catch((error) => {
+    let error_message = 'Something went wrong';
+    if(error.response) {
+        error_message = error.response.data.message;
+        if(error_message == undefined) {
+            error_message = error.response.statusText;
+        }
+    }
+    else {
+        error_message = error.message;
+    }
+    notie.alert({type: 'error', text: error_message, time: 5});
+    });
+}
+function onAdd(id,display)
+ { 
+  setMentions([...mentions,{ id : id,display :display}]);  
+  console.log("added a new mention", mentions);
+ };
+
+function addNote(){     
   let endpoint_url = route('add_Notes',{'module':props.module,'id':props.recordId});
-  if(data.noteText){
-      Axios({    
-        
+  if(value){
+      Axios({           
           method: 'post',
           url: endpoint_url,
-          data: data
+          data: {
+            noteText:value,
+            assignedTo:assginedTo,
+            mentions: mentions,
+          }
       })
-      .then( (response) =>{
-              setData({notetext:''})
+      .then( (response) => {
+              setValue('');
               fetchNote();
+              setAssignedTo('');
+              setMentions([]);
       });
   }
 }
@@ -77,9 +194,8 @@ return(
  
  <div>
       
-      <h2 className="sr-only">Notes</h2>      
-  
-      <div className="my-8 pt-3">
+      <h2 className="sr-only">Notes</h2>  
+      <div className="my-1 pt-3">
             
       {notes.map((note, index) => {
         return (
@@ -87,46 +203,73 @@ return(
            <span>{<br/>}</span>
             <div className={classNames(index === 0 ? '' : 'border-t border-gray-200 pt-3', 'flex-1')}>
               <h3 className="font-medium text-gray-900">{note.name}</h3>
+              { (props.current_userid === note.assigned_to) ?
+              <div className="mt-1 text-sm  sm:mt-0 text-right content-right">
+              <input
+                  className="rounded border-blue-400 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 "
+                  type="checkbox"
+                  id={note.id}
+                  name={note.id}
+                  checked = {(note.status) ?  true : ''}
+                  onChange={ handleChange }
+                  title = "Mark as completed"
+                  value={note.id}
+              /></div>:'' }
               <p>
                 <time >{note.date}</time>
               </p>   
               <div className="mt-4 prose prose-sm max-w-none text-gray-500">
                   {note.note} 
                 </div> 
-                
             </div>
           </div>);
         })} 
       </div>
-    </div>
+      </div>
                 <div></div>
-                <div>
-       <div className="mt-1 flex rounded-md shadow-sm my-8">
-        
-                         <TextArea
-                          id="noteText"                                           
-                          name="noteText"
-                          rows={5}
-                          cols={5}
-                          value={data.noteText}
-                          required={true}
-                          handleChange={handleChange}
-                          placeholder={trans['Enter your new note here']}
-                          className="w-full focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-2xl  py-3 sm:text-sm border-gray-300"
-                         />
-                         <div>
+               
+                <div className="mt-1 rounded-md shadow-sm my-8">
+                      <MentionsInput                      
+                          value = {value}
+                          onChange = { (e) => setValue(e.target.value) } 
+                          placeholder={"Add your note here... \nTo mention the users use '@'"} 
+                          style={defaultStyle}                         
+                        >
+                          <Mention  
+                          trigger="@"                          
+                          data={users} 
+                          //onAdd={(id) => setMentions([...mentions, id])} 
+                           onAdd = {onAdd}
+                           markup="{__display__}"
+                          style={defaultMentionStyle} 
+                          />
+                        </MentionsInput>
+                         <div>   
+                          <div/>
+
+                          { mentions && mentions.length != 0 &&
+                          <>
+                              { (mentions).map(({id, display}) => (                                                      
+                                <div className="my-1 pt-1" onChange= { (e) => setAssignedTo(e.target.value)}>                                                     
+                                <input type="radio" value={id} name="assigned_to"/> <label className="text-s leading-3 font-medium text-gray-400">Assigned to </label> <label className="text-s leading-3 font-medium text-blue-600">{display}</label>
+                                </div>
+                                ))}</>
+                        }
                         <button
                             type="button"
                             id="add_note"
                             onClick={addNote}
-                            className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="ml-2 my-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >{(props.module =="SupportRequest") ?<> Submit </> : <>{trans['Add a new note']}</>}</button>
+                        
                         </div>
+                        
+
       </div>     
       </div> 
                 
     
-  </div> 
+   
     
   
   )

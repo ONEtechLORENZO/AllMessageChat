@@ -3,7 +3,8 @@ import Authenticated from "@/Layouts/Authenticated";
 import notie from 'notie';
 import nProgress from 'nprogress';
 import { Inertia } from "@inertiajs/inertia";
-import { Head,Link } from '@inertiajs/inertia-react';
+import { Link } from '@inertiajs/inertia-react';
+import Axios from "axios";
 
 export default function RecordMerger(props) {
 
@@ -99,12 +100,29 @@ export default function RecordMerger(props) {
                 onSuccess: (response) => {
                     nProgress.done(true);
                     notie.alert({type: 'success', text: ' Your record has been merged', time: 5});
+                    deleteRemainRecord();
                 },
             });
 
         } else {
             notie.alert({type: 'warning', text: ' Please select master record', time: 5});
         }
+    }
+
+    function deleteRemainRecord() {
+        
+        let master_id = mergeRecord.master_id;
+
+        let data = {
+            'master_id' : master_id,
+            'record_id' : props.record_id.join(','),
+            'module' : props.module
+        };
+
+        Axios.post(route('remain_record'), data).then( (response) => {
+            
+        });
+          
     }
 
     return (

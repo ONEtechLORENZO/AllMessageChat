@@ -12,6 +12,8 @@ use App\Models\User;
 use App\Models\Plan;
 use App\Models\Account;
 use App\Models\Template;
+use App\Models\Order;
+use App\Models\Opportunity;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Log;
 
@@ -507,7 +509,7 @@ class SettingsController extends Controller
         $company_id = Cache::get('selected_company_' . $request->user()->id);      
         
         $id = explode(',',$request->id);
-        $records = $module::find($id);
+        $records = $module::find($id)->where('company_id', $company_id);
 
         $query = Field::where('module_name', $parent_module);
         $entity_modules = ['Contact','Lead', 'Product', 'Opportunity', 'Order', 'Campaign', 'User','Organization'];
@@ -541,7 +543,8 @@ class SettingsController extends Controller
         return Inertia::render('RecordMerger', [
             'module' => $parent_module,
             'records' => $records,
-            'fields' => $fields
+            'fields' => $fields,
+            'record_id' => $id
         ]);
     }
 
@@ -571,5 +574,49 @@ class SettingsController extends Controller
             }
         }
         return response()->json(['status' => true, 'data' => $userData]);
+    }
+    
+    public function deleteRemainRecords(Request $request) {
+        
+        $parent_module = "Contact";
+        $master_id = $request->master_id;
+        $record_id = explode(',', $request->record_id);
+        
+        $company_id = Cache::get('selected_company_' . $request->user()->id);      
+        $module = "App\Models\\{$parent_module}";
+
+        $count = $module::find($record_id)->where('company_id', $company_id)->count();
+        
+        if(count($record_id) != $count) {
+            return response()->json(['status' => true, 'message' => 'You can not access this record']);
+        }
+
+        $deleted_id = array_diff($record_id, [$master_id]);
+        
+        if($parent_module == 'Contact') {
+            foreach($deleted_id as $id) {
+
+                // Change Order relation to master record id
+                $order = Order::where('contact', $id)->first();
+                if($order) {
+                    $order->contact = $master_id;
+                    $order->save();
+                }
+                
+                // Change Opportunity relation to master record id
+                $opportunity = Opportunity::where('contact_id', $id)->first();
+                if($opportunity) {
+                    $opportunity->contact_id = $master_id;
+                    $opportunity->save();
+                }
+            }
+        }
+        
+        // Delete the remaining merge records
+        $moduleRecords = $module::where('id',$deleted_id)
+                        ->where('company_id', $company_id) 
+                        ->delete();
+        
+        return response()->json(['status' => true]);
     }
 }
