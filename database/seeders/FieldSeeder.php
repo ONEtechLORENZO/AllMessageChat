@@ -34,9 +34,9 @@ class FieldSeeder extends Seeder
         $this->createField('Field', 'module_name', 'Module Name', 'dropdown', '1', $moduleOptions, 'true');
         $this->createField('Field', 'field_type', 'Field Type', 'dropdown', '1', $fieldTypes, 'true');
         $this->createField('Message', 'msg_mode', 'Mode', 'dropdown', '1', $msgMode, 'true');
-        $this->createField('Plan', 'billing_period', 'Billing Period', 'dropdown', '1', $billing_period, 'false', '4');
-        $this->createField('Plan', 'pricing_model', 'Price Model', 'dropdown', '1', $price_model, 'false', '5');
-        $this->createField('Plan', 'currency', 'Currency Type', 'dropdown', '1', $stripeCurrency, 'false', '6');
+        $this->createField('Plan', 'billing_period', 'Billing Period', 'dropdown', '1', $billing_period, 'true', '4');
+        $this->createField('Plan', 'pricing_model', 'Price Model', 'dropdown', '1', $price_model, 'true', '5');
+        $this->createField('Plan', 'currency', 'Currency Type', 'dropdown', '1', $stripeCurrency, 'true', '6');
 
         $this->createField('Company', 'company_country', 'Company Country', 'dropdown', '0', $country, 'false', 10);
         $this->createField('Company', 'currency', 'Currency', 'dropdown', '0', $stripeCurrency, 'false',11);
@@ -107,8 +107,8 @@ class FieldSeeder extends Seeder
             ['module_name' => 'Document', 'field_name' => 'size', 'field_label' => 'Size', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true', 'sequence' => '1'],
 
             //Plans
-            ['module_name' => 'Plan', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'sequence' => '1','is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true'],
-            ['module_name' => 'Plan', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'sequence' => '2', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true'],
+            ['module_name' => 'Plan', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'sequence' => '1','is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false'],
+            ['module_name' => 'Plan', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'sequence' => '2', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false'],
             ['module_name' => 'Plan', 'field_name' => 'amount', 'field_label' => 'Amount', 'field_type' => 'number', 'sequence' => '3', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true'],
         ]);
 
