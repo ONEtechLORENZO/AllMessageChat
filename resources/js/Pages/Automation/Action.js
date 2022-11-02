@@ -721,9 +721,31 @@ function Action(props){
                                                             <div class="flex flex-wrap mx-3 mb-6">
                                                                 <div className="w-full">
                                                                     <div className='form-group' >
-                                                                        <label htmlFor={'field_name'} className="block text-sm font-medium text-gray-700">
-                                                                            Select Fields
-                                                                        </label>
+                                                                        {actionData.type != 'send_request' ?
+                                                                            <label htmlFor={'field_name'} className="block text-sm font-medium text-gray-700">
+                                                                                Select Fields
+                                                                            </label>
+                                                                        :
+                                                                        <div className="flex w-full">
+                                                                            <div className="flex flex-1  gap-2">
+                                                                                <div className="flex-1 flex items-center ">
+                                                                                    <label  className="block text-sm font-medium text-gray-700">
+                                                                                        Post field
+                                                                                    </label>
+                                                                                </div>
+                                                                                <div className="flex-1 flex items-center ">
+                                                                                    <label className="block text-sm font-medium text-gray-700">
+                                                                                       Field value
+                                                                                    </label>
+                                                                                </div>
+                                                                                <div className="flex-1 flex items-center ">
+                                                                                    <label className="block text-sm font-medium text-gray-700">
+                                                                                        Field name
+                                                                                    </label>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        }
 
                                                                         {Object.entries(mappedField).map(([key, field_map]) => {
                                                                             return(
@@ -745,14 +767,20 @@ function Action(props){
                                                                                                     )}
                                                                                                 </select>
                                                                                                 :
-                                                                                                <input
-                                                                                                    className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
-                                                                                                    type="text"
-                                                                                                    name={'field_name'}
-                                                                                                    map_index={key}
+                                                                                                <select
                                                                                                     onChange={ (e) => handleFieldMap(e)}
-                                                                                                    value={field_map.field_name}
-                                                                                                />
+                                                                                                    map_index={key}
+                                                                                                    value=''
+                                                                                                    name="webhook_field"
+                                                                                                    className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                                                >
+                                                                                                    <option value=""> {'{{}}'} </option>
+                                                                                                    
+                                                                                                    {Object.entries(moduleFields).map(([key, field]) => 
+                                                                                                        <option map_index={key} value={"{{"+field.field_name+'}}'} defaultValue={field_map.module_field === field.field_name} > {field.field_label} </option>
+                                                                                                    )}
+                                                                                                </select>
+                                                                                                
                                                                                             }
                                                                                         </div>
                                                                                         <div className="flex-2 flex items-center ">
@@ -782,19 +810,14 @@ function Action(props){
                                                                                             </div>
                                                                                             :
                                                                                             <div className="flex-1 flex items-center ">
-                                                                                                 <select
-                                                                                                    onChange={ (e) => handleFieldMap(e)}
+                                                                                                <input
+                                                                                                    className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                                                    type="text"
+                                                                                                    name={'field_name'}
                                                                                                     map_index={key}
-                                                                                                    value=''
-                                                                                                    name="webhook_field"
-                                                                                                    className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
-                                                                                                >
-                                                                                                    <option value=""> {'{{}}'} </option>
-                                                                                                    
-                                                                                                    {Object.entries(moduleFields).map(([key, field]) => 
-                                                                                                        <option map_index={key} value={"{{"+field.field_name+'}}'} defaultValue={field_map.module_field === field.field_name} > {field.field_label} </option>
-                                                                                                    )}
-                                                                                                </select>
+                                                                                                    onChange={ (e) => handleFieldMap(e)}
+                                                                                                    value={field_map.field_name}
+                                                                                                />
                                                                                             </div>
                                                                                         }
                                                                                         <div className="flex items-center justify-between p-4 space-x-6">

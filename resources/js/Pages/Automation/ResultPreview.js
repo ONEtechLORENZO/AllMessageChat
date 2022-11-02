@@ -20,28 +20,30 @@ function ResultPreview(props){
         if(flow){
           
             Object.entries(flow.nodes).map(([key,node]) => {
-                if(node.status == true){
-                    node['style'] = {
-                        background: "rgba(69, 170, 82, 0.52)",
-                        width: 150,
-                        color: "#1a192b",
-                        fontSize: "16px",
-                        fontFamily: "Helvetica",
-                        boxShadow: "5px 5px 5px 0px rgba(0,0,0,.10)"
-                      }
-                } else if(node.status == false){
-                    node['style'] = {
-                        background: "rgba(247, 16, 16, 0.42)",
-                        width: 150,
-                        color: "#1a192b",
-                        fontSize: "16px",
-                        fontFamily: "Helvetica",
-                        boxShadow: "5px 5px 5px 0px rgba(0,0,0,.10)"
-                      }
+                node['style'] = {
+                    width: 150,
+                    color: "#1a192b",
+                    fontSize: "16px",
+                    fontFamily: "Helvetica",
+                    boxShadow: "5px 5px 5px 0px rgba(0,0,0,.10)"
+                  }
+                if(node.status == true && node.type == 'condition'){
+                    node['style']['background'] = "rgba(69, 170, 82, 0.52)"; 
+                } else if(node.status == false && node.type == 'condition'){
+                    node['style']['background'] = "rgba(247, 16, 16, 0.42)"; 
+                } else if(node.status == true && node.type != 'condition'){
+                //    node['style']['background'] = "rgba(59, 130, 246, 0.5)"; 
                 }
             });
 
-//console.log(flow);
+            Object.entries(flow.edges).map(([key,edge]) => {
+                if(edge.status == true){
+                    edge['data'] = {text : 'edge'};
+                    edge['animated'] = true;
+                    edge['arrowHeadType'] = 'ArrowHeadType.ArrowClosed';
+                    edge['style'] = { stroke: 'red' };
+                }
+            });
             setNodes(flow.nodes || []);
             setEdges(flow.edges || []);
         }

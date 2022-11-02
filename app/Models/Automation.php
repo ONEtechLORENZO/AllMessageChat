@@ -78,7 +78,7 @@ class Automation extends Model
             $history->bean_id = $recordModal->id;
             $history->flow = base64_encode( serialize($this->duplicate));
             $history->status = true;
-         //   dd($history);
+        //    dd($this->duplicate);
             $history->save();
         }
     }
@@ -112,7 +112,7 @@ class Automation extends Model
                 if($actionData){
                     $this->doAction($actionData);
                 }
-                $nextEdge = $this->getNextEdge($node->id , 'source');
+                $nextEdge = $this->getNextEdge($node , 'source');
                 $node = $this->getNextNode($nextEdge->target);
                 $this->processNodeAction($node, $i);
 
@@ -132,12 +132,12 @@ class Automation extends Model
                 }
 
                 // Upddadte duplicate flow 
-                $this->updateDuplicateFlow($node , $result, true);
+                $this->updateDuplicateFlow($node , $result);
 
                 $edge = $this->edges[$i];
                 $currentNode = $this->getNextNode($edge->target);
                 $this->enquiryNodes[] = $currentNode->id;
-                $nextEdge = $this->getNextEdge($currentNode->id , 'source');
+                $nextEdge = $this->getNextEdge($currentNode , 'source');
                 $node = $this->getNextNode($nextEdge->target);
                 
                 $this->processNodeAction($node, $i);
@@ -148,13 +148,15 @@ class Automation extends Model
     /**
      * Return node's next edge
      */
-    public function getNextEdge($nodeId , $mode)
+    public function getNextEdge($node , $mode)
     {
         $return = '';
+        $nodeId = $node->id;
         foreach($this->edges as $edge){
             if($mode == 'source' && $nodeId == $edge->source) {
                 $return = $edge;
             } elseif($mode == 'target' && $nodeId == $edge->target) {
+                $this->updateDuplicateFlow($node , true);
                 $return = $edge;
             }
         }
@@ -169,6 +171,7 @@ class Automation extends Model
         foreach($this->nodes as $node){
           
             if(isset($node->id) && $node->id == $nodeId){
+                $this->updateDuplicateFlow($node , true);
                 return $node;
             }
         }
@@ -486,7 +489,7 @@ class Automation extends Model
      * @param {Object} $node
      * @param {Boolean} $flag
      */
-    public function updateDuplicateFlow($node , $flag, $isCondition = false)
+    public function updateDuplicateFlow($node , $flag)
     {
         $currentEdgeIndex = $this->getCurrentEdgeInex($node->id);
         $currentNodeIndex = '';
@@ -496,28 +499,13 @@ class Automation extends Model
             }
         }
         $status = false;
-        $style = [
-            'background' => "rgba(247, 16, 16, 0.42)",
-            'width'=> 150,
-            'color' => "#1a192b",
-            'fontSize'=> "16px",
-            'fontFamily' =>  "Helvetica",
-            'boxShadow'=> "5px 5px 5px 0px rgba(0,0,0,.10)"
-        ];
 
         if($flag){
             $status = true;
-            $style['background'] = "rgba(69, 170, 82, 0.52)"; 
         }
 
-        if($isCondition){
-            $style['background'] = "#434ccb"; 
-        }
-
-      //  $this->duplicate->nodes[$currentNodeIndex]->style = json_encode($style);
         $this->duplicate->nodes[$currentNodeIndex]->status = $status;
         $this->duplicate->edges[$currentEdgeIndex]->status = true;
 
-//        dd($this->duplicate->nodes);
     }
 }
