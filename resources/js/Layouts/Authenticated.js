@@ -157,7 +157,7 @@ const bottomNavigation = [
 const adminNavigation = [
     {
         name: "Dashboard",
-        href: route("showAdmindashboard"),
+        href: route("dashboard"),
         icon: HomeIcon,
         show: ['global_admin'],
     },

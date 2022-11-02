@@ -5,7 +5,7 @@ import { Link } from "@inertiajs/inertia-react";
 import Dropdown from "@/Components/Forms/Dropdown";
 
 const moduleOptions = {
-    'Contact' :'Contact', 'Product' : 'Product'
+    'Contact' :'Contact', 'Product' : 'Product', 'Order' : 'Order'
 };
 
 function Step1(props){

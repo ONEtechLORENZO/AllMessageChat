@@ -23,7 +23,7 @@ class SupportRequestController extends Controller
     public function index(Request $request)
     {
         $module = new SupportRequest();       
-                
+        
         $list_view_columns = $module->getListViewFields();
         $listViewData = $this->listView($request, $module, $list_view_columns);
 
@@ -32,6 +32,7 @@ class SupportRequestController extends Controller
             'plural' => ( $request->is('admin/*') ) ?  'Global Support Requests':'Support Requests',
             'module' => 'SupportRequest',
             'current_page' => 'Support Requests', 
+            'current_user' => $request->user(),
             // Actions
             'actions' => [
                 'create' => true,
@@ -93,9 +94,11 @@ class SupportRequestController extends Controller
          if($user){
             $supportRequest['assigned_to'] = [ 'label' => $user['name'] , 'value' => $user['id'], 'module' => 'User'];
         }  
+        
         return Inertia::render('SupportRequest/Detail', [
             'record' => $supportRequest,            
             'headers' => $headers,
+            'current_user' => $request->user(),
             'current_userid' => $request->user()->id, 
             'translator' => [
                 'Detail' => __('Detail'),
@@ -179,7 +182,13 @@ class SupportRequestController extends Controller
             $supportRequest->description = $request->description;
             $supportRequest->type = $request->type;
             $supportRequest->assigned_to =1;
-            $supportRequest->status='New';
+            if($request->status)
+            {
+            $supportRequest->status= $request->status;
+            }
+            else{
+                $supportRequest->status= "New";
+            }
             $supportRequest->company_id = $company_id;
             $supportRequest->created_by = $request->user()->id;
             $supportRequest->save();
