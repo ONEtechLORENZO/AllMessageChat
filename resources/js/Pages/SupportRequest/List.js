@@ -46,6 +46,7 @@ function List(props)
                         {tab.name=='supportrequest' &&
                             <ListView
                                 headers={props.list_view_columns}
+                                current_user={props.current_user}
                                 {...props}
                                 translator={props.translator}
                             /> 

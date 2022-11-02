@@ -437,6 +437,7 @@ function ListView(props)
                                 checkedId={checkedId}
                                 getCheckId={getCheckId}
                                 selectCheckAll={selectCheckAll}
+                                current_user={props.current_user}
                                 {...props}
                             />
 
@@ -460,6 +461,7 @@ function ListView(props)
                     translator={props.translator}
                     mod={props.mod}
                     productList={props.productList}
+                    current_user={props.current_user}
                 />
             : ''}
 

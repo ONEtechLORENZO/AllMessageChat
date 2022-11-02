@@ -132,8 +132,8 @@ function handleChange(e){
           })
           .then( (response) => {
             notie.alert({ type: 'success', text: 'Marked as completed', time: 5 }); 
-            (e.target.disabled) = true  
-            (e.target.id).style.visibility = 'hidden'                    
+            e.target.disabled = true 
+            (e.target.id).display ='none'                   
           });      
           
     } 
