@@ -337,12 +337,12 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::post('/storeFieldOrder', [FieldGroupController::class, 'storeFieldOrder'])->name('store_field_order');
     
     //SupportRequests  
-     Route::get('/supportrequests', [SupportRequestController::class, 'index'])->name('listSupportRequest');
-     Route::delete('/supportrequests/delete/{id}', [SupportRequestController::class, 'destroy'])->name('deleteSupportRequest');
-     Route::get('/supportrequests/{id}', [SupportRequestController::class, 'show'])->name('detailSupportRequest');
-     Route::post('/supportrequests/{id}', [SupportRequestController::class, 'update'])->name('updateSupportRequest');
-     Route::post('/supportrequests', [SupportRequestController::class, 'store'])->name('storeSupportRequest');
-     Route::get('/supportrequests/edit/{id}', [SupportRequestController::class, 'edit'])->name('editSupportRequest');
+     Route::get('/support-requests', [SupportRequestController::class, 'index'])->name('listSupportRequest');
+     Route::delete('/support-requests/delete/{id}', [SupportRequestController::class, 'destroy'])->name('deleteSupportRequest');
+     Route::get('/support-requests/{id}', [SupportRequestController::class, 'show'])->name('detailSupportRequest');
+     Route::post('/support-requests/{id}', [SupportRequestController::class, 'update'])->name('updateSupportRequest');
+     Route::post('/support-requests', [SupportRequestController::class, 'store'])->name('storeSupportRequest');
+     Route::get('/support-requests/edit/{id}', [SupportRequestController::class, 'edit'])->name('editSupportRequest');
     //Company   
     Route::get('/workspaces', [CompanyController::class, 'index'])->name('listAdminCompany');
     Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');
@@ -356,12 +356,12 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
 
 // Check user is global admin
 Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
-    Route::get('/admin/dashboard', [UserController::class, 'dashboard'])->name('showAdmindashboard');
+    
     // Users
     Route::get('/admin/users', [UserController::class, 'usersListing'])->name('list_global_user');
     Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_global_user');
     Route::get('/admin/user/edit/{id}', [UserController::class, 'editUser'])->name('edit_global_user');
-    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detail_global_user');
+    Route::get('/admin/user/{id}', [UserController::class, 'userDetail'])->name('detail_global_User');
     Route::delete('/admin/user/delete', [UserController::class, 'deleteUser'])->name('delete_global_user');
     Route::post('/wallet/amount', [UserController::class, 'addWalletAmount'])->name('wallet_amount');
 
@@ -372,12 +372,12 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/admin/workspace/activity', [CompanyController::class, 'workspaceActivities'])->name('worksapce_activities');
 
     //SupportRequests  
-    Route::get('/admin/supportrequests', [SupportRequestController::class, 'index'])->name('list_global_SupportRequest');
-    Route::delete('/admin/supportrequests/delete/{id}', [SupportRequestController::class, 'destroy'])->name('delete_global_SupportRequest');
-    Route::get('/admin/supportrequests/{id}', [SupportRequestController::class, 'show'])->name('detail_global_SupportRequest');
-    Route::post('/admin/supportrequests/{id}', [SupportRequestController::class, 'update'])->name('update_global_SupportRequest');
-    Route::post('/admin/supportrequests', [SupportRequestController::class, 'store'])->name('store_global_SupportRequest');
-    Route::post('/admin/supportrequests/{id}', [SupportRequestController::class, 'edit'])->name('edit_global_SupportRequest');
+    Route::get('/admin/support-requests', [SupportRequestController::class, 'index'])->name('list_global_SupportRequest');
+    Route::delete('/admin/support-requests/delete/{id}', [SupportRequestController::class, 'destroy'])->name('delete_global_SupportRequest');
+    Route::get('/admin/support-requests/{id}', [SupportRequestController::class, 'show'])->name('detail_global_SupportRequest');
+    Route::post('/admin/support-requests/{id}', [SupportRequestController::class, 'update'])->name('update_global_SupportRequest');
+    Route::post('/admin/support-requests', [SupportRequestController::class, 'store'])->name('store_global_SupportRequest');
+    Route::post('/admin/support-requests/{id}', [SupportRequestController::class, 'edit'])->name('edit_global_SupportRequest');
     
     // Settings
     Route::get('/admin/settings/outgoing_server', [SettingsController::class, 'settings'])->name('settings');

@@ -23,7 +23,7 @@ class SupportRequestController extends Controller
     public function index(Request $request)
     {
         $module = new SupportRequest();       
-                
+        
         $list_view_columns = $module->getListViewFields();
         $listViewData = $this->listView($request, $module, $list_view_columns);
 
@@ -32,6 +32,7 @@ class SupportRequestController extends Controller
             'plural' => ( $request->is('admin/*') ) ?  'Global Support Requests':'Support Requests',
             'module' => 'SupportRequest',
             'current_page' => 'Support Requests', 
+            'current_user' => $request->user(),
             // Actions
             'actions' => [
                 'create' => true,
@@ -96,6 +97,7 @@ class SupportRequestController extends Controller
         return Inertia::render('SupportRequest/Detail', [
             'record' => $supportRequest,            
             'headers' => $headers,
+            'current_user' => $request->user(),
             'current_userid' => $request->user()->id, 
             'translator' => [
                 'Detail' => __('Detail'),
