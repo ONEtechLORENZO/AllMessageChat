@@ -289,6 +289,11 @@ function Action(props){
      */
     function testRequestCall(){
         let endpoint_url = route('test_post_data');
+        var result = checkPostUrl();
+        if(!result){
+            return false;
+        }
+
         Axios.post(endpoint_url, actionData).then((response) => {
             if(response.data.status !== false) {
                 notie.alert({type: 'success', text: 'Test call send successfully!', time: 5});
@@ -297,7 +302,27 @@ function Action(props){
             }
         });
     }
-    
+
+    function saveAction(){
+        var result = checkPostUrl();
+        if(!result){
+            return false;
+        }
+        props.saveActionData(props.actionData.node_id, actionData);
+    }
+
+    /**
+     * Check post url 
+     */
+    function checkPostUrl(){
+        var hostName = window.location.hostname;
+        if((actionData.post_url).indexOf(hostName) !== -1 ){
+            notie.alert({type: 'error', text: 'Post url hostname must be different from current host', time: 5});
+            return false
+        }
+        return true;
+    }
+
     return(
         <Transition.Root show={true} as={Fragment}>
                   <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => {}} >
@@ -869,7 +894,7 @@ function Action(props){
                                         <button
                                             type="button"
                                             className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-                                            onClick={() => props.saveActionData(props.actionData.node_id, actionData)}
+                                            onClick={() => saveAction()}
                                         >
                                             Save
                                         </button>

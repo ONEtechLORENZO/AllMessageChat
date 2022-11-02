@@ -253,15 +253,15 @@ class Automation extends Model
             case  (in_array($action->type , ['create_contact', 'update_contact', 'create_lead', 'update_lead'])):
                 if($action->field_mapping) {
                     $bean = (str_contains( $action->type, 'lead')) ? new Lead : new Contact;
+                    $bean->creater_id = 1;
+                    $bean->company_id = $this->company_id;
+                    
                     if( isset( $_POST['id']) ) {
-                        $bean = $module->where([
+                        $bean = $bean->where([
                             'id' => $_POST['id'],
                             'company_id' => $this->company_id
                         ])->first();
                     }
-
-                    $bean->creater_id = 1;
-                    $bean->company_id = $this->company_id;
                     $this->recordModal = $bean;
                     
                     $this->storeRecord($action->field_mapping);
