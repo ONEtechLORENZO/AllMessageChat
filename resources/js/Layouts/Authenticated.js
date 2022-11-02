@@ -135,7 +135,7 @@ const navigation = [
         href: route("wallet"),
         icon: BriefcaseIcon,
         show: ['all'],
-    },    
+    },
     {
         name: "Users",
         href: route("show_Users"),
@@ -230,6 +230,12 @@ const adminNavigation = [
                 href: '#', 
             },]
         },
+    {
+        name: "Activities",
+        href: route("worksapce_activities"),
+        icon: ChartSquareBarIcon,
+        show: ['global_admin'],
+    },
     {
         name: "Support Requests",
         href: route("list_global_SupportRequest"),

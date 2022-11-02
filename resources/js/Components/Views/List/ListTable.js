@@ -45,7 +45,7 @@ function ListTable(props){
                 <table className="min-w-full divide-y divide-[#D9D9D9]">
                     <thead>
                         <tr>
-                            {(props.actions.mass_edit === true || props.actions.check === true)&&  
+                            {(props.actions.mass_edit === true || props.actions.merge === true)&&  
                                 <th>
                                     <Checkbox
                                         id={'checkall'}
@@ -99,7 +99,7 @@ function ListTable(props){
                     <tbody className=" bg-white">
                         {Object.entries(props.records).map(([key, record]) => ( 
                             <tr key={key}> 
-                                {(props.actions.mass_edit === true || props.actions.check === true)&& 
+                                {(props.actions.mass_edit === true || props.actions.merge === true)&& 
                                     <td className='px-2 py-2'>
                                         <Checkbox
                                             id={record.id}

@@ -56,6 +56,15 @@ function AutomationHistory(props){
                                 </tr>
                             )
                         })}
+                        {Object.entries(records).length == 0 &&
+                            <tr>
+                                <td className = "" colSpan="3">
+                                    <div className=" px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
+                                        Automation not run yet.
+                                    </div>
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>

@@ -33,7 +33,7 @@ export function DetailContainer(props) {
                                         <div className="py-4 sm:py-2 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                             <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
                                             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex"> 
-                                                {props.record[field.name] ? props.record[field.name] : '-'}
+                                                {props.record && props.record[field.name] ? props.record[field.name] : '-'}
                                             </dd>
                                         </div>
                                     )                                              

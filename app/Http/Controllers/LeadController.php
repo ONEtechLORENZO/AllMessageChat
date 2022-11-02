@@ -50,7 +50,6 @@ class LeadController extends Controller
                 'export' => true,                
                 'search' => true,                
                 'select_field'=>true,
-                'check' => true,
                 'merge' => true,
             ],
         ];
