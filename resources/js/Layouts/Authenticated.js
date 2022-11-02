@@ -16,6 +16,7 @@ import {
     IdentificationIcon,
     BriefcaseIcon,
     UsersIcon,
+    UserGroupIcon,
     XIcon,
     SpeakerphoneIcon,
     ChevronRightIcon,
@@ -31,7 +32,8 @@ import {
     ClipboardIcon,
     SupportIcon,
     QuestionMarkCircleIcon,
-    ChartSquareBarIcon
+    ChartSquareBarIcon,
+    LightBulbIcon
 } from "@heroicons/react/outline";                                                                      
 import SelectCompany from "@/Pages/Company/SelectCompany";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
@@ -154,29 +156,80 @@ const bottomNavigation = [
 ];
 const adminNavigation = [
     {
-        name: "Users",
-        href: route("list_global_user"),
+        name: "Dashboard",
+        href: route("showAdmindashboard"),
+        icon: HomeIcon,
+        show: ['global_admin'],
+    },
+    {    
+        name: "Customers",
+        href: '#',
         icon: UsersIcon,
         show: ['global_admin'],
-    },    
+        subMenu : [
+            {
+                name: "Workspaces",
+                href: route("listCompany"),
+            },
+            {
+                name: "Users",
+                href: route("list_global_user"),
+            }, ]
+    },   
+    {    
+        name: "Notifications",
+        href: '#',
+        icon: LightBulbIcon,
+        show: ['global_admin'],
+        subMenu : [
+            {
+                name: "Emails",
+                href: '#',
+            },
+            {
+                name: "Push",
+                href: '#',
+            }, 
+            {
+                name: "Notifications Log",
+                href: '#',
+            }, ]
+    },  
     {
-        name: "Pricing",
-        href: route("listPrice"),
+        name: "Billing",
+        href: '#',
         icon: CurrencyDollarIcon,
         show: ['global_admin'],
-    },
+        subMenu : [ 
+            {
+                name: "Plans",
+                href: route("listPlan"),
+            },
+            {
+                name: "Pricing",
+                href: route("listPrice"), 
+             },
+             {
+                name: "Addons",
+                href: route("listPrice"), 
+             },
+            ]
+   },
     {
-        name: "Workspaces",
-        href: route("listCompany"),
-        icon: OfficeBuildingIcon,
+        name: "Roles",
+        href: '#',
+        icon: UserGroupIcon,
         show: ['global_admin'],
-    },
-    {
-        name: "Plans",
-        href: route("listPlan"),
-        icon: ClipboardIcon,
-        show: ['global_admin'],
-    },
+        subMenu : [ 
+            {
+                name: "Workspace Roles & Permissions",
+                href: '#',
+            },
+            {
+                name: "Superadmin Roles & Permissions",
+                href: '#', 
+            },]
+        },
     {
         name: "Support Requests",
         href: route("list_global_SupportRequest"),

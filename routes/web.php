@@ -356,6 +356,7 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
 
 // Check user is global admin
 Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
+    Route::get('/admin/dashboard', [UserController::class, 'dashboard'])->name('showAdmindashboard');
     // Users
     Route::get('/admin/users', [UserController::class, 'usersListing'])->name('list_global_user');
     Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_global_user');
