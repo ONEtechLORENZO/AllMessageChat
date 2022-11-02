@@ -57,7 +57,8 @@ class OrderController extends Controller
                 'delete' => true,                
                 'search' => true,                
                 'select_field'=>true,
-                'detail' =>true
+                'detail' =>true,
+                'import' => true,
             ],
             'productList' => $productList,
         ];
