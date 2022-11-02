@@ -94,6 +94,7 @@ class SupportRequestController extends Controller
          if($user){
             $supportRequest['assigned_to'] = [ 'label' => $user['name'] , 'value' => $user['id'], 'module' => 'User'];
         }  
+        
         return Inertia::render('SupportRequest/Detail', [
             'record' => $supportRequest,            
             'headers' => $headers,
@@ -181,7 +182,13 @@ class SupportRequestController extends Controller
             $supportRequest->description = $request->description;
             $supportRequest->type = $request->type;
             $supportRequest->assigned_to =1;
-            $supportRequest->status='New';
+            if($request->status)
+            {
+            $supportRequest->status= $request->status;
+            }
+            else{
+                $supportRequest->status= "New";
+            }
             $supportRequest->company_id = $company_id;
             $supportRequest->created_by = $request->user()->id;
             $supportRequest->save();

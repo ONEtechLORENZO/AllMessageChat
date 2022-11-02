@@ -30,7 +30,7 @@ export default function Detail(props)
             auth={props.auth}
             errors={props.errors}
         >
-            <DetailView
+                <DetailView
                 record={props.record}
                 module='SupportRequest'
                 updateRecord={showEditForm}
@@ -39,7 +39,6 @@ export default function Detail(props)
                 translator={props.translator}
                 current_userid={props.current_userid}
             />
-            
             {showForm ?
                 <Form 
                     module={'SupportRequest'}
