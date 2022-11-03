@@ -532,7 +532,7 @@ class UserController extends Controller
             $user->company()->syncWithoutDetaching([$companyId]);
             
             if($currentUser->role == 'global_admin') {
-                return Redirect::route('detail_global_user', $user_id);
+                return Redirect::route('detail_global_User', $user_id);
             }
             else if($currentUser->role == 'admin') {
                 return Redirect::route('detailUser', $user_id);

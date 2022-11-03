@@ -50,6 +50,8 @@ class FormController extends Controller
         }
         
         $fields = Field::where($whereCondition)->groupBy('field_name')->orderBy('sequence')->orderBy('id')->get();
+        
+        //only Global admin can change the status of a Support Request
         if($module == 'SupportRequest' && $user->role != 'global_admin')
         {
             if( !($request->is('admin/*')) ) {
