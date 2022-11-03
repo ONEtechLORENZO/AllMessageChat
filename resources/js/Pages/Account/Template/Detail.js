@@ -41,10 +41,9 @@ function NewTemplate(props)
     });
 
     const [buttons, setButtons] = useState([]);
-    
     const [errors, setError] = useState({});
-   
     const [temp_status, setStatus] = useState(props.template.status);
+    const [sampleValues , setSampleValue] = useState(props.samples);
 
     useEffect(() => {
         let tmpButtons = Object.assign([], buttons);
@@ -194,6 +193,26 @@ function NewTemplate(props)
         let newState = Object.assign({}, data);
         newState['body'] += field;
         setData(newState);
+
+        let newSample = Object.assign({}, sampleValues);
+        newSample[field] = '';
+        setSampleValue(newSample);
+    }
+
+    /**
+     * Handle sample value 
+     */
+    function sampleValueHandler(e){
+        var value = e.target.value;
+        var field = e.target.getAttribute('fieldIndex');
+        let newState = Object.assign({}, sampleValues);
+        newState[field] = value;
+        setSampleValue(newState);
+
+        let newData = Object.assign({}, data);
+        newData['sample_value'] = newState;
+        setData(newData);
+
     }
 
     return (
@@ -339,8 +358,33 @@ function NewTemplate(props)
                                                 <p className='mt-2 text-sm text-gray-500 float-right'>{body_max_length - data.body.length}</p>
                                                 <InputError message={errors.body} />
                                             </div>
-
-                                            <div className="form-group col-span-6 sm:col-span-4">
+                                            {Object.entries(sampleValues).length && 
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor="example" className="block text-sm font-medium text-gray-700">
+                                                        Sample value
+                                                    </label>
+                                                    <div className="mt-1">
+                                                        {Object.entries(sampleValues).map(([field, value]) => {
+                                                            return(
+                                                                <div className=' grid grid-cols-2 '>
+                                                                    <label className="block mt-2 mr-2 text-sm font-medium text-gray-700">{field}</label>
+                                                                    <input
+                                                                        className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                                        fieldIndex={field}
+                                                                        name='sample_value' 
+                                                                        required={true} 
+                                                                        id='sample_value' 
+                                                                        placeholder='' 
+                                                                        onChange={(e) => sampleValueHandler(e)} 
+                                                                        value={sampleValues[field]}
+                                                                    />
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            }
+                                            {/* <div className="form-group col-span-6 sm:col-span-4">
                                                 <label htmlFor="example" className="block text-sm font-medium text-gray-700">
                                                     Example
                                                 </label>
@@ -349,7 +393,7 @@ function NewTemplate(props)
                                                 </div>
                                                 <p className='mt-2 text-sm text-gray-500 float-right'>{body_max_length - data.example.length}</p>
                                                 <InputError message={errors.example} />
-                                            </div>
+                                            </div> */}
 
                                             <div className="form-group col-span-6 sm:col-span-4">
                                                 <label htmlFor="body_footer" className="block text-sm font-medium text-gray-700">
