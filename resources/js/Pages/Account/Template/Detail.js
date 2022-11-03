@@ -186,6 +186,16 @@ function NewTemplate(props)
         Inertia.visit(route('template_detail_view', [props.template.account_id, props.template.id]) + '?language=' + language);
     }
     
+    /**
+     * Put field name to the template content
+     */
+    function addFieldToContent(e){
+        var field = e.target.value;
+        let newState = Object.assign({}, data);
+        newState['body'] += field;
+        setData(newState);
+    }
+
     return (
         <Authenticated
             auth={props.auth}
@@ -306,6 +316,19 @@ function NewTemplate(props)
                                                 </div>
                                             : ''}                                            
 
+                                            <div className="form-group col-span-6 sm:col-span-4">
+                                                <label htmlFor="body" className="block text-sm font-medium text-gray-700">
+                                                    Select field
+                                                </label>
+                                                <Dropdown 
+                                                    required={true} 
+                                                    id="field_name"
+                                                    name="field_name"
+                                                    handleChange={addFieldToContent}
+                                                    options={props.fields}
+                                                    value={data.field_name}
+                                                />
+                                            </div>
                                             <div className="form-group col-span-6 sm:col-span-4">
                                                 <label htmlFor="body" className="block text-sm font-medium text-gray-700">
                                                     Body

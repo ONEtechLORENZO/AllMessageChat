@@ -19,6 +19,7 @@ use App\Models\Wallet;
 use App\Models\Msg;
 use App\Models\Company;
 use App\Models\Price;
+use App\Models\Field;
 use App\Models\WebhookEvent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -1066,11 +1067,25 @@ class UserController extends Controller
             $message_buttons = MessageButton::where('message_id', $message->id)->get();
         }
 
+        // Get module fields
+        $fields = [];
+        $getFields = Field::where('module_name', 'Contact')
+                ->where('company_id', $companyId)
+                ->where('field_type' , '!=' , 'relate' )
+                ->groupBy('field_name')
+                ->orderBy('id')
+                ->get();
+        
+        foreach($getFields as $field){
+            $fields['{{'.$field->field_name.'}}'] = $field->field_label;
+        }
+       
         return Inertia::render('Account/Template/Detail', [
             'template' => $template,
             'message' => $message,
             'language' => $language,
             'buttons' => $message_buttons,
+            'fields' => $fields,
         ]);
     }
 
