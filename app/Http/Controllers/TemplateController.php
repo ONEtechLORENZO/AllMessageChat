@@ -31,18 +31,22 @@ class TemplateController extends Controller
         }
 
         if($account->service_engine == 'facebook'){
+            $user = User::find($account->user_id);
             $template = Template::find($data['template_id']);
 
             $endPoint = config('app.fb.api_url');
             $endPoint .= $account->fb_whatsapp_account_id . '/message_templates' ;
             $headers = [
-                'Authorization' => 'Bearer '. $account->service_token,
+                'Authorization' => 'Bearer '. $user->fb_token,
                 'Content-Type' => 'application/json',
             ];
 
             $components = [];
             if($data['data']->body){
-                $components[] = json_encode(['type' => 'BODY', 'text' => $data['data']->body]);
+                $body = ['type' => 'BODY', 'text' => $data['data']->body];
+//dd($data['data']->body);
+
+                $components[] = json_encode($body);
             }
             if($data['data']->header_text){
                 $components[] = json_encode(['type' => 'HEADER', 'format' => 'TEXT', 'text' => $data['data']->header_text]);
@@ -75,7 +79,7 @@ class TemplateController extends Controller
                 'language' => 'en_US',
             ];   
 
-        //dd($postData);
+        dd($postData);
             $response = Http::withHeaders($headers)->post($endPoint, ($postData))->json();
         dd($response);
 

@@ -57,8 +57,9 @@ class Document extends Model
         $url = config('app.fb.api_url');
         $url .= $fileData['id'];
     
+        $user = User::find($account->user_id);
         $headers = [
-            'Authorization' => 'Bearer '. $account->service_token,
+            'Authorization' => 'Bearer '. $user->fb_token,
             'Content-Type' => 'application/json',
         ];
 
