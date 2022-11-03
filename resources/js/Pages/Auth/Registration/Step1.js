@@ -15,7 +15,9 @@ export default function Step1 (props) {
     const [passwordType, setPasswordType] = useState("password");
     
     useEffect( () => { 
-        updateUserData();
+        if(props.userMail) {
+            updateUserData();
+        }
     },[]);
     
     /**
@@ -23,8 +25,8 @@ export default function Step1 (props) {
      */
     function updateUserData(){
         let newUser = Object.assign({}, user);
-        newUser['email'] = props.userMail.email;
-        newUser['uuid'] = props.userMail.uuid ? props.userMail.uuid : '';
+        newUser['email'] = props.userMail;
+        newUser['uuid'] = props.uuid ? props.uuid : '';
         setUser(newUser);
     }
     
@@ -82,20 +84,20 @@ export default function Step1 (props) {
     }
 
     function saveUserDetail () {
-        nProgress.start(0.5);
-        nProgress.inc(0.2);
 
         let is_validate = userValidation(user);
         if(!is_validate) {
             return false;
         }
+        nProgress.start(0.5);
+        nProgress.inc(0.2);
 
         let url = route('new_user');
         axios.post(url, user).then( (response) => {
             if(response.data.step) {
                 props.setOpenTab(7);
                 nProgress.done(true);
-            }else {
+            } else {
                 nProgress.done(true);
                 let newUser = Object.assign({}, user);
                 newUser['user_id'] = response.data.user_id;
@@ -108,7 +110,7 @@ export default function Step1 (props) {
             errorHandler(error.response.data)
         });
     }
- 
+
     return (
         <div className="h-screen w-full bg-blue-50 flex justify-center items-center">
             <div className="max-w-7xl flex mx-auto items-center px-10">
