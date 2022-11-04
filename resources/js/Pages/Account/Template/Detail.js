@@ -439,7 +439,7 @@ function NewTemplate(props)
                                                 <p className='mt-2 text-sm text-gray-500 float-right'>{body_max_length - data.body.length}</p>
                                                 <InputError message={errors.body} />
                                             </div>
-                                            {Object.entries(sampleValues).length && 
+                                            {sampleValues && Object.entries(sampleValues).length && 
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="example" className="block text-sm font-medium text-gray-700">
                                                         Sample value
