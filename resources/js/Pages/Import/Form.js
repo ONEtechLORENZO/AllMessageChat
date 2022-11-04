@@ -15,7 +15,6 @@ const Tabs = (props) => {
     const [CsvHeader, setCsvHeader] = useState();
     const [View, setView] = useState(false);
     const { data, setData, errors } = useForm({});
-    
 
     useEffect(() => {
         if (props.data.Onestepfield) {
@@ -42,7 +41,6 @@ const Tabs = (props) => {
         let validate = true;
         
         fields.map( (field) => {
-            console.log(field, data[field]);
             if(!data[field] && validate) {
                 validate = false;
             }
@@ -155,6 +153,7 @@ const Tabs = (props) => {
                                             CsvHeader = {CsvHeader}
                                             handleChange = {handleChange}
                                             importfileSave = {importfileSave}
+                                            module={props.data.module}
                                         />    
                                     </div>
                                 </div>

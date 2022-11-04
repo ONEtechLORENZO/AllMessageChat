@@ -11,6 +11,7 @@ import languages from '@/Pages/languages';
 import TemplateButton from './TemplateButton';
 import { Inertia } from '@inertiajs/inertia';
 import notie from 'notie';
+import { TrashIcon } from '@heroicons/react/solid';
 
 import { Dialog, Transition } from '@headlessui/react'
 
@@ -41,10 +42,9 @@ function NewTemplate(props)
     });
 
     const [buttons, setButtons] = useState([]);
-    
     const [errors, setError] = useState({});
-   
     const [temp_status, setStatus] = useState(props.template.status);
+    const [sampleValues , setSampleValue] = useState(props.samples);
 
     useEffect(() => {
         let tmpButtons = Object.assign([], buttons);
@@ -154,6 +154,10 @@ function NewTemplate(props)
     function handleChange(event) {
         const name = event.target.name;
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+        if(name == 'body'){
+            addSampleValueBox(value);
+        }
+
         let newState = Object.assign({}, data);
         if(event.target.type == 'file' && event.target.files) {
             newState[name] = event.target.files[0];
@@ -186,6 +190,112 @@ function NewTemplate(props)
         Inertia.visit(route('template_detail_view', [props.template.account_id, props.template.id]) + '?language=' + language);
     }
     
+    /**
+     * Put field name to the template content
+     */
+    function addFieldToContent(e){
+        var field = e.target.value;
+        let newState = Object.assign({}, data);
+        newState['body'] += field;
+        setData(newState);
+
+        let newSample = Object.assign({}, sampleValues);
+        newSample[field] = '';
+        setSampleValue(newSample);
+    }
+
+    /**
+     * Handle sample value 
+     */
+    function sampleValueHandler(e){
+        var value = e.target.value;
+        var field = e.target.getAttribute('fieldIndex');
+        let newState = Object.assign({}, sampleValues);
+        newState[field] = value;
+        setSampleValue(newState);
+
+        let newData = Object.assign({}, data);
+        newData['sample_value'] = newState;
+        setData(newData);
+    }
+
+    /**
+     * Add input for sample value 
+     * @param {Sring} content 
+     */
+    function addSampleValueBox(content){
+        var getFromBetween = {
+            results:[],
+            string:"",
+            getFromBetween:function (sub1,sub2) {
+                if(this.string.indexOf(sub1) < 0 || this.string.indexOf(sub2) < 0) return false;
+                var SP = this.string.indexOf(sub1)+sub1.length;
+                var string1 = this.string.substr(0,SP);
+                var string2 = this.string.substr(SP);
+                var TP = string1.length + string2.indexOf(sub2);
+                return this.string.substring(SP,TP);
+            },
+            removeFromBetween:function (sub1,sub2) {
+                if(this.string.indexOf(sub1) < 0 || this.string.indexOf(sub2) < 0) return false;
+                var removal = sub1+this.getFromBetween(sub1,sub2)+sub2;
+                this.string = this.string.replace(removal,"");
+            },
+            getAllResults:function (sub1,sub2) {
+                // first check to see if we do have both substrings
+                if(this.string.indexOf(sub1) < 0 || this.string.indexOf(sub2) < 0) return;
+        
+                // find one result
+                var result = this.getFromBetween(sub1,sub2);
+                // push it to the results array
+                this.results.push(result);
+                // remove the most recently found one from the string
+                this.removeFromBetween(sub1,sub2);
+        
+                // if there's more substrings
+                if(this.string.indexOf(sub1) > -1 && this.string.indexOf(sub2) > -1) {
+                    this.getAllResults(sub1,sub2);
+                }
+                else return;
+            },
+            get:function (string,sub1,sub2) {
+                this.results = [];
+                this.string = string;
+                this.getAllResults(sub1,sub2);
+                return this.results;
+            }
+        };
+        var sampleValueIndex = getFromBetween.get(content,"{{","}}");
+
+        let newSample = Object.assign({}, sampleValues);
+        for(var i = 0 ; i < sampleValueIndex.length ; i ++ ){
+            if(sampleValueIndex[i]){
+                var index = sampleValueIndex[i];
+                newSample[index] = (newSample[index]) ? newSample[index] : '';
+            }
+        }
+        Object.entries(newSample).map(([key, value]) => {
+            if(!sampleValueIndex.includes(key)){
+                delete newSample[key]; 
+            }
+        });
+
+        setSampleValue(newSample);
+    }
+
+    /**
+     * Delete sample data
+     */
+    function deleteSampleData(key){
+        console.log(key);
+        var newState = Object.assign([], sampleValues);
+        delete newState[key]; 
+        setSampleValue(newState);
+
+        let newData = Object.assign({}, data);
+        newData['sample_value'] = newState;
+        setData(newData);
+    }
+
     return (
         <Authenticated
             auth={props.auth}
@@ -306,6 +416,19 @@ function NewTemplate(props)
                                                 </div>
                                             : ''}                                            
 
+                                            {/* <div className="form-group col-span-6 sm:col-span-4">
+                                                <label htmlFor="body" className="block text-sm font-medium text-gray-700">
+                                                    Select field
+                                                </label>
+                                                <Dropdown 
+                                                    required={true} 
+                                                    id="field_name"
+                                                    name="field_name"
+                                                    handleChange={addFieldToContent}
+                                                    options={props.fields}
+                                                    value={data.field_name}
+                                                />
+                                            </div> */}
                                             <div className="form-group col-span-6 sm:col-span-4">
                                                 <label htmlFor="body" className="block text-sm font-medium text-gray-700">
                                                     Body
@@ -316,8 +439,51 @@ function NewTemplate(props)
                                                 <p className='mt-2 text-sm text-gray-500 float-right'>{body_max_length - data.body.length}</p>
                                                 <InputError message={errors.body} />
                                             </div>
+                                            {sampleValues && Object.entries(sampleValues).length && 
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor="example" className="block text-sm font-medium text-gray-700">
+                                                        Sample value
+                                                    </label>
+                                                    <div className="mt-1">
+                                                        {Object.entries(sampleValues).map(([key, value]) => {
+                                                            
+                                                            var label = "{{"+ key +"}}";
+                                                            return(
+                                                                <div className=' grid grid-cols-2 '>
+                                                                    <label className="block mt-2 mr-2 text-sm font-medium text-gray-700"> {label} </label>
+                                                                    
+                                                                    <select
+                                                                        name="module_field"
+                                                                        fieldIndex={key}
+                                                                        id="module_field"
+                                                                        value={value}
+                                                                        onChange={ (e) => sampleValueHandler(e)}
+                                                                        className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                    >
+                                                                        <option value=""></option>
+                                                                        {Object.entries(props.fields).map(([index, field]) => 
+                                                                            <option map_index={key} value={index}  defaultValue={index === value} > {field} </option>
+                                                                        )}
+                                                                    </select>
+                                                                    {/* <div className="flex items-center justify-between ml-5">
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={(e) => deleteSampleData(key)}
+                                                                            className="inline-flex  items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+                                                                        >
+                                                                            <TrashIcon 
+                                                                                className='h-4 w-4 text-red-600 cursor-pointer' 
+                                                                            />
 
-                                            <div className="form-group col-span-6 sm:col-span-4">
+                                                                        </button>
+                                                                    </div> */}
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            }
+                                            {/* <div className="form-group col-span-6 sm:col-span-4">
                                                 <label htmlFor="example" className="block text-sm font-medium text-gray-700">
                                                     Example
                                                 </label>
@@ -326,7 +492,7 @@ function NewTemplate(props)
                                                 </div>
                                                 <p className='mt-2 text-sm text-gray-500 float-right'>{body_max_length - data.example.length}</p>
                                                 <InputError message={errors.example} />
-                                            </div>
+                                            </div> */}
 
                                             <div className="form-group col-span-6 sm:col-span-4">
                                                 <label htmlFor="body_footer" className="block text-sm font-medium text-gray-700">

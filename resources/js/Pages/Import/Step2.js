@@ -1,6 +1,11 @@
 import React from "react";
 import { Link } from "@inertiajs/inertia-react";
 
+const lineItems = [
+    {name : 'product' , label : 'Product'},
+    {name : 'quantity', label : 'Quantity'},
+];
+
 function Step2(props){
 
     return(
@@ -90,6 +95,45 @@ function Step2(props){
                                         </tr>
                                     )
                                 )}
+                                {props.module == 'Order' && lineItems.map( (item) => (
+                                    <tr key={item.name} >
+                                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                                          {item.label}
+                                      </td>
+                                      <td className="hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500 sm:table-cell">
+                                          {props.View ? (
+                                              <div>
+                                                  {props.CsvHeader.map((option) => (
+                                                          <>
+                                                              {item.name == option.value ? (
+                                                                  <p>{option.label}</p>
+                                                              ) : 
+                                                              ""
+                                                              }
+                                                          </>
+                                                      ))}
+                                              </div>
+                                          ) : (
+                                              <div>
+                                                  <select
+                                                      id={item.name}
+                                                      name={item.name}
+                                                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                                                      onChange={(e) => props.handleChange(e) }
+                                                  >
+                                                      <option value=""> select </option>
+                                                      {props.CsvHeader.map((option) =>(
+                                                              <option value={option}>        
+                                                                  {option}
+                                                              </option>
+                                                          )
+                                                      )}
+                                                  </select>
+                                              </div>
+                                          )}
+                                      </td>
+                                  </tr>    
+                                ))}
                             </>
                         ) : (
                             ""
