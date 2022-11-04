@@ -6,6 +6,7 @@ use App\Models\Msg;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Auth;
+use App\Models\Message;
 use App\Models\Account;
 use App\Models\Contact;
 use App\Models\Document;
@@ -736,12 +737,26 @@ class MsgController extends Controller
             }
            
             log::info(['Docuemnt data ' => $document ]);
-
-            $result = $msg->sendWhatsAppMessage($request->content , $request->destination, $account , $template, $document);
+            $parent = $this->getInfoUsingContactUniqueId($request->destination, $request->channel, $account->company_id, $user->id);
+            $content = $request->content;
+            if($template){
+                $content = [];
+                $message =  Message::join('templates', 'templates.id' , 'template_id')
+                    ->where('template_uid', $template)
+                    ->first();
+                $sample = unserialize( base64_decode( $message->example) );
+                $contact = Contact::find($parent);
+                
+                foreach($sample as $key => $name){
+                  //  $content = str_replace('{{'.$key.'}}' , $contact->$name , $content);
+                    $content[] = ['type' => 'text' , 'text' => $contact->$name];
+                } 
+            }
+            
+            $result = $msg->sendWhatsAppMessage($content , $request->destination, $account , $template, $document);
             if($attachment){
                 // Store Document 
                 $file = file_get_contents($path.'/'.$attachment_name);
-                $parent = $this->getInfoUsingContactUniqueId($request->destination, $request->channel, $account->company_id, $user->id);
                 $docId = (new Document)->saveDocument($mimeType , $file, $parent, $account, 'sent');
                 $result['result']['file_path'] = $docId;
 
