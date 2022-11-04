@@ -44,8 +44,11 @@ class TemplateController extends Controller
             $components = [];
             if($data['data']->body){
                 $body = ['type' => 'BODY', 'text' => $data['data']->body];
-//dd($data['data']->body);
-
+                if($data['data']->get('sample_value')){
+                    $samples = array_values($data['data']->get('sample_value'));
+                    $body['example'] = (['body_text' => [[ 'kaerthi']]]);
+                }
+                //dd(($body));
                 $components[] = json_encode($body);
             }
             if($data['data']->header_text){
@@ -75,13 +78,14 @@ class TemplateController extends Controller
             $postData = [
                 'category' => $template->category,
                 'components' => $components,
-                'name' => strtolower(str_replace( ' ', '_', $template->name)),
+                'name' => strtolower(str_replace( ' ', '_', $template->name)). uniqid(),
                 'language' => 'en_US',
             ];   
 
-        dd($postData);
+        //dd($postData);
+        log::info(['Template post data' => $postData]);
             $response = Http::withHeaders($headers)->post($endPoint, ($postData))->json();
-        dd($response);
+       // dd($response);
 
             // store template id
             if(isset($response['id'])){
