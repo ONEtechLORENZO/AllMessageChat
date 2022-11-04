@@ -20,6 +20,7 @@ use App\Models\Msg;
 use App\Models\Company;
 use App\Models\Price;
 use App\Models\Field;
+use App\Models\SupportRequest;
 use App\Models\WebhookEvent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -890,10 +891,20 @@ class UserController extends Controller
         $account->user_id = $user_id;
         $account->company_id = Cache::get('selected_company_'. $user_id);
         $account->save();
+        
 
         if($id){
             return Redirect::route('dashboard');
         }else{
+            $supportRequest = new SupportRequest();
+            $supportRequest->subject= 'New Social Profile is created.[ '.$account->display_name.','. $account->id.']';
+            $supportRequest->description = 'New Social Profile is created';
+            $supportRequest->type = "Channel";
+            $supportRequest->assigned_to = $request->user()->id;
+            $supportRequest->status = "New";
+            $supportRequest->company_id = Cache::get('selected_company_'. $user_id);
+            $supportRequest->created_by=  $account->user_id;          
+            $supportRequest->save();
             return response()->json(['status' => true, 'account_id' => $account->id]);
         }
 

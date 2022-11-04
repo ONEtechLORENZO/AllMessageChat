@@ -174,10 +174,6 @@ class SupportRequestController extends Controller
         }
         
         $company_id = Cache::get('selected_company_'. $request->user()->id);
-         
-       
-            
-        
             $supportRequest->subject= $request->subject;
             $supportRequest->description = $request->description;
             $supportRequest->type = $request->type;
