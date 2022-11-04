@@ -897,8 +897,8 @@ class UserController extends Controller
             return Redirect::route('dashboard');
         }else{
             $supportRequest = new SupportRequest();
-            $supportRequest->subject= 'New Social Profile is created.[ '.$account->display_name.','. $account->id.']';
-            $supportRequest->description = 'New Social Profile is created';
+            $supportRequest->subject= 'New Social Profile is created';
+            $supportRequest->description = 'New Social Profile is created.[ '.$account->display_name.','. $account->id.']';
             $supportRequest->type = "Channel";
             $supportRequest->assigned_to = $request->user()->id;
             $supportRequest->status = "New";
