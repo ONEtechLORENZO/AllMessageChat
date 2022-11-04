@@ -10,6 +10,8 @@ use App\Models\User;
 use App\Models\Company;
 use Cache;
 use Mail;
+use Illuminate\Support\Facades\Redirect;
+
 
 class NoteController extends Controller
 {
@@ -129,7 +131,7 @@ class NoteController extends Controller
                     if($email_address){
                         Mail::send('supportrequest',$data, function($message) use ($email_address){
                             $message->to($email_address)->subject
-                            ('[Support Request]Received a reply from admin');
+                            ('A note is added to your support request by the admin');
                         });
                     }
             }
@@ -185,21 +187,16 @@ class NoteController extends Controller
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Note  $note
-     * @return \Illuminate\Http\Response
-     */
+  //to update a note status
     public function updateTask(Request $request, $mod,$id)  
     {
         if ($request->get('noteId')) {            
             $note = Note::findOrFail($request->get('noteId'));
         }
         $note->status = 1;
-        $note->save();
+        $note->save();       
         return response()->json(['response' => $note->status]);
+
     }
 
     /**
