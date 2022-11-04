@@ -19,6 +19,7 @@ use App\Models\Wallet;
 use App\Models\Msg;
 use App\Models\Company;
 use App\Models\Price;
+use App\Models\Field;
 use App\Models\WebhookEvent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -531,7 +532,7 @@ class UserController extends Controller
             $user->company()->syncWithoutDetaching([$companyId]);
             
             if($currentUser->role == 'global_admin') {
-                return Redirect::route('detail_global_user', $user_id);
+                return Redirect::route('detail_global_User', $user_id);
             }
             else if($currentUser->role == 'admin') {
                 return Redirect::route('detailUser', $user_id);
@@ -1060,17 +1061,36 @@ class UserController extends Controller
         if (!$message) {
             $message = new Message();
         }
+        $sampleData = '';
+        if($message->example){
+            $sampleData = unserialize(base64_decode($message->example));
+        }
 
         $message_buttons = [];
         if ($message->id) {
             $message_buttons = MessageButton::where('message_id', $message->id)->get();
         }
 
+        // Get module fields
+        $fields = [];
+        $getFields = Field::where('module_name', 'Contact')
+                ->where('company_id', $companyId)
+                ->where('field_type' , '!=' , 'relate' )
+                ->groupBy('field_name')
+                ->orderBy('id')
+                ->get();
+        
+        foreach($getFields as $field){
+            $fields['{{'.$field->field_name.'}}'] = $field->field_label;
+        }
+      // dd($sampleData);
         return Inertia::render('Account/Template/Detail', [
             'template' => $template,
             'message' => $message,
+            'samples' => $sampleData,
             'language' => $language,
             'buttons' => $message_buttons,
+            'fields' => $fields,
         ]);
     }
 
@@ -1135,13 +1155,13 @@ class UserController extends Controller
         } else {
             $message->header_content = '';
         }
-
+    
         $message->body = $request->get('body');
         $message->footer_content = $request->get('body_footer');
         $message->template_id = $template_id;
         $message->language = $request->get('language');
         $message->attach_file = isset($attachFilePath['url'])? $attachFilePath['url'] : '';
-        $message->example = $request->get('example');
+        $message->example = base64_encode(serialize($request->get('sample_value')));
         $message->save();
         
         $message_id = $message->id;

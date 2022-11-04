@@ -32,7 +32,7 @@ class FormController extends Controller
         if($user->role == 'regular' && $module == 'User') {
             abort(401);
         }
-
+        
         $whereCondition = [
             'module_name' => $module, 
         ];
@@ -48,8 +48,18 @@ class FormController extends Controller
                 $fieldGroupOptions[$fieldGroup->id] = $fieldGroup->name;
             }
         }
-
+        
         $fields = Field::where($whereCondition)->groupBy('field_name')->orderBy('sequence')->orderBy('id')->get();
+        
+        //only Global admin can change the status of a Support Request
+        if($module == 'SupportRequest' && $user->role != 'global_admin')
+        {
+            if( !($request->is('admin/*')) ) {
+            $fields = $fields->filter(function ($value, $key) {
+                return $value['field_name'] != 'status';
+            });
+        }
+        }
         foreach($fields as $field) {
             if(($field['is_custom'] == '1' && $field['field_type'] == 'dropdown') 
                 || $field['field_name'] == 'field_group'
@@ -88,7 +98,7 @@ class FormController extends Controller
         if($moduleName == 'Contact' || $moduleName == 'Opportunity' || $moduleName == 'Lead') {
             $whereCondition['user_id'] = $request->user()->id;
         }
-
+        
         $options = Field::where($whereCondition)->first('options');
         if(!$options['options']) {
             $options['options'] = [];

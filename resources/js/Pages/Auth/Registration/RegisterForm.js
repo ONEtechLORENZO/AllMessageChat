@@ -43,7 +43,8 @@ export default function RegisterForm (props) {
             {openTab === 1 &&
                 // User creation form
                 <Step1 
-                    userMail={userMail}
+                    userMail={props.email}
+                    uuid={props.uuid}
                     setUserMail={setUserMail}
                     setOpenTab={setOpenTab}
                 />

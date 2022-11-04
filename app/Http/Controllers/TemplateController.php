@@ -74,8 +74,10 @@ class TemplateController extends Controller
                 'name' => strtolower(str_replace( ' ', '_', $template->name)),
                 'language' => 'en_US',
             ];   
-        
+
+        //dd($postData);
             $response = Http::withHeaders($headers)->post($endPoint, ($postData))->json();
+        dd($response);
 
             // store template id
             if(isset($response['id'])){
@@ -226,6 +228,7 @@ class TemplateController extends Controller
             'content' => $data['data']->body,
             'footer' => $data['data']->body_footer,
             'example' => $data['data']->example,
+            'enableSample' => true,
         ];
 
         if($data['file']) {
@@ -235,7 +238,7 @@ class TemplateController extends Controller
             $postData['header'] = $data['data']->header_text;
             $postData['buttons'] = ($buttons);
         }
-     
+
         $result = $this->restApiCall('POST', $endPoint, $header, ($postData));
         if($result['status'] == 'success') {
             $template->template_uid = $result['template']['id'];
