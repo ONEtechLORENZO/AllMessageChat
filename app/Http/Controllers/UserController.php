@@ -1081,9 +1081,9 @@ class UserController extends Controller
                 ->get();
         
         foreach($getFields as $field){
-            $fields['{{'.$field->field_name.'}}'] = $field->field_label;
+            $fields[$field->field_name] = $field->field_label;
         }
-      // dd($sampleData);
+    //   dd($message);
         return Inertia::render('Account/Template/Detail', [
             'template' => $template,
             'message' => $message,
