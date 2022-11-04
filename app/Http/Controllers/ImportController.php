@@ -152,8 +152,8 @@ class ImportController extends Controller
         $module_name = $request->module;
         $user_id = $request->user()->id;
         $company_id = Cache::get('selected_company_'.$user_id);
+
         $fields = Field::where('module_name', $module_name)
-            ->where('user_id', $user_id)
             ->where('company_id', $company_id)
             ->get();
 
@@ -192,7 +192,7 @@ class ImportController extends Controller
 
         $id = $import->id;
 
-        return Inertia::render('Import/Form', ['id' => $id, 'csvHeader' => $headers, 'Onestepfield' => $fields]);
+        return Inertia::render('Import/Form', ['id' => $id, 'csvHeader' => $headers, 'Onestepfield' => $fields, 'module' => $module_name]);
     }
 
     /**
@@ -205,7 +205,9 @@ class ImportController extends Controller
     {    
        
         $user_id = $request->user()->id;
+        $company_id = Cache::get('selected_company_'.$user_id);
         $status = $request->status;
+
         if($status == 'draft') {
            $field = $request->editOneStepfield;
            $record_id = $request->id;
@@ -222,20 +224,44 @@ class ImportController extends Controller
         if(!$import) {
             abort(401);
         }
+        
+        $module = $import->module_name;
+        
+        // Mapping fields and items
+        $mapping_value = [];  
+        $product_value = [];
 
-        $mapping_value = [];
         foreach($field as $key => $value) {
             $mapping_value[$value['field_name']] = $request->get($value['field_name']);
         }
-       
+        
+        $product_fields = [
+            ['field_name' => 'product' , 'field_label' => 'Product'],
+            ['field_name' => 'quantity' , 'field_label' => 'Quantity'],
+        ];
+
+        if($module == 'Order') {
+            foreach($product_fields as $product){
+                $product_value[$product['field_name']] = $request->get($product['field_name']);
+            }
+        }
+
+        // Serialize the mapping fields
         $mapping_field = base64_encode(serialize($mapping_value));
+        $line_items = base64_encode(serialize($product_value));
+
+        $update = [
+            'status' => 'new',
+            'mapping' => $mapping_field
+        ];
+
+        if($module == 'Order') {
+            $update['line_item_mapping'] = $line_items;
+        }
  
         Import::where('id', $record_id)
             ->where('user_id', $user_id)
-            ->update([
-                'status' => 'new',
-                'mapping' => $mapping_field
-            ]);
+            ->update($update);
            
         $alertNotification = $this->updateNotification($user_id, $record_id, $import->name);
 
@@ -252,7 +278,9 @@ class ImportController extends Controller
     {
      
         $user_id = $request->user()->id;
-        $import = Import::where('user_id', $user_id)
+        $company_id = Cache::get('selected_company_'.$user_id);
+
+        $import = Import::where('company_id', $company_id)
                     ->where('id', $id)
                     ->first();
 
@@ -265,7 +293,7 @@ class ImportController extends Controller
 
         // Get module fields
         $moduleFields = Field::where('module_name', $module)
-            ->where('user_id', $user_id)
+            ->where('company_id', $company_id)
             ->get();
 
         $fields = [];
@@ -290,10 +318,22 @@ class ImportController extends Controller
                 }else{
                     $headers[] = ['value' => $key, 'label' => $value];
                 }  
-            } 
+            }
+            
+            if($module == 'Order') {
+                $lineItems = $import->line_item_mapping;
+                $decode_lineItems = unserialize(base64_decode($lineItems));
+                foreach($decode_lineItems as $key => $value) {
+                    if($value == '') {
+                        $headers[] = ['value' => $key, 'label' => "-"];
+                    }else{
+                        $headers[] = ['value' => $key, 'label' => $value];
+                    } 
+                }
+            }
         }
 
-        return Inertia::render('Import/Form',['id' => $id, 'editcsvHeader' => $headers, 'editOneStepfield' => $fields, 'status' => $status]);
+        return Inertia::render('Import/Form',['id' => $id, 'editcsvHeader' => $headers, 'editOneStepfield' => $fields, 'status' => $status, 'module' => $module]);
     }
 
     public function updateNotification($user_id, $record_id, $name){
@@ -304,4 +344,5 @@ class ImportController extends Controller
         $notification->notification_content = 'created';
         $notification->save();
     }
+
 }
