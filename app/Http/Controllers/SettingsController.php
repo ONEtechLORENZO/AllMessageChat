@@ -14,6 +14,7 @@ use App\Models\Account;
 use App\Models\Template;
 use App\Models\Order;
 use App\Models\Opportunity;
+use App\Models\Note;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Log;
 
@@ -578,7 +579,7 @@ class SettingsController extends Controller
     }
     
     public function deleteRemainRecords(Request $request) {
-        
+     
         $parent_module = $request->module;
         $master_id = $request->master_id;
         $record_id = explode(',', $request->record_id);
@@ -611,6 +612,19 @@ class SettingsController extends Controller
                     $opportunity->save();
                 }
             }
+        }
+
+        if($parent_module == 'Contact' || $parent_module == 'Lead') {
+            foreach($deleted_id as $id) {
+                // Change notes relation to the master record id
+                $notes = Note::where('notable_id', $id)->get();
+                                            
+                foreach($notes as $note) {
+                    $note->notable_id = $master_id;
+                    $note->save();
+                }
+            }
+            
         }
         
         // Delete the remaining merge records

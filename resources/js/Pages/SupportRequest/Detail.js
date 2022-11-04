@@ -7,10 +7,10 @@ import Form from '@/Components/Forms/Form';
 export default function Detail(props) 
 {
     const tabs = [
-        { label:(props.translator['Request']),name: 'Request', href: '#'  },       
+        { label:'Support Request',name: 'SupportRequest', href: '#'  },       
       ];
     const [showForm, setShowForm] = useState(false);
-
+  
     /**
      * Hide form and reset the Record ID
      */
@@ -38,6 +38,7 @@ export default function Detail(props)
                 tabs = {tabs}
                 translator={props.translator}
                 current_userid={props.current_userid}
+                created_by = {props.created_by}
             />
             {showForm ?
                 <Form 

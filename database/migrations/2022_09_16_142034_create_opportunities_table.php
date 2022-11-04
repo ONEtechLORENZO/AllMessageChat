@@ -16,7 +16,7 @@ class CreateOpportunitiesTable extends Migration
         Schema::create('opportunities', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->float('amount', 14, 4)->nullable();                  
+            $table->float('amount', 14, 4)->nullable();                
             $table->foreignId('contact_id')->constrained('contacts')->nullable();
             $table->date('expected_close_date')->nullable();
             $table->foreignId('assigned_to')->constrained('users')->nullable();

@@ -116,6 +116,23 @@ class NoteController extends Controller
         $note->assigned_to = $assigned_to;
         $note->status = 0;
         $module->notes()->save($note); 
+   
+            if($mod=='SupportRequest' && ($request->user()->role == 'global_admin') && ($request->get('created_by')))
+            {
+                $email_address= User::where('id',$request->get('created_by'))->pluck('email');                
+                $email_address= trim($email_address,"[]");
+                    $email_address = filter_var($email_address, FILTER_SANITIZE_EMAIL);
+                    $data = [
+                        'data' => $request->get('noteText'),
+                        'name' => $user_name,                        
+                    ];
+                    if($email_address){
+                        Mail::send('supportrequest',$data, function($message) use ($email_address){
+                            $message->to($email_address)->subject
+                            ('[Support Request]Received a reply from admin');
+                        });
+                    }
+            }
     }
 
     //get mention users list 

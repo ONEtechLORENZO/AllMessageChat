@@ -377,6 +377,7 @@ export default function Index(props) {
                                   module={props.module}                                                                                
                                   recordId={props.record.id} 
                                   current_userid={props.current_userid}
+                                  created_by = {props.created_by}
                                 />
                          
                          </>}                      
@@ -603,7 +604,7 @@ export default function Index(props) {
                                :''}
                                </>
                             }
-                            {activeTab == 'Notes' && 
+                            {activeTab == 'Notes' &&                              
                                 <Notes
                                   module={props.module}                                                                                
                                   recordId={props.record.id} 

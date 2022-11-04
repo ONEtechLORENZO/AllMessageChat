@@ -98,7 +98,7 @@ class SupportRequestController extends Controller
         return Inertia::render('SupportRequest/Detail', [
             'record' => $supportRequest,            
             'headers' => $headers,
-            'current_user' => $request->user(),
+            'created_by' => $supportRequest->created_by,           
             'current_userid' => $request->user()->id, 
             'translator' => [
                 'Detail' => __('Detail'),
