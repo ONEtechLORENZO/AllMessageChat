@@ -16,7 +16,11 @@ class Product extends Model
     ];
 
     protected $fillable = ['name', 'price', 'description','product_category','company_id','created_at', 'updated_at'];
-
+    
+    public function opportunity()
+    {
+        return $this->belongsToMany(Opportunity::class,'opportunity_products');
+    }
    
     /**
      * Return list view fields

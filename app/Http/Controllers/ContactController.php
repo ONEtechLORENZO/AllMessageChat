@@ -269,6 +269,14 @@ class ContactController extends Controller
                           ->where('company_user.company_id', $request->id);                 
             }
         }
+        if($parent_module=='Opportunity')
+         {            
+            if($subModule=='Product')
+            {         
+                $query = $submod::join('opportunity_products', 'product_id', 'products.id')
+                          ->where('opportunity_products.opportunity_id', $request->id);                 
+            }
+        }
         if($parent_module=='Contact')
         {
             if($subModule=='Opportunity')

@@ -65,7 +65,8 @@ function Form(props)
         //prefill the module_name in addfield form  
        props.module=='Field' && props.mod!='' && setData('module_name',props.mod);
        
-       props.module=='Order' && props.OpportunityrecordId!='' && setData('opportunity',{'value':props.OpportunityrecordId,'label':props.opportunityname});;
+       props.module=='Order' && props.OpportunityrecordId!='' && setData('opportunity',{'value':props.OpportunityrecordId,'label':props.opportunityname});
+       
        
         //prefill relate field in subpanel
        if(props.parent_module == 'Organization' && props.module == 'Contact')
@@ -220,7 +221,7 @@ function Form(props)
         }
         
         data['options'] = options;
-        data['lineItems'] = lineItems;
+        data['lineItems'] = (props.lineItems)? props.lineItems:lineItems;
 
         // Set parent module detail
         data['parent_id'] = (props.parent_id) ? props.parent_id : '';

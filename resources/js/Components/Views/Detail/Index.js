@@ -645,6 +645,14 @@ export default function Index(props) {
                                     parent_name={props.record.name}
                                 />
                             }
+                            {activeTab == 'Product' &&
+                                <SubPanels 
+                                    module={'Product'}
+                                    parent_id={props.record.id}
+                                    parent_module={props.module}
+                                    parent_name={props.record.name}
+                                />
+                            }
                             {activeTab == 'Document' &&
                                 <SubPanels 
                                     module={'Document'}
@@ -679,6 +687,8 @@ export default function Index(props) {
                     translator={props.translator}
                     mod={props.mod}
                     productList={props.productList}
+                    lineItems = {props.lineItems}
+                 //   totalPrice={props.totalPrice}
                 />
             : ''}
             </>
