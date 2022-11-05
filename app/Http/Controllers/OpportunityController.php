@@ -169,7 +169,6 @@ class OpportunityController extends Controller
         }  
         list($productList,$lineItems) = $this->getProductList($request->id);
         
-        
         if( $request->is('api/*') ){
             return response()->json($opportunity);
              }
@@ -334,9 +333,9 @@ class OpportunityController extends Controller
         $productList[] = ['value' => $product->name, 'label' => $product->name, 'id' => $product->id];
         $lineItems[] = [
             'name' => ['value' => $product->name, 'label' => $product->name],
-           // 'quantity' => 0,
+            'quantity' => 0,
             'price' => $product->price,
-           // 'amount' => 0,
+            'amount' => 0,
             'id' => $product->id
         ];
         }  

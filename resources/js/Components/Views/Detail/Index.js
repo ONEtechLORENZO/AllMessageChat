@@ -687,8 +687,7 @@ export default function Index(props) {
                     translator={props.translator}
                     mod={props.mod}
                     productList={props.productList}
-                    lineItems = {props.lineItems}
-                 //   totalPrice={props.totalPrice}
+                    lineItems = {props.lineItems}                 
                 />
             : ''}
             </>

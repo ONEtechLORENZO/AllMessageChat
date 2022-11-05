@@ -624,7 +624,7 @@ function Form(props)
                                         {props && props.module == 'Order' ? 
                                         <LineItem 
                                             productList={productList}
-                                            lineItems={lineItems}
+                                            lineItems={(props.lineItems)? props.lineItems:lineItems}
                                             totalPrice={totalPrice}
                                             setLineItems={setLineItems}
                                             setTotalPrice={setTotalPrice}
