@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Head,Link } from '@inertiajs/inertia-react';
-import { ChevronDownIcon, ChevronUpIcon, UserAddIcon, PencilAltIcon, TrashIcon, UploadIcon, DownloadIcon } from '@heroicons/react/solid';
+import { ChevronDownIcon, LinkIcon, ChevronUpIcon, UserAddIcon, PencilAltIcon, TrashIcon, UploadIcon, DownloadIcon } from '@heroicons/react/solid';
 import Axios from "axios";
 import Checkbox from '@/Components/Forms/Checkbox';
 
@@ -200,8 +200,11 @@ function ListTable(props){
                                             </>
                                             
                                         : ''}
-                                        {(props.actions && props.actions.delete === true) || (record.is_custom == '1') ?
+                                        {((props.actions && props.actions.delete === true && props.module != 'User') || ( props.module == 'User' && props.auth.user.role == 'global_admin') ) || (record.is_custom == '1') ?
                                             <TrashIcon className='h-4 w-4 text-red-600 cursor-pointer' onClick={() => props.deleteRecord(record.id)} />
+                                        : ''}
+                                        {(props.actions && props.actions.delete === true && props.module == 'User') || (record.is_custom == '1') ?
+                                            <LinkIcon className='h-4 w-4 text-red-600 cursor-pointer' onClick={() => props.deleteRecord(record.id , true)} />
                                         : ''}
                                         {props.actions.download === true && record.status === 'success' ? 
                                                 <a href={route('invoices',record.id)} ><DownloadIcon className='h-4 w-4 cursor-pointer' /></a>

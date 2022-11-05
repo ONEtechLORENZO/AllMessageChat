@@ -617,13 +617,23 @@ class UserController extends Controller
     {
         $id = $request->get('id');
         $user = User::find($id);
+        $companyId = Cache::get('selected_company_'. $user->id);
+        if($request->is_soft){
+            $condition = [
+                'user_id' => $id,
+                'company_id' => $companyId
+            ];
+           
+            DB::table('company_user')->where($condition)->delete();
 
-        Schema::disableForeignKeyConstraints();
-        if ($user->delete()) {
-            Log::info('User deleted.');            
-            return Redirect::route('show_Users');
+        } else {
+            Schema::disableForeignKeyConstraints();
+            if ($user->delete()) {
+                Log::info('User deleted.');
+                Schema::enableForeignKeyConstraints();
+            }
         }
-        Schema::enableForeignKeyConstraints();
+        return Redirect::route('show_Users');
     }
 
     /**
