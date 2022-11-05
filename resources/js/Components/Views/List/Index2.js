@@ -94,24 +94,31 @@ function ListView(props)
     }
 
     /**
-     * Delete record
      * 
-     * @param {string} record_id 
+     * @param {Integer} record_id 
+     * @param {Boolean} soft_delete 
+     * @returns 
      */
-    function deleteRecord(record_id)
+    function deleteRecord(record_id , soft_delete = false)
     {
-        let confirm = window.confirm(props.translator['Are you sure you want to delete the record?']);
-        if(!confirm) {
-            return;
-        }
+        
+        var recordData = {id: record_id};
 
         if(props.module == 'User'){
-            let confirmUserDelete = window.confirm('Are you sure you want to delete the user?');
+            let confirmUserDelete = window.confirm('Are you sure you want to unlink the user?');
             if(!confirmUserDelete) {
                 return;
             }
+            if(soft_delete){
+                recordData['is_soft'] = true;
+            }
+        } else {
+            let confirm = window.confirm(props.translator['Are you sure you want to delete the record?']);
+            if(!confirm) {
+                return;
+            }
         }
-        Inertia.delete(route('delete' + props.module, {id: record_id}), {}, {
+        Inertia.delete(route('delete' + props.module, recordData), {}, {
             onSuccess: (response) => { 
                 notie.alert({type: 'success', text: 'Record deleted successfully', time: 5});
             },

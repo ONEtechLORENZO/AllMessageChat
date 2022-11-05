@@ -209,8 +209,14 @@ function NewTemplate(props)
      */
     function sampleValueHandler(e){
         var value = e.target.value;
+        var name = e.target.name;
         var field = e.target.getAttribute('fieldIndex');
         let newState = Object.assign({}, sampleValues);
+        
+        if(name == 'module_field'){
+            value = (newState[field]) ? newState[field] + " " + value : value ; 
+        }
+
         newState[field] = value;
         setSampleValue(newState);
 
@@ -437,6 +443,12 @@ function NewTemplate(props)
                                                     <TextArea id="body" name="body" required={true} handleChange={handleChange} value={data.body} />
                                                 </div>
                                                 <p className='mt-2 text-sm text-gray-500 float-right'>{body_max_length - data.body.length}</p>
+                                                <>
+                                                 
+                                                    <p className='mt-2 text-sm text-gray-500 '> 
+                                                        <a href="https://developers.facebook.com/docs/whatsapp/message-templates/guidelines/#common-rejection-reasons" target={"_blank"}> Please follow the <span className='text-blue-500'> criteria </span> </a> 
+                                                        </p> 
+                                                    </>
                                                 <InputError message={errors.body} />
                                             </div>
                                             {sampleValues && Object.entries(sampleValues).length && 
@@ -449,8 +461,8 @@ function NewTemplate(props)
                                                             
                                                             var label = "{{"+ key +"}}";
                                                             return(
-                                                                <div className=' grid grid-cols-2 '>
-                                                                    <label className="block mt-2 mr-2 text-sm font-medium text-gray-700"> {label} </label>
+                                                                <div className=' grid grid-cols-4 '>
+                                                                    <label className="block w-1/2 mt-2 mr-2 text-sm font-medium text-gray-700"> {label} </label>
                                                                     
                                                                     <select
                                                                         name="module_field"
@@ -460,23 +472,21 @@ function NewTemplate(props)
                                                                         onChange={ (e) => sampleValueHandler(e)}
                                                                         className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
                                                                     >
-                                                                        <option value=""></option>
+                                                                        <option value=""> Select field</option>
                                                                         {Object.entries(props.fields).map(([index, field]) => 
-                                                                            <option map_index={key} value={index}  defaultValue={index === value} > {field} </option>
+                                                                            <option map_index={key} value={"{{"+ index +"}}"} > {field} </option>
                                                                         )}
                                                                     </select>
-                                                                    {/* <div className="flex items-center justify-between ml-5">
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={(e) => deleteSampleData(key)}
-                                                                            className="inline-flex  items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
-                                                                        >
-                                                                            <TrashIcon 
-                                                                                className='h-4 w-4 text-red-600 cursor-pointer' 
-                                                                            />
-
-                                                                        </button>
-                                                                    </div> */}
+                                                                     <div className="flex items-center justify-between ml-5 w-64">
+                                                                     <input
+                                                                        className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                        type="text"
+                                                                        name={'field_value'}
+                                                                        fieldIndex={key}
+                                                                        onChange={ (e) => sampleValueHandler(e)}
+                                                                        value={value}
+                                                                    />
+                                                                    </div> 
                                                                 </div>
                                                             )
                                                         })}
