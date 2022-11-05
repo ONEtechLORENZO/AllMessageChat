@@ -748,11 +748,12 @@ class MsgController extends Controller
                 $contact = Contact::find($parent);
                 
                 foreach($sample as $key => $name){
-                  //  $content = str_replace('{{'.$key.'}}' , $contact->$name , $content);
-                    $content[] = ['type' => 'text' , 'text' => $contact->$name];
+                 
+                    $fieldValue = $this->replaceFieldValue($name, $contact);
+                    $content[] = ['type' => 'text' , 'text' => $fieldValue];
                 } 
             }
-            
+           
             $result = $msg->sendWhatsAppMessage($content , $request->destination, $account , $template, $document);
             if($attachment){
                 // Store Document 
