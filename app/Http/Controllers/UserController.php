@@ -20,6 +20,7 @@ use App\Models\Msg;
 use App\Models\Company;
 use App\Models\Price;
 use App\Models\Field;
+use App\Models\SupportRequest;
 use App\Models\WebhookEvent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -616,13 +617,23 @@ class UserController extends Controller
     {
         $id = $request->get('id');
         $user = User::find($id);
+        $companyId = Cache::get('selected_company_'. $user->id);
+        if($request->is_soft){
+            $condition = [
+                'user_id' => $id,
+                'company_id' => $companyId
+            ];
+           
+            DB::table('company_user')->where($condition)->delete();
 
-        Schema::disableForeignKeyConstraints();
-        if ($user->delete()) {
-            Log::info('User deleted.');            
-            return Redirect::route('show_Users');
+        } else {
+            Schema::disableForeignKeyConstraints();
+            if ($user->delete()) {
+                Log::info('User deleted.');
+                Schema::enableForeignKeyConstraints();
+            }
         }
-        Schema::enableForeignKeyConstraints();
+        return Redirect::route('show_Users');
     }
 
     /**
@@ -890,10 +901,20 @@ class UserController extends Controller
         $account->user_id = $user_id;
         $account->company_id = Cache::get('selected_company_'. $user_id);
         $account->save();
+        
 
         if($id){
             return Redirect::route('dashboard');
         }else{
+            $supportRequest = new SupportRequest();
+            $supportRequest->subject= 'New Social Profile is created';
+            $supportRequest->description = 'New Social Profile is created.[ '.$account->display_name.','. $account->id.']';
+            $supportRequest->type = "Channel";
+            $supportRequest->assigned_to = $request->user()->id;
+            $supportRequest->status = "New";
+            $supportRequest->company_id = Cache::get('selected_company_'. $user_id);
+            $supportRequest->created_by=  $account->user_id;          
+            $supportRequest->save();
             return response()->json(['status' => true, 'account_id' => $account->id]);
         }
 
@@ -1081,9 +1102,9 @@ class UserController extends Controller
                 ->get();
         
         foreach($getFields as $field){
-            $fields['{{'.$field->field_name.'}}'] = $field->field_label;
+            $fields[$field->field_name] = $field->field_label;
         }
-      // dd($sampleData);
+    //   dd($message);
         return Inertia::render('Account/Template/Detail', [
             'template' => $template,
             'message' => $message,

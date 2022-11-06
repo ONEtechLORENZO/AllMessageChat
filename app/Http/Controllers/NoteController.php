@@ -10,6 +10,8 @@ use App\Models\User;
 use App\Models\Company;
 use Cache;
 use Mail;
+use Illuminate\Support\Facades\Redirect;
+
 
 class NoteController extends Controller
 {
@@ -116,6 +118,23 @@ class NoteController extends Controller
         $note->assigned_to = $assigned_to;
         $note->status = 0;
         $module->notes()->save($note); 
+   
+            if($mod=='SupportRequest' && ($request->user()->role == 'global_admin') && ($request->get('created_by')))
+            {
+                $email_address= User::where('id',$request->get('created_by'))->pluck('email');                
+                $email_address= trim($email_address,"[]");
+                    $email_address = filter_var($email_address, FILTER_SANITIZE_EMAIL);
+                    $data = [
+                        'data' => $request->get('noteText'),
+                        'name' => $user_name,                        
+                    ];
+                    if($email_address){
+                        Mail::send('supportrequest',$data, function($message) use ($email_address){
+                            $message->to($email_address)->subject
+                            ('A note is added to your support request by the admin');
+                        });
+                    }
+            }
     }
 
     //get mention users list 
@@ -168,21 +187,16 @@ class NoteController extends Controller
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Note  $note
-     * @return \Illuminate\Http\Response
-     */
+  //to update a note status
     public function updateTask(Request $request, $mod,$id)  
     {
         if ($request->get('noteId')) {            
             $note = Note::findOrFail($request->get('noteId'));
         }
         $note->status = 1;
-        $note->save();
+        $note->save();       
         return response()->json(['response' => $note->status]);
+
     }
 
     /**

@@ -51,7 +51,8 @@ class Msg extends Model
                 $template = Template::where('template_uid' , $template)->first();
                 $message = [
                     'name' => strtolower(str_replace( ' ', '_', $template->name)),
-                    'language' => [ 'code' => 'en_US']
+                    'language' => [ 'code' => 'en_US'],
+                    'components' => [['type' => 'body', 'parameters' => $content]]
                 ];
                 $post_data['type'] = 'template';
                 $post_data['template'] = (json_encode($message));

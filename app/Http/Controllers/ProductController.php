@@ -9,7 +9,7 @@ use App\Models\Account;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
 use Cache;
-
+use DB;
 class ProductController extends Controller
 {
     public $limit = 15;
@@ -74,7 +74,15 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+
         $product_id = $this->saveProduct($request);
+        if(($product_id) && ($request->parent_id))
+        {
+            DB::table('opportunity_products')->insert([
+                'opportunity_id' => $request->parent_id,
+                'product_id' => $product_id
+            ]);
+        }
         if($request->is('api/*'))     // API call check
         {            
             if($product_id){
@@ -90,7 +98,7 @@ class ProductController extends Controller
         if($request->parent_module == 'Chat') {
             return Redirect::route('chat_list');
         } else if($request->parent_id){
-            $url = route('detail'. $request->parent_module).'?id='.$request->parent_id.'&page=1';
+            $url = route(('detail'. $request->parent_module),['id' => $request->parent_id]);
             return Redirect::to($url);
         } else {
             return Redirect::route('listProduct', $product_id);

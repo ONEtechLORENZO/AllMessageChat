@@ -12,11 +12,14 @@ class Opportunity extends Model
     protected $table = 'opportunities';
     protected $casts = [
         'custom' => 'array',
-    ];
-    
+    ];    
 
     protected $fillable = ['name', 'amount', 'contact_id', 'expected_close_date', 'assigned_to', 'sales_stage', 'description','created_at', 'updated_at'];
 
+    public function product()
+    {
+        return $this->belongsToMany(Product::class,'opportunity_products');
+    }
    
     /**
      * Return list view fields

@@ -135,8 +135,7 @@ class Controller extends BaseController
         }
 
         //if($moduleName == 'Company' && $user->role != 'global_admin') {
-        if($moduleName == 'Company') {
-      
+        if($moduleName == 'Company' && !($request->is('admin/*')) ) {
             $query->join('company_user', 'company_id', 'companies.id');
             $query->where('company_user.user_id', $user_id);
         }
@@ -769,7 +768,45 @@ class Controller extends BaseController
         if($records) {
             $moduleRecords['records'] = $records;
         }
-        
         return $moduleRecords;
     }
+
+    /**
+     * Relpace field value instand of field name
+     * 
+     * @param {String} $string 
+     */
+    public function replaceFieldValue($str, $recordModal)
+    {
+        $fieldValue = $str;
+        $fieldName = $this->getModuleFieldName($str);
+        if($fieldName && strpos($str , '{{')  !== false && strpos($str , '}}')  !== false ){
+            $value = $recordModal->$fieldName;
+            $fieldValue = str_replace( "{{".$fieldName."}}", $value, $str);
+            $fieldValue = $this->replaceFieldValue($fieldValue , $recordModal);
+            return $fieldValue;
+        }
+        return $fieldValue;
+    }
+
+   /**
+     * Return field name from a sting
+     * 
+     * @param {String} $str  
+     */
+    public function getModuleFieldName($str)
+    {
+        $starting_word = "{{"; 
+        $ending_word = "}}";
+        $fieldName = $str;
+        if(strpos($str , '{{')  !== false && strpos($str , '}}')  !== false){
+            // Fetch substring between the curly braces
+            $subtring_start = strpos($str, $starting_word);
+            $subtring_start += strlen($starting_word);
+            $size = strpos($str, $ending_word, $subtring_start) - $subtring_start;
+            $fieldName = substr($str, $subtring_start, $size);
+        }
+        return $fieldName;
+    }
+
 }

@@ -377,6 +377,7 @@ export default function Index(props) {
                                   module={props.module}                                                                                
                                   recordId={props.record.id} 
                                   current_userid={props.current_userid}
+                                  created_by = {props.created_by}
                                 />
                          
                          </>}                      
@@ -603,7 +604,7 @@ export default function Index(props) {
                                :''}
                                </>
                             }
-                            {activeTab == 'Notes' && 
+                            {activeTab == 'Notes' &&                              
                                 <Notes
                                   module={props.module}                                                                                
                                   recordId={props.record.id} 
@@ -644,6 +645,14 @@ export default function Index(props) {
                                     parent_name={props.record.name}
                                 />
                             }
+                            {activeTab == 'Product' &&
+                                <SubPanels 
+                                    module={'Product'}
+                                    parent_id={props.record.id}
+                                    parent_module={props.module}
+                                    parent_name={props.record.name}
+                                />
+                            }
                             {activeTab == 'Document' &&
                                 <SubPanels 
                                     module={'Document'}
@@ -678,6 +687,7 @@ export default function Index(props) {
                     translator={props.translator}
                     mod={props.mod}
                     productList={props.productList}
+                    lineItems = {props.lineItems}                 
                 />
             : ''}
             </>

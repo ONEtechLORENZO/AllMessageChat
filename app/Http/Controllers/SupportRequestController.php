@@ -98,7 +98,7 @@ class SupportRequestController extends Controller
         return Inertia::render('SupportRequest/Detail', [
             'record' => $supportRequest,            
             'headers' => $headers,
-            'current_user' => $request->user(),
+            'created_by' => $supportRequest->created_by,           
             'current_userid' => $request->user()->id, 
             'translator' => [
                 'Detail' => __('Detail'),
@@ -174,10 +174,6 @@ class SupportRequestController extends Controller
         }
         
         $company_id = Cache::get('selected_company_'. $request->user()->id);
-         
-       
-            
-        
             $supportRequest->subject= $request->subject;
             $supportRequest->description = $request->description;
             $supportRequest->type = $request->type;

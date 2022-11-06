@@ -1,9 +1,13 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import Axios from "axios";
 import notie from 'notie';
+import { Inertia } from "@inertiajs/inertia";
 import TextArea from '@/Components/Forms/TextArea';
 import { MentionsInput, Mention } from 'react-mentions';
 import { addSeconds } from 'date-fns/esm';
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
+
 const defaultStyle = {
   control: {
     backgroundColor: "#fff",
@@ -76,9 +80,9 @@ export default function Notes(props) {
 const [trans,setTrans]=useState([]);
 const [users, setUsers] = useState(); 
 const [value, setValue] = useState('');
-const [assginedTo, setAssignedTo] = useState();
+const [assignedTo, setAssignedTo] = useState();
 const [mentions,setMentions]=useState([]);
-const [check, setCheck] = useState(false);
+const [status, setStatus] = useState(false);
 
 
   useEffect(() => {    
@@ -100,43 +104,35 @@ function fetchNote(){
 }else {
   notie.alert({type: 'error', text: response.data.message, time: 5});
 }
-}).catch((error) => {
-let error_message = 'Something went wrong';
-if(error.response) {
-    error_message = error.response.data.message;
-    if(error_message == undefined) {
-        error_message = error.response.statusText;
-    }
-}
-else {
-    error_message = error.message;
-}
-notie.alert({type: 'error', text: error_message, time: 5});
-});
-
+})
 }
 
-function handleChange(e){
-  (e.target.value) = !(e.target.checked)  
-  
-  if(e.target.checked)
-    {
-      let endpoint_url = route('update_task',{'module':props.module,'id':props.recordId});      
-          Axios({           
-              method: 'post',
-              url: endpoint_url,
-              data: {
-                status : true,
-                noteId : e.target.id
-              }
-          })
-          .then( (response) => {
-            notie.alert({ type: 'success', text: 'Marked as completed', time: 5 }); 
-            e.target.disabled = true 
-            (e.target.id).display ='none'                   
-          });      
-          
-    } 
+function handleChange(e){   
+  setStatus(!status)
+  e.target.checked = status
+    confirmAlert({
+      message: ('Are you sure you want to mark this task as completed?'),
+      buttons: [{
+          label: ('Confirm'),
+          onClick: () => {  
+              let endpoint_url = route('update_task',{'module':props.module,'id':props.recordId});      
+                  Axios({           
+                      method: 'post',
+                      url: endpoint_url,
+                      data: {
+                        status : true,
+                        noteId : e.target.id
+                        }
+                  })
+            .then( (response) => {           
+              notie.alert({ type: 'success', text: 'Marked as completed', time: 5 });            
+              window.location.reload();       
+            });  
+          }
+        }, {
+            label: 'No',            
+        }]
+    }); 
 }
 
 function getUsers() {
@@ -164,11 +160,12 @@ function getUsers() {
 }
 function onAdd(id,display)
  { 
-  setMentions([...mentions,{ id : id,display :display}]);  
-  console.log("added a new mention", mentions);
+  setMentions([...mentions,{ id : id,display :display}]);   
  };
 
-function addNote(){     
+
+function addNote(){  
+    
   let endpoint_url = route('add_Notes',{'module':props.module,'id':props.recordId});
   if(value){
       Axios({           
@@ -176,8 +173,9 @@ function addNote(){
           url: endpoint_url,
           data: {
             noteText:value,
-            assignedTo:assginedTo,
+            assignedTo: assignedTo,
             mentions: mentions,
+            created_by: props.created_by
           }
       })
       .then( (response) => {
@@ -211,10 +209,10 @@ return(
                   type="checkbox"
                   id={note.id}
                   name={note.id}
-                  //checked = {(note.status) ?  true : ''}
+                 // value = {(taskStatus) ?  true : ''}
                   onChange={ handleChange }
                   title = "Mark as completed"
-                  value={note.id}
+                 // value={note.id}
               /></div>:'' }
               <p>
                 <time >{note.date}</time>
@@ -234,14 +232,16 @@ return(
                           value = {value}
                           onChange = { (e) => setValue(e.target.value) } 
                           placeholder={"Add your note here... \nTo mention the users use '@'"} 
-                          style={defaultStyle}                         
+                          style={defaultStyle}   
+                          
+                      
                         >
                           <Mention  
                           trigger="@"                          
                           data={users} 
-                          //onAdd={(id) => setMentions([...mentions, id])} 
-                           onAdd = {onAdd}                           
+                          onAdd = {onAdd}                           
                           style={defaultMentionStyle} 
+                          markup="@__display__"
                           />
                         </MentionsInput>
                          <div>   

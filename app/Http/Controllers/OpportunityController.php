@@ -10,7 +10,9 @@ use App\Models\Field;
 use App\Models\Account;
 use App\Models\Contact;
 use App\Models\User;
+use App\Models\Product;
 use App\Http\Controllers\ContactController;
+use DB;
 
 
 class OpportunityController extends Controller
@@ -165,7 +167,8 @@ class OpportunityController extends Controller
         if($user){
             $opportunity['assigned_to'] = [ 'label' => $user['name'] , 'value' => $user['id'], 'module' => 'User'];
         }  
-
+        list($productList,$lineItems) = $this->getProductList($request->id);
+        
         if( $request->is('api/*') ){
             return response()->json($opportunity);
              }
@@ -173,6 +176,9 @@ class OpportunityController extends Controller
         return Inertia::render('Opportunity/Detail', [
             'record' => $opportunity,            
             'headers' => $headers,
+            'productList' => $productList,
+            'lineItems' => $lineItems,
+            'totalPrice' => 0,
             'translator' => [
                 'Detail' => __('Detail'),
                 'Notes' => __('Notes'),
@@ -313,5 +319,26 @@ class OpportunityController extends Controller
             $opportunity->save();
         }
         return $opportunity->id;
-    }  
+    } 
+
+    public function getProductList($opportunityId){
+        $opportunity_products = DB::table('opportunity_products')->where('opportunity_id', $opportunityId)->get('product_id'); 
+        
+        $productList = [];
+        $lineItems=[];
+       // $productList[] = ['value' => '', 'label' => 'Select', 'id' => ''];
+        foreach($opportunity_products as $products)
+        {
+        $product = Product::where('id', $products->product_id)->get(['id','name','price'])->first();
+        $productList[] = ['value' => $product->name, 'label' => $product->name, 'id' => $product->id];
+        $lineItems[] = [
+            'name' => ['value' => $product->name, 'label' => $product->name],
+            'quantity' => 0,
+            'price' => $product->price,
+            'amount' => 0,
+            'id' => $product->id
+        ];
+        }  
+        return array($productList,$lineItems);
+    }
 }
