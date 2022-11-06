@@ -19,6 +19,8 @@ class Contact extends Model
     protected $with = [
         '0' => 'tags',
         '1' => 'categorys',
+        '2' => 'phones',
+        '3' => 'emails'
     ];
 
     protected $casts = [
@@ -56,6 +58,16 @@ class Contact extends Model
     {  
       return $this->hasOne('App\Models\Document', 'parent_id');  
     }  
+
+    public function phones()
+    {
+        return $this->morphMany(Phone::class, 'phoneable');
+    }
+
+    public function emails()
+    {
+        return $this->morphMany(Email::class, 'emailable');
+    }
 
     /**
      * Return list view fields

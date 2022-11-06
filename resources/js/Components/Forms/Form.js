@@ -23,6 +23,7 @@ import Time from './Time';
 import MultiSelect from './MultiSelect';
 import LineItem from '@/Pages/Order/Form';
 import InputError from './InputError';
+import MultiPhoneNumber from './MultiPhoneNumber';
 
 const defaultConfig = {
     // class of the parent element where the error/success class is added
@@ -352,6 +353,10 @@ function Form(props)
         DataHandler(field_name, values);
     }
 
+    function multiRecordHandler(){
+
+    }
+
     return (
         <Transition.Root show={open} as={Fragment}>
             <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => {}} >
@@ -591,7 +596,16 @@ function Form(props)
                                                             required={field_info.is_mandatory === 1 ? true : false}
                                                             readOnly={(readOnly) ? '' : 'disabled'}
                                                         />;
-                                                        break;                                     
+                                                        break;
+                                                case 'phone_numbers':
+                                                        element = <MultiPhoneNumber 
+                                                            type="text" 
+                                                            id={field_info.field_name}
+                                                            name={field_info.field_name}
+                                                            value={field_value} 
+                                                            handleChange={multiRecordHandler}
+                                                        />;
+                                                        break;                                                
                                                 case 'default':
                                                     element = <Input 
                                                         type="text" 

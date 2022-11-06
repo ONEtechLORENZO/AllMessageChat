@@ -28,6 +28,16 @@ class Lead extends Model
         return $this->morphMany(Note::class, 'notable');
     }
 
+    public function phones()
+    {
+        return $this->morphMany(Phone::class, 'phoneable');
+    }
+
+    public function emails()
+    {
+        return $this->morphMany(Email::class, 'emailable');
+    }
+
     /**
      * Return list view fields
      */
