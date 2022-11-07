@@ -23,7 +23,7 @@ import Time from './Time';
 import MultiSelect from './MultiSelect';
 import LineItem from '@/Pages/Order/Form';
 import InputError from './InputError';
-import MultiPhoneNumber from './MultiPhoneNumber';
+import MultiContainer from './MultiContainer';
 
 const defaultConfig = {
     // class of the parent element where the error/success class is added
@@ -596,14 +596,23 @@ function Form(props)
                                                         />;
                                                         break;
                                                 case 'phones':
-                                                        element = <MultiPhoneNumber 
+                                                        element = <MultiContainer 
                                                             type="text" 
                                                             id={field_info.field_name}
                                                             name={field_info.field_name}
                                                             value={field_value} 
                                                             DataHandler={DataHandler}
                                                         />;
-                                                        break;                                                
+                                                        break; 
+                                                case 'emails':
+                                                    element = <MultiContainer 
+                                                        type="text" 
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        value={field_value} 
+                                                        DataHandler={DataHandler}
+                                                    />;
+                                                    break;                                                        
                                                 case 'default':
                                                     element = <Input 
                                                         type="text" 

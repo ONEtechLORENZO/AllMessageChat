@@ -445,7 +445,7 @@ export default function Index(props) {
                                                            }
 
                                                            if(field.type == 'phones' && key == 'phones') {
-                                                               let phoneNumbers = record['phones'];
+                                                               let phoneNumbers = record[key];
                                                                let numbers = [];
                                                                if(phoneNumbers) {
                                                                 {phoneNumbers && phoneNumbers.map( (phone) => {
@@ -453,6 +453,18 @@ export default function Index(props) {
                                                                 })}
                                                                }
                                                                value = numbers ? (numbers).join(', ') : '';
+                                                           }
+
+                                                           if(field.type == 'emails' && key == 'emails') {
+                                                               let EmailAddress = record[key];
+                                                               let emails = [];
+                                                               if(EmailAddress) {
+                                                                 {EmailAddress && EmailAddress.map( (email) => {
+                                                                     emails.push(email[key]);
+                                                                 })}
+                                                               }
+
+                                                               value = emails ? (emails).join(', ') : '';
                                                            }
 
                                                            if(showField) {

@@ -18,6 +18,7 @@ use App\Models\Field;
 use App\Models\Service;
 use App\Models\User;
 use App\Models\Phone;
+use App\Models\Email;
 
 class ContactController extends Controller
 {
@@ -548,7 +549,8 @@ class ContactController extends Controller
             ->where('company_id', $company_id)
             ->get(['field_name', 'is_custom', 'field_type']);
         
-        $phoneNumbers = [];    
+        $phoneNumbers = [];
+        $emails = [];    
 
         if ($fields) {
             $custom_field = [];
@@ -568,6 +570,8 @@ class ContactController extends Controller
                         }
                     }else if ($type == 'phones') {
                         $phoneNumbers = $request->$field;
+                    } else if ($type == 'emails') {
+                        $emails = $request->$field;
                     }else {
                         $contact->$field = $request->$field;
                     }
@@ -593,6 +597,10 @@ class ContactController extends Controller
 
             if($phoneNumbers){
                 $sync = $this->syncPhoneNumber($contact, $phoneNumbers, $company_id);
+            }
+
+            if($emails) {
+                $sync = $this->syncEmails($contact, $emails, $company_id); 
             }
 
             if($request->parent_id){
@@ -638,7 +646,7 @@ class ContactController extends Controller
 
     public function syncPhoneNumber($contact, $records, $company_id) {
         
-        $deletePrevious = $contact->phones()->delete();
+        $deletePreviousNumbers = $contact->phones()->delete();
 
         foreach($records as $record) {
             $number = $record['phones'];
@@ -654,4 +662,21 @@ class ContactController extends Controller
         }
     }
 
+    public function syncEmails($contact, $records, $company_id) {
+        
+        $deletePreviousEmails = $contact->emails()->delete();
+
+        foreach($records as $record) {
+            $Email = $record['emails'];
+            $type = $record['type'];
+
+            if($Email){
+                $email = new Email();
+                $email->emails = $Email;
+                $email->type = $type;
+                $email->company_id = $company_id;
+                $contact->emails()->save($email); 
+            }
+        }
+    }
 }
