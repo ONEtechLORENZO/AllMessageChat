@@ -276,6 +276,7 @@ function Form(props)
                 newState['custom'] = customfields;
             }
         });
+
         setData(newState);
     }
     
@@ -354,10 +355,6 @@ function Form(props)
         DataHandler(field_name, values);
     }
 
-    function multiRecordHandler(){
-
-    }
-
     return (
         <Transition.Root show={open} as={Fragment}>
             <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => {}} >
@@ -426,7 +423,7 @@ function Form(props)
                                             if(field_info.readonly_on_edit == 'true' && data.id){
                                                 readOnly = false;
                                             }
-                                       
+
                                             switch (field_info.field_type) {
                                                 case "text":
                                                     element = <Input
@@ -598,13 +595,13 @@ function Form(props)
                                                             readOnly={(readOnly) ? '' : 'disabled'}
                                                         />;
                                                         break;
-                                                case 'phone_numbers':
+                                                case 'phones':
                                                         element = <MultiPhoneNumber 
                                                             type="text" 
                                                             id={field_info.field_name}
                                                             name={field_info.field_name}
                                                             value={field_value} 
-                                                            handleChange={multiRecordHandler}
+                                                            DataHandler={DataHandler}
                                                         />;
                                                         break;                                                
                                                 case 'default':
@@ -620,7 +617,7 @@ function Form(props)
                                                     />;
                                                     break;
                                             }
-                                           
+
                                             return (
                                                 <div className='form-group' key={field_info.field_name}>
                                                     <label htmlFor={field_info.field_name} className="block text-sm font-medium text-gray-700">
