@@ -34,9 +34,9 @@ function List(props)
                             href={tab.href}
                             className={classNames(
                                 tab.current
-                                    ? "border-purple-500 text-primary"
-                                    : "border-transparent text-gray-500 text-[#3D4459] hover:text-primary hover:border-purple-500",
-                                "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base  my-6"
+                                    ? "bg-primary text-white"
+                                    : "border-transparent  text-[#3D4459] hover:text-primary hover:border-purple-500",
+                                "whitespace-nowrap py-2 px-1 border-b-2 font-medium text-base  my-3"
                             )}
                         >
                             {tab.name}  

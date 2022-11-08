@@ -4,6 +4,29 @@ import { ChevronDownIcon, LinkIcon, ChevronUpIcon, UserAddIcon, PencilAltIcon, T
 import Axios from "axios";
 import Checkbox from '@/Components/Forms/Checkbox';
 
+import {
+  Row,
+  Col,
+  Button,
+  Nav,
+  Container,
+  NavItem,
+  ListGroup,
+  ListGroupItem,
+  Card,
+  CardBody,
+  CardHeader,
+  NavLink,
+  TabContent,
+  TabPane,
+  Progress,
+  ButtonGroup,
+  CardFooter,
+  Table,
+  Popover,
+  PopoverBody,
+} from "reactstrap";
+
 function ListTable(props){
 
     const [fields, setFields] = useState([]);
@@ -41,8 +64,11 @@ function ListTable(props){
  
     return(
         <>
-            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg my-4">
-                <table className="min-w-full divide-y divide-[#D9D9D9]">
+            <div className="">
+            <Card className="main-card my-3">
+
+                <CardBody>
+                 <Table responsive hover striped borderless className="align-middle mb-0">
                     <thead>
                         <tr>
                             {(props.actions.mass_edit === true || props.actions.merge === true)&&  
@@ -217,7 +243,9 @@ function ListTable(props){
                             </tr>
                         ))}
                     </tbody>
-                </table>
+                    </Table>
+                    </CardBody>
+              </Card>
             </div>
         </>
     );
