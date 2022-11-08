@@ -17,6 +17,8 @@ use App\Models\Company;
 use App\Models\Field;
 use App\Models\Service;
 use App\Models\User;
+use App\Models\Phone;
+use App\Models\Email;
 
 class ContactController extends Controller
 {
@@ -539,23 +541,24 @@ class ContactController extends Controller
               $account = Account::findorFail($request->account_id);                
               $company_id = $account->company_id;                
             }         
-           
+        } else{        
+            $company_id = Cache::get('selected_company_'. $request->user()->id);
         }
-        else
-         {        
-        $company_id = Cache::get('selected_company_'. $request->user()->id);
-         }
      
         $fields = Field::where('module_name', 'Contact')
             ->where('company_id', $company_id)
-            ->get(['field_name', 'is_custom']);
+            ->get(['field_name', 'is_custom', 'field_type']);
+        
+        $phoneNumbers = [];
+        $emails = [];    
 
         if ($fields) {
             $custom_field = [];
             foreach ($fields as $record) {
                 $field = $record['field_name'];
                 $custom = $record['is_custom'];
-                         
+                $type = $record['field_type'];
+                       
                 if($request->has($field) && ($custom == '0' || !$custom)) {
                     if(($field == 'assigned_to' || $field == 'organization_id') && !($request->is('api/*'))) {
 
@@ -565,6 +568,10 @@ class ContactController extends Controller
                         }else {
                             $contact->$field = NULL;
                         }
+                    }else if ($type == 'phones') {
+                        $phoneNumbers = $request->$field;
+                    } else if ($type == 'emails') {
+                        $emails = $request->$field;
                     }else {
                         $contact->$field = $request->$field;
                     }
@@ -588,6 +595,14 @@ class ContactController extends Controller
                
             $contact->save();
 
+            if($phoneNumbers){
+                $sync = $this->syncPhoneNumber($contact, $phoneNumbers, $company_id);
+            }
+
+            if($emails) {
+                $sync = $this->syncEmails($contact, $emails, $company_id); 
+            }
+
             if($request->parent_id){
                 // $parent = array($request->parent_id);
                 // if($request->parent_module == 'Category'){
@@ -599,9 +614,8 @@ class ContactController extends Controller
                 // }
             }
         }
-        
+
         return $contact->id;
-        
     }
 
     /**
@@ -630,4 +644,39 @@ class ContactController extends Controller
         return Redirect::to(url()->previous());
     }
 
+    public function syncPhoneNumber($contact, $records, $company_id) {
+        
+        $deletePreviousNumbers = $contact->phones()->delete();
+
+        foreach($records as $record) {
+            $number = $record['phones'];
+            $type = $record['type'];
+
+            if($number){
+                $phone = new Phone();
+                $phone->phones = $number;
+                $phone->type = $type;
+                $phone->company_id = $company_id;
+                $contact->phones()->save($phone); 
+            }
+        }
+    }
+
+    public function syncEmails($contact, $records, $company_id) {
+        
+        $deletePreviousEmails = $contact->emails()->delete();
+
+        foreach($records as $record) {
+            $Email = $record['emails'];
+            $type = $record['type'];
+
+            if($Email){
+                $email = new Email();
+                $email->emails = $Email;
+                $email->type = $type;
+                $email->company_id = $company_id;
+                $contact->emails()->save($email); 
+            }
+        }
+    }
 }

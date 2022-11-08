@@ -444,6 +444,29 @@ export default function Index(props) {
                                                                value = (value) ? 'checked': 'unchecked';
                                                            }
 
+                                                           if(field.type == 'phones' && key == 'phones') {
+                                                               let phoneNumbers = record[key];
+                                                               let numbers = [];
+                                                               if(phoneNumbers) {
+                                                                {phoneNumbers && phoneNumbers.map( (phone) => {
+                                                                    numbers.push(phone[key]);
+                                                                })}
+                                                               }
+                                                               value = numbers ? (numbers).join(', ') : '';
+                                                           }
+
+                                                           if(field.type == 'emails' && key == 'emails') {
+                                                               let EmailAddress = record[key];
+                                                               let emails = [];
+                                                               if(EmailAddress) {
+                                                                 {EmailAddress && EmailAddress.map( (email) => {
+                                                                     emails.push(email[key]);
+                                                                 })}
+                                                               }
+
+                                                               value = emails ? (emails).join(', ') : '';
+                                                           }
+
                                                            if(showField) {
                                                                return(
                                                                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">

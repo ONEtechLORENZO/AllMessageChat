@@ -15,7 +15,7 @@ class CreateEmailsTable extends Migration
     {
         Schema::create('emails', function (Blueprint $table) {
             $table->id();
-            $table->string('email')->nullable();
+            $table->string('emails')->nullable();
             $table->string('type')->nullable();
             $table->boolean('is_primary')->default(0);
             $table->foreignId('company_id')->constrained('companies');

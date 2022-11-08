@@ -15,7 +15,7 @@ class CreatePhonesTable extends Migration
     {
         Schema::create('phones', function (Blueprint $table) {
             $table->id();
-            $table->string('phone_number')->nullable();
+            $table->string('phones')->nullable();
             $table->string('type')->nullable();
             $table->boolean('is_primary')->default(0);
             $table->foreignId('company_id')->constrained('companies');
