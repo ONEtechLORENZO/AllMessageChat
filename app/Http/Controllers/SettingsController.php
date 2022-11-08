@@ -218,7 +218,6 @@ class SettingsController extends Controller
             $user_id = $request->user()->id;
         }
 
-        $flag = false;
         $company_id = Cache::get('selected_company_' . $user_id);
 
         // Get current company details
@@ -227,7 +226,7 @@ class SettingsController extends Controller
         //Check the company has assign any custom plan
         $customPlan = DB::table('plan_workspaces')->where('company_id', $company_id)->first();
        
-        // Get all Plan details
+        // Get default plans
         $plan_record = DB::table('plans')->where('default_plan', 'true')->get(); 
 
         $plans = [];
@@ -243,29 +242,41 @@ class SettingsController extends Controller
             }
         }
         
-        // If the company has custom plan, change the plan records
+        // If the company has any custom plan, change the plan records
         if($customPlan) {
             $customSubscription = DB::table('plans')->where('plan_id', $customPlan->plan_id)->get();
-           
-            foreach ($customSubscription as $subscription){
-                
-                if(!array_key_exists($subscription->plan, $plans)) {
-                   
-                    $plan = Plan::find($subscription->plan_id);
-
-                    if(isset($plan)){
-                        $subscription->period = $plan->billing_period;
-                        $subscription->currency = $plan->currency;
+            
+            // Check if we fill the plan details 
+            if(count($customSubscription)) {
+                foreach ($customSubscription as $subscription){
+            
+                    if(!array_key_exists($subscription->plan, $plans)) {
+                       
+                        $plan = Plan::find($subscription->plan_id);
+    
+                        if(isset($plan)){
+                            $subscription->period = $plan->billing_period;
+                            $subscription->currency = $plan->currency;
+                        }
+    
+                        $plans[$subscription->plan] = $subscription;
                     }
-
-                    $plans[$subscription->plan] = $subscription;
                 }
-                $flag = true;
+            } else {
+                $plan = Plan::find($customPlan->plan_id); 
+
+                if($plan) {
+                    $planPrice = [
+                        'plan' => $plan->name,
+                        'price' => $plan->amount,
+                        'period' => $plan->billing_period,
+                        'currency' => $plan->currency
+                    ]; 
+
+                    $plans[$plan->name] =  json_decode(json_encode($planPrice), FALSE);
+                }
             }
             
-            if($flag) {
-                unset($plans['enterprise']);
-            }
         }
 
         return Inertia::render('Subscription/subscription', ['current_plan' => $currentCompany->plan, 'user_id' => $user_id, 'plans' => $plans]);
