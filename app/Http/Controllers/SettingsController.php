@@ -235,20 +235,31 @@ class SettingsController extends Controller
         foreach ($plan_record as $record) {
             // Insert current plan currency type and payment interval time
             $plan = Plan::find($record->plan_id);
-            
+
             if(isset($plan)){
                 $record->period = $plan->billing_period;
                 $record->currency = $plan->currency;
                 $plans[$record->plan] = $record;
             }
         }
-
+        
         // If the company has custom plan, change the plan records
         if($customPlan) {
             $customSubscription = DB::table('plans')->where('plan_id', $customPlan->plan_id)->get();
            
             foreach ($customSubscription as $subscription){
-                $plans[$subscription->plan] = $subscription;
+                
+                if(!array_key_exists($subscription->plan, $plans)) {
+                   
+                    $plan = Plan::find($subscription->plan_id);
+
+                    if(isset($plan)){
+                        $subscription->period = $plan->billing_period;
+                        $subscription->currency = $plan->currency;
+                    }
+
+                    $plans[$subscription->plan] = $subscription;
+                }
                 $flag = true;
             }
             
