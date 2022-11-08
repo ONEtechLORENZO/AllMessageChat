@@ -10,7 +10,7 @@ function Search(props)
     useEffect(() => {
         setSearch(props.search);
     }, [props.search]);
-    
+    const pathname = window.location.pathname;
 
     /**
      * Trigger search
@@ -23,7 +23,10 @@ function Search(props)
        }
         else 
         {
-       Inertia.get(route('list' + props.module) +'?page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order);
+            if(props.module=="Company" && !(pathname.includes('admin/'))) 
+                Inertia.get(route('listAdminCompany') +'?page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order); 
+            else
+                Inertia.get(route('list' + props.module) +'?page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order);
         }
     }
 

@@ -2575,13 +2575,13 @@ select {
 	--tw-text-opacity: 1;
 	color: rgba(29, 78, 216, var(--tw-text-opacity));
 }
-.text-blue-500 {
-	--tw-text-opacity: 1;
-	color: rgba(59, 130, 246, var(--tw-text-opacity));
-}
 .text-yellow-400 {
 	--tw-text-opacity: 1;
 	color: rgba(251, 191, 36, var(--tw-text-opacity));
+}
+.text-blue-500 {
+	--tw-text-opacity: 1;
+	color: rgba(59, 130, 246, var(--tw-text-opacity));
 }
 .text-black {
 	--tw-text-opacity: 1;

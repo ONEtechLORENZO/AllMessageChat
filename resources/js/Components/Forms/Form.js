@@ -59,7 +59,7 @@ function Form(props)
     const cancelButtonRef = useRef(null)
 
     const { data, setData, post, processing, errors, reset } = useForm({});
-
+   
     useEffect(() => {
         fetchModuleFields();       
 
@@ -101,8 +101,8 @@ function Form(props)
             nProgress.done(true);
             if(response.data.status !== false) {
                 setData(response.data.record);
-                setLineItems(response.data.lineItems);
-                setProductList(response.data.productList)           
+                setLineItems((response.data.lineItems)?response.data.lineItems:props.lineItems);
+                setProductList((response.data.productList)?response.data.productList :productList)           
             }
             else {
                 notie.alert({type: 'error', text: response.data.message, time: 5});

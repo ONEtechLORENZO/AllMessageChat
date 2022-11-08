@@ -13,13 +13,16 @@ use App\Models\Price;
 use App\Models\Wallet;
 use App\Models\Msg;
 use App\Models\Plan;
+use Illuminate\Support\Facades\Log;
 use Cache;
 use Mail;
+use Session;
 use DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Account;
 use App\Models\Automation;
+use Schema;
 
 class CompanyController extends Controller
 {
@@ -28,7 +31,7 @@ class CompanyController extends Controller
         'name' => ['label' => 'Name', 'type' => 'text'],
         'company_address' =>  ['label' => 'Address', 'type' => 'text'],
         'company_country' =>  ['label' => 'Country', 'type' => 'text'],
-        'email' => ['label' =>'Email', 'type' => 'text'],
+        'email' => ['label' =>'Email', 'type' => 'email'],
         'currency' => ['label' =>'Currency', 'type' => 'text'],
         'plan' => ['label' =>'Plan', 'type' => 'text'],       
     ];
@@ -118,8 +121,11 @@ class CompanyController extends Controller
                 'company_id' => $company->id
             ]);
         }
-       // return Redirect::route('detailCompany', $company->id );
-       return Redirect::route('dashboard');
+        if(($request->user()->role == 'global_admin') && ($request->is('admin/*')))
+             return Redirect::route('detail_global_Company', $company->id );
+        else
+             return Redirect::route('detailCompany', $company->id );
+       //return Redirect::route('dashboard');
     }
 
     /**
@@ -225,11 +231,19 @@ class CompanyController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request,$id)
     {
         $company = Company::find($id);
-        $company->delete();
-        return Redirect::route('listCompany');
+        Schema::disableForeignKeyConstraints();
+        if ($company->delete()) {
+            Log::info('Company deleted.');
+            Schema::enableForeignKeyConstraints();
+         }
+         if(($request->user()->role == 'global_admin') && ($request->is('admin/*')))
+            return Redirect::route('listCompany');
+         else
+            return Redirect::route('listAdminCompany');
+        
     }
 
     /**
@@ -359,7 +373,9 @@ class CompanyController extends Controller
 
             $company->payment_method = $request->method;
             $company->save();
-
+        if(($request->user()->role == 'global_admin') && ($request->is('admin/*')))
+             return Redirect::route('detail_global_Company', ['id' => $request->id] );
+        else
             return Redirect::route('detailCompany', ['id' => $request->id]);
         }
     }
