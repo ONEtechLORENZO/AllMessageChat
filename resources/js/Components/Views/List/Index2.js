@@ -1,7 +1,7 @@
 import React, { useEffect, useState, Fragment } from 'react';
 import Pagination from '@/Components/Pagination';
 import Alert from '@/Components/Alert';
-import Button from '@/Components/Forms/Button';
+// import Button from '@/Components/Forms/Button';
 import Axios from "axios";
 import Form from '@/Components/Forms/Form';
 import { ChevronDownIcon, ChevronUpIcon, UserAddIcon, PencilAltIcon, TrashIcon, UploadIcon, DownloadIcon, CollectionIcon } from '@heroicons/react/solid';
@@ -14,6 +14,8 @@ import axios from "axios";
 import { Menu, Transition } from '@headlessui/react'
 import ListTable from './ListTable';
 import MassEdit from './MassEdit';
+
+import { Button } from "reactstrap";
 
 
 function ListView(props)
@@ -255,55 +257,59 @@ function ListView(props)
                             />
                         }
                     </div>
-                    <div className='flex gap-4'>
+                    <div className='flex gap-3 align-self-center'>
                         {props.actions && props.actions.invite_user === true ?
                             <>
-                                <button 
+                                <Button 
                                     type = 'button'
                                     onClick={() => props.setInviteUser(true) }
-                                    className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
+                                    
+                                    
                                 > 
                                     <UserAddIcon className='h-4 w-4 mr-1' /> Invite Users 
-                                </button>
+                                </Button>
                             </>
                         : ''}
                         {props.actions && props.actions.field_group === true ?
                             <>
-                                <button 
+                                <Button 
                                     type = 'button'
                                     onClick={() => props.setFieldGroup(true) }
-                                    className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
+                                    className='d-flex gap-1 items-center px-4 py-2 font-semibold shadow-md text-sm btn-square'
+                                    color="light"
                                 > 
                                     Add Field Group 
-                                </button>
+                                </Button>
                             </>
                         : ''}
                         {props.actions && props.actions.order_field === true ?
                             <>
-                                <button 
+                                <Button 
                                     type = 'button'
                                     onClick={() => props.setOrderFields(true) }
-                                    className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
+                                    className='d-flex gap-1 items-center px-4 py-2 font-semibold shadow-md text-sm btn-square'
+                                    color="light"
                                 > 
                                     Order fields 
-                                </button>
+                                </Button>
                             </>
                         : ''}
                         {props.actions && props.actions.merge === true ?
                             <>
-                                <button
-                                    className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
+                                <Button
+                                    className='d-flex gap-1 items-center px-4 py-2 font-semibold shadow-md text-sm btn-square'
+                                    color="light"
                                     onClick={() => recordMerger()}
                                 >
                                     <CollectionIcon className='h-4 w-4' /> Merge
-                                </button>
+                                </Button>
                             </>
                         : ''}
                         {props.actions && props.actions.import === true ?
                             <>
                                 <Link 
                                     href={route('listImport')}
-                                    className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
+                                    className='d-flex gap-1 items-center px-4 py-2 font-semibold shadow-md text-sm btn btn-light'
                                 > 
                                     <UploadIcon className='h-4 w-4 cursor-pointer' /> Import 
                                 </Link>
@@ -312,7 +318,7 @@ function ListView(props)
                         {props.actions && props.actions.export === true ?
                             <>
                                 <a href={route('export',{'exportmod':props.module})} 
-                                    className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
+                                    className='d-flex gap-1 items-center px-4 py-2 font-semibold shadow-md text-sm btn btn-light'
                                 >
                                     <DownloadIcon className='h-4 w-4' /> Export 
                                 </a>
@@ -320,12 +326,12 @@ function ListView(props)
                         : ''}
                         {props.actions && props.actions.mass_edit === true ?
                             <>
-                                <button
-                                    className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold shadow-md text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3D4459]'
+                                <Button
+                                    className='d-flex gap-1 items-center px-4 py-2 font-semibold shadow-md text-sm btn-square'
                                     onClick={() => massEdit()}
                                 >
                                     <PencilAltIcon className='h-4 w-4' /> Mass edit
-                                </button>
+                                </Button>
                             </>
                         : ''}
                         
@@ -356,7 +362,7 @@ function ListView(props)
                                     <Menu as="div" className="relative inline-block text-left">
                                         <div>
                                             <Menu.Button                                               
-                                                className="ba-field-dropdown inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100"
+                                                className="ba-field-dropdown inline-flex w-full justify-center rounded-md px-4 py-2 text-sm font-medium btn btn-light"
                                             >
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-5">
                                                     <path fillRule="evenodd" d="M14 18h2.75A2.25 2.25 0 0019 15.75V4.25A2.25 2.25 0 0016.75 2H14v16zM12.5 2h-5v16h5V2zM3.25 2H6v16H3.25A2.25 2.25 0 011 15.75V4.25A2.25 2.25 0 013.25 2z" clipRule="evenodd" />
@@ -366,15 +372,15 @@ function ListView(props)
 
                                         <Transition
                                             as={Fragment}
-                                            enter="transition ease-out duration-100"
-                                            enterFrom="transform opacity-0 scale-95"
-                                            enterTo="transform opacity-100 scale-100"
-                                            leave="transition ease-in duration-75"
+                                            enter="transition ease-out duration-100 "
+                                            enterFrom="transform opacity-0 scale-95 "
+                                            enterTo="transform opacity-100 scale-100 "
+                                            leave="transition ease-in duration-75 "
                                             leaveFrom="transform opacity-100 scale-100"
                                             leaveTo="transform opacity-0 scale-95"
                                         >
                                             <Menu.Items 
-                                                className={"absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none "}
+                                                className={"absolute right-0 mt-2 w-56 z-[500] origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none "}
                                             >
 
                                                 <ul role="list" className="divide-y divide-gray-200 overflow-y-auto m-h-64">
@@ -428,8 +434,8 @@ function ListView(props)
                 : ''}
                 
                 <div className="mt-2 flex flex-col">
-                    <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                        <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+                    <div className="">
+                        <div className="inline-block min-w-full py-2 align-middle">
 
                             <ListTable 
                                 module={props.module}

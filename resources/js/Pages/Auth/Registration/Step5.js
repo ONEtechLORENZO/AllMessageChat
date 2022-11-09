@@ -7,7 +7,7 @@ import axios from "axios";
 import { Inertia } from '@inertiajs/inertia';
 
 const tiers = [
-    { name: 'Lite', href: '#', priceMonthly: 0, currency: '€',description: '' , original: 'lite'},
+    { name: 'Start for Free ', href: '#', priceMonthly: 0, currency: '€',description: '' , original: 'lite'},
     { name: 'Pro', href: '#', priceMonthly: 49, currency: '€',description: '' , original: 'pro'},
     {
       name: 'Business',
@@ -93,7 +93,12 @@ export default function Step5 (props) {
                                             scope="col"
                                         >
                                             <p className="px-6 py-2 rounded">
-                                                {tier.name}
+                                                {tier.original == 'lite'?
+                                                    <>Lite</>
+                                                    :
+                                                    <> {tier.name}</>
+                                                }
+                                               
                                             </p>
                                         </th>
                                         ))}

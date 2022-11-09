@@ -6,20 +6,21 @@ import notie from 'notie';
 import nProgress from 'nprogress';
 
 const validateList = [
-    'first_name','last_name','email','phone_number','password'
+    'first_name','last_name','email','password','confirm_password'
 ];
 
 export default function Step1 (props) {
 
     const [user, setUser] = useState({});
     const [passwordType, setPasswordType] = useState("password");
+    const [condition, setCondition] = useState(false);
     
     useEffect( () => { 
         if(props.userMail) {
             updateUserData();
         }
     },[]);
-    
+
     /**
      * Update user data
      */
@@ -61,7 +62,7 @@ export default function Step1 (props) {
             setPasswordType('password');
         }
     }
-
+    
     function userValidation (user) {
        let validate = true;
        let field_value = '';
@@ -82,11 +83,38 @@ export default function Step1 (props) {
             notie.alert({type: 'error', text: error[0], time: 5});
         } )
     }
+    
+    // Check Password and Re-enter are match 
+    function confirmPassword(user) {
+
+       let check = true;
+       const password = user['password'];
+       const confirm_password = user['confirm_password']; 
+
+       if(password != confirm_password){
+          notie.alert({type: 'warning', text: 'Please re-enter your password', time: 5});
+          check = false;
+       }
+       return check;
+    }
+
+    function checkCondition(check) {
+        let terms = check ? false : true;
+        setCondition(terms);
+    }
 
     function saveUserDetail () {
 
         let is_validate = userValidation(user);
         if(!is_validate) {
+            return false;
+        }
+        let confirmation = confirmPassword(user);
+        if(!confirmation){
+            return false;
+        }
+        if(!condition){
+            notie.alert({type: 'warning', text: 'Check all the terms and conditions', time: 5});
             return false;
         }
         nProgress.start(0.5);
@@ -95,8 +123,8 @@ export default function Step1 (props) {
         let url = route('new_user');
         axios.post(url, user).then( (response) => {
             if(response.data.step) {
-                props.setOpenTab(7);
                 nProgress.done(true);
+                props.setOpenTab(7);
             } else {
                 nProgress.done(true);
                 let newUser = Object.assign({}, user);
@@ -112,7 +140,7 @@ export default function Step1 (props) {
     }
 
     return (
-        <div className="h-screen w-full bg-blue-50 flex justify-center items-center">
+        <div className="w-full bg-blue-50 flex justify-center items-center">
             <div className="max-w-7xl flex mx-auto items-center px-10">
                 <div className="w-full bg-white self-stretch flex justify-center py-24 rounded-xl px-4 lg:px-10">
                   <form id="form">
@@ -127,10 +155,10 @@ export default function Step1 (props) {
                         <div className="flex justify-end">
                             <span>Already have an account 
                                 <Link
-                                        href={route('login')}
-                                        className="text-primary px-2"
-                                        >
-                                        Log in
+                                  href={route('login')}
+                                  className="text-primary px-2"
+                                >
+                                    Log in
                                 </Link>
                             </span>
                         </div> 
@@ -194,24 +222,6 @@ export default function Step1 (props) {
 
                         <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
                             <div className="text-gray-500">
-                               <PhoneIcon className="h-6 w-6" />
-                            </div>
-                            <div className="flex flex-col flex-1">
-                                <label>Telephone Number <span className="text-red-500">  * </span>  </label>
-                                <input
-                                    type="text"
-                                    name="phone_number"
-                                    className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
-                                    autoComplete="off"
-                                    value={user['phone_number'] ? user['phone_number'] : ''}
-                                    onChange={(e) => changePhoneNumber(e)}
-                                />
-                            </div>
-                            <div className="w-4"></div>
-                        </div>
-
-                        <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
-                            <div className="text-gray-500">
                                <KeyIcon className="h-6 w-6" />
                             </div>
                             <div className="flex flex-col flex-1">
@@ -231,16 +241,51 @@ export default function Step1 (props) {
                                 </div>
                             </div>
                         </div>
-                        
-                        <div className="py-8 flex justify-end">
-                            <button
-                                type="button"
-                                className="w-full inline-flex justify-end rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary hover:bg-primary/80 text-semibold font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm mt-8"
-                                onClick={() => saveUserDetail()}
+
+                        <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                            <div className="text-gray-500">
+                               <KeyIcon className="h-6 w-6" />
+                            </div>
+                            <div className="flex flex-col flex-1">
+                                <label>Confirm Password <span className="text-red-500">  * </span>  </label>
+                                <input
+                                    type={passwordType}
+                                    name="confirm_password"
+                                    className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
+                                    autoComplete="off"
+                                    value={user['confirm_password'] ? user['confirm_password'] : ''}
+                                    onChange={(e) => userHandler(e)}
+                                />
+                            </div>
+                            <div className="cursor-pointer w-4">
+                                <div className="text-gray-500">
+                                   <EyeIcon className="h-4 w-4" onClick={() => showPassword()}/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 mt-4">
+                            <div className="flex justify-start items-center">
+                                <div className="">
+                                    <input
+                                        type="checkbox"
+                                        checked={condition == true ? 'checked' : ''}
+                                        className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                        onChange={() => checkCondition(condition)}
+                                    />
+                                </div>
+                                <div className="px-3">Accept Privacy Policy and Terms and Condition</div>
+                            </div>
+                            <div className="flex justify-end">
+                                <button
+                                    type="button"
+                                    className="w-full inline-flex justify-end rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary hover:bg-primary/80 text-semibold font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm mt-4"
+                                    onClick={() => saveUserDetail()}
                             >
-                                Next
-                                <span className="flex justify-end pt-1 pl-2"><ChevronRightIcon className="h-4 w-4"/></span>
-                            </button>
+                                    Next
+                                    <span className="flex justify-end pt-1"><ChevronRightIcon className="h-4 w-4"/></span>
+                                </button>
+                            </div>
                         </div>
             
                     </div>

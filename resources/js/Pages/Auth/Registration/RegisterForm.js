@@ -21,7 +21,7 @@ export default function RegisterForm (props) {
         let uuid = props.uuid ? props.uuid : '';
         newMail['email'] = mail;
         newMail['uuid'] = uuid;
-        if(props.step < 4 ){
+        if(props.step < 3 ){
             newMail['user_id'] = props.user_id;
             setOpenTab(props.step);
             setCompanyId(props.company_id);

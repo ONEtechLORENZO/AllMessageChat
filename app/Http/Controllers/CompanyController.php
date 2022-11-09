@@ -349,18 +349,19 @@ class CompanyController extends Controller
     public function billingInformation(Request $request) {
         
         $company_id = $request->company_id;
-
         $company = Company::findOrFail($company_id);
 
-        if($company) {
-            $company->company_country = $request->company_country;
-            $company->company_address = $request->company_address;
-            $company->company_vat_id = $request->company_vat_id;
-            $company->email = $request->email;
-            $company->save();
+        $companyFields = ['company_country', 'company_vat_id', 'company_address', 'email', 'city', 'state', 'country', 'codice_destinatario'];
+        
+        foreach($companyFields as $field) {
+            if($request->has($field)) {
+                $company->$field = $request->$field;
+            }
         }
 
-        Cache::put('user_steps_status_'. $request->user_id, 4 );
+        $company->save();
+
+        Cache::put('user_steps_status_'. $request->user_id, 5 );
 
         return response()->json(['status' => true]);
     }

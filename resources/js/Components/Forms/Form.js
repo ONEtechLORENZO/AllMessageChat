@@ -404,7 +404,7 @@ function Form(props)
                                 : ''}
 
                                 <form id='form'>
-                                    <div className='p-4 space-y-4'>
+                                    <div className='space-y-4'>
                                         {fields && fields.map((field_info,index) => { 
                                             let element = ''; 
                                             let readOnly = true;

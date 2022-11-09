@@ -251,14 +251,14 @@ export default function Index(props) {
             <div>
                 <Head title={props.module}/>
                 <ul className="py-4 space-y-2 sm:px-6 sm:space-y-4 lg:px-8" role="list">
-                    <li className="bg-white px-4 py-6 shadow sm:rounded-lg sm:px-6">
+                    <li className="border border-gray-500 px-4 py-6 sm:rounded-xl sm:px-6">
                         <div className="sm:flex sm:justify-between sm:items-baseline">
                             <h3 className="text-base font-medium flex w-full">
                             {(props.module != 'SupportRequest') &&
                                 <div>
                                     <span className="text-gray-900 p-3">
-                                        <span className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-gray-500">
-                                            <span className="text-3xl font-medium leading-none text-white">
+                                        <span className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-gray-500">
+                                            <span className="text-3xl font-medium leading-none text-uppercase text-white">
                                                 {(props.module == 'Contact' || props.module == 'Lead') ?
                                                     <> { record.first_name ? (record.first_name).substring(0,2) : (record.last_name).substring(0,2)} </>
                                                     :
@@ -316,6 +316,7 @@ export default function Index(props) {
                                 </>
                             }
                         </h3>
+                        <div className="d-flex align-items-center">
                         {(props.module == 'Lead') || (props.module == 'Opportunity')  ?
                             <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
                                 {(props.module == 'Lead') ? <div>
@@ -337,6 +338,7 @@ export default function Index(props) {
                                 </div>}
                             </div>
                             : ''}
+                            
                          {(props.module == 'Company' && props.role == 'global_admin') ?
                             <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
                                 <div>
@@ -359,18 +361,22 @@ export default function Index(props) {
                                 </button>
                             </div>
                         </div>
+                        </div>
                     </div>
                 </li> 
-                <li className="bg-white px-4 py-6 shadow sm:rounded-lg sm:px-6">
-                    <ul id="props.tabs" className="inline-flex w-full px-1 pt-2 ">
+                <li className="border border-gray-500 px-4 py-6 sm:rounded-xl sm:px-6">
+                    <ul id="props.tabs" className="inline-flex w-full px-1 pt-2 border-bottom">
                         {Object.entries(props.tabs).map(([key, tab]) => {
-                            var activeClassName = "px-4 py-2 -mb-px font-semibold text-gray-800 rounded-t opacity-50";
+                            var activeClassName = "px-3 py-2 -mb-px font-semibold text-gray-800 rounded-t";
+                            
+                            let activeHrefClass = "text-gray-600"
                             if (activeTab == tab.name) {
                                 activeClassName += ' border-b-2 border-blue-400';
+                                activeHrefClass = "text-primary"
                             }
                             return (
                                 <li className={activeClassName} onClick={() => setActiveTab(tab.name)}>
-                                    <a id="default-tab" href={"#" + tab.name}> {tab.label} </a>
+                                    <a id="default-tab" href={"#"+tab.name} className={activeHrefClass}> {tab.label} </a>
                                 </li>
                             )
                         })}
@@ -387,18 +393,18 @@ export default function Index(props) {
                          </>}                      
                      
                         
-                        <div id="tab-contents">
+                        <div id="tab-contents" className="my-3">
                             
                             {activeTab == 'Detail' && (props.module != 'SupportRequest') &&
                                <>
-                               <div className="bg-gray-50">
+                               <div className="bg-gray-50 ">
                                    <dl className="text-gray-200 divide-y">
                                        <Disclosure as="div" key='General' className="" defaultOpen>
                                            {({ open }) => (
                                            <>
-                                               <dt className="pt-2">
-                                                   <Disclosure.Button className="flex w-full items-start justify-between text-left text-gray-500">
-                                                       <span className="px-2 -mb-px font-semibold text-gray-800 rounded-t opacity-70">General</span>
+                                               <dt className="p-2 bg-gray-200 rounded-lg">
+                                                   <Disclosure.Button className="flex w-full items-start align-items-center justify-between text-left text-gray-500">
+                                                       <span className="px-2 -mb-px font-semibold text-gray-800 rounded-t">General</span>
                                                        <span className="ml-6 flex h-7 items-center">
                                                        <ChevronDownIcon
                                                            className={classNames(open ? '-rotate-180' : 'rotate-0', 'h-4 w-4 transform')}
@@ -408,7 +414,7 @@ export default function Index(props) {
                                                    </Disclosure.Button>
                                                </dt>
                                                    <Disclosure.Panel as="dd" className="mt-2 pr-12">
-                                                   <div>
+                                                   <div className="divide-y divide-gray-200">
                                                        {Object.entries(defaultHeader).map( ([key, field]) => {
                                                            var field_name = key;
                                                            let showField = true;
@@ -473,7 +479,7 @@ export default function Index(props) {
 
                                                            if(showField) {
                                                                return(
-                                                                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                                   <div className="py-2 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4">
                                                                        <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
                                                                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex"> 
                                                                          <InlineEdit 
@@ -491,7 +497,7 @@ export default function Index(props) {
 
                                                            if(key == 'tag'){
                                                                return(
-                                                                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                                   <div className="py-2 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4">
                                                                        <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
                                                                        <dd className="flex"> 
                                                                            <ReactSelect
@@ -509,7 +515,7 @@ export default function Index(props) {
                                                            }   
                                                            if(key == 'list'){
                                                                return(
-                                                                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                                   <div className="py-2 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4">
                                                                        <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
                                                                        <dd className="flex"> 
                                                                            <ReactSelect
@@ -535,15 +541,15 @@ export default function Index(props) {
                                </div>
 
                                {customHeader &&
-                                   <div className="bg-gray-50">
-                                   <dl className="text-gray-200 divide-y">
+                                   <div className="bg-gray-50 ">
+                                   <dl className="text-gray-200">
                                        {Object.entries(customHeader).map(([group, fields]) => (
                                        <Disclosure as="div" key={group} className="" defaultOpen>
                                            {({ open }) => (
                                            <>
-                                               <dt className="pt-2">
+                                               <dt className="p-2 bg-gray-200 rounded-lg mt-3">
                                                <Disclosure.Button className="flex w-full items-start justify-between text-left text-gray-500">
-                                                   <span className="px-2 -mb-px font-semibold text-gray-800 rounded-t opacity-70">{group}</span>
+                                                   <span className="px-2 -mb-px font-semibold text-gray-800 rounded-t">{group}</span>
                                                    <span className="ml-6 flex h-7 items-center">
                                                    <ChevronDownIcon
                                                        className={classNames(open ? '-rotate-180' : 'rotate-0', 'h-4 w-4 transform')}
@@ -553,7 +559,7 @@ export default function Index(props) {
                                                </Disclosure.Button>
                                                </dt>
                                                <Disclosure.Panel as="dd" className="mt-2 pr-12">
-                                               <div>
+                                               <div className="divide-y divide-gray-200">
                                                    {Object.entries(fields).map(([key,field]) => { 
                                                        var field_name = key;
                                                        var value = (record[key]) ? record[key] : (record.custom && record.custom[key]) ? record.custom[key] : '-';
@@ -590,7 +596,7 @@ export default function Index(props) {
                                                        }
 
                                                        return(
-                                                           <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                           <div className="py-2 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4">
                                                                <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
                                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex">
                                                                  <InlineEdit 

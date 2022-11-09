@@ -23,7 +23,7 @@ function List(props)
             current_page={props.current_page}
         >
                 <nav
-                    className="px-4 sm:px-6 flex space-x-8 gap-2"
+                    className="px-4 sm:px-6 flex gap-2 mb-3"
                     aria-label="Tabs"
                 >
                     {tabs.map((tab) => (
@@ -32,9 +32,9 @@ function List(props)
                             href={tab.href}
                             className={classNames(
                                 tab.current
-                                    ? "border-purple-500 text-primary"
-                                    : "border-transparent text-gray-500 text-[#3D4459] hover:text-primary hover:border-purple-500",
-                                "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base  my-6"
+                                    ? "bg-primary text-white shadow-blue-500/50 shadow-md"
+                                    : "border-transparent text-gray-500  hover:bg-[#545cd8] hover:text-white hover:shadow-blue-500/50 hover:shadow-md",
+                                "whitespace-nowrap px-3 py-2 font-medium text-base  my-2 rounded-md"
                             )}
                         >
                             {tab.name}  

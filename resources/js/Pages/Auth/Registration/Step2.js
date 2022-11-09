@@ -11,6 +11,10 @@ const validateList = [
     'name', 'currency', 'time_zone'
 ];
 
+const defaultValue = {
+    'currency' : 'EUR','time_zone': 'Europe/Rome'
+};
+
 export default function Step2 (props) {
 
     const [workspace, setWorkspace] = useState({});
@@ -18,6 +22,7 @@ export default function Step2 (props) {
 
     useEffect( () => {
         getTimezones();
+        setWorkspace(defaultValue);
     },[]);
 
     // Workspace handling 
@@ -54,13 +59,14 @@ export default function Step2 (props) {
     } 
 
     function saveWorkspace () {
-        nProgress.start(0.5);
-        nProgress.inc(0.2);
 
         let is_validate = validation(workspace);
         if(!is_validate) {
             return false;
         }
+
+        nProgress.start(0.5);
+        nProgress.inc(0.2);
 
         let url = route('saveWorkspace');
         axios.post(url, workspace).then( (response) => {
@@ -105,7 +111,7 @@ export default function Step2 (props) {
                             <HomeIcon className="h-6 w-6" />
                             </div>
                             <div className="flex flex-col flex-1">
-                                <label>Workspace Name <span className="text-red-500">  * </span>  </label>
+                                <label>Company Workspace Name <span className="text-red-500">  * </span>  </label>
                                 <input
                                     type="text"
                                     name="name"

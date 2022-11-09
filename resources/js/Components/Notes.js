@@ -205,7 +205,7 @@ return(
               { (note.current_user == note.assigned_to && !(note.status)) ?
               <div className="mt-1 text-sm  sm:mt-0 text-right content-right">
               <input
-                  className="rounded border-green-400 text-green-600 shadow-sm focus:border-green-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 "
+                  className="rounded border-green-400 text-green-600 shadow-sm focus:border-green-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 w-full"
                   type="checkbox"
                   id={note.id}
                   name={note.id}
