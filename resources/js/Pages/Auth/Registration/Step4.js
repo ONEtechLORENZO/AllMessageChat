@@ -39,7 +39,7 @@ export default function Step4 (props) {
                         </div> 
 
                         <div className="grid grid-cols-2 mt-5">
-                            <div className="flex justify-start font-semibold text-lg text-primary">Step 5</div>
+                            <div className="flex justify-start font-semibold text-lg text-primary">Step 4</div>
                             <div className="flex justify-end font-semibold text-lg">Payment Method</div>
                         </div>
 
