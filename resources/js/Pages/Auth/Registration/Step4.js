@@ -12,7 +12,7 @@ export default function Step4 (props) {
      */
     function setPlanPage(){
         props.setAddStrip(true);
-        props.setOpenTab(6);
+        props.setOpenTab(7);
     }
 
     return (
@@ -39,7 +39,7 @@ export default function Step4 (props) {
                         </div> 
 
                         <div className="grid grid-cols-2 mt-5">
-                            <div className="flex justify-start font-semibold text-lg text-primary">Step 4</div>
+                            <div className="flex justify-start font-semibold text-lg text-primary"></div>
                             <div className="flex justify-end font-semibold text-lg">Payment Method</div>
                         </div>
 
@@ -72,7 +72,7 @@ export default function Step4 (props) {
                                 <button
                                     type="button"
                                     className="w-full inline-flex justify-start rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-200 hover:bg-gray-900 hover:text-white text-semibold font-medium text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm mt-4"
-                                    onClick={() => props.setOpenTab(6)}
+                                    onClick={() => props.setOpenTab(7)}
                                >
                                     Connect later
                                     <span className="flex justify-end pt-1"><ChevronRightIcon className="h-4 w-4"/></span>

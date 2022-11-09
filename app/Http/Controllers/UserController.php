@@ -1690,8 +1690,14 @@ class UserController extends Controller
      * get User Timezone
      */
     public function getUserTimeZone(Request $request)
-    {
-        echo json_encode(['time_zone' => $this->timezones ]);
+    {   
+        $zones = $this->timezones;
+        $timezones = [];
+        foreach($zones as $country => $time) {
+            $timezones[] = ['value' => $country, 'label' => $time];
+        }
+        
+        echo json_encode(['time_zone' => $timezones ]);
     }
 
     /**

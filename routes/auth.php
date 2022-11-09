@@ -84,5 +84,7 @@ Route::get('/company/plan', [SettingsController::class, 'updateSubscription'])
                ->name('showPlan');
 
 Route::post('/billingInformation', [CompanyController::class, 'billingInformation'])
-               ->name('billing_information');               
+               ->name('billing_information');
+
+Route::get('/company/plan/records', [SettingsController::class, 'getDefaultPlan'])->name('get_plan');               
                 
