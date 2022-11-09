@@ -38,9 +38,10 @@ class FieldSeeder extends Seeder
         $this->createField('Plan', 'pricing_model', 'Price Model', 'dropdown', '1', $price_model, 'true', '5');
         $this->createField('Plan', 'currency', 'Currency Type', 'dropdown', '1', $stripeCurrency, 'true', '6');
 
-        $this->createField('Company', 'company_country', 'Company Country', 'dropdown', '0', $country, 'false', 10);
-        $this->createField('Company', 'currency', 'Currency', 'dropdown', '0', $stripeCurrency, 'false',11);
+        $this->createField('Company', 'country', 'Country', 'dropdown', '0', $country, 'false', 6);
+        $this->createField('Company', 'currency', 'Currency', 'dropdown', '1', $stripeCurrency, 'false',11);
         $this->createField('Company', 'time_zone', 'Time zone', 'dropdown', '0', $timeZone, 'false',12);
+        $this->createField('Company', 'company_country', 'Company Country', 'dropdown', '0', $country, 'false', 10);
 
         // Add Service entries
         DB::table('services')->insert([
@@ -77,7 +78,6 @@ class FieldSeeder extends Seeder
             ['module_name' => 'Company', 'field_name' => 'address_line_2', 'field_label' => 'Address Line 2', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '3'],
             ['module_name' => 'Company', 'field_name' => 'city', 'field_label' => 'City', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '4'],
             ['module_name' => 'Company', 'field_name' => 'state', 'field_label' => 'State', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '5'],
-            ['module_name' => 'Company', 'field_name' => 'country', 'field_label' => 'Country', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '6'], 
             ['module_name' => 'Company', 'field_name' => 'status', 'field_label' => 'Status', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '7'],
             ['module_name' => 'Company', 'field_name' => 'company_address', 'field_label' => 'Company Address', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '8'],
             ['module_name' => 'Company', 'field_name' => 'company_vat_id', 'field_label' => 'Company VAT ID', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '13'],

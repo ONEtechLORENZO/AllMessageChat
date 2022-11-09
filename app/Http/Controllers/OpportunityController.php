@@ -326,7 +326,7 @@ class OpportunityController extends Controller
         
         $productList = [];
         $lineItems=[];
-       // $productList[] = ['value' => '', 'label' => 'Select', 'id' => ''];
+        $productList[] = ['value' => '', 'label' => 'Select', 'id' => ''];
         foreach($opportunity_products as $products)
         {
         $product = Product::where('id', $products->product_id)->get(['id','name','price'])->first();
@@ -338,6 +338,7 @@ class OpportunityController extends Controller
             'amount' => 0,
             'id' => $product->id
         ];
+       // $totalPrice += $product->price;
         }  
         return array($productList,$lineItems);
     }

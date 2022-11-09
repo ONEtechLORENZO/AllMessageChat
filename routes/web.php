@@ -346,7 +346,7 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     //Company   
     Route::get('/workspaces', [CompanyController::class, 'index'])->name('listAdminCompany');
     Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');
-   // Route::get('/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
+    Route::get('/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
     Route::get('/company/edit/{id}', [CompanyController::class, 'edit'])->name('editCompany');
     Route::post('/company/update/{id}', [CompanyController::class, 'store'])->name('updateCompany');
     Route::delete('/company/delete/{id}', [CompanyController::class, 'destroy'])->name('deleteCompany');
@@ -367,7 +367,7 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
 
     //Workspaces
     Route::get('/admin/workspaces', [CompanyController::class, 'index'])->name('listCompany');
-    Route::get('/admin/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
+    Route::get('/admin/company/detail/{id}', [CompanyController::class, 'show'])->name('detail_global_Company');
     Route::post('/admin/paymentmethod', [CompanyController::class, 'paymentMethod'])->name('payment_method');
     Route::get('/admin/workspace/activity', [CompanyController::class, 'workspaceActivities'])->name('worksapce_activities');
 
