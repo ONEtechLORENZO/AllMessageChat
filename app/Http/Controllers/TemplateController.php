@@ -233,9 +233,9 @@ class TemplateController extends Controller
             'category' => strtoupper(str_replace(' ', '_',$template->category)),
             'templateType' => strtoupper($data['data']->header_type),
             'vertical' => strtoupper(str_replace(' ', '_',$template->category)),
-            'content' => $data['data']->body,
+            'content' =>  $data['data']->body,
             'footer' => $data['data']->body_footer,
-            'example' => $data['data']->example,
+            'example' => $data['data']->body,
             'enableSample' => true,
         ];
 
@@ -246,8 +246,10 @@ class TemplateController extends Controller
             $postData['header'] = $data['data']->header_text;
             $postData['buttons'] = ($buttons);
         }
+    // dd( $endPoint , json_encode($postData));
+     $result = $this->restApiCall('POST', $endPoint, $header, ($postData));
+     //   dd($result);
 
-        $result = $this->restApiCall('POST', $endPoint, $header, ($postData));
         if($result['status'] == 'success') {
             $template->template_uid = $result['template']['id'];
             $template->type = $result['template']['templateType'];
