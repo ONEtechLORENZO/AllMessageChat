@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Cache;
 use App\Models\Field;
 use App\Models\User;
+use App\Models\Company;
 use DB;
 
 
@@ -94,12 +95,15 @@ class SupportRequestController extends Controller
          if($user){
             $supportRequest['assigned_to'] = [ 'label' => $user['name'] , 'value' => $user['id'], 'module' => 'User'];
         }  
-        
+        $workspace_name= Company::where('id',$companyId)->pluck('name');
+        $created_user= User::where('id',$supportRequest->created_by)->pluck('name');
         return Inertia::render('SupportRequest/Detail', [
             'record' => $supportRequest,            
             'headers' => $headers,
-            'created_by' => $supportRequest->created_by,           
+            'created_by' => $created_user,  
+            'workspace'=> $workspace_name,        
             'current_userid' => $request->user()->id, 
+            'role' => $request->user()->role,
             'translator' => [
                 'Detail' => __('Detail'),
                 'Notes' => __('Notes'),
@@ -116,8 +120,7 @@ class SupportRequestController extends Controller
      */
     public function edit(Request $request, $id)
     {
-        $module = new SupportRequest();
-        $SupportRequest = $this->checkAccessPermission($request, $module, $id);
+        $SupportRequest = SupportRequest::findOrFail($id);        
 
         if(!$SupportRequest) {
             return response()->json(['status' => false, 'message' => 'Record not found']);   

@@ -11,7 +11,7 @@ use Cache;
 
 class FormController extends Controller
 {
-    public $entity_modules = ['Contact','Lead', 'Product', 'Opportunity', 'Order', 'Campaign', 'User','Organization'];
+    public $entity_modules = ['Contact','Lead', 'Product', 'Opportunity', 'Order', 'Campaign', 'User','Organization','SupportRequest'];
 
     /**
      * Fetch module fields from Field model
@@ -52,13 +52,11 @@ class FormController extends Controller
         $fields = Field::where($whereCondition)->groupBy('field_name')->orderBy('sequence')->orderBy('id')->get();
         
         //only Global admin can change the status of a Support Request
-        if($module == 'SupportRequest' && $user->role != 'global_admin')
+      if($module == 'SupportRequest' && ($user->role != 'global_admin'))
         {
-            if( !($request->is('admin/*')) ) {
             $fields = $fields->filter(function ($value, $key) {
                 return $value['field_name'] != 'status';
-            });
-        }
+            });        
         }
         foreach($fields as $field) {
             if(($field['is_custom'] == '1' && $field['field_type'] == 'dropdown') 
