@@ -31,7 +31,7 @@ function ListTable(props){
 
     const [fields, setFields] = useState([]);
     const [fieldOptions, setFieldOptions ] = useState({});
-
+    const pathname = window.location.pathname;
     useEffect(() => {
         fetchModuleFields();
     }, [props.headers]);
@@ -149,7 +149,7 @@ function ListTable(props){
                                     }
                                     
                                     if(props.actions.detail === true && index === 0) {                                        
-                                        var url = (props.module === 'User' || props.module === 'Company' ||props.module === 'SupportRequest') && props.current_user.role === 'global_admin'?  'detail_global_'+props.module : 'detail'+props.module                                        
+                                        var url = (props.module === 'User' || props.module === 'Company' ||props.module === 'SupportRequest') && (props.current_user.role === 'global_admin' && (pathname.includes('admin/')))?  'detail_global_'+props.module : 'detail'+props.module                                        
                                             column_value = <Link href={route(url, {id: record.id})} className='cursor-pointer underline'>
                                              {column_value} 
                                         </Link>;                                          

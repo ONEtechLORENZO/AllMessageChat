@@ -302,12 +302,16 @@ export default function Index(props) {
                                 :
                                 <>
                                     <div className="pl-3 w-full">                                    
-                                        <div className="text-gray-600">{(props.module == 'SupportRequest') ? <>{record.subject}</>:<>{record.name}</>} </div>
+                                        <div className="text-black-800">{(props.module == 'SupportRequest') ? <>{record.subject}</>:<>{record.name}</>} </div>
                                         {props.module == 'Tag' || props.module == 'Category' || props.module == 'Plan' ?
                                             <div className={classNames(
                                                 addClass ? 'text-gray-600 break-words w-3/4' : 'text-gray-600 w-1/2 truncate'
                                             )} onClick={() => removeClass()}>{record.description} </div>
-                                            : (props.module == 'SupportRequest') ?  <div className="text-gray-600"> Status:  {record.status} </div>: ''}
+                                            : (props.module == 'SupportRequest') ?  
+                                            <><div className="text-gray-600"> Status        : {record.status} </div>
+                                               {props.role == 'global_admin'?
+                                              <><div className="text-gray-600"> Created by: <a href={route('detail_global_User', { id: record.created_by })} className='text-indigo-600 mx-1'>{props.created_by}</a> </div>
+                                              <div className="text-gray-600"> Workspace name: <a href={route('detail_global_Company', { id: record.company_id })} className='text-indigo-600 mx-1'>{props.workspace} </a></div></>:''}</>: ''}
                                     </div>
                                 </>
                             }

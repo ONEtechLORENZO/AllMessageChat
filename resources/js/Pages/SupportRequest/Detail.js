@@ -39,6 +39,8 @@ export default function Detail(props)
                 translator={props.translator}
                 current_userid={props.current_userid}
                 created_by = {props.created_by}
+                workspace={props.workspace}
+                role={props.role}
             />
             {showForm ?
                 <Form 
