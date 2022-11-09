@@ -140,7 +140,7 @@ export default function Step1 (props) {
     }
 
     return (
-        <div className="h-screen w-full bg-blue-50 flex justify-center items-center">
+        <div className="w-full bg-blue-50 flex justify-center items-center">
             <div className="max-w-7xl flex mx-auto items-center px-10">
                 <div className="w-full bg-white self-stretch flex justify-center py-24 rounded-xl px-4 lg:px-10">
                   <form id="form">
@@ -265,8 +265,8 @@ export default function Step1 (props) {
                         </div>
 
                         <div className="grid grid-cols-2 mt-4">
-                            <div className="flex justify-start">
-                                <div className="py-5">
+                            <div className="flex justify-start items-center">
+                                <div className="">
                                     <input
                                         type="checkbox"
                                         checked={condition == true ? 'checked' : ''}
@@ -274,7 +274,7 @@ export default function Step1 (props) {
                                         onChange={() => checkCondition(condition)}
                                     />
                                 </div>
-                                <div className="p-5">Accept Privacy Policy and Terms and Condition</div>
+                                <div className="px-3">Accept Privacy Policy and Terms and Condition</div>
                             </div>
                             <div className="flex justify-end">
                                 <button
