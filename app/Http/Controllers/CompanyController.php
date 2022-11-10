@@ -351,7 +351,7 @@ class CompanyController extends Controller
         $company_id = $request->company_id;
         $company = Company::findOrFail($company_id);
 
-        $companyFields = ['company_country', 'company_vat_id', 'company_address', 'email', 'city', 'state', 'country', 'codice_destinatario'];
+        $companyFields = ['company_country', 'company_vat_id', 'company_address', 'email', 'city', 'state', 'country', 'codice_destinatario','organization', 'phone_number'];
         
         foreach($companyFields as $field) {
             if($request->has($field)) {

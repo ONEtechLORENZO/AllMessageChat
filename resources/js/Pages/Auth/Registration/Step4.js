@@ -12,7 +12,12 @@ export default function Step4 (props) {
      */
     function setPlanPage(){
         props.setAddStrip(true);
-        props.setOpenTab(7);
+        if(props.stripe){
+            props.setOpenTab(7); 
+        }else {
+            props.setOpenTab(5);
+            props.setStripe(true);
+        }
     }
 
     return (
