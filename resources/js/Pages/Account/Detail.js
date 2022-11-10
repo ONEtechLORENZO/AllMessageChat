@@ -187,9 +187,10 @@ function Detail(props)
                                     if(!props.field_info[key]['label']){
                                         return;
                                     }
-                                    if( (key == 'service_engine' || key == 'service_token'|| key == 'fb_phone_number_id' || key == 'fb_whatsapp_account_id') && props.auth.user.role != 'global_admin'){
+                                    if(props.field_info[key].fb_show && !props.field_info[key].fb_show.includes(props.account.service_engine)) {
                                         return;
                                     }
+                                   
 
                                     return (
                                         <div key={key} className={`${bg_color} px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
