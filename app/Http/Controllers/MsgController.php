@@ -739,16 +739,16 @@ class MsgController extends Controller
             log::info(['Docuemnt data ' => $document ]);
             $parent = $this->getInfoUsingContactUniqueId($request->destination, $request->channel, $account->company_id, $user->id);
             $content = $request->content;
-            if($template){
+          
+            if($template && $template != 'undefined'){
                 $content = [];
                 $message =  Message::join('templates', 'templates.id' , 'template_id')
                     ->where('template_uid', $template)
                     ->first();
-                $sample = unserialize( base64_decode( $message->example) );
+                $sample = ($message->example) ? unserialize( base64_decode( $message->example) ) : [];
                 $contact = Contact::find($parent);
                 
                 foreach($sample as $key => $name){
-                 
                     $fieldValue = $this->replaceFieldValue($name, $contact);
                     $content[] = ['type' => 'text' , 'text' => $fieldValue];
                 } 
