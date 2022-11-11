@@ -656,4 +656,22 @@ class SettingsController extends Controller
         
         return response()->json(['status' => true]);
     }
+
+    public function getDefaultPlan() {
+
+        $plans = DB::table('plans')->where('default_plan', 'true')->get();
+
+        if($plans) {
+            foreach($plans as $key => $record) {
+                $plan = Plan::find($record->plan_id);  // GET Plan currency type and period 
+
+                if($plan){
+                    $record->period = $plan->billing_period;
+                    $record->currency = $plan->currency;
+                } 
+            }
+        }
+        
+        return response()->json(['status' => 200, 'plans' => $plans]);
+    }
 }

@@ -367,4 +367,17 @@ class PlanController extends Controller
  
  
     }
+
+    public function deleteCustomPlan(Request $request) {
+        
+        $plan_workspace = DB::table('plan_workspaces')             
+                         ->where('plan_id', $request->plan_id)
+                         ->where('company_id', $request->company_id)
+                         ->delete();
+        
+        return Redirect::route('detailPlan', ['id' => $request->plan_id]);
+    }
 }
+
+
+

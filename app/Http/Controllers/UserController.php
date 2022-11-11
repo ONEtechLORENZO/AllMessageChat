@@ -657,29 +657,48 @@ class UserController extends Controller
         $templates = Template::where('account_id', $id)->get();
         $webhookEvents = WebhookEvent::where('account_id', $id)->get();
 
+        // $field_info = [
+        //     'company_name' => ['label' => __('Name')],
+        //     'service_engine' => ['label' => 'Service Engine'],
+        //     'service_token' => ['label' => 'Service token'],
+        //     'fb_phone_number_id' => ['label' => 'FaceBook phone number ID'],
+        //     'fb_whatsapp_account_id' => ['label' => 'FaceBook whatsapp account ID'],
+        //     'service' => ['label' => __('Service')],
+        //     // 'company_type' => ['label' => 'Company type'],
+        //     // 'website' => ['label' => 'Website'],
+        //     // 'email' => ['label' => 'Email'],
+        //     // 'estimated_launch_date' => ['label' => 'Estimated launch date'],
+        //     // 'type_of_integration' => ['label' => 'Type of integration'],
+        //     'display_name' => ['label' => __('Display name'), 'show' => ['whatsapp']],
+        //     'phone_number' => ['label' => __('Phone number'), 'show' => ['whatsapp']],
+        //     'src_name' => ['label' => __('Source name'), 'show' => ['whatsapp', 'instagram']],
+        //     'api_partner' => ['label' => __('API partner'), 'show' => ['whatsapp']],
+        //     'api_partner_name' => ['label' => __('API partner Name'), 'show' => ['whatsapp']],
+        //     'business_manager_id' => ['label' => __('Business manager ID'), 'show' => ['whatsapp']],
+        //     'Profile' => __('Profile'),
+        //     'Callback URL' => __('Callback URL')
+        //     // 'profile_picture' => ['label' => 'Profile picture', 'type' => 'image', 'show' => ['whatsapp']],
+        //     // 'profile_description' => ['label' => 'Profile description', 'show' => ['whatsapp']],
+        //     // 'status' => ['label' => 'Status'],
+        // ];
+
         $field_info = [
             'company_name' => ['label' => __('Name')],
-            'service_engine' => ['label' => 'Service Engine'],
-            'service_token' => ['label' => 'Service token'],
-            'fb_phone_number_id' => ['label' => 'FaceBook phone number ID'],
-            'fb_whatsapp_account_id' => ['label' => 'FaceBook whatsapp account ID'],
-            'service' => ['label' => __('Service')],
-            // 'company_type' => ['label' => 'Company type'],
-            // 'website' => ['label' => 'Website'],
-            // 'email' => ['label' => 'Email'],
-            // 'estimated_launch_date' => ['label' => 'Estimated launch date'],
-            // 'type_of_integration' => ['label' => 'Type of integration'],
-            'display_name' => ['label' => __('Display name'), 'show' => ['whatsapp']],
             'phone_number' => ['label' => __('Phone number'), 'show' => ['whatsapp']],
+            'service' => ['label' => __('Service')],
+            'service_engine' => ['label' => 'Service Engine'],
+          //  'service_token' => ['label' => 'Service token'],
+            'fb_phone_number_id' => ['label' => 'FaceBook phone number ID' , 'fb_show' => [ 'facebook', 'global_admin']],
             'src_name' => ['label' => __('Source name'), 'show' => ['whatsapp', 'instagram']],
-            'api_partner' => ['label' => __('API partner'), 'show' => ['whatsapp']],
-            'api_partner_name' => ['label' => __('API partner Name'), 'show' => ['whatsapp']],
+            'fb_whatsapp_account_id' => ['label' => 'FaceBook whatsapp account ID', 'fb_show' => [ 'facebook' , 'gupshup']],
+          
+           // 'display_name' => ['label' => __('Display name'), 'show' => ['whatsapp']],
+          //  'api_partner' => ['label' => __('API partner'), 'show' => ['whatsapp']],
+          //  'api_partner_name' => ['label' => __('API partner Name'), 'show' => ['whatsapp']],
             'business_manager_id' => ['label' => __('Business manager ID'), 'show' => ['whatsapp']],
             'Profile' => __('Profile'),
             'Callback URL' => __('Callback URL')
-            // 'profile_picture' => ['label' => 'Profile picture', 'type' => 'image', 'show' => ['whatsapp']],
-            // 'profile_description' => ['label' => 'Profile description', 'show' => ['whatsapp']],
-            // 'status' => ['label' => 'Status'],
+          
         ];
 
         return Inertia::render('Account/Detail', [
@@ -879,7 +898,7 @@ class UserController extends Controller
         $account->fb_phone_number_id = $request->fb_phone_number_id;
         $account->fb_whatsapp_account_id = $request->fb_whatsapp_account_id;
         $account->phone_number = $request->phone_number;
-        $account->src_name = $request->company_name;
+        $account->src_name = $request->src_name;
         $account->company_name = $request->company_name;
         $account->business_manager_id = $request->business_manager_id;
         
@@ -888,7 +907,7 @@ class UserController extends Controller
         }else{
            $account->display_name = $request->display_name;
         }
-
+        
         $acccountFields = ['company_name','website','category','description','email'];
 
         foreach($acccountFields as $field){
@@ -1690,8 +1709,14 @@ class UserController extends Controller
      * get User Timezone
      */
     public function getUserTimeZone(Request $request)
-    {
-        echo json_encode(['time_zone' => $this->timezones ]);
+    {   
+        $zones = $this->timezones;
+        $timezones = [];
+        foreach($zones as $country => $time) {
+            $timezones[] = ['value' => $country, 'label' => $time];
+        }
+        
+        echo json_encode(['time_zone' => $timezones ]);
     }
 
     /**

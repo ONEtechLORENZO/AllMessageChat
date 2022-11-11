@@ -326,8 +326,8 @@ class CompanyController extends Controller
         $company = new Company;
 
         $company->name = $request->name;
-        $company->currency = $request->currency;
-        $company->time_zone = $request->time_zone;
+        $company->currency = $request->currency['value'];
+        $company->time_zone = $request->time_zone['value'];
         $company->save();
 
        if($request->user()){
@@ -351,7 +351,7 @@ class CompanyController extends Controller
         $company_id = $request->company_id;
         $company = Company::findOrFail($company_id);
 
-        $companyFields = ['company_country', 'company_vat_id', 'company_address', 'email', 'city', 'state', 'country', 'codice_destinatario'];
+        $companyFields = ['company_country', 'company_vat_id', 'company_address', 'email', 'city', 'state', 'country', 'codice_destinatario','organization', 'phone_number'];
         
         foreach($companyFields as $field) {
             if($request->has($field)) {

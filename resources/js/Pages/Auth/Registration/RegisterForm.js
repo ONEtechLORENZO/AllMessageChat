@@ -14,6 +14,7 @@ export default function RegisterForm (props) {
     const [userMail, setUserMail] = useState({});
     const [addStripe, setAddStrip] = useState(false);
     const [companyId, setCompanyId] = useState();
+    const [stripe, setStripe] = useState(false);
 
     useEffect( () => {
         let newMail = Object.assign({}, userMail);
@@ -75,22 +76,26 @@ export default function RegisterForm (props) {
             }
                 
             {openTab === 5 &&
-                //  Stripe integration
-                <Step4 
-                    setOpenTab={setOpenTab}
-                    stripe_public_key={props.stripe_public_key}
-                    translator={props.translator}
-                    setAddStrip={setAddStrip}
-                />
-            }
-               
-            {openTab === 6 &&
                 // Choose Plan
                 <Step5 
                     user={userMail}
                     addStripe={addStripe}
                     setOpenTab={setOpenTab}
+                    stripe={stripe}
+                    setStripe={setStripe}
                 /> 
+            }
+               
+            {openTab === 6 &&
+                //  Stripe integration
+                 <Step4 
+                 setOpenTab={setOpenTab}
+                 stripe_public_key={props.stripe_public_key}
+                 translator={props.translator}
+                 setAddStrip={setAddStrip}
+                 stripe={stripe}
+                 setStripe={setStripe}
+             />
             }
 
             {openTab === 7 && 
