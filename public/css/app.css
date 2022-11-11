@@ -978,6 +978,10 @@ select {
 	margin-left: 0.5rem;
 	margin-right: 0.5rem;
 }
+.my-2 {
+	margin-top: 0.5rem;
+	margin-bottom: 0.5rem;
+}
 .my-6 {
 	margin-top: 1.5rem;
 	margin-bottom: 1.5rem;
@@ -985,10 +989,6 @@ select {
 .mx-10 {
 	margin-left: 2.5rem;
 	margin-right: 2.5rem;
-}
-.my-2 {
-	margin-top: 0.5rem;
-	margin-bottom: 0.5rem;
 }
 .ml-3 {
 	margin-left: 0.75rem;
@@ -1893,13 +1893,13 @@ select {
 	--tw-border-opacity: 1;
 	border-color: rgba(79, 70, 229, var(--tw-border-opacity));
 }
-.border-purple-500 {
-	--tw-border-opacity: 1;
-	border-color: rgba(139, 92, 246, var(--tw-border-opacity));
-}
 .border-indigo-500 {
 	--tw-border-opacity: 1;
 	border-color: rgba(99, 102, 241, var(--tw-border-opacity));
+}
+.border-purple-500 {
+	--tw-border-opacity: 1;
+	border-color: rgba(139, 92, 246, var(--tw-border-opacity));
 }
 .border-blue-300 {
 	--tw-border-opacity: 1;
@@ -1913,13 +1913,13 @@ select {
 	--tw-border-opacity: 1;
 	border-color: rgba(55, 48, 163, var(--tw-border-opacity));
 }
-.border-indigo-200 {
-	--tw-border-opacity: 1;
-	border-color: rgba(199, 210, 254, var(--tw-border-opacity));
-}
 .border-gray-500 {
 	--tw-border-opacity: 1;
 	border-color: rgba(107, 114, 128, var(--tw-border-opacity));
+}
+.border-indigo-200 {
+	--tw-border-opacity: 1;
+	border-color: rgba(199, 210, 254, var(--tw-border-opacity));
 }
 .bg-white {
 	--tw-bg-opacity: 1;
@@ -3029,6 +3029,10 @@ select {
 .hover\:bg-primary\/80:hover {
 	background-color: rgba(163, 30, 255, 0.8);
 }
+.hover\:bg-\[\#545cd8\]:hover {
+	--tw-bg-opacity: 1;
+	background-color: rgba(84, 92, 216, var(--tw-bg-opacity));
+}
 .hover\:bg-primary:hover {
 	--tw-bg-opacity: 1;
 	background-color: rgba(163, 30, 255, var(--tw-bg-opacity));
@@ -3064,10 +3068,6 @@ select {
 .hover\:bg-green-700:hover {
 	--tw-bg-opacity: 1;
 	background-color: rgba(4, 120, 87, var(--tw-bg-opacity));
-}
-.hover\:bg-\[\#545cd8\]:hover {
-	--tw-bg-opacity: 1;
-	background-color: rgba(84, 92, 216, var(--tw-bg-opacity));
 }
 .hover\:text-gray-500:hover {
 	--tw-text-opacity: 1;
@@ -3307,9 +3307,6 @@ select {
 }
 .focus\:ring-offset-blue-50:focus {
 	--tw-ring-offset-color: #eff6ff;
-}
-.focus\:ring-offset-gray-100:focus {
-	--tw-ring-offset-color: #f3f4f6;
 }
 .focus-visible\:ring:focus-visible {
 	--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
@@ -3683,12 +3680,12 @@ select {
 		border-radius: 0.5rem;
 	}
 
-	.sm\:rounded-md {
-		border-radius: 0.375rem;
-	}
-
 	.sm\:rounded-xl {
 		border-radius: 0.75rem;
+	}
+
+	.sm\:rounded-md {
+		border-radius: 0.375rem;
 	}
 
 	.sm\:border-t {
