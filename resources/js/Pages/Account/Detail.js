@@ -170,7 +170,7 @@ function Detail(props)
                         </span>
                     </div>
                     <div className="inline-flex">
-                        {props.auth.user.fb_token ? 
+                        {props['account'].fb_token ? 
                             <a href='#' className="rounded-md bg-blue-50 p-4 flex">
                                 <div className="ml-3 flex-1 md:flex md:justify-between">
                                     <p className="text-sm text-blue-700">Connected with Facebook</p>
