@@ -229,7 +229,7 @@ class CategoryController extends Controller
      * @param  \App\Models\Category  $category
      * @return \Illuminate\Http\Response
      */
-    public function edit(Category $category, $id)
+    public function edit(Category $category, $id,Request $request)
     {
         $module = new Category();
         $record = $this->checkAccessPermission($request, $module, $id);

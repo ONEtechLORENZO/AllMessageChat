@@ -240,7 +240,7 @@ export default function Subscription(props){
                     <td key={plan.id} className="px-6 pt-5">
                         <button
                             className={classNames(
-                                props.current_plan == plan.plan
+                                (props.current_plan == plan.plan || props.current_plan == plan.plan_id)
                                 ?"block w-full rounded-md border border-indigo-800 bg-indigo-600 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
                                 :"block w-full rounded-md border border-gray-800 bg-gray-800 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
                             )}

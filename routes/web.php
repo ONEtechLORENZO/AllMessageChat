@@ -407,6 +407,7 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::post('/admin/plan/create', [PlanController::class, 'create'])->name('plan_save');
     Route::post('/admin/workspace/plan', [PlanController::class, 'workspacePlan'])->name('workspace_plan');
     Route::get('/admin/plan/default/{id}', [PlanController::class, 'setDefaultPlan'])->name('set_defaultPlan');
+    Route::post('/admin/delete/custom/plan', [PlanController::class, 'deleteCustomPlan'])->name('delete_customplan');
 
     // Impersonate User 
     Route::post('/admin/user/impersonate', [UserController::class, 'changeLogInUser'])->name('change_log_in_user');

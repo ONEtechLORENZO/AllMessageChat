@@ -86,6 +86,7 @@ function Form(props)
         if(props.recordId) {
             fetchRecord();
         }  
+      
     }, [props]);
 
     /**
@@ -405,7 +406,8 @@ function Form(props)
 
                                 <form id='form'>
                                     <div className='space-y-4'>
-                                        {fields && fields.map((field_info,index) => { 
+                                     
+                                        {fields.length > 0 && fields && fields.map((field_info,index) => { 
                                             let element = ''; 
                                             let readOnly = true;
                                             if(data && data.is_custom == '1' && data.module_name == 'Contact' || data.module_name == 'Opportunity'  && data.field_type == 'dropdown'){
@@ -504,7 +506,7 @@ function Form(props)
                                                         name={field_info.field_name}
                                                         options={field_info.options ? field_info.options : {}}
                                                         handleChange={handleChange}
-                                                        emptyOption={field_info.field_name == 'field_group' ? 'General' : ''}
+                                                        emptyOption={field_info.field_name == 'field_group' ? 'General' : 'Select'}
                                                         value={field_value}
                                                         required={field_info.is_mandatory === 1 ? true : false}
                                                         readOnly={(readOnly) ? '' : 'disabled'}
@@ -566,7 +568,7 @@ function Form(props)
                                                         name={field_info.field_name}
                                                         options={field_info.options ? field_info.options : {}}
                                                         handleChange={handleMultiSelectChange}
-                                                        emptyOption={field_info.field_name == 'field_group' ? 'General' : ''}
+                                                        emptyOption={field_info.field_name == 'field_group' ? 'General' : 'Select'}
                                                         value={field_value}
                                                         required={field_info.is_mandatory === 1 ? true : false}
                                                         readOnly={(readOnly) ? '' : 'disabled'}

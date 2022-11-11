@@ -4,6 +4,7 @@ import { Link } from "@inertiajs/inertia-react";
 import axios from "axios";
 import notie from 'notie';
 import nProgress from 'nprogress';
+import { Col, Row, Button, FormGroup, Label, Input } from "reactstrap";
 
 const validateList = [
     'first_name','last_name','email','password','confirm_password'
@@ -130,7 +131,7 @@ export default function Step1 (props) {
                 let newUser = Object.assign({}, user);
                 newUser['user_id'] = response.data.user_id;
                 props.setUserMail(newUser);
-    
+   
                 props.setOpenTab(2);
             }
         })
@@ -168,20 +169,18 @@ export default function Step1 (props) {
                             <div className="flex justify-end font-semibold text-lg">About You</div>
                         </div>
 
-                        <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                        <div className="w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
                             <div className="text-gray-500">
                                <UserIcon className="h-6 w-6" />
                             </div>
                             <div className="flex flex-col flex-1">
                                 <label>First Name <span className="text-red-500">  * </span>  </label>
-                                <input
-                                    type="text"
-                                    name="first_name"
-                                    className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
-                                    autoComplete="off"
+                                <Input type="text"
+                                    name="first_name"  autoComplete="off"
+                                    className="mt-2"
                                     value={user['first_name'] ? user['first_name'] : ''}
-                                    onChange={(e) => userHandler(e)}
-                                />
+                                    onChange={(e) => userHandler(e)} />
+                               
                             </div>
                         </div>
 
@@ -191,14 +190,12 @@ export default function Step1 (props) {
                             </div>
                             <div className="flex flex-col flex-1">
                                 <label>Last Name <span className="text-red-500">  * </span>  </label>
-                                <input
-                                    type="text"
-                                    name="last_name"
-                                    className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
-                                    autoComplete="off"
+                                <Input type="text"
+                                    name="last_name"  autoComplete="off"
+                                    className="mt-2"
                                     value={user['last_name'] ? user['last_name'] : ''}
-                                    onChange={(e) => userHandler(e)}
-                                />
+                                    onChange={(e) => userHandler(e)} />
+                                
                             </div>
                         </div>
 
@@ -208,14 +205,11 @@ export default function Step1 (props) {
                             </div>
                             <div className="flex flex-col flex-1">
                                 <label>Email <span className="text-red-500">  * </span>  </label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
-                                    autoComplete="off"
+                                <Input type="email"
+                                    name="email"  autoComplete="off"
+                                    className="mt-2"
                                     value={user['email'] ? user['email'] : ''}
-                                    onChange={(e) => userHandler(e)}
-                                />
+                                    onChange={(e) => userHandler(e)} />                                
                             </div>
                             <div className="w-4"></div>
                         </div>
@@ -226,14 +220,11 @@ export default function Step1 (props) {
                             </div>
                             <div className="flex flex-col flex-1">
                                 <label>Password <span className="text-red-500">  * </span>  </label>
-                                <input
-                                    type={passwordType}
-                                    name="password"
-                                    className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
-                                    autoComplete="off"
-                                    value={user['password'] ? user['password'] : ''}
-                                    onChange={(e) => userHandler(e)}
-                                />
+                                <Input type={passwordType}
+                                    name="password"  autoComplete="off"
+                                    className="mt-2"
+                                    value={user['password'] ? user['password'] : ''} 
+                                    onChange={(e) => userHandler(e)} />
                             </div>
                             <div className="cursor-pointer w-4">
                                 <div className="text-gray-500">
@@ -248,14 +239,12 @@ export default function Step1 (props) {
                             </div>
                             <div className="flex flex-col flex-1">
                                 <label>Confirm Password <span className="text-red-500">  * </span>  </label>
-                                <input
-                                    type={passwordType}
-                                    name="confirm_password"
-                                    className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
-                                    autoComplete="off"
-                                    value={user['confirm_password'] ? user['confirm_password'] : ''}
-                                    onChange={(e) => userHandler(e)}
-                                />
+                                <Input type={passwordType}
+                                    name="confirm_password"  autoComplete="off"
+                                    className="mt-2"
+                                    value={user['confirm_password'] ? user['confirm_password'] : ''} 
+                                    onChange={(e) => userHandler(e)} 
+                                />                                
                             </div>
                             <div className="cursor-pointer w-4">
                                 <div className="text-gray-500">

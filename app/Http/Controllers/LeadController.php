@@ -252,7 +252,13 @@ class LeadController extends Controller
     // Convert a lead to contact
     public function convert_lead(Request $request,Lead $lead,$leadId)
     {
+        if($request->is('api/*')){ 
+            $lead = Lead::find($request->id);
+        }
+        else
+        {
         $lead = Lead::find($leadId);
+        }
         $new_contact=new Contact();
         $new_contact=$lead->replicate(['id']);       
         $new_contact->setTable('contacts'); 

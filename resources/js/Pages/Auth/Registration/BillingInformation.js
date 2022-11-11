@@ -1,12 +1,13 @@
 import React, {useEffect, useState} from "react";
-import {UserCircleIcon, MailIcon, GlobeIcon, FlagIcon, LocationMarkerIcon, ChevronRightIcon, HomeIcon, MailOpenIcon, OfficeBuildingIcon}from "@heroicons/react/outline";
 import {countries} from '@/Pages/Constants';
 import Dropdown from "@/Components/Forms/Dropdown";
 import axios from "axios";
 import { Link } from "@inertiajs/inertia-react";
 import notie from 'notie';
-
-const billingFields = ['company_country', 'email', 'company_address'];
+import {UserCircleIcon, MailIcon, GlobeIcon, FlagIcon, LocationMarkerIcon, ChevronRightIcon, HomeIcon, MailOpenIcon, OfficeBuildingIcon, PhoneIcon, LibraryIcon}from "@heroicons/react/outline";
+import PhoneInput2 from 'react-phone-input-2';
+import { parsePhoneNumber } from 'react-phone-number-input';
+import 'react-phone-input-2/lib/style.css';
 
 export default function BillingInformation (props) {
 
@@ -42,26 +43,7 @@ export default function BillingInformation (props) {
         return check_mail;
     }
 
-    // function validateInformation() {
-    //     let check = true;
-
-    //     if(billingInformation) {
-    //         billingFields.map( (field) => {
-    //             if(!billingInformation[field]) {
-    //                 check = false;
-    //             }
-    //         });
-    //     }
-
-    //     if(!billingInformation || billingInformation && !check) {
-    //         notie.alert({type: 'error', text: 'Please fill the required field', time: 5});
-    //     }
-
-    //     return check;
-    // }
-
     function saveBillingInformation () {
-       // let validate = validateInformation();
         let mailValidate = mailHandler();
        
         if(mailValidate) {
@@ -74,6 +56,16 @@ export default function BillingInformation (props) {
                 props.setOpenTab(5);
             });
         }
+    }
+
+    function changePhoneNumber(event, name) {
+        let newState = Object.assign({}, billingInformation);
+        event = '+'+event;
+        newState[name] = event;
+        if(event && parsePhoneNumber(event) ){
+            newState['country_code'] = parsePhoneNumber(event).countryCallingCode;
+        }
+        setBillingInformation(newState);
     }
 
     return (
@@ -102,6 +94,45 @@ export default function BillingInformation (props) {
                     <div className="grid grid-cols-2 mt-5">
                         <div className="flex justify-start font-semibold text-lg text-primary">Step 3 </div>
                         <div className="flex justify-end font-semibold text-lg">Billing Information</div>
+                    </div>
+
+                    
+                    <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                        <div className="text-gray-500">
+                           <LibraryIcon className="h-6 w-6" />
+                        </div>
+                        <div className="flex flex-col flex-1">
+                            <label>Organization Name</label>
+                            <input
+                                type="text"
+                                name="organization"
+                                className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
+                                autoComplete="off"
+                                value={billingInformation['organization'] ? billingInformation['organization'] : ''}
+                                onChange={(e) => handleChange(e)}
+                            />
+                        </div>
+                    </div>
+
+                    
+                    <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                        <div className="text-gray-500">
+                           <PhoneIcon className="h-6 w-6" />
+                        </div>
+                        <div className="flex flex-col flex-1">
+                            <label>Telephone Number</label>
+                            <PhoneInput2
+                                inputProps={{name: 'phone_number',autoFocus: true}}
+                                containerStyle={{ marginTop: "15px" }}
+                                searchClass="search-class"
+                                searchStyle={{ margin: "0", width: "97%", height: "30px" }}
+                                enableSearchField
+                                disableSearchIcon
+                                placeholder="Enter phone number"
+                                value={billingInformation['phone_number'] ? billingInformation['phone_number'] : ''} 
+                                onChange={(e) => changePhoneNumber(e, 'phone_number')}
+                            />
+                        </div>
                     </div>
 
                     <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">

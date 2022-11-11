@@ -32,18 +32,28 @@ export default function Step5 (props) {
         getPlanDetails();
     },[]);
 
-    function Subscribe(plan){
+    function Subscribe(plan_id, name){
+       
         let confirm = window.confirm(['Are you sure to subscribe this plan']);
         if(!confirm) {
             return;
         }
-   
-        Inertia.post(route('subscribe_plan',{'plan': plan}), {user_id: props.user_id, is_register_step: true }, {
+        if(name == 'Lite') {
+            props.setOpenTab(6);
+            props.setStripe(true);
+            return false;
+        }
+
+        if(!props.stripe) {
+           props.setOpenTab(6);
+           return false;
+        }
+
+        Inertia.post(route('subscribe_plan',{'plan': plan_id}), {user_id: props.user.user_id, is_register_step: true }, {
             onSuccess: (response) => {
                 props.setOpenTab(7);
             }
         });
-        props.setOpenTab(7);
     }
 
     function getPlanDetails() {
@@ -155,7 +165,7 @@ export default function Step5 (props) {
                                                      ?"block w-full rounded-md border border-indigo-800 bg-indigo-600 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
                                                      :"block w-full rounded-md border border-gray-800 bg-gray-800 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
                                                  )}
-                                                 onClick={() => Subscribe(plan.plan_id)}
+                                                 onClick={() => Subscribe(plan.plan_id, plan.plan)}
                                              >
                                                 {plan && plan.plan == 'Lite' && plan.price == '0' ? 'Start from free' : <>Buy {plan.plan}</>}
                                              </button>

@@ -156,10 +156,10 @@ class CompanyObserver
                   'module_name' => 'Contact','field_name' => 'last_name','field_label' => 'Last Name','field_type' => 'text','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
                ],
                [
-                  'module_name' => 'Contact','field_name' => 'email','field_label' => 'Email','field_type' => 'email','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
+                  'module_name' => 'Contact','field_name' => 'emails','field_label' => 'Email','field_type' => 'emails','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
                ],
                [
-                  'module_name' => 'Contact','field_name' => 'phone_number','field_label' => 'Phone Number','field_type' => 'phone_number','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
+                  'module_name' => 'Contact','field_name' => 'phones','field_label' => 'Phone Number','field_type' => 'phones','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
                ],
                [
                   'module_name' => 'Contact','field_name' => 'gender','field_label' => 'Gender','field_type' => 'dropdown','is_mandatory' => 0,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'','created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>json_encode(['male'=>'Male', 'female'=>'Female' ,'unknown'=>'Unknown'])
