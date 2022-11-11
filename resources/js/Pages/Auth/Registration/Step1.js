@@ -131,7 +131,7 @@ export default function Step1 (props) {
                 let newUser = Object.assign({}, user);
                 newUser['user_id'] = response.data.user_id;
                 props.setUserMail(newUser);
-    
+   
                 props.setOpenTab(2);
             }
         })
@@ -225,14 +225,6 @@ export default function Step1 (props) {
                                     className="mt-2"
                                     value={user['password'] ? user['password'] : ''} 
                                     onChange={(e) => userHandler(e)} />
-                                <input
-                                    type={passwordType}
-                                    name="password"
-                                    className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
-                                    autoComplete="off"
-                                    value={user['password'] ? user['password'] : ''}
-                                    onChange={(e) => userHandler(e)}
-                                />
                             </div>
                             <div className="cursor-pointer w-4">
                                 <div className="text-gray-500">
@@ -248,10 +240,11 @@ export default function Step1 (props) {
                             <div className="flex flex-col flex-1">
                                 <label>Confirm Password <span className="text-red-500">  * </span>  </label>
                                 <Input type={passwordType}
-                                    name="password"  autoComplete="off"
+                                    name="confirm_password"  autoComplete="off"
                                     className="mt-2"
                                     value={user['confirm_password'] ? user['confirm_password'] : ''} 
-                                    onChange={(e) => userHandler(e)} />                                
+                                    onChange={(e) => userHandler(e)} 
+                                />                                
                             </div>
                             <div className="cursor-pointer w-4">
                                 <div className="text-gray-500">
