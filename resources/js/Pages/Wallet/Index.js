@@ -6,8 +6,20 @@ import notie from 'notie';
 import nProgress from 'nprogress';
 import { Link, Head } from "@inertiajs/inertia-react";
 import axios from "axios";
-import { CheckIcon } from "@heroicons/react/outline";
+import { CheckIcon, ChatAltIcon } from "@heroicons/react/outline";
 import PlanUsage from "./PlanUsage";
+import {
+    Accordion,
+    AccordionBody,
+    AccordionHeader,
+    AccordionItem,
+    Table,
+    ListGroupItem,
+  } from 'reactstrap';
+import {
+    WhatsAppIcon,
+    InstaIcon,
+} from "../icons";
 
 function Wallet(props)
 {
@@ -22,6 +34,22 @@ function Wallet(props)
     const [messageDeduction , setMessageDeduction] = useState({});
 
     const [isPaymentForm , setPaymentForm] = useState(false);
+
+    const [showDeductionDetail, setShowDeductionDetail] = useState();
+
+    const deductionTypes = {
+        'BIC': 'Business-initiated conversation',
+        'UIC': 'User-initiated conversation',
+        'FEP': 'Free entry point'
+    } 
+
+    const toggle = (id) => {
+        if (showDeductionDetail === id) {
+            setShowDeductionDetail();
+        } else {
+            setShowDeductionDetail(id);
+        }
+      };
 
     useEffect(() => {
         setBalance(props.balance);
@@ -187,6 +215,86 @@ function Wallet(props)
                                 balance = {balance}
                             />
                         </div>
+                        <div class="grid grid-cols-1 gap-4 mt-4">
+                            <div class="bg-white rounded-md shadow w-full space-y-6 p-4 md:p-8 flex flex-col justify-center md:justify-start">
+                                <div className="flex justify-between flex-col w-full md:flex-row gap-3 md:gap-0">
+                                    <div className="flex gap-1 font-semibold text-base">
+                                    Total Spent
+                                    </div>
+                                    <div className="text-base font-semibold text-primary">
+                                        $ {messageDeduction['total_amount'] ? <>{messageDeduction.total_amount}</> : 0 }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {(props.message_accoount_detail).map(account => {
+                            return(
+                                <div class="grid grid-cols-1 gap-4 mt-4">
+                                    <div class="bg-white rounded-md shadow w-full space-y-6 p-4 md:p-8 flex flex-col justify-center md:justify-start">
+                                        <Accordion open={showDeductionDetail} toggle={toggle}>
+                                            <AccordionItem>
+                                                <AccordionHeader targetId={account.number}>
+                                                    <div className="flex justify-between flex-col w-full md:flex-row gap-3 md:gap-0">
+                                                        <div className="flex gap-1 font-semibold text-base">
+                                                            <div className="">
+                                                                {account.service == 'whatsapp' ? 
+                                                                    <WhatsAppIcon
+                                                                        className="p-2 w-12 h-12 fill-current text-gray-500"
+                                                                    />
+                                                                :
+                                                                    <InstaIcon
+                                                                        className="p-2 w-12 h-12 fill-current text-gray-500"
+                                                                    />
+                                                                }
+                                                            </div>
+                                                            <div className="">
+                                                                <div> {account.service} </div>
+                                                                <div> {account.number} </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-base font-semibold text-primary">
+                                                            ${account.amount_data['total_amount']}
+                                                        </div>
+                                                    </div>
+                                                </AccordionHeader>
+                                            
+                                                <AccordionBody accordionId={account.number}>
+                                                    <Table >
+                                                        {Object.entries(deductionTypes).map(([key, label]) => {
+                                                            return (
+                                                            <tr>
+                                                                <td> {label} </td>
+                                                                <td> 
+                                                                    <div className="flex">
+                                                                        <ChatAltIcon
+                                                                            className="h-6 w-6" 
+                                                                        /> 
+                                                                        {(account.amount_data[key]) ? 
+                                                                            <>{account.amount_data[key].count} </>
+                                                                        : 
+                                                                            <> 0 </> }
+                                                                    </div>
+                                                                </td>
+                                                                <td> 
+                                                                    $
+                                                                    {(account.amount_data[key]) ? 
+                                                                        <> {account.amount_data[key].amount} </> 
+                                                                    : <> 0 </> }
+                                                                </td>
+                                                            </tr>
+                                                            )
+                                                        })}
+                                                    </Table>
+                                                </AccordionBody>
+                                            </AccordionItem>
+                                        </Accordion>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                        
+{/*                         
                         <div class="grid grid-cols-2 gap-4 mt-4">
                             <div class="bg-white rounded-md shadow w-full space-y-6 p-4 md:p-8 flex flex-col justify-center md:justify-start">
                                 <span className="font-semibold text-base">
@@ -381,6 +489,7 @@ function Wallet(props)
                                 </div>
                             </div>
                         </div>
+                         */}
                     </div>
 
                     <div class="space-y-4 mt-4 sm:mt-0">

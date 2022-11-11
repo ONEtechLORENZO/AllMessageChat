@@ -39,7 +39,6 @@ function ChatBox(props)
         });
         setTemplates(templateList);
     }
-
     return(
        <>
        <div className="flex items-start space-x-4">
@@ -193,22 +192,27 @@ function ChatBox(props)
                                                     </span>
                                                 </div>
                                            
-                                            {(templates).map((template) => (
-                                                <Listbox.Option
-                                                    key={template.value}
-                                                    className={({ active }) =>
-                                                        classNames(
-                                                            active ? 'bg-gray-100' : 'bg-white',
-                                                            'relative cursor-default select-none py-2 px-3'
-                                                        )
-                                                    }
-                                                    onClick={()=> props.setTemplateInfo(template)}
-                                                >
-                                                    <div className="flex items-center">
-                                                        <span className="ml-3 block truncate font-medium">{template.name}</span>
-                                                    </div>
-                                                </Listbox.Option>
-                                            ))}
+                                            { templates && (templates).map((template) => {
+                                                if(template.account_id != props.selectedAccount) {
+                                                    return false;
+                                                }
+                                                return(
+                                                    <Listbox.Option
+                                                        key={template.value}
+                                                        className={({ active }) =>
+                                                            classNames(
+                                                                active ? 'bg-gray-100' : 'bg-white',
+                                                                'relative cursor-default select-none py-2 px-3'
+                                                            )
+                                                        }
+                                                        onClick={()=> props.setTemplateInfo(template)}
+                                                    >
+                                                        <div className="flex items-center">
+                                                            <span className="ml-3 block truncate font-medium">{template.name}</span>
+                                                        </div>
+                                                    </Listbox.Option>
+                                                )
+                                            })}
                                         </Listbox.Options>
                                         </Transition>
                                     </div>

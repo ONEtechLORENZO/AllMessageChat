@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddSrcNameAccountsTable extends Migration
+class AddFbTokenAccountTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,7 @@ class AddSrcNameAccountsTable extends Migration
     public function up()
     {
         Schema::table('accounts', function (Blueprint $table) {
-            $table->string('src_name')->nullable();
+            $table->longText('fb_token')->nullable();
         });
     }
 
@@ -26,7 +26,7 @@ class AddSrcNameAccountsTable extends Migration
     public function down()
     {
         Schema::table('accounts', function (Blueprint $table) {
-            $table->dropColumn(['src_name']);
+            $table->dropColumn('fb_token');
         });
     }
 }

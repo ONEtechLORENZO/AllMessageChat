@@ -62,6 +62,10 @@ function Registration(props) {
         'facebook': 'FaceBook'
     }
     
+    const statusOptions = {
+        New: 'New', Draft: 'Draft', Active: 'Active', Inactive: 'Inactive'
+    }
+
     const [checked, setChecked] = useState(false);  
       
   
@@ -182,10 +186,27 @@ function Registration(props) {
                                                             name="service_engine"
                                                             handleChange={handleChange}
                                                             options={service_engine}
-                                                            value={data.service_engine}
+                                                            value={(data.service_engine) ? data.service_engine : 'gupshup'}
                                                         />
                                                     </div>
                                                     <InputError message={errors.service_engine} />
+                                                </div>
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor="status" className="block text-sm font-medium text-gray-700" >
+                                                        Status
+                                                    </label>
+                                                    <div className="mt-1">
+                                                        <Dropdown
+                                                            required={true}
+                                                            id="status"
+                                                            name="status"
+                                                            handleChange={handleChange}
+                                                            options={statusOptions}
+                                                            value={(data.status) ? data.status : 'New'}
+
+                                                        />
+                                                    </div>
+                                                    <InputError message={errors.status} />
                                                 </div>
                                             </>
                                         }
@@ -211,128 +232,6 @@ function Registration(props) {
                                 </div>
                             </div>
                         </div>
-
-                        {(data.service_engine == 'facebook' && props.auth.user.role == 'global_admin' ) &&
-                            <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
-                                <div className="md:grid md:grid-cols-3 md:gap-6">
-                                    <div className="md:col-span-1">
-                                        <h3 className="text-lg font-medium leading-6 text-gray-900">
-                                            FaceBook Information
-                                        </h3>
-                                        <p className="mt-1 text-sm text-gray-500">
-                                            Information will be used to create your facebook business account
-                                        </p>
-                                    </div>
-                                    <div className="mt-5 md:mt-0 md:col-span-2">
-                                        <div className="grid grid-cols-6 gap-6">
-
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="service_token" className="block text-sm font-medium text-gray-700" >
-                                                        Service token
-                                                        <span className="text-sm text-red-700 mx-1"> * </span>
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <Input
-                                                            required={true}
-                                                            id="service_token"
-                                                            name="service_token"
-                                                            handleChange={handleChange}
-                                                            value={data.service_token}
-                                                        />
-                                                    </div>
-                                                    <InputError message={errors.service_token} />
-                                                </div>
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="fb_phone_number_id" className="block text-sm font-medium text-gray-700" >
-                                                        FaceBook phone number ID
-                                                        <span className="text-sm text-red-700 mx-1"> * </span>
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <Input
-                                                            required={true}
-                                                            id="fb_phone_number_id"
-                                                            name="fb_phone_number_id"
-                                                            handleChange={handleChange}
-                                                            value={data.fb_phone_number_id}
-                                                        />
-                                                    </div>
-                                                    <InputError message={errors.fb_phone_number_id} />
-                                                </div>
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="fb_whatsapp_account_id" className="block text-sm font-medium text-gray-700" >
-                                                        FaceBook whatsapp account ID
-                                                        <span className="text-sm text-red-700 mx-1"> * </span>
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <Input
-                                                            required={true}
-                                                            id="fb_whatsapp_account_id"
-                                                            name="fb_whatsapp_account_id"
-                                                            handleChange={handleChange}
-                                                            value={data.fb_whatsapp_account_id}
-                                                        />
-                                                    </div>
-                                                    <InputError message={errors.fb_whatsapp_account_id} />
-                                                </div>
-                                                
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                        {(data.service_engine == 'gupshup' && props.auth.user.role == 'global_admin' ) &&
-                            <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
-                                <div className="md:grid md:grid-cols-3 md:gap-6">
-                                    <div className="md:col-span-1">
-                                        <h3 className="text-lg font-medium leading-6 text-gray-900">
-                                            Gupshup Information
-                                        </h3>
-                                        <p className="mt-1 text-sm text-gray-500">
-                                            Information will be used to create your gupshup account
-                                        </p>
-                                    </div>
-                                    <div className="mt-5 md:mt-0 md:col-span-2">
-                                        <div className="grid grid-cols-6 gap-6">
-
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="service_token" className="block text-sm font-medium text-gray-700" >
-                                                        Source Name
-                                                        <span className="text-sm text-red-700 mx-1"> * </span>
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <Input
-                                                            required={true}
-                                                            id="src_name"
-                                                            name="src_name"
-                                                            handleChange={handleChange}
-                                                            value={data.src_name}
-                                                        />
-                                                    </div>
-                                                    <InputError message={errors.src_name} />
-                                                </div>
-                                                
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="fb_whatsapp_account_id" className="block text-sm font-medium text-gray-700" >
-                                                        Gupshup whatsapp account ID
-                                                        <span className="text-sm text-red-700 mx-1"> * </span>
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <Input
-                                                            required={true}
-                                                            id="fb_whatsapp_account_id"
-                                                            name="fb_whatsapp_account_id"
-                                                            handleChange={handleChange}
-                                                            value={data.fb_whatsapp_account_id}
-                                                        />
-                                                    </div>
-                                                    <InputError message={errors.fb_whatsapp_account_id} />
-                                                </div>
-                                                
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        }
 
                         {data.service == "whatsapp" ? (
                             <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
@@ -542,6 +441,130 @@ function Registration(props) {
                             }
                             </>
                         )}
+                        {(data.service_engine == 'facebook' && props.auth.user.role == 'global_admin' ) &&
+                            <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
+                                <div className="md:grid md:grid-cols-3 md:gap-6">
+                                    <div className="md:col-span-1">
+                                        <h3 className="text-lg font-medium leading-6 text-gray-900">
+                                            FaceBook Information
+                                        </h3>
+                                        <p className="mt-1 text-sm text-gray-500">
+                                            Information will be used to create your facebook business account
+                                        </p>
+                                    </div>
+                                    <div className="mt-5 md:mt-0 md:col-span-2">
+                                        <div className="grid grid-cols-6 gap-6">
+
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor="service_token" className="block text-sm font-medium text-gray-700" >
+                                                        Service token
+                                                        <span className="text-sm text-red-700 mx-1"> * </span>
+                                                    </label>
+                                                    <div className="mt-1">
+                                                        <Input
+                                                            required={true}
+                                                            id="service_token"
+                                                            name="service_token"
+                                                            handleChange={handleChange}
+                                                            value={data.service_token}
+                                                        />
+                                                    </div>
+                                                    <InputError message={errors.service_token} />
+                                                </div>
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor="fb_phone_number_id" className="block text-sm font-medium text-gray-700" >
+                                                        FaceBook phone number ID
+                                                        <span className="text-sm text-red-700 mx-1"> * </span>
+                                                    </label>
+                                                    <div className="mt-1">
+                                                        <Input
+                                                            required={true}
+                                                            id="fb_phone_number_id"
+                                                            name="fb_phone_number_id"
+                                                            handleChange={handleChange}
+                                                            value={data.fb_phone_number_id}
+                                                        />
+                                                    </div>
+                                                    <InputError message={errors.fb_phone_number_id} />
+                                                </div>
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor="fb_whatsapp_account_id" className="block text-sm font-medium text-gray-700" >
+                                                        FaceBook whatsapp account ID
+                                                        <span className="text-sm text-red-700 mx-1"> * </span>
+                                                    </label>
+                                                    <div className="mt-1">
+                                                        <Input
+                                                            required={true}
+                                                            id="fb_whatsapp_account_id"
+                                                            name="fb_whatsapp_account_id"
+                                                            handleChange={handleChange}
+                                                            value={data.fb_whatsapp_account_id}
+                                                        />
+                                                    </div>
+                                                    <InputError message={errors.fb_whatsapp_account_id} />
+                                                </div>
+                                                
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        {console.log('data.service_engine' , data.service_engine)}
+                        {( ( !data.service_engine || data.service_engine == 'gupshup') && props.auth.user.role == 'global_admin' ) &&
+                            <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
+                                <div className="md:grid md:grid-cols-3 md:gap-6">
+                                    <div className="md:col-span-1">
+                                        <h3 className="text-lg font-medium leading-6 text-gray-900">
+                                            Gupshup Information
+                                        </h3>
+                                        <p className="mt-1 text-sm text-gray-500">
+                                            Information will be used to create your gupshup account
+                                        </p>
+                                    </div>
+                                    <div className="mt-5 md:mt-0 md:col-span-2">
+                                        <div className="grid grid-cols-6 gap-6">
+
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor="service_token" className="block text-sm font-medium text-gray-700" >
+                                                        Source Name
+                                                        <span className="text-sm text-red-700 mx-1"> * </span>
+                                                    </label>
+                                                    <div className="mt-1">
+                                                        <Input
+                                                            required={true}
+                                                            id="src_name"
+                                                            name="src_name"
+                                                            handleChange={handleChange}
+                                                            value={data.src_name}
+                                                        />
+                                                    </div>
+                                                    <InputError message={errors.src_name} />
+                                                </div>
+                                                
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor="fb_whatsapp_account_id" className="block text-sm font-medium text-gray-700" >
+                                                        Gupshup whatsapp account ID
+                                                        <span className="text-sm text-red-700 mx-1"> * </span>
+                                                    </label>
+                                                    <div className="mt-1">
+                                                        <Input
+                                                            required={true}
+                                                            id="fb_whatsapp_account_id"
+                                                            name="fb_whatsapp_account_id"
+                                                            handleChange={handleChange}
+                                                            value={data.fb_whatsapp_account_id}
+                                                        />
+                                                    </div>
+                                                    <InputError message={errors.fb_whatsapp_account_id} />
+                                                </div>
+                                                
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        
                     </div>
                     { !data.id && 
                         <div className="form-group col-span-6 sm:col-span-4">
