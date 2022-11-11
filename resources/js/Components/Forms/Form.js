@@ -86,6 +86,7 @@ function Form(props)
         if(props.recordId) {
             fetchRecord();
         }  
+      
     }, [props]);
 
     /**
@@ -405,7 +406,8 @@ function Form(props)
 
                                 <form id='form'>
                                     <div className='space-y-4'>
-                                        {fields && fields.map((field_info,index) => { 
+                                     
+                                        {fields.length > 0 && fields && fields.map((field_info,index) => { 
                                             let element = ''; 
                                             let readOnly = true;
                                             if(data && data.is_custom == '1' && data.module_name == 'Contact' || data.module_name == 'Opportunity'  && data.field_type == 'dropdown'){
