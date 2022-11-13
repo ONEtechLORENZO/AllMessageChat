@@ -506,7 +506,7 @@ function Form(props)
                                                         name={field_info.field_name}
                                                         options={field_info.options ? field_info.options : {}}
                                                         handleChange={handleChange}
-                                                        emptyOption={field_info.field_name == 'field_group' ? 'General' : ''}
+                                                        emptyOption={field_info.field_name == 'field_group' ? 'General' : 'Select'}
                                                         value={field_value}
                                                         required={field_info.is_mandatory === 1 ? true : false}
                                                         readOnly={(readOnly) ? '' : 'disabled'}
@@ -568,7 +568,7 @@ function Form(props)
                                                         name={field_info.field_name}
                                                         options={field_info.options ? field_info.options : {}}
                                                         handleChange={handleMultiSelectChange}
-                                                        emptyOption={field_info.field_name == 'field_group' ? 'General' : ''}
+                                                        emptyOption={field_info.field_name == 'field_group' ? 'General' : 'Select'}
                                                         value={field_value}
                                                         required={field_info.is_mandatory === 1 ? true : false}
                                                         readOnly={(readOnly) ? '' : 'disabled'}

@@ -305,6 +305,7 @@ class MsgController extends Controller
                     $query->where('service' , $category);
                 }
             })
+            ->where('status' , 'Active')
             ->get();
         
         foreach($accounts as $account){
@@ -450,7 +451,7 @@ class MsgController extends Controller
             ->where('company_id', $companyId)
             ->where('status' , 'APPROVED' )
             ->get(['template_uid', 'account_id', 'body', 'name']);
-        
+
         return $templates;
     }
 
@@ -747,11 +748,12 @@ class MsgController extends Controller
                     ->first();
                 $sample = ($message->example) ? unserialize( base64_decode( $message->example) ) : [];
                 $contact = Contact::find($parent);
-                
-                foreach($sample as $key => $name){
-                    $fieldValue = $this->replaceFieldValue($name, $contact);
-                    $content[] = ['type' => 'text' , 'text' => $fieldValue];
-                } 
+                if($sample){
+                    foreach($sample as $key => $name){
+                        $fieldValue = $this->replaceFieldValue($name, $contact);
+                        $content[] = ['type' => 'text' , 'text' => $fieldValue];
+                    } 
+                }
             }
            
             $result = $msg->sendWhatsAppMessage($content , $request->destination, $account , $template, $document);
@@ -956,7 +958,8 @@ class MsgController extends Controller
             
             $content = isset($data['payload']['text']) ? $data['payload']['text'] : '';
             $content = ( $content == '' && isset($data['payload']['name'])) ? $data['payload']['name'] : $content;
-
+            $countryCode = $data['sender']['country_code'];
+            $price = Price::where('country_code', $countryCode)->first();
             $messageData = [
                 'service_id' => $data['id'],
                 'service' => 'whatsapp',
@@ -967,6 +970,8 @@ class MsgController extends Controller
                 'msgable_type' => $msgable_type,
                 'msg_mode' => 'incoming',
                 'status' => 'received',
+                'policy' => 'FEP',
+                'amount' => $price->message,
                 'is_delivered' => 0,
                 'is_read' => 0
             ];

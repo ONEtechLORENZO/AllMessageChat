@@ -94,7 +94,7 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/show_register_step',[RegisteredUserController:: class, 'create'])->name('show_register_step');
 
         // FaceBook
-        Route::get('/connect/fb',[UserController::class, 'connectFaceBook'])->name('connect_face_book');
+        Route::get('/connect/fb/{accountId}',[UserController::class, 'connectFaceBook'])->name('connect_face_book');
         Route::get('/fb-callback',[UserController::class, 'storeFaceBookCode'])->name('store_face_book_code');
         
         // Wallet

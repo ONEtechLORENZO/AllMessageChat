@@ -14,7 +14,7 @@ class AddSrcNameAccountsTable extends Migration
     public function up()
     {
         Schema::table('accounts', function (Blueprint $table) {
-            $table->string('src_name');
+            $table->string('src_name')->nullable();
         });
     }
 
