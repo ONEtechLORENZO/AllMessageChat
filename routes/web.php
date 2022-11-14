@@ -244,6 +244,8 @@ Route::middleware('planrestriction')->group(function () {
 
         // Show Columns
         Route::post('/showColumns/{module}', [CompanyController::class, 'showColumn'])->name('showColumns');
+        Route::get('/company/list', [CompanyController::class, 'getCompanies'])->name('getCompanies');
+        Route::post('/company/unlink', [CompanyController::class, 'unlinkCompany'])->name('unlinkCompany');
 
         // Tag
         Route::get('/tags', [TagController::class, 'index'])->name('listTag');
