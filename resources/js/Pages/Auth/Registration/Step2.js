@@ -99,10 +99,10 @@ export default function Step2 (props) {
 
     return (
         <div className="h-screen w-full bg-blue-50 flex justify-center items-center">
-            <div className="max-w-7xl flex mx-auto items-center px-10">
-                <div className="w-full bg-white self-stretch flex justify-center py-24 rounded-xl px-4 lg:px-10">
+            <div className="max-w-7xl flex mx-auto items-center px-10 h-screen">
+                <div className="w-full bg-white flex justify-center py-8 rounded-xl px-4 lg:px-10 shadow-2xl">
                     <div className="py-8">
-                        <div className="flex justify-end px-4">
+                        <div className="flex justify-end pl-4">
                             <img
                                 src="./img/onemessage-logo.png"
                                 alt="One message logo"
@@ -121,28 +121,25 @@ export default function Step2 (props) {
                         </div> 
 
                         <div className="grid grid-cols-2 mt-5">
-                            <div className="flex justify-start font-semibold text-lg text-primary">Step 2</div>
+                            <div className="flex justify-start font-semibold text-lg text-primary">Step 2 of 3</div>
                             <div className="flex justify-end font-semibold text-lg">About Your Workspace</div>
                         </div>
 
-                        <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                        <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                             <div className="text-gray-500">
                             <HomeIcon className="h-6 w-6" />
                             </div>
                             <div className="flex flex-col flex-1">
                                 <label>Company Workspace Name <span className="text-red-500">  * </span>  </label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
-                                    autoComplete="off"
+                                <Input type="text"
+                                    name="name"  autoComplete="off"
+                                    className="mt-2"
                                     value={workspace['name'] ? workspace['name'] : ''}
-                                    onChange={(e) => workspaceHandler(e)}
-                                />
+                                    onChange={(e) => workspaceHandler(e)} />
                             </div>
                         </div>
 
-                        <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                        <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                             <div className="text-gray-500">
                             <CurrencyPoundIcon className="h-6 w-6" />
                             </div>
@@ -156,7 +153,7 @@ export default function Step2 (props) {
                             </div>
                         </div>
 
-                        <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                        <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                             <div className="text-gray-500">
                             <ClockIcon className="h-6 w-6" />
                             </div>

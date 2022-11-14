@@ -142,11 +142,11 @@ export default function Step1 (props) {
 
     return (
         <div className="w-full bg-blue-50 flex justify-center items-center">
-            <div className="max-w-7xl flex mx-auto items-center px-10">
-                <div className="w-full bg-white self-stretch flex justify-center py-24 rounded-xl px-4 lg:px-10">
+            <div className="max-w-7xl flex mx-auto items-center px-10 h-screen">
+                <div className="w-full bg-white flex justify-center py-8 rounded-xl px-4 lg:px-10 shadow-2xl">
                   <form id="form">
                     <div className="py-8">
-                        <div className="flex justify-end px-4">
+                        <div className="flex justify-end pl-4">
                             <img
                                 src="./img/onemessage-logo.png"
                                 alt="One message logo"
@@ -165,11 +165,11 @@ export default function Step1 (props) {
                         </div> 
 
                         <div className="grid grid-cols-2 mt-4">
-                            <div className="flex justify-start font-semibold text-lg text-primary">Step 1 </div>
+                            <div className="flex justify-start font-semibold text-lg text-primary">Step 1 of 3</div>
                             <div className="flex justify-end font-semibold text-lg">About You</div>
                         </div>
 
-                        <div className="w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                        <div className="w-full px-10 py-2 flex gap-8 items-center mt-5">
                             <div className="text-gray-500">
                                <UserIcon className="h-6 w-6" />
                             </div>
@@ -184,7 +184,7 @@ export default function Step1 (props) {
                             </div>
                         </div>
 
-                        <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                        <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                             <div className="text-gray-500">
                                <UserAddIcon className="h-6 w-6" />
                             </div>
@@ -199,7 +199,7 @@ export default function Step1 (props) {
                             </div>
                         </div>
 
-                        <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                        <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                             <div className="text-gray-500">
                                <MailIcon className="h-6 w-6" />
                             </div>
@@ -211,45 +211,47 @@ export default function Step1 (props) {
                                     value={user['email'] ? user['email'] : ''}
                                     onChange={(e) => userHandler(e)} />                                
                             </div>
-                            <div className="w-4"></div>
+                            
                         </div>
 
-                        <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                        <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                             <div className="text-gray-500">
                                <KeyIcon className="h-6 w-6" />
                             </div>
                             <div className="flex flex-col flex-1">
                                 <label>Password <span className="text-red-500">  * </span>  </label>
-                                <Input type={passwordType}
-                                    name="password"  autoComplete="off"
-                                    className="mt-2"
-                                    value={user['password'] ? user['password'] : ''} 
-                                    onChange={(e) => userHandler(e)} />
-                            </div>
-                            <div className="cursor-pointer w-4">
-                                <div className="text-gray-500">
-                                   <EyeIcon className="h-4 w-4" onClick={() => showPassword()}/>
+                                <div className="relative">
+                                    <Input type={passwordType}
+                                        name="password"  autoComplete="off"
+                                        className="mt-2"
+                                        value={user['password'] ? user['password'] : ''} 
+                                        onChange={(e) => userHandler(e)} />
+                                    <div className="text-gray-500 absolute right-2 bottom-2 cursor-pointer">
+                                        <EyeIcon className="h-4 w-4" onClick={() => showPassword()}/>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                        <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                             <div className="text-gray-500">
                                <KeyIcon className="h-6 w-6" />
                             </div>
                             <div className="flex flex-col flex-1">
                                 <label>Confirm Password <span className="text-red-500">  * </span>  </label>
-                                <Input type={passwordType}
-                                    name="confirm_password"  autoComplete="off"
-                                    className="mt-2"
-                                    value={user['confirm_password'] ? user['confirm_password'] : ''} 
-                                    onChange={(e) => userHandler(e)} 
-                                />                                
-                            </div>
-                            <div className="cursor-pointer w-4">
-                                <div className="text-gray-500">
-                                   <EyeIcon className="h-4 w-4" onClick={() => showPassword()}/>
-                                </div>
+                                <div className="relative">
+                                    <input
+                                        type={passwordType}
+                                        name="confirm_password"
+                                        className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
+                                        autoComplete="off"
+                                        value={user['confirm_password'] ? user['confirm_password'] : ''}
+                                        onChange={(e) => userHandler(e)}
+                                    /> 
+                                    <div className="text-gray-500 absolute right-2 bottom-2 cursor-pointer">
+                                        <EyeIcon className="h-4 w-4" onClick={() => showPassword()}/>
+                                    </div>                
+                                </div>              
                             </div>
                         </div>
 
