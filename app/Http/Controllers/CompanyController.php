@@ -463,4 +463,36 @@ class CompanyController extends Controller
         
         return $average;
     }
+
+    /**
+     * Return company list based on User
+     */
+    public function getCompanies(Request $request)
+    {
+        $userId = $request->parent;
+        $company_id = Cache::get('selected_company_'.$request->user()->id);
+        $companyList = [];
+        $user = User::find($userId);
+        $companies = $user->company;
+        foreach($companies as $company){
+            if($request->user()->id != $userId && $company_id != $company->id){ 
+                $companyList[] = $company; 
+            }
+        }
+        return response()->json(['status' => true , 'companies' => $companyList]);
+    }
+
+    /**
+     * Unlink company to the user  
+     */
+    public function unlinkCompany(Request $request)
+    {
+        $condition = [
+            'user_id' => $request->user,
+            'company_id' => $request->company
+        ];
+        DB::table('company_user')->where($condition)->delete();
+
+        return Redirect::route('show_Users');
+    }
 }

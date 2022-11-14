@@ -424,7 +424,8 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                     );
                 }
                 const companies = response.data.companies;
-                if(companies[0].currency == null) {
+                
+                if(companies.length && companies[0].currency == null) {
                     setshowModal(true)
                     setCompany(companies[0]);  
                 }
@@ -839,6 +840,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
 
             {/* Select company */}
             <SelectCompany
+                user={auth.user}
                 openModal={selectCompanyModal}
                 setSelectedCompany={setSelectedCompany}
             />

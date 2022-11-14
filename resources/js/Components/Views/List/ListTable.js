@@ -229,8 +229,8 @@ function ListTable(props){
                                         {((props.actions && props.actions.delete === true && props.module != 'User') || ( props.module == 'User' && props.auth.user.role == 'global_admin') ) || (record.is_custom == '1') ?
                                             <TrashIcon className='h-4 w-4 text-red-600 cursor-pointer' onClick={() => props.deleteRecord(record.id)} />
                                         : ''}
-                                        {(props.actions && props.actions.delete === true && props.module == 'User') || (record.is_custom == '1') ?
-                                            <LinkIcon className='h-4 w-4 text-red-600 cursor-pointer' onClick={() => props.deleteRecord(record.id , true)} />
+                                        {(props.actions && props.actions.unlink === true && props.module == 'User') || (record.is_custom == '1') ?
+                                            <LinkIcon className='h-4 w-4 text-red-600 cursor-pointer' onClick={() => props.unlinkRecord(record.id)} />
                                         : ''}
                                         {props.actions.download === true && record.status === 'success' ? 
                                                 <a href={route('invoices',record.id)} ><DownloadIcon className='h-4 w-4 cursor-pointer' /></a>

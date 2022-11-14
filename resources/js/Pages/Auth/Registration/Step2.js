@@ -6,6 +6,7 @@ import axios from "axios";
 import notie from 'notie';
 import nProgress from 'nprogress';
 import CreatableSelect from 'react-select';
+import Input from "@/Components/Forms/Input";
 
 const defaultValue = {
     'currency' : { value: "EUR", label: "Euro" },'time_zone': { value: "Europe/Rome", label: "(GMT+01:00) Rome" }
@@ -135,7 +136,7 @@ export default function Step2 (props) {
                                     name="name"  autoComplete="off"
                                     className="mt-2"
                                     value={workspace['name'] ? workspace['name'] : ''}
-                                    onChange={(e) => workspaceHandler(e)} />
+                                    handleChange={workspaceHandler} />
                             </div>
                         </div>
 

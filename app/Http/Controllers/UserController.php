@@ -240,6 +240,7 @@ class UserController extends Controller
                 'detail' => true,
                 'edit' => true,
                 'delete' => true,
+                'unlink' => true,
                 'export' => false,
                 'import' => false,
                 'search' => true,
