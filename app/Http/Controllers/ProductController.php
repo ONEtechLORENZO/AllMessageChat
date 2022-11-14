@@ -74,7 +74,13 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-
+        if($request->is('api/*'))     // API call check
+        { 
+            $postFields = array_keys($_POST);
+            if(count($postFields) == 0) {
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+            }
+        }
         $product_id = $this->saveProduct($request);
         if(($product_id) && ($request->parent_id))
         {
@@ -84,13 +90,17 @@ class ProductController extends Controller
             ]);
         }
         if($request->is('api/*'))     // API call check
-        {            
-            if($product_id){
-            return response()->json($product_id);
+        {        
+            if( $product_id){
+                
+                $product = Product::findOrFail($product_id);                       
+                $return = ['Message' => 'Record has been created successfully', 'Product_id' =>  $product_id,'Record' =>  $product];
+        
             }
             else{
-                abort(422);
+                $return = ['Message' => 'Invalid Input'];
             }
+            return response()->json($return);
         }
         else
         {
@@ -123,7 +133,14 @@ class ProductController extends Controller
     {
         $module = new Product();
         $product = $this->checkAccessPermission($request, $module, $request->id);
-
+        if(!$product) { 
+            if($request->is('api/*')){
+                 return response()->json(['status' => false, 'message' => 'Record not found']);
+              }
+            else{
+                abort('404');
+              }
+        }
         if($request->is('api/*')) //api call check
             {
                 if ($request->account_id)
@@ -186,13 +203,25 @@ class ProductController extends Controller
         $module = new Product(); 
         $product = $this->checkAccessPermission($request, $module, $request->id);
         if(!$product) {
-            abort('404');
+            if($request->is('api/*')){
+                return response()->json(['status' => false, 'message' => 'Record not found']);   
+            }
+            else{
+                 abort('404');}           
         }   
+        if($request->is('api/*'))     // API call check
+        { 
+            $postFields = array_keys($_POST);
+            if(count($postFields) == 0) {
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+            }
+        }
         $product_id = $this->saveProduct($request);
         if($request->is('api/*')){
             
             $product = Product::findOrFail($product_id);
-            return response()->json($product);           
+            $return = ['Message' => 'Record has been updated successfully','Record' => $product];
+                return response()->json($return);                 
         }
         else
           {

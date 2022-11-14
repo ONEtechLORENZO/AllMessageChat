@@ -18,7 +18,7 @@ import WorkspacePaid from "./WorkspacePaid";
 import axios from "axios";
 import Wallet from "@/Pages/Wallet/Index"
 import Form from '@/Components/Forms/Form';
-
+import Acitivies from "@/Pages/Company/Acitivies";
 
 export default function Index(props) {
     const [record, setRecord] = useState(props.record);
@@ -704,6 +704,13 @@ export default function Index(props) {
                                 <WorkspacePlan 
                                   plan_id={props.record.id}
                                   workspaces={props.workspaces}
+                                />
+                            }
+                            {activeTab == 'Acitivies' &&
+                                <Acitivies 
+                                  workspace={props.record}
+                                  revenue={props.revenue_data}
+                                  plan={props.companyPlan}
                                 />
                             }
                         </div>

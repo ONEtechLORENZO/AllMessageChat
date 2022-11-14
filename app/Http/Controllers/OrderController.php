@@ -88,8 +88,16 @@ class OrderController extends Controller
     {   
         $companyId = Cache::get('selected_company_'. $request->user()->id);
 
+        if($request->is('api/*'))     // API call check
+        { 
+            $postFields = array_keys($_POST);
+            if(count($postFields) == 0) {
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+            }
+        }
         //save the Order
-        $order_id = $this->saveOrder($request);       
+        $order_id = $this->saveOrder($request);     
+          
      
         //save the lineItems
         $lineItems = $this->saveLineItems($request->lineItems, $order_id, $companyId);
@@ -97,12 +105,17 @@ class OrderController extends Controller
         if($request->is('api/*'))     // API call check
         {            
             if($order_id){
-            return response()->json($order_id);
+               
+                $order = Order::findOrFail($order_id);                       
+                $return = ['Message' => 'Record has been created successfully', 'Order_id' => $order_id,'Order' => $order];
+        
             }
             else{
-                abort(422);
+                $return = ['Message' => 'Invalid Input'];
             }
-        }
+            return response()->json($return);
+            }           
+       
         else
         {
           return Redirect::route('detailOrder', $order_id);
@@ -122,7 +135,12 @@ class OrderController extends Controller
         $order = $this->checkAccessPermission($request, $module, $request->id);
 
         if(!$order){
-            abort('401');
+            if($request->is('api/*')){
+                return response()->json(['status' => false, 'message' => 'Record not found']);
+             }
+           else{
+               abort('404');
+             }
         }
         if($request->is('api/*')) //api call check
         {
@@ -253,10 +271,21 @@ class OrderController extends Controller
         $companyId = Cache::get('selected_company_'. $request->user()->id);
         $currentUser = $request->user();         
         $module = new Order();
+        if($request->is('api/*'))     // API call check
+        { 
+            $postFields = array_keys($_POST);
+            if(count($postFields) == 0) {
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+            }
+        }
        
         $order = $this->checkAccessPermission($request, $module, $request->id);
         if(!$order) {
-            abort('404');
+            if($request->is('api/*')){
+                return response()->json(['status' => false, 'message' => 'Record not found']);   
+            }
+            else{
+                 abort('404');}
         }
 
         //save the Order
@@ -270,7 +299,8 @@ class OrderController extends Controller
         if($request->is('api/*')){
             
             $order = Order::findOrFail($order_id);
-            return response()->json($order);           
+            $return = ['Message' => 'Record has been updated successfully','Record' => $order];
+            return response()->json($return);              
         }
         else
           {
@@ -335,13 +365,14 @@ class OrderController extends Controller
             $order = new Order();
         }
         if($request->is('api/*'))
-        {   
+        {     
             $current_user = $request->user();
             $account = Account::find($request->account_id);
             if ($request->account_id)
             {                           
               $company_id = $account->company_id;                
             }           
+
         }
         else
          {    

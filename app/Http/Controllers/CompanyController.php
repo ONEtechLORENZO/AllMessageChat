@@ -160,7 +160,39 @@ class CompanyController extends Controller
         $paymentMethods = []; //(new UserController)->getPaymentMethods($request , 'direct');
 
         $stripe_public_key = config('stripe.stripe_key');
-        $headers = $this->getModuleHeader(1 , 'Company');        
+        $headers = $this->getModuleHeader(1 , 'Company');   
+
+        $account_id = [];
+        $accounts = Account::where('company_id',$companyId)->get();
+        
+        foreach($accounts as $account) {
+            $account_id[] = $account->id;
+        } 
+
+        if($company) {
+            $user_count = $users->count();
+            $user_id = [];
+
+            foreach($users as $company_User) {
+                $user_id[] = $company_User->id;
+            } 
+            
+            $last_signUp = User::whereIn('id',$user_id)->max('user_login');
+            
+            $company['last_signUp'] = $last_signUp;
+            $company['users'] = $user_count;
+        }
+
+        $plan = Plan::find($company->plan);
+        
+        if($plan) {
+            $plan['payment_method'] = $company->payment_method;
+            $plan['monthly_consumption'] =  $this->monthlyConsumptin($account_id, $companyId);
+        }
+        
+        // GET Company msg revenue data
+        $revenue_data = $this->getRevenueData($account_id);
+
         $data = [
             'record' => $company,
             'current_user' => $user,
@@ -173,12 +205,15 @@ class CompanyController extends Controller
             'paymentMethods' => $paymentMethods,
             'stripe_public_key' => $stripe_public_key,
             'currentPlan' => $currentCompany,
+            'revenue_data' => $revenue_data,
+            'companyPlan' => $plan,
             'translator' => [
                 'Detail' => __('Detail'),
                 'Notes' => __('Notes'),
                 'Edit'  =>__('Edit'),
                 'Wallet' => __('Wallet'),
                 'Hi' => __('Hi'),
+                'Acitivies' => __('Acitivies'),
                 'Welcome to your Wallet' => __('Welcome to your Wallet'),
                 'Here you can see your payments, change your payment method and get your invoices.' => __('Here you can see your payments, change your payment method and get your invoices.'),
                 'Available Balance' => __('Available Balance'),

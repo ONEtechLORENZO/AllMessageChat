@@ -10,6 +10,7 @@ function Detail(props){
     const tabs = [
         { label:(props.translator['Detail']),name: 'Detail', href: '#'  },
        { label:(['Users']),name: 'Users', href: '#'  },
+       { label:(props.translator['Acitivies']),name: 'Acitivies', href: '#'  },
       ];
 
     /**

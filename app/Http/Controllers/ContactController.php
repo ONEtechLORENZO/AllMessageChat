@@ -116,16 +116,26 @@ class ContactController extends Controller
      */
     public function store(Request $request)
     {
+        if($request->is('api/*'))     // API call check
+        { 
+            $postFields = array_keys($_POST);
+            if(count($postFields) == 0) {
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+            }
+        }
         $contact_id = $this->saveContact($request);
        
         if($request->is('api/*'))     // API call check
         {            
             if($contact_id){
-            return response()->json($contact_id);
+                $contact = Contact::findOrFail($contact_id);                       
+                $return = ['Message' => 'Record has been created successfully', 'Contact_id' => $contact_id,'Contact' => $contact];
+            
             }
             else{
-                abort(422);
+                $return = ['Message' => 'Invalid Input'];
             }
+            return response()->json($return);
         }
         else
         {
@@ -153,13 +163,18 @@ class ContactController extends Controller
     {
         $module = new Contact();
         $contact = $this->checkAccessPermission($request, $module, $request->id);
-
+      
         if(!$contact) {
+            if($request->is('api/*')){
+                return response()->json(['status' => false, 'message' => 'Record not found']);
+            }
+            else{
             abort('404');
+            }
         }
         $currentUser = $request->user();
         
-        $flag = $this->checkPermission($currentUser, $request->id,'Contact');
+        $flag = $this->checkPermission($request,$currentUser, $request->id,'Contact');
         if($flag === false) {
             abort(401);
         }
@@ -318,7 +333,7 @@ class ContactController extends Controller
         
         //checking access permission 
         $currentUser = $request->user();        
-        $flag = $this->checkPermission($currentUser, $request->id,'Contact');
+        $flag = $this->checkPermission($request,$currentUser, $request->id,'Contact');
         if($flag === false) {
             abort(401);
         }
@@ -354,22 +369,38 @@ class ContactController extends Controller
      */
     public function update(Request $request)
     {        
+
         $currentUser = $request->user();    
         $module = new Contact();    
-        $flag = $this->checkPermission($currentUser, $request->id,'Contact');
+        $flag = $this->checkPermission($request,$currentUser, $request->id,'Contact');
         if($flag === false) {
-            abort(401);
+            if($request->is('api/*')){
+                return response()->json(['status' => false, 'message' => 'Record not found']);
+            }
+            else{
+            abort(401);}
         }
         $contact = $this->checkAccessPermission($request, $module, $request->id);
         if(!$contact) {
-            abort('404');
+            if($request->is('api/*')){
+                return response()->json(['status' => false, 'message' => 'Record not found']);   
+            }
+            else{
+            abort('404');}
         }   
-
+        if($request->is('api/*'))     // API call check
+        { 
+            $postFields = array_keys($_POST);
+            if(count($postFields) == 0) {
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+            }
+        }
         $contact_id = $this->saveContact($request);
        
         if($request->is('api/*')){
                 $contact = Contact::findOrFail($contact_id);
-                return response()->json($contact);           
+                $return = ['Message' => 'Record has been updated successfully','Contact' => $contact];
+                return response()->json($return);           
             }
             else
               {
@@ -415,7 +446,7 @@ class ContactController extends Controller
      /**
      * Check whether user has permission to access the record
      */
-    public function checkPermission($currentUser, $user_id, $module_name)
+    public function checkPermission($request,$currentUser, $user_id, $module_name)
     {
         if(!$user_id) {
             return false;
@@ -428,6 +459,14 @@ class ContactController extends Controller
         if($module_name== 'Contact')
         {
         $contact = Contact::where('id',$user_id)->first();
+         if($request->is('api/*'))
+            {
+                if($contact == NULL)
+                    {
+                        return response()->json(['status' => false, 'message' => 'Record not found']);   
+                    }
+                }
+
         $companies []= $contact->company_id;              
         }
         $flag = false;
@@ -522,7 +561,7 @@ class ContactController extends Controller
         if ($request->id) {
             $request->validate([
                 'last_name' => 'required|max:255',
-                'email' => 'max:255',
+                'email' => 'unique:contacts|max:255',
             ]);
             $contact = Contact::findOrFail($request->id);
 
