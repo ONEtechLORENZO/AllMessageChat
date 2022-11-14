@@ -14,7 +14,6 @@ import axios from "axios";
 import { Menu, Transition } from '@headlessui/react'
 import ListTable from './ListTable';
 import MassEdit from './MassEdit';
-
 import { Button } from "reactstrap";
 
 
@@ -107,13 +106,22 @@ function ListView(props)
         var recordData = {id: record_id};
 
         if(props.module == 'User'){
-            let confirmUserDelete = window.confirm('Are you sure you want to unlink the user?');
+           
+            if(props.auth.user.id == record_id) {
+                notie.alert({type: 'error', text: 'you can not delete your profile.', time: 5});
+                return false;
+            }
+
+            var msg = 'Are you sure you want to delete the user?';
+            if(soft_delete){
+                recordData['is_soft'] = true;
+                msg = 'Are you sure you want to unlink the user?'
+            }
+            let confirmUserDelete = window.confirm(msg);
             if(!confirmUserDelete) {
                 return;
             }
-            if(soft_delete){
-                recordData['is_soft'] = true;
-            }
+
         } else {
             let confirm = window.confirm(props.translator['Are you sure you want to delete the record?']);
             if(!confirm) {
@@ -212,7 +220,6 @@ function ListView(props)
 
     function recordMerger() {
         const recordLength = checkedId.length;
-
         if(recordLength >= 2) {
             
             let data = {
@@ -226,6 +233,11 @@ function ListView(props)
         }
     }
  
+    function unlinkRecord(recordId){
+        props.setParent(recordId);
+        props.setShowCompanies(true);
+    }
+
     return (
         <>
             <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
@@ -445,6 +457,7 @@ function ListView(props)
                                 fieldOptions={fieldOptions}
                                 getFieldOptions={getFieldOptions}
                                 deleteRecord={deleteRecord}
+                                unlinkRecord={unlinkRecord}
                                 showEditForm={showEditForm}
                                 checkAll={checkAll}
                                 checkedId={checkedId}

@@ -48,10 +48,10 @@ export default function Step3 (props) {
 
     return (
         <div className="h-full w-full bg-blue-50 flex justify-center items-center">
-          <div className="max-w-7xl flex mx-auto items-center px-10">
-            <div className="w-full bg-white self-stretch flex justify-center py-24 rounded-xl px-4 lg:px-10">
+          <div className="max-w-7xl flex mx-auto items-center px-10 h-screen">
+            <div className="w-full bg-white flex justify-center py-8 rounded-xl px-4 lg:px-10 shadow-2xl">
                 <div className="py-8">
-                    <div className="flex justify-end px-4">
+                    <div className="flex justify-end pl-4">
                         <img
                             src="./img/onemessage-logo.png"
                             alt="One message logo"

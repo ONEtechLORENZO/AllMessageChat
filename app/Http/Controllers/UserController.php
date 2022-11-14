@@ -240,6 +240,7 @@ class UserController extends Controller
                 'detail' => true,
                 'edit' => true,
                 'delete' => true,
+                'unlink' => true,
                 'export' => false,
                 'import' => false,
                 'search' => true,
@@ -893,6 +894,7 @@ class UserController extends Controller
         }
 
         $account->service = $request->service;
+        $account->status = $request->status;
         $account->service_engine = $request->service_engine;
         $account->service_token = $request->service_token;
         $account->fb_phone_number_id = $request->fb_phone_number_id;
@@ -908,9 +910,9 @@ class UserController extends Controller
            $account->display_name = $request->display_name;
         }
         
-        $acccountFields = ['company_name','website','category','description','email'];
+        $accountFields = ['company_name','website','category','description','email'];
 
-        foreach($acccountFields as $field){
+        foreach($accountFields as $field){
             if($request->has($field)){
                 $account->$field = $request->$field;
             }
@@ -1349,7 +1351,9 @@ class UserController extends Controller
         }
 
         // Get message amount deduction
-        $messageDeduction = $this->getAmountDeduction($user->id);
+        $messageDeduction = $this->getMsgAmountDeduction($user->id);
+        $accountDeduction = $this->getDeductionDetail($user->id);
+        
         $paymentMethods = $this->getPaymentMethods($request , 'direct');
 
         $stripe_public_key = config('stripe.stripe_key');
@@ -1358,6 +1362,7 @@ class UserController extends Controller
             'name' => $user->name,
             'balance' => $balance,
             'message_deduction' => $messageDeduction,
+            'message_accoount_detail' => $accountDeduction,
             'paymentMethods' => $paymentMethods,
             'stripe_public_key' => $stripe_public_key,
             'currentPlan' => $currentCompany,
@@ -1561,14 +1566,14 @@ class UserController extends Controller
      * 
      * @param INTEGER $user_id
      */
-    public function getAmountDeduction($user_id)
+    public function getMsgAmountDeduction($user_id)
     {
         //TODO Need to get country id for gettting price detail
 
         $countryId = 1;
-        $price = Price::find($countryId);
+        //$price = Price::find($countryId);
 
-        $messages = Msg::selectRaw(' count(msgs.id) as messages , sum(amount) as total , policy, amount ')
+        $messages = Msg::selectRaw(' count(msgs.id) as messages , sum(amount) as total , policy')
             ->leftJoin('accounts', 'account_id', 'accounts.id')
             ->where('user_id', $user_id)
             ->where('msgs.created_at', '>', now()->subDays(30)->endOfDay())
@@ -1576,26 +1581,62 @@ class UserController extends Controller
             ->groupBy('amount', 'policy')
             ->get();
            
+        $data = $this->getAmountDetailsBasedOnMsg($messages );
+        return $data;
+    }
+
+    /**
+     * Return amount details 
+     */
+    public function getAmountDetailsBasedOnMsg($records)
+    {
         $return['total_messages'] = 0;
         $return['total_amount'] = 0;
-        if(! $price){
-            return $return;
-        }
-        foreach($messages as $message){
-          
+      
+        foreach($records as $message){    
             $return['total_messages'] = $message->messages + $return['total_messages'];
-            $return['total_amount'] = $message->amount + $return['total_amount'];
-           
-            if($price->user_initiated == $message->amount){
+            $return['total_amount'] = $message->total + $return['total_amount'];
+
+            if($message->policy == 'BIC'){
                 $return[$message->policy] = ['amount' => number_format($message->total , 4, '.', ''), 'count' => $message->messages];
-            } else if($price->business_initiated == $message->amount) {
+            } else if($message->policy == 'UIC') {
                 $return[$message->policy] = ['amount' => number_format($message->total , 4, '.', '') , 'count' => $message->messages];
-            } else {
-                $return['messages'] = ['amount' => number_format($message->total , 4, '.', '') , 'count' => $message->messages];
+            } else if($message->policy == 'FEP'){
+                $return[$message->policy] = ['amount' => number_format($message->total , 4, '.', '') , 'count' => $message->messages];
             }
         }
         return $return; 
     }
+
+    /**
+     * Return amount detail  
+     */
+    public function getDeductionDetail($userId)
+    {
+        $companyId =  Cache::has('selected_company_' . $userId);
+        $accounts = Account::where('company_id' , $companyId)->get();
+
+        $accooutAmountDetail = [];
+        foreach($accounts as $account){
+            $messages = Msg::selectRaw(' count(msgs.id) as messages , sum(amount) as total , policy')
+                ->where('account_id', $account->id)
+                ->where('msgs.created_at', '>', now()->subDays(30)->endOfDay())
+                ->whereNotNull('policy')
+                ->groupBy('amount', 'policy')
+                ->get();
+
+            $data = $this->getAmountDetailsBasedOnMsg($messages);
+            $accooutAmountDetail[] = [
+                'service' => $account->service,
+                'number' => $account->phone_number,
+                'amount_data' => $data,
+            ];
+        } 
+        
+        return $accooutAmountDetail;
+      //  dd($accooutAmountDetail);
+    }
+
 
     /**
      * Return companies related to User and selected company name
@@ -1863,10 +1904,11 @@ class UserController extends Controller
     /**
      * Connect FaceBook
      */
-    public function connectFaceBook(Request $request)
+    public function connectFaceBook(Request $request, $accountId)
     {
 	    session_start();
-        
+        Session::put('fb_access_token_account_id', $accountId);
+
         $fb = new Facebook([
             'app_id' => config('app.fb.api_id'),
             'app_secret' => config('app.fb.app_secret'),
@@ -1881,15 +1923,15 @@ class UserController extends Controller
     }
 
     /**
-     * Get facebook unique code and store user table 
+     * Get facebook unique code and store account table 
      */
     public function storeFaceBookCode(Request $request)
     {
         Session::put('fb_access_token', '');
         session_start();
         
-        $user = User::find($request->user()->id);
-
+        $accountId =  Session::get('fb_access_token_account_id');
+       
         $fb = new Facebook([
             'app_id' => config('app.fb.api_id'),
             'app_secret' => config('app.fb.app_secret'),
@@ -1922,9 +1964,12 @@ class UserController extends Controller
             exit;
           }
           
-          $token = ($accessToken->getValue());
-          $user->fb_token = $token;
-          $user->save();
+          $token = $accessToken->getValue();
+          $account = Account::find($accountId);
+          $account->fb_token = $token;
+          $account->status = 'Active';
+          $account->save();
+
           return Redirect::route('dashboard');
     }
 

@@ -8,6 +8,7 @@ module.exports = {
         './resources/views/**/*.blade.php',
         './resources/js/**/*.js',
     ],
+    //prefix: 'tw-',
 
     theme: {
         extend: {

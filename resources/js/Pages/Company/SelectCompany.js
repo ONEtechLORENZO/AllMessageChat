@@ -1,11 +1,12 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { Inertia } from '@inertiajs/inertia'
+import {  Alert } from "reactstrap";
             
 function SelectCompany(props) 
 {
     const [open, setOpen] = useState(false);
-    const [companytList, setCompanyList] = useState({});
+    const [companyList, setCompanyList] = useState({});
     const [selectedCompany, setSelectedCompany] = useState('');
     const cancelButtonRef = useRef(null);
 
@@ -28,6 +29,12 @@ function SelectCompany(props)
     function getSelectedCompany(){
         axios.get(route('get_selected_company'))
         .then(res => {
+           
+            if(res.data.companies.length == 0 ){
+                Inertia.post(route('show_register_step'),
+                      {'step' : 2, 'user_id': props.user.id}
+                    );
+            }
             setSelectedCompany(res.data.selected_company);
             setCompanyList(res.data.companies);
             if(!res.data.selected_company || props.openModal){
@@ -82,7 +89,7 @@ function SelectCompany(props)
                                         <div className='p-4 space-y-4'>
                                             <div class="flex justify-center">
                                                 <ul class="bg-white rounded-lg border border-gray-200 w-full text-gray-900">
-                                                    {companytList && Object.entries(companytList).map(([key ,company]) =>
+                                                    {companyList && Object.entries(companyList).map(([key ,company]) =>
                                                         <li 
                                                             onClick={() => saveSelectedCompany(company.id) } 
                                                             class="cursor-pointer px-6 py-2 border-b border-gray-200 w-full rounded-t-lg"
@@ -93,6 +100,11 @@ function SelectCompany(props)
                                                                 }
                                                         </li>
                                                     )}
+                                                    {!companyList || Object.entries(companyList).length == 0 &&
+                                                        <>
+                                                             <Alert color="primary"> There is no linked company to the user </Alert>
+                                                        </>
+                                                    }
                                                 </ul>
                                             </div>
                                         </div>

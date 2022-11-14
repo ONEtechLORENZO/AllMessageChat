@@ -172,18 +172,20 @@ class PlanRestriction
         $company_id = Cache::get('selected_company_' . $user->id);
 
         if($company_id) {
-            $company = Company::find($company_id);
-        
             // Get company plan details
-            $companyPlan = DB::table('plans')->where('plan_id', $company->plan)->get();
-    
-            $currentPlan = '';
-    
-            foreach($companyPlan as $company) {
-                $currentPlan = $company;
+            $company = Company::find($company_id);
+            if($company){
+                
+                $companyPlan = DB::table('plans')->where('plan_id', $company->plan)->get();
+        
+                $currentPlan = '';
+        
+                foreach($companyPlan as $company) {
+                    $currentPlan = $company;
+                }
+        
+                return $currentPlan;
             }
-    
-            return $currentPlan;
         } 
 
         return false;

@@ -658,6 +658,7 @@ function ChatList(props)
                                     handleKeyUp = {handleKeyUp}
                                     templates = {props.templates}
                                     setTemplateInfo = {setTemplateInfo}
+                                    selectedAccount = {selectedAccount}
                                     data = {data}
                                     sendMessage = {sendMessage}
                                     logo = { (selectedContact)? (chatList[selectedContact].name).substring(0,2) : ''}
