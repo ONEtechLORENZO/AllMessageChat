@@ -88,7 +88,8 @@ Route::middleware('planrestriction')->group(function () {
     // Check user login
     Route::middleware(['auth', 'verified'])->group(function () {
         
-        Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
+        Route::get('/home', [UserController::class, 'home'])->name('home');
+        Route::get('/dashboard', [UserController::class, 'home'])->name('dashboard');
         Route::get('/getCompanyId', [UserController::class, 'getSelectedCompany'])->name('get_selected_company');
         Route::get('/user/timezone',[UserController::class, 'getUserTimeZone'])->name('get_time_zone');
         Route::post('/show_register_step',[RegisteredUserController:: class, 'create'])->name('show_register_step');
@@ -140,6 +141,9 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/account/delete_account', [UserController::class, 'deleteAccount'])->name('delete_account');
         Route::post('/saveTemplateStatus/account/{acc_id}/template/{tmp_id}', [UserController::class, 'saveTemplateStatus'])->name('template_status_form');
         Route::post('/migrateRequest', [UserController::class, 'sendMigrateRequest'])->name('migrate_request');
+
+        // Social profile CRUD view
+        Route::get('/account/list' , [UserController::class , 'listAccounts'])->name('listAccount');
 
         // Webhook Events
         Route::post('/account/{id}/webhook_event', [UserController::class, 'createWebhookEvent'])->name('create_webhook_event');

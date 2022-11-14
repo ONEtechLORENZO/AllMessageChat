@@ -175,6 +175,16 @@ class UserController extends Controller
     );
     
     /**
+     * Show home page 
+     */
+    public function home(Request $request)
+    {
+        return Inertia::render('Home',[
+
+        ]);
+    }
+
+    /**
      * Show list of accounts related to logged in user
      */
     public function dashboard(Request $request)
@@ -635,6 +645,14 @@ class UserController extends Controller
             }
         }
         return Redirect::route('show_Users');
+    }
+
+    /**
+     * List account 
+     */
+    public function listAccounts(Request $request)
+    {
+        
     }
 
     /**

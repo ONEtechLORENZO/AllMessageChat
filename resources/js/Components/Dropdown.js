@@ -40,12 +40,9 @@ const Content = ({ align = 'right', width = '48', contentClasses = 'py-1 bg-whit
     } else if (align === 'right') {
         alignmentClasses = 'origin-top-right right-0';
     }
-
-    let widthClasses = '';
-
-    if (width === '48') {
-        widthClasses = 'w-48';
-    }
+    
+    let widthClasses = 'w-' + width;
+    
 
     return (
         <>
