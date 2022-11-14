@@ -79,15 +79,25 @@ class LeadController extends Controller
      */
     public function store(Request $request)
     {
+        if($request->is('api/*'))     // API call check
+        { 
+            $postFields = array_keys($_POST);
+            if(count($postFields) == 0) {
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+            }
+        }
         $lead_id = $this->saveLead($request);
         if($request->is('api/*'))     // API call check
         {            
             if($lead_id){
-            return response()->json($lead_id);
+                $lead = Lead::findOrFail($lead_id);                       
+                $return = ['Message' => 'Record has been created successfully', 'Lead_id' => $lead_id,'Lead' => $lead];
+            
             }
             else{
-                abort(422);
+                $return = ['Message' => 'Invalid Input'];
             }
+            return response()->json($return);
         }
         else
         {        
@@ -115,7 +125,12 @@ class LeadController extends Controller
         $lead = $this->checkAccessPermission($request, $module, $request->id);
 
         if(!$lead) {
+            if($request->is('api/*')){
+                return response()->json(['status' => false, 'message' => 'Record not found']);
+            }
+            else{
             abort('404');
+            }
         }
         if($request->is('api/*')) //api call check
         {
@@ -206,12 +221,19 @@ class LeadController extends Controller
         if(!$lead) {
             abort('404');
         }   
-
+        if($request->is('api/*'))     // API call check
+        { 
+            $postFields = array_keys($_POST);
+            if(count($postFields) == 0) {
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+            }
+        }
         $lead_id = $this->saveLead($request);
 
         if($request->is('api/*')){
             $lead = Lead::findOrFail($lead_id);
-            return response()->json($lead);           
+            $return = ['Message' => 'Record has been updated successfully','Lead' => $lead];
+                return response()->json($return);             
         }
         else
           {        
@@ -254,6 +276,10 @@ class LeadController extends Controller
     {
         if($request->is('api/*')){ 
             $lead = Lead::find($request->id);
+            if(!$lead)
+            {
+                return response()->json(['status' => false, 'message' => 'Record not found']);   
+            }
         }
         else
         {
@@ -270,8 +296,9 @@ class LeadController extends Controller
             $note->notable_id=$new_contact->id;           
             $contact_note->notes()->save($note);
         }
-        if($request->is('api/*')){          
-            return response()->json($new_contact->id);
+        if($request->is('api/*')){ 
+            $return = ['Message' => 'Record has been converted to a new contact successfully','Contact_id' => $new_contact->id];
+            return response()->json($return); 
             }
             else
               {

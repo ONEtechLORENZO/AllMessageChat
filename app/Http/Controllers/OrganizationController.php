@@ -70,16 +70,27 @@ class OrganizationController extends Controller
      */
     public function store(Request $request)
     {
+        if($request->is('api/*'))     // API call check
+        { 
+            $postFields = array_keys($_POST);
+            if(count($postFields) == 0) {
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+            }
+        }
         $organization_id = $this->saveOrganization($request);
 
         if($request->is('api/*'))     // API call check
         {            
             if($organization_id){
-            return response()->json($organization_id);
+                
+                $organization= Organization::findOrFail($organization_id);                       
+                $return = ['Message' => 'Record has been created successfully', 'Organization_id' => $organization_id,'Record' => $organization];
+        
             }
             else{
-                abort(422);
+                $return = ['Message' => 'Invalid Input'];
             }
+            return response()->json($return);
         }
         else
         {        
@@ -119,7 +130,12 @@ class OrganizationController extends Controller
         $organization = $this->checkAccessPermission($request, $module, $request->id);
        
         if(!$organization) {
-            abort('404');
+            if($request->is('api/*')){
+                return response()->json(['status' => false, 'message' => 'Record not found']);
+             }
+           else{
+               abort('404');
+             }
         }
         if($request->is('api/*'))
             {
@@ -163,12 +179,24 @@ class OrganizationController extends Controller
         $module = new Organization();       
         $organization = $this->checkAccessPermission($request, $module, $request->id);
         if(!$organization) {
-            abort('404');
+            if($request->is('api/*')){
+                return response()->json(['status' => false, 'message' => 'Record not found']);   
+            }
+            else{
+                 abort('404');}
+        }
+        if($request->is('api/*'))     // API call check
+        { 
+            $postFields = array_keys($_POST);
+            if(count($postFields) == 0) {
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+            }
         }
         $organization_id = $this->saveOrganization($request);
         if($request->is('api/*')){
             $organization = Organization::findOrFail($organization_id);
-            return response()->json($organization);           
+            $return = ['Message' => 'Record has been updated successfully','Record' => $organization];
+                return response()->json($return);               
         }
         else
           {

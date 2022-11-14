@@ -73,16 +73,27 @@ class OpportunityController extends Controller
      */
     public function store(Request $request)
     {
+        if($request->is('api/*'))     // API call check
+        { 
+            $postFields = array_keys($_POST);
+            if(count($postFields) == 0) {
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+            }
+        }
         $opportunity_id = $this->saveOpportunity($request);
 
         if($request->is('api/*')) // API call check
         {            
             if($opportunity_id){
-            return response()->json($opportunity_id);
+                
+                $opportunity = Opportunity::findOrFail($opportunity_id);                       
+                $return = ['Message' => 'Record has been created successfully', 'Opportunity_id' => $opportunity_id,'Opportunity' => $opportunity];
+        
             }
             else{
-                abort(422);
+                $return = ['Message' => 'Invalid Input'];
             }
+            return response()->json($return);
         }
         else
         {        
@@ -137,8 +148,13 @@ class OpportunityController extends Controller
         $module = new Opportunity();
         $opportunity = $this->checkAccessPermission($request, $module, $request->id);
        
-        if(!$opportunity) {
-            abort('404');
+        if(!$opportunity) { 
+            if($request->is('api/*')){
+                 return response()->json(['status' => false, 'message' => 'Record not found']);
+              }
+            else{
+                abort('404');
+              }
         }
         if($request->is('api/*'))
             {
@@ -200,13 +216,26 @@ class OpportunityController extends Controller
         $module = new Opportunity();
        
         $opportunity = $this->checkAccessPermission($request, $module, $request->id);
-        if(!$opportunity) {
-            abort('404');
+        if(!$opportunity) { 
+            if($request->is('api/*')){
+                return response()->json(['status' => false, 'message' => 'Record not found']);   
+            }
+            else{
+                 abort('404');}
+        }
+
+        if($request->is('api/*'))     // API call check
+        { 
+            $postFields = array_keys($_POST);
+            if(count($postFields) == 0) {
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+            }
         }
         $opportunity_id = $this->saveOpportunity($request);
         if($request->is('api/*')){            
             $opportunity = Opportunity::findOrFail($opportunity_id);
-            return response()->json($opportunity);           
+            $return = ['Message' => 'Record has been updated successfully','Record' => $opportunity];
+                return response()->json($return);            
         }
         else
           {
