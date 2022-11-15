@@ -1347,17 +1347,20 @@ class UserController extends Controller
     public function wallet(Request $request)
     {
         $user = $request->user();
-        $wallet = Wallet::where('user_id', $user->id)->first();
-        
-        $balance = 0.00;
-        if($wallet) {
-            $balance = $wallet->balance_amount;
-        }
-        
-        $company_id = Cache::get('selected_company_'.$user->id);
+        $company_id = Cache::get('selected_company_'.$user->id);  
 
-        //get current company details
-        $currentCompany =  Company::where('id', $company_id)->first();
+        $columns = [
+            'created_at' => [ 'label' => __('Date') , 'type' => 'text'],
+            'service' => [ 'label' => __('Channel') , 'type' => 'text'],
+            'account_id' => [ 'label' => __('Account') , 'type' => 'text'],
+            'msg_type' => [ 'label' => __('Type') , 'type' => 'text'],
+            'amount' => [ 'label' => __('Amount') , 'type' => 'text'],
+        ];
+
+        $module = new Msg();
+        $TransactionList = $this->listView($request, $module, $columns);
+
+        $currentCompany =  Company::where('id', $company_id)->first(); // GET current user Company Details
         
         // Get Company Subscription Plan name
         if($currentCompany->plan != 'lite') {
@@ -1368,6 +1371,13 @@ class UserController extends Controller
             }
         }
 
+        $wallet = Wallet::where('user_id', $user->id)->first();
+        
+        $balance = 0.00;
+        if($wallet) {
+            $balance = $wallet->balance_amount;
+        }
+
         // Get message amount deduction
         $messageDeduction = $this->getMsgAmountDeduction($user->id);
         $accountDeduction = $this->getDeductionDetail($user->id);
@@ -1376,7 +1386,8 @@ class UserController extends Controller
 
         $stripe_public_key = config('stripe.stripe_key');
 
-        return Inertia::render('Wallet/WalletIndex', [
+        $data = [
+            'actions' => [],
             'name' => $user->name,
             'balance' => $balance,
             'message_deduction' => $messageDeduction,
@@ -1385,6 +1396,8 @@ class UserController extends Controller
             'stripe_public_key' => $stripe_public_key,
             'currentPlan' => $currentCompany,
             'current_page' => 'Wallet',
+            'columns' => $columns,
+            'transactionList' => $TransactionList,
             'translator' => [
                 'Wallet' => __('Wallet'),
                 'Hi' => __('Hi'),
@@ -1405,7 +1418,9 @@ class UserController extends Controller
                 'Download your VAT Invoices' => __('Download your VAT Invoices'),'Go to Invoices'=>__('Go to Invoices'),
                 'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount')
             ]
-        ]);
+        ];
+
+        return Inertia::render('Wallet/WalletIndex', $data);
     }
 
     /**

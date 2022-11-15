@@ -122,7 +122,7 @@ class Controller extends BaseController
 
         $query = ($searchData) ? $this->prepareQuery($searchData, $query, $baseTable) : $query;
 
-        if($moduleName != 'Price' && $moduleName != 'Company' && $moduleName != 'Plan' && $moduleName != 'SupportRequest' ) {
+        if($moduleName != 'Price' && $moduleName != 'Company' && $moduleName != 'Plan' && $moduleName != 'SupportRequest' && $moduleName != 'Msg' ) {
             // For tenancy
             if( $moduleName != 'User') {
                 $query->where("{$baseTable}.company_id", $companyId);

@@ -1,49 +1,79 @@
-import React from "react";
+import React, { useState } from "react";
 import Wallet from "./Index";
 import Authenticated from "@/Layouts/Authenticated";
 import { Head } from "@inertiajs/inertia-react";
-import { Nav,NavItem,NavLink } from "reactstrap";
+import ListView from "@/Components/Views/List/Index2";
+import MessageTransaction from "./MsgTransaction";
+
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
+
+const tabs = [
+    { label: 'Wallet & Usages', name: 'Wallet & Usages', href: '#',current: true, page: 1 },
+    { label: 'Transaction History', name: 'Transaction History', href: '#',current: false, page: 2 },
+    { label: 'VAT Invoices', name: 'VAT Invoices', href: '#',current: false, page: 3 },       
+];
+
 function WalletIndex(props)
 {
-    const tabs = [
-        { label: 'Wallet & Usages', name: 'Wallet & Usages', href: '#',current: true },
-        { label: 'Transaction History', name: 'Transaction History', href: route('listTransaction'),current: false },
-        { label: 'VAT Invoices', name: 'VAT Invoices', href: '#',current: false },       
-    ];
+    const [currentTab, setCurrentTab] = useState(1);
+
     return (
         <Authenticated
             auth={props.auth}
             errors={props.errors}
             current_page= {props.current_page}
         >
-            <Head title={props.translator['Wallet']} />
-            <Nav  className="px-4 sm:px-6 flex space-x-8 gap-2"
-                    aria-label="Tabs"
-  >
+        <Head title={props.translator['Wallet']} />
 
-            {tabs.map((tab) => (
-                <NavItem>               
-                    <NavLink
-                    active
-                    href={tab.href}
-                    className={classNames(
-                        tab.current
-                            ? "bg-primary text-white"
-                            : "border-transparent  text-[#3D4459] hover:text-primary hover:border-purple-500",
-                        "whitespace-nowrap py-2 px-1 border-b-2 font-medium text-base  my-3"
-                    )}
+        <div className="hidden sm:block p-4">
+         <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                {tabs.map((tab) => (
+                    <a
+                        active
+                        href={tab.href}
+                        className={classNames(
+                            tab.page == currentTab
+                            ? 'border-indigo-500 text-indigo-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                        'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
+                        )}
+                        onClick={() => setCurrentTab(tab.page)}
                     >
-                    {tab.name}
-                    </NavLink>
-                </NavItem>
+                        {tab.name}
+                    </a>
                 ))} 
-                </Nav>
+            </nav>
 
-            <Wallet {...props}
-            tabs={tabs} />
+            <div className="p-4">
+
+             {currentTab && currentTab == 1 ? 
+                <Wallet
+                  {...props}
+                  tabs={tabs} 
+                />
+             : ''}
+
+             {currentTab && currentTab == 2 ? 
+              <>
+                <MessageTransaction
+                  {...props} 
+                />
+              </>
+                
+             : ''}
+
+             {currentTab && currentTab == 3 ? 
+                <>Three</>
+             : ''}
+
+            </div>
+         </div>
+        </div>    
+
+           
 
         </Authenticated>
     )
