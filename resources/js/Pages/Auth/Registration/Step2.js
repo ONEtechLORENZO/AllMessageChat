@@ -61,7 +61,7 @@ export default function Step2 (props) {
             return false;
         }
         if(!condition){
-            notie.alert({type: 'warning', text: 'Check all the terms and conditions', time: 5});
+            notie.alert({type: 'warning', text: 'Please accept the terms and conditions', time: 5});
             return false;
         }
 

@@ -1467,7 +1467,8 @@ class UserController extends Controller
                 'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount'),
                 'No records' =>__('No records'),
                 'Search' =>__('Search'),
-                'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?')
+                'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?'),
+                'Add your Card' =>__('Add your Card'),
             ],
             'paginator' => [
                 'firstPageUrl' => $transactionHistory->url(1),

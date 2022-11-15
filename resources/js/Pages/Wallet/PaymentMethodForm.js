@@ -66,8 +66,8 @@ function PaymentMethodForm(props)
                                 <div className="bg-gray-50 px-4 pt-5 pb-4 sm:p-4 sm:pb-4">
                                     <div className="sm:flex sm:items-start">
                                         <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                                            <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                                                {props.translator['Add Payment Method']}
+                                            <Dialog.Title as="h3" className="text-lg leading-6 font-bold text-gray-900">
+                                                {props.translator['Add your Card']}
                                             </Dialog.Title>
                                         </div>
                                     </div>

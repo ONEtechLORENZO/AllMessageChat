@@ -39,19 +39,19 @@ export default function Step5 (props) {
             return;
         }
         if(name == 'Lite') {
-            props.setOpenTab(6);
+            props.setOpenTab(4);
             props.setStripe(true);
             return false;
         }
 
         if(!props.stripe) {
-           props.setOpenTab(6);
+           props.setOpenTab(4);
            return false;
         }
 
         Inertia.post(route('subscribe_plan',{'plan': plan_id}), {user_id: props.user.user_id, is_register_step: true }, {
             onSuccess: (response) => {
-                props.setOpenTab(7);
+                props.setOpenTab(5);
             }
         });
     }
@@ -68,7 +68,7 @@ export default function Step5 (props) {
 
     return (
         <div className="h-full w-full bg-blue-50 flex justify-center items-center">
-            <div className="max-w-7xl flex mx-auto items-center px-10 h-screen">
+            <div className="max-w-7xl flex mx-auto items-center px-10">
                 <div className="w-full bg-white flex justify-center py-8 rounded-xl px-4 lg:px-10 shadow-2xl">
                     <div className="py-8">
                         <div className="flex justify-center px-4">
@@ -153,7 +153,7 @@ export default function Step5 (props) {
                                             href={route('showPlan')}
                                             className="w-full inline-flex justify-end rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-300 hover:bg-primary hover:text-white text-semibold font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm "
                                         >
-                                            See plan and prices in detiles
+                                           See plan and prices in details
                                             <span className="flex justify-end pt-1"><ChevronRightIcon className="h-4 w-4"/></span>
                                         </Link>
                                         </th>
@@ -183,7 +183,7 @@ export default function Step5 (props) {
                             <button
                                 type="button"
                                 className="w-full inline-flex justify-start rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-900 hover:bg-gray-200 hover:text-gray-900 text-semibold font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-                                onClick={() => props.setOpenTab(6)}
+                                onClick={() => props.setOpenTab(4)}
                             >
                                 Skip
                                 <span className="flex justify-end pt-1"><ChevronRightIcon className="h-4 w-4"/></span>
