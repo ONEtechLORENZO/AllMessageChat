@@ -388,6 +388,7 @@ export default function Index(props) {
                                   recordId={props.record.id} 
                                   current_userid={props.current_userid}
                                   created_by = {props.created_by}
+                                  creator_id ={props.creator_id}
                                 />
                          
                          </>}                      

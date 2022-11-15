@@ -1609,10 +1609,10 @@ class UserController extends Controller
         $user = User::find($request->user()->id);
             view()->share('invoice',$invoice);
             view()->share('user',$user);
-
-            $pdf = PDF::loadView('invoice');
+           
+            $pdf = PDF::loadView('invoicesample');
           //$pdf->save(storage_path() . '/invoice');
-            return $pdf->download('invoice.pdf');
+            return $pdf->download('invoicesample.pdf');
     }
 
     /**
