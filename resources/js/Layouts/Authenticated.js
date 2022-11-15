@@ -6,34 +6,25 @@ import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link } from "@inertiajs/inertia-react";
 import { Dialog, Transition } from "@headlessui/react";
 import UserRegistration from '@/Components/UserRegistration';
-import { UserIcon } from '../Pages/icons'
-import nProgress, { settings } from 'nprogress';
+import nProgress from 'nprogress';
+import { Container , Row , Col, List} from 'reactstrap';
 
 import {
     HomeIcon,
-    ChatAltIcon,
-    ChatAlt2Icon,
-    IdentificationIcon,
+    UserIcon,
     BriefcaseIcon,
     UsersIcon,
     UserGroupIcon,
     XIcon,
-    SpeakerphoneIcon,
     ChevronRightIcon,
     ChevronLeftIcon,
-    ServerIcon,
-    ChipIcon,
     CogIcon,
-    EyeIcon,
-    ShoppingCartIcon,
-    ShoppingBagIcon,
+    PlusCircleIcon,
     ChevronDownIcon,
-    OfficeBuildingIcon,
-    ClipboardIcon,
-    SupportIcon,
     QuestionMarkCircleIcon,
     ChartSquareBarIcon,
-    LightBulbIcon
+    LightBulbIcon,
+    PlusIcon
 } from "@heroicons/react/outline";                                                                      
 import SelectCompany from "@/Pages/Company/SelectCompany";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
@@ -41,112 +32,126 @@ import axios from "axios";
 import Notification from "./Notification";
 import notie from 'notie';
 
+// const navigation = [
+//     {
+//         name: "Dashboard",
+//         href: route("dashboard"),
+//         icon: HomeIcon,
+//         show: ['all'],
+//     },
+//     {
+//         name: "Conversation",
+//         href: '#',
+//         icon: ChatAlt2Icon,
+//         show: ['all'],
+//         subMenu : [{
+//             name: 'Chats',
+//             href : route('chat_list')
+//         },
+//         {
+//             name: 'Campaigns',
+//             href : route('listCampaign')
+//         },  
+//     ]
+//     },   
+//     {
+//         name: "CRM",
+//         href: '#',
+//         icon: IdentificationIcon,
+//         show: ['all'],
+//         subMenu : [
+//             {
+//                 name: 'Leads',
+//                 href : route("listLead")
+//             },
+//             {
+//             name: 'Contacts',
+//             href : route('listContact')
+//             },
+//             {
+//             name: 'Organizations',
+//             href : route("listOrganization")
+//             },
+//             {
+//                 name: 'Fields',
+//                 href : route("listField")
+//             },
+//             {
+//                 name: 'Tags',
+//                 href : route("listTag")
+//             },{
+//                 name: 'Lists',
+//                 href : route("listCategory")
+//             },]
+//     },  
+    
+//     {
+//         name: "Sales",
+//         href: '#',
+//         icon: ShoppingCartIcon,
+//         show: ['all'],
+//         subMenu : [
+//             {
+//                 name: 'Opportunities',
+//                 href : route('listOpportunity')
+//             },                      
+//             {
+//             name: 'Orders',
+//             href : route('listOrder')
+//         },{
+//             name: 'Products',
+//             href : route('listProduct')
+//         },]
+//     },  
+//     {
+//         name: "Workspaces",
+//         href: route("listAdminCompany"),
+//         icon: OfficeBuildingIcon,
+//         show: ['admin', 'global_admin'],
+//     },    
+//     {
+//         name: "Automations",
+//         href: route("listAutomation"),
+//         icon: ChipIcon,
+//         show: ['all'],
+//     },
+//     {
+//         name: "Reports",
+//         href: route("listMessage"),
+//         icon: ChatAltIcon,
+//         show: ['all'],
+//     },
+//     {
+//         name: "Wallet",
+//         href: route("wallet"),
+//         icon: BriefcaseIcon,
+//         show: ['all'],
+//     },
+//     {
+//         name: "Users",
+//         href: route("show_Users"),
+//         icon: UsersIcon,
+//         show: ['admin', 'global_admin'],
+//     },
+   
+// ];
+
 const navigation = [
     {
-        name: "Dashboard",
-        href: route("dashboard"),
+        name: "Home",
+        href: route("home"),
         icon: HomeIcon,
         show: ['all'],
     },
+];
+
+const bottomNavigation = [
     {
-        name: "Conversation",
-        href: '#',
-        icon: ChatAlt2Icon,
-        show: ['all'],
-        subMenu : [{
-            name: 'Chats',
-            href : route('chat_list')
-        },
-        {
-            name: 'Campaigns',
-            href : route('listCampaign')
-        },  
-    ]
-    },   
-    {
-        name: "CRM",
-        href: '#',
-        icon: IdentificationIcon,
-        show: ['all'],
-        subMenu : [
-            {
-                name: 'Leads',
-                href : route("listLead")
-            },
-            {
-            name: 'Contacts',
-            href : route('listContact')
-            },
-            {
-            name: 'Organizations',
-            href : route("listOrganization")
-            },
-            {
-                name: 'Fields',
-                href : route("listField")
-            },
-            {
-                name: 'Tags',
-                href : route("listTag")
-            },{
-                name: 'Lists',
-                href : route("listCategory")
-            },]
-    },  
-    
-    {
-        name: "Sales",
-        href: '#',
-        icon: ShoppingCartIcon,
-        show: ['all'],
-        subMenu : [
-            {
-                name: 'Opportunities',
-                href : route('listOpportunity')
-            },                      
-            {
-            name: 'Orders',
-            href : route('listOrder')
-        },{
-            name: 'Products',
-            href : route('listProduct')
-        },]
-    },  
-    {
-        name: "Workspaces",
-        href: route("listAdminCompany"),
-        icon: OfficeBuildingIcon,
-        show: ['admin', 'global_admin'],
-    },    
-    {
-        name: "Automations",
-        href: route("listAutomation"),
-        icon: ChipIcon,
-        show: ['all'],
-    },
-    {
-        name: "Reports",
-        href: route("listMessage"),
-        icon: ChatAltIcon,
-        show: ['all'],
-    },
-    {
-        name: "Wallet",
+        name: "Billing",
         href: route("wallet"),
         icon: BriefcaseIcon,
         show: ['all'],
     },
-    {
-        name: "Users",
-        href: route("show_Users"),
-        icon: UsersIcon,
-        show: ['admin', 'global_admin'],
-    },
-   
-];
-
-const bottomNavigation = [
-
     {
         name: "Settings",
         href: route("wallet_subscription"),
@@ -170,6 +175,10 @@ const adminNavigation = [
             {
                 name: "Workspaces",
                 href: route("listCompany"),
+            }, 
+            {
+                name: "Social profiles",
+                href: route("listAccount"),
             },
             {
                 name: "Users",
@@ -268,7 +277,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
     const[showModal,setshowModal]= useState(false);
     const [count, setCount] = useState();
     const [id, setId] = useState();
-    const [company, setCompany] = useState({});
+    const [companyList, setCompany] = useState({});
     const [adminMenuText, setadminMenuText] = useState("Global Admin page");
     const [navigateField, setNavigateField] = useState();
     const pathname = window.location.pathname;
@@ -288,7 +297,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
         getNavigationfield();
        // drownDownToggleAction();
     },[])
-
+    
     useEffect(() => {
         if(pathname.includes('admin/'))
         {
@@ -417,6 +426,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
         nProgress.inc(0.2);
         let url = route('get_selected_company');
         axios.get(url).then( (response) => {
+            
             if(response) {
                 if(response.data.register_step && response.data.register_step <= 2){
                     Inertia.post(route('show_register_step'),
@@ -425,9 +435,9 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                 }
                 const companies = response.data.companies;
                 
-                if(companies.length && companies[0].currency == null) {
-                    setshowModal(true)
-                    setCompany(companies[0]);  
+                if(companies.length) {
+                    //setshowModal(true)
+                    setCompany(companies);  
                 }
                 nProgress.done();
             }
@@ -703,16 +713,12 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                             preserveState
                                             key="supportrequest"
                                             href={route("listSupportRequest")}  
-                                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"                                                                                    
+                                            className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"                                                                                    
                                         >
-                                            <span class="relative inline-block">
                                             <QuestionMarkCircleIcon
-                                                className= "mr-3 flex-shrink-0 h-6 w-6"
-                                                 
-                                    aria-hidden="true"
-                                               
-                                            />
-                                            </span>
+                                                className="h-6 w-6"                                                 
+                                                aria-hidden="true"                                               
+                                            />                                            
                                         </Link>
                                         </div> :''}                                            
                                           
@@ -745,7 +751,8 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                     </span>
                                                 </Dropdown.Trigger>
 
-                                                <Dropdown.Content>
+                                                <Dropdown.Content width={96}>
+{/*                                                      
                                                     <Dropdown.Link href={route('profile')} method="get" as="button">
                                                         Profile
                                                     </Dropdown.Link>
@@ -755,12 +762,14 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                     </button>
 
                                                     {auth && auth.user && auth.user.role == 'global_admin' ? 
-                                                        <>  <Dropdown.Link href={route('settings')} method="get" as="button">
+                                                        <>  
+                                                            <Dropdown.Link href={route('settings')} method="get" as="button">
                                                                 Settings
                                                             </Dropdown.Link> 
-                                                    <button className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" onClick={(e)=>{showadminpage(e)}} as="button">
-                                                          {adminMenuText}                                                                                                                                                                                                          
-                                                    </button></>
+                                                            <button className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" onClick={(e)=>{showadminpage(e)}} as="button">
+                                                                {adminMenuText}                                                                                                                                                                                                          
+                                                            </button>
+                                                        </>
                                                     : ''}
 
                                                     {returnMainUser &&
@@ -773,7 +782,68 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
 
                                                     <Dropdown.Link href={route('logout')} method="post" as="button">
                                                         Log Out
-                                                    </Dropdown.Link>
+                                                    </Dropdown.Link> */}
+                                                    <Container >
+                                                        <div className="w-full flex justify-center">
+                                                            <div className="flex gap-2 mx-auto py-4 items-center">
+                                                                <div className="w-10 h-10 flex justify-center items-center bg-gray-700 rounded-full">
+                                                                    <UserIcon className="w-6 h-6 text-white" />
+                                                                </div>
+                                                                <div className="flex flex-col">
+                                                                    <span><b> {auth.user.name} </b></span>
+                                                                    <span>Company Name</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <Row> 
+                                                            <Col 
+                                                                className="border-r  col-3"
+                                                            >  
+                                                              
+                                                                <List type="unstyled" className="space-y-1">
+                                                                    {Object.entries(companyList).map(([key , company]) => {
+                                                                     
+                                                                        return(
+                                                                            <li className="p-1 text-center" >
+                                                                                <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-primary">
+                                                                                    <span className="text-lg font-medium leading-none text-white">
+                                                                                        {company.name &&
+                                                                                            <> {(company.name).substring(0,2)} </>
+                                                                                        }
+                                                                                    </span>
+                                                                                </span>
+                                                                            </li>
+                                                                        )
+                                                                    })}
+                                                                    
+                                                                    <li className="p-1 text-center" >
+                                                                        <span className="w-9 h-9 bg-gray-100 flex justify-center items-center rounded-full cursor-pointer mx-auto">
+                                                                            <PlusIcon className="w-6 h-6 " />
+                                                                        </span>
+                                                                        
+                                                                    </li>
+                                                                </List> 
+                                                            </Col>
+                                                            <Col className="border-r" > 
+                                                                <List type="unstyled">
+                                                                    <li className="p-1" > Workspace </li>
+                                                                    <li className="p-1" > Switch to full mode </li>
+                                                                    <li className="p-1" > <Link href={route("wallet_subscription")} method="get"> Workspace settings </Link> </li>
+                                                                </List> 
+                                                            </Col>
+                                                            <Col> 
+                                                                <List type="unstyled">
+                                                                    <li className="p-1" > <b> {auth.user.name} </b> </li>
+                                                                    <li className="p-1" > <Link href={route('profile')} method="get"> Profile </Link> </li>
+                                                                    {auth && auth.user && auth.user.role == 'global_admin' &&
+                                                                        <li className="p-1" > <Link href={route('settings')} method="get" as="button"> Global Admin </Link> </li>
+                                                                    }
+                                                                    <li className="p-1" > API key</li>
+                                                                    <li className="p-1" > <Link href={route('logout')} method="post" as="button"> Log out </Link> </li>
+                                                                </List> 
+                                                            </Col>
+                                                        </Row>
+                                                    </Container>
                                                 </Dropdown.Content>
                                             </Dropdown>
                                         </div>
@@ -845,12 +915,12 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                 setSelectedCompany={setSelectedCompany}
             />
 
-        {showModal && company.hasOwnProperty('name')?
+        {showModal && companyList[0].hasOwnProperty('name')?
             <UserRegistration
               user={auth.user}
               time_zone={timezone}
               setshowModal={setshowModal}
-              company={company}
+              company={companyList[0]}
             />:''
         }
 

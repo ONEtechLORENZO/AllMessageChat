@@ -88,7 +88,8 @@ Route::middleware('planrestriction')->group(function () {
     // Check user login
     Route::middleware(['auth', 'verified'])->group(function () {
         
-        Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
+        Route::get('/home', [UserController::class, 'home'])->name('home');
+        Route::get('/dashboard', [UserController::class, 'home'])->name('dashboard');
         Route::get('/getCompanyId', [UserController::class, 'getSelectedCompany'])->name('get_selected_company');
         Route::get('/user/timezone',[UserController::class, 'getUserTimeZone'])->name('get_time_zone');
         Route::post('/show_register_step',[RegisteredUserController:: class, 'create'])->name('show_register_step');
@@ -372,6 +373,11 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/admin/company/detail/{id}', [CompanyController::class, 'show'])->name('detail_global_Company');
     Route::post('/admin/paymentmethod', [CompanyController::class, 'paymentMethod'])->name('payment_method');
     Route::get('/admin/workspace/activity', [CompanyController::class, 'workspaceActivities'])->name('worksapce_activities');
+
+    // Social profile 
+    Route::get('/admin/account/list' , [UserController::class , 'listAccounts'])->name('listAccount');
+    Route::get('/admin/account/detail/{id}' , [UserController::class , 'showAccount'])->name('detailAccount');
+
 
     //SupportRequests  
     Route::get('/admin/support-requests', [SupportRequestController::class, 'index'])->name('list_global_SupportRequest');

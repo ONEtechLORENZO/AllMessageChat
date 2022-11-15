@@ -1371,6 +1371,9 @@ select {
 .w-3\/5 {
 	width: 60%;
 }
+.w-0 {
+	width: 0px;
+}
 .min-w-full {
 	min-width: 100%;
 }
@@ -1497,6 +1500,10 @@ select {
 }
 .rotate-90 {
 	--tw-rotate: 90deg;
+	transform: var(--tw-transform);
+}
+.rotate-45 {
+	--tw-rotate: 45deg;
 	transform: var(--tw-transform);
 }
 .scale-95 {
