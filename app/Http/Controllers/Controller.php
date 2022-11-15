@@ -122,7 +122,7 @@ class Controller extends BaseController
 
         $query = ($searchData) ? $this->prepareQuery($searchData, $query, $baseTable) : $query;
 
-        if($moduleName != 'Price' && $moduleName != 'Company' && $moduleName != 'Plan' && $moduleName != 'SupportRequest' && $moduleName != 'Msg' ) {
+        if($moduleName != 'Price' && $moduleName != 'Company' && $moduleName != 'Account' && $moduleName != 'Plan' && $moduleName != 'SupportRequest' && $moduleName != 'Msg' ) {
             // For tenancy
             if( $moduleName != 'User') {
                 $query->where("{$baseTable}.company_id", $companyId);
@@ -142,7 +142,6 @@ class Controller extends BaseController
         if($moduleName == 'SupportRequest' && !($request->is('admin/*'))) {
             $query->where("supportrequests.company_id", $companyId);
         }
-        
         
         // Show only module records
         if($moduleName == 'Field') {           

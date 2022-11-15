@@ -171,28 +171,34 @@ class SupportRequestController extends Controller
     public function saveSupportRequest($request){
         $current_user = $request->user();   
 
+        $request->validate([
+            'type' => 'required|max:255',
+            'description' => 'required',
+            'subject' => 'required',
+           ]);
+
         if ($request->id) {           
             $supportRequest = SupportRequest::findOrFail($request->id);
         } else {            
             $supportRequest = new SupportRequest();
         }
-        
-        $company_id = Cache::get('selected_company_'. $request->user()->id);
-            $supportRequest->subject= $request->subject;
-            $supportRequest->description = $request->description;
-            $supportRequest->type = $request->type;
-            $supportRequest->assigned_to =1;
-            if($request->status)
-            {
-            $supportRequest->status= $request->status;
-            }
-            else{
-                $supportRequest->status= "New";
-            }
-            $supportRequest->company_id = $company_id;
-            $supportRequest->created_by = $request->user()->id;
-            $supportRequest->save();
        
+        $company_id = Cache::get('selected_company_'. $request->user()->id);
+
+        $supportRequest->subject= $request->subject;
+        $supportRequest->description = $request->description;
+        $supportRequest->type = $request->type;
+        $supportRequest->assigned_to =1;
+        if($request->status)
+        {
+        $supportRequest->status= $request->status;
+        }
+        else{
+            $supportRequest->status= "New";
+        }
+        $supportRequest->company_id = $company_id;
+        $supportRequest->created_by = $request->user()->id;
+        $supportRequest->save();
         return  $supportRequest->id;
     }  
 }

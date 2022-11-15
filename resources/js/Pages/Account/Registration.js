@@ -340,7 +340,6 @@ function Registration(props) {
                                                 </label>
                                                 <div className="mt-1 flex rounded-md shadow-sm">
                                                     <Input
-                                                        required={true}
                                                         name="business_manager_id"
                                                         value={ data.business_manager_id }
                                                         id="business_manager_id"
