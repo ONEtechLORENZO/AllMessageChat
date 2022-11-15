@@ -845,6 +845,9 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                                     {auth && auth.user && auth.user.role == 'global_admin' &&
                                                                         <li className="p-1" > <Link href={route('list_global_user')} method="get" as="button"> Global Admin </Link> </li>
                                                                     }
+                                                                    {returnMainUser &&
+                                                                        <li className="p-1" > <button onClick={() => setImpersonate()} type="button"> Return to global admin </button> </li>
+                                                                    }
                                                                     <li className="p-1" > API key</li>
                                                                     <li className="p-1" > <Link href={route('logout')} method="post" as="button"> Log out </Link> </li>
                                                                 </List> 
