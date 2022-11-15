@@ -11,7 +11,7 @@ import { Container , Row , Col, List} from 'reactstrap';
 
 import {
     HomeIcon,
-  
+    UserIcon,
     BriefcaseIcon,
     UsersIcon,
     UserGroupIcon,
@@ -23,7 +23,8 @@ import {
     ChevronDownIcon,
     QuestionMarkCircleIcon,
     ChartSquareBarIcon,
-    LightBulbIcon
+    LightBulbIcon,
+    PlusIcon
 } from "@heroicons/react/outline";                                                                      
 import SelectCompany from "@/Pages/Company/SelectCompany";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
@@ -712,16 +713,12 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                             preserveState
                                             key="supportrequest"
                                             href={route("listSupportRequest")}  
-                                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"                                                                                    
+                                            className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"                                                                                    
                                         >
-                                            <span class="relative inline-block">
                                             <QuestionMarkCircleIcon
-                                                className= "mr-3 flex-shrink-0 h-6 w-6"
-                                                 
-                                    aria-hidden="true"
-                                               
-                                            />
-                                            </span>
+                                                className="h-6 w-6"                                                 
+                                                aria-hidden="true"                                               
+                                            />                                            
                                         </Link>
                                         </div> :''}                                            
                                           
@@ -787,17 +784,28 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                         Log Out
                                                     </Dropdown.Link> */}
                                                     <Container >
+                                                        <div className="w-full flex justify-center">
+                                                            <div className="flex gap-2 mx-auto py-4 items-center">
+                                                                <div className="w-10 h-10 flex justify-center items-center bg-gray-700 rounded-full">
+                                                                    <UserIcon className="w-6 h-6 text-white" />
+                                                                </div>
+                                                                <div className="flex flex-col">
+                                                                    <span><b> {auth.user.name} </b></span>
+                                                                    <span>Company Name</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                         <Row> 
                                                             <Col 
-                                                                className="border-r-2 col-3"
+                                                                className="border-r  col-3"
                                                             >  
                                                               
-                                                                <List type="unstyled">
+                                                                <List type="unstyled" className="space-y-1">
                                                                     {Object.entries(companyList).map(([key , company]) => {
                                                                      
                                                                         return(
-                                                                            <li className="p-1" >
-                                                                                <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-gray-500">
+                                                                            <li className="p-1 text-center" >
+                                                                                <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-primary">
                                                                                     <span className="text-lg font-medium leading-none text-white">
                                                                                         {company.name &&
                                                                                             <> {(company.name).substring(0,2)} </>
@@ -808,14 +816,15 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                                         )
                                                                     })}
                                                                     
-                                                                    <li className="p-1" >
-                                                                        <PlusCircleIcon 
-                                                                            className="w-9 h-9"
-                                                                        />
+                                                                    <li className="p-1 text-center" >
+                                                                        <span className="w-9 h-9 bg-gray-100 flex justify-center items-center rounded-full cursor-pointer mx-auto">
+                                                                            <PlusIcon className="w-6 h-6 " />
+                                                                        </span>
+                                                                        
                                                                     </li>
                                                                 </List> 
                                                             </Col>
-                                                            <Col className="border-r-2" > 
+                                                            <Col className="border-r" > 
                                                                 <List type="unstyled">
                                                                     <li className="p-1" > Workspace </li>
                                                                     <li className="p-1" > Switch to full mode </li>
