@@ -136,7 +136,8 @@ function Form(props)
         Axios.get(endpoint_url).then((response) => {
             nProgress.done(true);
             if (response.data.status !== false) {
-                setFields(response.data.fields);
+                var fields = (typeof (response.data.fields) === 'object') ? Object.values(response.data.fields) : response.data.fields;
+                setFields(fields);
             }
             else {
                 notie.alert({type: 'error', text: response.data.message, time: 5});
