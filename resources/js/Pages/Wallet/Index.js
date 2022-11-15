@@ -561,6 +561,8 @@ function Wallet(props)
                             </h5>
                             <button
                                 type="button"
+                                //onClick={route('invoices' , {'id' : product_id})}
+                                onClick={route('listTransaction')}
                                 className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-700 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bg-gray-800"
                             >
                                 {props.translator['Go to Invoices']}
