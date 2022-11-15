@@ -33,14 +33,6 @@ export default function RegisterForm (props) {
     return (
        <div>
 
-            {openTab === 0 &&
-                <UserRegistration 
-                    userMail={userMail}
-                    setUserMail={setUserMail}
-                    setOpenTab={setOpenTab}
-                />
-            }
-                
             {openTab === 1 &&
                 // User creation form
                 <Step1 
@@ -60,24 +52,8 @@ export default function RegisterForm (props) {
             }
 
             {openTab === 3 && 
-                // Billing Information
-                <BillingInformation 
-                companyId={companyId}
-                setOpenTab={setOpenTab}
-                userMail={userMail}
-                />
-            }
-                
-            {openTab === 4 &&
-                // Organization form
-                <Step3 
-                    setOpenTab={setOpenTab}
-                />
-            }
-                
-            {openTab === 5 &&
-                // Choose Plan
-                <Step5 
+                 // Choose Plan
+                 <Step5 
                     user={userMail}
                     addStripe={addStripe}
                     setOpenTab={setOpenTab}
@@ -85,24 +61,31 @@ export default function RegisterForm (props) {
                     setStripe={setStripe}
                 /> 
             }
+                
+            {openTab === 4 &&
+                //  Stripe integration
+                <Step4 
+                    setOpenTab={setOpenTab}
+                    stripe_public_key={props.stripe_public_key}
+                    translator={props.translator}
+                    setAddStrip={setAddStrip}
+                    stripe={stripe}
+                    setStripe={setStripe}
+                />
+            }
+                
+            {openTab === 5 &&
+                <BillingInformation 
+                    companyId={companyId}
+                    setOpenTab={setOpenTab}
+                    userMail={userMail}
+                />
+            }
                
             {openTab === 6 &&
-                //  Stripe integration
-                 <Step4 
-                 setOpenTab={setOpenTab}
-                 stripe_public_key={props.stripe_public_key}
-                 translator={props.translator}
-                 setAddStrip={setAddStrip}
-                 stripe={stripe}
-                 setStripe={setStripe}
-             />
-            }
-
-            {openTab === 7 && 
-              // DashBoard
+               // DashBoard
                <Step6 />
             }
-
             
        </div>
     );

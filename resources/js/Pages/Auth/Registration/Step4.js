@@ -13,9 +13,9 @@ export default function Step4 (props) {
     function setPlanPage(){
         props.setAddStrip(true);
         if(props.stripe){
-            props.setOpenTab(7); 
+            props.setOpenTab(5); 
         }else {
-            props.setOpenTab(5);
+            props.setOpenTab(3);
             props.setStripe(true);
         }
     }
@@ -77,7 +77,7 @@ export default function Step4 (props) {
                                 <button
                                     type="button"
                                     className="w-full inline-flex justify-start rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-200 hover:bg-gray-900 hover:text-white text-semibold font-medium text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm mt-4"
-                                    onClick={() => props.setOpenTab(7)}
+                                    onClick={() => props.setOpenTab(5)}
                                >
                                     Connect later
                                     <span className="flex justify-end pt-1"><ChevronRightIcon className="h-4 w-4"/></span>
