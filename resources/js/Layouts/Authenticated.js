@@ -8,6 +8,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import UserRegistration from '@/Components/UserRegistration';
 import nProgress from 'nprogress';
 import { Container , Row , Col, List} from 'reactstrap';
+import Form from '@/Components/Forms/Form';
 
 import {
     HomeIcon,
@@ -282,6 +283,11 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
     const [navigateField, setNavigateField] = useState();
     const pathname = window.location.pathname;
 
+    const [showWorkspaceForm, setShowWorkspaceForm] = useState(false);
+    function hideForm() {
+        setShowWorkspaceForm(false);
+    }
+
     useEffect(() => {
         getUserCompany();
         getNotifications();
@@ -434,8 +440,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                     );
                 }
                 const companies = response.data.companies;
-                
-                if(companies.length) {
+                if(Object.entries(companies).length) {
                     //setshowModal(true)
                     setCompany(companies);  
                 }
@@ -799,16 +804,14 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                             <Col 
                                                                 className="border-r  col-3"
                                                             >  
-                                                              
                                                                 <List type="unstyled" className="space-y-1">
                                                                     {Object.entries(companyList).map(([key , company]) => {
-                                                                     
                                                                         return(
                                                                             <li className="p-1 text-center" >
                                                                                 <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-primary">
                                                                                     <span className="text-lg font-medium leading-none text-white">
-                                                                                        {company.name &&
-                                                                                            <> {(company.name).substring(0,2)} </>
+                                                                                        {company &&
+                                                                                            <> {(company).substring(0,2)} </>
                                                                                         }
                                                                                     </span>
                                                                                 </span>
@@ -817,10 +820,14 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                                     })}
                                                                     
                                                                     <li className="p-1 text-center" >
-                                                                        <span className="w-9 h-9 bg-gray-100 flex justify-center items-center rounded-full cursor-pointer mx-auto">
-                                                                            <PlusIcon className="w-6 h-6 " />
-                                                                        </span>
-                                                                        
+                                                                        <button 
+                                                                            type='button'
+                                                                            onClick={() => setShowWorkspaceForm(true)}
+                                                                        >
+                                                                            <span className="w-9 h-9 bg-gray-100 flex justify-center items-center rounded-full cursor-pointer mx-auto">
+                                                                                <PlusIcon className="w-6 h-6 " />
+                                                                            </span>
+                                                                        </button>
                                                                     </li>
                                                                 </List> 
                                                             </Col>
@@ -923,6 +930,19 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
               company={companyList[0]}
             />:''
         }
+
+        {showWorkspaceForm ?
+                <Form 
+                    module={'Company'}
+                    heading={'Create Company'}
+                    hideForm={hideForm}
+                    recordId={''}
+                   // translator={translator}
+                   // mod={''}
+                   // productList={props.productList}
+                   // current_user={props.current_user}
+                />
+            : ''}
 
         </>
     );

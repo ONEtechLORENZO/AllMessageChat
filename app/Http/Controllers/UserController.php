@@ -978,7 +978,8 @@ class UserController extends Controller
         
 
         if($id){
-            return Redirect::route('listAccount');
+            return Redirect::route('wallet_subscription' , ['tab' => 2]);
+            //return Redirect::route('listAccount');
         }else{
             $supportRequest = new SupportRequest();
             $supportRequest->subject= 'New Social Profile is created';
@@ -1406,7 +1407,7 @@ class UserController extends Controller
         // Get message amount deduction
         $messageDeduction = $this->getMsgAmountDeduction($user->id);
         $accountDeduction = $this->getDeductionDetail($user->id);
-        
+    
         $paymentMethods = $this->getPaymentMethods($request , 'direct');
 
         $stripe_public_key = config('stripe.stripe_key');
@@ -1666,7 +1667,7 @@ class UserController extends Controller
      */
     public function getDeductionDetail($userId)
     {
-        $companyId =  Cache::has('selected_company_' . $userId);
+        $companyId =  Cache::get('selected_company_' . $userId);
         $accounts = Account::where('company_id' , $companyId)->get();
 
         $accooutAmountDetail = [];
@@ -1697,16 +1698,15 @@ class UserController extends Controller
     public function getSelectedCompany(Request $request)
     {
         $user = $request->user();
-        // Get companies related to the User
-        $companies = $user->company;
-        
+        // Get user related compan
+        $companies = $this->UserRelatedCompany($user->id);
 
         $selectedCompany = Cache::has('selected_company_' . $user->id) ? Cache::get('selected_company_' . $user->id) : '';
        
         // If user has single company related to him, set the company as default
         if($companies && !$selectedCompany && count($companies) == 1) {
-            $selectedCompany = $companies[0]->id;
-            Cache::put('selected_company_' . $user->id, $companies[0]->id);
+            $selectedCompany = array_keys($companies)[0];
+            Cache::put('selected_company_' . $user->id, $selectedCompany);
         }
 
         // Get register step 
