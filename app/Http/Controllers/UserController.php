@@ -652,7 +652,42 @@ class UserController extends Controller
      */
     public function listAccounts(Request $request)
     {
-        
+      
+        $module = new Account();       
+        $list_view_columns = [
+            'company_name' => ['label' => 'Name', 'type' => 'text'],
+            'service' =>  ['label' => 'Service', 'type' => 'dropdown'],
+            'service_engine' =>  ['label' => 'Service engine', 'type' => 'dropdown'],
+            'phone_number' =>  ['label' => 'Phone number', 'type' => 'text'],
+            'status' => ['label' => 'Status', 'type' => 'text'],
+        ];
+        $listViewData = $this->listView($request, $module, $list_view_columns);
+
+        $moduleData = [
+            'singular' => 'Social Profile',
+            'plural' => 'Social Profiles',
+            'module' => 'Account',
+            'current_page' => 'Account', 
+            // Actions
+            'actions' => [
+                'create' => true,
+                'detail' => true,
+                'edit' => false,
+                'delete' => true,
+                'export' => false,
+                'import' => false,
+                'search' => true,
+                'filter' => false,
+                'select_field'=>false,
+                'mass_edit' => false,
+                'merge' => false
+            ],
+        ];
+
+        $records =  $this->listViewRecord($request, $listViewData, 'Account');
+        $data = array_merge($moduleData, $records);
+        return Inertia::render('Account/List', $data);
+
     }
 
     /**
@@ -912,7 +947,7 @@ class UserController extends Controller
         }
 
         $account->service = $request->service;
-        $account->status = $request->status;
+        $account->status = ($request->status) ? $request->status : 'New';
         $account->service_engine = $request->service_engine;
         $account->service_token = $request->service_token;
         $account->fb_phone_number_id = $request->fb_phone_number_id;
@@ -943,7 +978,7 @@ class UserController extends Controller
         
 
         if($id){
-            return Redirect::route('dashboard');
+            return Redirect::route('listAccount');
         }else{
             $supportRequest = new SupportRequest();
             $supportRequest->subject= 'New Social Profile is created';

@@ -827,7 +827,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                                     <li className="p-1" > <b> {auth.user.name} </b> </li>
                                                                     <li className="p-1" > <Link href={route('profile')} method="get"> Profile </Link> </li>
                                                                     {auth && auth.user && auth.user.role == 'global_admin' &&
-                                                                        <li className="p-1" > <Link href={route('settings')} method="get" as="button"> Admin </Link> </li>
+                                                                        <li className="p-1" > <Link href={route('settings')} method="get" as="button"> Global Admin </Link> </li>
                                                                     }
                                                                     <li className="p-1" > API key</li>
                                                                     <li className="p-1" > <Link href={route('logout')} method="post" as="button"> Log out </Link> </li>
