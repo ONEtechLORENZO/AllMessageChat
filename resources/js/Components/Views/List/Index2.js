@@ -68,7 +68,7 @@ function ListView(props)
           ...state,
           [field.field_name]: state[field.field_name]
             ?  
-               console.log('')
+               <></>
             : {
                 name:field.field_name,
                 label: field.field_label,

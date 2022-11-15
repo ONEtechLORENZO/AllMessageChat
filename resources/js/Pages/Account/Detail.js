@@ -170,6 +170,7 @@ function Detail(props)
                         </span>
                     </div>
                     <div className="inline-flex">
+                        {/*                         
                         {props['account'].fb_token ? 
                             <a href='#' className="rounded-md bg-blue-50 p-4 flex">
                                 <div className="ml-3 flex-1 md:flex md:justify-between">
@@ -191,6 +192,15 @@ function Detail(props)
                                 </a> 
                             </>
                         }
+                         */}
+                         <Link 
+                            href={route('wallet_subscription' , {tab: 2})}
+                            className="mt-2"
+                        //    className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                        >
+                            Back to List
+                        </Link>
+
                         <Link 
                             href={route('edit_account' , props.account.id)}
                             className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -224,6 +234,9 @@ function Detail(props)
                                     if(props.field_info[key].fb_show && !props.field_info[key].fb_show.includes(props.account.service_engine)) {
                                         return;
                                     }
+                                    if(props.field_info[key].user_show && !props.field_info[key].user_show.includes(props.auth.user.role)) {
+                                        return;
+                                    }
                                    
 
                                     return (
@@ -247,8 +260,9 @@ function Detail(props)
                             </dl>
                         </div>
                     </div>
-                    {props.account.service == 'whatsapp' ?
+                    {(props.account.service == 'whatsapp' && props['account'].status == 'Active') &&
                         <>
+                  
                             <div className="pb-5 pt-5">
                                 <div className="flex justify-between">
                                     <div>
@@ -298,42 +312,48 @@ function Detail(props)
                                 : ''}
                             </div>
                         </>
-                    : ''}
+                    }
 
-                    <div className="pb-5 pt-5">
-                        <div className="flex justify-between">
-                            <div>
-                                <h3 className="text-lg leading-6 font-medium text-gray-900 mt-3"> Webhook URLs </h3>
-                            </div>
-                            <div>
-                                <button type='button' onClick={openWebhookForm} className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                {props.translator['Add Webhook URL']}
-                                </button>
+                    {props['account'].status == 'Active' &&
+                        <>
+                        <div className="pb-5 pt-5">
+                            <div className="flex justify-between">
+                                <div>
+                                    <h3 className="text-lg leading-6 font-medium text-gray-900 mt-3"> Webhook URLs </h3>
+                                </div>
+                                <div>
+                                    <button type='button' onClick={openWebhookForm} className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    {props.translator['Add Webhook URL']}
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="bg-white shadow overflow-hidden rounded-md">
-                        <ul role="list" className="divide-y divide-gray-200">
-                            {props.events.map((data) => {
-                                return (
-                                    <li key={data.id} className="px-6 py-4">
-                                        <div className="flex justify-between">
-                                            <h2> {data.callback_url} </h2>
-                                            <div className='flex gap-3'>
-                                                <PencilAltIcon className='h-6 w-6' onClick={() => editWebhookEvent(data)} />
-                                                <TrashIcon className='h-6 w-6 text-red-700 cursor-pointer' onClick={() => deleteWebhookEvent(data.id)} />
+                        <div className="bg-white shadow overflow-hidden rounded-md">
+                            <ul role="list" className="divide-y divide-gray-200">
+                                {props.events.map((data) => {
+                                    return (
+                                        <li key={data.id} className="px-6 py-4">
+                                            <div className="flex justify-between">
+                                                <h2> {data.callback_url} </h2>
+                                                <div className='flex gap-3'>
+                                                    <PencilAltIcon className='h-6 w-6' onClick={() => editWebhookEvent(data)} />
+                                                    <TrashIcon className='h-6 w-6 text-red-700 cursor-pointer' onClick={() => deleteWebhookEvent(data.id)} />
+                                                </div>
                                             </div>
-                                        </div>
-                                    </li>
-                                );
-                            })}
+                                        </li>
+                                    );
+                                })}
 
-                            {props.events.length == 0 &&
-                                <li className="flex p-5"> {props.translator['Webhooks not configured yet.']} </li>
-                            }
-                        </ul>
-                    </div>
+                                {props.events.length == 0 &&
+                                    <li className="flex p-5"> {props.translator['Webhooks not configured yet.']} </li>
+                                }
+                            </ul>
+                        </div>
+                        </>
+                        
+                    }
+
                 </div>
             </div>
 

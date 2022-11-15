@@ -661,6 +661,7 @@ class UserController extends Controller
             'phone_number' =>  ['label' => 'Phone number', 'type' => 'text'],
             'status' => ['label' => 'Status', 'type' => 'text'],
         ];
+        
         $listViewData = $this->listView($request, $module, $list_view_columns);
 
         $moduleData = [
@@ -740,15 +741,12 @@ class UserController extends Controller
             'company_name' => ['label' => __('Name')],
             'phone_number' => ['label' => __('Phone number'), 'show' => ['whatsapp']],
             'service' => ['label' => __('Service')],
-            'service_engine' => ['label' => 'Service Engine'],
-          //  'service_token' => ['label' => 'Service token'],
-            'fb_phone_number_id' => ['label' => 'FaceBook phone number ID' , 'fb_show' => [ 'facebook', 'global_admin']],
+            'service_engine' => ['label' => 'Service Engine', 'user_show' => [ 'global_admin']],
+
+            'fb_phone_number_id' => ['label' => 'FaceBook phone number ID' , 'fb_show' => [ 'facebook'] , 'user_show' => [ 'global_admin']],
             'src_name' => ['label' => __('Source name'), 'show' => ['whatsapp', 'instagram']],
             'fb_whatsapp_account_id' => ['label' => 'FaceBook whatsapp account ID', 'fb_show' => [ 'facebook' , 'gupshup']],
-          
-           // 'display_name' => ['label' => __('Display name'), 'show' => ['whatsapp']],
-          //  'api_partner' => ['label' => __('API partner'), 'show' => ['whatsapp']],
-          //  'api_partner_name' => ['label' => __('API partner Name'), 'show' => ['whatsapp']],
+
             'business_manager_id' => ['label' => __('Business manager ID'), 'show' => ['whatsapp']],
             'Profile' => __('Profile'),
             'Callback URL' => __('Callback URL')
@@ -948,7 +946,7 @@ class UserController extends Controller
 
         $account->service = $request->service;
         $account->status = ($request->status) ? $request->status : 'New';
-        $account->service_engine = $request->service_engine;
+        $account->service_engine = ($request->service_engine) ? $request->service_engine : 'gupshup';
         $account->service_token = $request->service_token;
         $account->fb_phone_number_id = $request->fb_phone_number_id;
         $account->fb_whatsapp_account_id = $request->fb_whatsapp_account_id;
