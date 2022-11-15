@@ -1393,6 +1393,16 @@ class UserController extends Controller
             'amount' => [ 'label' => __('Amount') , 'type' => 'text'],
         ];
 
+        $transaction_columns = [
+            'service' => [ 'label' => __('Service') , 'type' => 'text'],
+            'transaction_id' => [ 'label' => __('Transaction Id') , 'type' => 'text'],
+            'amount' => [ 'label' => __('Amount') , 'type' => 'text'],
+            'status' => [ 'label' => __('Status') , 'type' => 'text'],
+            'error_message' => [ 'label' => __('Message') , 'type' => 'text'],
+            'created_at' => [ 'label' => __('Created At') , 'type' => 'text'],
+          //  'actions'   => [ 'label' =>'Action' , 'type' => 'url'],
+        ];
+
         $module = new Msg();
         $TransactionList = $this->listView($request, $module, $columns);
 
@@ -1422,6 +1432,8 @@ class UserController extends Controller
 
         $stripe_public_key = config('stripe.stripe_key');
 
+        $transactionHistory = $this->getTransactionHistory($request);
+
         $data = [
             'actions' => [],
             'name' => $user->name,
@@ -1434,6 +1446,8 @@ class UserController extends Controller
             'current_page' => 'Wallet',
             'columns' => $columns,
             'transactionList' => $TransactionList,
+            'transaction_columns' => $transaction_columns,
+            'transactionHistory'=> $transactionHistory->items(),
             'translator' => [
                 'Wallet' => __('Wallet'),
                 'Hi' => __('Hi'),
@@ -1452,8 +1466,22 @@ class UserController extends Controller
                 'See Transactions History' => __('See Transactions History'),
                 'See Details' => __('See Details'),
                 'Download your VAT Invoices' => __('Download your VAT Invoices'),'Go to Invoices'=>__('Go to Invoices'),
-                'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount')
-            ]
+                'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount'),
+                'No records' =>__('No records'),
+                'Search' =>__('Search'),
+                'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?')
+            ],
+            'paginator' => [
+                'firstPageUrl' => $transactionHistory->url(1),
+                'previousPageUrl' => $transactionHistory->previousPageUrl(),
+                'nextPageUrl' => $transactionHistory->nextPageUrl(),
+                'lastPageUrl' => $transactionHistory->url($transactionHistory->lastPage()),  
+                'currentPage' => $transactionHistory->currentPage(),
+                'total' => $transactionHistory->total(),
+                'count' => $transactionHistory->count(),
+                'lastPage' => $transactionHistory->lastPage(),
+                'perPage' => $transactionHistory->perPage(),
+            ],
         ];
 
         return Inertia::render('Wallet/WalletIndex', $data);
@@ -2041,5 +2069,40 @@ class UserController extends Controller
 
           return Redirect::route('dashboard');
     }
+    
+    public function getTransactionHistory($request) {
+         // List view columns to show
+         $list_view_columns = [
+            'service' => [ 'label' => __('Service') , 'type' => 'text'],
+            'transaction_id' => [ 'label' => __('Transaction Id') , 'type' => 'text'],
+            'amount' => [ 'label' => __('Amount') , 'type' => 'text'],
+            'status' => [ 'label' => __('Status') , 'type' => 'text'],
+            'error_message' => [ 'label' => __('Message') , 'type' => 'text'],
+            'created_at' => [ 'label' => __('Created At') , 'type' => 'text'],
+          //  'actions'   => [ 'label' =>'Action' , 'type' => 'url'],
+        ];
 
+        $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
+        $sort_by = $request->has('sort_by') && $request->get('sort_by') ? $request->get('sort_by') : 'created_at';
+        $sort_order = $request->has('sort_order') && $request->get('sort_order') ? $request->get('sort_order') : 'desc';
+
+        $user_id = $request->user()->id;
+        if($search) {
+            $records = Transaction::orderBy($sort_by, $sort_order)
+                        ->where('user_id', $user_id)
+                        ->where(function ($query) use ($search, $list_view_columns) {    
+                            foreach($list_view_columns as $field_name => $field_info) {
+                                $query->orWhere($field_name, 'like', '%' . $search . '%');
+                            }
+                        })
+                        ->paginate($this->per_page);
+        }
+        else {
+            $records = Transaction::orderBy($sort_by, $sort_order)
+                        ->where('user_id', $user_id)
+                        ->paginate($this->per_page);
+        } 
+
+        return $records;
+    }
 }

@@ -3,6 +3,7 @@ import Wallet from "./Index";
 import Authenticated from "@/Layouts/Authenticated";
 import { Head } from "@inertiajs/inertia-react";
 import MessageTransaction from "./MsgTransaction";
+import ListView from "@/Components/Views/List/Index2";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
@@ -17,7 +18,7 @@ const tabs = [
 function WalletIndex(props)
 {
     const [currentTab, setCurrentTab] = useState(1);
-   
+    
     return (
         <Authenticated
             auth={props.auth}
@@ -65,7 +66,16 @@ function WalletIndex(props)
              : ''}
 
              {currentTab && currentTab == 3 ? 
-                <>Three</>
+                <ListView 
+                  module={'Transaction'}
+                  singular={'Transaction'}
+                  plural={'Transactions'}
+                  headers={props.transaction_columns}
+                  current_user={props.auth}
+                  records={props.transactionHistory}
+                  paginator={props.paginator}
+                  {...props}
+                />
              : ''}
 
             </div>
