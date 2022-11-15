@@ -1383,7 +1383,7 @@ class UserController extends Controller
         $user = $request->user();
         $company_id = Cache::get('selected_company_'.$user->id);  
 
-        $columns = [
+        $transaction_columns = [
             'created_at' => [ 'label' => __('Date') , 'type' => 'text'],
             'service' => [ 'label' => __('Channel') , 'type' => 'text'],
             'account_id' => [ 'label' => __('Account') , 'type' => 'text'],
@@ -1391,18 +1391,23 @@ class UserController extends Controller
             'amount' => [ 'label' => __('Amount') , 'type' => 'text'],
         ];
 
-        $transaction_columns = [
+        $invoice_columns = [
             'service' => [ 'label' => __('Service') , 'type' => 'text'],
             'transaction_id' => [ 'label' => __('Transaction Id') , 'type' => 'text'],
             'amount' => [ 'label' => __('Amount') , 'type' => 'text'],
             'status' => [ 'label' => __('Status') , 'type' => 'text'],
             'error_message' => [ 'label' => __('Message') , 'type' => 'text'],
             'created_at' => [ 'label' => __('Created At') , 'type' => 'text'],
-          //  'actions'   => [ 'label' =>'Action' , 'type' => 'url'],
         ];
 
-        $module = new Msg();
-        $TransactionList = $this->listView($request, $module, $columns);
+        $account_id = [];
+        $accounts = Account::where('company_id',$company_id)->get();
+        
+        foreach($accounts as $account) {
+            $account_id[] = $account->id;
+        } 
+
+        $msgTransactionList = Msg::whereIn('account_id', $account_id)->where('status', '!=', 'FAILED')->paginate($this->per_page);
 
         $currentCompany =  Company::where('id', $company_id)->first(); // GET current user Company Details
         
@@ -1433,7 +1438,8 @@ class UserController extends Controller
         $transactionHistory = $this->getTransactionHistory($request);
 
         $data = [
-            'actions' => [],
+            'transaction_actions' => [],
+            'invoice_actions' => ['download' => true],
             'name' => $user->name,
             'balance' => $balance,
             'message_deduction' => $messageDeduction,
@@ -1442,9 +1448,9 @@ class UserController extends Controller
             'stripe_public_key' => $stripe_public_key,
             'currentPlan' => $currentCompany,
             'current_page' => 'Wallet',
-            'columns' => $columns,
-            'transactionList' => $TransactionList,
             'transaction_columns' => $transaction_columns,
+            'msgTransactionList' => $msgTransactionList->items(),
+            'invoice_columns' => $invoice_columns,
             'transactionHistory'=> $transactionHistory->items(),
             'translator' => [
                 'Wallet' => __('Wallet'),
@@ -1470,7 +1476,7 @@ class UserController extends Controller
                 'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?'),
                 'Add your Card' =>__('Add your Card'),
             ],
-            'paginator' => [
+            'invoice_paginator' => [
                 'firstPageUrl' => $transactionHistory->url(1),
                 'previousPageUrl' => $transactionHistory->previousPageUrl(),
                 'nextPageUrl' => $transactionHistory->nextPageUrl(),
@@ -1480,6 +1486,17 @@ class UserController extends Controller
                 'count' => $transactionHistory->count(),
                 'lastPage' => $transactionHistory->lastPage(),
                 'perPage' => $transactionHistory->perPage(),
+            ],
+            'transaction_paginator' => [
+                'firstPageUrl' => $msgTransactionList->url(1),
+                'previousPageUrl' => $msgTransactionList->previousPageUrl(),
+                'nextPageUrl' => $msgTransactionList->nextPageUrl(),
+                'lastPageUrl' => $msgTransactionList->url($msgTransactionList->lastPage()),  
+                'currentPage' => $msgTransactionList->currentPage(),
+                'total' => $msgTransactionList->total(),
+                'count' => $msgTransactionList->count(),
+                'lastPage' => $msgTransactionList->lastPage(),
+                'perPage' => $msgTransactionList->perPage(),
             ],
         ];
 

@@ -108,7 +108,6 @@ function Wallet(props)
      */
     function fetchPaymentMethods(){
         Axios.get(route('getPaymentMethods')).then((response) => {
-            console.log(response.data.paymentMethods);
             setPaymentMethods(response.data.paymentMethods);
         });
     }

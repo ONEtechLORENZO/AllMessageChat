@@ -70,10 +70,11 @@ function WalletIndex(props)
                   module={'Transaction'}
                   singular={'Transaction'}
                   plural={'Transactions'}
-                  headers={props.transaction_columns}
+                  headers={props.invoice_columns}
                   current_user={props.auth}
                   records={props.transactionHistory}
-                  paginator={props.paginator}
+                  paginator={props.invoice_paginator}
+                  actions={props.invoice_actions}
                   {...props}
                 />
              : ''}

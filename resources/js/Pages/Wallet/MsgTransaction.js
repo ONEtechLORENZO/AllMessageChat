@@ -84,10 +84,11 @@ function MessageTransaction(props) {
                 module={'Msg'}
                 singular={'Transaction'}
                 plural={'Transactions'}
-                headers={props.columns}
+                headers={props.transaction_columns}
                 current_user={props.auth}
-                records={props.transactionList.records}
-                paginator={props.transactionList.paginator}
+                records={props.msgTransactionList}
+                paginator={props.transaction_paginator}
+                actions={props.transaction_actions}
                 {...props}
             />
 
