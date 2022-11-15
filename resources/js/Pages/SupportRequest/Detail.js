@@ -41,6 +41,8 @@ export default function Detail(props)
                 created_by = {props.created_by}
                 workspace={props.workspace}
                 role={props.role}
+                creator_id ={props.creator_id}
+
             />
             {showForm ?
                 <Form 

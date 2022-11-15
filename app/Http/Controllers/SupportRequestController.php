@@ -101,6 +101,7 @@ class SupportRequestController extends Controller
             'record' => $supportRequest,            
             'headers' => $headers,
             'created_by' => $created_user,  
+            'creator_id' => $supportRequest->created_by,
             'workspace'=> $workspace_name,        
             'current_userid' => $request->user()->id, 
             'role' => $request->user()->role,
