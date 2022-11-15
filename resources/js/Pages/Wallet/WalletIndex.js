@@ -11,7 +11,7 @@ function WalletIndex(props)
     const tabs = [
         { label: 'Wallet & Usages', name: 'Wallet & Usages', href: '#',current: true },
         { label: 'Transaction History', name: 'Transaction History', href: route('listTransaction'),current: false },
-        { label: 'VAT Invoices', name: 'VAT Invoices', href: '#',current: false },       
+        { label: 'VAT Invoices', name: 'VAT Invoices', href: route('listTransaction'),current: false },       
     ];
     return (
         <Authenticated

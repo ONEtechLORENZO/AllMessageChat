@@ -225,7 +225,11 @@ function ListTable(props){
                                             }
                                             </>
                                             
-                                        : ''}
+                                        : (props.module == 'Transaction') ?<Link 
+                                        href={route('invoices' , {'id' : record.id})}
+                                    > 
+                                        Download
+                                    </Link>:''}
                                         {((props.actions && props.actions.delete === true && props.module != 'User') || ( props.module == 'User' && props.auth.user.role == 'global_admin') ) || (record.is_custom == '1') ?
                                             <TrashIcon className='h-4 w-4 text-red-600 cursor-pointer' onClick={() => props.deleteRecord(record.id)} />
                                         : ''}

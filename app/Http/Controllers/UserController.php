@@ -1532,7 +1532,8 @@ class UserController extends Controller
             'amount' => [ 'label' => __('Amount') , 'type' => 'text'],
             'status' => [ 'label' => __('Status') , 'type' => 'text'],
             'error_message' => [ 'label' => __('Message') , 'type' => 'text'],
-            'created_at' => [ 'label' => __('Created At') , 'type' => 'text']
+            'created_at' => [ 'label' => __('Created At') , 'type' => 'text'],
+          //  'actions'   => [ 'label' =>'Action' , 'type' => 'url'],
         ];
 
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
@@ -1621,7 +1622,7 @@ class UserController extends Controller
      * @param INTEGER $user_id
      */
     public function getMsgAmountDeduction($user_id)
-    {
+{
         //TODO Need to get country id for gettting price detail
 
         $countryId = 1;
