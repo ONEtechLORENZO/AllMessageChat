@@ -713,16 +713,12 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                             preserveState
                                             key="supportrequest"
                                             href={route("listSupportRequest")}  
-                                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"                                                                                    
+                                            className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"                                                                                    
                                         >
-                                            <span class="relative inline-block">
                                             <QuestionMarkCircleIcon
-                                                className= "mr-3 flex-shrink-0 h-6 w-6"
-                                                 
-                                    aria-hidden="true"
-                                               
-                                            />
-                                            </span>
+                                                className="h-6 w-6"                                                 
+                                                aria-hidden="true"                                               
+                                            />                                            
                                         </Link>
                                         </div> :''}                                            
                                           
