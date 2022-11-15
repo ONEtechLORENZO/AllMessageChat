@@ -142,9 +142,6 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/saveTemplateStatus/account/{acc_id}/template/{tmp_id}', [UserController::class, 'saveTemplateStatus'])->name('template_status_form');
         Route::post('/migrateRequest', [UserController::class, 'sendMigrateRequest'])->name('migrate_request');
 
-        // Social profile CRUD view
-        Route::get('/account/list' , [UserController::class , 'listAccounts'])->name('listAccount');
-
         // Webhook Events
         Route::post('/account/{id}/webhook_event', [UserController::class, 'createWebhookEvent'])->name('create_webhook_event');
         Route::post('/account/{id}/webhook_event/{webhook_id}', [UserController::class, 'updateWebhookURL'])->name('update_webhook_url');
@@ -376,6 +373,11 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/admin/company/detail/{id}', [CompanyController::class, 'show'])->name('detail_global_Company');
     Route::post('/admin/paymentmethod', [CompanyController::class, 'paymentMethod'])->name('payment_method');
     Route::get('/admin/workspace/activity', [CompanyController::class, 'workspaceActivities'])->name('worksapce_activities');
+
+    // Social profile 
+    Route::get('/admin/account/list' , [UserController::class , 'listAccounts'])->name('listAccount');
+    Route::get('/admin/account/detail/{id}' , [UserController::class , 'showAccount'])->name('detailAccount');
+
 
     //SupportRequests  
     Route::get('/admin/support-requests', [SupportRequestController::class, 'index'])->name('list_global_SupportRequest');

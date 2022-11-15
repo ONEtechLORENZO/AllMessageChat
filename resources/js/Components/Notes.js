@@ -175,7 +175,8 @@ function addNote(){
             noteText:value,
             assignedTo: assignedTo,
             mentions: mentions,
-            created_by: props.created_by
+            created_by: props.created_by,
+            creator_id: props.creator_id,
           }
       })
       .then( (response) => {

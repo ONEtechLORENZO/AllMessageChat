@@ -23,7 +23,7 @@ function InviteUser(props)
        var issue = false;
         Object.entries(emails).map(([key, email])=>{
             var isValid = isEmail(email.value);
-            console.log([email.value , isValid])
+          
             if(!isValid){
                 issue = true;
             }

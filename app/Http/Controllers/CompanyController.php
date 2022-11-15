@@ -46,7 +46,7 @@ class CompanyController extends Controller
         $module = new Company();
         $currentUser = $request->user();
         
-        $columnlist=Cache::get('Company'.'selected_column_list_'. $request->user()->id);       
+        $columnlist = Cache::get('Company'.'selected_column_list_'. $request->user()->id);       
         $listViewData = $this->listView($request, $module, $this->list_view_columns);
         $moduleData = [
             'singular' => 'Company',
@@ -155,9 +155,10 @@ class CompanyController extends Controller
         $companyId = Cache::get('selected_company_'. $user->id);
         //get current company details
         $currentCompany =  Company::where('id', $companyId)->first();
+
         // Get message amount deduction
-        $messageDeduction = []; //(new UserController)->getAmountDeduction($user->id);
-        $paymentMethods = []; //(new UserController)->getPaymentMethods($request , 'direct');
+        $messageDeduction = (new UserController)->getMsgAmountDeduction($user->id);
+        $paymentMethods = (new UserController)->getPaymentMethods($request , 'direct');
 
         $stripe_public_key = config('stripe.stripe_key');
         $headers = $this->getModuleHeader(1 , 'Company');   

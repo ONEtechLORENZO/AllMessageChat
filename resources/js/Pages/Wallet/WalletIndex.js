@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Wallet from "./Index";
 import Authenticated from "@/Layouts/Authenticated";
 import { Head } from "@inertiajs/inertia-react";
-import ListView from "@/Components/Views/List/Index2";
 import MessageTransaction from "./MsgTransaction";
 
 function classNames(...classes) {
@@ -18,7 +17,7 @@ const tabs = [
 function WalletIndex(props)
 {
     const [currentTab, setCurrentTab] = useState(1);
-
+   
     return (
         <Authenticated
             auth={props.auth}
@@ -72,8 +71,6 @@ function WalletIndex(props)
             </div>
          </div>
         </div>    
-
-           
 
         </Authenticated>
     )

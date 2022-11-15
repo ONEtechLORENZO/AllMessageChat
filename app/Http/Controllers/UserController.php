@@ -652,7 +652,42 @@ class UserController extends Controller
      */
     public function listAccounts(Request $request)
     {
-        
+      
+        $module = new Account();       
+        $list_view_columns = [
+            'company_name' => ['label' => 'Name', 'type' => 'text'],
+            'service' =>  ['label' => 'Service', 'type' => 'dropdown'],
+            'service_engine' =>  ['label' => 'Service engine', 'type' => 'dropdown'],
+            'phone_number' =>  ['label' => 'Phone number', 'type' => 'text'],
+            'status' => ['label' => 'Status', 'type' => 'text'],
+        ];
+        $listViewData = $this->listView($request, $module, $list_view_columns);
+
+        $moduleData = [
+            'singular' => 'Social Profile',
+            'plural' => 'Social Profiles',
+            'module' => 'Account',
+            'current_page' => 'Account', 
+            // Actions
+            'actions' => [
+                'create' => true,
+                'detail' => true,
+                'edit' => false,
+                'delete' => true,
+                'export' => false,
+                'import' => false,
+                'search' => true,
+                'filter' => false,
+                'select_field'=>false,
+                'mass_edit' => false,
+                'merge' => false
+            ],
+        ];
+
+        $records =  $this->listViewRecord($request, $listViewData, 'Account');
+        $data = array_merge($moduleData, $records);
+        return Inertia::render('Account/List', $data);
+
     }
 
     /**
@@ -912,7 +947,7 @@ class UserController extends Controller
         }
 
         $account->service = $request->service;
-        $account->status = $request->status;
+        $account->status = ($request->status) ? $request->status : 'New';
         $account->service_engine = $request->service_engine;
         $account->service_token = $request->service_token;
         $account->fb_phone_number_id = $request->fb_phone_number_id;
@@ -943,7 +978,8 @@ class UserController extends Controller
         
 
         if($id){
-            return Redirect::route('dashboard');
+            return Redirect::route('wallet_subscription' , ['tab' => 2]);
+            //return Redirect::route('listAccount');
         }else{
             $supportRequest = new SupportRequest();
             $supportRequest->subject= 'New Social Profile is created';
@@ -1381,7 +1417,7 @@ class UserController extends Controller
         // Get message amount deduction
         $messageDeduction = $this->getMsgAmountDeduction($user->id);
         $accountDeduction = $this->getDeductionDetail($user->id);
-        
+    
         $paymentMethods = $this->getPaymentMethods($request , 'direct');
 
         $stripe_public_key = config('stripe.stripe_key');
@@ -1511,7 +1547,8 @@ class UserController extends Controller
             'amount' => [ 'label' => __('Amount') , 'type' => 'text'],
             'status' => [ 'label' => __('Status') , 'type' => 'text'],
             'error_message' => [ 'label' => __('Message') , 'type' => 'text'],
-            'created_at' => [ 'label' => __('Created At') , 'type' => 'text']
+            'created_at' => [ 'label' => __('Created At') , 'type' => 'text'],
+          //  'actions'   => [ 'label' =>'Action' , 'type' => 'url'],
         ];
 
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
@@ -1588,10 +1625,10 @@ class UserController extends Controller
         $user = User::find($request->user()->id);
             view()->share('invoice',$invoice);
             view()->share('user',$user);
-
-            $pdf = PDF::loadView('invoice');
+           
+            $pdf = PDF::loadView('invoicesample');
           //$pdf->save(storage_path() . '/invoice');
-            return $pdf->download('invoice.pdf');
+            return $pdf->download('invoicesample.pdf');
     }
 
     /**
@@ -1600,7 +1637,7 @@ class UserController extends Controller
      * @param INTEGER $user_id
      */
     public function getMsgAmountDeduction($user_id)
-    {
+{
         //TODO Need to get country id for gettting price detail
 
         $countryId = 1;
@@ -1646,7 +1683,7 @@ class UserController extends Controller
      */
     public function getDeductionDetail($userId)
     {
-        $companyId =  Cache::has('selected_company_' . $userId);
+        $companyId =  Cache::get('selected_company_' . $userId);
         $accounts = Account::where('company_id' , $companyId)->get();
 
         $accooutAmountDetail = [];
@@ -1677,16 +1714,15 @@ class UserController extends Controller
     public function getSelectedCompany(Request $request)
     {
         $user = $request->user();
-        // Get companies related to the User
-        $companies = $user->company;
-        
+        // Get user related compan
+        $companies = $this->UserRelatedCompany($user->id);
 
         $selectedCompany = Cache::has('selected_company_' . $user->id) ? Cache::get('selected_company_' . $user->id) : '';
        
         // If user has single company related to him, set the company as default
         if($companies && !$selectedCompany && count($companies) == 1) {
-            $selectedCompany = $companies[0]->id;
-            Cache::put('selected_company_' . $user->id, $companies[0]->id);
+            $selectedCompany = array_keys($companies)[0];
+            Cache::put('selected_company_' . $user->id, $selectedCompany);
         }
 
         // Get register step 
