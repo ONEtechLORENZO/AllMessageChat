@@ -4,6 +4,7 @@ import CompanyDetail from "./company";
 import axios from "axios";
 import Accounts from "../Wallet/Accounts";
 import ListView from "@/Components/Views/List/Index2";
+import InviteUser from "../Admin/User/InviteUsers";
 
 const tabs = [
   { name: 'Workspace Settings', href: '#', current: true, page: 1 },
@@ -17,8 +18,9 @@ function classNames(...classes) {
 
 export default function Subscription(props)
 {  
-  const [page, setPage] = useState(1);
-  
+  const [page, setPage] = useState(props.current_tab);
+  const[ inviteUser, setInviteUser] = useState(false);
+
   return(
     <Authenticated
       auth={props.auth}
@@ -68,10 +70,18 @@ export default function Subscription(props)
                
               <ListView 
                 headers={props.list_view_columns}
+                setInviteUser={setInviteUser}
                 current_user={props.current_user}
                 {...props}
               />
+
             : ''}
+
+            {inviteUser &&
+                <InviteUser 
+                    setInviteUser={setInviteUser}
+                />
+            }
                  
          </div>
        </div>

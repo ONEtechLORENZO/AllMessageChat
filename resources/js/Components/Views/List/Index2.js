@@ -275,8 +275,6 @@ function ListView(props)
                                 <Button 
                                     type = 'button'
                                     onClick={() => props.setInviteUser(true) }
-                                    
-                                    
                                 > 
                                     <UserAddIcon className='h-4 w-4 mr-1' /> Invite Users 
                                 </Button>

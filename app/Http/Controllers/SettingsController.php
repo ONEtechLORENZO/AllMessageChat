@@ -112,6 +112,8 @@ class SettingsController extends Controller
 
         $companyId = Cache::get('selected_company_' . $request->user()->id);
 
+        $tab =($request->tab) ?  $request->tab : 1;
+
         // GET Account records
         $accounts = Account::where('company_id', $companyId)->get(); 
 
@@ -137,23 +139,24 @@ class SettingsController extends Controller
             'add_button_text' => 'Add User',
             'current_page' => 'Users',
             'current_user' => $request->user(),
+            'current_tab' => $tab,
             // Actions
             'actions' => [
-                'create' => true,
+                'create' => false,
                 'detail' => true,
                 'edit' => true,
                 'delete' => true,
                 'export' => false,
                 'import' => false,
-                'search' => true,
+                'search' => false,
                 'filter' => false,
                 'invite_user' => true,
-                'select_field'=>true
+                'select_field'=>false
 
             ],
             'accounts' => $accounts,
             'company' => $userCompany,
-            'show_header' => false
+            'show_header' => true
         ];        
 
         $data = array_merge($moduleData, $userList);
