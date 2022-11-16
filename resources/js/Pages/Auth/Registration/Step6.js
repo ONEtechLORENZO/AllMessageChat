@@ -1,8 +1,23 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {ChevronRightIcon}from "@heroicons/react/outline";
 import { Link } from "@inertiajs/inertia-react";
 
 export default function Step6 (props) {
+
+    const [plan , setPlan] = useState('');
+    useEffect(()=> {
+        getCompanyPlan();
+    }, []);
+
+    /**
+     * Fetch company plan
+     */
+    function getCompanyPlan(){
+        axios.get(route('get_company' , props.companyId)).then((response) => {
+            if(response)
+                setPlan(response.data.plan)
+        });
+    } 
 
     return (
         <div className="h-screen w-full bg-blue-50 flex justify-center items-center">
@@ -36,7 +51,7 @@ export default function Step6 (props) {
                           <div className="text-gray-900 py-2 font-semibold text-lg">You Account has been registered!</div>
                           <div className="text-gray-500 font-small py-2">We've been accredited $1.00 so you can start using OneMessage right now!</div>
                           <div className="text-gray-500 font-small py-2">You can charge your wallet anytime and send more messages:<span className="text-indigo-500 font-semibold pl-2">Check Rates</span></div>
-                          <div className="text-gray-500 font-small py-2">You registered with<span className="text-indigo-500 font-semibold px-2"> Lite plan</span>which is monthly free and you have: </div>
+                          <div className="text-gray-500 font-small py-2">You registered with<span className="text-indigo-500 font-semibold px-2"> {plan} plan</span>which is monthly free and you have: </div>
                           <div className="text-gray-500 font-small py-2">
                             <ul className="list-disc ml-6">
                                 <li>1 workspace</li>

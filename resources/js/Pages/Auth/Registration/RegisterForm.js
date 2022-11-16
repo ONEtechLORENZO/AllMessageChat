@@ -84,7 +84,9 @@ export default function RegisterForm (props) {
                
             {openTab === 6 &&
                // DashBoard
-               <Step6 />
+               <Step6
+                companyId={companyId}
+               />
             }
             
        </div>

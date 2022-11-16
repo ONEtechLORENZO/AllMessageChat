@@ -531,4 +531,17 @@ class CompanyController extends Controller
 
         return Redirect::route('show_Users');
     }
+
+    /**
+     * Return company data
+     */
+    public function getCompanyDetail(Request $request , $id)
+    {
+        $company = Company::find($id);
+        $planid = $company->plan;
+
+        $plan = Plan::find($planid);
+        $planName = $plan->name;
+        return response()->json(['status' => true , 'plan' => $planName]);
+    }
 }
