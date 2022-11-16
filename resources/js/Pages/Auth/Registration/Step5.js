@@ -50,10 +50,9 @@ export default function Step5 (props) {
         }
 
        // Inertia.post(route('subscribe_plan',{'plan': plan_id}), {user_id: props.user.user_id, is_register_step: true }, {
-        axios.post(route('subscribe_plan',{'plan': plan_id}), {user_id: props.user.user_id, is_register_step: true }, {
-            then: (response) => {
+        axios.post(route('subscribe_plan',{'plan': plan_id}), {user_id: props.user.user_id, is_register_step: true })
+        .then((response) => {
                 props.setOpenTab(5);
-            }
         });
     }
 
