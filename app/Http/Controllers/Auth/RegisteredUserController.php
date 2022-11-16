@@ -51,7 +51,8 @@ class RegisteredUserController extends Controller
                 'stripe_public_key' => $stripe_public_key,
                 'translator' => [
                     'Add a Payment Method' => __('Add a Payment Method'),
-                    'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount')
+                    'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount'),
+                    'Add your Card' => __('Add your Card'),
                 ]
             ]);
     }
@@ -155,11 +156,11 @@ class RegisteredUserController extends Controller
 
         if ($request->uuid) {
             $invitation = UserInvite::where('unique_id' , $request->uuid)->first();
-            Cache::put('user_steps_status_'.  $user->id , 7 );
+            Cache::put('user_steps_status_'.  $user->id , 6 );
 
             if( $invitation ){
                 $user->company()->syncWithoutDetaching([$company_id]);
-                return response()->json(['status' => true, 'step' => 7]);
+                return response()->json(['status' => true, 'step' => 6]);
             }
         }
 

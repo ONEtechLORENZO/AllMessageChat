@@ -125,7 +125,7 @@ export default function Step1 (props) {
         axios.post(url, user).then( (response) => {
             if(response.data.step) {
                 nProgress.done(true);
-                props.setOpenTab(7);
+                props.setOpenTab(response.data.step);
             } else {
                 nProgress.done(true);
                 let newUser = Object.assign({}, user);
