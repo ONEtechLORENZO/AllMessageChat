@@ -145,7 +145,7 @@ class CompanyController extends Controller
         if(!$access && $user->role != 'global_admin'){
             abort('401');
         }
-        $wallet = Wallet::where('user_id', $user->id)->first();
+        $wallet = Wallet::where('company_id', $id)->first();
         
         $balance = 0.00;
         if($wallet) {
@@ -164,7 +164,7 @@ class CompanyController extends Controller
         $headers = $this->getModuleHeader(1 , 'Company');   
 
         $account_id = [];
-        $accounts = Account::where('company_id',$companyId)->get();
+        $accounts = Account::where('company_id',$id)->get();
         
         foreach($accounts as $account) {
             $account_id[] = $account->id;
