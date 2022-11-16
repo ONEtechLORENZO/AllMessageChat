@@ -52,6 +52,7 @@ function ShowCompany(props)
         Inertia.post(route('unlinkCompany'), companyData, {
             onSuccess: (response) => { 
                 notie.alert({type: 'success', text: 'Company unlinked successfully', time: 5});
+                setModal(false);
             }
         });
     }
