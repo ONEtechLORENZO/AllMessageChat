@@ -940,7 +940,8 @@ class UserController extends Controller
             $account = Account::findOrFail($id);
         }else{
             $account = new Account();
-
+            $account->company_id = Cache::get('selected_company_'. $user_id);
+            $account->user_id = $user_id;
             $account->status = 'New'; // inicial  status as New.
         }
 
@@ -969,9 +970,6 @@ class UserController extends Controller
             }
         }
 
-        //log in user id & company
-        $account->user_id = $user_id;
-        $account->company_id = Cache::get('selected_company_'. $user_id);
         $account->save();
         
 
