@@ -553,7 +553,7 @@ function Wallet(props)
                                 {props.translator['See Details']}
                             </Link>
                         </div>
-
+{/* 
                         <div class="bg-white rounded-md shadow w-full flex justify-between items-center p-4 md:p-8">
                             <h5 className="text-base font-semibold">
                             {props.translator['Download your VAT Invoices']}
@@ -566,7 +566,7 @@ function Wallet(props)
                             >
                                 {props.translator['Go to Invoices']}
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>

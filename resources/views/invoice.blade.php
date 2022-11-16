@@ -106,7 +106,7 @@
 						<table>
 							<tr>
 								<td class="title">
-								 <img className="h-8 w-auto" src="https://tailwindui.com/img/logos/workflow-logo-indigo-600-mark-gray-800-text.svg" alt="Workflow"/> 
+								 <img className="h-8 w-auto" src="https://www.onemessage.chat/wp-content/uploads/2022/07/OneMessage.ChatRisorsa-10@2x-300x42.png" alt="Workflow"/> 
 								</td>
 
 								<td>
@@ -123,9 +123,10 @@
 						<table>
 							<tr>
 								<td>
-									Sparksuite, Inc.<br />
-									12345 Sunny Road<br />
-									Sunnyville, CA 12345
+								One S.r.l<br />
+								Viale Antonio Gramsci 13, <br />
+								80122 Napoli
+
 								</td>
 
 								<td>
