@@ -21,13 +21,13 @@ class CompanyObserver
      */
     public function created(Company $company)
     {
+        $user_id = Auth::id();
+        $user = User::find($user_id);
+
          // Create user in Stripe
-          $this->createStripeCustomer($company);
+        $this->createStripeCustomer($company, '', $user_id);
 
-         $user_id = Auth::id();
-         $user = User::find($user_id);
-
-         $sendMail = $this->sendMailToAdmin($company);
+        $sendMail = $this->sendMailToAdmin($company);
             
          // Check whether field entries are already added for this company
          $isAdded = Field::where('company_id', $company->id)->first();
@@ -88,7 +88,7 @@ class CompanyObserver
     /**
      * Create stripe customer 
      */
-    public function createStripeCustomer(Company $company, $mode = '')
+    public function createStripeCustomer(Company $company, $mode = '', $user_id = '')
     {
         $secretId = config('stripe.stripe_secret');
         $stripe = new \Stripe\StripeClient($secretId);
@@ -108,11 +108,16 @@ class CompanyObserver
         $_REQUEST['is_stripe_action'] = true;
         $company->save();
 
-        $users = $company->user;
+        if($user_id) {
+            $userBean = User::find($user_id);
+            $userBean->stripe_id = $company->stripe_id;
+            $userBean->save();
+        }
+        /*$users = $company->user;
         foreach($users as $user){
             $user->stripe_id = $company->stripe_id;
             $user->save();
-        }
+        }*/
         
         return true;
     }
