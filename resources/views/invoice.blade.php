@@ -125,13 +125,18 @@
 								<td>
 								One S.r.l<br />
 								Viale Antonio Gramsci 13, <br />
-								80122 Napoli
-
+								80122 Napoli <br/>
+								VAT ID: IT10071971211
 								</td>
 
 								<td>
+								    {{$company->organization}}<br />
 									{{$user->name}}<br />
-									{{$user->email}}
+									{{$user->email}}</br>
+									{{$company->email}}</br>
+									{{$company->city}}</br>
+									{{$company->state}}</br>
+									{{$company->company_country}}</br>
 								</td>
 							</tr>
 						</table>

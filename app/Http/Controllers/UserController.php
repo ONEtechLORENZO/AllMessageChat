@@ -1641,9 +1641,13 @@ class UserController extends Controller
             abort(401);
         }
 
+        $company_id = $invoice->company_id;
+        $company = Company::find($company_id);
+
         $user = User::find($request->user()->id);
             view()->share('invoice',$invoice);
             view()->share('user',$user);
+            view()->share('company', $company);
            
             $pdf = PDF::loadView('invoice');
           //$pdf->save(storage_path() . '/invoice');
