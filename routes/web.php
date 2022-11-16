@@ -113,7 +113,7 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/relatePaymentMethod', [UserController::class, 'relatePaymentMethod'])->name('relatePaymentMethod');
 
         // Subscription
-        Route::get('/wallet/subscription', [SettingsController::class, 'walletSubscription'])->name('wallet_subscription');
+        Route::get('/workspace/settings', [SettingsController::class, 'walletSubscription'])->name('wallet_subscription');
         Route::get('/user/company/pricing', [SettingsController::class, 'updateSubscription'])->name('updateSubscription');
         Route::post('/save/subscription/{plan}', [SettingsController::class, 'SubscriptionPlan'])->name('subscribe_plan');
         Route::post('/edit/company',[SettingsController::class, 'saveCompany'])->name('saveCompany');

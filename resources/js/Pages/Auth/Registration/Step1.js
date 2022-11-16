@@ -265,7 +265,7 @@ export default function Step1 (props) {
                                         onChange={() => checkCondition(condition)}
                                     />
                                 </div>
-                                <div className="px-3">Accept Privacy Policy and Terms and Condition</div>
+                                <div className="px-3 flex">Accept Privacy Policy and <a href="http://onemessage.chat" target={"_blank"} className="inline-flex px-2">Terms and Condition</a></div>
                             </div>
                             <div className="flex justify-end">
                                 <button
