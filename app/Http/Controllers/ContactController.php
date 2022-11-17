@@ -19,6 +19,9 @@ use App\Models\Service;
 use App\Models\User;
 use App\Models\Phone;
 use App\Models\Email;
+use Illuminate\Support\Facades\Validator;
+
+
 
 class ContactController extends Controller
 {
@@ -60,16 +63,39 @@ class ContactController extends Controller
     {
         $module = new Contact();       
                 
-        $list_view_columns = $module->getListViewFields();
-        $listViewData = $this->listView($request, $module, $list_view_columns);
-
+        
         if ($request->is('api/*')) // API call check
-            {            
-                unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
-                return response()->json($listViewData);
+            {           
+                if($request->account_id)
+                     {
+                        if(Account::where('id',$request->account_id)->exists())
+                            {
+                                $list_view_columns = $module->getListViewFields();
+                                $listViewData = $this->listView($request, $module, $list_view_columns);                
+                                if($listViewData)
+                                  {
+                                    unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
+                                    return response()->json(['status' => true,'Contacts' => $listViewData],200);
+                                 }
+                                else
+                                {
+                                    return response()->json(['status' => false, 'message' => 'No records found'],200); 
+                                }
+                            }
+                            else{
+                                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],400); 
+                            }
+                    }
+                else
+                {
+                    return response()->json(['status' => false, 'message' => 'Workspace ID not found'],404); 
+                }   
             }
         else
             {      
+                $list_view_columns = $module->getListViewFields();
+                $listViewData = $this->listView($request, $module, $list_view_columns);
+
             $moduleData = [
                 'singular' => __('Contact'),
                 'plural' => __('Contacts'),
@@ -120,7 +146,18 @@ class ContactController extends Controller
         { 
             $postFields = array_keys($_POST);
             if(count($postFields) == 0) {
-                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data'],404);
+            }
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email|unique:contacts|max:255',
+                'last_name' => 'required|max:255',
+            ]);
+    
+            if ($validator->fails()) {
+                $messages =  $validator->messages();
+
+                return response()->json(['status' => false, 'message' => $messages],404);  
+    
             }
         }
         $contact_id = $this->saveContact($request);
@@ -130,6 +167,7 @@ class ContactController extends Controller
             if($contact_id){
                 $contact = Contact::findOrFail($contact_id);                       
                 $return = ['Message' => 'Record has been created successfully', 'Contact_id' => $contact_id,'Contact' => $contact];
+            
             }
             else{
                 $return = ['Message' => 'Invalid Input'];
@@ -161,7 +199,14 @@ class ContactController extends Controller
     public function show(Request $request)
     {
         $module = new Contact();
-        $contact = $this->checkAccessPermission($request, $module, $request->id);
+        if($request->is('api/*') && !(Account::where('id',$request->account_id)->exists()))
+        {
+            return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+
+        }
+        else{
+            $contact = $this->checkAccessPermission($request, $module, $request->id);
+        }
       
         if(!$contact) {
             if($request->is('api/*')){
@@ -221,7 +266,7 @@ class ContactController extends Controller
         }
         
         if ($request->is('api/*')) { // API call check             
-                return response()->json($contact);
+                return response()->json([ 'status' => true,'Contact' => $contact],200);
         } else {    
             return Inertia::render('Contacts/Detail', [
                 'contact' => $contact,
@@ -351,12 +396,9 @@ class ContactController extends Controller
             
             $contact['assigned_to'] = ['value' => $user->id, 'label' => $name];
         }
-        if( $request->is('api/*') ){
-            return response()->json($contact);
-             }
-        else{
-            return response()->json(['status' => true, 'record' => $contact]);
-        }
+      
+            return response()->json(['status' => true, 'record' => $contact],200);
+        
     }
 
     /**
@@ -374,7 +416,7 @@ class ContactController extends Controller
         $flag = $this->checkPermission($request,$currentUser, $request->id,'Contact');
         if($flag === false) {
             if($request->is('api/*')){
-                return response()->json(['status' => false, 'message' => 'Record not found']);
+                return response()->json(['status' => false, 'message' => 'Record not found'],404);
             }
             else{
             abort(401);}
@@ -382,7 +424,7 @@ class ContactController extends Controller
         $contact = $this->checkAccessPermission($request, $module, $request->id);
         if(!$contact) {
             if($request->is('api/*')){
-                return response()->json(['status' => false, 'message' => 'Record not found']);   
+                return response()->json(['status' => false, 'message' => 'Record not found'],404);   
             }
             else{
             abort('404');}
@@ -391,7 +433,17 @@ class ContactController extends Controller
         { 
             $postFields = array_keys($_POST);
             if(count($postFields) == 0) {
-                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data'],404);
+            }
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email|unique:contacts|max:255',                
+            ]);
+    
+            if ($validator->fails()) {
+                $messages =  $validator->messages();
+
+                return response()->json(['status' => false, 'message' => $messages],404);  
+    
             }
         }
         $contact_id = $this->saveContact($request);
@@ -559,7 +611,6 @@ class ContactController extends Controller
 
         if ($request->id) {
             $request->validate([
-                'last_name' => 'required|max:255',
                 'email' => 'unique:contacts|max:255',
             ]);
             $contact = Contact::findOrFail($request->id);
@@ -578,11 +629,21 @@ class ContactController extends Controller
             {
               $account = Account::findorFail($request->account_id);                
               $company_id = $account->company_id;                
-            }         
+            }  
+            
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|unique:contacts|max:255',
+            ]);
+    
+            if ($validator->fails()) {
+                return response()->json(['status' => false, 'message' => 'Email id should be unique'],1025);  
+    
+            }
+         
         } else{        
             $company_id = Cache::get('selected_company_'. $request->user()->id);
         }
-     
+       
         $fields = Field::where('module_name', 'Contact')
             ->where('company_id', $company_id)
             ->get(['field_name', 'is_custom', 'field_type']);

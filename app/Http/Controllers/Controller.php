@@ -52,16 +52,19 @@ class Controller extends BaseController
 
         $user = $request->user();
         $user_id = $user->id;
-        if ($request->is('api/*'))
+        if ($request->is('api/*')) //API call
            { 
              if($request->account_id)
               {
-                $account = Account::find($request->account_id);                
-                $companyId = $account->company_id;                
+                if(Account::where('id',$request->account_id)->exists())
+                {
+                    $account = Account::find($request->account_id);                
+                    $companyId = $account->company_id;   
+                } 
               }           
               else
               {
-                abort(403);
+                return response()->json(['status' => false, 'message' => 'Workspace ID not found'],404); 
               }   
            }
         else{
