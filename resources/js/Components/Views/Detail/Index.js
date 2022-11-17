@@ -19,6 +19,7 @@ import axios from "axios";
 import Wallet from "@/Pages/Wallet/Index"
 import Form from '@/Components/Forms/Form';
 import Acitivies from "@/Pages/Company/Acitivies";
+import ListView from "../List/Index2";
 
 export default function Index(props) {
     const [record, setRecord] = useState(props.record);
@@ -58,6 +59,9 @@ export default function Index(props) {
             setActiveTab(props.current_tab);
         }
         setSubscribedServices(props.subscribedServices);
+        if(props.module == 'Company') {
+            setActiveTab('Acitivies');
+        }
     }, [props]);
 
       /**
@@ -645,14 +649,19 @@ export default function Index(props) {
                                 />
                             }
                             {activeTab == 'Users' &&
-                                <ul role="list" className="divide-y divide-gray-200">
-                                    {Object.entries(props.users).map(([key, user]) => (
-                                        <li key={''} className="py-4 flex border-2 m-1 border-gray-100 p-4">
-                                            <span><UserIcon /> </span> 
-                                            <span className="ml-3">{user.name}</span>
-                                        </li>
-                                    ))}
-                                </ul>
+                                <ListView 
+                                    auth={props.auth}
+                                    errors={props.errors}
+                                    module={'User'}
+                                    current_user={props.auth}
+                                    headers={props.users_columns}
+                                    records={props.user_List}
+                                    translator={props.translator}
+                                    actions={props.user_actions}
+                                    paginator={props.users_paginator}
+                                    sort_by={'created_at'}
+                                    sort_order={'desc'}
+                                />
                             }
                             {activeTab == 'Contact' &&
                                 <SubPanels 
