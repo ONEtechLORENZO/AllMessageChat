@@ -6,6 +6,8 @@ import axios from "axios";
 import { Link } from "@inertiajs/inertia-react";
 import notie from 'notie';
 
+import {  Input } from "reactstrap";
+
 export default function Step3 (props) {
 
     const [organization, setOrganization] = useState({});
@@ -70,7 +72,7 @@ export default function Step3 (props) {
                     </div> 
 
                     <div className="grid grid-cols-2 mt-5">
-                        <div className="flex justify-start font-semibold text-lg text-primary">Step 4 </div>
+                        <div className="flex justify-start font-semibold text-lg text-primary">Step 4 of 5 </div>
                         <div className="flex justify-end font-semibold text-lg">About Your Organization</div>
                     </div>
 
@@ -83,7 +85,6 @@ export default function Step3 (props) {
                             <input
                                 type="text"
                                 name="name"
-                                className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
                                 autoComplete="off"
                                 value={organization['name'] ? organization['name'] : ''}
                                 onChange={(e) => handleChange(e)}
@@ -111,10 +112,9 @@ export default function Step3 (props) {
                         </div>
                         <div className="flex flex-col flex-1">
                             <label>Number of Employees</label>
-                            <input
+                            <Input
                                 type="text"
                                 name="number_of_employees"
-                                className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
                                 autoComplete="off"
                                 value={organization['number_of_employees'] ? organization['number_of_employees'] : ''}
                                 onChange={(e) => totalEmployee(e)}
@@ -144,10 +144,10 @@ export default function Step3 (props) {
                         </div>
                         <div className="flex flex-col flex-1">
                             <label>City</label>
-                            <input
+                            <Input
                                 type="text"
                                 name="city"
-                                className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
+                                
                                 autoComplete="off"
                                 value={organization['city'] ? organization['city'] : ''}
                                 onChange={(e) => handleChange(e)}
@@ -161,10 +161,9 @@ export default function Step3 (props) {
                         </div>
                         <div className="flex flex-col flex-1">
                             <label>Address</label>
-                            <input
+                            <Input
                                 type="text"
                                 name="street"
-                                className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
                                 autoComplete="off"
                                 value={organization['street'] ? organization['street'] : ''}
                                 onChange={(e) => handleChange(e)}

@@ -168,6 +168,16 @@ function Detail(props)
                         <span className={`ml-3 text-sm inline-flex items-center px-2 py-0.5 rounded font-medium ${status_class_names}`}>
                             {props['account'].status}
                         </span>
+                        {props.auth.user.role == 'global_admin' &&
+                            <Link
+                                href={route('detail_global_Company' , props.company.id)}
+                            >
+                                <span className={`ml-3 text-sm inline-flex items-center px-2 py-0.5 rounded font-medium`}>
+                                {props.company.name}
+                                </span>
+                            </Link>
+                        }
+                        
                     </div>
                     <div className="inline-flex">
                         {/*                         

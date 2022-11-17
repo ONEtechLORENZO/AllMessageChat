@@ -3,6 +3,8 @@ import {CreditCardIcon , ChevronRightIcon}from "@heroicons/react/outline";
 import { Link } from "@inertiajs/inertia-react";
 import PaymentMethodForm from "@/Pages/Wallet/PaymentMethodForm";
 
+import { Input } from "reactstrap";
+
 export default function Step4 (props) {
 
     const [stripeForm, setStripeForm] = useState(false);
@@ -48,15 +50,15 @@ export default function Step4 (props) {
                             <div className="flex justify-end font-semibold text-lg">Payment Method</div>
                         </div>
 
-                        <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                        <div className=" w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
                              <div className="text-gray-500">
                                <CreditCardIcon className="h-6 w-6" />
                             </div>
                             <div className="flex flex-col flex-1" onClick={() => setStripeForm(true)}>
                                 <label>Add a Credit Card or a Bank Account</label>
-                                <input
+                                <Input
                                     type="text"
-                                    className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
+                                    
                                     autoComplete="off"
                                 />
                             </div> 

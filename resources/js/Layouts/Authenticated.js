@@ -541,9 +541,9 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                         >
                             {showSidebarText ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                         </div>
-                        <div className="mt-2 flex-grow flex flex-col">
+                        <div className="mt-4 flex-grow flex flex-col">
                             <nav className="flex-1 px-2 pb-4 space-y-1 gio-navbar">
-                                <ul>
+                                <ul className="pl-0">
                             {showAdminNav ?                                                     
                                  adminNavigation.map((item,index) => {
                                 if(!item.show.includes('all') && !item.show.includes(auth.user.role)) {

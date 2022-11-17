@@ -17,13 +17,24 @@ export default function Step2 (props) {
     const [workspace, setWorkspace] = useState({});
     const [timeZone, setTimezone] = useState([]);
     const [currencyType, setCurrency] = useState([]);
-    const [condition, setCondition] = useState(false);
    
     useEffect( () => {
         getTimezones();
         setWorkspace(defaultValue);
         getCurrencies();
     },[]);
+
+    function liveTimezone(time_zone) {
+        let newWorkspace = Object.assign({}, workspace);
+        let currentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        (time_zone).map( (zone) => {
+            if(currentTimezone == zone.value) {
+                newWorkspace['currency'] = { value: "EUR", label: "Euro" };
+                newWorkspace['time_zone'] = zone;
+                setWorkspace(newWorkspace);
+            }
+        });
+    }
 
     // Workspace handling 
     function workspaceHandler (event) {
@@ -38,7 +49,8 @@ export default function Step2 (props) {
     function getTimezones(){
         var url = route('get_timezone');
         axios.get(url).then((response) => {
-          setTimezone(response.data.time_zone);          
+          setTimezone(response.data.time_zone);
+          liveTimezone(response.data.time_zone);          
         });
     }
 
@@ -58,10 +70,6 @@ export default function Step2 (props) {
 
         let is_validate = validation(workspace);
         if(!is_validate) {
-            return false;
-        }
-        if(!condition){
-            notie.alert({type: 'warning', text: 'Please accept the terms and conditions', time: 5});
             return false;
         }
 
@@ -91,11 +99,6 @@ export default function Step2 (props) {
         let newWorkspace = Object.assign({}, workspace);
         newWorkspace[name] = event;
         setWorkspace(newWorkspace);
-    }
-
-    function checkCondition(check) {
-        let terms = check ? false : true;
-        setCondition(terms);
     }
 
     return (
@@ -170,15 +173,7 @@ export default function Step2 (props) {
 
                         <div className="grid grid-cols-2 mt-4">
                             <div className="flex justify-start items-center">
-                                <div className="">
-                                    <input
-                                        type="checkbox"
-                                        checked={condition == true ? 'checked' : ''}
-                                        className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                                        onChange={() => checkCondition(condition)}
-                                    />
-                                </div>
-                                <div className="px-3">Accept Privacy Policy and Terms and Condition</div>
+                                
                             </div>
                             <div className="flex justify-end">
                                 <button

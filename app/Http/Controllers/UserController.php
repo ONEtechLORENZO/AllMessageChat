@@ -699,7 +699,8 @@ class UserController extends Controller
         $user = $request->user();
         $companyId = Cache::get('selected_company_'. $user->id);
         $query = Account::where('id', $id);
-
+        $company = Company::find($companyId);
+       
         if($user->role != 'global_admin') {
             $query->where('company_id', $companyId);
         }
@@ -711,31 +712,6 @@ class UserController extends Controller
 
         $templates = Template::where('account_id', $id)->get();
         $webhookEvents = WebhookEvent::where('account_id', $id)->get();
-
-        // $field_info = [
-        //     'company_name' => ['label' => __('Name')],
-        //     'service_engine' => ['label' => 'Service Engine'],
-        //     'service_token' => ['label' => 'Service token'],
-        //     'fb_phone_number_id' => ['label' => 'FaceBook phone number ID'],
-        //     'fb_whatsapp_account_id' => ['label' => 'FaceBook whatsapp account ID'],
-        //     'service' => ['label' => __('Service')],
-        //     // 'company_type' => ['label' => 'Company type'],
-        //     // 'website' => ['label' => 'Website'],
-        //     // 'email' => ['label' => 'Email'],
-        //     // 'estimated_launch_date' => ['label' => 'Estimated launch date'],
-        //     // 'type_of_integration' => ['label' => 'Type of integration'],
-        //     'display_name' => ['label' => __('Display name'), 'show' => ['whatsapp']],
-        //     'phone_number' => ['label' => __('Phone number'), 'show' => ['whatsapp']],
-        //     'src_name' => ['label' => __('Source name'), 'show' => ['whatsapp', 'instagram']],
-        //     'api_partner' => ['label' => __('API partner'), 'show' => ['whatsapp']],
-        //     'api_partner_name' => ['label' => __('API partner Name'), 'show' => ['whatsapp']],
-        //     'business_manager_id' => ['label' => __('Business manager ID'), 'show' => ['whatsapp']],
-        //     'Profile' => __('Profile'),
-        //     'Callback URL' => __('Callback URL')
-        //     // 'profile_picture' => ['label' => 'Profile picture', 'type' => 'image', 'show' => ['whatsapp']],
-        //     // 'profile_description' => ['label' => 'Profile description', 'show' => ['whatsapp']],
-        //     // 'status' => ['label' => 'Status'],
-        // ];
 
         $field_info = [
             'company_name' => ['label' => __('Name')],
@@ -755,6 +731,7 @@ class UserController extends Controller
 
         return Inertia::render('Account/Detail', [
             'account' => $account,
+            'company' => $company,
             'field_info' => $field_info,
             'templates' => $templates,
             'webhook_events' => $this->webhook_events,
@@ -940,7 +917,8 @@ class UserController extends Controller
             $account = Account::findOrFail($id);
         }else{
             $account = new Account();
-
+            $account->company_id = Cache::get('selected_company_'. $user_id);
+            $account->user_id = $user_id;
             $account->status = 'New'; // inicial  status as New.
         }
 
@@ -969,9 +947,6 @@ class UserController extends Controller
             }
         }
 
-        //log in user id & company
-        $account->user_id = $user_id;
-        $account->company_id = Cache::get('selected_company_'. $user_id);
         $account->save();
         
 
@@ -1666,9 +1641,13 @@ class UserController extends Controller
             abort(401);
         }
 
+        $company_id = $invoice->company_id;
+        $company = Company::find($company_id);
+
         $user = User::find($request->user()->id);
             view()->share('invoice',$invoice);
             view()->share('user',$user);
+            view()->share('company', $company);
            
             $pdf = PDF::loadView('invoice');
           //$pdf->save(storage_path() . '/invoice');

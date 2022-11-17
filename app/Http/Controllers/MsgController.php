@@ -850,8 +850,13 @@ class MsgController extends Controller
         if(!$contact) {
             // Create new contact if instagram id is not found
             $contact = new Contact();
-            $contact->last_name = ($name) ? $name : $_POST['last_name'];
-            $contact->first_name = ($name) ? $name : $_POST['first_name'];
+
+            $last_name = isset($_POST['last_name']) ? $_POST['last_name'] : $name;
+            $first_name = isset($_POST['first_name']) ? $_POST['first_name'] : $name;
+
+            $contact->last_name = $last_name ;
+            $contact->first_name = $first_name ;
+
             $contact->$field = $uniqueId;
             $contact->creater_id = $user_id;
             $contact->company_id = $companyId;
@@ -1038,12 +1043,14 @@ class MsgController extends Controller
         if($request->from_crm){
             $_REQUEST['FROM_CRM'] = true;
         }
+        
         $current_user = $request->user();
+        $companies = (new UserController)->UserRelatedCompany($current_user->id);//$current_user->commpany;
         $account_id = $request->account_number;
         $account = Account::where('id' , $account_id)->orWhere('phone_number', $account_id )->first();
         if($account) {
             // Check whether current user can access this account
-            if($current_user->id != $account->user_id) {
+            if( !array_key_exists($account->company_id , $companies)) {
                 return response()->json(['status' => 'failed', 'message' => 'Invalid API token']);
             }
         } else {

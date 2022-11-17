@@ -392,7 +392,8 @@ class SettingsController extends Controller
         }
         
         if($request->is_register_step){
-            Cache::put('user_steps_status_'. $request->user()->id , 6 );
+            Cache::put('user_steps_status_'. $request->user()->id , 5 );
+           // return Redirect::route('show_register_step');
             return response()->json(['status' => true]);
         }
 

@@ -11,6 +11,7 @@ use App\Models\Message;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 
+
 class TemplateController extends Controller
 {
 	public $result = '';
@@ -163,6 +164,8 @@ class TemplateController extends Controller
             foreach($appList as $app) {
                 if($account->src_name == $app['name']) {
                     $appId = $app['id'];
+                } else {
+                    $this->result = 'Invalid APP Name.';  // Might be Invalid partner token
                 }
             }
         } else {
@@ -246,7 +249,7 @@ class TemplateController extends Controller
             $postData['header'] = $data['data']->header_text;
             $postData['buttons'] = ($buttons);
         }
-    // dd( $endPoint , json_encode($postData));
+    //dd( $endPoint , json_encode($postData));
      $result = $this->restApiCall('POST', $endPoint, $header, ($postData));
      //   dd($result);
 
@@ -354,10 +357,12 @@ class TemplateController extends Controller
     function createWhatsAppTemplateViaAPI(Request $request, $account_id)
     {
         $current_user = $request->user();
+        $companies = (new UserController)->UserRelatedCompany($current_user->id);//$current_user->commpany;
         $account = Account::find($account_id);
+
         if($account) {
             // Check whether current user can access this account
-            if($current_user->id != $account->user_id) {
+            if( !array_key_exists($account->company_id , $companies)) {
                 return response()->json(['status' => 'failed', 'message' => 'Invalid API token']);
             }
         } else {
@@ -447,7 +452,7 @@ class TemplateController extends Controller
             $message->attach_file = isset($attachFilePath['url']) ? $attachFilePath['url'] : '';
             $message->example = $request->get('example');
             $message->save();
-            
+
             $return = $this->submitTemplate(['account_id' => $account_id, 'template_id' => $template_id, 'data' => $request, 'file' => $attachFilePath]);
             Log::info($return);
         }
@@ -460,10 +465,11 @@ class TemplateController extends Controller
     public function getTemplates(Request $request, $account_id)
     {
         $current_user = $request->user();
+        $companies = (new UserController)->UserRelatedCompany($current_user->id);//$current_user->commpany;
         $account = Account::find($account_id);
         if($account) {
             // Check whether current user can access this account
-            if($current_user->id != $account->user_id) {
+            if( !array_key_exists($account->company_id , $companies)) {
                 return response()->json(['status' => 'failed', 'message' => 'Invalid API token']);
             }
         } else {

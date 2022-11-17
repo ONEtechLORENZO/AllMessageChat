@@ -2108,6 +2108,14 @@ select {
 	--tw-bg-opacity: 1;
 	background-color: rgba(124, 58, 237, var(--tw-bg-opacity));
 }
+.\!bg-\[\#F6FFFD\] {
+	--tw-bg-opacity: 1 !important;
+	background-color: rgba(246, 255, 253, var(--tw-bg-opacity)) !important;
+}
+.\!bg-\[\#9BFFF2\] {
+	--tw-bg-opacity: 1 !important;
+	background-color: rgba(155, 255, 242, var(--tw-bg-opacity)) !important;
+}
 .bg-opacity-75 {
 	--tw-bg-opacity: 0.75;
 }
@@ -2381,6 +2389,9 @@ select {
 }
 .pt-10 {
 	padding-top: 2.5rem;
+}
+.pl-0 {
+	padding-left: 0px;
 }
 .text-left {
 	text-align: left;

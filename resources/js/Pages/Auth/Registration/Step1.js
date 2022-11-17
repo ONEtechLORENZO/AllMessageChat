@@ -125,7 +125,7 @@ export default function Step1 (props) {
         axios.post(url, user).then( (response) => {
             if(response.data.step) {
                 nProgress.done(true);
-                props.setOpenTab(7);
+                props.setOpenTab(response.data.step);
             } else {
                 nProgress.done(true);
                 let newUser = Object.assign({}, user);
@@ -240,10 +240,10 @@ export default function Step1 (props) {
                             <div className="flex flex-col flex-1">
                                 <label>Confirm Password <span className="text-red-500">  * </span>  </label>
                                 <div className="relative">
-                                    <input
+                                    <Input
                                         type={passwordType}
                                         name="confirm_password"
-                                        className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
+                                        className="mt-2"
                                         autoComplete="off"
                                         value={user['confirm_password'] ? user['confirm_password'] : ''}
                                         onChange={(e) => userHandler(e)}
@@ -265,7 +265,7 @@ export default function Step1 (props) {
                                         onChange={() => checkCondition(condition)}
                                     />
                                 </div>
-                                <div className="px-3">Accept Privacy Policy and Terms and Condition</div>
+                                <div className="px-3 flex">Accept Privacy Policy and <a href="http://onemessage.chat" target={"_blank"} className="inline-flex px-2">Terms and Condition</a></div>
                             </div>
                             <div className="flex justify-end">
                                 <button
