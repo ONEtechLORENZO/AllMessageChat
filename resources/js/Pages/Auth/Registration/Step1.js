@@ -240,10 +240,10 @@ export default function Step1 (props) {
                             <div className="flex flex-col flex-1">
                                 <label>Confirm Password <span className="text-red-500">  * </span>  </label>
                                 <div className="relative">
-                                    <input
+                                    <Input
                                         type={passwordType}
                                         name="confirm_password"
-                                        className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
+                                        className="mt-2"
                                         autoComplete="off"
                                         value={user['confirm_password'] ? user['confirm_password'] : ''}
                                         onChange={(e) => userHandler(e)}

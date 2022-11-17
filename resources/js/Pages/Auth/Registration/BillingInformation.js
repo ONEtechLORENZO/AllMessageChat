@@ -9,6 +9,8 @@ import PhoneInput2 from 'react-phone-input-2';
 import { parsePhoneNumber } from 'react-phone-number-input';
 import 'react-phone-input-2/lib/style.css';
 
+import {  Input } from "reactstrap";
+
 export default function BillingInformation (props) {
 
     const [billingInformation, setBillingInformation] = useState({});
@@ -92,21 +94,21 @@ export default function BillingInformation (props) {
                     </div> 
 
                     <div className="grid grid-cols-2 mt-5">
-                        <div className="flex justify-start font-semibold text-lg text-primary">Step 3 </div>
+                        <div className="flex justify-start font-semibold text-lg text-primary">Step 3 of 3 </div>
                         <div className="flex justify-end font-semibold text-lg">Billing Information</div>
                     </div>
 
                     
-                    <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                    <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                         <div className="text-gray-500">
                            <LibraryIcon className="h-6 w-6" />
                         </div>
                         <div className="flex flex-col flex-1">
                             <label>Organization Name</label>
-                            <input
+                            <Input
                                 type="text"
                                 name="organization"
-                                className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
+                                
                                 autoComplete="off"
                                 value={billingInformation['organization'] ? billingInformation['organization'] : ''}
                                 onChange={(e) => handleChange(e)}
@@ -115,7 +117,7 @@ export default function BillingInformation (props) {
                     </div>
 
                     
-                    <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                    <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                         <div className="text-gray-500">
                            <PhoneIcon className="h-6 w-6" />
                         </div>
@@ -135,7 +137,7 @@ export default function BillingInformation (props) {
                         </div>
                     </div>
 
-                    <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                    <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                         <div className="text-gray-500">
                            <GlobeIcon className="h-6 w-6" />
                         </div>
@@ -151,16 +153,15 @@ export default function BillingInformation (props) {
                         </div>
                     </div>
 
-                    <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                    <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                         <div className="text-gray-500">
                            <UserCircleIcon className="h-6 w-6" />
                         </div>
                         <div className="flex flex-col flex-1">
                             <label>Company VAT ID </label>
-                            <input
+                            <Input
                                 type="text"
                                 name="company_vat_id"
-                                className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
                                 autoComplete="off"
                                 value={billingInformation['company_vat_id'] ? billingInformation['company_vat_id'] : ''}
                                 onChange={(e) => handleChange(e)}
@@ -168,16 +169,15 @@ export default function BillingInformation (props) {
                         </div>
                     </div>
 
-                    <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                    <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                         <div className="text-gray-500">
                            <MailIcon className="h-6 w-6" />
                         </div>
                         <div className="flex flex-col flex-1">
                             <label>Email for invoices</label>
-                            <input
+                            <Input
                                 type="text"
                                 name="email"
-                                className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
                                 autoComplete="off"
                                 value={billingInformation['email'] ? billingInformation['email'] : ''}
                                 onChange={(e) => handleChange(e)}
@@ -185,16 +185,15 @@ export default function BillingInformation (props) {
                         </div>
                     </div>
 
-                    <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                    <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                         <div className="text-gray-500">
                            <OfficeBuildingIcon className="h-6 w-6" />
                         </div>
                         <div className="flex flex-col flex-1">
                             <label>Company Address</label>
-                            <input
+                            <Input
                                 type="text"
                                 name="company_address"
-                                className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
                                 autoComplete="off"
                                 value={billingInformation['company_address'] ? billingInformation['company_address'] : ''}
                                 onChange={(e) => handleChange(e)}
@@ -202,16 +201,15 @@ export default function BillingInformation (props) {
                         </div>
                     </div>
 
-                    <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                    <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                         <div className="text-gray-500">
                            <HomeIcon className="h-6 w-6" />
                         </div>
                         <div className="flex flex-col flex-1">
                             <label>City</label>
-                            <input
+                            <Input
                                 type="text"
                                 name="city"
-                                className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
                                 autoComplete="off"
                                 value={billingInformation['city'] ? billingInformation['city'] : ''}
                                 onChange={(e) => handleChange(e)}
@@ -219,16 +217,15 @@ export default function BillingInformation (props) {
                         </div>
                     </div>
 
-                    <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                    <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                         <div className="text-gray-500">
                            <LocationMarkerIcon className="h-6 w-6" />
                         </div>
                         <div className="flex flex-col flex-1">
                             <label>State</label>
-                            <input
+                            <Input
                                 type="text"
                                 name="state"
-                                className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
                                 autoComplete="off"
                                 value={billingInformation['state'] ? billingInformation['state'] : ''}
                                 onChange={(e) => handleChange(e)}
@@ -236,16 +233,15 @@ export default function BillingInformation (props) {
                         </div>
                     </div>
 
-                    <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                    <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                         <div className="text-gray-500">
                            <MailOpenIcon className="h-6 w-6" />
                         </div>
                         <div className="flex flex-col flex-1">
                             <label>Zin Code</label>
-                            <input
+                            <Input
                                 type="text"
                                 name="codice_destinatario"
-                                className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
                                 autoComplete="off"
                                 value={billingInformation['codice_destinatario'] ? billingInformation['codice_destinatario'] : ''}
                                 onChange={(e) => handleChange(e)}
@@ -253,16 +249,15 @@ export default function BillingInformation (props) {
                         </div>
                     </div>
 
-                    <div className="bg-white shadow w-full px-10 py-2 flex gap-8 items-center mt-4 rounded">
+                    <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                         <div className="text-gray-500">
                            <FlagIcon className="h-6 w-6" />
                         </div>
                         <div className="flex flex-col flex-1">
                             <label>Country</label>
-                            <input
+                            <Input
                                 type="text"
                                 name="country"
-                                className="h-4 px-0 py-4 border-0 focus:ring-0 focus:border-primary w-full focus:border-0 focus:border-b"
                                 autoComplete="off"
                                 value={billingInformation['country'] ? billingInformation['country'] : ''}
                                 onChange={(e) => handleChange(e)}
