@@ -10,6 +10,7 @@ import InputError from '@/Components/Forms/InputError';
 import { currencies, countries } from '@/Pages/Constants';
 import { BriefcaseIcon } from '@heroicons/react/solid';
 import Dropdown from '@/Components/Forms/Dropdown';
+import ListTable from '@/Components/Views/List/ListTable';
 
 export default function UserDetail(props) {
 
@@ -275,27 +276,26 @@ export default function UserDetail(props) {
                     </div>
                 )})}
                    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4">
-                        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                            <div className="px-4 py-5 sm:px-6">
-                                <h3 className="text-lg leading-6 font-medium text-gray-900">User Related Workspaces</h3>
-                            </div>
-                            <div className="border-t border-gray-200">
-                                <dl>
-               
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                <ul class="bg-white rounded-lg border border-gray-200 w-full text-gray-900">
-                    {relatedCompanies && Object.entries(relatedCompanies).map(([key ,company]) =>
-                        <li                                                            
-                           class="cursor-pointer px-6 py-2 border-b border-gray-200 w-full rounded-t-lg"
-                            >
-                                {company.name}                                                                
-                        </li>
-                    )}
-                </ul>
-                </dd>          
-                  </dl>  
-                  </div>
-                  </div>   
+                    <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                        <div className="px-4 py-5 sm:px-6">
+                            <h3 className="text-lg leading-6 font-medium text-gray-900">User Related Workspaces</h3>
+                        </div>
+                        <div className="border-t border-gray-200">
+                          <dl>
+                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                <ul class="bg-white rounded-lg  w-full text-gray-900">
+                                    <ListTable 
+                                        module={'Company'}
+                                        headers={props.workspace_columns}
+                                        records={props.companies}
+                                        actions={props.actions}
+                                        current_user={props.auth}
+                                    />
+                                </ul>
+                            </dd>          
+                          </dl>  
+                        </div>
+                    </div>   
                   </div>     
             </div>
 

@@ -8,9 +8,9 @@ function Detail(props){
     const [showForm, setShowForm] = useState(false);
 
     const tabs = [
-        { label:(props.translator['Detail']),name: 'Detail', href: '#'  },
-       { label:(['Users']),name: 'Users', href: '#'  },
+      //  { label:(props.translator['Detail']),name: 'Detail', href: '#'  },
        { label:(props.translator['Acitivies']),name: 'Acitivies', href: '#'  },
+       { label:(['Users']),name: 'Users', href: '#'  },
       ];
 
     /**

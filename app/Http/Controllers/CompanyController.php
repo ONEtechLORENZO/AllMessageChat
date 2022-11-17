@@ -27,6 +27,8 @@ use Schema;
 class CompanyController extends Controller
 {
 
+    public $limit = 15;
+
     public $list_view_columns = [
         'name' => ['label' => 'Name', 'type' => 'text'],
         'company_address' =>  ['label' => 'Address', 'type' => 'text'],
@@ -140,6 +142,21 @@ class CompanyController extends Controller
         $company = Company::find($id);
         $users = $company->user;
 
+        $users_columns = [
+            'name' => [ 'label' => ' Name' , 'type' => 'text'],
+            'email' =>  [ 'label' => 'Email' , 'type' => 'text'],
+            'role' => [ 'label' => 'Role' , 'type' => 'text'],
+            'status' =>  [ 'label' => 'Status' , 'type' => 'checkbox'],
+            'created_at' =>  [ 'label' => 'Created at' , 'type' => 'datetime'],
+        ];
+        
+        $company_usersId = [];
+        foreach($users as $company_user) {
+            $company_usersId[] = $company_user->id;
+        }
+
+        $company_UserList = User::whereIn('id', $company_usersId)->paginate($this->limit);
+
         // Check user can access the record
         $access = $this->checkPermissin($id, $user);
         if(!$access && $user->role != 'global_admin'){
@@ -208,6 +225,11 @@ class CompanyController extends Controller
             'currentPlan' => $currentCompany,
             'revenue_data' => $revenue_data,
             'companyPlan' => $plan,
+            'users_columns' => $users_columns,
+            'user_actions' => [
+                'search' => true,
+                'detail' => true
+            ],
             'translator' => [
                 'Detail' => __('Detail'),
                 'Notes' => __('Notes'),
@@ -230,8 +252,21 @@ class CompanyController extends Controller
                 'See Transactions History' => __('See Transactions History'),
                 'See Details' => __('See Details'),
                 'Download your VAT Invoices' => __('Download your VAT Invoices'),'Go to Invoices'=>__('Go to Invoices'),
-                'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount')
-                ]
+                'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount'),
+                'Search' => __('Search'),
+            ],
+            'user_List' => $company_UserList->items(),
+            'users_paginator' => [
+                'firstPageUrl' => $company_UserList->url(1),
+                'previousPageUrl' => $company_UserList->previousPageUrl(),
+                'nextPageUrl' => $company_UserList->nextPageUrl(),
+                'lastPageUrl' => $company_UserList->url($company_UserList->lastPage()),  
+                'currentPage' => $company_UserList->currentPage(),
+                'total' => $company_UserList->total(),
+                'count' => $company_UserList->count(),
+                'lastPage' => $company_UserList->lastPage(),
+                'perPage' => $company_UserList->perPage(),
+            ],
         ];
         return Inertia::render('Company/Detail', $data);       
     }

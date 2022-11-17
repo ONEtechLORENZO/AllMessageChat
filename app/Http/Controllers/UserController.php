@@ -374,6 +374,14 @@ class UserController extends Controller
         $user = User::find($id);
         $companies = $user->company;
 
+        $workspace_columns = [
+            'name' => ['label' => 'Name', 'type' => 'text'],
+            'company_address' =>  ['label' => 'Address', 'type' => 'text'],
+            'company_country' =>  ['label' => 'Country', 'type' => 'text'],
+            'email' => ['label' =>'Email', 'type' => 'email'],
+            'currency' => ['label' =>'Currency', 'type' => 'text'],
+        ];
+
         $related_Company = $this->UserRelatedCompany($id);
         
         $token = $user->api_token;        
@@ -385,6 +393,7 @@ class UserController extends Controller
                 'current_user' => $request->user(),
                 'time_zone' => $this->timezones,
                 'related_company' => $related_Company,
+                'workspace_columns' => $workspace_columns,
                 'translator' => [
                     'Name' => __('Name'),
                     'New Password' => __('New Password'),
@@ -414,6 +423,9 @@ class UserController extends Controller
                     'The new password and confirm password must match' => __('The new password and confirm password must match'),
                     'Time Zone' => __('Time Zone'),
                     'Do you want change the user token?' => __('Do you want change the user token?')
+                ],
+                'actions' => [
+                    'detail' => true
                 ]
             ]);
         } else {

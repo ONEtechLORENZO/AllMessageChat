@@ -25,6 +25,9 @@ function Search(props)
         {
             if(props.module=="Company" && !(pathname.includes('admin/'))) 
                 Inertia.get(route('listAdminCompany') +'?page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order); 
+            else if (props.module == "User" && props.mod != "") {
+                Inertia.get(route('show_Users') +'?page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order); 
+            }    
             else
                 Inertia.get(route('list' + props.module) +'?page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order);
         }
