@@ -134,7 +134,7 @@ function Wallet(props)
 
     return (
         <>
-            <div className="px-4 sm:px-6 lg:px-8 text-[#3D4459]">
+            <div className=" text-[#3D4459]">
                 <div className="sm:grid grid grid-cols-2 gap-4 ">
                     <Card className="main-card">
                         <CardBody className="flex gap-4 items-center">
@@ -164,7 +164,7 @@ function Wallet(props)
                             </div>
                         </CardBody>
                     </Card>
-                    <Card className="main-card" style={{backgroundColor : '#9BFFF2'}}>
+                    <Card className="!bg-[#9BFFF2]">
                         <CardBody>
                             <CardTitle>{props.currentPlan.plan} - Plan</CardTitle>
                             <div className="grid grid-cols-2 p-2">
@@ -225,16 +225,18 @@ function Wallet(props)
                             />
                         </div>
                         <div class="grid grid-cols-1 gap-4 mt-4">
-                            <div class="bg-white rounded-md shadow w-full space-y-6 p-4 md:p-8 flex flex-col justify-center md:justify-start">
-                                <div className="flex justify-between flex-col w-full md:flex-row gap-3 md:gap-0">
-                                    <div className="flex gap-1 font-semibold text-base">
-                                    Total Spent
+                            <Card className="main-card">
+                                <CardBody class=" rounded-md  w-full  p-4 justify-center md:justify-start">
+                                    <div className="flex justify-between flex-col w-full md:flex-row gap-3 md:gap-0">
+                                        <div className="flex gap-1 font-semibold text-base">
+                                        Total Spent
+                                        </div>
+                                        <div className="text-base font-semibold text-primary">
+                                            $ {messageDeduction['total_amount'] ? <>{messageDeduction.total_amount}</> : 0 }
+                                        </div>
                                     </div>
-                                    <div className="text-base font-semibold text-primary">
-                                        $ {messageDeduction['total_amount'] ? <>{messageDeduction.total_amount}</> : 0 }
-                                    </div>
-                                </div>
-                            </div>
+                                </CardBody>
+                            </Card>
                         </div>
                         
                         {(props.message_accoount_detail).map(account => {
@@ -244,16 +246,20 @@ function Wallet(props)
                                         <Accordion open={showDeductionDetail} toggle={toggle}>
                                             <AccordionItem>
                                                 <AccordionHeader targetId={account.number}>
-                                                    <div className="flex justify-between flex-col w-full md:flex-row gap-3 md:gap-0">
-                                                        <div className="flex gap-1 font-semibold text-base">
-                                                            <div className="">
+                                                    <div className="flex justify-between flex-col w-full md:flex-row gap-3 md:gap-0 items-center">
+                                                        <div className="flex gap-2 font-semibold text-base items-center">
+                                                            <div >
                                                                 {account.service == 'whatsapp' ? 
                                                                     <WhatsAppIcon
-                                                                        className="p-2 w-12 h-12 fill-current text-gray-500"
+                                                                        className="fill-current text-gray-500"
+                                                                        width={36}
+                                                                        height={36}
                                                                     />
                                                                 :
                                                                     <InstaIcon
-                                                                        className="p-2 w-12 h-12 fill-current text-gray-500"
+                                                                        className="fill-current text-gray-500"
+                                                                        width={36}
+                                                                        height={36}
                                                                     />
                                                                 }
                                                             </div>
@@ -542,17 +548,19 @@ function Wallet(props)
                             </div>
                         </div>
 
-                        <div class="bg-white rounded-md shadow w-full flex justify-between items-center p-4 md:p-8">
-                            <h5 className="text-base font-semibold">
-                            {props.translator['See Transactions History']}
-                            </h5>
-                            <Link 
-                                href={route('listTransaction')}
-                                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-700 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bg-gray-800"
-                            >
-                                {props.translator['See Details']}
-                            </Link>
-                        </div>
+                        <Card>
+                            <CardBody className="w-full flex justify-between items-center p-4">
+                                <h5 className="text-base font-semibold mb-0">
+                                {props.translator['See Transactions History']}
+                                </h5>
+                                <Link 
+                                    href={route('listTransaction')}
+                                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium btn btn-secondary"
+                                >
+                                    {props.translator['See Details']}
+                                </Link>
+                            </CardBody>
+                        </Card>
 {/* 
                         <div class="bg-white rounded-md shadow w-full flex justify-between items-center p-4 md:p-8">
                             <h5 className="text-base font-semibold">
