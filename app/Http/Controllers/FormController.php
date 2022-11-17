@@ -8,6 +8,8 @@ use App\Models\FieldGroup;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Http\Request;
 use Cache;
+use App\Models\Account;
+
 
 class FormController extends Controller
 {
@@ -17,68 +19,119 @@ class FormController extends Controller
      * Fetch module fields from Field model
      */
     function fetchModuleFields(Request $request)
-    {     
+    {   
         $user = $request->user();
         $userId = $user->id;
-        $companyId = Cache::get('selected_company_' . $userId);
-        $module = $request->route('module');
 
-        // Only global admin can able to access the price module
-        if($user->role != 'global_admin' && $module == 'Price') {
-            abort(401);
-        }
-
-        // Regular user is not allowed to view the User module
-        if($user->role == 'regular' && $module == 'User') {
-            abort(401);
-        }
-        
-        $whereCondition = [
-            'module_name' => $module, 
-        ];
-
-        if(in_array($module, $this->entity_modules)) {
-            $whereCondition['company_id'] = $companyId;
-        }
-
-        if($module == 'Field') {
-            $fieldGroupList = FieldGroup::where('company_id', $companyId)->get();
-            $fieldGroupOptions = [];
-            foreach($fieldGroupList as $fieldGroup) {
-                $fieldGroupOptions[$fieldGroup->id] = $fieldGroup->name;
+        //API call
+        if($request->is('api/*'))
+            {
+                $module = $request->module_name;
+                    if ($request->account_id)
+                      {
+                            if(Account::where('id',$request->account_id)->exists())
+                            {
+                                $account = Account::findorFail($request->account_id);                
+                                $companyId = $account->company_id;  
+                            }             
+                            else     
+                            {
+                                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+                            }
+                      }    
+                    else     
+                        {
+                            return response()->json(['status' => false, 'message' => 'Enter Workspace ID'],404); 
+                        }
             }
-        }
-        
-        $fields = Field::where($whereCondition)->groupBy('field_name')->orderBy('sequence')->orderBy('id')->get();
-        
-        //only Global admin can change the status of a Support Request
-      if($module == 'SupportRequest' && ($user->role != 'global_admin'))
-        {
-            $fields = $fields->filter(function ($value, $key) {
-                return $value['field_name'] != 'status';
-            });        
-        }
-        foreach($fields as $field) {
-            if(($field['is_custom'] == '1' && $field['field_type'] == 'dropdown') 
-                || $field['field_name'] == 'field_group'
-                || ($field['is_custom'] == '1' && $field['field_type'] == 'multiselect')) {
+        else
+            {               
+                $companyId = Cache::get('selected_company_' . $userId);
+                $module = $request->route('module');
+            }
+                // Only global admin can able to access the price module
+                if($user->role != 'global_admin' && $module == 'Price') {
+                    abort(401);
+                }
+                // Regular user is not allowed to view the User module
+                if($user->role == 'regular' && $module == 'User') {
+                    abort(401);
+                }                
+                $whereCondition = [
+                    'module_name' => $module, 
+                ];
 
-                $option = $field['options'];
-                $options = [];
-                if ($option) {
-                    foreach ($option as $key) {
-                        $options[$key['value']] = $key['value'];
+                if(in_array($module, $this->entity_modules)) {
+                    $whereCondition['company_id'] = $companyId;
+                }
+                else
+                   {
+                    if($request->is('api/*'))
+                    {
+                        return response()->json(['status' => false, 'message' => 'Unknown Module Name'],404);  
+
+                    }
+                   }
+
+                if($module == 'Field') {
+                    $fieldGroupList = FieldGroup::where('company_id', $companyId)->get();
+                    $fieldGroupOptions = [];
+                    foreach($fieldGroupList as $fieldGroup) {
+                        $fieldGroupOptions[$fieldGroup->id] = $fieldGroup->name;
                     }
                 }
-               
-                if($field['field_name'] == 'field_group') {
-                    $options = $fieldGroupOptions;
-                }
-                $field->options = $options;
-            }  
-        }   
 
-        return response()->json(['fields' => $fields]);
+                if($request->is('api/*'))
+                {
+              $fields = Field::select('field_name','field_label','is_mandatory','field_type','options')->where('module_name',$module)->where('company_id',$companyId)->groupBy('field_name')->orderBy('sequence')->orderBy('id')->get();
+            
+            foreach($fields as $field) {
+                if($field['options']==null)
+                  {
+                    unset($field['options']); 
+                  }
+                     $return[]=$field; 
+                           
+             }
+             return response()->json(['status' => true,'Fields' => $return]);
+               
+                
+                }
+                else{
+                
+                $fields = Field::where($whereCondition)->groupBy('field_name')->orderBy('sequence')->orderBy('id')->get();
+                
+                //only Global admin can change the status of a Support Request
+                if($module == 'SupportRequest' && ($user->role != 'global_admin'))
+                    {
+                        $fields = $fields->filter(function ($value, $key) {
+                            return $value['field_name'] != 'status';
+                        });        
+                    }
+                
+                foreach($fields as $field) {
+                    if(($field['is_custom'] == '1' && $field['field_type'] == 'dropdown') 
+                        || $field['field_name'] == 'field_group'
+                        || ($field['is_custom'] == '1' && $field['field_type'] == 'multiselect')) {
+
+                        $option = $field['options'];
+                        $options = [];
+                        if ($option) {
+                            foreach ($option as $key) {
+                                $options[$key['value']] = $key['value'];
+                            }
+                        }
+                    
+                        if($field['field_name'] == 'field_group') {
+                            $options = $fieldGroupOptions;
+                        }
+                        $field->options = $options;
+                    }  
+                }   
+
+                return response()->json(['fields' => $fields]);
+            
+                }
     }
 
     /**

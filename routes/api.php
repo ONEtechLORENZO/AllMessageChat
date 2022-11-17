@@ -14,6 +14,8 @@ use App\Http\Controllers\LeadController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\OrganizationController;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\FormController;
+
 
 
 /*
@@ -85,5 +87,9 @@ Route::middleware(['auth:sanctum'])->group(function() {
     Route::post('/v1/{account_id}/organization', [OrganizationController::class, 'store']);
     Route::post('/v1/{account_id}/organization/{id}', [OrganizationController::class, 'update']);
     Route::delete('/v1/{account_id}/organization/{id}', [OrganizationController::class, 'destroy']);
+
+    //fields
+    Route::get('/v1/{account_id}/{module_name}/fields', [FormController::class, 'fetchModuleFields']);
+
 
 });
