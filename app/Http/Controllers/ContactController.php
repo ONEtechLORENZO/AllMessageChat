@@ -130,7 +130,6 @@ class ContactController extends Controller
             if($contact_id){
                 $contact = Contact::findOrFail($contact_id);                       
                 $return = ['Message' => 'Record has been created successfully', 'Contact_id' => $contact_id,'Contact' => $contact];
-            
             }
             else{
                 $return = ['Message' => 'Invalid Input'];
