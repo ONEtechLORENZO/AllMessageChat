@@ -13,7 +13,7 @@ use App\Models\Account;
 
 class FormController extends Controller
 {
-    public $entity_modules = ['Contact','Lead', 'Product', 'Opportunity', 'Order', 'Campaign', 'User','Organization','SupportRequest'];
+    public $entity_modules = ['Contact','Lead', 'Product', 'Opportunity', 'Order', 'Campaign', 'User','Organization','SupportRequest','Company'];
 
     /**
      * Fetch module fields from Field model
@@ -81,56 +81,62 @@ class FormController extends Controller
                     }
                 }
 
-                if($request->is('api/*'))
+             if($request->is('api/*'))
                 {
-              $fields = Field::select('field_name','field_label','is_mandatory','field_type','options')->where('module_name',$module)->where('company_id',$companyId)->groupBy('field_name')->orderBy('sequence')->orderBy('id')->get();
-            
-            foreach($fields as $field) {
-                if($field['options']==null)
-                  {
-                    unset($field['options']); 
-                  }
-                     $return[]=$field; 
-                           
-             }
-             return response()->json(['status' => true,'Fields' => $return]);
-               
-                
-                }
-                else{
-                
-                $fields = Field::where($whereCondition)->groupBy('field_name')->orderBy('sequence')->orderBy('id')->get();
-                
-                //only Global admin can change the status of a Support Request
-                if($module == 'SupportRequest' && ($user->role != 'global_admin'))
-                    {
-                        $fields = $fields->filter(function ($value, $key) {
-                            return $value['field_name'] != 'status';
-                        });        
-                    }
-                
-                foreach($fields as $field) {
-                    if(($field['is_custom'] == '1' && $field['field_type'] == 'dropdown') 
-                        || $field['field_name'] == 'field_group'
-                        || ($field['is_custom'] == '1' && $field['field_type'] == 'multiselect')) {
-
-                        $option = $field['options'];
-                        $options = [];
-                        if ($option) {
-                            foreach ($option as $key) {
-                                $options[$key['value']] = $key['value'];
+                    $fields = Field::select('field_name','field_label','is_mandatory','field_type','options')->where('module_name',$module)->where('company_id',$companyId)->groupBy('field_name')->orderBy('sequence')->orderBy('id')->get();
+                    if(count($fields) !==0)
+                    {  
+                        foreach($fields as $field) {
+                            if($field['options']==null)
+                            {
+                                unset($field['options']); 
                             }
-                        }
+                                $return[]=$field; 
+                                    
+                        }   
+                        return response()->json(['status' => true,'Fields' => $return],200);
+                    }
+                    else
+                    {
+                        return response()->json(['status' => false,'Fields' => "Fields not found"],404);
+                    }
                     
-                        if($field['field_name'] == 'field_group') {
-                            $options = $fieldGroupOptions;
-                        }
-                        $field->options = $options;
-                    }  
-                }   
+                        
+                }
+            else{
+                
+                        $fields = Field::where($whereCondition)->groupBy('field_name')->orderBy('sequence')->orderBy('id')->get();
+                        
+                        //only Global admin can change the status of a Support Request
+                        if($module == 'SupportRequest' && ($user->role != 'global_admin'))
+                            {
+                                $fields = $fields->filter(function ($value, $key) {
+                                    return $value['field_name'] != 'status';
+                                });        
+                            }
+                        
+                        foreach($fields as $field) {
+                            if(($field['is_custom'] == '1' && $field['field_type'] == 'dropdown') 
+                                || $field['field_name'] == 'field_group'
+                                || ($field['is_custom'] == '1' && $field['field_type'] == 'multiselect')) {
 
-                return response()->json(['fields' => $fields]);
-            
+                                $option = $field['options'];
+                                $options = [];
+                                if ($option) {
+                                    foreach ($option as $key) {
+                                        $options[$key['value']] = $key['value'];
+                                    }
+                                }
+                            
+                                if($field['field_name'] == 'field_group') {
+                                    $options = $fieldGroupOptions;
+                                }
+                                $field->options = $options;
+                            }  
+                        }   
+
+                        return response()->json(['fields' => $fields]);
+                    
                 }
     }
 
