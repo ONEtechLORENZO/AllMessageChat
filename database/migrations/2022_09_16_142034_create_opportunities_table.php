@@ -17,9 +17,9 @@ class CreateOpportunitiesTable extends Migration
             $table->id();
             $table->string('name');
             $table->float('amount', 14, 4)->nullable();                
-            $table->foreignId('contact_id')->constrained('contacts')->nullable();
+            $table->foreignId('contact_id')->nullable()->constrained('contacts');
             $table->date('expected_close_date')->nullable();
-            $table->foreignId('assigned_to')->constrained('users')->nullable();
+            $table->foreignId('assigned_to')->nullable()->constrained('users');
             $table->string('sales_stage')->nullable();
             $table->string('description')->nullable();
             $table->foreignId('company_id')->constrained('companies');    
