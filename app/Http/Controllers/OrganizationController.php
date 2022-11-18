@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Redirect;
 use Cache;
 use App\Models\Field;
 use Schema;
+use Illuminate\Support\Facades\Validator;
 
 class OrganizationController extends Controller
 {
@@ -29,16 +30,37 @@ class OrganizationController extends Controller
     public function index(Request $request)
     {
         $module = new Organization();
-        $list_view_columns = $module->getListViewFields();
-        $listViewData = $this->listView($request, $module, $list_view_columns);
-
         if ($request->is('api/*')) // API call check
-            {            
-                unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
-                return response()->json($listViewData);
+            {           
+                if($request->account_id)
+                     {
+                        if(Account::where('id',$request->account_id)->exists())
+                            {
+                                $list_view_columns = $module->getListViewFields();
+                                $listViewData = $this->listView($request, $module, $list_view_columns);                
+                                if($listViewData)
+                                  {
+                                    unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
+                                    return response()->json(['Status' => true,'Organization' => $listViewData],200);
+                                 }
+                                else
+                                {
+                                    return response()->json(['status' => false, 'message' => 'No records found'],200); 
+                                }
+                            }
+                            else{
+                                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],400); 
+                            }
+                    }
+                else
+                {
+                    return response()->json(['status' => false, 'message' => 'Workspace ID not found'],404); 
+                }   
             }
         else
             {      
+        $list_view_columns = $module->getListViewFields();
+        $listViewData = $this->listView($request, $module, $list_view_columns);
         $moduleData = [
             'singular' => __('Organization'),
             'plural' => __('Organizations'),
@@ -72,9 +94,23 @@ class OrganizationController extends Controller
     {
         if($request->is('api/*'))     // API call check
         { 
+            if(!Account::where('id',$request->account_id)->exists())
+            {
+                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+            }
             $postFields = array_keys($_POST);
             if(count($postFields) == 0) {
-                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data'],400);
+            }
+            $validator = Validator::make($request->all(), [               
+                'name' => 'required|max:255',                
+            ]);
+    
+            if ($validator->fails()) {
+                $messages =  $validator->messages();
+
+                return response()->json(['status' => false, 'message' => $messages],400);  
+    
             }
         }
         $organization_id = $this->saveOrganization($request);
@@ -84,7 +120,7 @@ class OrganizationController extends Controller
             if($organization_id){
                 
                 $organization= Organization::findOrFail($organization_id);                       
-                $return = ['Message' => 'Record has been created successfully', 'Organization_id' => $organization_id,'Record' => $organization];
+                $return = ['Status'=>true,'Message' => 'Record has been created successfully','Record' => $organization];
         
             }
             else{
@@ -127,11 +163,17 @@ class OrganizationController extends Controller
     public function show(Request $request)
     {
         $module = new Organization();
+        if($request->is('api/*') && !(Account::where('id',$request->account_id)->exists()))
+        {
+            return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+
+        }
+        else{
         $organization = $this->checkAccessPermission($request, $module, $request->id);
-       
+        }
         if(!$organization) {
             if($request->is('api/*')){
-                return response()->json(['status' => false, 'message' => 'Record not found']);
+                return response()->json(['status' => false, 'message' => 'Record not found'],404);
              }
            else{
                abort('404');
@@ -152,7 +194,7 @@ class OrganizationController extends Controller
         $headers = $this->getModuleHeader($companyId, 'Organization');
 
         if ($request->is('api/*')) { // API call check             
-            return response()->json($organization);
+            return response()->json(['Status' =>true , 'Record' =>$organization]);
         } else {    
         return Inertia::render('Organization/Detail', [
             'record' => $organization,            
@@ -176,11 +218,25 @@ class OrganizationController extends Controller
     public function update(Request $request)
     {
         $currentUser = $request->user();         
-        $module = new Organization();       
+        $module = new Organization();  
+        if($request->is('api/*'))
+        {
+                if ($request->account_id)
+                  {
+                        if(!Account::where('id',$request->account_id)->exists())
+                        {
+                            return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+                        }
+                  }    
+                else     
+                    {
+                        return response()->json(['status' => false, 'message' => 'Enter Workspace ID'],404); 
+                    }
+        }     
         $organization = $this->checkAccessPermission($request, $module, $request->id);
         if(!$organization) {
             if($request->is('api/*')){
-                return response()->json(['status' => false, 'message' => 'Record not found']);   
+                return response()->json(['status' => false, 'message' => 'Record not found'],404);   
             }
             else{
                  abort('404');}
@@ -189,13 +245,13 @@ class OrganizationController extends Controller
         { 
             $postFields = array_keys($_POST);
             if(count($postFields) == 0) {
-                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data'],400);
             }
         }
         $organization_id = $this->saveOrganization($request);
         if($request->is('api/*')){
             $organization = Organization::findOrFail($organization_id);
-            $return = ['Message' => 'Record has been updated successfully','Record' => $organization];
+            $return = ['Status' => true,'Message' => 'Record has been updated successfully','Record' => $organization];
                 return response()->json($return);               
         }
         else
@@ -213,6 +269,10 @@ class OrganizationController extends Controller
     public function destroy(Request $request, $organizationId)
     {
         if($request->is('api/*')){
+            if(!Account::where('id',$request->account_id)->exists())
+            {
+                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+            }
             $account = Account::findorFail($request->account_id);                
             $company_id = $account->company_id;  
             $organization = Organization::where('id',$request->id)->where('company_id', $company_id);
@@ -221,26 +281,21 @@ class OrganizationController extends Controller
 
         if(!$organization) 
             {
-            return response()->json(['status' => false, 'message' => 'Record not found']);   
+            return response()->json(['status' => false, 'message' => 'Record not found'],404);   
             }           
         else
             {   Schema::disableForeignKeyConstraints();
                 $organization->delete();        
-                return response()->json(['record'=>$request->id,'message'=>'deleted']);
+                return response()->json(['Status' => true,'Record ID'=>$request->id,'message'=>'Deleted the record successsfully']);
             }
          }
         else
           {
         $organization = Organization::find($organizationId);
         Schema::disableForeignKeyConstraints();
-        $organization->delete();
-        if($request->is('api/*')){          
-            return response()->json($organization);
-            }
-            else
-              {
+        $organization->delete();        
         return Redirect::route('listOrganization');
-              }
+              
         Schema::enableForeignKeyConstraints();              
         }
     }

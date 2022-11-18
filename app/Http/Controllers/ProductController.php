@@ -10,6 +10,8 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
 use Cache;
 use DB;
+use Illuminate\Support\Facades\Validator;
+
 class ProductController extends Controller
 {
     public $limit = 15;
@@ -25,34 +27,57 @@ class ProductController extends Controller
     public function index(Request $request)
     {        
         $module = new Product();
-        $list_view_columns = $module->getListViewFields();
-        $listViewData = $this->listView($request, $module, $list_view_columns);
         if ($request->is('api/*')) // API call check
-            {            
-                unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
-                return response()->json($listViewData);
+            {           
+                if($request->account_id)
+                     {
+                        if(Account::where('id',$request->account_id)->exists())
+                            {
+                                $list_view_columns = $module->getListViewFields();
+                                $listViewData = $this->listView($request, $module, $list_view_columns);                
+                                if($listViewData)
+                                  {
+                                    unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
+                                    return response()->json(['Status' => true,'Product' => $listViewData],200);
+                                 }
+                                else
+                                {
+                                    return response()->json(['status' => false, 'message' => 'No records found'],200); 
+                                }
+                            }
+                            else{
+                                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],400); 
+                            }
+                    }
+                else
+                {
+                    return response()->json(['status' => false, 'message' => 'Workspace ID not found'],404); 
+                }   
             }
         else
-            {    
-        $moduleData = [
-            'singular' => __('Product'),
-            'plural' => __('Products'),
-            'module' => 'Product',
-            'current_page' => 'Products', 
-            // Actions
-            'actions' => [
-                'create' => true,                
-                'edit' => true,
-                'delete' => true,                
-                'search' => true,                
-                'select_field'=> true,
-                'detail' => true,
-                'import' => true
-            ],
-        ];
-        
-        $data = array_merge($moduleData, $listViewData);
-        return Inertia::render('Product/List', $data);
+            {      
+                $list_view_columns = $module->getListViewFields();
+                $listViewData = $this->listView($request, $module, $list_view_columns);
+                
+                $moduleData = [
+                    'singular' => __('Product'),
+                    'plural' => __('Products'),
+                    'module' => 'Product',
+                    'current_page' => 'Products', 
+                    // Actions
+                    'actions' => [
+                        'create' => true,                
+                        'edit' => true,
+                        'delete' => true,                
+                        'search' => true,                
+                        'select_field'=> true,
+                        'detail' => true,
+                        'import' => true
+                    ],
+                ];
+                
+                $data = array_merge($moduleData, $listViewData);
+                return Inertia::render('Product/List', $data);
     }
     }
 
@@ -76,9 +101,25 @@ class ProductController extends Controller
     {
         if($request->is('api/*'))     // API call check
         { 
+            if(!Account::where('id',$request->account_id)->exists())
+            {
+                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+            }
             $postFields = array_keys($_POST);
             if(count($postFields) == 0) {
-                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data'],400);
+            }
+            $validator = Validator::make($request->all(), [               
+                'name' => 'required|max:255',
+                'price' => 'required|max:255',
+                'description' => 'required|max:255',
+            ]);
+    
+            if ($validator->fails()) {
+                $messages =  $validator->messages();
+
+                return response()->json(['status' => false, 'message' => $messages],400);  
+    
             }
         }
         $product_id = $this->saveProduct($request);
@@ -94,7 +135,7 @@ class ProductController extends Controller
             if( $product_id){
                 
                 $product = Product::findOrFail($product_id);                       
-                $return = ['Message' => 'Record has been created successfully', 'Product_id' =>  $product_id,'Record' =>  $product];
+                $return = ['Message' => 'Record has been created successfully','Record' =>  $product];
         
             }
             else{
@@ -132,10 +173,17 @@ class ProductController extends Controller
     public function show(Request $request, $product_id)
     {
         $module = new Product();
+        if($request->is('api/*') && !(Account::where('id',$request->account_id)->exists()))
+        {
+            return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+
+        }
+        else{
         $product = $this->checkAccessPermission($request, $module, $request->id);
+        }
         if(!$product) { 
             if($request->is('api/*')){
-                 return response()->json(['status' => false, 'message' => 'Record not found']);
+                 return response()->json(['status' => false, 'message' => 'Record not found'],404);
               }
             else{
                 abort('404');
@@ -156,7 +204,7 @@ class ProductController extends Controller
         $headers = $this->getModuleHeader($companyId , 'Product');
         
         if( $request->is('api/*') ){
-            return response()->json($product);
+            return response()->json(['Status' =>true , 'Record' =>$product]);
              }
         else{
         return Inertia::render('Product/Detail', [
@@ -201,26 +249,31 @@ class ProductController extends Controller
     {        
         $currentUser = $request->user();    
         $module = new Product(); 
-        $product = $this->checkAccessPermission($request, $module, $request->id);
-        if(!$product) {
-            if($request->is('api/*')){
-                return response()->json(['status' => false, 'message' => 'Record not found']);   
-            }
-            else{
-                 abort('404');}           
-        }   
         if($request->is('api/*'))     // API call check
         { 
             $postFields = array_keys($_POST);
             if(count($postFields) == 0) {
-                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data'],400);
+            }
+            if(!Account::where('id',$request->account_id)->exists())
+            {
+                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
             }
         }
+        $product = $this->checkAccessPermission($request, $module, $request->id);
+        if(!$product) {
+            if($request->is('api/*')){
+                return response()->json(['status' => false, 'message' => 'Record not found'],404);   
+            }
+            else{
+                 abort('404');}           
+        }   
+        
         $product_id = $this->saveProduct($request);
         if($request->is('api/*')){
             
             $product = Product::findOrFail($product_id);
-            $return = ['Message' => 'Record has been updated successfully','Record' => $product];
+            $return = ['status' =>true,'Message' => 'Record has been updated successfully','Record' => $product];
                 return response()->json($return);                 
         }
         else
@@ -238,19 +291,23 @@ class ProductController extends Controller
     public function destroy(Request $request, $productId)
     {
         if($request->is('api/*')){
+            if(!Account::where('id',$request->account_id)->exists())
+            {
+                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+            }
             $account = Account::findorFail($request->account_id);                
             $company_id = $account->company_id;   
             $product = Product::where('id',$request->id)->where('company_id', $company_id);
             $module = new Product();
             $product = $this->checkAccessPermission($request, $module, $request->id);
             if(!$product) {
-                return response()->json(['status' => false, 'message' => 'Record not found']);   
+                return response()->json(['status' => false, 'message' => 'Record not found'],404);   
             }
            else
            {
             $product->delete();        
-            return response()->json(['record'=>$request->id,'message'=>'deleted']);
-           }
+            return response()->json(['Status' => true,'Record ID'=>$request->id,'Message'=>'Deleted the record successsfully']);
+        }
         }
         else
             {

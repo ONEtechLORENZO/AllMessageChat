@@ -13,7 +13,7 @@ use App\Models\User;
 use App\Models\Product;
 use App\Http\Controllers\ContactController;
 use DB;
-
+use Illuminate\Support\Facades\Validator;
 
 class OpportunityController extends Controller
 {
@@ -31,16 +31,39 @@ class OpportunityController extends Controller
     public function index(Request $request)
     {
         $module = new Opportunity();
-        $list_view_columns = $module->getListViewFields();
-        $listViewData = $this->listView($request, $module, $list_view_columns);
-
         if ($request->is('api/*')) // API call check
-            {            
-                unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
-                return response()->json($listViewData);
+            {           
+                if($request->account_id)
+                     {
+                        if(Account::where('id',$request->account_id)->exists())
+                            {
+                                $list_view_columns = $module->getListViewFields();
+                                $listViewData = $this->listView($request, $module, $list_view_columns);                
+                                if($listViewData)
+                                  {
+                                    unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
+                                    return response()->json(['Status' => true,'Opportunity' => $listViewData],200);
+                                 }
+                                else
+                                {
+                                    return response()->json(['status' => false, 'message' => 'No records found'],200); 
+                                }
+                            }
+                            else{
+                                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],400); 
+                            }
+                    }
+                else
+                {
+                    return response()->json(['status' => false, 'message' => 'Workspace ID not found'],404); 
+                }   
             }
         else
             {      
+        $list_view_columns = $module->getListViewFields();
+        $listViewData = $this->listView($request, $module, $list_view_columns);
+
+       
         $moduleData = [
             'singular' => __('Opportunity'),
             'plural' => __('Opportunities'),
@@ -58,8 +81,7 @@ class OpportunityController extends Controller
 
             ],
         ];
-        $records =  $this->listViewRecord($request, $listViewData, 'Opportunity');
-        
+        $records =  $this->listViewRecord($request, $listViewData, 'Opportunity');        
         $data = array_merge($moduleData, $records);
         return Inertia::render('Opportunity/List', $data);
         }
@@ -75,9 +97,23 @@ class OpportunityController extends Controller
     {
         if($request->is('api/*'))     // API call check
         { 
+            if(!Account::where('id',$request->account_id)->exists())
+            {
+                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+            }
             $postFields = array_keys($_POST);
             if(count($postFields) == 0) {
-                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data'],400);
+            }
+            $validator = Validator::make($request->all(), [               
+                'name' => 'required|max:255',                
+            ]);
+    
+            if ($validator->fails()) {
+                $messages =  $validator->messages();
+
+                return response()->json(['status' => false, 'message' => $messages],400);  
+    
             }
         }
         $opportunity_id = $this->saveOpportunity($request);
@@ -87,7 +123,7 @@ class OpportunityController extends Controller
             if($opportunity_id){
                 
                 $opportunity = Opportunity::findOrFail($opportunity_id);                       
-                $return = ['Message' => 'Record has been created successfully', 'Opportunity_id' => $opportunity_id,'Opportunity' => $opportunity];
+                $return = ['Status'=>true,'Message' => 'Record has been created successfully','Opportunity' => $opportunity];
         
             }
             else{
@@ -146,8 +182,14 @@ class OpportunityController extends Controller
     public function show(Request $request, $opportunity_id)
     {
         $module = new Opportunity();
+        if($request->is('api/*') && !(Account::where('id',$request->account_id)->exists()))
+        {
+            return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+
+        }
+        else{
         $opportunity = $this->checkAccessPermission($request, $module, $request->id);
-       
+        }
         if(!$opportunity) { 
             if($request->is('api/*')){
                  return response()->json(['status' => false, 'message' => 'Record not found']);
@@ -186,7 +228,7 @@ class OpportunityController extends Controller
         list($productList,$lineItems) = $this->getProductList($request->id);
         
         if( $request->is('api/*') ){
-            return response()->json($opportunity);
+            return response()->json(['Status' =>true , 'Record' =>$opportunity],200);
              }
         else{       
         return Inertia::render('Opportunity/Detail', [
@@ -214,6 +256,20 @@ class OpportunityController extends Controller
     {
         $currentUser = $request->user();         
         $module = new Opportunity();
+        if($request->is('api/*'))
+        {
+                if ($request->account_id)
+                  {
+                        if(!Account::where('id',$request->account_id)->exists())
+                        {
+                            return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+                        }
+                  }    
+                else     
+                    {
+                        return response()->json(['status' => false, 'message' => 'Enter Workspace ID'],404); 
+                    }
+        }
        
         $opportunity = $this->checkAccessPermission($request, $module, $request->id);
         if(!$opportunity) { 
@@ -234,7 +290,7 @@ class OpportunityController extends Controller
         $opportunity_id = $this->saveOpportunity($request);
         if($request->is('api/*')){            
             $opportunity = Opportunity::findOrFail($opportunity_id);
-            $return = ['Message' => 'Record has been updated successfully','Record' => $opportunity];
+            $return = ['Status' => true,'Message' => 'Record has been updated successfully','Record' => $opportunity];
                 return response()->json($return);            
         }
         else
@@ -252,6 +308,10 @@ class OpportunityController extends Controller
     public function destroy(Request $request, $opportunityId)
     {                  
         if($request->is('api/*')){
+            if(!Account::where('id',$request->account_id)->exists())
+            {
+                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+            }
             $account = Account::findorFail($request->account_id);                
             $company_id = $account->company_id;  
             $opportunity = Opportunity::where('id',$request->id)->where('company_id', $company_id);
@@ -259,12 +319,12 @@ class OpportunityController extends Controller
             $Opportunity = $this->checkAccessPermission($request, $module, $request->id);
 
         if(!$Opportunity) {
-            return response()->json(['status' => false, 'message' => 'Record not found']);   
+            return response()->json(['status' => false, 'message' => 'Record not found'],404);   
             }           
             else
             {
                 $opportunity->delete();        
-                return response()->json(['record'=>$request->id,'message'=>'deleted']);
+                return response()->json(['Status' => true,'Record ID'=>$request->id,'message'=>'Deleted the record successsfully']);
             }
          }
         else

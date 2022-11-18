@@ -13,6 +13,7 @@ use App\Models\LineItem;
 use App\Models\Opportunity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
@@ -31,17 +32,40 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $module = new Order();
+        if ($request->is('api/*')) // API call check
+            {      
+               if($request->account_id)
+                        {
+                        if(Account::where('id',$request->account_id)->exists())
+                            {
+                                $list_view_columns = $module->getListViewFields();
+                                $listViewData = $this->listView($request, $module, $list_view_columns);                
+                                if($listViewData)
+                                  {
+                                    unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
+                                    return response()->json(['status' => true,'Orders' => $listViewData],200);
+                                 }
+                                else
+                                {
+                                    return response()->json(['status' => false, 'message' => 'No records found'],200); 
+                                }
+                            }
+                            else{
+                                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],400); 
+                            }
+                    }
+                else
+                {
+                    return response()->json(['status' => false, 'message' => 'Workspace ID not found'],404); 
+                }   
+            }
+        else
+            {      
+
         $list_view_columns = $module->getListViewFields();
         $listViewData = $this->listView($request, $module, $list_view_columns);
         $companyId = Cache::get('selected_company_'. $request->user()->id);
-
-        if ($request->is('api/*')) // API call check
-            {            
-                unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
-                return response()->json($listViewData);
-            }
-        else
-            {    
+        
         //get Product List
         $productList = $this->getProductList($companyId);
 
@@ -90,9 +114,23 @@ class OrderController extends Controller
 
         if($request->is('api/*'))     // API call check
         { 
+            if(!Account::where('id',$request->account_id)->exists())
+            {
+                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+            }
             $postFields = array_keys($_POST);
             if(count($postFields) == 0) {
-                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data'],400);
+            }
+            $validator = Validator::make($request->all(), [               
+                'name' => 'required|max:255',                
+            ]);
+    
+            if ($validator->fails()) {
+                $messages =  $validator->messages();
+
+                return response()->json(['status' => false, 'message' => $messages],400);  
+    
             }
         }
         //save the Order
@@ -132,8 +170,14 @@ class OrderController extends Controller
     public function show(Request $request, $order_id) 
     {
         $module = new Order();
-        $order = $this->checkAccessPermission($request, $module, $request->id);
+        if($request->is('api/*') && !(Account::where('id',$request->account_id)->exists()))
+        {
+            return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
 
+        }
+        else{
+        $order = $this->checkAccessPermission($request, $module, $request->id);
+        }
         if(!$order){
             if($request->is('api/*')){
                 return response()->json(['status' => false, 'message' => 'Record not found']);
@@ -186,7 +230,7 @@ class OrderController extends Controller
         }
 
         if ($request->is('api/*')) { // API call check             
-            return response()->json($order);
+            return response()->json(['Status' =>true , 'Record' => $order],200);
     } else {    
 
         return Inertia::render('Order/Detail', [
@@ -273,6 +317,10 @@ class OrderController extends Controller
         $module = new Order();
         if($request->is('api/*'))     // API call check
         { 
+            if(!Account::where('id',$request->account_id)->exists())
+            {
+                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+            }
             $postFields = array_keys($_POST);
             if(count($postFields) == 0) {
                 return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
@@ -299,7 +347,7 @@ class OrderController extends Controller
         if($request->is('api/*')){
             
             $order = Order::findOrFail($order_id);
-            $return = ['Message' => 'Record has been updated successfully','Record' => $order];
+            $return = ['Status'=> true,'Message' => 'Record has been updated successfully','Record' => $order];
             return response()->json($return);              
         }
         else
@@ -317,6 +365,10 @@ class OrderController extends Controller
     public function destroy(Request $request, $orderId)
     {
         if($request->is('api/*')){
+            if(!Account::where('id',$request->account_id)->exists())
+            {
+                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+            }
             $account = Account::findorFail($request->account_id);                
             $company_id = $account->company_id;  
             $order = Order::where('id',$request->id)->where('company_id', $company_id);
@@ -329,7 +381,7 @@ class OrderController extends Controller
             else
             {
                 $order->delete();        
-                return response()->json(['record'=>$request->id,'message'=>'deleted']);
+                return response()->json(['Status' => true,'Record ID'=>$request->id,'Message'=>'Deleted the record successsfully']);
             }
          }
         else

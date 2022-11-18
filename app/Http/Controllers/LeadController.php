@@ -17,6 +17,8 @@ use App\Models\User;
 use App\Models\Account;
 use App\Models\Note;
 use App\Models\Contact;
+use Illuminate\Support\Facades\Validator;
+
 class LeadController extends Controller
 {
     /**
@@ -27,15 +29,37 @@ class LeadController extends Controller
     public function index(Request $request)
     {
         $module = new Lead();
-        $list_view_columns = $module->getListViewFields();
-        $listViewData = $this->listView($request, $module, $list_view_columns);
         if ($request->is('api/*')) // API call check
-        {            
-            unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
-            return response()->json($listViewData);
-        }
-    else
-        {     
+            {           
+                if($request->account_id)
+                     {
+                        if(Account::where('id',$request->account_id)->exists())
+                            {
+                                $list_view_columns = $module->getListViewFields();
+                                $listViewData = $this->listView($request, $module, $list_view_columns);                
+                                if($listViewData)
+                                  {
+                                    unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
+                                    return response()->json(['status' => true,'Leads' => $listViewData],200);
+                                 }
+                                else
+                                {
+                                    return response()->json(['status' => false, 'message' => 'No records found'],200); 
+                                }
+                            }
+                            else{
+                                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],400); 
+                            }
+                    }
+                else
+                {
+                    return response()->json(['status' => false, 'message' => 'Workspace ID not found'],404); 
+                }   
+            }
+        else
+            {      
+                $list_view_columns = $module->getListViewFields();
+                $listViewData = $this->listView($request, $module, $list_view_columns);
         $moduleData = [
             'singular' => 'Lead',
             'plural' => 'Leads',
@@ -81,6 +105,28 @@ class LeadController extends Controller
     {
         if($request->is('api/*'))     // API call check
         { 
+            if(!Account::where('id',$request->account_id)->exists())
+            {
+                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+            }
+            $postFields = array_keys($_POST);
+            if(count($postFields) == 0) {
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data'],400);
+            }
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email|unique:leads|max:255',
+                'last_name' => 'required|max:255',
+            ]);
+    
+            if ($validator->fails()) {
+                $messages =  $validator->messages();
+
+                return response()->json(['status' => false, 'message' => $messages],404);  
+    
+            }
+        }
+        if($request->is('api/*'))     // API call check
+        { 
             $postFields = array_keys($_POST);
             if(count($postFields) == 0) {
                 return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
@@ -91,13 +137,13 @@ class LeadController extends Controller
         {            
             if($lead_id){
                 $lead = Lead::findOrFail($lead_id);                       
-                $return = ['Message' => 'Record has been created successfully', 'Lead_id' => $lead_id,'Lead' => $lead];
+                $return = ['Status' =>true,'Message' => 'Record has been created successfully','Lead' => $lead];
             
             }
             else{
                 $return = ['Message' => 'Invalid Input'];
             }
-            return response()->json($return);
+            return response()->json($return,200);
         }
         else
         {        
@@ -122,8 +168,14 @@ class LeadController extends Controller
     public function show(Request $request)
     {
         $module = new Lead();
-        $lead = $this->checkAccessPermission($request, $module, $request->id);
+        if($request->is('api/*') && !(Account::where('id',$request->account_id)->exists()))
+        {
+            return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
 
+        }
+        else{
+            $lead = $this->checkAccessPermission($request, $module, $request->id);
+        }
         if(!$lead) {
             if($request->is('api/*')){
                 return response()->json(['status' => false, 'message' => 'Record not found']);
@@ -160,7 +212,7 @@ class LeadController extends Controller
             $lead['assigned_to'] = [ 'label' => $user['name'] , 'value' => $user['id'], 'module' => 'User'];
         }
         if ($request->is('api/*')) { // API call check             
-            return response()->json($lead);
+            return response()->json(['Status' =>true , 'Record' =>$lead],200);
          } else {   
 
         return Inertia::render('Leads/Detail', [
@@ -217,22 +269,51 @@ class LeadController extends Controller
     {
         $currentUser = $request->user();    
         $module = new Lead();  
+        if($request->is('api/*'))
+            {
+                    if ($request->account_id)
+                      {
+                            if(!Account::where('id',$request->account_id)->exists())
+                            {
+                                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+                            }
+                      }    
+                    else     
+                        {
+                            return response()->json(['status' => false, 'message' => 'Enter Workspace ID'],404); 
+                        }
+            }
         $lead = $this->checkAccessPermission($request, $module, $request->id);
         if(!$lead) {
+            if($request->is('api/*')){
+                return response()->json(['status' => false, 'message' => 'Record not found'],404);   
+            }
+            else{
             abort('404');
+            }
         }   
         if($request->is('api/*'))     // API call check
         { 
             $postFields = array_keys($_POST);
             if(count($postFields) == 0) {
-                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data'],404);
+            }
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email|unique:leads|max:255',                
+            ]);
+    
+            if ($validator->fails()) {
+                $messages =  $validator->messages();
+
+                return response()->json(['status' => false, 'message' => $messages],404);  
+    
             }
         }
         $lead_id = $this->saveLead($request);
 
         if($request->is('api/*')){
             $lead = Lead::findOrFail($lead_id);
-            $return = ['Message' => 'Record has been updated successfully','Lead' => $lead];
+            $return = ['Status' => true,'Message' => 'Record has been updated successfully','Record' => $lead];
                 return response()->json($return);             
         }
         else
@@ -250,6 +331,10 @@ class LeadController extends Controller
     public function destroy(Request $request,Lead $lead,$leadId)
     {
         if($request->is('api/*')){
+            if(!Account::where('id',$request->account_id)->exists())
+                            {
+                                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+                            }
             $account = Account::findorFail($request->account_id);                
             $company_id = $account->company_id;   
            $lead = Lead::where('id',$request->id)->where('company_id', $company_id);
@@ -257,12 +342,12 @@ class LeadController extends Controller
            $lead = $this->checkAccessPermission($request, $module, $request->id);
 
             if(!$lead) {
-                return response()->json(['status' => false, 'message' => 'Record not found']);   
+                return response()->json(['status' => false, 'message' => 'Record not found'],404);   
             }
            else
            {
            $lead->delete();        
-           return response()->json(['record'=>$request->id,'message'=>'deleted']);
+           return response()->json(['status' => true,'Record ID'=>$request->id,'message'=>'Deleted the record successsfully']);
            }
        }
        else{
@@ -275,10 +360,21 @@ class LeadController extends Controller
     public function convert_lead(Request $request,Lead $lead,$leadId)
     {
         if($request->is('api/*')){ 
+            if ($request->account_id)
+            {
+                  if(!Account::where('id',$request->account_id)->exists())
+                  {
+                      return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+                  }
+            }    
+          else     
+              {
+                  return response()->json(['status' => false, 'message' => 'Enter Workspace ID'],404); 
+              }
             $lead = Lead::find($request->id);
             if(!$lead)
             {
-                return response()->json(['status' => false, 'message' => 'Record not found']);   
+                return response()->json(['status' => false, 'message' => 'Record not found'],404);   
             }
         }
         else
@@ -310,8 +406,7 @@ class LeadController extends Controller
 
         if ($request->id) {
             $request->validate([
-                'last_name' => 'required|max:255',
-                'email' => 'max:255',
+                'email' => 'unique:leads|max:255',
             ]);
             $lead = Lead::findOrFail($request->id);
         } else {

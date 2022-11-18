@@ -79,7 +79,7 @@ class ContactController extends Controller
                                  }
                                 else
                                 {
-                                    return response()->json(['status' => false, 'message' => 'No records found'],200); 
+                                    return response()->json(['status' => false, 'message' => 'No records found'],404); 
                                 }
                             }
                             else{
@@ -144,9 +144,13 @@ class ContactController extends Controller
     {
         if($request->is('api/*'))     // API call check
         { 
+            if(!Account::where('id',$request->account_id)->exists())
+            {
+                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+            }
             $postFields = array_keys($_POST);
             if(count($postFields) == 0) {
-                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data'],404);
+                return response()->json(['status' => 'failed', 'message' => 'Please pass the form data'],400);
             }
             $validator = Validator::make($request->all(), [
                 'email' => 'required|email|unique:contacts|max:255',
@@ -166,11 +170,11 @@ class ContactController extends Controller
         {            
             if($contact_id){
                 $contact = Contact::findOrFail($contact_id);                       
-                $return = ['Message' => 'Record has been created successfully', 'Contact_id' => $contact_id,'Contact' => $contact];
+                $return = ['Status' =>true,'Message' => 'Record has been created successfully', 'Contact' => $contact,200];
             
             }
             else{
-                $return = ['Message' => 'Invalid Input'];
+                $return = ['Message' => 'Invalid Input',404];
             }
             return response()->json($return);
         }
@@ -372,7 +376,7 @@ class ContactController extends Controller
         $contact = $this->checkAccessPermission($request, $module, $request->id);
 
         if(!$contact) {
-            return response()->json(['status' => false, 'message' => 'Record not found']);   
+            return response()->json(['status' => false, 'message' => 'Record not found'],404);   
         }
         
         //checking access permission 
@@ -410,17 +414,32 @@ class ContactController extends Controller
      */
     public function update(Request $request)
     {        
-
         $currentUser = $request->user();    
         $module = new Contact();    
-        $flag = $this->checkPermission($request,$currentUser, $request->id,'Contact');
-        if($flag === false) {
+        if($request->is('api/*'))
+            {
+                    if ($request->account_id)
+                      {
+                            if(!Account::where('id',$request->account_id)->exists())
+                            {
+                                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+                            }
+                      }    
+                    else     
+                        {
+                            return response()->json(['status' => false, 'message' => 'Enter Workspace ID'],404); 
+                        }
+            }
+               
+          $flag = $this->checkPermission($request,$currentUser, $request->id,'Contact');
+          if($flag === false) {
             if($request->is('api/*')){
                 return response()->json(['status' => false, 'message' => 'Record not found'],404);
             }
             else{
             abort(401);}
         }
+    
         $contact = $this->checkAccessPermission($request, $module, $request->id);
         if(!$contact) {
             if($request->is('api/*')){
@@ -450,7 +469,7 @@ class ContactController extends Controller
        
         if($request->is('api/*')){
                 $contact = Contact::findOrFail($contact_id);
-                $return = ['Message' => 'Record has been updated successfully','Contact' => $contact];
+                $return = ['Status' => true,'Message' => 'Record has been updated successfully','Record' => $contact];
                 return response()->json($return);           
             }
             else
@@ -470,6 +489,11 @@ class ContactController extends Controller
     public function destroy(Request $request, $contactId)
     {               
            if($request->is('api/*')){
+                     if(!Account::where('id',$request->account_id)->exists())
+                            {
+                                return response()->json(['status' => false, 'message' => 'Workspace ID not valid'],404); 
+                            }
+                            
                  $account = Account::findorFail($request->account_id);                
                  $company_id = $account->company_id;   
                 $contact = Contact::where('id',$request->id)->where('company_id', $company_id);
@@ -477,12 +501,12 @@ class ContactController extends Controller
                 $contact = $this->checkAccessPermission($request, $module, $request->id);
 
         if(!$contact) {
-            return response()->json(['status' => false, 'message' => 'Record not found']);   
+            return response()->json(['status' => false, 'message' => 'Record not found'],404);   
         }
                 else
                 {
                 $contact->delete();        
-                return response()->json(['record'=>$request->id,'message'=>'deleted']);
+                return response()->json(['Status' => true,'Record ID'=>$request->id,'Message'=>'Deleted the record successsfully'],200);
                 }
             }
             else
