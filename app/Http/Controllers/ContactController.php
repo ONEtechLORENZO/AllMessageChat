@@ -19,6 +19,8 @@ use App\Models\Service;
 use App\Models\User;
 use App\Models\Phone;
 use App\Models\Email;
+use App\Models\Opportunity;
+use App\Models\Order;
 
 class ContactController extends Controller
 {
@@ -417,28 +419,32 @@ class ContactController extends Controller
      */
     public function destroy(Request $request, $contactId)
     {               
-           if($request->is('api/*')){
-                 $account = Account::findorFail($request->account_id);                
-                 $company_id = $account->company_id;   
-                $contact = Contact::where('id',$request->id)->where('company_id', $company_id);
-                $module = new Contact();
-                $contact = $this->checkAccessPermission($request, $module, $request->id);
+        if($request->is('api/*')){
+            $account = Account::findorFail($request->account_id);                
+            $company_id = $account->company_id;   
+            $contact = Contact::where('id',$request->id)->where('company_id', $company_id);
+            $module = new Contact();
+            $contact = $this->checkAccessPermission($request, $module, $request->id);
 
-        if(!$contact) {
-            return response()->json(['status' => false, 'message' => 'Record not found']);   
-        }
-                else
-                {
-                $contact->delete();        
-                return response()->json(['record'=>$request->id,'message'=>'deleted']);
+            if(!$contact) {
+                return response()->json(['status' => false, 'message' => 'Record not found']);   
+            } else {
+                if($contact) {
+                    $delete_record = $this->deleteRelatedRecords($request->id); // Disable the related assigned records
                 }
+                $contact->delete();  
+
+                return response()->json(['record'=>$request->id,'message'=>'deleted']);
             }
-            else
-              {
-                $contact = Contact::find($contactId);
-                $contact->delete();
-                return Redirect::route('listContact');
-              }
+        } else {
+            $contact = Contact::find($contactId);
+
+            if($contact) {
+                $delete_record = $this->deleteRelatedRecords($contactId); // Disable the related assigned records
+            }
+            $contact->delete();
+            return Redirect::route('listContact');
+        }
         
     }
 
@@ -717,4 +723,23 @@ class ContactController extends Controller
             }
         }
     }
+
+    public function deleteRelatedRecords($contact_id) {
+
+        $Opportunity = Opportunity::where('contact_id', $contact_id)->first(); 
+        $Order = Order::where('contact', $contact_id)->first();
+        
+        // Assigned record are disable...
+        if($Opportunity) {
+            $Opportunity->contact_id = NULL;   
+            $Opportunity->save();
+        }
+        if($Order) {
+            $Order->contact = NULL;
+            $Order->save();
+        }
+        return true;
+    }
+
+
 }
