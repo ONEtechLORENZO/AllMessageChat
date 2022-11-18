@@ -488,7 +488,6 @@ class ContactController extends Controller
      */
     public function destroy(Request $request, $contactId)
     {               
-<<<<<<< HEAD
            if($request->is('api/*')){
                      if(!Account::where('id',$request->account_id)->exists())
                             {
@@ -506,32 +505,16 @@ class ContactController extends Controller
         }
                 else
                 {
-                $contact->delete();        
-                return response()->json(['Status' => true,'Record ID'=>$request->id,'Message'=>'Deleted the record successsfully'],200);
-=======
-        if($request->is('api/*')){
-            $account = Account::findorFail($request->account_id);                
-            $company_id = $account->company_id;   
-            $contact = Contact::where('id',$request->id)->where('company_id', $company_id);
-            $module = new Contact();
-            $contact = $this->checkAccessPermission($request, $module, $request->id);
-
-            if(!$contact) {
-                return response()->json(['status' => false, 'message' => 'Record not found']);   
-            } else {
-                if($contact) {
                     $delete_record = $this->deleteRelatedRecords($request->id); // Disable the related assigned records
->>>>>>> afedde23f07ea3773662e1d3b4be1b1642288187
-                }
-                $contact->delete();  
-
-                return response()->json(['record'=>$request->id,'message'=>'deleted']);
+                    $contact->delete();        
+                    return response()->json(['Status' => true,'Record ID'=>$request->id,'Message'=>'Deleted the record successsfully'],200);
+                }               
             }
-        } else {
+        else {
             $contact = Contact::find($contactId);
 
             if($contact) {
-                $delete_record = $this->deleteRelatedRecords($contactId); // Disable the related assigned records
+             $delete_record = $this->deleteRelatedRecords($contactId); // Disable the related assigned records
             }
             $contact->delete();
             return Redirect::route('listContact');
