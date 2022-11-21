@@ -20,6 +20,7 @@
         <!-- Scripts -->
         @routes
         <script src="{{ url('js/app.js') }}?v=1.7.21" defer></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLBjA5H72o6Mu2qWheFeNf-9HZWUaa7iM&libraries=places"></script>
 
     </head>
     <body class="font-sans antialiased">

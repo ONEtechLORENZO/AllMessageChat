@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {countries} from '@/Pages/Constants';
 import Dropdown from "@/Components/Forms/Dropdown";
 import axios from "axios";
@@ -8,12 +8,17 @@ import {UserCircleIcon, MailIcon, GlobeIcon, FlagIcon, LocationMarkerIcon, Chevr
 import PhoneInput2 from 'react-phone-input-2';
 import { parsePhoneNumber } from 'react-phone-number-input';
 import 'react-phone-input-2/lib/style.css';
-
 import {  Input } from "reactstrap";
 
 export default function BillingInformation (props) {
 
     const [billingInformation, setBillingInformation] = useState({});
+    const autocompleteInput = useRef();
+
+    // Google autocomplete fields
+    const google = window.google;
+    const autocomplete = new google.maps.places.Autocomplete(autocompleteInput.current );
+    autocomplete.addListener('place_changed', handlePlaceChanged);
 
     useEffect(() => {
         if(props.userMail.email) {
@@ -32,6 +37,59 @@ export default function BillingInformation (props) {
         setBillingInformation(newState);
     }
 
+    function handlePlaceChanged(e) {
+        if(autocomplete){
+           const place = autocomplete.getPlace();
+           if(place){
+            autoCompleteHandler(place.address_components);
+           } else {
+            handleChange(e);
+           }
+        }
+    }
+
+    // Company address auto-fill using Google autocomplete form
+    function autoCompleteHandler(address_components) {
+        let city = '';
+        let state = '';
+        let route = '';
+        let country = '';
+        let postal_code = '';
+        let street_number = '';
+
+        address_components.map( (component) => {
+            for( let i = 0;  i < component.types.length; i++) {
+                if(component.types[i] == 'postal_code'){
+                    postal_code = component.long_name
+                } 
+                else if(component.types[i] == 'locality'){
+                    city = component.long_name
+                } 
+                else if(component.types[i] == 'administrative_area_level_1'){
+                    state = component.long_name
+                }
+                else if(component.types[i] == 'country'){
+                    country = component.long_name
+                }
+                else if(component.types[i] == 'street_number'){
+                    street_number = component.long_name
+                }
+                else if(component.types[i] == 'route'){
+                    route = component.long_name
+                }
+            }
+        });
+        let newState = Object.assign({}, billingInformation);
+
+        newState['company_address'] = street_number +' '+ route;
+        newState['city'] = city;
+        newState['country'] = country;
+        newState['state'] = state;
+        newState['codice_destinatario'] = postal_code;
+
+        setBillingInformation(newState);
+    }
+
     function mailHandler () {
         let check_mail = true;
         let mail = billingInformation['email'];
@@ -47,7 +105,7 @@ export default function BillingInformation (props) {
 
     function saveBillingInformation () {
         let mailValidate = mailHandler();
-       
+
         if(mailValidate) {
             let user = props.userMail;
             billingInformation['user_id'] = user['user_id'];
@@ -112,7 +170,7 @@ export default function BillingInformation (props) {
                                 autoComplete="off"
                                 value={billingInformation['organization'] ? billingInformation['organization'] : ''}
                                 onChange={(e) => handleChange(e)}
-                            />
+                            />                          
                         </div>
                     </div>
 
@@ -191,12 +249,14 @@ export default function BillingInformation (props) {
                         </div>
                         <div className="flex flex-col flex-1">
                             <label>Company Address</label>
-                            <Input
+                            <input
                                 type="text"
                                 name="company_address"
+                                className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300 "
                                 autoComplete="off"
                                 value={billingInformation['company_address'] ? billingInformation['company_address'] : ''}
-                                onChange={(e) => handleChange(e)}
+                                onChange={(e) => handlePlaceChanged(e)}
+                                ref={autocompleteInput}
                             />
                         </div>
                     </div>
