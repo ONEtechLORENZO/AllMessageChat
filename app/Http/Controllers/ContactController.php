@@ -74,7 +74,7 @@ class ContactController extends Controller
                                 $listViewData = $this->listView($request, $module, $list_view_columns);                
                                 if($listViewData)
                                   {
-                                    unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
+                                   // unset($listViewData['related_records_header'],$listViewData['search'],$listViewData['filter'],$listViewData['compact_type'],$listViewData['list_view_columns'],$listViewData['sort_by'],$listViewData['sort_order'],$listViewData['translator']);
                                     return response()->json(['status' => true,'Contacts' => $listViewData],200);
                                  }
                                 else
@@ -357,7 +357,7 @@ class ContactController extends Controller
               $query = $submod::where('organization_id', $request->id);
         }
         
-        $subPanelData = $this->getSubPanelRecords($parent_module, $submod, $query,$parent_name);  
+        $subPanelData = $this->getSubPanelRecords($request,$parent_module, $submod, $query,$parent_name);  
       
         echo json_encode($subPanelData);
        die;
