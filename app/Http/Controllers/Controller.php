@@ -591,8 +591,7 @@ class Controller extends BaseController
      */
     public function getListViewFields($request,$baseTable, $moduleName, $query ,$headers)
     {          
-        if($request->is('api/*') && $request->has('field')){   
-           // $listFields = explode(',', $headers); 
+        if($request->is('api/*') && $request->has('field')){ 
            $listFields =  $headers; 
             }
             else{

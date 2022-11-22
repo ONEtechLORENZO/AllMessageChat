@@ -83,7 +83,17 @@ class FormController extends Controller
 
              if($request->is('api/*'))
                 {
-                    $fields = Field::select('field_name','field_label','is_mandatory','field_type','options')->where('module_name',$module)->where('company_id',$companyId)->groupBy('field_name')->orderBy('sequence')->orderBy('id')->get();
+                    if($request->has('field')&& $request->get('field') )
+                    {
+                    $field_list = $request->get('field');
+                    $field_list = explode(',', $field_list); 
+                    
+                    }
+                    else{
+                        $field_list=['field_name','field_label','is_mandatory','field_type','options'];
+                    }
+                    $fields = Field::select($field_list)->where('module_name',$module)->where('company_id',$companyId)->groupBy('field_name')->orderBy('sequence')->orderBy('id')->get();
+                    
                     if(count($fields) !==0)
                     {  
                         foreach($fields as $field) {
