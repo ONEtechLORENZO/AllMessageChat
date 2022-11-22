@@ -7,6 +7,7 @@ use App\Models\Contact;
 use App\Models\FieldGroup;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Http\Request;
+use Illuminate\Http\Collection;
 use Cache;
 use App\Models\Account;
 
@@ -120,9 +121,11 @@ class FormController extends Controller
                         //only Global admin can change the status of a Support Request
                         if($module == 'SupportRequest' && ($user->role != 'global_admin'))
                             {
+                               
                                 $fields = $fields->filter(function ($value, $key) {
                                     return $value['field_name'] != 'status';
-                                });        
+                                });   
+                                $fields = $fields->values()->all();   
                             }
                         
                         foreach($fields as $field) {
