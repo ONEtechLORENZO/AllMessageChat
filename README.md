@@ -8,4 +8,3 @@ Installation:
     4. npm install
     5. Update DB credentials on .env file
     6. php artisan migrate
-    7. php artisan db:seed --class=FieldSeeder
