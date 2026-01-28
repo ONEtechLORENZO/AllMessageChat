@@ -9,5 +9,5 @@ class Session extends Model
 {
     use HasFactory;
 
-    protected $table = 'chat_sessions';
+    protected $table = 'sessions';
 }
