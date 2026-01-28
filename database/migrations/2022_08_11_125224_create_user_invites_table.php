@@ -18,7 +18,6 @@ class CreateUserInvitesTable extends Migration
 
             $table->string('email');
             $table->integer('user_id');
-            $table->integer('company_id');
             $table->string('unique_id');
 
             $table->timestamps();

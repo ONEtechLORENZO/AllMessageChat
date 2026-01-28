@@ -20,7 +20,6 @@ class CreateSupportrequestsTable extends Migration
             $table->string('status');
             $table->string('type');
             $table->foreignId('created_by')->constrained('users');
-            $table->foreignId('company_id')->constrained('companies'); 
             $table->foreignId('assigned_to')->constrained('users');
             $table->timestamps();
         });

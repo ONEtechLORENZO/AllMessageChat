@@ -21,7 +21,6 @@ class CreateTransactionsTable extends Migration
             $table->string('status');
             $table->longText('error_message')->nullable();
             $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('company_id')->constrained('companies');            
             $table->timestamps();
         });
     }

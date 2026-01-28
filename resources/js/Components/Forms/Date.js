@@ -16,6 +16,9 @@ export default function Date({
            name={name}
            value={value}
            onChange={handleChange}
+           showMonthDropdown
+           showYearDropdown           
+           dropdownMode="select"
            dateFormat='d/M/yyyy'
            closeOnScroll={true}
            />

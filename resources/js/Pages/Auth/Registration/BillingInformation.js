@@ -1,18 +1,34 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useState, useRef} from "react";
 import {countries} from '@/Pages/Constants';
 import Dropdown from "@/Components/Forms/Dropdown";
 import axios from "axios";
-import { Link } from "@inertiajs/inertia-react";
 import notie from 'notie';
-import {UserCircleIcon, MailIcon, GlobeIcon, FlagIcon, LocationMarkerIcon, ChevronRightIcon, HomeIcon, MailOpenIcon, OfficeBuildingIcon, PhoneIcon, LibraryIcon}from "@heroicons/react/outline";
 import PhoneInput2 from 'react-phone-input-2';
 import { parsePhoneNumber } from 'react-phone-number-input';
 import 'react-phone-input-2/lib/style.css';
+import ApplicationLogo from "@/Components/ApplicationLogo";
+import {currencies} from '@/Pages/Constants';
+import CreatableSelect from 'react-select';
+import {
+UserCircleIcon, MailIcon, 
+GlobeIcon, FlagIcon, 
+LocationMarkerIcon, ChevronRightIcon, 
+HomeIcon, MailOpenIcon, 
+OfficeBuildingIcon, PhoneIcon, 
+LibraryIcon, CurrencyPoundIcon, 
+ClockIcon}from "@heroicons/react/outline";
+
 import {  Input } from "reactstrap";
+
+const defaultValue = {
+    'currency' : { value: "EUR", label: "Euro" },'time_zone': { value: "Europe/Rome", label: "(GMT+01:00) Rome" }
+};
 
 export default function BillingInformation (props) {
 
-    const [billingInformation, setBillingInformation] = useState({});
+    const [billingInformation, setBillingInformation] = useState(props.company);
+    const [timeZone, setTimezone] = useState([]);
+    const [currencyType, setCurrency] = useState([]);
     const autocompleteInput = useRef();
 
     // Google autocomplete fields
@@ -21,11 +37,9 @@ export default function BillingInformation (props) {
     autocomplete.addListener('place_changed', handlePlaceChanged);
 
     useEffect(() => {
-        if(props.userMail.email) {
-            let newBilling = Object.assign( {}, billingInformation);
-            newBilling['email'] = props.userMail.email;
-            setBillingInformation(newBilling);
-        }
+        getTimezones();
+        getCurrencies();
+        setBillingInformation(defaultValue);
     },[]);
 
     // BillingInformation detail handling
@@ -36,6 +50,68 @@ export default function BillingInformation (props) {
         newState[name] = value;
         setBillingInformation(newState);
     }
+
+    function mailHandler () {
+        let check_mail = true;
+        let mail = billingInformation['email'];
+        if(mail) {
+            let AdminEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            if(!AdminEmail.test(mail)){
+                notie.alert({type: 'warning', text: 'Please enter the valid email', time: 5});
+                check_mail =  false;
+            }
+        }
+        return check_mail;
+    }
+
+    function changePhoneNumber(event, name) {
+        let newState = Object.assign({}, billingInformation);
+        event = '+'+event;
+        newState[name] = event;
+        if(event && parsePhoneNumber(event) ){
+            newState['country_code'] = parsePhoneNumber(event).countryCallingCode;
+        }
+        setBillingInformation(newState);
+    }
+
+    // Get Time Zone
+    function getTimezones(){
+        var url = route('get_timezone');
+        axios.get(url).then((response) => {
+            setTimezone(response.data.time_zone);
+            liveTimezone(response.data.time_zone);          
+        });
+    }
+    
+    function liveTimezone(time_zone) {
+        let newBilling = Object.assign({}, billingInformation);
+        let currentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        (time_zone).map( (zone) => {
+            if(currentTimezone == zone.value) {
+                newBilling['currency'] = { value: "EUR", label: "Euro" };
+                newBilling['time_zone'] = zone;
+            }
+        });
+        newBilling['name'] = props.company.name;
+        newBilling['email'] = props.user.email;
+        setBillingInformation(newBilling);
+    }
+
+    function getCurrencies() {
+        let newCurrency = Object.assign([], currencyType);
+        Object.entries(currencies).map( ([key,currency]) => {
+            let type = {'value' : key, 'label' : currency };
+            newCurrency.push(type);
+        });
+        setCurrency(newCurrency);
+    }
+
+    function searchHandler(event, name){
+        let newBilling = Object.assign({}, billingInformation);
+        newBilling[name] = event;
+        setBillingInformation(newBilling);
+    }
+    
 
     function handlePlaceChanged(e) {
         if(autocomplete){
@@ -89,43 +165,19 @@ export default function BillingInformation (props) {
 
         setBillingInformation(newState);
     }
-
-    function mailHandler () {
-        let check_mail = true;
-        let mail = billingInformation['email'];
-        if(mail) {
-            let AdminEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-            if(!AdminEmail.test(mail)){
-                notie.alert({type: 'warning', text: 'Please enter the valid email', time: 5});
-                check_mail =  false;
-            }
-        }
-        return check_mail;
-    }
-
+    
     function saveBillingInformation () {
         let mailValidate = mailHandler();
-
+     
         if(mailValidate) {
-            let user = props.userMail;
-            billingInformation['user_id'] = user['user_id'];
-            billingInformation['company_id'] = props.companyId;
+            billingInformation['company_id'] = props.company.id;
 
             let url = route('billing_information');
             axios.post(url, billingInformation).then( (response) => {
-                props.setOpenTab(6);
+                props.setOpenTab(2);
+                props.setCompany(response.data.company);
             });
         }
-    }
-
-    function changePhoneNumber(event, name) {
-        let newState = Object.assign({}, billingInformation);
-        event = '+'+event;
-        newState[name] = event;
-        if(event && parsePhoneNumber(event) ){
-            newState['country_code'] = parsePhoneNumber(event).countryCallingCode;
-        }
-        setBillingInformation(newState);
     }
 
     return (
@@ -133,30 +185,61 @@ export default function BillingInformation (props) {
           <div className="max-w-7xl flex mx-auto items-center px-10">
             <div className="w-full bg-white self-stretch flex justify-center py-24 rounded-xl px-4 lg:px-10">
                 <div className="py-8">
-                    <div className="flex justify-end px-4">
-                        <img
-                            src="./img/onemessage-logo.png"
-                            alt="One message logo"
-                            className="w-1/2"
-                        />
+                    <div className="flex justify-end px-4 text-indigo-600 text-4xl font-semibold italic">
+                       One message
+                       <ApplicationLogo className="block h-90 w-auto text-gray-500 px-2" />
                     </div>
                     <div className="flex justify-end">
-                        <span>Already have an account 
-                           <Link
-                                href={route('login')}
-                                className="text-primary px-2"
-                                >
-                                Log in
-                           </Link>
-                        </span>
+                      
                     </div> 
 
                     <div className="grid grid-cols-2 mt-5">
-                        <div className="flex justify-start font-semibold text-lg text-primary">Step 3 of 3 </div>
-                        <div className="flex justify-end font-semibold text-lg">Billing Information</div>
+                        <div className="flex justify-start font-semibold text-lg text-primary italic">Billing Information </div>
+                        <div className="flex justify-end font-semibold text-lg"></div>
                     </div>
 
-                    
+                    <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
+                        <div className="text-gray-500">
+                        <HomeIcon className="h-6 w-6" />
+                        </div>
+                        <div className="flex flex-col flex-1">
+                            <label>Workspace Name <span className="text-red-500">  * </span>  </label>
+                            <Input type="text"
+                                name="name"  autoComplete="off"
+                                className="mt-2"
+                                value={billingInformation['name'] ? billingInformation['name'] : ''}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
+                        <div className="text-gray-500">
+                        <CurrencyPoundIcon className="h-6 w-6" />
+                        </div>
+                        <div className="flex flex-col flex-1">
+                            <label>Workspace Currency <span className="text-red-500">  * </span>  </label>
+                                <CreatableSelect
+                                value={billingInformation['currency'] ? billingInformation['currency'] : ''}
+                                options={currencyType}
+                                onChange={(e) => searchHandler(e, 'currency')}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
+                        <div className="text-gray-500">
+                        <ClockIcon className="h-6 w-6" />
+                        </div>
+                        <div className="flex flex-col flex-1">
+                            <label>Workspace Time Zone <span className="text-red-500">  * </span>  </label>
+                            <CreatableSelect
+                                value={billingInformation['time_zone'] ? billingInformation['time_zone'] : ''}
+                                options={timeZone}
+                                onChange={(e) => searchHandler(e, 'time_zone')}
+                            />
+                        </div>
+                    </div>
+                
                     <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
                         <div className="text-gray-500">
                            <LibraryIcon className="h-6 w-6" />
@@ -166,11 +249,10 @@ export default function BillingInformation (props) {
                             <Input
                                 type="text"
                                 name="organization"
-                                
                                 autoComplete="off"
                                 value={billingInformation['organization'] ? billingInformation['organization'] : ''}
                                 onChange={(e) => handleChange(e)}
-                            />                          
+                            />
                         </div>
                     </div>
 
@@ -252,8 +334,8 @@ export default function BillingInformation (props) {
                             <input
                                 type="text"
                                 name="company_address"
-                                className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300 "
                                 autoComplete="off"
+                                className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300 "
                                 value={billingInformation['company_address'] ? billingInformation['company_address'] : ''}
                                 onChange={(e) => handlePlaceChanged(e)}
                                 ref={autocompleteInput}
@@ -298,7 +380,7 @@ export default function BillingInformation (props) {
                            <MailOpenIcon className="h-6 w-6" />
                         </div>
                         <div className="flex flex-col flex-1">
-                            <label>Zin Code</label>
+                            <label>Zip Code</label>
                             <Input
                                 type="text"
                                 name="codice_destinatario"
@@ -327,14 +409,14 @@ export default function BillingInformation (props) {
 
                     <div className="grid grid-cols-2 mt-4">
                         <div className="flex justify-start">
-                            <button
+                            {/* <button
                                 type="button"
                                 className="w-full inline-flex justify-start rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-500 hover:bg-gray-900 text-semibold font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm mt-4"
                                 onClick={() => props.setOpenTab(6)}
                            >
                                 Skip
                                 <span className="flex justify-end pt-1"><ChevronRightIcon className="h-4 w-4"/></span>
-                            </button>
+                            </button> */}
                         </div>
                         <div className="flex justify-end">
                             <button

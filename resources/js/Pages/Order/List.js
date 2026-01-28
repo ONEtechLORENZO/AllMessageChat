@@ -9,8 +9,8 @@ function classNames(...classes) {
 function List(props)
 {
     const tabs = [
-        { label:'Orders',name: 'Orders', href: '#',current: true },       
-        { label:'Fields',name: 'Fields', href: route("listField",{'mod':props.module}),current: false }
+        { label:props.translator['Orders'],name: 'Orders', href: '#',current: true },       
+        { label:props.translator['Fields'],name: 'Fields', href: route("listField",{'mod':props.module}),current: false }
 
       ];
       
@@ -19,37 +19,45 @@ function List(props)
             auth={props.auth}
             errors={props.errors}
             current_page={props.current_page}
+            navigationMenu={props.menuBar}
         >
-                <nav
-                    className="px-4 sm:px-6 flex space-x-8 gap-2"
-                    aria-label="Tabs"
-                >
+            <div className='font-semibold text-2xl text-[#363740] !px-4 ml-3'>{props.plural}</div>
+
+            <div className="mt-6 sm:mt-2 2xl:mt-5 !mb-6">
+            <div className="border-b border-gray-200">
+                <div className="mx-auto px-4 sm:px-6 lg:px-8">
+                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                     {tabs.map((tab) => (
-                        <Link
-                            key={tab.name}
-                            href={tab.href}
-                            className={classNames(
-                                tab.current
-                                    ? "border-purple-500 text-primary"
-                                    : "border-transparent text-gray-500 hover:text-primary hover:border-purple-500",
-                                "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base  my-6"
-                            )}
-                        >
-                            {tab.name}  
-                        </Link>
-                    ))} 
+                    <Link
+                        key={tab.name}
+                        href={tab.href}
+                        className={classNames(
+                        tab.current
+                            ? 'border-primary text-[#363740]'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                        'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm'
+                        )}
+                        aria-current={tab.current ? 'page' : undefined}
+                    >
+                        {tab.label} 
+                    </Link>
+                    ))}
                 </nav>
-                {tabs.map((tab) => (
-                    <>
-                        {tab.name=='Orders' &&
-                            <ListView
-                                headers={props.list_view_columns}
-                                {...props}
-                                translator={props.translator}
-                            /> 
-                        }
-                    </>
-                ))}
+                </div>
+            </div>
+            </div>
+               
+            {tabs.map((tab) => (
+                <>
+                    {tab.name=='Orders' &&
+                        <ListView
+                            headers={props.list_view_columns}
+                            {...props}
+                            translator={props.translator}
+                        /> 
+                    }
+                </>
+            ))}
                            
         </Authenticated>
     )

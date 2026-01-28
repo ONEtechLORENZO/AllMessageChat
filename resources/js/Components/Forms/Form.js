@@ -85,7 +85,11 @@ function Form(props)
 
         if(props.recordId) {
             fetchRecord();
-        }  
+        }
+        
+        if(props.module == "Api") {
+            setData({ read_only: true, write_only: true});
+        }
       
     }, [props]);
 
@@ -236,6 +240,9 @@ function Form(props)
                 if(props.is_chat){
                     props.getUserContacts();
                 }
+                if(props.newcontact){
+                    props.addNewContact();
+                }
             },
             onError: (errors) => {
                 setErrors(errors)
@@ -357,6 +364,13 @@ function Form(props)
         DataHandler(field_name, values);
     }
 
+    function fileHandler(event) {
+        let field_name = event.target.name;
+        let field_value = event.target.files[0];
+
+        DataHandler(field_name, field_value);
+    }
+
     return (
         <Transition.Root show={open} as={Fragment}>
             <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => {}} >
@@ -389,9 +403,9 @@ function Form(props)
                                 ? "relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-1/2"
                                 :"relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-xl sm:w-full"
                             )} >
-                                <div className="bg-gray-50 px-4 pt-5 pb-4 sm:p-4 sm:pb-4">
+                                <div className="bg-gray-50 px-4 sm:p-4 sm:pb-4">
                                     <div className="sm:flex sm:items-start">
-                                        <div className="mt-3 text-center sm:mt-0 sm:text-left">
+                                        <div className="text-center sm:mt-0 sm:text-left">
                                             <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
                                                 {props.recordId ? 'Update' : 'Create'} {props.heading}
                                             </Dialog.Title>
@@ -406,7 +420,7 @@ function Form(props)
                                 : ''}
 
                                 <form id='form'>
-                                    <div className='space-y-4'>
+                                    <div className='space-y-4 p-3'>
                                      
                                         {fields.length > 0 && fields && fields.map((field_info,index) => { 
                                             let element = ''; 
@@ -481,7 +495,7 @@ function Form(props)
                                                        
                                                         <Number 
                                                             type="text"
-                                                            className={`pl-6 mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                            className={`pl-6 mt-1 appearance-none block w-full pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
                                                             id={field_info.field_name}
                                                             name={field_info.field_name}
                                                             value={field_value}
@@ -615,7 +629,17 @@ function Form(props)
                                                         value={field_value} 
                                                         DataHandler={DataHandler}
                                                     />;
-                                                    break;                                                        
+                                                    break;
+                                                case "file":
+                                                    element = <Input
+                                                        type="file"
+                                                        className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        handleChange={fileHandler}
+                                                        required={field_info.is_mandatory === 1 ? true : false}
+                                                    />;
+                                                    break;                                                            
                                                 case 'default':
                                                     element = <Input 
                                                         type="text" 
@@ -666,7 +690,7 @@ function Form(props)
                                     </button>
                                     <button
                                         type="button"
-                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                                        className="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                                         onClick={() => props.hideForm()}
                                         ref={cancelButtonRef}
                                     >

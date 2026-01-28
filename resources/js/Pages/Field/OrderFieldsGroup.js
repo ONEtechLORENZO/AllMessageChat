@@ -103,7 +103,7 @@ function OrderFieldsGroup(props){
                                     <div className="sm:flex sm:items-start">
                                         <div className="mt-3 text-center sm:mt-0 sm:text-left">
                                             <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                                                Order field group
+                                                {props.translator['Order field group']}
                                             </Dialog.Title>
                                         </div>
                                     </div>
@@ -115,7 +115,7 @@ function OrderFieldsGroup(props){
                                             <div>
                                                 <div class="sm:gap-4">
                                                     <label for="selected_module" class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-                                                        Select Module
+                                                    {props.translator['Select Module']}
                                                     </label>
                                                     <div class="mt-1 sm:mt-0 w-1/4">
                                                         <Dropdown
@@ -150,7 +150,7 @@ function OrderFieldsGroup(props){
                                         className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
                                         onClick={saveFieldOrder}
                                     >
-                                        Save
+                                         {props.translator['Save']}
                                     </button>
                                     <button
                                         type="button"
@@ -158,7 +158,7 @@ function OrderFieldsGroup(props){
                                         onClick={() => props.setOrderFields(false)}
                                         ref={cancelButtonRef}
                                     >
-                                        Cancel
+                                         {props.translator['Cancel']}
                                     </button>
                                 </div>
                             </Dialog.Panel>

@@ -1,94 +1,98 @@
-import React ,{useEffect, useState}from "react";
-import UserRegistration from "./UserRegistration";
-import Step1 from "./Step1";
-import Step2 from "./Step2";
-import Step3 from "./Step3";
-import Step4 from "./Step4";
-import Step5 from "./Step5";
-import Step6 from "./Step6";
+import React ,{useState}from "react";
+import StripeInformation from "./Step4";
+import PlanInformation from "./Step5";
 import BillingInformation from "./BillingInformation";
+import DashBoard from "./Step6";
+import { Inertia } from "@inertiajs/inertia";
+import axios from "axios";
+import SignUp from "@/Pages/new_ui/SignUp";
+import Workspace from "@/Pages/new_ui/Workspace";
+import PlanSubscription from "@/Pages/PlanComponent";
 
 export default function RegisterForm (props) {
 
-    const [openTab, setOpenTab] = useState(1);
-    const [userMail, setUserMail] = useState({});
-    const [addStripe, setAddStrip] = useState(false);
-    const [companyId, setCompanyId] = useState();
+    const [openTab, setOpenTab] = useState(5);
     const [stripe, setStripe] = useState(false);
+    const [company, setCompany] = useState();
 
-    useEffect( () => {
-        let newMail = Object.assign({}, userMail);
-        let mail = props.email ? props.email : '';
-        let uuid = props.uuid ? props.uuid : '';
-        newMail['email'] = mail;
-        newMail['uuid'] = uuid;
-        if(props.step < 3 ){
-            newMail['user_id'] = props.user_id;
-            setOpenTab(props.step);
-            setCompanyId(props.company_id);
-        }
-        setUserMail(newMail);
-    },[]);
+    function redirectDashBoard() {
+        Inertia.get(route('dashboard'), {}, {
+            onSuccess: (response) => {
+                if(response) {
+                    axios.post(route('subcription_complete')).then( (response) => {})
+                }
+            }
+        })
+    }
 
     return (
-       <div>
-
-            {openTab === 1 &&
-                // User creation form
-                <Step1 
-                    userMail={props.email}
-                    uuid={props.uuid}
-                    setUserMail={setUserMail}
+        <div>
+            {openTab == 1 &&
+                <BillingInformation 
+                    user={props.user}
+                    company={props.company}
                     setOpenTab={setOpenTab}
+                    setCompany={setCompany}
                 />
             }
-           
+
             {openTab === 2 &&
-                // Create workspace form
-                <Step2 
-                    setOpenTab={setOpenTab}
-                    setCompanyId={setCompanyId}
-                />
-            }
-
-            {openTab === 3 && 
-                 // Choose Plan
-                 <Step5 
-                    user={userMail}
-                    addStripe={addStripe}
-                    setOpenTab={setOpenTab}
-                    stripe={stripe}
-                    setStripe={setStripe}
-                /> 
-            }
-                
-            {openTab === 4 &&
-                //  Stripe integration
-                <Step4 
+                <StripeInformation 
+                    user={props.user}
                     setOpenTab={setOpenTab}
                     stripe_public_key={props.stripe_public_key}
                     translator={props.translator}
-                    setAddStrip={setAddStrip}
                     stripe={stripe}
                     setStripe={setStripe}
+                    redirectDashBoard={redirectDashBoard}
                 />
             }
-                
-            {openTab === 5 &&
-                <BillingInformation 
-                    companyId={companyId}
+        
+            {openTab === 3 && 
+                <PlanInformation 
+                    user={props.user}
                     setOpenTab={setOpenTab}
-                    userMail={userMail}
-                />
+                    stripe={stripe}
+                    plans={props.plans}
+                    company={company}
+                /> 
             }
-               
-            {openTab === 6 &&
-               // DashBoard
-               <Step6
-                companyId={companyId}
+
+            {openTab === 4 &&
+               <DashBoard
+                company={props.company}
                />
             }
-            
-       </div>
+
+            {openTab == 5 && 
+              <SignUp 
+                user={props.user}
+                company={props.company}
+                setOpenTab={setOpenTab}
+              />
+            }
+
+            {openTab == 6 && 
+              <Workspace 
+               company={props.company}
+               setOpenTab={setOpenTab}
+              />
+            }
+
+            {openTab == 7 && 
+              <PlanSubscription 
+                company={props.company}
+                plans={props.plans}
+                user={props.user}
+                stripe_public_key={props.stripe_public_key}
+                translator={props.translator}
+                stripe={stripe}
+                setStripe={setStripe}
+                redirectDashBoard={redirectDashBoard}
+                {...props}
+              /> 
+            }
+
+        </div>
     );
 }

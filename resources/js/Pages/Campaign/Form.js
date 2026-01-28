@@ -220,6 +220,7 @@ export default function Campaign(props) {
                     data={data}
                     handleChange={handleChange}
                     saveCampaign={saveCampaign}
+                    translator={props.translator}
                    />
               </div>
               <div
@@ -237,6 +238,7 @@ export default function Campaign(props) {
                   setConditions={setConditions}
                   setRecordCount={setRecordCount}
                   recordCount={recordCount}
+                  translator={props.translator}
                 />
           
               </div>
@@ -253,6 +255,7 @@ export default function Campaign(props) {
                    previous={setOpenTab}
                    companyName={companyName}
                    templates={templates}
+                   translator={props.translator}
                  />
               </div>
               <div
@@ -272,6 +275,7 @@ export default function Campaign(props) {
                   scheduleTime={scheduleTime}
                   templates={templates}
                   setScheduleTime={setScheduleTime}
+                  translator={props.translator}
                 />
               </div>
                     </div>

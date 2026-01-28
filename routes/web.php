@@ -16,12 +16,14 @@ use App\Http\Controllers\FormController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\GroupController;
 use App\Http\Controllers\OpportunityController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\FieldController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\UserInviteController;
 use App\Http\Controllers\FieldGroupController;
 use App\Http\Controllers\ChatListContactController;
@@ -33,15 +35,16 @@ use App\Http\Controllers\AutomationController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\SupportRequestController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\ApiController;
+use App\Http\Controllers\WhatsAppUsersController;
+use App\Http\Controllers\TemplateController;
+use App\Http\Controllers\RoleController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsGlobalAdmin;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Models\Contact;
-use App\Models\Document;
-use App\Models\Service;
-use App\Models\Company;
-use App\Models\Notification;
+use App\Models\User;
+use App\Http\Controllers\InteractiveMessageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -61,17 +64,17 @@ Route::middleware('guest')->group(function () {
     Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('login');
 });
 
-// Test
-Route::get('/test', function(){
-   echo "Test";
+Route::get('/new-ui', function(){
+    return Inertia::render('new_ui', []);
 });
 
-Route::get('/Test', function () {
-    echo "Success";
-})->middleware('planrestriction');
+// Test
+Route::get('/test', function(){
+});
+ 
 
 // Invite User
-Route::get('/user-invite', [UserInviteController::class, 'relateUser']);
+Route::get('/user-invite', [UserInviteController::class, 'inviteUser']);
 Route::get('/invitedUserRelation', [UserInviteController::class, 'relateUser']);
 
 Route::post('/incoming', [MsgController::class, 'incoming']);
@@ -80,8 +83,10 @@ Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
 Route::get('/fb-whatsapp',[MsgController::class, 'incomingFBWhatsApp']);
 Route::post('/fb-whatsapp',[MsgController::class, 'incomingFBWhatsApp']);
 
-Route::get('/stripe-incoming',[SettingsController::class, 'updatePayment']);
-Route::post('/stripe-incoming',[SettingsController::class, 'updatePayment']);
+Route::get('/fb-insta',[MsgController::class, 'incomingFBInsta']);
+Route::post('/fb-insta',[MsgController::class, 'incomingFBInsta']);
+
+Route::get('/login-admin-user', [UserController::class , 'loginAdminUser']);
 
 Route::middleware('planrestriction')->group(function () {
 
@@ -89,25 +94,30 @@ Route::middleware('planrestriction')->group(function () {
     Route::middleware(['auth', 'verified'])->group(function () {
         
         Route::get('/home', [UserController::class, 'home'])->name('home');
-        Route::get('/dashboard', [UserController::class, 'home'])->name('dashboard');
-        Route::get('/getCompanyId', [UserController::class, 'getSelectedCompany'])->name('get_selected_company');
+        Route::get('/social-profile', [UserController::class, 'socialProfile'])->name('social_profile');
+        Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
         Route::get('/user/timezone',[UserController::class, 'getUserTimeZone'])->name('get_time_zone');
         Route::post('/show_register_step',[RegisteredUserController:: class, 'create'])->name('show_register_step');
+        Route::get('/user/checkInformation', [UserController::class, 'checkInformation'])->name('check_information');
+        Route::post('/company/information', [UserController::class, 'onBoardingInformation'])->name('onBoarding');
+        Route::post('/subscription/complete', [UserController::class, 'informationComplete'])->name('subcription_complete');
+        Route::get('/fetch-social-profile-pages', [UserController::class, 'fetchSocialPages'])->name('fetch_social_profile_pages');
 
         // FaceBook
-        Route::get('/connect/fb/{accountId}',[UserController::class, 'connectFaceBook'])->name('connect_face_book');
-        Route::get('/fb-callback',[UserController::class, 'storeFaceBookCode'])->name('store_face_book_code');
+        Route::get('/connect/fb/{accountId}',[WhatsAppUsersController::class, 'connectFaceBook'])->name('connect_face_book');
+        Route::get('/store-access-token/{app_name}/{token}',[WhatsAppUsersController::class, 'storeUserToken'])->name('store_user_code');
         
         // Wallet
         Route::get('/wallet', [UserController::class, 'wallet'])->name('wallet');
         Route::post('/charge', [UserController::class, 'charge'])->name('charge');
         Route::get('/user-balance', [UserController::class, 'userBalance'])->name('userBalance');
-        Route::get('/transactions', [UserController::class, 'transactions'])->name('listTransaction');
+       // Route::get('/transactions', [UserController::class, 'transactions'])->name('listTransaction');
         Route::get('/invoices/{id}', [UserController::class, 'invoices'])->name('invoices');    
         Route::get('/getPaymentMethods', [UserController::class, 'getPaymentMethods'])->name('getPaymentMethods');
         Route::get('/getPlanDetail/{plan}', [PlanController::class, 'getPlanDetail'])->name('get_plan_data');
-
-
+        Route::post('/update-payment-method', [SettingsController::class, 'updatePaymentMethod'])->name('setDefaultPaymentMethod');
+        Route::post('/delete-payment-method', [SettingsController::class, 'deletePaymentMethod'])->name('deletePaymentMethod');
+         
         // Stripe
         Route::get('/createStripeSetupIntent', [UserController::class, 'createStripeSetupIntent'])->name('createStripeSetupIntent');
         Route::post('/relatePaymentMethod', [UserController::class, 'relatePaymentMethod'])->name('relatePaymentMethod');
@@ -117,13 +127,17 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/user/company/pricing', [SettingsController::class, 'updateSubscription'])->name('updateSubscription');
         Route::post('/save/subscription/{plan}', [SettingsController::class, 'SubscriptionPlan'])->name('subscribe_plan');
         Route::post('/edit/company',[SettingsController::class, 'saveCompany'])->name('saveCompany');
+        Route::post('/autotopup',[SettingsController::class, 'setAutoTopupStatus'])->name('setAutoTopupStatus');
+        Route::get('/currentcompany',[SettingsController::class, 'CurrentCompany'])->name('CurrentCompany');
 
         // Profile
         Route::get('/user/profile', [UserController::class, 'profile'])->name('profile');
         Route::post('/user/registration', [UserController::class, 'storeUserRegistration'])->name('store_user_data');
+        Route::post('/user/update', [UserController::class, 'storeUserRegistration'])->name('update_user_data');
         Route::get('/image/{type}/{id}', [ImageController::class, 'showImage'])->name('show_image');
         Route::post('/user/regenerate_token', [UserController::class, 'regenerateToken'])->name('regenerate_token');
         Route::post('/user/change_password/{id}', [UserController::class, 'changePassword'])->name('change_password');
+        Route::post('/change/profile/picture', [UserController::class, 'changeProfilePicture'])->name('change_profile_picture');
 
         // Messages
         Route::get('/messages/list', [MessageLogController::class, 'list'])->name('messages');
@@ -141,6 +155,9 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/account/delete_account', [UserController::class, 'deleteAccount'])->name('delete_account');
         Route::post('/saveTemplateStatus/account/{acc_id}/template/{tmp_id}', [UserController::class, 'saveTemplateStatus'])->name('template_status_form');
         Route::post('/migrateRequest', [UserController::class, 'sendMigrateRequest'])->name('migrate_request');
+        Route::post('/account/tmpBodymapping/{template_id}', [UserController::class, 'tmpBodyfieldMapping'])->name('tmp_body_mapping');
+        Route::get('/product/searchproduct', [ProductController::class, 'searchProduct'])->name('search_product');
+        Route::post('/catalog/product/delete/{id}', [ProductController::class, 'deleteProduct'])->name('deleteCatalogProduct');
 
         // Webhook Events
         Route::post('/account/{id}/webhook_event', [UserController::class, 'createWebhookEvent'])->name('create_webhook_event');
@@ -162,7 +179,6 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/getusers/{module}/{id}', [NoteController::class, 'getUsers'])->name('get_users');
         Route::post('/taskupdate/{module}/{id}', [NoteController::class, 'updateTask'])->name('update_task');
 
-
         Route::get('/contacts', [ContactController::class, 'index'])->name('listContact');
         Route::delete('/contact/delete/{id}', [ContactController::class, 'destroy'])->name('deleteContact');
         Route::get('/contact', [ContactController::class, 'show'])->name('detailContact');
@@ -170,46 +186,54 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/contact/store', [ContactController::class, 'store'])->name('storeContact');
         Route::get('/contact/getContactDetail', [ContactController::class, 'edit'])->name('editContact');
         Route::get('/contact/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
+        Route::post('/contact/groupDelete', [ContactController::class, 'groupDeleteRecord'])->name('group_delete');
         
         Route::get('/subpanelRecords', [ContactController::class, 'show_subpanel'])->name('subpanel_list');
+        Route::get('/getLatestContact', [ContactController::class, 'getLatestContact'])->name('new_contact');
 
         // Document
         Route::get('/download_document/{id}', [DocumentController::class, 'downloadDocument'])->name('download_document');
         Route::get('/preview_document/{id}', [DocumentController::class, 'previewDocument'])->name('preview_document');
 
         // Opportunity
-        Route::get('/opportunities', [OpportunityController::class, 'index'])->name('listOpportunity');
-        Route::delete('/opportunity/delete/{id}', [OpportunityController::class, 'destroy'])->name('deleteOpportunity');
-        Route::get('/opportunity/detail/{id}', [OpportunityController::class, 'show'])->name('detailOpportunity');
-        Route::post('/opportunity/update/{id}', [OpportunityController::class, 'update'])->name('updateOpportunity');
-        Route::post('/opportunity/store', [OpportunityController::class, 'store'])->name('storeOpportunity');
-        Route::get('/opportunity/edit/{id}', [OpportunityController::class, 'edit'])->name('editOpportunity');
+        Route::get('/deals', [OpportunityController::class, 'index'])->name('listOpportunity');
+        Route::delete('/deal/delete/{id}', [OpportunityController::class, 'destroy'])->name('deleteOpportunity');
+        Route::get('/deal/detail/{id}', [OpportunityController::class, 'show'])->name('detailOpportunity');
+        Route::post('/deal/update/{id}', [OpportunityController::class, 'update'])->name('updateOpportunity');
+        Route::post('/deal/store', [OpportunityController::class, 'store'])->name('storeOpportunity');
+        Route::get('/deal/edit/{id}', [OpportunityController::class, 'edit'])->name('editOpportunity');
     
         //Leads
         Route::get('/leads', [LeadController::class, 'index'])->name('listLead');
         Route::delete('/lead/delete/{id}', [LeadController::class, 'destroy'])->name('deleteLead');
-        Route::get('/lead', [LeadController::class, 'show'])->name('detailLead');
-        Route::post('/updateLead/{id}', [LeadController::class, 'update'])->name('updateLead');
-        Route::post('/updateLead', [LeadController::class, 'store'])->name('storeLead');
-        Route::get('/getLeadDetail', [LeadController::class, 'edit'])->name('editLead');
-        Route::post('/convertLead/{id}', [LeadController::class, 'convert_lead'])->name('convertLead');
-        
+        Route::get('/lead/detail/{id}', [LeadController::class, 'show'])->name('detailLead');
+        Route::post('/lead/updateLead/{id}', [LeadController::class, 'update'])->name('updateLead');
+        Route::post('/lead/updateLead', [LeadController::class, 'store'])->name('storeLead');
+        Route::get('/lead/getLeadDetail/{id}', [LeadController::class, 'edit'])->name('editLead');
+        Route::post('/lead/convertLead/{id}', [LeadController::class, 'convert_lead'])->name('convertLead');
+         //Groups
+         Route::get('/groups', [GroupController::class, 'index'])->name('listGroup');
+         Route::delete('/group/delete/{id}', [GroupController::class, 'destroy'])->name('deleteGroup');
+         Route::get('/group/detail/{id}', [GroupController::class, 'show'])->name('detailGroup');
+         Route::post('/group/updategroup/{id}', [GroupController::class, 'update'])->name('updateGroup');
+         Route::post('/group/updateGroup', [GroupController::class, 'store'])->name('storeGroup');
+         Route::get('/group/getgroupDetail/{id}', [GroupController::class, 'edit'])->name('editGroup');
         
         //Organization
         Route::get('/organizations', [OrganizationController::class, 'index'])->name('listOrganization');
         Route::delete('/organization/delete/{id}', [OrganizationController::class, 'destroy'])->name('deleteOrganization');
-        Route::get('/organization', [OrganizationController::class, 'show'])->name('detailOrganization');
-        Route::post('/updateOrganization/{id}', [OrganizationController::class, 'update'])->name('updateOrganization');
-        Route::post('/updateOrganization', [OrganizationController::class, 'store'])->name('storeOrganization');
+        Route::get('/organization/list', [OrganizationController::class, 'show'])->name('detailOrganization');
+        Route::post('/organization/updateOrganization/{id}', [OrganizationController::class, 'update'])->name('updateOrganization');
+        Route::post('/organization/updateOrganization', [OrganizationController::class, 'store'])->name('storeOrganization');
         Route::get('/organization/edit/{id}', [OrganizationController::class, 'edit'])->name('editOrganization');
 
         // Product
         Route::get('/products', [ProductController::class, 'index'])->name('listProduct');
         Route::delete('/product/delete/{id}', [ProductController::class, 'destroy'])->name('deleteProduct');
         Route::get('/product/{id}', [ProductController::class, 'show'])->name('detailProduct');
-        Route::post('/updateProduct/{id}', [ProductController::class, 'update'])->name('updateProduct');
-        Route::post('/updateProduct', [ProductController::class, 'store'])->name('storeProduct');
-        Route::get('/getProductDetail', [ProductController::class, 'edit'])->name('editProduct');
+        Route::post('/product/updateProduct/{id}', [ProductController::class, 'update'])->name('updateProduct');
+        Route::post('/product/updateProduct', [ProductController::class, 'store'])->name('storeProduct');
+        Route::get('/product/edit/{id}', [ProductController::class, 'edit'])->name('editProduct');
     
         // Order
         Route::get('/orders', [OrderController::class, 'index'])->name('listOrder');
@@ -231,7 +255,9 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/getRelateContacts', [FormController::class, 'getRelateContacts'])->name('get_relate_contacts_list');
         Route::get('/lookup', [FormController::class, 'lookup'])->name('lookup');
         Route::post('/massEdit', [FormController::class, 'massEdit'])->name('mass_edit');
-
+        Route::get('/fetchModuleGroupFields/{module}', [FormController::class, 'fetchModuleGroupFields'])->name('fetch_module_groupfields');
+        Route::get('/fetchTagListOptions', [FormController::class, 'fetchTagListOption'])->name('tag_list_options');
+        
         // Import
         Route::get('/imports', [ImportController::class, 'index'])->name('listImport');
         Route::get('/import/create', [ImportController::class, 'create'])->name('new_import');
@@ -243,10 +269,30 @@ Route::middleware('planrestriction')->group(function () {
         // Export
         Route::get('/exports', [ExportController::class, 'exportFile'])->name('export');
 
+        // Catalog
+        Route::get('/fetchFBfields/{module}', [CatalogController::class, 'fetchFBfields'])->name('fetchFBfields');
+        Route::post('/FBfields/mapping/{module}', [SettingsController::class, 'saveFbFielsMapping'])->name('FBfields_map');
+        Route::get('/catalogs', [CatalogController::class, 'index'])->name('listCatalog');
+        Route::post('/catalog/store', [CatalogController::class, 'createCatalog'])->name('storeCatalog');
+        Route::get('/catalog/detail/{id}', [CatalogController::class, 'show'])->name('detailCatalog');
+        Route::delete('/catalog/delete/{id}', [CatalogController::class, 'destroy'])->name('deleteCatalog');
+        Route::get('/catalog/schedule/list', [CatalogController::class, 'catalogScheduleList'])->name('catalog_schedule');
+        Route::post('/schedule-facebook-business-catalog/{businessId}/{fbToken}', [CatalogController::class, 'scheduleCatalog'])->name('schedule_business_catalog');
+        Route::post('/revoke-facebook-token', [SettingsController::class, 'revokeFacebookData'])->name('revokeFbSync');
+        Route::post('/catalog/re-schedule/{id}', [CatalogController::class, 'reSchedularCatalogProduct'])->name('catalog_reschedule');
+        Route::post('/catalog/schedular/fbFieldmap/{id}', [CatalogController::class, 'schedularFieldMapping'])->name('schedule_mappingfield');
+        Route::post('/catalog/schedular/handleScheduler/{id}/{action}', [CatalogController::class, 'catalogSchedularHandler'])->name('handle_scheduler');
+        Route::get('/catalog/related/products/{id}', [CatalogController::class, 'fetchCatalogProduct'])->name('catalog_product');
+        Route::post('/fbBusinessAccount/{token}', [CatalogController::class, 'fetchBusinessAccount'])->name('fetchBusinessAccount');
+        Route::get('/catalog/schedular/list/{token}', [CatalogController::class, 'schedularList'])->name('catalog_list');
+        Route::post('catalog/schedule/period/{catalog_id}', [CatalogController::class, 'scheduleTimeperiod'])->name('schedule_period');
+        Route::get('/facebook/app/list', [CatalogController::class, 'fetchFBAppList'])->name('facebook_app_list');
+
         // Show Columns
         Route::post('/showColumns/{module}', [CompanyController::class, 'showColumn'])->name('showColumns');
         Route::get('/company/list', [CompanyController::class, 'getCompanies'])->name('getCompanies');
         Route::post('/company/unlink', [CompanyController::class, 'unlinkCompany'])->name('unlinkCompany');
+        Route::post('/set_pagelimit/{module}', [UserController::class, 'setPageLimit'])->name('setPageLimit');
 
         // Tag
         Route::get('/tags', [TagController::class, 'index'])->name('listTag');
@@ -270,18 +316,19 @@ Route::middleware('planrestriction')->group(function () {
         Route::delete('/deleteList/{id}', [CategoryController::class, 'destroy'])->name('deleteCategory');
 
         // Field
+        Route::get('/field/GroupMenu', [FieldController::class, 'fieldGroupMenu'])->name('field_group_menu');
         Route::get('/fields', [FieldController::class, 'index'])->name('listField');
         Route::get('/field/{id}', [FieldController::class, 'edit'])->name('editField');
         Route::post('/field/store', [FieldController::class, 'store'])->name('storeField');
-        Route::post('/updateField/{id}',[FieldController::class, 'update'])->name('updateField');
-        Route::delete('/deleteField/{id}',[FieldController::class, 'destroy'])->name('deleteField');
+        Route::post('/field/updateField/{id}',[FieldController::class, 'update'])->name('updateField');
+        Route::delete('/field/deleteField/{id}',[FieldController::class, 'destroy'])->name('deleteField');
 
         // Campaign
         Route::get('/campaigns',[CampaignController::class, 'index'])->name('listCampaign');
         Route::post('/campaign/store',[Campaigncontroller::class, 'store'])->name('storeCampaign');
         Route::get('/campaign/detail/{id}',[CampaignController::class, 'show'])->name('detailCampaign');
         Route::get('/campaign/search',[CampaignController::class, 'searchRecords'])->name('searchfilter');
-        Route::delete('/deleteCampaign/{id}',[CampaignController::class, 'destroy'])->name('deleteCampaign');
+        Route::delete('/campaign/deleteCampaign/{id}',[CampaignController::class, 'destroy'])->name('deleteCampaign');
         Route::get('/campaign/company/{service}',[CampaignController::class, 'getCompanyName'])->name('get_company_name');
         Route::get('/campaign/getTemplates/{account_id}',[CampaignController::class, 'getTemplateList'])->name('get_template_list');
 
@@ -318,6 +365,29 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/navigate/fields', [SettingsController::class, 'navigationField'])->name('navigation_field');
         Route::get('/record/merge', [SettingsController::class, 'recordMerger'])->name('record_merge');
         Route::post('/merge/remain', [SettingsController::class, 'deleteRemainRecords'])->name('remain_record');
+
+        // API
+        Route::get('/api-key/list',[ApiController::class, 'index'])->name('listApi');
+        Route::post('/api-key/store',[ApiController::class, 'store'])->name('storeApi');
+        Route::post('/api-key/update',[ApiController::class, 'store'])->name('updateApi');
+        Route::get('/api-key/detail/{id}', [ApiController::class, 'show'])->name('detailApi');
+        Route::get('/api-key/edit/{id}', [ApiController::class, 'create'])->name('editApi');
+        Route::delete('/api-key/delete/{id}', [ApiController::class, 'destroy'])->name('deleteApi');
+        Route::post('/api-key/link/token', [ApiController::class, 'linkApiToken'])->name('link_token');
+        Route::post('/api-key/delete/token', [ApiController::class, 'deleteApiToken'])->name('delete_token');
+
+        Route::get('/navigation/submenu', [PlanController::class, 'subMenu'])->name('sub_menu');
+        Route::get('/update/company/plan', [PlanController::class, 'updatePlan'])->name('update_plan');
+
+        // Settings
+        Route::get('/fetchTemplates', [TemplateController::class, 'syncTemplate'])->name('sync_templates');
+
+        //Roles
+        Route::get('/roles',[RoleController::class, 'index'])->name('listRole');
+        Route::get('/role/detail/{id}',[RoleController::class, 'show'])->name('detailRole');
+        Route::get('/role/edit/{id}',[RoleController::class, 'edit'])->name('editRole');
+        Route::post('/role/store',[RoleController::class, 'store'])->name('storeRole');
+        Route::post('/role/update',[RoleController::class, 'store'])->name('updateRole');
     });
 
 });
@@ -333,6 +403,7 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::delete('/user/delete', [UserController::class, 'deleteUser'])->name('deleteUser');
     Route::get('/user/{id}', [UserController::class, 'userDetail'])->name('detailUser');
     Route::get('/globalusers', [UserController::class, 'globalusersListing'])->name('show_GlobalUsers');
+    Route::post('/delete/template/{id}', [UserController::class, 'deleteTemplate'])->name('delete_template');
 
     // Field Group
     Route::post('/storeFieldGroup', [FieldGroupController::class, 'store'])->name('storeFieldGroup');
@@ -346,8 +417,9 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
      Route::post('/support-requests/{id}', [SupportRequestController::class, 'update'])->name('updateSupportRequest');
      Route::post('/support-requests', [SupportRequestController::class, 'store'])->name('storeSupportRequest');
      Route::get('/support-requests/edit/{id}', [SupportRequestController::class, 'edit'])->name('editSupportRequest');
+    
     //Company   
-    Route::get('/workspaces', [CompanyController::class, 'index'])->name('listAdminCompany');
+    //Route::get('/workspaces', [CompanyController::class, 'index'])->name('listAdminCompany');
     Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');
     Route::get('/company/detail/{id}', [CompanyController::class, 'show'])->name('detailCompany');
     Route::get('/company/edit/{id}', [CompanyController::class, 'edit'])->name('editCompany');
@@ -355,6 +427,16 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::delete('/company/delete/{id}', [CompanyController::class, 'destroy'])->name('deleteCompany');
     Route::post('/company/sendInvitation', [CompanyController::class, 'sendInvitation'])->name('send_invite_link');
 
+    // List Templates
+    Route::get('/InteractiveMessages', [InteractiveMessageController::class, 'index'])->name('listInteractiveMessage');
+    Route::post('/InteractiveMessages/save', [InteractiveMessageController::class, 'store'])->name('storeInteractiveMessage');
+    Route::get('/InteractiveMessages/Detail/{id}', [InteractiveMessageController::class, 'show'])->name('detailInteractiveMessage');
+    Route::get('/InteractiveMessages/edit/{id}', [InteractiveMessageController::class, 'edit'])->name('editInteractiveMessage');
+    Route::post('/InteractiveMessages/update/{id}', [InteractiveMessageController::class, 'store'])->name('updateInteractiveMessage');
+    Route::delete('/InteractiveMessages/delete/{id}', [InteractiveMessageController::class, 'destroy'])->name('deleteInteractiveMessage');
+    
+    
+    Route::get('/company/current/plan', [PlanController::class, 'companyCurrentPlan'])->name('max_users');
 });
 
 // Check user is global admin
@@ -396,8 +478,7 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::post('/subscription/plan/save', [SettingsController::class, 'saveSubscriptionChange'])->name('subscription_save');
     
     Route::get('/user/company/Detail', [SettingsController::class, 'CurrentCompany'])->name('user_company');
-    Route::get('/changeCompany/{id}', [SettingsController::class, 'changeCompany'])->name('change_company');
-    
+
     // Pricing
     Route::get('/admin/pricing', [PriceController::class, 'index'])->name('listPrice');
     Route::get('/admin/pricing/edit/{id}', [PriceController::class, 'edit'])->name('editPrice');

@@ -176,6 +176,9 @@ return [
         App\Providers\RouteServiceProvider::class,
         Barryvdh\DomPDF\ServiceProvider::class,
 
+        // Permissions
+        Spatie\Permission\PermissionServiceProvider::class,
+
     ],
 
     /*
@@ -243,6 +246,11 @@ return [
     'platFormParentId' => env('PLATFORM_PARENT_ID'),
     */
 
+    'admin_email' => env('ADMIN_EMAIL'),
+    'log_email' => env('LOG_EMAIL'),
+    'admin_api_url' => env('ADMIN_API_URL'),
+    'admin_api_key' => env('ADMIN_API_KEY'),
+
     // GupShup
     'api_url' => env('API_URL'),
     'apiKey' =>  env('API_KEY'),
@@ -257,26 +265,26 @@ return [
     'crmUserName' => env('CRM_USER_NAME'),
     'crmAccessKey' => env('CRM_ACCESS_KEY'),
 
-    'stripe' => [
-        'stripe_key' => env('STRIPE_KEY'),
-        'stripe_secret' => env('STRIPE_SECRET'),
-        'stripe_webhook' => env('STRIPE_WEBHOOK_SECRET'),
-    ],
-
     'plans' => [
         'pro' => env('PRO'),
         'business' => env('BUSINESS'),
         'enterprise' => env('ENTERPRISE'),
+        'conversation' => env('CONVERSATION'),
+        'social_profile' => env('SOCIAL_PROFILE'),
     ],
 
     // FaceBook
     'fb' => [
-        'api_id' => env('API_ID'),
+        'app_id' => env('FB_APP_ID'),
         'app_secret' => env('APP_SECRET'),
+        'app_token' => env('APP_TOKEN'),
         'app_graph_version' => env('DEFAULT_GRAPH_VERSION'),
         'call_back_url' => env('CALL_BACK_URL'),
         
         'verification_code' => env('VERIFICATION_CODE'),
         'api_url' => env('FB_API_URL'),
     ],
+
+    'admin_email' => env('ADMIN_EMAIL'),
+    'log_email' => env('LOG_EMAIL'),
 ];

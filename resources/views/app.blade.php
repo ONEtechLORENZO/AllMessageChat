@@ -16,6 +16,9 @@
         <link rel="stylesheet" href="{{ url('css/app.css') }}?v=1.7.21">
         <link rel="stylesheet" href="{{ url('css/notie.min.css') }}?v=1.7.21">
         <link rel="stylesheet" href="{{ url('css/custom.css') }}?v=1.7.21">
+        
+        <!-- Tab Logo -->
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ url('img/logo-boost.svg') }}?v=1.7.21">
 
         <!-- Scripts -->
         @routes

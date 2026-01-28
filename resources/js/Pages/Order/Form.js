@@ -84,6 +84,7 @@ export default function LineItem(props)
          productList={props.productList}
          totalPrice={props.totalPrice}
          view={'Form'}
+         {...props}
         />
     );
 }

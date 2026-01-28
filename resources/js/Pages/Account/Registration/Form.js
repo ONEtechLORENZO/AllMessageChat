@@ -11,6 +11,7 @@ import Step7 from './Step7';
 import axios from 'axios';
 import notie from 'notie';
 import nProgress from 'nprogress';
+import { Inertia } from '@inertiajs/inertia';
 
 const mandatoryField = ['display_name', 'phone_number', 'company_name'];
 
@@ -23,13 +24,29 @@ export default function AccountRegistration(props){
     const [addfield, setAddField] = useState(false);
     const [checkPermission, setPermission] = useState({});
     const [accountId, setAccountid] = useState();
-    
+    const [socialProfiles, setSocialProfiles] = useState();
+
     useEffect(() => {
       setData({});
     },[]);
 
     function serviceHandler(){
         const service = data.service;
+
+        // Save account based on selected profile
+        if(data.profile_list) {
+          nProgress.start(0.5);
+          nProgress.inc(0.2);
+          let url = route('store_account_registration');
+
+          Inertia.post(url, data, {
+            onSuccess : (response) => {
+               console.log(response);
+            }
+          });
+          return false;
+        }
+
         if(service == "whatsapp"){
             setCurrentPage(6);
         }
@@ -43,11 +60,30 @@ export default function AccountRegistration(props){
       let value = '';
       if(field_name == 'phone_number'){
         value = event.target.value.replace(/\D/g, "");
-      }else{
+      } else {
         value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-      }
+      } 
       newData[field_name] = value;
       setData(newData);
+
+      // Fetch exist social profile
+      if(field_name == 'service' && value) {
+        fetchExistProfiles(value);
+      }
+
+    }
+
+    /**
+     * Fetch exist Social profile list
+     */
+    function fetchExistProfiles(service) {
+      nProgress.start(0.5);
+      nProgress.inc(0.2);
+
+      axios.get(route('fetch_social_profile_pages', {'service': service})).then((response) => {
+        nProgress.done(true);
+        setSocialProfiles(response.data.social_profiles);
+      });
     }
 
     /**
@@ -178,6 +214,8 @@ export default function AccountRegistration(props){
                                         setOpen={setOpen}
                                         formHandler={formHandler}
                                         serviceHandler={serviceHandler}
+                                        socialProfiles={socialProfiles}
+                                        {...props}
                                        />
                                     </div>
 
@@ -193,6 +231,8 @@ export default function AccountRegistration(props){
                                         setAddField={setAddField}
                                         legalEntityName={legalEntityName}
                                         changePhoneNumber={changePhoneNumber}
+                                        translator ={props.translator}
+                                        {...props}
                                         />
                                     </div>
 
@@ -210,6 +250,7 @@ export default function AccountRegistration(props){
                                         validateRequest={validateRequest}
                                         saveAccount={saveAccount}
                                         changePhoneNumber={changePhoneNumber}
+                                        {...props}
                                        />
                                     </div>
 
@@ -221,6 +262,7 @@ export default function AccountRegistration(props){
                                        <Step4 
                                        accountId={accountId}
                                        saveAccount={saveAccount}
+                                       {...props}
                                        />
                                     </div>
 
@@ -239,6 +281,7 @@ export default function AccountRegistration(props){
                                     >
                                       <Step6 
                                       setCurrentPage={setCurrentPage}
+                                      {...props}
                                       />
                                     </div>
 
@@ -249,6 +292,7 @@ export default function AccountRegistration(props){
                                     >
                                       <Step7 
                                       setCurrentPage={setCurrentPage}
+                                      {...props}
                                       />
                                     </div>
 

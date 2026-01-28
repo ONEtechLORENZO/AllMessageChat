@@ -4,6 +4,7 @@ import { CheckIcon, XIcon, ChevronRightIcon} from "@heroicons/react/solid";
 import { Link } from "@inertiajs/inertia-react";
 import axios from "axios";
 import { Inertia } from '@inertiajs/inertia';
+import ApplicationLogo from "@/Components/ApplicationLogo";
 
 const tiers = [
     { name: 'Lite', href: '#', priceMonthly: 0, currency: '€',description: '' , original: 'lite', label : 'Lite'},
@@ -26,10 +27,10 @@ function classNames(...classes) {
 
 export default function Step5 (props) {
 
-    const [plans, setPlans] = useState();
+    const [plans, setPlans] = useState(props.plans);
 
     useEffect( () => {
-        getPlanDetails();
+
     },[]);
 
     function Subscribe(plan_id, name){
@@ -40,29 +41,18 @@ export default function Step5 (props) {
         }
         if(name == 'Lite') {
             props.setOpenTab(4);
-            props.setStripe(true);
             return false;
         }
 
         if(!props.stripe) {
-           props.setOpenTab(4);
+           props.setOpenTab(2);
            return false;
         }
 
        // Inertia.post(route('subscribe_plan',{'plan': plan_id}), {user_id: props.user.user_id, is_register_step: true }, {
-        axios.post(route('subscribe_plan',{'plan': plan_id}), {user_id: props.user.user_id, is_register_step: true })
+        axios.post(route('subscribe_plan',{'plan': plan_id}), {user_id: props.user.id, is_register_step: true })
         .then((response) => {
-                props.setOpenTab(5);
-        });
-    }
-
-    function getPlanDetails() {
-
-        var url = route('get_plan');
-        axios.get(url).then( (response) => {
-            if(response.data){
-                setPlans(response.data.plans);
-            }
+            props.setOpenTab(4);
         });
     }
 
@@ -71,12 +61,9 @@ export default function Step5 (props) {
             <div className="max-w-7xl flex mx-auto items-center px-10">
                 <div className="w-full bg-white flex justify-center py-8 rounded-xl px-4 lg:px-10 shadow-2xl">
                     <div className="py-8">
-                        <div className="flex justify-center px-4">
-                            <img
-                                src="./img/onemessage-logo.png"
-                                alt="One message logo"
-                                className="w-1/2"
-                            />
+                        <div className="flex justify-center px-4 text-indigo-600 text-4xl font-semibold italic">
+                           One message
+                           <ApplicationLogo className="block h-90 w-auto text-gray-500 px-2" />
                         </div>
                         <div className="flex justify-center">
                             <div className="font-semibold text-lg">Choose Your Plan First!</div>
@@ -138,8 +125,8 @@ export default function Step5 (props) {
                                           <td key={plan.id} className="h-full py-8 px-6 align-top">
                                             <div className="relative table h-full">
                                             <p>
-                                                <span className="text-3xl font-bold tracking-tight text-gray-900">{plan.price} {plan.currency}</span>{' '}
-                                                <span className="text-base font-medium text-gray-500">/{plan.period}</span>
+                                                <span className="text-3xl font-bold tracking-tight text-gray-900">{plan.price} {props.company.currency ? props.company.currency : '€'}</span>{' '}
+                                                <span className="text-base font-medium text-gray-500">/{plan.period ? plan.period : 'monthly'}</span>
                                             </p>
                                             </div>
                                           </td>
@@ -179,15 +166,27 @@ export default function Step5 (props) {
                           </div>
                         </div>
             
-                        <div className="flex justify-end mr-6">
-                            <button
-                                type="button"
-                                className="w-full inline-flex justify-start rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-900 hover:bg-gray-200 hover:text-gray-900 text-semibold font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-                                onClick={() => props.setOpenTab(4)}
-                            >
-                                Skip
-                                <span className="flex justify-end pt-1"><ChevronRightIcon className="h-4 w-4"/></span>
-                            </button>
+                        <div className="mt-4 grid grid-cols-2 ">
+                            <div className="flex justify-start">
+                                <button
+                                    type="button"
+                                    className="w-full inline-flex justify-start rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-200 hover:bg-gray-900 hover:text-white text-semibold font-medium text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+                                    onClick={() => props.setOpenTab(2)}
+                               >
+                                    Back
+                                    <span className="flex justify-end pt-1"><ChevronRightIcon className="h-4 w-4"/></span>
+                                </button>
+                            </div>
+                            <div className="flex justify-end ">
+                                <button
+                                    type="button"
+                                    className="w-full inline-flex justify-start rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-900 hover:bg-gray-200 hover:text-gray-900 text-semibold font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+                                    onClick={() => props.setOpenTab(4)}
+                                >
+                                    Skip
+                                    <span className="flex justify-end pt-1"><ChevronRightIcon className="h-4 w-4"/></span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

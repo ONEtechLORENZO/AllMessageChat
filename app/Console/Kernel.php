@@ -24,8 +24,13 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-         $schedule->command('command:HandleImport')->everyMinute();
-         $schedule->command('command:HandleCampaign')->everyMinute();
+        $schedule->command('command:HandleImport')->everyMinute();
+        $schedule->command('command:HandleCampaign')->everyMinute();
+        $schedule->command('command:HandleSubscription')->daily();
+        $schedule->command('command:RemoveAccessToken')->everyMinute();
+        $schedule->command('command:HandleCatalogProduct')->everyMinute();
+        $schedule->command('command:ResetSessionValue')->monthlyOn(1, '00:00');
+	$schedule->command('command:HandleDocumentStorage')->daily();
     }
 
     /**

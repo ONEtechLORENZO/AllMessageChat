@@ -6,12 +6,12 @@ function Information(props){
     return(
         <div className="overflow-hidden shadow rounded-lg divide-y divide-gray-200 w-full content-center">
             <div className="px-4 py-5 sm:px-6 bg-green-200">
-                Information
+                {props.translator['Information']}
             </div>
         <div className="px-4 py-5 sm:p-6">
          <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Title
+            {props.translator['Title']}
             </label>
             <div className="mt-1">
                 <Input
@@ -33,7 +33,7 @@ function Information(props){
                     className="bg-indigo-600 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     onClick={props.saveCampaign}
                >
-                    Next
+                    {props.translator['Next']}
                 </button>
              </div>
             </div>

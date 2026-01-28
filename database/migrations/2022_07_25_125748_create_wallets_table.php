@@ -17,7 +17,6 @@ class CreateWalletsTable extends Migration
             $table->id();
             $table->float('balance_amount', 14, 4);
             $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('company_id')->constrained('companies');            
             $table->timestamps();
         });
     }

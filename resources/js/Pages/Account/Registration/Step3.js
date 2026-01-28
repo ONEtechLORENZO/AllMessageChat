@@ -5,26 +5,11 @@ import Checkbox from "@/Components/Forms/Checkbox";
 import { Link } from "@inertiajs/inertia-react";
 import PhoneInput2 from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
+import TextArea from "@/Components/Forms/TextArea";
 
-const categoryOption = {
-    'Automotive' : 'Automotive',
-    'Beauty, Spa and Salon' : 'Beauty, Spa and Salon',
-    'Clothing and Apparel':'Clothing and Apparel',
-    'Education':'Education',
-    'Entertainment':'Entertainment',
-    'Event Planning and Service' : 'Event Planning and Service',
-    'Finance and Banking':'Finance and Banking',
-    'Food and Grocery':'Food and Grocery',
-    'Public Service' :'Public Service',
-    'Hotel and Lodging':'Hotel and Lodging',
-    'Medical and Health':'Medical and Health',
-    'Non-profit':'Non-profit',
-    'Professional Services':'Professional Services',
-    'Shopping and Retail':'Shopping and Retail',
-    'Travel and Transportation':'Travel and Transportation',
-    'Restaurant':'Restaurant',
-    'Other':'Other',
-}
+import { Button } from "reactstrap";
+
+
 
 const checklist = [
   {'name': 'accept','description':'Accept WA Business Policy & Commerce Policy','value':''},
@@ -32,21 +17,41 @@ const checklist = [
   {'name': 'confirm','description':'I confirm that I own this number and I have the authority to bind it to this account','value':''}
 ];
  
-const formField = [
-  {'label':'Business Category', 'name':'category', 'type':'dropdown'},
-  {'label':'Business Description', 'name':'description', 'type':'text'},
-];
-
-const addformField = [
-  {'label':'Business Phone Number', 'name':'phone_number', 'type':'phone_number', 'mandatory':1},
-  {'label':'Legal Entity Name', 'name':'company_name', 'type':'text', 'mandatory':1},
-  {'label':'Legal Business Name', 'name':'display_name', 'type':'text', 'mandatory':1},
-];
 
 export default function Step3(props){
 
-  const [fieldList, setFieldList] = useState(formField);
+  const categoryOption = {
+    'Automotive' : props.translator['Automotive'],
+    'Beauty, Spa and Salon' : props.translator['Beauty, Spa and Salon'],
+    'Clothing and Apparel':props.translator['Clothing and Apparel'],
+    'Education':props.translator['Education'],
+    'Entertainment':props.translator['Entertainment'],
+    'Event Planning and Service' : props.translator['Event Planning and Service'],
+    'Finance and Banking':props.translator['Finance and Banking'],
+    'Food and Grocery':props.translator['Food and Grocery'],
+    'Public Service' :props.translator['Public Service'],
+    'Hotel and Lodging':props.translator['Hotel and Lodging'],
+    'Medical and Health':props.translator['Medical and Health'],
+    'Non-profit':props.translator['Non-profit'],
+    'Professional Services':props.translator['Professional Services'],
+    'Shopping and Retail':props.translator['Shopping and Retail'],
+    'Travel and Transportation':props.translator['Travel and Transportation'],
+    'Restaurant':props.translator['Restaurant'],
+    'Other':props.translator['Other'],
+}
+  const formField = [
+    {'label':props.translator['Business Category'], 'name':'category', 'type':'dropdown'},
+    {'label':props.translator['Business Description'], 'name':'description', 'type':'textarea'},
+  ];
+  
+  const addformField = [
+    {'label':props.translator['Business Phone Number'], 'name':'phone_number', 'type':'phone_number', 'mandatory':1},
+    {'label':props.translator['Legal Entity Name'], 'name':'company_name', 'type':'text', 'mandatory':1},
+    {'label':props.translator['Legal Business Name'], 'name':'display_name', 'type':'text', 'mandatory':1},
+  ];
 
+  const [fieldList, setFieldList] = useState(formField);
+  
   useEffect(() =>{
     if(props.addfield && fieldList.length < 5){
        let fields = [...addformField,...formField];
@@ -56,7 +61,11 @@ export default function Step3(props){
 
     return(
         <div className='p-4'>
-          <div className="flex">
+          <div>
+            <h2 className="text-2xl font-medium">{props.translator['Register Phone Number']}</h2>
+            <p className="text-[#878787] text-sm">{props.translator['Fill out the form accurately, we will send this data to whats app to verify your credentials.']}</p>
+          </div>
+          <div className="hidden">
                 <div className='p-2 w-1/2'>
                 </div>
                 <div className="w-1/2"> 
@@ -70,20 +79,20 @@ export default function Step3(props){
                     </div> 
                 </div>
             </div>
-          <div className="overflow-hidden  md:rounded-lg">
-            <table className="min-w-full divide-gray-300">
-            <tbody className="divide-gray-200 bg-white">
+          <div className="overflow-hidden  md:rounded-lg mt-6">
+            
+            <div className="space-y-6">
               {fieldList.map((field) => {
                   let field_value = '';
                   let field_name = field.name;
                   field_value = props.data[field_name];
                 return(
-                  <tr>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                  <div className="flex flex-col gap-1">
+                  <div className="whitespace-nowrap text-base font-medium text-gray-500">
                     {field.label}
                     {field.mandatory == 1 && <span className="text-red-600 px-2">*</span>}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                  </div>
+                  <div className="whitespace-nowrap text-sm text-gray-500">
                     {field.type == 'text' ? 
                       <Input 
                       type="text" 
@@ -101,7 +110,7 @@ export default function Step3(props){
                         name={field_name}
                         options={categoryOption}
                         handleChange={props.formHandler}
-                        emptyOption='choose Category'
+                        emptyOption={props.translator['Choose Category']}
                         value={field_value}
                         required={true}
                       />
@@ -119,45 +128,50 @@ export default function Step3(props){
                         searchStyle={{ margin: "0", width: "97%", height: "30px" }}
                         enableSearchField
                         disableSearchIcon
-                        placeholder="Enter phone number"
+                        placeholder={props.translator["Enter phone number"]}
                         value={field_value} 
                         onChange={(value) => props.changePhoneNumber(value, field_name)}
                       />
                      </div>
+                    : field.type == 'textarea' ?
+                      <TextArea
+                          id={field_name}
+                          name={field_name}
+                          required={true}
+                          rows="2"
+                          className={`mt-1 max-w-lg shadow-sm block w-full focus:ring-skin-primary focus:border-skin-primary sm:text-sm border border-gray-300 rounded-md`}
+                          value={field_value}
+                          handleChange={props.formHandler}
+                      />
                     :''}
                   
                     {field.name == 'display_name' ? 
-                    <span>if different from legal entity name, add a link that shows that you own that brand</span>
+                    <span>{props.translator['if different from legal entity name, add a link that shows that you own that brand']}</span>
                     :''}
-                  </td>
-                  </tr>
+                  </div>
+                  </div>
                 )
                 })}
                 {fieldList.length > 3 ? 
-                  <tr>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                  <div className="">
                     
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <p>
-                    <span className="text-red-500">Note: </span>
-                    <span className="text-gray-500 text-sm">
-                        Make sure to enter a Business Description that is
-                        consistent with the<br></br> information show on your website
-                        and that is adherent to Whatsapp Policies.
-                    </span>
-                    </p>
-                    <br></br>
-                    <p>Go to FAQ</p>
-                  </td>
-                  </tr>
+                    <div className="whitespace-nowrap text-sm text-gray-500 col-span-2 space-y-2">
+                      <p>
+                        <span className="text-red-500">Note: </span>
+                        <span className="text-gray-500 text-sm">
+                        {props.translator['Make sure to enter a Business Description that is consistent with the']}<br></br>{props.translator['information show on your website and that is adherent to Whatsapp Policies.']}
+                        </span>
+                      </p>
+                      <p>{props.translator['Go to']} FAQ</p>
+                    </div>
+                  </div>
                 : ''}
-            </tbody>
-            </table>
+            </div>
+            
           </div>
       
-          <div className="p-4">
-            <div className="form-check">
+          <div className="mt-4 space-y-2">
+            <div className="form-check !pl-0">
                  <Checkbox
                     id="accept"
                     name="accept"
@@ -165,10 +179,10 @@ export default function Step3(props){
                     handleChange={props.checkAllPermissioin}
                   />
               <label class="form-check-label inline-block text-gray-500 px-4">
-                  Accept <a className="text-blue-500 px-2" href="https://www.whatsapp.com/legal/business-policy/" target="_blank">WA Business Policy</a> & <a className="text-blue-500 px-2" href="https://www.whatsapp.com/legal/commerce-policy/" target="_blank">Commerce Policy</a>
+              {props.translator['Accept']} <a className="text-blue-500 px-2" href="https://www.whatsapp.com/legal/business-policy/" target="_blank">{props.translator['WA Business Policy']}</a> & <a className="text-blue-500 px-2" href="https://www.whatsapp.com/legal/commerce-policy/" target="_blank">{props.translator['Commerce Policy']}</a>
               </label>
             </div>
-            <div className="form-check">
+            <div className="form-check !pl-0">
                  <Checkbox
                     id="condition"
                     name="condition"
@@ -176,10 +190,10 @@ export default function Step3(props){
                     handleChange={props.checkAllPermissioin}
                   />
               <label class="form-check-label inline-block text-gray-500 px-4">
-                  OneMessage <a className="text-blue-500 px-2" href="https://www.gupshup.io/terms-and-conditions" target="_blank">Terms & Conditions</a>and<a className="text-blue-500 px-2" href="https://www.gupshup.io/privacy-policy" target="_blank">Privary Policy</a>
+                  OneMessage <a className="text-blue-500 px-2" href="https://www.gupshup.io/terms-and-conditions" target="_blank">{props.translator['Terms & Conditions']}</a>{props.translator['and']}<a className="text-blue-500 px-2" href="https://www.gupshup.io/privacy-policy" target="_blank">{props.translator['Privary Policy']}</a>
               </label>
             </div>
-            <div className="form-check">
+            <div className="form-check !pl-0">
                  <Checkbox
                     id="confirm"
                     name="confirm"
@@ -187,19 +201,23 @@ export default function Step3(props){
                     handleChange={props.checkAllPermissioin}
                   />
               <label class="form-check-label inline-block text-gray-500 px-4">
-                    I confirm that i own this number and i have the authority to bind it to this account
+              {props.translator['I confirm that i own this number and i have the authority to bind it to this account']}
               </label>
             </div>
           </div>
 
-          <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button
-                type="button"
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-                onClick={() => props.saveAccount()}
+          <div className="flex justify-between mt-14">
+            <Link
+             href={route('dashboard')}
+             className="btn btn-light"
             >
-                Send Request
-            </button>
+             {props.translator['Cancel']}
+            </Link>
+            <Button
+                color="primary"
+                onClick={() => props.saveAccount()} >
+                {props.translator['Send Request']}
+            </Button>
           </div>
        </div> 
     );

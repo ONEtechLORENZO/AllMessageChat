@@ -19,7 +19,7 @@ function Filter(props)
     };
     const logic_operators = ['AND', 'OR'];
 
-    const relationFields = [
+  /* const relationFields = [
         {
             'field_label': props.translator.Tag,
             'field_name': 'tag_relation',
@@ -34,7 +34,7 @@ function Filter(props)
             'is_mandatory': 0,
             'options': props.filter.category_list
         }
-    ];
+    ];*/
 
     const condition_operators = {
         'text':{
@@ -82,7 +82,22 @@ function Filter(props)
         },
         'tag': {
             'equal':  props.translator['Equal'],
-        }
+        },
+        'textarea':{
+            'equal':  props.translator['Equal'],
+            'contains': props.translator['Contains'],
+            'is_null': props.translator['Null'],
+            'not_equal':props.translator['Not equal'],
+            'start_with': props.translator['Start with'],
+            'end_with': props.translator['End with']
+        },
+        'amount':{
+            'equal':  props.translator['Equal'],
+            'is_null': props.translator['Null'],
+            'not_equal':props.translator['Not equal'],
+            'lesser_than':props.translator['Lesser than'],
+            'greater_than':props.translator['Greater than'],
+        },
        
     };
     const [filter, setFilter] = useState([
@@ -96,7 +111,7 @@ function Filter(props)
     const [selectedFilter , setSelectedFilter] = useState(props.filter.selected_filter);
     const [errors, setErrors] = useState({});
     const [selectedOptions, setSelectedOptions] = useState({'tag_relation': {} , 'list_relation': {}});
-    const [tagOptions, setTagOptions] = useState(props.filter.tag_list);
+   // const [tagOptions, setTagOptions] = useState(props.filter.tag_list);
 
     useEffect(() => {
         fetchModuleFields();
@@ -107,7 +122,17 @@ function Filter(props)
         if(props.is_chat){
             var url = route('chat_list') + '?filter_id='+filter;
         } else {
-            var url = route('list'+props.module) + '?filter_id='+filter;
+            if(props.module =="Transaction")
+            {
+                var url = route('wallet') + '?current_page=Invoice&search_tab=Transaction'+'&filter_id='+filter;
+            }
+            else if(props.module =="Msg")
+            {
+                var url = route('wallet') + '?current_page=Expenses&search_tab=Msg'+'&filter_id='+filter;
+            }           
+            else
+            {
+            var url = route('list'+props.module) + '?filter_id='+filter;}
         }
         
         Inertia.get(url,  {
@@ -303,7 +328,18 @@ function Filter(props)
         if(props.is_chat){
             var url = route('chat_list') + '?filter='+advancedSearch +'&is_chat='+ props.is_chat;
         } else {
-            var url = route('list'+ props.module) + '?filter='+advancedSearch ;
+            if(props.module =="Transaction")
+            {
+                var url = route('wallet') + '?current_page=Invoice&search_tab=Transaction'+'&filter='+advancedSearch;
+            }
+            
+            else if(props.module =="Msg")
+            {
+                var url = route('wallet') + '?current_page=Expenses&search_tab=Msg'+'&filter='+advancedSearch;
+            }
+            else
+            {
+            var url = route('list'+ props.module) + '?filter='+advancedSearch ;}
         }
         
         Inertia.get(url, {
@@ -312,6 +348,7 @@ function Filter(props)
             },
         });
     }
+
     function saveFilterCondition(){
         var is_valid = checkValidate();
         if(!is_valid){
@@ -410,7 +447,7 @@ function Filter(props)
         Axios.get(endpoint_url).then((response) => {
             nProgress.done(true);
             if(response.data.status !== false) {
-                response.data.fields = [...response.data.fields, ...relationFields];
+                //response.data.fields = [...response.data.fields, ...relationFields];
                 setFields(response.data.fields);
             }
             else {
@@ -432,25 +469,31 @@ function Filter(props)
             notie.alert({type: 'error', text: error_message, time: 5});
         });
     }
-    
+ 
     return ( 
         <>
-            <div className="overscroll-auto">
+            <div className="overscroll-auto z-10 mt-1">
                 <Dropdown >
                     <Dropdown.Trigger>
                         <span className="inline-flex rounded-md">
                             <button
                                 type="button"
-                                className="w-10 h-10 bg-white shadow-sm flex items-center justify-center"
+                                className="p-2 bg-white shadow-sm flex items-center justify-center"
                             >
-                                <SettingIcon />
+                                <svg width={20} height={20} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M17.6638 3.66855C17.6638 2.74855 16.9175 2.00293 15.9975 2.00293C15.0775 2.00293 14.3313 2.74855 14.3313 3.66855C14.3313 4.47418 14.9038 5.14668 15.6644 5.30105V16.6636H16.3307V5.30105C17.0913 5.14668 17.6638 4.47418 17.6638 3.66855V3.66855ZM15.9975 4.66855C15.4463 4.66855 14.9982 4.22043 14.9982 3.66918C14.9982 3.11793 15.4463 2.6698 15.9975 2.6698C16.5488 2.6698 16.9969 3.11793 16.9969 3.66918C16.9969 4.22043 16.5488 4.66855 15.9975 4.66855Z" fill="#363740" />
+                                    <path d="M4.33566 14.6984V3.33594H3.66941V14.6984C2.90879 14.8528 2.33691 15.5247 2.33691 16.3309C2.33691 17.2509 3.08316 17.9972 4.00316 17.9972C4.92316 17.9972 5.66941 17.2509 5.66941 16.3309C5.66941 15.5247 5.09691 14.8528 4.33629 14.6984H4.33566ZM4.00254 17.3309C3.45129 17.3309 3.00316 16.8828 3.00316 16.3316C3.00316 15.7803 3.45129 15.3322 4.00254 15.3322C4.55379 15.3322 5.00191 15.7803 5.00191 16.3316C5.00191 16.8828 4.55379 17.3309 4.00254 17.3309Z" fill="#363740" />
+                                    <path d="M10.3331 8.36719V3.33594H9.66687V8.36719C8.90624 8.52156 8.33374 9.19406 8.33374 9.99969C8.33374 10.8053 8.90624 11.4778 9.66687 11.6322V16.6634H10.3331V11.6322C11.0937 11.4778 11.6662 10.8053 11.6662 9.99969C11.6662 9.19406 11.0937 8.52156 10.3331 8.36719V8.36719ZM9.99999 10.9991C9.44874 10.9991 9.00062 10.5509 9.00062 9.99969C9.00062 9.44844 9.44874 9.00031 9.99999 9.00031C10.5512 9.00031 10.9994 9.44844 10.9994 9.99969C10.9994 10.5509 10.5512 10.9991 9.99999 10.9991Z" fill="#363740" />
+                                </svg>
+
+
                             </button>
                         </span>
                     </Dropdown.Trigger>
 
                     <Dropdown.Content align="" contentClasses="right-4 py-1 bg-white w-64 shadow-lg">
                             
-                    <ul role="list" className="divide-y divide-gray-200 overflow-y-auto m-h-64">
+                    <ul role="list" className="divide-y divide-gray-200 overflow-y-auto m-h-64 !pl-0 mb-0">
                         
                         <li onClick={ ()=> applyFilter('All')} className={"px-4 py-2 text-gray-900 text-sm hover:bg-sky-700 cursor-pointer "+ (selectedFilter == 'All' && 'bg-gray-100' ) }>
                         {props.translator['All']}
@@ -589,6 +632,7 @@ function Filter(props)
                                                                                         onChange={ (e) => handleChange(e)}
                                                                                         className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
                                                                                     >
+                                                                                        <option value={''}> Select </option>
                                                                                         {Object.entries(field.options).map(([name, label]) => 
                                                                                             <option defaultValue={condition.condition_value === name} value={name}> {label} </option>
                                                                                         )}
@@ -604,6 +648,7 @@ function Filter(props)
                                                                                         onChange={ (e) => handleChange(e)}
                                                                                         className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
                                                                                     >
+                                                                                        <option value={''}> Select </option>
                                                                                         {Object.entries(field.options).map(([name, label]) => 
                                                                                             <option defaultValue={condition.condition_value === name} value={name}> {label} </option>
                                                                                         )}

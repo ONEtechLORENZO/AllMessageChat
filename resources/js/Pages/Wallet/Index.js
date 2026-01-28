@@ -174,12 +174,12 @@ function Wallet(props)
                                     <p className="flex text-gray-500 gap-2"><span className="w-5 h-5"><CheckIcon/></span>1 User for Workspace</p>
                                 </div>
                                 <div className="p-4 sm:flex sm:flex-row-reverse self-center">
-                                    <Link
+                                    {/* <Link
                                             href={route('updateSubscription')}
                                             className="w-full inline-flex justify-center rounded-md px-4 py-2 text-base font-medium btn btn-secondary sm:ml-3 sm:w-auto sm:text-sm"
                                             >
                                             Update
-                                    </Link>
+                                    </Link> */}
                                 </div>
                             </div>
                         </CardBody>
@@ -211,19 +211,18 @@ function Wallet(props)
                         </CardBody>
                     </Card>
                         
-
                         <h4 class="mt-3">
                             <span className="font-semibold text-base">
                                 {props.translator['This Month']}
                             </span>
                         </h4>
 
-                        <div class="grid gap-4 mt-4">
+                        {/* <div class="grid gap-4 mt-4">
                             <PlanUsage
                                 currentPlan = {props.currentPlan.plan}
                                 balance = {balance}
                             />
-                        </div>
+                        </div> */}
                         <div class="grid grid-cols-1 gap-4 mt-4">
                             <Card className="main-card">
                                 <CardBody class=" rounded-md  w-full  p-4 justify-center md:justify-start">
@@ -231,8 +230,14 @@ function Wallet(props)
                                         <div className="flex gap-1 font-semibold text-base">
                                         Total Spent
                                         </div>
+                                        <div className="text-base flex font-semibold text-primary">
+                                                <ChatAltIcon
+                                                    className="h-6 w-6" 
+                                                /> 
+                                            {messageDeduction['total_messages']}
+                                        </div>
                                         <div className="text-base font-semibold text-primary">
-                                            $ {messageDeduction['total_amount'] ? <>{messageDeduction.total_amount}</> : 0 }
+                                            $ {messageDeduction['total_amount'] ? <>{(messageDeduction.total_amount).toFixed(3)}</> : 0 }
                                         </div>
                                     </div>
                                 </CardBody>
@@ -269,7 +274,7 @@ function Wallet(props)
                                                             </div>
                                                         </div>
                                                         <div className="text-base font-semibold text-primary">
-                                                            ${account.amount_data['total_amount']}
+                                                            ${(account.amount_data['total_amount'])&&  <> {(account.amount_data['total_amount']).toFixed(3)} </>}
                                                         </div>
                                                     </div>
                                                 </AccordionHeader>

@@ -1,10 +1,10 @@
 import React, { useState, useRef, Fragment, useEffect } from 'react';
 import { Dialog, Transition } from '@headlessui/react'
 import CreatableSelect, { useAsync } from 'react-select';
-import Form from '@/Components/Forms/Form';
 import nProgress from 'nprogress';
 import Axios from "axios";
 import { Inertia } from '@inertiajs/inertia';
+import NewForm from './Forms/NewForm';
 
 export default function ContactSelection(props) {
 
@@ -16,7 +16,6 @@ export default function ContactSelection(props) {
 
     useEffect(() => {    
         getUserContacts('');
-        
     },[]);
  
     /**
@@ -68,6 +67,25 @@ export default function ContactSelection(props) {
         setCreateForm(false);
     }
 
+    function addNewContact() {
+        let url = route('new_contact');
+        Axios.get(url).then((response) => {
+            if(response.data.status === true) {
+                let contact = response.data.contact;
+                if(contact) {
+                    let newContact = Object.assign([], selectedContact);
+                    let id = contact.id;
+                    let first_name = contact['first_name'] ? contact['first_name'] : '';
+                    let last_name = contact['last_name'] ? contact['last_name'] : '';
+                    let name = first_name + ' ' + last_name;
+                    let data = {'label' : name, 'value' : id };
+                    newContact.push(data);
+                    setSelectedContact(newContact);
+                }
+            }
+        })
+    }
+
     return (
         <>
         <Transition.Root show={show} as={Fragment}>
@@ -98,17 +116,17 @@ export default function ContactSelection(props) {
                             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         >
-                            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                            <div className="inline-block bg-white rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
                                 <div>
                                     <div className="">
                                         <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
-                                            Select Contact
+                                            {props.translator['Select Contact']}
                                             <span className=' float-right'>
                                                 <button 
                                                     onClick={()=> setCreateForm(true)}
                                                     className='text-sm text-indigo-900'
                                                 >
-                                                    Add a contact
+                                                    {props.translator['Add a contact']}
                                                 </button>
                                             </span>
                                         </Dialog.Title>
@@ -117,7 +135,7 @@ export default function ContactSelection(props) {
                                             <div>
                                                     <CreatableSelect
                                                         isMulti
-                                                    //    value={selectedContact}
+                                                        value={selectedContact}
                                                         options={contactList}
                                                         onInputChange={handleInputChange}
                                                         onChange={setSelectedContact}
@@ -129,17 +147,17 @@ export default function ContactSelection(props) {
                                 <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
                                     <button
                                         type="button"
-                                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
+                                        className="w-full self-end inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
                                         onClick={() => addContacts()}
                                     >
-                                        Add
+                                        {props.translator['Add']}
                                     </button>
                                     <button
                                         type="button"
                                         className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
                                         onClick={() => props.setShowForm(false)}
                                     >
-                                      Cancel
+                                      {props.translator['Cancel']}
                                     </button>
                                 </div>
                             </div>
@@ -149,13 +167,15 @@ export default function ContactSelection(props) {
             </Transition.Root>
 
             {createForm ?
-                <Form 
+                <NewForm 
                     module={'Contact'}
                     hideForm={hideForm}
                     parent_module={props.parent_module}
                     parent_id= {props.parent_id ? props.parent_id : ''}
                     parent_name= {props.parent_name}
                     getUserContacts={getUserContacts}
+                    addNewContact={addNewContact}
+                    newcontact={true}
                 />
             : ''}
 

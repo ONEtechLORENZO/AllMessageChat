@@ -6,7 +6,9 @@ use App\Models\User;
 use App\Models\Field;
 use App\Models\Wallet;
 use App\Models\FieldGroup;
+use App\Models\Company;
 use Mail;
+use Illuminate\Support\Facades\Http;
 
 class UserObserver
 {
@@ -18,20 +20,13 @@ class UserObserver
      */
     public function created(User $user)
     {
-      //   $company_id = $_REQUEST['company_id'];
-       
-      //   // Check whether field entries are already added for this company
-      //   $isAdded = Field::where('company_id', $company_id)->first();
-      //   if(!$isAdded) {
-      //       $fields = $this->getModuleFields($user->id, $company_id);
-      //       Field::insert($fields);
-            
-      //       //add amount in wallet 
-      //       $wallet = $this->addWalletAmount($user->id, $company_id);
-      //   }
-      //$user->createAsStripeCustomer();
-
-      $sendMail = $this->sendMailToAdmin($user);
+      
+   //   $this->updateUserToAdmin($user, 'create');
+      
+      if($user->id == '2') {
+      //   $welcome_mail = $this->welcomeMail($user);
+      }
+     // $sendMail = $this->sendMailToAdmin($user);       
     }
 
     /**
@@ -42,12 +37,7 @@ class UserObserver
      */
     public function updated(User $user)
     {
-         // if(!$user->stripe_id) {
-         //    $user->createAsStripeCustomer();
-         // }
-         // else {
-         //    $user->updateStripeCustomer();
-         // }
+  //       $this->updateUserToAdmin($user, 'update');
     }
 
     /**
@@ -58,7 +48,7 @@ class UserObserver
      */
     public function deleted(User $user)
     {
-        //
+//      $this->updateUserToAdmin($user, 'delete');
     }
 
     /**
@@ -181,7 +171,7 @@ class UserObserver
 
             //Opportunity
              [
-                'module_name' => 'Opportunity','field_name' => 'name' ,'field_label' =>'Opportunity Name','field_type' => 'text','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'','created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
+                'module_name' => 'Opportunity','field_name' => 'name' ,'field_label' =>'Deal Name','field_type' => 'text','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'','created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
              ],
              [
                 'module_name' => 'Opportunity','field_name' => 'amount' ,'field_label' =>'Amount','field_type' => 'amount','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
@@ -244,6 +234,13 @@ class UserObserver
                   ['module_name' => 'Organization', 'field_name' => 'website', 'field_label' => 'Website', 'field_type' => 'url', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
                   ['module_name' => 'Organization', 'field_name' => 'phone_number', 'field_label' => 'Phone Number', 'field_type' => 'phone_number', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
 
+                  //// Transaction
+                  ['module_name' => 'Transaction', 'field_name' => 'service', 'field_label' => 'Service', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Transaction', 'field_name' => 'transaction_id', 'field_label' => 'Transaction id', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Transaction', 'field_name' => 'amount', 'field_label' => 'Amount', 'field_type' => 'amount', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Transaction', 'field_name' => 'status', 'field_label' => 'Status', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                  ['module_name' => 'Transaction', 'field_name' => 'error_message', 'field_label' => 'Error Message', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' =>'', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
+                 
                     //Lead
                     [
                      'module_name' => 'Lead','field_name' => 'first_name','field_label' => 'First Name','field_type' => 'text','is_mandatory' => 1,'is_custom' => 0,'user_id' => $user_id, 'company_id' => $company_id,  'field_group' =>'', 'created_at' => date('Y-m-d H:i:s'),'updated_at' => date('Y-m-d H:i:s'),'readonly_on_edit' => 'false', 'options' =>''
@@ -303,8 +300,6 @@ class UserObserver
                     ['module_name' => 'Lead', 'field_name' => 'campaign', 'field_label' => 'Campaign', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $Lead_source_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
                     ['module_name' => 'Lead', 'field_name' => 'content', 'field_label' => 'Content', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $Lead_source_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
                     ['module_name' => 'Lead', 'field_name' => 'term', 'field_label' => 'Term', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => $user_id, 'company_id' => $company_id, 'field_group' => $Lead_source_id, 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'options' => ''],
-
-
 
          ];
        
@@ -585,18 +580,57 @@ class UserObserver
 
    public function sendMailToAdmin($user) {
 
-      $emailAddress = 'logs@onemessage.chat';
-      $emailAddress = filter_var($emailAddress, FILTER_SANITIZE_EMAIL);
+      if($user->role != 'global_admin') {
+         $emailAddress = 'logs@onemessage.chat';
+         $emailAddress = filter_var($emailAddress, FILTER_SANITIZE_EMAIL);
 
-      $data = [
-         'data' => $user
-      ];
+         $data = [
+            'data' => $user
+         ];
 
-      if($emailAddress){
-          Mail::send('user',$data, function($message) use ($emailAddress){
-              $message->to($emailAddress)->subject
-              ('Welcome');
-          });
+         if($emailAddress){
+            Mail::send('user',$data, function($message) use ($emailAddress){
+               $message->to($emailAddress)->subject
+               ('Welcome');
+            });
+         }
+      }
+   }
+
+   public function welcomeMail($user) {
+      if($user->role != 'global_admin') {
+         $email_address= $user->email; 
+            
+         $name = $user->name;
+
+         $email_address= trim($email_address,"[]");
+         $email_address = filter_var($email_address, FILTER_SANITIZE_EMAIL);
+      
+         $data = [
+            'data' => $user,
+            'name' => $name,
+            'url' => url(''),
+         ];
+         if($email_address){
+            Mail::send('welcomeuser',$data, function($message) use ($email_address){
+               $message->to($email_address)->subject
+               ('Welcome to OneMessage');
+            });
+         }
+      }
+   }
+   
+
+   public function updateUserToAdmin($user, $mode) {
+      if($user->role != 'global_admin') {
+         $company = Company::first();
+         $user['user_company'] = $company;
+
+         $url = config('app.admin_api_url')."/api/{$mode}-portaluser";  // create a Api url
+         $headers = ['api-key' => config('app.admin_api_key')]; // Api key
+         
+         $response = Http::withHeaders($headers)->post($url, ['user' => $user]); // Send API call from portal to Admin...
       }
    }
 }
+

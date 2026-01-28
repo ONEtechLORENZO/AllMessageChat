@@ -93,7 +93,6 @@ function TemplateButton(props)
                                         handleChange={props.handleChange}
                                         options={url_types}
                                         value={props.data.url_type}
-                                        required={true}
                                     />
                                 </div>
                                 <InputError message={props.errors.url_type} />

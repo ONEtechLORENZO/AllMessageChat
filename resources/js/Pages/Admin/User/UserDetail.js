@@ -10,20 +10,19 @@ import InputError from '@/Components/Forms/InputError';
 import { currencies, countries } from '@/Pages/Constants';
 import { BriefcaseIcon } from '@heroicons/react/solid';
 import Dropdown from '@/Components/Forms/Dropdown';
-import ListTable from '@/Components/Views/List/ListTable';
 
 export default function UserDetail(props) {
 
     const fieldList = {
         'Personal Information': {
-            'first_name': {'value': props.user.first_name, 'label': 'First Name', 'type': 'text', 'required': true },
-            'last_name': {'value': props.user.last_name, 'label': 'Last Name', 'type': 'text', 'required': true },            
+            'first_name': {'value': props.user.first_name, 'label': props.translator['First Name'], 'type': 'text', 'required': true },
+            'last_name': {'value': props.user.last_name, 'label': props.translator['Last Name'], 'type': 'text', 'required': true },            
             'email': {'value': props.user.email, 'label': (props.translator['Email']), 'type': 'email', 'required': true},
             'phone_number': {'value': props.user.phone_number, 'label': (props.translator['Phone number']), 'type': 'text', 'required': false },
             'language': {'value': props.user.language, 'label':(props.translator['Language']), 'type': 'select', 'required': false , 'options': { 'en': 'English', 'it': 'Italy'}},
           //  'currency': {'value': props.user.currency, 'label': (props.translator['Currency']), 'type': 'select', 'required': false, 'options': currencies },
            // 'time_zone': {'value': props.user.time_zone, 'label':(props.translator['Time Zone']), 'type': 'select', 'required': false , 'options': props.time_zone },
-            'token': {'value': props.token, 'label': (props.translator['Token']) , action:'regenarate', 'type': 'text', 'required': false },
+         //   'token': {'value': props.token, 'label': (props.translator['Token']) , action:'regenarate', 'type': 'text', 'required': false },
             'status': {'value': (props.user.status == 1) ? 'Active': 'Inactive', 'label': (props.translator['Active Status']), 'type': 'checkbox', 'required': false },
          
         },
@@ -106,15 +105,6 @@ export default function UserDetail(props) {
             }
         });
     }
-
-    //select the company to add the cash
-    function changeCompany(event){
-        let newCompany = Object.assign({}, walletCash);
-        const name = event.target.name;
-        let value = event.target.value;
-        newCompany[name] = value;
-        setWalletCash(newCompany);
-    }
  
     //wallet amount 
     function walletHandler(event){
@@ -171,7 +161,7 @@ export default function UserDetail(props) {
                         className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     >
                         <span className='flex gap-1'>
-                            <BriefcaseIcon className='h-4 w-4' /> Wallet
+                            <BriefcaseIcon className='h-4 w-4' /> {props.translator['Wallet']}
                         </span>
                     </Link>
                     {isChangePassword &&
@@ -251,19 +241,7 @@ export default function UserDetail(props) {
                                                 <div key={key} className={`${bg_color} px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
                                                     <dt className="text-sm font-medium text-gray-500">{field.label}</dt>
                                                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                    {field.hasOwnProperty('action') ?
-                                                        <>
-                                                            {token}
-                                                            <span class="cursor-pointer" title="Regenarate Token">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" onClick={() => {if(window.confirm((props.translator['Do you want change the user token?']))){updateToken()};}} class={"h-5 w-5 " + spinClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                                </svg>
-                                                            </span>
-                                                        </>
-                                                    : <>
                                                        {field.value}  
-                                                     </>
-                                                    }
                                                     </dd>
                                                 </div>
                                             );
@@ -276,26 +254,27 @@ export default function UserDetail(props) {
                     </div>
                 )})}
                    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4">
-                    <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                        <div className="px-4 py-5 sm:px-6">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900">User Related Workspaces</h3>
-                        </div>
-                        <div className="border-t border-gray-200">
-                          <dl>
-                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                <ul class="bg-white rounded-lg  w-full text-gray-900">
-                                    <ListTable 
-                                        module={'Company'}
-                                        headers={props.workspace_columns}
-                                        records={props.companies}
-                                        actions={props.actions}
-                                        current_user={props.auth}
-                                    />
-                                </ul>
-                            </dd>          
-                          </dl>  
-                        </div>
-                    </div>   
+                        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                            <div className="px-4 py-5 sm:px-6">
+                                <h3 className="text-lg leading-6 font-medium text-gray-900">{props.translator['User Related Workspaces']}</h3>
+                            </div>
+                            <div className="border-t border-gray-200">
+                                <dl>
+               
+                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                <ul class="bg-white rounded-lg border border-gray-200 w-full text-gray-900">
+                    {relatedCompanies && Object.entries(relatedCompanies).map(([key ,company]) =>
+                        <li                                                            
+                           class="cursor-pointer px-6 py-2 border-b border-gray-200 w-full rounded-t-lg"
+                            >
+                                {company.name}                                                                
+                        </li>
+                    )}
+                </ul>
+                </dd>          
+                  </dl>  
+                  </div>
+                  </div>   
                   </div>     
             </div>
 
@@ -341,10 +320,10 @@ export default function UserDetail(props) {
                                                         <div className="grid gap-6"> 
                                                             <div className="form-group col-span-6 sm:col-span-4">
                                                                 <label htmlFor="current_password" className="block text-sm font-medium text-gray-700">
-                                                                    Current Password
+                                                                {props.translator['Current Password']}
                                                                 </label>
                                                                 <div className="mt-1 flex rounded-md shadow-sm">
-                                                                    <Input type="password" minlength="8" name='current_password' required={true} id='current_password' placeholder='Current Password' handleChange={handleChange} />
+                                                                    <Input type="password" minlength="8" name='current_password' required={true} id='current_password' placeholder={props.translator['Current Password']} handleChange={handleChange} />
                                                                 </div>
                                                                 <InputError message={errors.current_password} />
                                                             </div>
@@ -435,24 +414,7 @@ export default function UserDetail(props) {
                                         </Dialog.Title>
                                         <div className="mt-2">
                                             <form id="add_cash">                                            
-                                                <div className="grid gap-6 mt-3">                                                
-                                                    <div className="form-group col-span-6 sm:col-span-4">
-                                                        <label htmlFor="new_password" className="block text-sm font-medium text-gray-700">
-                                                         Switch Company
-                                                        </label>
-                                                        <div className="mt-1 flex rounded-md shadow-sm">
-                                                            <Dropdown
-                                                                id="selected_company"
-                                                                name="selected_company"
-                                                                options={props.related_company}
-                                                                handleChange={changeCompany}
-                                                                emptyOption="Select Company"
-                                                                value={walletCash['selected_company']}
-                                                            />
-                                                        </div>
-                                                        <InputError message={errors.new_password} />
-                                                    </div>
-                                                </div>
+                                                
                                                 <div className="grid gap-6 mt-3">                                                
                                                     <div className="form-group col-span-6 sm:col-span-4">
                                                         <label htmlFor="confirm_password" className="block text-sm font-medium text-gray-700">

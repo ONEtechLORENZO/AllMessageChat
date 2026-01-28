@@ -11,6 +11,7 @@ export default function TextArea({
     row="4",
     placeholder,
     defaultValue,
+    maxLength
 }) {
     const input = useRef();
 
@@ -38,6 +39,7 @@ export default function TextArea({
             data-pristine-required={required}
             onChange={(e) => handleChange(e)}
             value={value}
+            maxLength={maxLength}
         />
     );
 }

@@ -19,14 +19,7 @@ import Input from '@/Components/Input';
 import { Switch } from '@headlessui/react'
 import AutomationHistory from './AutomationHistory';
 
-const initialNodes = [{
-    id: "1",
-    type: "input", // input node
-    data: { label: 'Select Trigger' },
-    position: { x: 250, y: 0 },
-    width: 150,
-    height: 40,
-}];
+
 
 let initialEdges = [];
   
@@ -37,6 +30,14 @@ function AutomationFlow(props)
     const [actions , setActions] = useState() ;
     const [processTypes, setProcessTypes] = useState() ;
     const [triggers, setTriggers] = useState() ;
+    const initialNodes = [{
+        id: "1",
+        type: "input", // input node
+        data: { label: props.translator['Select Trigger'] },
+        position: { x: 250, y: 0 },
+        width: 150,
+        height: 40,
+    }];
 
     // Edit name & status
     const [showInput, setShowInput] = useState(false);
@@ -72,8 +73,8 @@ function AutomationFlow(props)
 
 
     const tabs = [
-        { label: 'Flow', name: 'Detail', href: '#' },
-        { label: 'History', name: 'History', href: '#' },
+        { label: props.translator['Flow'], name: 'Detail', href: '#' },
+        { label: props.translator['History'], name: 'History', href: '#' },
     ];
     const [activeTab, setActiveTab] = useState('Detail');
 
@@ -513,7 +514,7 @@ function AutomationFlow(props)
                         <>
                             <div class="flex justify-between">
                                 <div class="font-medium text-slate-900 mx-1 flex">
-                                    <span className='mt-2 mx-1'> Name: </span>
+                                    <span className='mt-2 mx-1'> {props.translator['Name']}: </span>
                                     {!showInput && <label className='mt-2 mx-1'> {automationName} </label> }
                                     
                                     {showInput &&
@@ -560,7 +561,7 @@ function AutomationFlow(props)
                                                 />
                                             </Switch>
                                             <Switch.Label as="span" className="ml-3">
-                                                <span className="text-sm font-medium text-gray-900"> Active</span>
+                                                <span className="text-sm font-medium text-gray-900"> {props.translator['Active']}</span>
                                             </Switch.Label>
                                         </Switch.Group>
                                     </span>
@@ -572,14 +573,14 @@ function AutomationFlow(props)
                                         className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                                         
                                     >
-                                        Cancel
+                                        {props.translator['Cancel']}
                                     </Link>
                                     <button
                                         type="button"
                                         onClick={() => saveAutomation()}
                                         className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
                                     >
-                                        Save
+                                        {props.translator['Save']}
                                     </button>
                                 </div>
                             </div>
@@ -666,6 +667,7 @@ function AutomationFlow(props)
                         <> 
                             <AutomationHistory 
                                 record={props.record.id}
+                                translator={props.translator}
                             />
                         </>
                     }

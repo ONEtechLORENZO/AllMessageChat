@@ -19,7 +19,7 @@ function Registration(props) {
         estimated_launch_date: '',
         type_of_integration: '',
         phone_number: '',
-        src_name: '',
+      //  src_name: '',
         display_name: '',
         business_manager_id: '',
         profile_picture: '',
@@ -55,11 +55,13 @@ function Registration(props) {
 
     const services = {
          'whatsapp': 'WhatsApp',
+         'instagram': 'Instagram',
+         'facebook': 'Facebook',
         };
     
     const service_engine = {
         'gupshup': 'GupShup',
-        'facebook': 'FaceBook'
+        'facebook': 'Facebook'
     }
     
     const statusOptions = {
@@ -119,13 +121,25 @@ function Registration(props) {
         let newState = Object.assign({}, data);
         if(event.target.type == 'file' && event.target.files) {
             newState[name] = event.target.files[0];
-        }
-        else {
+        } else {
             newState[name] = value;
         }
+        if(name == 'fb_phone_number_id') {           
+            newState['fb_page_name'] = props.pages[value];
+        }
+        if(name == 'fb_insta_app_id') {
+            newState['insta_user_name'] = props.insta_accounts[data.fb_phone_number_id][value];
+        }
+        if(name == 'business_manager_id' && value && props.whatsapp_account_id[value]) {
+            newState['fb_business_name'] =  (value)? props.whatsapp_account_id[value]['name'] : '';
+        } 
+        if(name == 'fb_phone_number_id' && data.business_manager_id && props.whatsapp_account_id[data.business_manager_id]) {
+            newState['fb_waba_name'] = props.whatsapp_account_id[data.business_manager_id]['whatsapp_account'][value]['name'];
+            newState['fb_whatsapp_account_id'] = props.whatsapp_account_id[data.business_manager_id]['whatsapp_account'][value]['waba_id'];
+        }
+        
         setData(newState);
     }
-    
 
     return (
         <Authenticated
@@ -172,9 +186,9 @@ function Registration(props) {
                                             <InputError message={errors.company_name} />
                                         </div>
 
-                                        {props.auth.user.role == 'global_admin' &&
+                                        {props.auth.user.role == 'admin' &&
                                             <>
-                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                {/* <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="service_engine" className="block text-sm font-medium text-gray-700" >
                                                         Service Engine
                                                         <span className="text-sm text-red-700 mx-1"> * </span>
@@ -190,7 +204,7 @@ function Registration(props) {
                                                         />
                                                     </div>
                                                     <InputError message={errors.service_engine} />
-                                                </div>
+                                                </div> 
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="status" className="block text-sm font-medium text-gray-700" >
                                                         Status
@@ -207,7 +221,7 @@ function Registration(props) {
                                                         />
                                                     </div>
                                                     <InputError message={errors.status} />
-                                                </div>
+                                                </div> */}
                                             </>
                                         }
                                         <div className="form-group col-span-6 sm:col-span-4">
@@ -223,6 +237,7 @@ function Registration(props) {
                                                     handleChange={handleChange}
                                                     options={services}
                                                     value={data.service}
+                                                    readOnly={'disabled'}
                                                 />
                                             </div>
                                             <InputError message={errors.service} />
@@ -246,38 +261,157 @@ function Registration(props) {
                                     </div>
                                     <div className="mt-5 md:mt-0 md:col-span-2">
                                         <div className="grid grid-cols-6 gap-6">
-                                            <div className="form-group col-span-6 sm:col-span-4">
-                                                <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700" >
-                                                { props.translator["Display Name"]}
-                                                </label>
-                                                <div className="mt-1 flex rounded-md shadow-sm">
-                                                    <Input
-                                                        required={true}
-                                                        name="display_name"
-                                                        value={data.display_name}
-                                                        id="display_name"
-                                                        placeholder=""
-                                                        handleChange={ handleChange }
-                                                    />
-                                                </div>
-                                                <InputError message={errors.display_name} />
-                                            </div>
-                                            <div className="form-group col-span-6 sm:col-span-4">
-                                                <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700" >
-                                                    { props.translator["Phone number"]}
-                                                </label>
-                                                <div className="mt-1 flex rounded-md shadow-sm">
-                                                    <Input
-                                                        required={true}
-                                                        name="phone_number"
-                                                        value={data.phone_number}
-                                                        id="phone_number"
-                                                        placeholder=""
-                                                        handleChange={handleChange}
-                                                    />
-                                                </div>
-                                                <InputError message={errors.phone_number} />
-                                            </div>
+                                          
+                                            {(props.company.service_engine == 'Facebook' && data.service_engine == 'facebook')?
+                                                <>
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <label htmlFor="business_manager_id" className="block text-sm font-medium text-gray-700" >
+                                                            Business Manager 
+                                                        </label>
+                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                            <select
+                                                                required={true}
+                                                                name="business_manager_id"
+                                                                className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+                                                                value={data.business_manager_id}
+                                                                id="business_manager_id"
+                                                                onChange={ handleChange }
+                                                            >
+                                                                <option value=""> Select </option>
+                                                              
+                                                                {Object.entries(props.whatsapp_account_id).map( ([id, account]) => {
+                                                                    return(
+                                                                        <option value={id}> {account.name} </option>
+                                                                    );
+                                                                })}
+                                                            </select>
+                                                        </div>
+                                                        <InputError message={errors.business_manager_id} />
+                                                    </div>
+                                                    {data.business_manager_id &&
+                                                       
+                                                        <div className="form-group col-span-6 sm:col-span-4">
+                                                            <label htmlFor="fb_phone_number_id" className="block text-sm font-medium text-gray-700" >
+                                                                Whatsapp Account
+                                                            </label>
+
+                                                            <div className="mt-1 flex rounded-md shadow-sm">
+                                                                
+                                                                <select
+                                                                    required={true}
+                                                                    name="fb_phone_number_id"
+                                                                    className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+                                                                    value={data.fb_phone_number_id}
+                                                                    id="fb_phone_number_id"
+                                                                    onChange={ handleChange }
+                                                                >
+                                                                    <option value=""> Select </option>
+                                                                
+                                                                    {Object.entries(props.whatsapp_account_id[data.business_manager_id]['whatsapp_account']).map( ([id, account]) => {
+                                                                        return(
+                                                                            <option value={id}> {account.name} </option>
+                                                                        );
+                                                                    })}
+                                                                </select>
+                                                            </div>
+                                                            <InputError message={errors.fb_phone_number_id} />
+                                                        </div>
+                                                    }
+                                                </>
+                                            :
+                                                <>
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700" >
+                                                        { props.translator["Display Name"]}
+                                                        </label>
+                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                            <Input
+                                                                required={true}
+                                                                name="display_name"
+                                                                value={data.display_name}
+                                                                id="display_name"
+                                                                placeholder=""
+                                                                handleChange={ handleChange }
+                                                            />
+                                                        </div>
+                                                        <InputError message={errors.display_name} />
+                                                    </div>
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700" >
+                                                            { props.translator["Phone number"]}
+                                                        </label>
+                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                            <Input
+                                                                required={true}
+                                                                name="phone_number"
+                                                                value={data.phone_number}
+                                                                id="phone_number"
+                                                                placeholder=""
+                                                                handleChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <InputError message={errors.phone_number} />
+                                                    </div>
+
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <div className="flex items-start">
+                                                            <div className="flex items-center h-5">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    id="api_partner"
+                                                                    name="api_partner"
+                                                                    checked={ data.api_partner }
+                                                                    onChange={handleChange}
+                                                                />
+                                                                <div className="ml-3 text-sm">
+                                                                    <label htmlFor="api_partner" className="font-medium text-gray-700" >
+                                                                    { props.translator["Api partner?"]}
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                            <InputError message={errors.api_partner} />
+                                                        </div>
+                                                    </div>
+                                                    {data.api_partner &&
+                                                        <div className="form-group col-span-6 sm:col-span-4">
+                                                            <label htmlFor="api_partner_name" className="block text-sm font-medium text-gray-700" >
+                                                            { props.translator["API partner Name"]}
+                                                            </label>
+                                                            <div className="mt-1 flex rounded-md shadow-sm">
+                                                                <Input
+                                                                    required={true}
+                                                                    name="api_partner_name"
+                                                                    value={ data.api_partner_name }
+                                                                    id="api_partner_name"
+                                                                    placeholder=""
+                                                                    handleChange={ handleChange }
+                                                                />
+                                                            </div>
+                                                            <InputError
+                                                                message={errors.api_partner_name}
+                                                            />
+                                                        </div>
+                                                    }
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <label htmlFor="business_manager_id" className="block text-sm font-medium text-gray-700" >
+                                                            Facebook BM ID
+                                                        </label>
+                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                            <Input
+                                                                name="business_manager_id"
+                                                                value={ data.business_manager_id }
+                                                                id="business_manager_id"
+                                                                placeholder=""
+                                                                handleChange={ handleChange }
+                                                            />
+                                                        </div>
+                                                        <InputError
+                                                            message={errors.business_manager_id}
+                                                        />
+                                                    </div>
+                                                </>
+                                            }
+                                            
                                             {/* <div className="form-group col-span-6 sm:col-span-4">
                                                 <label htmlFor="src_name" className="block text-sm font-medium text-gray-700" >
                                                     {props.translator["Source Name"]}
@@ -295,157 +429,125 @@ function Registration(props) {
                                                 <InputError message={errors.src_name} />
                                             </div> */}
 
-                                            <div className="form-group col-span-6 sm:col-span-4">
-                                                <div className="flex items-start">
-                                                    <div className="flex items-center h-5">
-                                                        <input
-                                                            type="checkbox"
-                                                            id="api_partner"
-                                                            name="api_partner"
-                                                            checked={ data.api_partner }
-                                                            onChange={handleChange}
-                                                        />
-                                                        <div className="ml-3 text-sm">
-                                                            <label htmlFor="api_partner" className="font-medium text-gray-700" >
-                                                                Api partner?
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                    <InputError message={errors.api_partner} />
-                                                </div>
-                                            </div>
-                                            {data.api_partner &&
+                                            {/* 
                                                 <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="api_partner_name" className="block text-sm font-medium text-gray-700" >
-                                                    { props.translator["API partner Name"]}
+                                                    <label htmlFor="profile_picture" className="block text-sm font-medium text-gray-700">
+                                                        Profile picture
+                                                    </label>
+                                                    <div className="mt-1 flex rounded-md">
+                                                        {data.profile_picture ?
+                                                        <FileInput accept="image/png, image/jpeg, image/jpg" name='profile_picture' id='profile_picture' handleChange={handleChange} />
+                                                        :<FileInput accept="image/png, image/jpeg, image/jpg"  required={true} name='profile_picture' id='profile_picture' handleChange={handleChange} />
+                                                        }
+                                                    </div>
+                                                    <p className="mt-2 text-sm text-gray-500">500px by 500px with 100px magin</p>
+                                                    <InputError message={errors.profile_picture} />
+                                                </div>
+
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label htmlFor="profile_description" className="block text-sm font-medium text-gray-700">
+                                                        Profile description
                                                     </label>
                                                     <div className="mt-1 flex rounded-md shadow-sm">
-                                                        <Input
-                                                            required={true}
-                                                            name="api_partner_name"
-                                                            value={ data.api_partner_name }
-                                                            id="api_partner_name"
-                                                            placeholder=""
-                                                            handleChange={ handleChange }
-                                                        />
+                                                        <TextArea required={true} name='profile_description' value={data.profile_description} id='profile_description' placeholder='' handleChange={handleChange} />
                                                     </div>
-                                                    <InputError
-                                                        message={errors.api_partner_name}
-                                                    />
+                                                    <p className="mt-2 text-sm text-gray-500">Max 139 characters</p>
+                                                    <InputError message={errors.profile_description} />
                                                 </div>
-                                            }
-                                            <div className="form-group col-span-6 sm:col-span-4">
-                                                <label htmlFor="business_manager_id" className="block text-sm font-medium text-gray-700" >
-                                                    Facebook BM ID
-                                                </label>
-                                                <div className="mt-1 flex rounded-md shadow-sm">
-                                                    <Input
-                                                        name="business_manager_id"
-                                                        value={ data.business_manager_id }
-                                                        id="business_manager_id"
-                                                        placeholder=""
-                                                        handleChange={ handleChange }
-                                                    />
-                                                </div>
-                                                <InputError
-                                                    message={errors.business_manager_id}
-                                                />
-                                            </div>
-                                            {/* 
-                                        <div className="form-group col-span-6 sm:col-span-4">
-                                            <label htmlFor="profile_picture" className="block text-sm font-medium text-gray-700">
-                                                Profile picture
-                                            </label>
-                                            <div className="mt-1 flex rounded-md">
-                                                {data.profile_picture ?
-                                                 <FileInput accept="image/png, image/jpeg, image/jpg" name='profile_picture' id='profile_picture' handleChange={handleChange} />
-                                                :<FileInput accept="image/png, image/jpeg, image/jpg"  required={true} name='profile_picture' id='profile_picture' handleChange={handleChange} />
-                                                }
-                                            </div>
-                                            <p className="mt-2 text-sm text-gray-500">500px by 500px with 100px magin</p>
-                                            <InputError message={errors.profile_picture} />
-                                        </div>
 
-                                        <div className="form-group col-span-6 sm:col-span-4">
-                                            <label htmlFor="profile_description" className="block text-sm font-medium text-gray-700">
-                                                Profile description
-                                            </label>
-                                            <div className="mt-1 flex rounded-md shadow-sm">
-                                                <TextArea required={true} name='profile_description' value={data.profile_description} id='profile_description' placeholder='' handleChange={handleChange} />
-                                            </div>
-                                            <p className="mt-2 text-sm text-gray-500">Max 139 characters</p>
-                                            <InputError message={errors.profile_description} />
-                                        </div>
-
-                                        <div className="form-group col-span-6 sm:col-span-4">
-                                            <div className="flex items-start">
-                                                <div className="flex items-center h-5">
-                                                    <Checkbox
-                                                        id="oba"
-                                                        name="oba"
-                                                        handleChange={handleChange}
-                                                        value={data.oba}
-                                                    />
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <div className="flex items-start">
+                                                        <div className="flex items-center h-5">
+                                                            <Checkbox
+                                                                id="oba"
+                                                                name="oba"
+                                                                handleChange={handleChange}
+                                                                value={data.oba}
+                                                            />
+                                                        </div>
+                                                        <div className="ml-3 text-sm">
+                                                            <label htmlFor="oba" className="font-medium text-gray-700">
+                                                                Official business account
+                                                            </label>
+                                                            <p className="text-gray-500">Request for Whatsapp official business account (OBA).</p>
+                                                        </div>
+                                                        <InputError message={errors.oba} />
+                                                    </div>
                                                 </div>
-                                                <div className="ml-3 text-sm">
-                                                    <label htmlFor="oba" className="font-medium text-gray-700">
-                                                        Official business account
-                                                    </label>
-                                                    <p className="text-gray-500">Request for Whatsapp official business account (OBA).</p>
-                                                </div>
-                                                <InputError message={errors.oba} />
-                                            </div>
-                                        </div>
-                                         */}
+                                            */}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         ) : (
                             <>
-                            {data.service == 'instagram' ?
-                            (
-                            <div className='className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6"'>
-                                <div className="md:grid md:grid-cols-3 md:gap-6">
-                                    <div className="md:col-span-1">
-                                        <h3 className="text-lg font-medium leading-6 text-gray-900">
-                                            { props.translator["Instagram Information"]}
-                                        </h3>
-                                        <p className="mt-1 text-sm text-gray-500">
-                                            { props.translator[ "Information will be used to create your instagram business account"]}
-                                        </p>
+                            {(data.service == 'instagram' || data.service == 'facebook')?
+                                <>
+                                  <div className='className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6"'>
+                                    <div className="md:grid md:grid-cols-3 md:gap-6">
+                                      <div className="md:col-span-1">
+                                          <h3 className="text-lg font-medium leading-6 text-gray-900">
+                                              { props.translator["Instagram Information"]}
+                                          </h3>
+                                          <p className="mt-1 text-sm text-gray-500">
+                                              { props.translator[ "Information will be used to create your instagram business account"]}
+                                          </p>
+                                      </div>
+                                      <div className="mt-5 md:mt-0 md:col-span-2">
+                                          <div className="grid grid-cols-6 gap-6"></div>
+                                          <div className="form-group col-span-6 sm:col-span-4">
+                                              <label htmlFor="fb_phone_number_id" className="block text-sm font-medium text-gray-700" >
+                                                Page Name
+                                              </label>
+
+                                              <div className="mt-1 flex rounded-md shadow-sm">
+                                                  <Dropdown
+                                                      required={true}
+                                                      id="fb_phone_number_id"
+                                                      name="fb_phone_number_id"
+                                                      handleChange={handleChange}
+                                                      options={props.pages}
+                                                      value={data.fb_phone_number_id}
+                                                  />
+                                              </div>
+                                              <InputError message={errors.fb_phone_number_id} />
+                                          </div>
+
+                                            {(data.fb_phone_number_id && data.service == 'instagram' ) &&
+                                            <div className='mt-5'>
+                                                    <div className="grid grid-cols-6 gap-6"></div>
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <label htmlFor="fb_insta_app_id" className="block text-sm font-medium text-gray-700" >
+                                                            Instagram account
+                                                        </label>
+
+                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                            <Dropdown
+                                                                required={true}
+                                                                id="fb_insta_app_id"
+                                                                name="fb_insta_app_id"
+                                                                handleChange={handleChange}
+                                                                options={props.insta_accounts[data.fb_phone_number_id]}
+                                                                value={data.fb_insta_app_id}
+                                                            />
+                                                        </div>
+                                                        <InputError message={errors.fb_insta_app_id} />
+                                                    </div>
+                                                </div>
+                                            }
+                                       </div>
                                     </div>
-                                    <div className="mt-5 md:mt-0 md:col-span-2">
-                                        <div className="grid grid-cols-6 gap-6"></div>
-                                        <div className="form-group col-span-6 sm:col-span-4">
-                                            <label htmlFor="src_name" className="block text-sm font-medium text-gray-700" >
-                                                {props.translator["Source Name"]}
-                                            </label>
-                                            <div className="mt-1 flex rounded-md shadow-sm">
-                                                <Input
-                                                    required={true}
-                                                    name="src_name"
-                                                    value={data.src_name}
-                                                    id="src_name"
-                                                    placeholder=""
-                                                    handleChange={handleChange}
-                                                />
-                                            </div>
-                                            <InputError message={errors.src_name} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            ) : ("")
-                            }
+                                  </div>
+                                </>
+                            : "" }
                             </>
                         )}
-                        {(data.service_engine == 'facebook' && props.auth.user.role == 'global_admin' ) &&
+                        {/* {(data.service_engine == 'facebook' && props.auth.user.role == 'admin' && data.service != 'instagram' ) &&
                             <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
                                 <div className="md:grid md:grid-cols-3 md:gap-6">
                                     <div className="md:col-span-1">
                                         <h3 className="text-lg font-medium leading-6 text-gray-900">
-                                            FaceBook Information
+                                            Facebook Information
                                         </h3>
                                         <p className="mt-1 text-sm text-gray-500">
                                             Information will be used to create your facebook business account
@@ -472,7 +574,7 @@ function Registration(props) {
                                                 </div>
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="fb_phone_number_id" className="block text-sm font-medium text-gray-700" >
-                                                        FaceBook phone number ID
+                                                        Facebook phone number ID
                                                         <span className="text-sm text-red-700 mx-1"> * </span>
                                                     </label>
                                                     <div className="mt-1">
@@ -488,7 +590,7 @@ function Registration(props) {
                                                 </div>
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="fb_whatsapp_account_id" className="block text-sm font-medium text-gray-700" >
-                                                        FaceBook whatsapp account ID
+                                                        Facebook whatsapp account ID
                                                         <span className="text-sm text-red-700 mx-1"> * </span>
                                                     </label>
                                                     <div className="mt-1">
@@ -507,17 +609,18 @@ function Registration(props) {
                                     </div>
                                 </div>
                             </div>
-                        }
-                        {console.log('data.service_engine' , data.service_engine)}
-                        {( ( !data.service_engine || data.service_engine == 'gupshup') && props.auth.user.role == 'global_admin' ) &&
+                        } */}
+
+                        {/*                        
+                        {( ( !data.service_engine || data.service_engine == 'gupshup') && props.auth.user.role == 'admin' ) &&
                             <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
                                 <div className="md:grid md:grid-cols-3 md:gap-6">
                                     <div className="md:col-span-1">
                                         <h3 className="text-lg font-medium leading-6 text-gray-900">
-                                            Gupshup Information
+                                            API Information
                                         </h3>
                                         <p className="mt-1 text-sm text-gray-500">
-                                            Information will be used to create your gupshup account
+                                            Information will be used to create your whatsapp account
                                         </p>
                                     </div>
                                     <div className="mt-5 md:mt-0 md:col-span-2">
@@ -542,7 +645,7 @@ function Registration(props) {
                                                 
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="fb_whatsapp_account_id" className="block text-sm font-medium text-gray-700" >
-                                                        Gupshup whatsapp account ID
+                                                        Whatsapp account ID (WABA)
                                                         <span className="text-sm text-red-700 mx-1"> * </span>
                                                     </label>
                                                     <div className="mt-1">
@@ -562,6 +665,7 @@ function Registration(props) {
                                 </div>
                             </div>
                         }
+                        */}
 
                         
                     </div>
@@ -598,7 +702,7 @@ function Registration(props) {
                     }
                     
                     <div className="flex justify-end">
-                        <Link href={route("dashboard")} className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" >
+                        <Link href={route("social_profile")} className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" >
                             {props.translator["Cancel"]}
                         </Link>
 

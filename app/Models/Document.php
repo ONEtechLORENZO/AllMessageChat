@@ -35,24 +35,44 @@ class Document extends Model
     /**
      * Store Document and return file path
      */
-    public function storeDocument($type , $url , $parent, $account)
+    public function storeDocument($type = '' , $url , $parentId, $account)
     {
-        $fileUrl = explode('?', $url);
-        $query_str = parse_url($url, PHP_URL_QUERY);
-        parse_str($query_str, $query_params);
-        $name = ($query_params['fileName']);
+        $response = Http::get($url);
 
-        $file = file_get_contents($fileUrl[0]);
+        if (!$response->successful()) {
+            Log::info('Failed to fetch the file from the external source.');
+            return false;
+        }
+        $fileContent = $response->body();
+        $domainName = config('app.name');
+        $appName = $account->company_name;
+        $extension = explode('/', $type)[1];
+        $name = 'onemessage'. uniqid(). '.' .$extension;
         
-        $docId = $this->saveDocument($type , $file, $parent, $account, 'incoming', $name);
+        $path = "{$domainName}/{$appName}/{$name}";
+            
+        try {
+            // Upload file to S3 without ACL
+            $result = Storage::disk('s3')->put($path, $fileContent);
 
-        return ($docId);
+            if (!$result) {
+                Log::info('Failed to upload file to S3.');
+                return false;
+            }
+            
+            // Generate the public URL for the file
+            $url = Storage::disk('s3')->url($path);
+
+        } catch (AwsException $e) {
+            Log::info("Error applying bucket policy: " . $e->getMessage());
+        }
+        return $url;
     }
 
     /**
      * Store document from Facebook whatsapp API
      */
-    public function storeFBDocument($account, $parent , $fileData)
+    public function storeFBDocument($account, $parentId , $fileData)
     {
         $url = config('app.fb.api_url');
         $url .= $fileData['id'];
@@ -65,7 +85,7 @@ class Document extends Model
 
         $response = Http::withHeaders($headers)->get($url);
         $mediaData = json_decode($response->body());
-        log::info(['Media Data ' => $mediaData]);  
+        Log::info(['Media Data ' => $mediaData]);  
         
         // Remove unwanted header
         unset($headers['Content-Type']);
@@ -74,7 +94,13 @@ class Document extends Model
         $file = $response->body();
 
         $type = $mediaData->mime_type;
-        $docId = $this->saveDocument($type , $file , $parent, $account, 'incoming');
+        $name = ''; 
+        if($type){
+            $extension = explode('/', $type)[1];    
+            $name = 'onemessage'. uniqid(). '.' .$extension;
+        }
+        $path = "public/document/{$account->id}/{$parentId}/incoming/{$name}";
+        $docId = $this->saveDocument($name, $type , $file , $parentId, 'Contact', $path);
         
         $return['msg_type'] = explode('/', $type)[0];
         $return['file_path'] = $docId;
@@ -85,28 +111,30 @@ class Document extends Model
     /**
      * Save Document
      */
-    public function saveDocument($type, $file, $parent, $account, $mode , $name = '')
+    public function saveDocument($name = '', $type, $file, $parentId, $parentModule, $path, $url ='')
     {
-        $extension = explode('/', $type)[1];
-        if($name == '')
-            $name = 'onemessage'. uniqid(). '.' .$extension;
+        if($type){
+            $extension = explode('/', $type)[1];
+            if($name == '')
+                $name = 'onemessage'. uniqid(). '.' .$extension;
+        } else {
+            $extension = '';
+        }
 
-        $path = "public/document/{$account->company_id}/{$account->id}/{$parent}/{$mode}/{$name}";
-        
-        $file = Storage::put($path  , $file);
-
-        $fileSize = Storage::size($path);
+        Storage::disk('public_uploads')->put($path, $file);
+        $fileSize = Storage::disk('public_uploads')->size($path);
 
         $document = new Document();
         $document->title = $name;
         $document->type = $extension;
         $document->size = $fileSize;
         $document->path = $path;
-        $document->parent_id = $parent;
-        $document->parent_module = 'Contact';
+        $document->parent_id = $parentId;
+        $document->parent_module = $parentModule;
+        $document->gupshup_path = $url;
         $document->save();
 
         return $document->id;
     }
-
+    
 }

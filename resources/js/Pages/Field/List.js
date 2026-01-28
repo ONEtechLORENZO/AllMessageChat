@@ -13,7 +13,10 @@ function List(props)
         <Authenticated
             auth={props.auth}
             errors={props.errors}
+            navigationMenu={props.menuBar}
+            current_page={'Fields'}
         >
+            <div className='font-semibold text-2xl text-[#363740] !px-4 !mb-6 ml-3' >{props.translator[props.plural]}</div>
 
             <ListView
                 headers={props.list_view_columns}
@@ -28,6 +31,7 @@ function List(props)
                     module_list={props.module_list}
                     open={orderFields}
                     setOrderFields={setOrderFields}
+                    {...props}
                 />
             }
 
@@ -36,6 +40,7 @@ function List(props)
                     module_list={props.module_list}
                     open={fieldGroup}
                     setFieldGroup={setFieldGroup}
+                    {...props}
                 />
             }
         </Authenticated>

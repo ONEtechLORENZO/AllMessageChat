@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-
 use Illuminate\Support\Facades\DB;
-
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use App\Models\Field;
 
 class FieldSeeder extends Seeder
@@ -17,6 +17,7 @@ class FieldSeeder extends Seeder
      */
     public function run()
     {
+
         $current_datetime = gmdate('Y-m-d H:i:s');
         $countryCodes = $this->getCountryCodeJson();
         $country = $this->getCountryJson();
@@ -30,6 +31,19 @@ class FieldSeeder extends Seeder
         $stripeCurrency = $this->currencyType();
         $timeZone = $this->timeZone();
 
+
+        // Give Permissions
+        $permissionList = [ 'Create', 'Edit', 'Delete'];
+        $moduleList = ['Contacts', 'Leads', 'Organizations', 'Deals', 'Orders', 'Products', 'Catalogs'];
+        $role = Role::create(['name' => 'admin']);
+        foreach($permissionList as $modulePermission) {
+            foreach($moduleList as $moduleName) {
+                $permission = Permission::create(['name' => "{$modulePermission} {$moduleName}"]);
+                $role->givePermissionTo($permission);
+                $permission->assignRole($role);
+            }
+        }
+        
         $this->createField('Price', 'country_code', 'Country', 'dropdown', '1', $countryCodes, 'false');
         $this->createField('Field', 'module_name', 'Module Name', 'dropdown', '1', $moduleOptions, 'true');
         $this->createField('Field', 'field_type', 'Field Type', 'dropdown', '1', $fieldTypes, 'true');
@@ -49,79 +63,153 @@ class FieldSeeder extends Seeder
             ['name' => 'Instagram', 'unique_name' => 'Instagram'],
         ]);
 
+        // Add price list
+        $priceList = "
+        INSERT INTO `prices` (`id`, `country_code`, `service`, `user_initiated`, `business_initiated`, `message`, `media`, `created_at`, `updated_at`, `is_default`) VALUES
+        (1, '54', 'facebook', 0.0261, 0.0436, NULL, NULL, '2022-11-24 01:26:10', '2022-11-24 01:26:10', NULL),
+        (2, '55', 'facebook', 0.0248, 0.0414, NULL, NULL, '2022-11-24 01:27:26', '2022-11-24 01:27:26', NULL),
+        (3, '56', 'facebook', 0.0376, 0.0627, NULL, NULL, '2022-11-24 01:28:11', '2022-11-24 01:28:11', NULL),
+        (4, '57', 'facebook', 0.0050, 0.0083, NULL, NULL, '2022-11-24 01:28:32', '2022-11-24 01:28:32', NULL),
+        (5, '20', 'facebook', 0.0533, 0.0889, NULL, NULL, '2022-11-24 01:29:01', '2022-11-24 01:29:01', NULL),
+        (6, '33', 'facebook', 0.0712, 0.1186, NULL, NULL, '2022-11-24 01:29:32', '2022-11-24 01:29:32', NULL),
+        (7, '49', 'facebook', 0.0679, 0.1131, NULL, NULL, '2022-11-24 01:29:56', '2022-11-24 01:29:56', NULL),
+        (8, '91', 'facebook', 0.0033, 0.0055, NULL, NULL, '2022-11-24 01:30:16', '2022-11-24 01:30:16', NULL),
+        (9, '62', 'facebook', 0.0157, 0.0262, NULL, NULL, '2022-11-24 01:30:45', '2022-11-24 01:30:45', NULL),
+        (10, '972', 'facebook', 0.0149, 0.0248, NULL, NULL, '2022-11-24 01:36:54', '2022-11-24 01:36:54', NULL),
+        (11, '60', 'facebook', 0.0182, 0.0606, NULL, NULL, '2022-11-24 01:37:22', '2022-11-24 01:37:22', NULL),
+        (12, '52', 'facebook', 0.0087, 0.0289, NULL, NULL, '2022-11-24 01:37:48', '2022-11-24 01:37:48', NULL),
+        (13, '31', 'facebook', 0.0738, 0.1230, NULL, NULL, '2022-11-24 01:38:05', '2022-11-24 01:38:05', NULL),
+        (14, '227', 'facebook', 0.0257, 0.0428, NULL, NULL, '2022-11-24 01:38:36', '2022-11-24 01:38:36', NULL),
+        (15, '92', 'facebook', 0.0118, 0.0392, NULL, NULL, '2022-11-24 01:38:52', '2022-11-24 01:38:52', NULL),
+        (16, '51', 'facebook', 0.0149, 0.0495, NULL, NULL, '2022-11-24 01:39:11', '2022-11-24 01:39:11', NULL),
+        (17, '7', 'facebook', 0.0329, 0.0549, NULL, NULL, '2022-11-24 01:39:34', '2022-11-24 01:39:34', NULL),
+        (18, '966', 'facebook', 0.0161, 0.0269, NULL, NULL, '2022-11-24 01:40:43', '2022-11-24 01:40:43', NULL),
+        (19, '27', 'facebook', 0.0139, 0.0232, NULL, NULL, '2022-11-24 01:40:58', '2022-11-24 01:40:58', NULL),
+        (20, '34', 'facebook', 0.0305, 0.0509, NULL, NULL, '2022-11-24 01:41:21', '2022-11-24 01:41:21', NULL),
+        (21, '90', 'facebook', 0.0025, 0.0083, NULL, NULL, '2022-11-24 01:41:38', '2022-11-24 01:41:38', NULL),
+        (22, '971', 'facebook', 0.0157, 0.0262, NULL, NULL, '2022-11-24 01:42:01', '2022-11-24 01:42:01', NULL),
+        (23, '44', 'facebook', 0.0321, 0.0536, NULL, NULL, '2022-11-24 01:42:26', '2022-11-24 01:42:26', NULL),
+        (24, '0', 'facebook', 0.0120, 0.0400, NULL, NULL, '2022-11-24 02:31:06', '2022-11-24 02:31:06', 1),
+        (25, '54', 'gupshup', 0.0261, 0.0436, NULL, NULL, '2022-11-24 01:26:10', '2022-11-24 01:26:10', NULL),
+        (26, '55', 'gupshup', 0.0248, 0.0414, NULL, NULL, '2022-11-24 01:27:26', '2022-11-24 01:27:26', NULL),
+        (27, '56', 'gupshup', 0.0376, 0.0627, NULL, NULL, '2022-11-24 01:28:11', '2022-11-24 01:28:11', NULL),
+        (28, '57', 'gupshup', 0.0050, 0.0083, NULL, NULL, '2022-11-24 01:28:32', '2022-11-24 01:28:32', NULL),
+        (29, '20', 'gupshup', 0.0533, 0.0889, NULL, NULL, '2022-11-24 01:29:01', '2022-11-24 01:29:01', NULL),
+        (30, '33', 'gupshup', 0.0712, 0.1186, NULL, NULL, '2022-11-24 01:29:32', '2022-11-24 01:29:32', NULL),
+        (31, '49', 'gupshup', 0.0679, 0.1131, NULL, NULL, '2022-11-24 01:29:56', '2022-11-24 01:29:56', NULL),
+        (32, '91', 'gupshup', 0.0033, 0.0055, NULL, NULL, '2022-11-24 01:30:16', '2022-11-24 01:30:16', NULL),
+        (33, '62', 'gupshup', 0.0157, 0.0262, NULL, NULL, '2022-11-24 01:30:45', '2022-11-24 01:30:45', NULL),
+        (34, '972', 'gupshup', 0.0149, 0.0248, NULL, NULL, '2022-11-24 01:36:54', '2022-11-24 01:36:54', NULL),
+        (35, '60', 'gupshup', 0.0182, 0.0606, NULL, NULL, '2022-11-24 01:37:22', '2022-11-24 01:37:22', NULL),
+        (36, '52', 'gupshup', 0.0087, 0.0289, NULL, NULL, '2022-11-24 01:37:48', '2022-11-24 01:37:48', NULL),
+        (37, '31', 'gupshup', 0.0738, 0.1230, NULL, NULL, '2022-11-24 01:38:05', '2022-11-24 01:38:05', NULL),
+        (38, '227', 'gupshup', 0.0257, 0.0428, NULL, NULL, '2022-11-24 01:38:36', '2022-11-24 01:38:36', NULL),
+        (39, '92', 'gupshup', 0.0118, 0.0392, NULL, NULL, '2022-11-24 01:38:52', '2022-11-24 01:38:52', NULL),
+        (40, '51', 'gupshup', 0.0149, 0.0495, NULL, NULL, '2022-11-24 01:39:11', '2022-11-24 01:39:11', NULL),
+        (41, '7', 'gupshup', 0.0329, 0.0549, NULL, NULL, '2022-11-24 01:39:34', '2022-11-24 01:39:34', NULL),
+        (42, '966', 'gupshup', 0.0161, 0.0269, NULL, NULL, '2022-11-24 01:40:43', '2022-11-24 01:40:43', NULL),
+        (43, '27', 'gupshup', 0.0139, 0.0232, NULL, NULL, '2022-11-24 01:40:58', '2022-11-24 01:40:58', NULL),
+        (44, '34', 'gupshup', 0.0305, 0.0509, NULL, NULL, '2022-11-24 01:41:21', '2022-11-24 01:41:21', NULL),
+        (45, '90', 'gupshup', 0.0025, 0.0083, NULL, NULL, '2022-11-24 01:41:38', '2022-11-24 01:41:38', NULL),
+        (46, '971', 'gupshup', 0.0157, 0.0262, NULL, NULL, '2022-11-24 01:42:01', '2022-11-24 01:42:01', NULL),
+        (47, '44', 'gupshup', 0.0321, 0.0536, NULL, NULL, '2022-11-24 01:42:26', '2022-11-24 01:42:26', NULL),
+        (48, '0', 'gupshup', 0.0120, 0.0400, NULL, NULL, '2022-11-24 02:31:06', '2022-11-24 02:31:06', 1)";
+        
+        DB::insert($priceList);
+
         DB::table('fields')->insert([
             
             //Price
-            ['module_name' => 'Price', 'field_name' => 'user_initiated', 'field_label' => 'User Initiated', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
-            ['module_name' => 'Price', 'field_name' => 'business_initiated', 'field_label' => 'Business Initiated', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
-            ['module_name' => 'Price', 'field_name' => 'message', 'field_label' => 'Message', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
-            ['module_name' => 'Price', 'field_name' => 'media', 'field_label' => 'Media', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
-            ['module_name' => 'Price', 'field_name' => 'is_default', 'field_label' => 'Is default?', 'field_type' => 'checkbox', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Price', 'field_name' => 'user_initiated', 'field_label' => 'User Initiated', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Price', 'field_name' => 'business_initiated', 'field_label' => 'Business Initiated', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Price', 'field_name' => 'message', 'field_label' => 'Message', 'field_type' => 'amount', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Price', 'field_name' => 'media', 'field_label' => 'Media', 'field_type' => 'amount', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Price', 'field_name' => 'is_default', 'field_label' => 'Is default?', 'field_type' => 'checkbox', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
 
             // Tag
-            ['module_name' => 'Tag', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
-            ['module_name' => 'Tag', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Tag', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Tag', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
             
             // Category
-            ['module_name' => 'Category', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
-            ['module_name' => 'Category', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Category', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Category', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
             
             // Field
-            ['module_name' => 'Field', 'field_name' => 'field_label', 'field_label' => 'Field Label', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
-            ['module_name' => 'Field', 'field_name' => 'field_group', 'field_label' => 'Field Group', 'field_type' => 'dropdown', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
-            ['module_name' => 'Field', 'field_name' => 'is_mandatory', 'field_label' => 'Mandatory', 'field_type' => 'checkbox', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
-            ['module_name' => 'Field', 'field_name' => 'mass_edit', 'field_label' => 'Mass edit', 'field_type' => 'checkbox', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Field', 'field_name' => 'field_label', 'field_label' => 'Field Label', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Field', 'field_name' => 'field_group', 'field_label' => 'Field Group', 'field_type' => 'dropdown', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Field', 'field_name' => 'is_mandatory', 'field_label' => 'Mandatory', 'field_type' => 'checkbox', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Field', 'field_name' => 'mass_edit', 'field_label' => 'Mass edit', 'field_type' => 'checkbox', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
 
             // Company
-            ['module_name' => 'Company', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
-            ['module_name' => 'Company', 'field_name' => 'address_line_1', 'field_label' => 'Address Line 1', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '2'],
-            ['module_name' => 'Company', 'field_name' => 'address_line_2', 'field_label' => 'Address Line 2', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '3'],
-            ['module_name' => 'Company', 'field_name' => 'city', 'field_label' => 'City', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '4'],
-            ['module_name' => 'Company', 'field_name' => 'state', 'field_label' => 'State', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '5'],
-            ['module_name' => 'Company', 'field_name' => 'status', 'field_label' => 'Status', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '7'],
-            ['module_name' => 'Company', 'field_name' => 'company_address', 'field_label' => 'Company Address', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '8'],
-            ['module_name' => 'Company', 'field_name' => 'company_vat_id', 'field_label' => 'Company VAT ID', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '13'],
-            ['module_name' => 'Company', 'field_name' => 'email', 'field_label' => 'Admin email for invoices', 'field_type' => 'email', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '9'], 
-            ['module_name' => 'Company', 'field_name' => 'codice_destinatario', 'field_label' => 'Company Codice Destinatario', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '14'],
+            ['module_name' => 'Company', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Company', 'field_name' => 'address_line_1', 'field_label' => 'Address Line 1', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '2'],
+            ['module_name' => 'Company', 'field_name' => 'address_line_2', 'field_label' => 'Address Line 2', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '3'],
+            ['module_name' => 'Company', 'field_name' => 'city', 'field_label' => 'City', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '4'],
+            ['module_name' => 'Company', 'field_name' => 'state', 'field_label' => 'State', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '5'],
+            ['module_name' => 'Company', 'field_name' => 'status', 'field_label' => 'Status', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '7'],
+            ['module_name' => 'Company', 'field_name' => 'company_address', 'field_label' => 'Company Address', 'field_type' => 'textarea', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '8'],
+            ['module_name' => 'Company', 'field_name' => 'company_vat_id', 'field_label' => 'Company VAT ID', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '13'],
+            ['module_name' => 'Company', 'field_name' => 'email', 'field_label' => 'Admin email for invoices', 'field_type' => 'email', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '9'], 
+            ['module_name' => 'Company', 'field_name' => 'codice_destinatario', 'field_label' => 'Company Codice Destinatario', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '14'],
 
             // Campaign
-            ['module_name' => 'Campaign', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Campaign', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false', 'sequence' => '1'],
 
             // LineItem
-            ['module_name' => 'LineItem', 'field_name' => 'quantity', 'field_label' => 'Quantity', 'field_type' => 'number', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
-            ['module_name' => 'LineItem', 'field_name' => 'price', 'field_label' => 'Price', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
-            ['module_name' => 'LineItem', 'field_name' => 'total_amount', 'field_label' => 'Amount', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
-            ['module_name' => 'LineItem', 'field_name' => 'sequence', 'field_label' => 'Sequence', 'field_type' => 'number', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
-            ['module_name' => 'LineItem', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'LineItem', 'field_name' => 'quantity', 'field_label' => 'Quantity', 'field_type' => 'number', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'LineItem', 'field_name' => 'price', 'field_label' => 'Price', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'LineItem', 'field_name' => 'total_amount', 'field_label' => 'Amount', 'field_type' => 'amount', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'LineItem', 'field_name' => 'sequence', 'field_label' => 'Sequence', 'field_type' => 'number', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'LineItem', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
 
             // Automation
-            ['module_name' => 'Automation', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
-            ['module_name' => 'Automation', 'field_name' => 'status', 'field_label' => 'Status', 'field_type' => 'checkbox', 'is_mandatory' => 0, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Automation', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Automation', 'field_name' => 'status', 'field_label' => 'Status', 'field_type' => 'checkbox', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
 
             // Msg 
-            ['module_name' => 'Message', 'field_name' => 'message', 'field_label' => 'Content', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+            ['module_name' => 'Message', 'field_name' => 'message', 'field_label' => 'Content', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
             
             // Documennt
-            ['module_name' => 'Document', 'field_name' => 'title', 'field_label' => 'Title', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true', 'sequence' => '1'],
-            ['module_name' => 'Document', 'field_name' => 'type', 'field_label' => 'Type', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true', 'sequence' => '1'],
-            ['module_name' => 'Document', 'field_name' => 'size', 'field_label' => 'Size', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true', 'sequence' => '1'],
+            ['module_name' => 'Document', 'field_name' => 'title', 'field_label' => 'Title', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true', 'sequence' => '1'],
+            ['module_name' => 'Document', 'field_name' => 'type', 'field_label' => 'Type', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true', 'sequence' => '1'],
+            ['module_name' => 'Document', 'field_name' => 'size', 'field_label' => 'Size', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true', 'sequence' => '1'],
 
             //Plans
-            ['module_name' => 'Plan', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'sequence' => '1','is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false'],
-            ['module_name' => 'Plan', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'sequence' => '2', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false'],
-            ['module_name' => 'Plan', 'field_name' => 'amount', 'field_label' => 'Amount', 'field_type' => 'number', 'sequence' => '3', 'is_mandatory' => 1, 'is_custom' => 0, 'user_id' => 1, 'company_id' => 1,  'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true'],
+            ['module_name' => 'Plan', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'sequence' => '1','is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false'],
+            ['module_name' => 'Plan', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'textarea', 'sequence' => '2', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false'],
+            ['module_name' => 'Plan', 'field_name' => 'amount', 'field_label' => 'Amount', 'field_type' => 'number', 'sequence' => '3', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true'],
+
+            // APIs
+            ['module_name' => 'Api', 'field_name' => 'name', 'field_label' => 'Name', 'field_type' => 'text', 'sequence' => '1','is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false'],
+            ['module_name' => 'Api', 'field_name' => 'ip', 'field_label' => 'IP', 'field_type' => 'selectable', 'sequence' => '2', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false'],
+            ['module_name' => 'Api', 'field_name' => 'read_only', 'field_label' => 'Read only', 'field_type' => 'checkbox', 'sequence' => '3', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true'],
+            ['module_name' => 'Api', 'field_name' => 'write_only', 'field_label' => 'Write only', 'field_type' => 'checkbox', 'sequence' => '3', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'true'],
+        //    ['module_name' => 'Api', 'field_name' => 'api_key', 'field_label' => 'API key', 'field_type' => 'selectable', 'sequence' => '2', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'readonly_on_edit' => 'false'],
+      
+             //Role
+             ['module_name' => 'Role', 'field_name' => 'name', 'field_label' => 'Role Name', 'field_type' => 'text', 'is_mandatory' => 1, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '1'],
+             ['module_name' => 'Role', 'field_name' => 'description', 'field_label' => 'Description', 'field_type' => 'text', 'is_mandatory' => 0, 'is_custom' => 0,   'created_at' => $current_datetime, 'updated_at' => $current_datetime,'readonly_on_edit' => 'false', 'sequence' => '2'],
+      
         ]);
 
-        // DB::table('plans')->insert([
+        DB::table('plans')->insert([
             
-        //     // Subscription plan entires
-        //     ['plan' => 'lite', 'price' => '0','target' => 'Freelance', 'setup_workspace' => '0', 'monthly_workspace' => '0' ,'channels' => 'Whatsapp, Instagram, Facebook', 'accounts' => '1', 'offical_whatsapp' => '0', 'unoffical_whatsapp' => '45', 'facebook' => '0', 'users' => '1', 'include_users' => '1', 'extra_users' => '-', 'crm_contacts' => 'infinite','chat_cost' => 'Different from Country to Country','per_message' => '0.0017', 'per_allegato' => '0.0027', 'fatturazione' => 'Prepagato', 'contacts' => 'true', 'lists_tags' => 'true', 'custom_fields' => 'true', 'multichannel_chat' => 'true', 'campaigns' => 'true', 'workflow' => 'false', 'opportunities' => 'false', 'category' => 'false','orders' => 'false', 'lead_webhook' => 'false', 'integrations' => 'false', 'api' => 'false', 'custom_integrations'=>'false', 'created_at' => $current_datetime, 'updated_at' => $current_datetime ], 
-        //     ['plan' => 'pro', 'price' => '49','target' => 'Small business', 'setup_workspace' => '49', 'monthly_workspace' => '49' ,'channels' => 'Whatsapp, Instagram, Facebook', 'accounts' => '2', 'offical_whatsapp' => '0', 'unoffical_whatsapp' => '45', 'facebook' => '0', 'users' => '10', 'include_users' => '3', 'extra_users' => '5', 'crm_contacts' => 'infinite','chat_cost' => 'Different from Country to Country','per_message' => '0.0017', 'per_allegato' => '0.0027', 'fatturazione' => 'Prepagato', 'contacts' => 'true', 'lists_tags' => 'true', 'custom_fields' => 'true', 'multichannel_chat' => 'true', 'campaigns' => 'true', 'workflow' => '10000', 'opportunities' => 'true', 'category' => 'true','orders' => 'true', 'lead_webhook' => 'true', 'integrations' => 'true', 'api' => 'false', 'custom_integrations'=>'false', 'created_at' => $current_datetime, 'updated_at' => $current_datetime ], 
-        //     ['plan' => 'business', 'price' => '99','target' => 'Medium Business', 'setup_workspace' => '99', 'monthly_workspace' => '99' ,'channels' => 'Whatsapp, Instagram, Facebook', 'accounts' => '3', 'offical_whatsapp' => '0', 'unoffical_whatsapp' => '45', 'facebook' => '0', 'users' => '25', 'include_users' => '5', 'extra_users' => '5', 'crm_contacts' => 'infinite','chat_cost' => 'Different from Country to Country','per_message' => '0.0017', 'per_allegato' => '0.0027', 'fatturazione' => 'Prepagato', 'contacts' => 'true', 'lists_tags' => 'true', 'custom_fields' => 'true', 'multichannel_chat' => 'true', 'campaigns' => 'true', 'workflow' => '25000', 'opportunities' => 'true', 'category' => 'true','orders' => 'true', 'lead_webhook' => 'true', 'integrations' => 'true', 'api' => 'false', 'custom_integrations'=>'false', 'created_at' => $current_datetime, 'updated_at' => $current_datetime ], 
-        //     ['plan' => 'enterprise', 'price' => 'Custom','target' => 'Large Business', 'setup_workspace' => '350€/Max 10.000 messages month 500€ /max 25.000 messages month', 'monthly_workspace' => '350€/Max 10.000 messages month 500€ /max 25.000 messages month' ,'channels' => 'Whatsapp, Instagram, Facebook, Custom', 'accounts' => 'Custom', 'offical_whatsapp' => '0', 'unoffical_whatsapp' => 'NO', 'facebook' => '0', 'users' => 'Custom', 'include_users' => 'Custom', 'extra_users' => 'Custom', 'crm_contacts' => 'infinite','chat_cost' => 'Different from Country to Country','per_message' => 'Custom', 'per_allegato' => 'Custom', 'fatturazione' => 'Postpagato', 'contacts' => 'true', 'lists_tags' => 'true', 'custom_fields' => 'true', 'multichannel_chat' => 'true', 'campaigns' => 'true', 'workflow' => 'true', 'opportunities' => 'true', 'category' => 'true','orders' => 'true', 'lead_webhook' => 'true', 'integrations' => 'true', 'api' => 'true', 'custom_integrations'=>'true', 'created_at' => $current_datetime, 'updated_at' => $current_datetime ], 
-        // ]);
+            // Subscription plan entires
+           // ['plan' => 'Api', 'price' => '0','target' => 'Freelance', 'setup_workspace' => '-', 'monthly_workspace' => '-' ,'channels' => '-', 'accounts' => '-', 'offical_whatsapp' => '-', 'unoffical_whatsapp' => '-', 'facebook' => '-', 'users' => '-', 'include_users' => '-', 'extra_users' => '-', 'crm_contacts' => '-','chat_cost' => '-','per_message' => '-', 'per_allegato' => '-', 'fatturazione' => 'Postpagato', 'contacts' => 'false', 'lists_tags' => 'false', 'custom_fields' => 'false', 'multichannel_chat' => 'false', 'campaigns' => 'false', 'workflow' => 'false', 'opportunities' => 'false', 'category' => 'false','orders' => 'false', 'lead_webhook' => 'false', 'integrations' => 'false', 'api' => 'false', 'custom_integrations'=>'false', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'default_plan' => 'true', 'plan_id' => 'CONVERSATION_API' ], 
+           // ['plan' => 'Lite', 'price' => '0','target' => 'Freelance', 'setup_workspace' => '0', 'monthly_workspace' => '0' ,'channels' => 'Whatsapp, Instagram, Facebook', 'accounts' => '1', 'offical_whatsapp' => '0', 'unoffical_whatsapp' => '45', 'facebook' => '0', 'users' => '1', 'include_users' => '1', 'extra_users' => '-', 'crm_contacts' => 'infinite','chat_cost' => 'Different from Country to Country','per_message' => '0.0017', 'per_allegato' => '0.0027', 'fatturazione' => 'Prepagato', 'contacts' => 'true', 'lists_tags' => 'true', 'custom_fields' => 'true', 'multichannel_chat' => 'true', 'campaigns' => 'true', 'workflow' => 'false', 'opportunities' => 'false', 'category' => 'false','orders' => 'false', 'lead_webhook' => 'false', 'integrations' => 'false', 'api' => 'false', 'custom_integrations'=>'false', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'default_plan' => 'true', 'plan_id' => '1' ], 
+           // ['plan' => 'Pro', 'price' => '49','target' => 'Small business', 'setup_workspace' => '49', 'monthly_workspace' => '49' ,'channels' => 'Whatsapp, Instagram, Facebook', 'accounts' => '2', 'offical_whatsapp' => '0', 'unoffical_whatsapp' => '45', 'facebook' => '0', 'users' => '10', 'include_users' => '3', 'extra_users' => '5', 'crm_contacts' => 'infinite','chat_cost' => 'Different from Country to Country','per_message' => '0.0017', 'per_allegato' => '0.0027', 'fatturazione' => 'Prepagato', 'contacts' => 'true', 'lists_tags' => 'true', 'custom_fields' => 'true', 'multichannel_chat' => 'true', 'campaigns' => 'true', 'workflow' => '10000', 'opportunities' => 'true', 'category' => 'true','orders' => 'true', 'lead_webhook' => 'true', 'integrations' => 'true', 'api' => 'false', 'custom_integrations'=>'false', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'default_plan' => 'true', 'plan_id' => '2' ], 
+           // ['plan' => 'Business', 'price' => '99','target' => 'Medium Business', 'setup_workspace' => '99', 'monthly_workspace' => '99' ,'channels' => 'Whatsapp, Instagram, Facebook', 'accounts' => '3', 'offical_whatsapp' => '0', 'unoffical_whatsapp' => '45', 'facebook' => '0', 'users' => '25', 'include_users' => '5', 'extra_users' => '5', 'crm_contacts' => 'infinite','chat_cost' => 'Different from Country to Country','per_message' => '0.0017', 'per_allegato' => '0.0027', 'fatturazione' => 'Prepagato', 'contacts' => 'true', 'lists_tags' => 'true', 'custom_fields' => 'true', 'multichannel_chat' => 'true', 'campaigns' => 'true', 'workflow' => '25000', 'opportunities' => 'true', 'category' => 'true','orders' => 'true', 'lead_webhook' => 'true', 'integrations' => 'true', 'api' => 'false', 'custom_integrations'=>'false', 'created_at' => $current_datetime, 'updated_at' => $current_datetime, 'default_plan' => 'true', 'plan_id' => '3' ], 
+           // ['plan' => 'enterprise', 'price' => 'Custom','target' => 'Large Business', 'setup_workspace' => '350€/Max 10.000 messages month 500€ /max 25.000 messages month', 'monthly_workspace' => '350€/Max 10.000 messages month 500€ /max 25.000 messages month' ,'channels' => 'Whatsapp, Instagram, Facebook, Custom', 'accounts' => 'Custom', 'offical_whatsapp' => '0', 'unoffical_whatsapp' => 'NO', 'facebook' => '0', 'users' => 'Custom', 'include_users' => 'Custom', 'extra_users' => 'Custom', 'crm_contacts' => 'infinite','chat_cost' => 'Different from Country to Country','per_message' => 'Custom', 'per_allegato' => 'Custom', 'fatturazione' => 'Postpagato', 'contacts' => 'true', 'lists_tags' => 'true', 'custom_fields' => 'true', 'multichannel_chat' => 'true', 'campaigns' => 'true', 'workflow' => 'true', 'opportunities' => 'true', 'category' => 'true','orders' => 'true', 'lead_webhook' => 'true', 'integrations' => 'true', 'api' => 'true', 'custom_integrations'=>'true', 'created_at' => $current_datetime, 'updated_at' => $current_datetime ], 
+           ['plan' => 'Api', 'price' => '0', 'users' => '1','free_accounts' => '1', 'accounts' => '-', 'crm_leads' => 'false', 'crm_contacts' => 'false', 'crm_organizations' => 'false', 'crm_deals' => 'false', 'crm_custom_fields' => 'false', 'campaigns' => 'false', 'chat_conversation' => 'true', 'workflows' => 'false', 'workflow_operations' => '0', 'product_category' => 'false', 'sale_orders' => 'false', 'reports' => 'false', 'active_users' => '-', 'api_conversation' => 'true', 'api_module_access' => 'true', 'api_product_order' => 'false', 'catalogs' => 'false', 'default_plan' => 'true', 'plan_id' => 'CONVERSATION_API', 'created_at' => $current_datetime, 'updated_at' => $current_datetime ],
+           ['plan' => 'Starter', 'price' => '15', 'users' => '3','free_accounts' => '1', 'accounts' => '3', 'crm_leads' => 'true', 'crm_contacts' => 'true', 'crm_organizations' => 'true', 'crm_deals' => 'true', 'crm_custom_fields' => 'false', 'campaigns' => 'false', 'chat_conversation' => 'true', 'workflows' => 'false', 'workflow_operations' => '0', 'product_category' => '5', 'sale_orders' => '5', 'reports' => 'true', 'active_users' => '1000', 'api_conversation' => 'true', 'api_module_access' => 'true', 'api_product_order' => 'false', 'catalogs' => 'true','default_plan' => 'false', 'plan_id' => 'STARTER', 'created_at' => $current_datetime, 'updated_at' => $current_datetime ],
+           ['plan' => 'Pro', 'price' => '30', 'users' => '-','free_accounts' => '1', 'accounts' => '5', 'crm_leads' => 'true', 'crm_contacts' => 'true', 'crm_organizations' => 'true', 'crm_deals' => 'true', 'crm_custom_fields' => 'true', 'campaigns' => 'true', 'chat_conversation' => 'true', 'workflows' => 'true', 'workflow_operations' => '10000', 'product_category' => '5', 'sale_orders' => '5', 'reports' => 'true', 'active_users' => '5000', 'api_conversation' => 'true', 'api_module_access' => 'true', 'api_product_order' => 'false', 'catalogs' => 'true', 'default_plan' => 'false', 'plan_id' => 'PRO', 'created_at' => $current_datetime, 'updated_at' => $current_datetime ],
+           ['plan' => 'Business', 'price' => '50', 'users' => '-','free_accounts' => '1', 'accounts' => '15', 'crm_leads' => 'true', 'crm_contacts' => 'true', 'crm_organizations' => 'true', 'crm_deals' => 'true', 'crm_custom_fields' => 'true', 'campaigns' => 'true', 'chat_conversation' => 'true', 'workflows' => 'true', 'workflow_operations' => '25000', 'product_category' => 'true', 'sale_orders' => 'true', 'reports' => 'true', 'active_users' => '-', 'api_conversation' => 'true', 'api_module_access' => 'true', 'api_product_order' => 'true', 'catalogs' => 'true', 'default_plan' => 'false', 'plan_id' => 'BUSINESS', 'created_at' => $current_datetime, 'updated_at' => $current_datetime ],
+           ['plan' => 'Enterprise', 'price' => 'Custom', 'users' => '-','free_accounts' => '1', 'accounts' => 'Custom', 'crm_leads' => 'true', 'crm_contacts' => 'true', 'crm_organizations' => 'true', 'crm_deals' => 'true', 'crm_custom_fields' => 'true', 'campaigns' => 'true', 'chat_conversation' => 'true', 'workflows' => 'true', 'workflow_operations' => 'Custom', 'product_category' => 'true', 'sale_orders' => 'true', 'reports' => 'true', 'active_users' => '-', 'api_conversation' => 'true', 'api_module_access' => 'true', 'api_product_order' => 'true', 'catalogs' => 'true', 'default_plan' => 'false', 'plan_id' => 'CUSTOM', 'created_at' => $current_datetime, 'updated_at' => $current_datetime ],
+        ]);
+        
     }
 
+    
     /**
      * Retrun message mode
      */
@@ -137,6 +225,7 @@ class FieldSeeder extends Seeder
     public function getCountryCodeJson()
     {
         $countryCode = array(
+            '0' => 'Other',
             '93' => 'Afghanistan',
             '358' => 'Finland',
             '355' => 'Albania',
@@ -464,8 +553,6 @@ class FieldSeeder extends Seeder
         $field->field_type = $type;
         $field->is_mandatory = $mandatory;
         $field->is_custom = 0;
-        $field->user_id = 1;
-        $field->company_id = 1;
         $field->created_at = $current_datetime;
         $field->updated_at = $current_datetime;
         $field->options = $options;

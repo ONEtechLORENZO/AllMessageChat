@@ -64,10 +64,15 @@ export const call_to_action_lists = {
     'visit_website': 'Visit website'
 };
 
-export const url_types = [
-    {value: 'Static', label: 'Static'},
-    {value: 'Dynamic', label: 'Dynamic'},
-];
+// export const url_types = [
+//     {value: 'Static', label: 'Static'},
+//     {value: 'Dynamic', label: 'Dynamic'},
+// ];
+
+export const url_types = {
+    'Static' : 'Static',
+    'Dynamic': 'Dynamic'
+};
 
 export const currencies = {
     "AED": "United Arab Emirates Dirham",

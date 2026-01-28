@@ -88,5 +88,7 @@ Route::post('/billingInformation', [CompanyController::class, 'billingInformatio
 
 Route::get('/company/plan/records', [SettingsController::class, 'getDefaultPlan'])->name('get_plan');
 
-Route::get('/fetch/company/{id}', [CompanyController::class, 'getCompanyDetail'])->name('get_company');               
+Route::get('/fetch/company/{id}', [CompanyController::class, 'getCompanyDetail'])->name('get_company');  
+
+Route::post('/workspaceInformation', [CompanyController::class, 'workspaceInformation'])->name('workspace_information');
                 

@@ -63,11 +63,11 @@ function PaymentMethodForm(props)
                             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         >
                             <Dialog.Panel className="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-xl sm:w-full">
-                                <div className="bg-gray-50 px-4 pt-5 pb-4 sm:p-4 sm:pb-4">
+                                <div className="bg-gray-50 px-4 !py-4 sm:p-4 sm:pb-4">
                                     <div className="sm:flex sm:items-start">
-                                        <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                                            <Dialog.Title as="h3" className="text-lg leading-6 font-bold text-gray-900">
-                                                {props.translator['Add your Card']}
+                                        <div className="text-center sm:mt-0 sm:text-left">
+                                            <Dialog.Title as="h3" className="text-lg leading-6 mb-0 font-bold text-gray-900">
+                                                {props.translator['Add your Card']} 1
                                             </Dialog.Title>
                                         </div>
                                     </div>
@@ -163,7 +163,7 @@ const Form = (props) => {
             <CardElement />
             <div className='pt-10'>
                 <button
-                    className="border border-transparent rounded-md w-full px-8 py-4 flex items-center justify-center text-lg leading-6 font-medium bg-primary text-white md:px-10"
+                    className="border border-transparent rounded-md w-full px-8 py-3 flex items-center justify-center text-lg leading-6 font-medium bg-primary text-white md:px-10"
                     disabled={!stripe || loading}
                 >
                     {loading ? 'Loading...' : 'Add'}

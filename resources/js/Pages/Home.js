@@ -10,6 +10,7 @@ export default function Home(props) {
             errors={props.errors}
             current_page='Home' 
             message={props.message}
+            navigationMenu={props.menuBar}
         >
             
             <Head title={'Home'} />
@@ -27,11 +28,11 @@ export default function Home(props) {
                                 </div>
                                 <div class="ml-5 w-0 flex-1">
                                     <dl>
-                                    <dt class="truncate text-lg font-medium text-gray-500">Hi <b> {props.auth.user.name}</b></dt>
+                                    <dt class="truncate text-lg font-medium text-gray-500">{props.translator["Hi"]} <b> {props.auth.user.name}</b></dt>
                                     <dd>
-                                        <div class="text-sm font-medium text-gray-900 mt-3">It's a beautiful day to sell through your chats.</div>
-                                        <div class="text-sm font-medium text-gray-900 mt-3">Use OneMessage to learn more about your customers, capture leads, create automations, send messages and geek out on analytics.</div>
-                                        <div class="text-sm font-medium text-gray-900 mt-3">All the best!</div>
+                                        <div class="text-sm font-medium text-gray-900 mt-3">{props.translator["It is a beautiful day to sell through your chats."]}</div>
+                                        <div class="text-sm font-medium text-gray-900 mt-3">{props.translator["Use OneMessage to learn more about your customers, capture leads, create automations, send messages and geek out on analytics."]}</div>
+                                        <div class="text-sm font-medium text-gray-900 mt-3">{props.translator["All the best!"]}</div>
                                     </dd>
                                     </dl>
                                 </div>
@@ -42,7 +43,7 @@ export default function Home(props) {
                     <div className='clear'></div>
                 </div>
 
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-5">
+                {/* <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-5">
                     <div class="mt-2 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">              
                         <div class="overflow-hidden rounded-lg bg-white shadow">
                             <div class="p-3">
@@ -73,9 +74,9 @@ export default function Home(props) {
                         </div>              
                     </div>
                     <div className='clear'></div>
-                </div>
+                </div> */}
+
             </div>
-            
 
         </Authenticated>
     );

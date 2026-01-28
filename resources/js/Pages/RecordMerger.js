@@ -215,6 +215,29 @@ export default function RecordMerger(props) {
                                     if(field.type == 'checkbox') {
                                         value = (value) ? 'checked': 'unchecked';
                                     }
+
+                                    if(field.field_type == 'phones') {
+                                        let phoneNumbers = record['phones'];
+                                        let numbers = [];
+                                        if(phoneNumbers) {
+                                         {phoneNumbers && phoneNumbers.map( (phone) => {
+                                             numbers.push(phone['phones']);
+                                         })}
+                                        }
+                                        value = numbers ? (numbers).join(', ') : '';
+                                    }
+
+                                    if(field.field_type == 'emails') {
+                                        let EmailAddress = record['emails'];
+                                        let emails = [];
+                                        if(EmailAddress) {
+                                          {EmailAddress && EmailAddress.map( (email) => {
+                                              emails.push(email['emails']);
+                                          })}
+                                        }
+
+                                        value = emails ? (emails).join(', ') : '';
+                                    }
                                     
                                     return(
                                         <td className="whitespace-nowrap p-4 text-sm text-gray-500">

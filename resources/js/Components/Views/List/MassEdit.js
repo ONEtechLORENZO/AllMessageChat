@@ -22,6 +22,7 @@ import Date from "@/Components/Forms/Date";
 import DateTime from "@/Components/Forms/DateTime";
 import PhoneInput2 from 'react-phone-input-2';
 import Time from "@/Components/Forms/DateTime";
+import MultiContainer from '@/Components/Forms/MultiContainer';
 
 const defaultConfig = {
     // class of the parent element where the error/success class is added
@@ -50,13 +51,18 @@ export default function MassEdit(props)
     const [fields, setFields] = useState([]);
     const [formErrors, setErrors] = useState({});
     const [options, setOptions] = useState(null);
+    const [tags, setTags] = useState();
+    const [tagOptions, setTagOptions] = useState();
+    const [categorys, setCategorys] = useState();
+    const [categoryOptions, setCategoryOptions] = useState();
 
     const cancelButtonRef = useRef(null)
 
     const { data, setData} = useForm({});
 
     useEffect(() => {
-        fetchModuleFields();           
+        fetchModuleFields(); 
+        fetchTagList();          
     }, [props]);
 
     /**
@@ -92,6 +98,16 @@ export default function MassEdit(props)
         });
     }
 
+    function fetchTagList() {
+        let url = route('tag_list_options');
+        Axios.get(url).then((response) => {
+            if(response.data.status !== false) {
+                setTagOptions(response.data.tagOptions)
+                setCategoryOptions(response.data.categoryOptions);
+            }
+        });
+    }
+
     /**
      * Handle Input Change
      */
@@ -122,7 +138,9 @@ export default function MassEdit(props)
     {    
         data['id'] = props.checkId;
         data['module'] = props.module;
-    
+        data['tags'] = tags;
+        data['categorys'] = categorys;
+
         let url = route('mass_edit');
 
         Inertia.post(url, data, {
@@ -245,11 +263,6 @@ export default function MassEdit(props)
         setFields(newfield);
     }
 
-    function hideForm(){
-        setData({});
-        props.setShowMassEdit(false);
-    }
-
     return (
         <Transition.Root show={open} as={Fragment}>
             <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => {}} >
@@ -282,10 +295,10 @@ export default function MassEdit(props)
                                 ? "relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-1/2"
                                 :"relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-xl sm:w-full"
                             )} >
-                                <div className="bg-gray-50 px-4 pt-5 pb-4 sm:p-4 sm:pb-4">
+                                <div className="bg-gray-50 px-4 pb-2 sm:p-3 sm:pb-2">
                                     <div className="sm:flex sm:items-start">
                                         <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                                            <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
+                                            <Dialog.Title as="h3" className="text-lg leading-6 font-semibold text-gray-900">
                                                 Mass edit
                                             </Dialog.Title>
                                         </div>
@@ -299,7 +312,7 @@ export default function MassEdit(props)
                                 : ''}
 
                                 <form id='form'>
-                                    <div className='p-4 space-y-4'>
+                                    <div className='px-4 py-2 space-y-4'>
                                         {fields && fields.length != 0 ? fields.map((field_info,index) => { 
                                             let element = ''; 
                                             let readOnly = true;
@@ -396,7 +409,7 @@ export default function MassEdit(props)
                                                         name={field_info.field_name}
                                                         options={field_info.options ? field_info.options : {}}
                                                         handleChange={handleChange}
-                                                        emptyOption={field_info.field_name == 'field_group' ? 'General' : ''}
+                                                        emptyOption={field_info.field_name == 'field_group' ? 'General' : 'Select'}
                                                         value={field_value}
                                                         required={field_info.is_mandatory === 1 ? true : false}
                                                         readOnly={(readOnly) ? '' : 'disabled'}
@@ -474,8 +487,26 @@ export default function MassEdit(props)
                                                             required={field_info.is_mandatory === 1 ? true : false}
                                                             readOnly={(readOnly) ? '' : 'disabled'}
                                                         />                                                    
-                                                    break;                                 
-                                                case 'default':
+                                                    break;
+                                                case 'phones':
+                                                        element = <MultiContainer 
+                                                            type="text" 
+                                                            id={field_info.field_name}
+                                                            name={field_info.field_name}
+                                                            value={field_value} 
+                                                            DataHandler={DataHandler}
+                                                        />;
+                                                        break; 
+                                                case 'emails':
+                                                    element = <MultiContainer 
+                                                        type="text" 
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        value={field_value} 
+                                                        DataHandler={DataHandler}
+                                                    />;
+                                                    break;                                     
+                                                default:
                                                     element = <Input 
                                                         type="text" 
                                                         className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
@@ -499,14 +530,40 @@ export default function MassEdit(props)
                                                     </div>
                                                 </div>
                                             )
-                                        }) :'No fields for edit in Mass Edit'}
+                                        }) : (props.module != 'Contact') ? 'No fields for edit in Mass Edit': ''}
+                                        {props.module == 'Contact' ? 
+                                            <>
+                                                <div className='form-group' key={'Tag'}>
+                                                    <label htmlFor={'Tag'} className="block text-sm font-medium text-gray-700"> Tag </label>
+                                                    <div className="mt-1">
+                                                        <Creatable
+                                                        isMulti 
+                                                        value={tags}
+                                                        onChange={setTags}
+                                                        options={tagOptions}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className='form-group' key={'List'}>
+                                                    <label htmlFor={'List'} className="block text-sm font-medium text-gray-700"> List </label>
+                                                    <div className="mt-1">
+                                                        <Creatable
+                                                        isMulti 
+                                                        value={categorys}
+                                                        onChange={setCategorys}
+                                                        options={categoryOptions}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        : ''}
                                     </div>
                                 </form>
 
                                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                                     <button
                                         type="button"
-                                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
                                         onClick={saveForm}
                                     >
                                         Update
@@ -514,7 +571,7 @@ export default function MassEdit(props)
                                     <button
                                         type="button"
                                         className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                                        onClick={() => props.hideMassEdit()}
+                                        onClick={() => props.hideMassEdit(false)}
                                         ref={cancelButtonRef}
                                     >
                                         Cancel

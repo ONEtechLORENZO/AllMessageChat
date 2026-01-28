@@ -14,7 +14,7 @@ class AddNewfieldPlansDefault extends Migration
     public function up()
     {
         Schema::table('plans', function (Blueprint $table) {
-            $table->string('default_plan')->default('false')->nullable();
+          //  $table->string('default_plan')->default('false')->nullable();
         });
     }
 

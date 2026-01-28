@@ -22,12 +22,12 @@ function ContactFilter(props){
  return(
     <div className="overflow-hidden shadow rounded-lg divide-y divide-gray-200 w-full content-center">
         <div className="px-4 py-5 sm:px-6 bg-green-200">
-            Contact
+            {props.translator['Contact']}
         </div>
         <div className="px-4 py-5 sm:p-6">
             <div>
                 <div className="bg-gray-50 px-4 py-4 sm:px-6">
-                    Filter
+                {props.translator['Filter']}
                     <div className="mt-2">
                         <FilterGroups 
                             translator={translator}
@@ -50,7 +50,7 @@ function ContactFilter(props){
                  <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
                   <dl className="sm:divide-y sm:divide-gray-200">
                     <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt className="text-lg font-medium text-gray-500">Total Records</dt>
+                        <dt className="text-lg font-medium text-gray-500">{props.translator['Total Records']}</dt>
                         {props.recordCount || props.recordCount >= 0 ? 
                         <>
                          <dd className="mt-1 text-lg text-gray-900 sm:mt-0 sm:col-span-2">{props.recordCount}</dd>
@@ -78,8 +78,9 @@ function ContactFilter(props){
                                headers={headers}
                                records={records}
                                actions={''}
+                               translator = {props.translator}
                            />
-                           {Object.entries(records).length == 0 ? <Alert type='info' message= {'No record related yet.'} hideClose={true} /> : ''}
+                           {Object.entries(records).length == 0 ? <Alert type='info' message= {props.translator['No record related yet.']} hideClose={true} /> : ''}
                         </>
                        : ''} 
                     </div>
@@ -95,14 +96,14 @@ function ContactFilter(props){
                             className="justify-start bg-indigo-600 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             onClick={(e) => props.previous(1)}
                     >
-                            Previous
+                            {props.translator['Previous']}
                         </button>
                         <button
                             type='button'
                             className="justify-end bg-indigo-600 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             onClick={props.saveCampaign} 
                     >
-                            Next
+                            {props.translator['Next']}
                         </button>
                 </div>
             </div>

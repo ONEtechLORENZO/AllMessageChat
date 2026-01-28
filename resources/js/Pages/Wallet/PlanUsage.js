@@ -20,7 +20,6 @@ function PlanUsage(props){
 
         axios.get(route('get_plan_data' , props.currentPlan)).then((response) => {
             nProgress.done(true);
-            console.log(response);
             if(response.data) {
                 setData(response.data);
             }

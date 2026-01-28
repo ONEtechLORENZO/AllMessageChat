@@ -15,10 +15,10 @@ class CreateMsgsTable extends Migration
     {
         Schema::create('msgs', function (Blueprint $table) {
             $table->id();
-            $table->string('service_id');
+            $table->text('service_id');
             $table->string('service');
-            $table->foreignId('account_id')->constrained('accounts');
-            $table->text('message');
+            $table->foreignId('account_id')->nullable();
+            $table->text('message')->nullable();
             $table->integer('msgable_id');
             $table->string('msgable_type');
             $table->string('msg_mode');

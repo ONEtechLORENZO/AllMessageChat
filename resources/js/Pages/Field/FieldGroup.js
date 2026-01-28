@@ -63,7 +63,7 @@ function FieldGroup(props)
                                     <div className="sm:flex sm:items-start">
                                         <div className="mt-3 text-center sm:mt-0 sm:text-left">
                                             <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                                                Add new Field Group
+                                                {props.translator['Add new Field Group']}
                                             </Dialog.Title>
                                         </div>
                                     </div>
@@ -75,7 +75,7 @@ function FieldGroup(props)
                                         <div class=" justify-center">
                                             <div className='sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start  sm:pt-5'>
                                                 <label for="selected_module" class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-                                                    Select Module
+                                                {props.translator['Select Module']}
                                                 </label>
                                                 <div class="mt-1 sm:mt-0 sm:col-span-2">
                                                     <Dropdown
@@ -90,7 +90,7 @@ function FieldGroup(props)
                                         
                                             <div className='sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start  sm:pt-5'>
                                                 <label for="field_group_name" class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-                                                    Group Name   
+                                                {props.translator['Group Name']}  
                                                 </label>
                                                 <Input
                                                     name="field_group_name"
@@ -108,7 +108,7 @@ function FieldGroup(props)
                                         className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
                                         onClick={saveFieldGroup}
                                     >
-                                        Create
+                                        {props.translator['Create']}
                                     </button>
                                     <button
                                         type="button"
@@ -116,7 +116,7 @@ function FieldGroup(props)
                                         onClick={() => props.setFieldGroup(false)}
                                         ref={cancelButtonRef}
                                     >
-                                        Cancel
+                                         {props.translator['Cancel']}
                                     </button>
                                 </div>
                             </Dialog.Panel>

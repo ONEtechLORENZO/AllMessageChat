@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import Authenticated from "../../Layouts/Authenticated";
 import DetailView from "@/Components/Views/Detail/Index";
 import Form from '@/Components/Forms/Form';
+import NewForm from "@/Components/Forms/NewForm";
 
 function Detail(props){
     const [showForm, setShowForm] = useState(false);
@@ -28,6 +29,8 @@ function Detail(props){
         <Authenticated
             auth={props.auth}
             errors={props.errors}
+            current_page={'Tags'}
+            navigationMenu={props.menuBar}
         >
             <DetailView
                 record = {props.record}
@@ -45,7 +48,7 @@ function Detail(props){
             />
             
             {showForm ?  
-                <Form 
+                <NewForm 
                     module={'Tag'}
                     heading={props.heading}
                     hideForm={hideForm}

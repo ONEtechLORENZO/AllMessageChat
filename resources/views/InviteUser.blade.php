@@ -1,170 +1,221 @@
-<!doctype html>
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Simple Transactional Email</title>
-    <style>
-@media only screen and (max-width: 620px) {
-  table.body h1 {
-    font-size: 28px !important;
-    margin-bottom: 10px !important;
-  }
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+<!--[if (gte mso 9)|(IE)]>
+  <xml>
+    <o:OfficeDocumentSettings>
+    <o:AllowPNG/>
+    <o:PixelsPerInch>96</o:PixelsPerInch>
+  </o:OfficeDocumentSettings>
+</xml>
+<![endif]-->
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"> <!-- So that mobile will display zoomed in -->
+<meta http-equiv="X-UA-Compatible" content="IE=edge"> <!-- enable media queries for windows phone 8 -->
+<meta name="format-detection" content="telephone=no"> <!-- disable auto telephone linking in iOS -->
+<meta name="format-detection" content="date=no"> <!-- disable auto date linking in iOS -->
+<meta name="format-detection" content="address=no"> <!-- disable auto address linking in iOS -->
+<meta name="format-detection" content="email=no"> <!-- disable auto email linking in iOS -->
+<meta name="color-scheme" content="only">
+<title>Invite Message</title>
 
-  table.body p,
-table.body ul,
-table.body ol,
-table.body td,
-table.body span,
-table.body a {
-    font-size: 16px !important;
-  }
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
 
-  table.body .wrapper,
-table.body .article {
-    padding: 10px !important;
-  }
-
-  table.body .content {
-    padding: 0 !important;
-  }
-
-  table.body .container {
-    padding: 0 !important;
-    width: 100% !important;
-  }
-
-  table.body .main {
-    border-left-width: 0 !important;
-    border-radius: 0 !important;
-    border-right-width: 0 !important;
-  }
-
-  table.body .btn table {
-    width: 100% !important;
-  }
-
-  table.body .btn a {
-    width: 100% !important;
-  }
-
-  table.body .img-responsive {
-    height: auto !important;
-    max-width: 100% !important;
-    width: auto !important;
-  }
-}
-@media all {
-  .ExternalClass {
-    width: 100%;
-  }
-
-  .ExternalClass,
-.ExternalClass p,
-.ExternalClass span,
-.ExternalClass font,
-.ExternalClass td,
-.ExternalClass div {
-    line-height: 100%;
-  }
-
-  .apple-link a {
-    color: inherit !important;
-    font-family: inherit !important;
-    font-size: inherit !important;
-    font-weight: inherit !important;
-    line-height: inherit !important;
-    text-decoration: none !important;
-  }
-
-  #MessageViewBody a {
-    color: inherit;
-    text-decoration: none;
-    font-size: inherit;
-    font-family: inherit;
-    font-weight: inherit;
-    line-height: inherit;
-  }
-
-  .btn-primary table td:hover {
-    background-color: #34495e !important;
-  }
-
-  .btn-primary a:hover {
-    background-color: #34495e !important;
-    border-color: #34495e !important;
-  }
+<style type="text/css">
+/*Basics*/
+body {margin:0px !important; padding:0px !important; display:block !important; min-width:100% !important; width:100% !important; -webkit-text-size-adjust:none;}
+table {border-spacing:0; mso-table-lspace:0pt; mso-table-rspace:0pt;}
+table td {border-collapse: collapse;mso-line-height-rule:exactly;}
+td img {-ms-interpolation-mode:bicubic; width:auto; max-width:auto; height:auto; margin:auto; display:block!important; border:0px;}
+td p {margin:0; padding:0;}
+td div {margin:0; padding:0;}
+td a {text-decoration:none; color: inherit;} 
+/*Outlook*/
+.ExternalClass {width: 100%;}
+.ExternalClass,.ExternalClass p,.ExternalClass span,.ExternalClass font,.ExternalClass td,.ExternalClass div {line-height:inherit;}
+.ReadMsgBody {width:100%; background-color: #ffffff;}
+/* iOS BLUE LINKS */
+a[x-apple-data-detectors] {color:inherit !important; text-decoration:none !important; font-size:inherit !important; font-family:inherit !important; font-weight:inherit !important; line-height:inherit !important;} 
+/*Gmail blue links*/
+u + #body a {color:inherit;text-decoration:none;font-size:inherit;font-family:inherit;font-weight:inherit;line-height:inherit;}
+/*Buttons fix*/
+.undoreset a, .undoreset a:hover {text-decoration:none !important;}
+.yshortcuts a {border-bottom:none !important;}
+.ios-footer a {color:#aaaaaa !important;text-decoration:none;}
+/*Responsive*/
+@media screen and (max-width: 639px) {
+  table.row {width: 100%!important;max-width: 100%!important;}
+  td.row {width: 100%!important;max-width: 100%!important;}
+  .img-responsive img {width:100%!important;max-width: 100%!important;height: auto!important;margin: auto;}
+  .center-float {float: none!important;margin:auto!important;}
+  .center-text{text-align: center!important;}
+  .container-padding {width: 100%!important;padding-left: 15px!important;padding-right: 15px!important;}
+  .container-padding10 {width: 100%!important;padding-left: 10px!important;padding-right: 10px!important;}
+  .container-padding25 {width: 100%!important;padding-left: 25px!important;padding-right: 25px!important;}
+  .hide-mobile {display: none!important;}
+  .menu-container {text-align: center !important;}
+  .autoheight {height: auto!important;}
+  .m-padding-10 {margin: 10px 0!important;}
+  .m-padding-15 {margin: 15px 0!important;}
+  .m-padding-20 {margin: 20px 0!important;}
+  .m-padding-30 {margin: 30px 0!important;}
+  .m-padding-40 {margin: 40px 0!important;}
+  .m-padding-50 {margin: 50px 0!important;}
+  .m-padding-60 {margin: 60px 0!important;}
+  .m-padding-top10 {margin: 30px 0 0 0!important;}
+  .m-padding-top15 {margin: 15px 0 0 0!important;}
+  .m-padding-top20 {margin: 20px 0 0 0!important;}
+  .m-padding-top30 {margin: 30px 0 0 0!important;}
+  .m-padding-top40 {margin: 40px 0 0 0!important;}
+  .m-padding-top50 {margin: 50px 0 0 0!important;}
+  .m-padding-top60 {margin: 60px 0 0 0!important;}
+  .m-height10 {font-size:10px!important;line-height:10px!important;height:10px!important;}
+  .m-height15 {font-size:15px!important;line-height:15px!important;height:15px!important;}
+  .m-height20 {font-size:20px!important;line-height:20px!important;height:20px!important;}
+  .m-height25 {font-size:25px!important;line-height:25px!important;height:25px!important;}
+  .m-height30 {font-size:30px!important;line-height:30px!important;height:30px!important;}
+  .rwd-on-mobile {display: inline-block!important;padding: 5px!important;}
+  .center-on-mobile {text-align: center!important;}
 }
 </style>
-  </head>
-  <body style="background-color: #f6f6f6; font-family: sans-serif; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;">
-    <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">This is preheader text. Some clients will show this text as a preview.</span>
-    <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #f6f6f6; width: 100%;" width="100%" bgcolor="#f6f6f6">
-      <tr>
-        <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;" valign="top">&nbsp;</td>
-        <td class="container" style="font-family: sans-serif; font-size: 14px; vertical-align: top; display: block; max-width: 580px; padding: 10px; width: 580px; margin: 0 auto;" width="580" valign="top">
-          <div class="content" style="box-sizing: border-box; display: block; margin: 0 auto; max-width: 580px; padding: 10px;">
+</head>
 
-            <!-- START CENTERED WHITE CONTAINER -->
-            <table role="presentation" class="main" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; width: 100%;" width="100%">
+<body Simpli style="margin-top: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; width: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;" bgcolor="#F0F0F0">
 
-              <!-- START MAIN CONTENT AREA -->
-              <tr>
-                <td class="wrapper" style="font-family: sans-serif; font-size: 14px; vertical-align: top; box-sizing: border-box; padding: 20px;" valign="top">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;" width="100%">
+<span class="preheader-text" Simpli style="color: transparent; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; visibility: hidden; width: 0; display: none; mso-hide: all;"></span>
+
+<div  style="display:none; font-size:0px; line-height:0px; max-height:0px; max-width:0px; opacity:0; overflow:hidden; visibility:hidden; mso-hide:all;"></div>
+
+<table border="0" align="center" cellpadding="0" cellspacing="0" width="100%" style="width:100%;max-width:100%;">
+  <tr><!-- Outer Table -->
+    <td align="center" Simpli bgcolor="#F0F0F0" data-composer>
+
+        @include('header')
+
+    <table border="0" align="center" cellpadding="0" cellspacing="0" class="row" role="presentation" width="640" style="width:640px;max-width:640px;" Simpli>
+          <!-- simpli-header-1 -->
+          <tr>
+            <td align="center">             
+              <div>
+              <!-- simpli-header-bg-image -->                          
+                      <!-- Content -->
+                    <table border="0" align="center" cellpadding="0" cellspacing="0" role="presentation" class="row" width="600" style="width:600px;max-width:600px;">
+                      <tr>
+                        <td height="100" valign="bottom" class="container-padding" style="font-size:640px;line-height:640px;" Simpli>
+                            <table border="0" align="center" cellpadding="0" cellspacing="0" role="presentation" width="100%" style="width:100%;max-width:100%;">
+                                <tr>
+                                  <td align="center" Simpli bgcolor="#FFFFFF" height="40"  style="height:40px;font-size:40px;line-height:36px;border-radius:36px 36px 0 0;" class="container-padding">&nbsp;</td>
+                                </tr>
+                            </table>
+                        </td>
+                      </tr>
+                    </table>
+                      <!-- Content -->
+              <!-- simpli-header-bg-image -->
+              </div>
+                   
+   <!--message body -->
+  <table border="0" align="center" cellpadding="0" cellspacing="0" role="presentation" class="row container-padding25" width="600" style="width:600px;max-width:600px;">
+    <!-- basic-info -->
+    <tr>
+      <td align="center" Simpli bgcolor="#FFFFFF"  style="border-radius:0 0 36px 36px; border-bottom:solid 6px #DDDDDD;">
+        <!-- content -->
+      <table border="0" align="center" cellpadding="0" cellspacing="0" role="presentation" class="row container-padding" width="520" style="width:520px;max-width:520px;">
+          <tr>
+            <td class="center-text" Simpli align="center" style="font-family:'Catamaran',Arial,Helvetica,sans-serif;font-size:17px;line-height:24px;font-weight:900;font-style:normal;color:#1898c2;text-decoration:none;letter-spacing:2px;">
+                <singleline>
+                  <div mc:edit Simpli>
+                    INVITE MESSAGE
+                  </div>
+                </singleline>
+            </td>
+          </tr>
+          <tr>
+            <td class="center-text" Simpli align="center" style="font-family:'Catamaran',Arial,Helvetica,sans-serif;font-size:48px;line-height:54px;font-weight:700;font-style:normal;color:#333333;text-decoration:none;letter-spacing:0px;">
+                <singleline>
+                  <div mc:edit Simpli>
+                    Happy to see you!
+                  </div>
+                </singleline>
+            </td>
+          </tr>
+          <tr>
+            <td height="15" style="font-size:15px;line-height:15px;" Simpli>&nbsp;</td>
+          </tr>
+          <tr>
+          <td class="center-text" Simpli align="left" style="font-family:'Catamaran',Arial,Helvetica,sans-serif;font-size:20px;line-height:54px;font-weight:700;font-style:normal;color:#333333;text-decoration:none;letter-spacing:0px;">
+              <singleline>
+                <div mc:edit Simpli>
+                  Hi,
+                </div>
+              </singleline>
+          </td>
+        </tr>
+          <tr>
+            <td class="center-text" Simpli align="center" style="font-family:'Catamaran',Arial,Helvetica,sans-serif;font-size:20px;line-height:26px;font-weight:300;font-style:normal;color:#333333;text-decoration:none;letter-spacing:0px;">
+                <singleline>
+                  <div mc:edit Simpli>
+                  You have been invited to join {{$name}} on OneMessage.Chat
+                  </div>
+                </singleline>
+            </td>
+          </tr>
+          <tr>
+            <td height="25" style="font-size:25px;line-height:25px;" Simpli>&nbsp;</td>
+          </tr>
+          <tr>
+            <td align="center">
+              <!-- Button -->
+                  <table border="0" cellspacing="0" cellpadding="0" role="presentation" align="center" class="center-float">
                     <tr>
-                      <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;" valign="top">
-                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 15px;">Hi there,</p>
-                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 15px;">Sometimes you just want to send a simple HTML email with a simple design and clear call to action. This is it.</p>
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%;" width="100%">
-                          <tbody>
-                            <tr>
-                              <td align="left" style="font-family: sans-serif; font-size: 14px; vertical-align: top; padding-bottom: 15px;" valign="top">
-                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
-                                  <tbody>
-                                    <tr>
-                                      <td style="font-family: sans-serif; font-size: 14px; vertical-align: top; border-radius: 5px; text-align: center; background-color: #3498db;" valign="top" align="center" bgcolor="#3498db"> <a href="{{$url}}" target="_blank" style="border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-decoration: none; text-transform: capitalize; background-color: #3498db; border-color: #3498db; color: #ffffff;">Confirm Account</a> </td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 15px;">This is a really simple email template. Its sole purpose is to get the recipient to click the button with no distractions.</p>
-                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 15px;">Good luck! Hope it works.</p>
+                      <td align="center"  Simpli bgcolor="#ff7775" style="border-radius: 6px;">
+                  <!--[if (gte mso 9)|(IE)]>
+                    <table border="0" cellpadding="0" cellspacing="0" align="center">
+                      <tr>
+                        <td align="center" width="35"></td>
+                        <td align="center" height="50" style="height:50px;">
+                        <![endif]-->
+                          <singleline>
+                            <a  href="{{$url}}" target="_blank" mc:edit  style="font-family:'Catamaran',Arial,Helvetica,sans-serif;font-size:16px;line-height:20px;font-weight:700;font-style:normal;color:#FFFFFF;text-decoration:none;letter-spacing:0px;padding: 15px 35px 15px 35px;display: inline-block;"><span>CONFIRM ACCOUNT</span></a>
+                          </singleline>
+                        <!--[if (gte mso 9)|(IE)]>
+                        </td>
+                        <td align="center" width="35"></td>
+                      </tr>
+                    </table>
+                  <![endif]-->
                       </td>
                     </tr>
                   </table>
+                <!-- Buttons -->
                 </td>
-              </tr>
-
-            <!-- END MAIN CONTENT AREA -->
-            </table>
-            <!-- END CENTERED WHITE CONTAINER -->
-
-            <!-- START FOOTER -->
-            <div class="footer" style="clear: both; margin-top: 10px; text-align: center; width: 100%;">
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;" width="100%">
-                <tr>
-                  <td class="content-block" style="font-family: sans-serif; vertical-align: top; padding-bottom: 10px; padding-top: 10px; color: #999999; font-size: 12px; text-align: center;" valign="top" align="center">
-                    <span class="apple-link" style="color: #999999; font-size: 12px; text-align: center;">Company Inc, 3 Abbey Road, San Francisco CA 94102</span>
-                    <br> Don't like these emails? <a href="http://i.imgur.com/CScmqnj.gif" style="text-decoration: underline; color: #999999; font-size: 12px; text-align: center;">Unsubscribe</a>.
-                  </td>
-                </tr>
-                <tr>
-                  <td class="content-block powered-by" style="font-family: sans-serif; vertical-align: top; padding-bottom: 10px; padding-top: 10px; color: #999999; font-size: 12px; text-align: center;" valign="top" align="center">
-                    Powered by <a href="http://blackant.io" style="color: #999999; font-size: 12px; text-align: center; text-decoration: none;">Blackant</a>.
-                  </td>
-                </tr>
-              </table>
-            </div>
-            <!-- END FOOTER -->
-
-          </div>
+            </tr>
+            <tr>
+              <td height="40" style="font-size:40px;line-height:40px;" Simpli>&nbsp;</td>
+            </tr>
+          </table>
+          <!-- content -->
         </td>
-        <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;" valign="top">&nbsp;</td>
       </tr>
-    </table>
-  </body>
+      <!-- basic-info -->
+    </table> <!--message body ends here -->
+
+    </td>
+  </tr>
+  <!-- simpli-header-1 -->
+</table>
+
+
+<!-- footer starts here-->
+@include('footer')   
+
+
+
+    </td>
+  </tr><!-- Outer-Table -->
+</table>
+
+</body>
 </html>

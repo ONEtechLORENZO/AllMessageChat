@@ -6,11 +6,13 @@ use Illuminate\Http\Request;
 use App\Models\Template;
 use App\Models\MessageResponse;
 use Illuminate\Support\Facades\Log;
-use App\Models\Account;
 use App\Models\Message;
+use App\Models\Account;
+use App\Models\Document;
+use App\Models\MessageButton;
 use App\Models\User;
+use App\Models\Company;
 use Illuminate\Support\Facades\Http;
-
 
 class TemplateController extends Controller
 {
@@ -30,7 +32,6 @@ class TemplateController extends Controller
             $this->account_id = $data['account_id'];
             $account = Account::find($data['account_id']);
         }
-
         if($account->service_engine == 'facebook'){
             $user = User::find($account->user_id);
             $template = Template::find($data['template_id']);
@@ -38,7 +39,7 @@ class TemplateController extends Controller
             $endPoint = config('app.fb.api_url');
             $endPoint .= $account->fb_whatsapp_account_id . '/message_templates' ;
             $headers = [
-                'Authorization' => 'Bearer '. $user->fb_token,
+                'Authorization' => 'Bearer '. $account->fb_token,
                 'Content-Type' => 'application/json',
             ];
 
@@ -58,6 +59,42 @@ class TemplateController extends Controller
             if($data['data']->body_footer){
                 $components[] = json_encode(['type' => 'FOOTER', 'text' => $data['data']->body_footer]);
             }
+            if($data['data']->buttons){
+                $buttonObj = [];
+                foreach($data['data']->buttons as $button){
+                   $buttonItem = [];
+                    if($button['button_type'] == 'Quick Reply'){
+                        $buttonItem = [
+                            'type' => 'QUICK_REPLY',
+                            'text' => $button['button_text']
+                        ];
+                    }
+                    if($button['button_type'] == 'Call to Action'){
+                        if($button['action'] == 'call_phone_number'){
+                            $buttonItem = [
+                                'type' => 'PHONE_NUMBER',
+                                'text' => $button['button_text'],
+                                'phone_number' => $button['phone_number']
+                            ];
+                        } else if( 'visit_website' == $button['action'] ){
+                            $buttonItem = [
+                                'type' => 'URL',
+                                'text' => $button['button_text'],
+                                'url' => $button['url']
+                            ];
+                            if($button['url_type'] != 'Static'){
+                                $buttonItem['example'] = [$button['url']];
+                            }
+                        }
+                    }
+                    if($buttonItem){
+                        $buttonObj[] = $buttonItem;
+                    }
+                }
+                if($buttonObj){
+                    $components[] = json_encode(['type' => 'BUTTONS', 'buttons' => $buttonObj]);
+                }
+            }
  
             if($data['file']) {
                 $fileMimeType = mime_content_type($data['file']['path']);
@@ -69,31 +106,47 @@ class TemplateController extends Controller
                 } else {
                     $type = 'DOCUMENT';
                 }
+
+                $fileUrl = $this->uploadAttachmentToFacebook($account , $data['file'], $fileMimeType);
+
                 $components[] = json_encode([
                     'type' => 'HEADER',
                     'format' => $type,
-                    'example' => json_encode(['header_handle' => [$data['file']['url']] ])
+                    'example' => (['header_handle' => [$fileUrl]]),
+
                 ]); 
+            }
+
+            if($data['data']->language == 'en'){
+                $tempLanguage = 'en_US';
+            } else if($data['data']->language == 'pt') {
+                $tempLanguage = 'pt_BR';
+            } else {
+                $tempLanguage = $data['data']->language;
             }
 
             $postData = [
                 'category' => $template->category,
                 'components' => $components,
                 'name' => strtolower(str_replace( ' ', '_', $template->name)),
-                'language' => 'en_US',
+                'language' => $tempLanguage,
             ];   
 
-        //dd($postData);
-            log::info(['Template post data' => $postData]);
+            log::info(['Template post data' => $postData , 'endpoint' => $endPoint]);
             $response = Http::withHeaders($headers)->post($endPoint, ($postData))->json();
-        //dd($response);
+            Log::info(["Template submitted => ", $response]);
 
             // store template id
             if(isset($response['id'])){
-                $template->template_uid = $response['id'];
+                $messageObj = Message::where(['template_id' => $template->id , 'language' => $data['data']->language])->first(); 
+                $messageObj->template_uid = $response['id'];
                 $template->type = 'text';
-                $template->status = 'SUBMITTED';
-                $template->save();
+                $messageObj->status = 'SUBMITTED';
+                $messageObj->save();
+
+                // Upate Admin Portal 
+                $this->updateAdminSectionTemplate( $response['id'] );
+                
                 $return = ['status' => true, 'template_id' => $response['id'], 'template_status' => 'SUBMITTED'];
             } else {
                 $message = isset($response['error']['error_user_title']) ? $response['error']['error_user_title'] : $response['error']['message'] ;
@@ -104,23 +157,111 @@ class TemplateController extends Controller
         } else {
             $partnerToken = $this->getPartnerToken();
             if(!$partnerToken) {
-                return ['status' => 'failed', 'message' => $this->result];
+                return ['status' => 'failed', 'message' => $this->result, 'status_code' => 404];
             }
 
             $appId = $this->getAppId($partnerToken);
             if(!$appId) {
-                return ['status' => 'failed', 'message' => $this->result];
+                return ['status' => 'failed', 'message' => $this->result, 'status_code' => 404];
             }
 
             $appToken = $this->getAppToken($partnerToken, $appId);
+
             if($appToken) {
                 $response = $this->applyTemplate($appToken, $appId, $data);
                 return $response;
             }
             else {
-                return ['status' => 'failed', 'message' => $this->result];
+                return ['status' => 'failed', 'message' => $this->result, 'status_code' => 404];
             }
         }
+    }
+
+    /**
+     * Upload FB media for template
+     */
+    public function uploadAttachmentToFacebook($account, $file, $fileMimeType)
+    {
+        $endPoint = config('app.fb.api_url');
+        $endPoint .= $account->fb_phone_number_id . '/media' ;
+        $headers = [
+            'Authorization' => 'Bearer '. $account->fb_token,
+            'Content-Type' => 'application/json',
+        ];
+
+        // Resumable Upload
+        $sessionUrl = config('app.fb.api_url') . config('app.fb.app_id') ."/uploads";
+        $sessionData = [
+            'file_length' => $_FILES['attach_file']['size'],
+            'file_type' => $_FILES['attach_file']['type'],
+            'access_token' => $account->fb_token,
+        ];
+     
+        $getSessionId = Http::post($sessionUrl, $sessionData)->json();
+        $sessionId = $getSessionId['id'];
+
+        // Upload file
+        $uploadFileUrl = config('app.fb.api_url') ."{$sessionId}";
+     
+        $curl = curl_init();
+        
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $uploadFileUrl, 
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => file_get_contents($file['path']),
+            CURLOPT_HTTPHEADER => array(
+                'Authorization: OAuth '.$account->fb_token,
+                'file_offset: 0',
+                'Content-Type: '. $_FILES['attach_file']['type']
+              ),
+        ));
+        
+        $response = curl_exec($curl);
+        $result = json_decode($response, true);
+        curl_close($curl);
+       //echo $response;
+        return $result['h'];
+
+        // $file =  new \CURLFILE($file['path'], $fileMimeType);
+        // $postData = [
+        //     'messaging_product' => 'whatsapp',
+        //     'file' => $file,
+        //     'type' => trim($fileMimeType),
+        // ];
+
+        /*
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $endPoint,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $postData,
+            CURLOPT_HTTPHEADER => array(
+                'Authorization: Bearer '.$account->fb_token
+            ),
+        ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+        $result = json_decode($response, true);
+        return $result['id'];
+        */
+        // $getMediaEndpoint = config('app.fb.api_url').$result['id']."?access_token=".$account->fb_token;
+        // $response = Http::get($getMediaEndpoint)->json();
+        // log::info(['upload file response' => $response]);
+        // return $response['url'];
     }
 
     /**
@@ -156,10 +297,15 @@ class TemplateController extends Controller
         $header = array('token' => $token);
 
         $getAppList = $this->restApiCall('GET', $endPoint, $header);
+
         if(isset($getAppList['status']) && $getAppList['status'] == 'error'){
             $this->result = $getAppList['message'];
         } else if(isset($getAppList['partnerAppsList'])){
             $appList = $getAppList['partnerAppsList'];
+            if(count($appList) == 0 ){
+                $this->result = 'App not linked on partner.'; 
+            }
+
             $account = Account::find($this->account_id);
             foreach($appList as $app) {
                 if($account->src_name == $app['name']) {
@@ -200,11 +346,24 @@ class TemplateController extends Controller
         $header = [
             "token" => $token,
         ];
-       
+      
+       $body = $data['data']->body;
+       $example = isset($data['data']->example) ? $data['data']->example : $body ;
+
+        if($data['data']->sample_value){
+            foreach($data['data']->sample_value as $key => $value ){
+                $value = str_replace('{{' , '' , $value);
+                $value = str_replace('}}' , '' , $value);
+                $example = str_replace('{{'.$key.'}}' , '['.$value.']' , $example);
+            }
+        }
+
+       // dd( $body, $example);
         $template = Template::where('account_id', $data['account_id'])
             ->where('id', $data['template_id'])
             ->first();
-        
+
+        /*
         $buttons = [];
         $buttonArr = $data['data']->buttons;
         if(!is_array($data['data']->buttons)) {
@@ -228,18 +387,87 @@ class TemplateController extends Controller
         if(!$buttons){
            $buttons[] = (object)[];
         }
+        */
+        $buttonObj = [];
+	$buttonsArr = (is_array($data['data']->buttons)) ? $data['data']->buttons : $data['data']['buttons'];
+        if($buttonsArr){
+            foreach($buttonsArr as $button){
+                if( !is_array($button) || !isset($button['button_type'])) {
+                    continue;
+                }
 
+                $buttonItem = [];
+                if($button['button_type'] == 'Quick Reply'){
+                    $buttonItem = [
+                        'type' => 'QUICK_REPLY',
+                        'text' => $button['button_text']
+                    ];
+                }
+                if($button['button_type'] == 'Call to Action'){
+                    if($button['action'] == 'call_phone_number'){
+                        $buttonItem = [
+                            'type' => 'PHONE_NUMBER',
+                            'text' => $button['button_text'],
+                            'phone_number' => $button['phone_number']
+                        ];
+                    } else if( 'visit_website' == $button['action'] ){
+                        $buttonItem = [
+                            'type' => 'URL',
+                            'text' => $button['button_text'],
+                            'url' => $button['url']
+                        ];
+                        if($button['url_type'] != 'Static'){
+                            $buttonItem['example'] = [$button['url']];
+                        }
+                    }
+                }
+
+		if(strtoupper($button['button_type']) == 'phone_number'){
+			$buttonItem = [
+				'type' => 'PHONE_NUMBER',
+				'text' => $button['button_text'],
+				'phone_number' => $button['phone_number']
+			];
+		}
+		if(strtoupper($button['button_type']) == 'QUICK_REPLY') {
+			$buttonItem = [
+				'type' => 'QUICK_REPLY',
+				'text' => $button['button_text'],
+			];	
+		}
+
+                if($buttonItem){
+                    $buttonObj[] = $buttonItem;
+                }
+            }
+        }
+       
+        if($data['data']->language == 'en' || $data['data']->languageCode == 'en' || $data['data']->languageCode == 'en_US' ){
+            $tempLanguage = 'en_US';
+            $language = 'en';
+        } else if($data['data']->language == 'pt') {
+            $tempLanguage = 'pt_BR';
+            $language = 'pt';
+        } else {
+            $tempLanguage = $data['data']->language;
+            $language = $data['data']->language;
+        }
+       
         // Orignal
         $postData = [
-            'elementName' => strtolower(str_replace(' ', '_', $template->name)) . '_' . mt_rand(1000,9999) . '_' . $data['account_id'],
-            'languageCode' => 'en_US',
+            'elementName' => strtolower(str_replace(' ', '_', $template->name)),
+            'languageCode' => $tempLanguage,
             'category' => strtoupper(str_replace(' ', '_',$template->category)),
             'templateType' => strtoupper($data['data']->header_type),
-            'vertical' => strtoupper(str_replace(' ', '_',$template->category)),
-            'content' =>  $data['data']->body,
+            'vertical' => 'TEXT', // strtoupper(str_replace(' ', '_',$template->category)),
+            'content' =>  $body,
             'footer' => $data['data']->body_footer,
-            'example' => $data['data']->body,
+            'example' => $example,
             'enableSample' => true,
+            'allowTemplateCategoryChange' => false,
+            'codeExpirationMinutes' => 1,
+            'addSecurityRecommendation' => true,
+           
         ];
 
         if($data['file']) {
@@ -247,25 +475,39 @@ class TemplateController extends Controller
             $postData = array_merge($postData, $uploadFileData);
         } else {
             $postData['header'] = $data['data']->header_text;
-            $postData['buttons'] = ($buttons);
-        }
-    //dd( $endPoint , json_encode($postData));
-     $result = $this->restApiCall('POST', $endPoint, $header, ($postData));
-     //   dd($result);
-
-        if($result['status'] == 'success') {
-            $template->template_uid = $result['template']['id'];
-            $template->type = $result['template']['templateType'];
-            $template->status = 'SUBMITTED'; //result->template->status;
-            $template->save();
-            $return = ['status' => $result['status'], 'template_id' => $result['template']['id'], 'template_status' => $result['template']['status']];
-        } else {
-            $template->status = $result['message'];
-            $template->save();
-            $return = ['status' => $result['status'], 'template_status' => $result['message']];
-            return $return;
+            $postData['exampleHeader'] = $data['data']->header_text;
+            $postData['buttons'] = json_encode($buttonObj);
         }
         
+        log::info(['Template post data' => ($postData)]);
+        $result = $this->restApiCall('POST', $endPoint, $header, ($postData));
+        log::info(['template result' => $result]);
+        
+	$messageObj = Message::where(['template_id' => $template->id , 'language' => $language])->first(); 
+	if($result['status'] == 'success') {
+
+		$messageObj->template_uid = $result['template']['id'];
+		//    $template->type = $result['template']['templateType'];
+		$messageObj->status = 'SUBMITTED';
+		$messageObj->save();
+
+		// Upate Admin Portal 
+		$this->updateAdminSectionTemplate($result['template']['id']);
+
+		// $template->template_uid = $result['template']['id'];
+		// $template->type = $result['template']['templateType'];
+		// $template->status = 'SUBMITTED'; //result->template->status;
+		// $template->save();
+		$return = ['status' => $result['status'], 'template_id' => $result['template']['id'], 'template_status' => $result['template']['status']];
+	} else {
+		$messageObj->status = $result['message'];
+		$messageObj->save();
+
+		//$template->save();
+		$return = ['status' => $result['status'], 'template_status' => $result['message']];
+		return $return;
+	}
+
         // TODO Why are we storing the message response? We are using Msg model now. Is it needed?
         // Msg model - Used for store the conversation, not log
         $response = new MessageResponse();
@@ -290,7 +532,7 @@ class TemplateController extends Controller
                 "Authorization: {$token}",
                 );
         $postData = [
-            'file' => '@"'.$path['url'].'"',
+            'file' => "@'".$path['url']."'",
             'file_type' => $fileMimeType
         ];
 
@@ -302,15 +544,36 @@ class TemplateController extends Controller
         } else {
             $type = 'DOCUMENT';
         }
-        $getFileId = $this->restApiCall('POST', $endPoint, $header, $postData ); 
-        $fileId = $getFileId->handleId->message;
-      
-        $templatePostData = [
-            'templateType' => $type,
-            'appId' => $id, 
-            'exampleMedia' => $fileId,
-            'enableSample' => 'true',
-        ];
+     
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://partner.gupshup.io/partner/'.$endPoint,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $postData,
+            CURLOPT_HTTPHEADER => array(
+                'Authorization: '.$token
+            ),
+        ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+        $responseBody = json_decode($response, true);
+        $templatePostData = [];
+        if($responseBody && $responseBody['status'] = 'success') {
+            $templatePostData = [
+                'templateType' => $type,
+                'appId' => $id, 
+                'exampleMedia' => $responseBody['handleId']['message'],
+                'enableSample' => 'true',
+            ];
+        }
        return $templatePostData;
     } 
 
@@ -357,27 +620,22 @@ class TemplateController extends Controller
     function createWhatsAppTemplateViaAPI(Request $request, $account_id)
     {
         $current_user = $request->user();
-        $companies = (new UserController)->UserRelatedCompany($current_user->id);//$current_user->commpany;
         $account = Account::find($account_id);
 
-        if($account) {
-            // Check whether current user can access this account
-            if( !array_key_exists($account->company_id , $companies)) {
-                return response()->json(['status' => 'failed', 'message' => 'Invalid API token']);
-            }
-        } else {
-            return response()->json(['status' => 'failed', 'message' => 'Invalid account id']);
+        if(!$account) {
+            return response()->json(['status' => false, 'message' => 'Invalid account id'], 400);
         }
-        
+       
         // Setting the account id 
         $this->account_id = $account_id;
         // Getting the post keys to validate the POST (Comparing the keys)
         $postFields = array_keys($_POST);
         if(count($postFields) == 0) {
-            return response()->json(['status' => 'failed', 'message' => 'Please pass the form data']);
+            return response()->json(['status' => false, 'message' => 'Please pass the form data', 400]);
         }
 
         $return = '';
+        $attachFilePath = '';
         $status = true;
         // Validate the request
         if($request->header_type && strtoupper($request->header_type) == 'TEXT') {
@@ -388,7 +646,7 @@ class TemplateController extends Controller
                     && ($request->$field || $field == 'buttons')) {
                     // Process button field
                     if($field == 'buttons' && $request->$field) {
-                        $request->$field = json_decode($request->$field);
+                        //$request->$field = json_decode($request->$field);
                         if(is_array($request->$field)) {
                             $request->$field = json_encode($request->$field);
                         } else {
@@ -408,13 +666,27 @@ class TemplateController extends Controller
                     continue;
                 }
             }
+        } else if($request->header_type && in_array(strtoupper($request->header_type) , ['IMAGE' , 'DOCUMENT', 'VIDEO'])) {
+            
+            if($request->file('attach_file')) {
+                $file = $request->file('attach_file');
+                $fileName = $file->getClientOriginalName();
+                $destinationPath = public_path() . '/attach_files';
+                $file->move($destinationPath, $fileName);
+                $attachFilePath = ['url' => asset('attach_files/' . $fileName), 'path' => $destinationPath . '/' . $fileName];
+            } else {
+                $status = false;
+                $statusCode = 400;
+                $message = "Attachment file missing";
+                $result = 'Bad Request';
+            }
         }
         else {
-            return response()->json(['status' => 'failed', 'message' => 'Unknown header type.']);
+            return response()->json(['status' => false, 'message' => 'Unknown header type.'], 400);
         }
 
         if($status === false) {
-            $return = ['status' => 'failed', 'status_code' => $statusCode, 'result' => $result, 'message' => $message];
+            $return = ['status' => false, 'status_code' => $statusCode, 'result' => $result, 'message' => $message];
         } else {
             // Create new DRAFT template
             $template = new Template();
@@ -435,16 +707,7 @@ class TemplateController extends Controller
             } else {
                 $message->header_content = '';
             }
-
-            $attachFilePath = '';
-            if($request->file('attach_file')) {
-                $file = $request->file('attach_file');
-                $fileName = $file->getClientOriginalName();
-                $destinationPath = public_path() . '/attach_files';
-                $file->move($destinationPath, $fileName);
-                $attachFilePath = ['url' => asset('attach_files/' . $fileName), 'path' => $destinationPath . '/' . $fileName];
-            }
-
+            
             $message->body = $request->get('body');
             $message->footer_content = $request->get('body_footer');
             $message->template_id = $template_id;
@@ -456,7 +719,12 @@ class TemplateController extends Controller
             $return = $this->submitTemplate(['account_id' => $account_id, 'template_id' => $template_id, 'data' => $request, 'file' => $attachFilePath]);
             Log::info($return);
         }
-        return response()->json($return);
+        $statusCode = 200;
+        if(isset($return['status_code'])){
+            $statusCode = $return['status_code'];
+            unset($return['status_code']);
+        }
+        return response()->json($return , $statusCode);
     }
 
     /**
@@ -465,19 +733,327 @@ class TemplateController extends Controller
     public function getTemplates(Request $request, $account_id)
     {
         $current_user = $request->user();
-        $companies = (new UserController)->UserRelatedCompany($current_user->id);//$current_user->commpany;
         $account = Account::find($account_id);
-        if($account) {
-            // Check whether current user can access this account
-            if( !array_key_exists($account->company_id , $companies)) {
-                return response()->json(['status' => 'failed', 'message' => 'Invalid API token']);
-            }
-        } else {
-            return response()->json(['status' => 'failed', 'message' => 'Invalid account id']);
+       
+        if(! $account) {
+            return response()->json(['status' => false, 'message' => 'Invalid account id']);
         }
+	$this->account_id = $account_id;
+        $partnerToken = $this->getPartnerToken();
+        $appId = $this->getAppId($partnerToken);
+	$appToken = $this->getAppToken($partnerToken, $appId);
 
-        $template = new Template();
-        $result = $template->fetchTemplates($account->src_name);
+        if($appId && $appToken) {
+            $template = new Template();
+            $result = $template->fetchGupshupTemplates($appId, $appToken);
+            return response()->json($result);
+        } else {
+            return response()->json(['status' => false, 'message' => 'Invalid account id']);
+        }
         return response()->json($result);
+    }
+
+    /**
+     * Sync Templates
+     */
+    public function syncTemplate(Request $request)
+    {
+      
+        $condition['service'] = 'whatsapp';
+        
+        if(isset($_GET['account'])) {
+          $condition['id'] = $_GET['account']; 
+        }
+        try{
+            $accounts = Account::where('status' , 'Active')
+                ->where($condition)
+                ->get();
+          
+            $template = new Template();
+            foreach($accounts as $account){
+                if($account->service_engine != 'facebook') {
+			$this->account_id = $account->id;
+			$partnerToken = $this->getPartnerToken();
+			$appId = $this->getAppId($partnerToken);
+			$appToken = $this->getAppToken($partnerToken, $appId);
+
+			$templates = $template->fetchGupshupTemplates($appId, $appToken);
+                    if(isset($templates['status']) && $templates['status'] == 'success') {
+                        foreach($templates['templates'] as $templateData){
+                            if($templateData['status'] == 'APPROVED'){
+                                $template = Template::where('template_uid' , $templateData['id'])->where('account_id', $account->id)->first();
+
+				if(!$template){
+                                        $template = new Template();
+                                        $message = new Message();
+                                } else {
+                                        $message = Message::where('template_id', $template->id)->first();
+                                }
+				
+					$meta = isset($templateData['meta'])? json_decode($templateData['meta']) : [];
+
+                                    $template->name = $templateData['elementName'];
+                                    $template->account_id = $account->id;
+                                    $template->template_name = $templateData['elementName'];
+                                    $template->template_name_space = $templateData['namespace'];
+                                    $template->category = $templateData['category'];
+                                    $template->languages = [$templateData['languageCode']];
+                                    $template->status = 'APPROVED';
+                                    $template->template_uid = $templateData['id'];
+                                    $template->type = strtolower($templateData['templateType']);
+                                    $template->created_by = $request->user()->id;
+                                    $template->save();
+
+                                    $message->template_id = $template->id;
+                                    $message->body = $templateData['data'];
+                                    $message->template_uid = $templateData['id'];
+                                    $message->status = 'APPROVED';
+                                    $message->header_type = strtolower($templateData['templateType']);
+                                    $message->language = $templateData['languageCode'];
+                                    $message->media_id = isset($meta->mediaId)? $meta->mediaId : '';
+                                    $message->save();
+
+                                    $templateEntireData = json_decode($templateData['containerMeta']);
+                                    if(isset($templateEntireData->buttons) ) {
+
+					     // Delete Exist buttons
+                                            MessageButton::where('message_id', $message->id)->delete();
+                                  
+                                        // Save Template buttons
+                                        foreach($templateEntireData->buttons as $button){
+                                            $button = ((array)($button));
+
+                                            $buttonObj = new MessageButton();
+                                            $buttonObj->button_type = isset($button['type']) ? $button['type'] : '';
+                                            $buttonObj->body = $button['text'];
+
+                                            if ($buttonObj->button_type == 'Call to Action') {
+                                                $buttonObj->action = $button['action'];
+                                                if ($buttonObj->action == 'call_phone_number') {
+                                                    $buttonObj->body = $button['text'];
+                                                    $buttonObj->phone_number = $button['phone_number'];
+                                                } else {
+                                                // $buttonObj->body = '';
+                                                    $buttonObj->phone_number = '';
+                                                }
+                        
+                                                if ($buttonObj->action == 'visit_website') {
+                                                    $buttonObj->url_type = $button['url_type'];
+                                                    $buttonObj->url = $button['url'];
+                                                } else {
+                                                    $buttonObj->url_type = '';
+                                                    $buttonObj->url = '';
+                                                }
+                                            } else if($buttonObj->button_type == 'URL') {
+                                                $buttonObj->button_type = 'Call to Action';
+                                                $buttonObj->action = 'visit_website';
+                                                $buttonObj->url = $button['url'];
+                                                $buttonObj->url_type = 'Static';
+                                            } else if($buttonObj->button_type == 'QUICK_REPLY') {
+                                                $buttonObj->button_type = 'Quick Reply';
+                                                $buttonObj->body= $button['text'];
+                                            } else {
+                                                $buttonObj->action = '';
+                                                $buttonObj->phone_number = '';
+                                                $buttonObj->url_type = '';
+                                                $buttonObj->url = '';
+                                            }
+                                            $buttonObj->message_id = $message->id;
+                                            $buttonObj->save();
+                                        }
+
+                                    }
+
+                            }
+                        }
+                    }
+                } else {
+                    $templateList = $template->fetchFacebookTemplates($account);
+                    foreach($templateList as $templateData){
+                        if($templateData['status'] == 'APPROVED') {
+                            $template = Template::where('name' , $templateData['name'])->where('account_id', $account->id)->first();
+                            
+                            $attachment = '';
+                            $templateContent = $buttons =  [];
+                            $templateContent['type'] = 'text';
+                            foreach($templateData['components'] as $component){
+                                if($component['type'] == 'HEADER') {
+                                    $templateContent['type'] = isset($component['format']) ? $component['format'] : 'text';
+                                }
+                                $content = isset($component['text']) ? $component['text'] : ''; 
+                                if(!$content){
+                                    if( isset($component['format']) && isset($component[$component['format']])){
+                                        $content = ($component[strtolower($component['format'])]);
+                                    } elseif(isset($component['format']) && isset($component['example'])) {
+                                        $content = '';
+                                        $attachment = ($component['example']['header_handle'][0]) ? $component['example']['header_handle'][0] : '';
+                                    } 
+                                }
+                                if($component['type'] == 'BUTTONS'){
+                                    $buttons = $component['buttons'];
+                                }
+                                $templateContent[$component['type']] = $content;
+                            }
+
+                            if(!$template) {
+                                $template = new Template();
+                                $template->name = $templateData['name'];
+                                $template->account_id = $account->id;
+                                $template->template_name = $templateData['name'];
+                                $template->template_name_space = $templateData['name'];
+                                $template->category = $templateData['category'];
+                                $template->languages = [$templateData['language']];
+                                $template->status = 'APPROVED';
+                            //    $template->template_uid = $templateData['id'];
+                                $template->type = isset($templateData['type']) ? strtolower($templateData['type']) : strtolower($templateContent['type']) ;
+                                $template->created_by = $request->user()->id;
+                                $template->save();
+                            } 
+
+                            $message = Message::where([
+                                    'template_id' => $template->id,
+                                    'template_uid' => $templateData['id'],
+                                    'language' => $templateData['language'],
+                                ])
+                                ->first();
+
+                            if(!$message) {
+
+                                // Update template language
+                                $templateLanguages = $template->languages;
+                                if($templateData['language'] == 'en_US'){
+                                    $templateData['language'] = 'en';
+                                } else if($templateData['language'] == 'pt_BR') {
+                                    $templateData['language'] = 'pt';   
+                                }
+                                if(! in_array( $templateData['language'], $templateLanguages)) {
+                                    $templateLanguages[] = $templateData['language'];
+                                    $template->languages = $templateLanguages;
+                                    $template->save();
+                                }
+
+                                // Save media 
+                                $documentId = '';
+                                if($attachment && $template->id){
+                                    $name = $templateData['name']."_".time();
+                                    $type = $templateContent['type'];
+                                    if($type == 'IMAGE') {
+                                        $type = 'image/jpeg';
+                                        $name .= '.jpeg';
+                                    } else if($type == 'VIDEO'){
+                                        $type = 'video/mp4';
+                                        $name .= '.mp4';
+                                    } else {
+                                        $type = $type."/ " ;
+                                    }
+
+                                    if ($file = @file_get_contents($attachment) !== false) {
+                                        $file = file_get_contents($attachment);
+                                    }
+                                    $path = "document/{$account->id}/{$template->id}/{$name}";
+                                    $document = new Document();
+                                    $documentId = $document->saveDocument($name, $type , $file, $template->id, 'Template', $path, $attachment);
+                                }
+
+                                // Save template content  
+                                $message = new Message();
+                                $message->template_id = $template->id;
+                                $message->template_uid = $templateData['id'];
+                                $message->status = 'APPROVED';
+                                $message->body = isset($templateContent['BODY']) ? $templateContent['BODY'] : '';
+                                $message->header_content = isset($templateContent['HEADER']) ? $templateContent['HEADER'] : '';
+                                $message->footer_content = isset($templateContent['FOOTER']) ? $templateContent['FOOTER'] : '';
+                                $message->header_type = isset($templateContent['type']) ? strtolower($templateContent['type']) : 'text';
+                                $message->language = $templateData['language'];
+                                $message->attach_file = ($documentId) ? $documentId : '';
+                                $message->save();
+
+                                // Save Template buttons
+                                foreach($buttons as $button){
+                                    $buttonObj = new MessageButton();
+                                    $buttonObj->button_type = $button['type'];
+                                    $buttonObj->body = $button['text'];
+
+                                    if ($buttonObj->button_type == 'Call to Action') {
+                                        $buttonObj->action = $button['action'];
+                                        if ($buttonObj->action == 'call_phone_number') {
+                                            $buttonObj->body = $button['text'];
+                                            $buttonObj->phone_number = $button['phone_number'];
+                                        } else {
+                                           // $buttonObj->body = '';
+                                            $buttonObj->phone_number = '';
+                                        }
+                
+                                        if ($buttonObj->action == 'visit_website') {
+                                            $buttonObj->url_type = $button['url_type'];
+                                            $buttonObj->url = $button['url'];
+                                        } else {
+                                            $buttonObj->url_type = '';
+                                            $buttonObj->url = '';
+                                        }
+                                    } else if($buttonObj->button_type == 'URL') {
+                                        $buttonObj->button_type = 'Call to Action';
+                                        $buttonObj->action = 'visit_website';
+                                        $buttonObj->url = $button['url'];
+                                        $buttonObj->url_type = 'Static';
+                                    } else if($buttonObj->button_type == 'QUICK_REPLY') {
+                                        $buttonObj->button_type = 'Quick Reply';
+                                        $buttonObj->body= $button['text'];
+                                    } else {
+                                        $buttonObj->action = '';
+                                        $buttonObj->phone_number = '';
+                                        $buttonObj->url_type = '';
+                                        $buttonObj->url = '';
+                                    }
+                                    $buttonObj->message_id = $message->id;
+                                    $buttonObj->save();
+                                }
+                               
+                            }
+                        }
+                    }
+                }
+            }
+            $templates = Template::where('account_id', $account->id)->get();
+            $response = ['status' => true, 'message' => 'Template synced successfully' , 'templates' => $templates];
+        } catch (Exception $e){
+            $response = ['status' => false, 'message' => $e->getMessage()];
+        }
+        
+        return response()->json($response);
+    }
+
+    
+    /**
+     * Update Admin section social profile templates
+     */
+    public function updateAdminSectionTemplate($templateId)
+    {
+        $company = Company::first();
+        $postData['company_name'] = $company->name;
+        $postData['template_id'] = $templateId;
+
+        $url = config('app.admin_api_url')."/api/create-social-profile-template";  // Api url creation
+        $headers = ['api-key' => config('app.admin_api_key')]; 
+       
+        $response = Http::withHeaders($headers)->post($url, $postData ); // Send API call to create a social profile template
+        $result = $response->body();
+    }
+
+    /**
+     * Update template status
+     */
+    public function updateTemplateStatus(Request $request)
+    {
+        $message = Message::where('template_uid' , $request->template_id )->first(); 
+        
+        $message->status = $request->tempStatus;
+        if($request->tempStatus == 'REJECTED'){
+            $message->error_reason = $request->reason;    
+        }
+        $message->save();
+
+        $response = ['status' => true, 'message' => 'Template status updated successfully'];
+        return response()->json($response);
     }
 }

@@ -8,8 +8,10 @@ function MessageListing(props)
         <Authenticated
             auth={props.auth}
             errors={props.errors}
-            current_page={props.current_page}
+            current_page={'Reports'}
+            navigationMenu={props.menuBar}
         >
+            <div className='font-semibold text-2xl text-[#363740] !px-4 !mb-6 ml-3' >{props.plural}</div>
 
             <ListView 
                 headers={props.list_view_columns}

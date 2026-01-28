@@ -26,7 +26,7 @@ class AddNewColumnInFieldsTable extends Migration
     public function down()
     {
         Schema::table('fields', function (Blueprint $table) {
-            //
+            $table->dropColumns('readonly_on_edit');
         });
     }
 }

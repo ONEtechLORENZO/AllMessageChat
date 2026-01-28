@@ -14,8 +14,8 @@ class AddAttachFileAndExampleField extends Migration
     public function up()
     {
         Schema::table('messages', function (Blueprint $table) {
-            $table->string('attach_file')->nullable();
-            $table->string('example')->nullable();
+            $table->text('attach_file')->nullable();
+            $table->text('example')->nullable();
         });
     }
 

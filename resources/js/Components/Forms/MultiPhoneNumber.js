@@ -1,15 +1,18 @@
 import React, {useEffect, useState} from "react";
 import {PlusIcon, TrashIcon } from '@heroicons/react/solid';
+import PhoneInput2 from 'react-phone-input-2';
+import { parsePhoneNumber } from 'react-phone-number-input';
 
-const types = [
-    {name : 'Home' , label:'Home'},
-    {name : 'Work' , label:'Work'},
-    {name : 'Others' , label:'Others'},
-];
 
 export default function MultiPhoneNumber(props) {
 
     const [numbers, setNumber] = useState([]);
+
+const types = [
+    {name : 'Home' , label:props.translator['Home']},
+    {name : 'Work' , label:props.translator['Work']},
+    {name : 'Others' , label:props.translator['Others']},
+];
 
     useEffect( () => {
         let record = props.value;
@@ -41,7 +44,19 @@ export default function MultiPhoneNumber(props) {
         setNumber(newNumber); 
     }
 
-    function phoneNumberHandler(event, index) {
+    function phoneNumberHandler(value, index) {
+        
+        let newNumber = Object.assign([], numbers);
+        value = '+'+value;
+        newNumber[index]['phones'] = value;
+        if(value && parsePhoneNumber(value) ){
+            newNumber[index]['country_code'] = parsePhoneNumber(value).countryCallingCode;
+        }
+        props.DataHandler('phones', newNumber);
+        setNumber(newNumber);
+    }
+
+    function categoryHandler(event, index) {
         
         let newNumber = Object.assign([], numbers);
         const field_name = event.target.name;
@@ -56,62 +71,65 @@ export default function MultiPhoneNumber(props) {
         <div className="">
             {numbers.map( (number,index) => (
                 <div className="flex w-full">
-                 <div className="flex flex-1">
-                     <div className="flex-1 flex items-center">
-                         <div className="relative flex flex-grow items-stretch focus-within:z-10 rounded-md">
-                             <input
-                                type="text"
-                                id={props.name}
-                                name={props.name}
-                                value={number[props.name]}
-                                className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300"
-                                onChange={(e) =>  phoneNumberHandler(e, index)}
-                             />
-                         </div>
-                     </div>
-                     <div className="flex items-center">
-                     <select
-                         id={'type'}
-                         name={'type'}
-                         value={number['type']}
-                         className="h-10 rounded-md border-transparent bg-transparent py-0 pl-2 pr-7 text-gray-500 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                         onChange={(e) => phoneNumberHandler(e, index)}
-                         >
-                            <option value=''>Select</option>
-                             {types.map( (type) => (
-                                <option key={type.name} value={type.name} selected={type.name == number['type'] ? true : false}>{type.label}</option>
-                             ))}
-                         </select>
-                     </div>
-                 </div>
-                 <div className="flex items-center justify-between p-4 space-x-6">
-                     <button
-                        type="button"
-                        className="inline-flex  items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
-                        onClick={() => deleteNumber(index)}
-                     >
-                         <TrashIcon 
-                             className='h-4 w-4 text-red-600 cursor-pointer' 
-                         />
-                     </button>
-                 </div>       
+                 <div className="mt-1 col-span-8 !sm:mt-0">
+                        <div className="grid grid-cols-12 gap-2">
+                            <div className="col-span-6">
+                                <PhoneInput2
+                                    inputProps={{
+                                        name: 'phones',
+                                        autoFocus: true
+                                    }}
+                                    containerStyle={{ marginTop: "15px" }}
+                                    searchClass="search-class"
+                                    searchStyle={{ margin: "0", width: "97%", height: "30px" }}
+                                    enableSearchField
+                                    disableSearchIcon
+                                    placeholder="Enter phone number"
+                                    value={number[props.name]} 
+                                    onChange={(e) => phoneNumberHandler(e,index)}
+                                />
+                            </div>
+                            <div className="col-span-4">
+                                <select
+                                    id={'type'}
+                                    name={'type'}
+                                    value={number['type']}
+                                    className="h-10 rounded-md border-transparent bg-transparent py-0 pl-2 pr-7 text-gray-500 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    onChange={(e) => categoryHandler(e, index)}
+                                >
+                                    <option value=''>{props.translator['Select']}</option>
+                                    {types.map( (type) => (
+                                        <option key={type.name} value={type.name} selected={type.name == number['type'] ? true : false}>{type.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="col-span-2">
+                                <button
+                                    type="button"
+                                    className="inline-flex items-center px-3 py-2 text-sm leading-4 font-medium rounded-sm text-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+                                    onClick={() => deleteNumber(index)}
+                                >
+                                    <TrashIcon className='h-4 w-4 text-red-600 cursor-pointer' />
+                                </button>
+                            </div>
+                        </div>
+                    </div>      
                 </div>
             ))}
-            <div className="flex justify-end px-4">
-                <div className="flex items-center justify-between">
-                    <button
-                        type="button"
-                        className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
-                        onClick={() => addNumber()}
-                    >
-                        Add 
-                        <PlusIcon 
-                            className='h-4 w-4 text-red-600 cursor-pointer' 
-                        />
-                    </button>
-                </div>
+            <div className="flex gap-1 items-center text-[#545CD8] !mt-1 cursor-pointer">
+                <button
+                    type="button"
+                    className="inline-flex items-center px-3 py-2 text-sm leading-4 font-medium rounded-sm text-[#545CD8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+                    onClick={() => addNumber()}
+                >
+                    <PlusIcon 
+                        className='h-4 w-4 text-[#545CD8] cursor-pointer mr-2' 
+                    />
+                    {props.translator['Add']} {props.buttonTitle ? props.translator[props.buttonTitle] : ''}
+                </button>
             </div>
         </div>    
     )
+
 }
   

@@ -18,7 +18,6 @@ class CreateFieldGroupsTable extends Migration
 
             $table->string('name')->nullable();
             $table->string('module_name')->nullable();
-            $table->integer('company_id')->nullable();
             $table->integer('created_by')->nullable();
             
             $table->timestamps();

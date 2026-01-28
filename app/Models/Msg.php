@@ -6,8 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
-
+use Brick\PhoneNumber\PhoneNumber;
+use Brick\PhoneNumber\PhoneNumberParseException;
+use App\Models\WhatsAppUsers;
 use App\Models\Message;
+use App\Models\Document;
+use App\Models\MessageButton;
+use App\Models\Session;
+use App\Models\Company;
+use Carbon\Carbon;
 
 class Msg extends Model
 {
@@ -24,13 +31,24 @@ class Msg extends Model
     /**
      * Send message to WhatsApp
      */
-    public function sendWhatsAppMessage($content, $to, $account, $template = '' , $attachment = '')
-    {        
+    public function sendWhatsAppMessage($content, $to, $account, $templateId = '' , $attachment = '', $product = [], $interactiveMessage = [])
+    {   
         // remove + (plus) symbol       
         $destination = str_replace('+', '' , $to);
+
+        // Check balance
+        $canSend = $this->checkBalanceAmount($to , $account->phone_number);
         
+        $company = Company::first();
+
+        Log::info(['check status ', $canSend , $company->payment_method]);
+        if(!$canSend && $company->payment_method == 'Prepaid'){
+            $error = ['status' => false , 'message' => "You have insufficient balance"];
+            return ['result' => $error];
+        }
+
         if($account->service_engine == 'facebook'){
-            
+
             // create URL
             $url = config('app.fb.api_url');
             $url .= $account->fb_phone_number_id . '/messages' ;
@@ -38,7 +56,7 @@ class Msg extends Model
             $user = User::find($account->user_id);
             // set headers
             $headers = [
-                'Authorization' => 'Bearer '. $user->fb_token,
+                'Authorization' => 'Bearer '. $account->fb_token,
                 'Content-Type' => 'application/json',
             ];
             $post_data = [
@@ -47,28 +65,156 @@ class Msg extends Model
             ];
 
             // set data if is template  
-            if($template && $template != "undefined" ){  
-                $template = Template::where('template_uid' , $template)->first();
-                $message = [
-                    'name' => strtolower(str_replace( ' ', '_', $template->name)),
-                    'language' => [ 'code' => 'en_US'],
-                    'components' => [['type' => 'body', 'parameters' => $content]]
-                ];
+            if($templateId && $templateId != "undefined" ){  
+
+                $template =  Message::join('templates', 'templates.id' , 'template_id')
+                    ->where('messages.template_uid', $templateId)
+                    ->where('account_id', $account->id)
+                    ->first();
+                
+            //    $template = Template::where('template_uid' , $template)->first();
+                $tempMessage = Message::where('template_uid', $templateId)->first();
+                if($tempMessage) {
+                    $tempButtons = MessageButton::where('message_id', $tempMessage->id)->get();
+                }
+                $message['name'] = strtolower(str_replace( ' ', '_', $template->name));
+                $message['language'] = [ 'code' => $tempMessage->language];
+
+                $components = [];
+                /*
+                // Append components
+                if($template->type != 'text') {
+                    $componentType = $template->type;
+                    $header = $button = '';
+                    if($tempMessage->attach_file) {
+                        $header = [
+                            'type' => 'header',
+                            'parameters' => [[
+                                "type" => $template->type,
+                                $template->type => [
+                                    'link' => $tempMessage->attach_file,
+                                ]
+                            ]]
+                        ];
+                        array_push($components , json_encode($header));
+                    }
+
+                    $templateParam = [];
+                    foreach($content as $param){
+                        $templateParam[] = ["type" => "text", 'text' => $param];
+                    }
+
+                    $body = [
+                        'type' => 'body',
+                        'parameters' => $templateParam
+                    ];
+                    array_push($components , json_encode($body));
+                } else {
+                    $templateParam = [];
+                    foreach($content as $param){
+                        $templateParam[] = ["type" => "text", 'text' => $param];
+                    }
+                    if($templateParam){
+                        $body = [
+                            'type' => 'body',
+                            'parameters' => $templateParam
+                        ];
+                        array_push($components , json_encode($body));
+                    }
+                }
+                if($tempButtons){
+                    foreach($tempButtons as $key => $tempButton){
+                        if($tempButton->action == 'visit_website'){
+                            $button = [
+                                'type' => 'button',
+                                'index' => $key,
+                                "sub_type" => "url",
+//                                'parameters' => [[
+//                                    'type' => 'text',
+ //                                   'text' => $tempButton->body,
+   //                             ]],
+                                //"fallback_url" => $tempButton->url,
+                                //"title" => $tempButton->body
+                            ];
+                        }
+                        if($tempButton->button_type == 'Quick Reply') {
+                            $button = [
+                                'type' => 'button',
+                                'index' => $key,
+                                'sub_type' => 'quick_reply',
+                                'parameters' => [[
+                                    'type' => 'text',
+                                    'text' => $tempButton->body,
+                                ]],
+                            ];
+                        }
+    //                    $components[] = json_encode($button);
+                    }
+                }
+                if($components) {
+                    $message['components'] = ($components);
+                }
+                */
+                $docUrl = '';
+                if($tempMessage->attach_file) {
+                    $document = Document::find($tempMessage->attach_file);
+                    $docUrl = url("uploads/".$document->path);
+                }
+
                 $post_data['type'] = 'template';
-                $post_data['template'] = (json_encode($message));
+                if($template->type != 'text' && $template->type) {
+                    $component = [
+                        'type' => 'header',
+                        'parameters' => [[
+                                'type' => $template->type,
+                                $template->type => [
+                                    'link' => $docUrl, 
+                                ]],
+                        ]
+                    ];
+                    array_push($components , json_encode($component));
+                }
+                if($content) {
+                    $templateParam = [];
+                    foreach($content as $param){
+                        $templateParam[] = ["type" => "text", 'text' => $param];
+                    }
+
+                    $body = [
+                        'type' => 'body',
+                        'parameters' => $templateParam
+                    ];
+                    array_push($components , json_encode($body));
+                }
+                if($components) {
+                    $message['components'] = ($components);
+                }
+                $post_data['template'] = (($message));
+
             } else if($attachment) { 
                 // set attachment
                 $post_data['type'] = $attachment['type'];
-                $post_data[$attachment['type']] = ['link' => $attachment['file_url']];
-               
+                $post_data[$attachment['type']] = ['link' => $attachment['url']];
+
+                if($attachment['type'] == 'document') {
+                    $post_data[$attachment['type']]['filename'] = $content;
+                }
+            } else if($product) {
+                $post_data['recipient_type'] = 'individual';
+                $post_data['type'] = 'interactive'; 
+                $post_data['interactive'] = json_encode($product);
             } else {
                 $post_data['type'] = 'text'; 
+                $post_data['recipient_type'] = 'individual';
                 $post_data['text'] = (json_encode(['body' => $content]));
             }
+
+            log::info(['send_message_info', $url , $headers, $post_data]);
 
             // send message 
             $response = Http::asForm()->withHeaders($headers)->post($url, $post_data);
             $response_body = json_decode($response->body(), true);
+            log::info(['send_message_info', $response_body]);
 
             if(isset($response_body['messages'][0]['id'])) {
                 $messageId = $response_body['messages'][0]['id'];
@@ -78,7 +224,7 @@ class Msg extends Model
                 ];
                 if($attachment) { 
                     $response_body['msg_type'] = $attachment['type'];
-                    $response_body['file_path'] = $attachment['file_url'];
+                    $response_body['file_path'] = $attachment['url'];
                 }
                 $data['result'] = $response_body;
             } else {
@@ -86,13 +232,20 @@ class Msg extends Model
                     'status' => 'error',
                     'error' => $response_body['error']['message'],
                 ];
-                
+
                 $data['result'] = $response_body;
             }
-        
+
             return $data;
 
         } else {
+
+            $checkOptIn = (new WhatsAppUsers)->checkUserOptin($destination , $account->id);
+            if(! $checkOptIn){
+                $error = ['status' => false, 'message' => "Inactive user"];
+                return ['result' => $error];
+            }
+
             $url = config('app.api_url');
 
             $post_data = [
@@ -103,19 +256,47 @@ class Msg extends Model
                 'disablePreview' => null
             ];
 
-            if($template && $template != "undefined" ){  
+            if($templateId && $templateId != "undefined" ){  
                 // Set template type object
+                if($templateId == '9cfa1504-86b3-4b78-a544-a3c6530fcf5b') {     //TODO Need to fix 
+                    $content[]= 'test';
+                }
                 $message = [
-                    'id' => $template,
-                    'params' => []
+                    'id' => $templateId,
+                    'params' => ($content) ? $content : [],
                 ];
                 $post_data['template'] = (json_encode($message));
+
+                // Add media type template params
+                $docUrl = '';
+                $tempMessage = Message::where('template_uid', $templateId)
+                    ->first();
+                
+                if($tempMessage && $tempMessage->attach_file) {
+                    $docUrl = $tempMessage->attach_file;
+                }
+               
+                if($tempMessage->header_type != 'text' && $tempMessage->header_type) {
+			$mediaData['type'] =  $tempMessage->header_type;
+			if($docUrl) {
+				$mediaData[$tempMessage->header_type]['link'] = 'link_url';
+			}
+			if($tempMessage->media_id) {
+				$mediaData[$tempMessage->header_type]['id'] = $tempMessage->media_id;
+			}
+			$postDataMessage = json_encode($mediaData);
+
+                    $postDataMessage = str_replace('link_url' , $docUrl , $postDataMessage) ;  
+                    $post_data['message'] = $postDataMessage;
+                }
                 $url = str_replace('msg', 'template/msg', $url);
             } else if($attachment) { 
                 // Set attachment
+
                 $post_data['message'] = (json_encode($attachment));
                 $data['msg_type'] = $attachment['type'];
-                $data['file_path'] = $attachment['file_url'];
+                $data['file_path'] = isset($attachment['previewUrl']) ? $attachment['previewUrl'] : $attachment['url'] ;
+
             } else {
                 // Set text type object
                 $message = [
@@ -129,11 +310,15 @@ class Msg extends Model
                 'Accept' => 'application/json',
                 'apikey' => config('app.apiKey')
             ];
-
-            log::info(['send_message_info', $post_data]);
+            if($interactiveMessage) {
+                $post_data['message'] = json_encode($interactiveMessage);
+            }
+            log::info(['send_message_info', $url, $post_data]);
+            
             $response = Http::asForm()->withHeaders($headers)->post($url, $post_data);
             $response_body = json_decode($response->body(), true);
-        
+            log::info(['send_message_result_info', $response_body]);
+
             if( $response_body && $response_body['status'] != 'error') {
                 $data = $post_data;
                 $data['account_id'] = $account->id;
@@ -141,7 +326,7 @@ class Msg extends Model
             } 
             if($attachment) { 
                 $response_body['msg_type'] = $attachment['type'];
-                $response_body['file_path'] = $attachment['file_url'];
+                $response_body['file_path'] = isset($attachment['previewUrl']) ? $attachment['previewUrl'] : $attachment['url'] ;
             }
         }
         $data['result'] = $response_body;
@@ -182,6 +367,53 @@ class Msg extends Model
     }
 
     /**
+     * Send Insta message via facebook
+     */
+    public function sendInstaMessage($content, $recipient , $pageId, $token, $attachment = '')
+    {
+       
+        $message = '';
+        if($attachment){
+            $message = [
+                'attachment' => [
+                    'type' => $attachment['type'],
+                    'payload' => [ 'url' => $attachment['url']]
+                ]
+            ];
+        } else {
+            $message = ['text' => $content];
+        }
+        $post_data = [
+            'recipient' => [ 'id' => $recipient ],
+            'message' => $message,
+            'messaging_type' => 'RESPONSE',
+            'access_token' => $token,
+        ];
+
+        $version = config('app.fb.app_graph_version');
+        $url = "https://graph.facebook.com/{$version}/{$pageId}/messages";
+
+        try{
+            $response = Http::asForm()->post($url, $post_data);
+            $result = json_decode($response->body(), true);
+            if(isset($result['error']) && isset($result['error']['code']) && $result['error']['code'] == 100) {
+                $controlUrl = "https://graph.facebook.com/{$version}/{$pageId}/take_thread_control";
+                $controlData = [
+                    'recipient' => [ 'id' => $recipient ],
+                    'access_token' => $token,
+                ];
+                $response = Http::asForm()->post($controlUrl, $controlData);
+                $result = json_decode($response->body(), true);
+            }
+           
+        } catch(Exception $e){
+            $result = (['status' => false, 'message' => $e->getMessage()]);
+        }
+        Log::info( [' Insta send message response' =>  $result]);
+        return $result;
+    }
+
+    /**
      * Return Instagra profile info
      */
     public function getProfileDetail($channelid)
@@ -213,8 +445,62 @@ class Msg extends Model
         $response = Http::withHeaders($headers)->get($endPoint);
         $response_body = json_decode($response->body(), true);
 
-        log::info(['profile_dat'  => $response_body]);
         return ($response_body);
+    }
+
+    /**
+     * Check balance to send message
+     */
+    public function checkBalanceAmount($phoneNumber, $accountNumber)
+    {
+    
+        $number = PhoneNumber::parse('+'.$phoneNumber);
+        $countryCode = $number->getCountryCode();
+        $company = Company::first();
+
+        $condition = [
+            'account_id' => $accountNumber,
+            'contact_id' => $phoneNumber,
+        ];
+
+        $session = Session::where($condition)
+                ->where('created_at', '>=', Carbon::now()->subDay())
+                ->first();
+
+       
+        if($session) {
+            return true;
+        } else {
+
+            $sessions = Session::count();
+            if( $sessions <= $company->amount_limit) {
+                return true;
+            } else {
+                return false;
+            }
+            
+            /*
+            $price = Price::where('country_code' , $countryCode)->first();
+            $minAmount = ($price && $price->business_initiated) ? $price->business_initiated : 0;
+
+            $sessions = Session::where($condition)->count();
+            if($sessions < 1000) {
+                $minAmount = config('stripe.wp_msg_price');
+            } else {
+                $minAmount =  $minAmount + config('stripe.wp_msg_price');
+            }
+
+            $wallet = Wallet::first();
+            
+            $minAmount = $wallet->balance_amount - $minAmount;
+
+            if($wallet && (-$company->amount_limit <= $minAmount)){
+                return true;
+            } else {
+                return false;
+            }
+            */
+        }
     }
 
 }

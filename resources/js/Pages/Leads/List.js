@@ -12,8 +12,8 @@ function classNames(...classes) {
 function List(props)
 {
     const tabs = [
-        { label:'Leads',name: 'Leads', href: '#',current: true },        
-        { label:'Fields',name: 'Fields', href: route("listField",{'mod':props.module}),current: false }
+        { label:props.translator['Leads'],name: 'Leads', href: '#',current: true },        
+        { label:props.translator['Fields'],name: 'Fields', href: route("listField",{'mod':props.module}),current: false }
 
       ];
     return (
@@ -21,37 +21,45 @@ function List(props)
             auth={props.auth}
             errors={props.errors}
             current_page={props.current_page}
+            navigationMenu={props.menuBar}
         >
-                <nav
-                    className="px-4 sm:px-6 flex gap-2 mb-3"
-                    aria-label="Tabs"
-                >
+            <div className='font-semibold text-2xl text-[#363740] !px-4 ml-3'>{props.plural}</div>
+
+            <div className="mt-6 sm:mt-2 2xl:mt-5 !mb-6">
+            <div className="border-b border-gray-200">
+                <div className="mx-auto px-4 sm:px-6 lg:px-8">
+                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                     {tabs.map((tab) => (
-                        <Link
-                            key={tab.name}
-                            href={tab.href}
-                            className={classNames(
-                                tab.current
-                                    ? "bg-primary text-white shadow-blue-500/50 shadow-md"
-                                    : "border-transparent text-gray-500  hover:bg-[#545cd8] hover:text-white hover:shadow-blue-500/50 hover:shadow-md",
-                                "whitespace-nowrap px-3 py-2 font-medium text-base  my-2 rounded-md"
-                            )}
-                        >
-                            {tab.name}  
-                        </Link>
-                    ))} 
+                    <Link
+                        key={tab.name}
+                        href={tab.href}
+                        className={classNames(
+                        tab.current
+                            ? 'border-primary text-[#363740]'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                        'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm'
+                        )}
+                        aria-current={tab.current ? 'page' : undefined}
+                    >
+                        {tab.label}
+                    </Link>
+                    ))}
                 </nav>
-                {tabs.map((tab) => (
-                    <>
-                        {tab.name=='Leads' &&
-                            <ListView
-                                headers={props.list_view_columns}
-                                {...props}
-                                translator={props.translator}
-                            /> 
-                        }
-                    </>
-                ))}
+                </div>
+            </div>
+            </div>
+
+            {tabs.map((tab) => (
+                <>
+                    {tab.name=='Leads' &&
+                        <ListView
+                            headers={props.list_view_columns}
+                            {...props}
+                            translator={props.translator}
+                        /> 
+                    }
+                </>
+            ))}
                            
         </Authenticated>
     )

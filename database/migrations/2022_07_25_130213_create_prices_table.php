@@ -16,10 +16,11 @@ class CreatePricesTable extends Migration
         Schema::create('prices', function (Blueprint $table) {
             $table->id();
             $table->string('country_code');
+            $table->string('service')->nullable();
             $table->float('user_initiated', 14, 4);
             $table->float('business_initiated', 14, 4);
-            $table->float('message', 14, 4);
-            $table->float('media', 14, 4);
+            $table->float('message', 14, 4)->nullable();
+            $table->float('media', 14, 4)->nullable();
             $table->timestamps();
         });
     }

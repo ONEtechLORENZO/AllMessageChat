@@ -11,108 +11,149 @@ import { Container , Row , Col, List} from 'reactstrap';
 import Form from '@/Components/Forms/Form';
 
 import {
+    Button,
+    FormGroup,
+    Label,
+    Input,
+    FormText,
+    Card,
+    CardBody,
+    CardTitle,
+} from "reactstrap";
+
+import {
     HomeIcon,
     UserIcon,
     BriefcaseIcon,
     UsersIcon,
     UserGroupIcon,
     XIcon,
+    ChipIcon,
     ChevronRightIcon,
     ChevronLeftIcon,
+    AdjustmentsIcon,
     CogIcon,
+    ChatAltIcon,
+    OfficeBuildingIcon,
     PlusCircleIcon,
     ChevronDownIcon,
     QuestionMarkCircleIcon,
     ChartSquareBarIcon,
     LightBulbIcon,
-    PlusIcon
+    PlusIcon,
+    IdentificationIcon,
+    ShoppingCartIcon 
+
 } from "@heroicons/react/outline";                                                                      
-import SelectCompany from "@/Pages/Company/SelectCompany";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
 import axios from "axios";
 import Notification from "./Notification";
 import notie from 'notie';
+import { BsCaretDownFill,BsCaretUpFill } from "react-icons/bs";
+
+import { DashboardIcon,ChatNewIcon,CampaignsIcon,BillingIcon,Setting2Icon,SalesIcon,NetworkIcon,GraphIcon } from "@/Pages/icons";
+
+ const navigation = [
+    {
+        name: "Dashboard",
+        href: route("dashboard"),
+        icon: DashboardIcon,
+        show: ['all'],
+    },
+    {
+        name: "Conversation",
+        href: '#',
+        icon: ChatNewIcon,
+        show: ['all'],
+        subMenu : [{
+            name: 'Chats',
+            href : route('chat_list')
+        },
+        {
+            name: 'Campaigns',
+            href : route('listCampaign')
+        },  
+    ]
+    },   
+    {
+        name: "CRM",
+        href: '#',
+        icon: IdentificationIcon,
+        show: ['all'],
+        subMenu : [
+            {
+                name: 'Leads',
+                href : route("listLead")
+            },
+            {
+            name: 'Contacts',
+            href : route('listContact')
+            },
+            {
+            name: 'Organizations',
+            href : route("listOrganization")
+            },
+            {
+                name: 'Fields',
+                href : route("listField")
+            },
+            {
+                name: 'Tags',
+                href : route("listTag")
+            },{
+                name: 'Lists',
+                href : route("listCategory")
+            },]
+    },  
+    
+    {
+        name: "Sales",
+        href: '#',
+        icon: SalesIcon,
+        show: ['all'],
+        subMenu : [
+            {
+                name: 'Opportunities',
+                href : route('listOpportunity')
+            },                      
+            {
+            name: 'Orders',
+            href : route('listOrder')
+        },{
+            name: 'Products',
+            href : route('listProduct')
+        },]
+    },  
+    {
+        name: "Automations",
+        href: route("listAutomation"),
+        icon: NetworkIcon,
+        show: ['all'],
+    },
+    {
+        name: "Reports",
+        href: route("listMessage"),
+        icon: GraphIcon,
+        show: ['all'],
+    },
+];
 
 // const navigation = [
 //     {
-//         name: "Dashboard",
-//         href: route("dashboard"),
+//         name: "Home",
+//         href: route("home"),
 //         icon: HomeIcon,
 //         show: ['all'],
 //     },
 //     {
-//         name: "Conversation",
-//         href: '#',
-//         icon: ChatAlt2Icon,
-//         show: ['all'],
-//         subMenu : [{
-//             name: 'Chats',
-//             href : route('chat_list')
-//         },
-//         {
-//             name: 'Campaigns',
-//             href : route('listCampaign')
-//         },  
-//     ]
-//     },   
-//     {
-//         name: "CRM",
-//         href: '#',
-//         icon: IdentificationIcon,
-//         show: ['all'],
-//         subMenu : [
-//             {
-//                 name: 'Leads',
-//                 href : route("listLead")
-//             },
-//             {
-//             name: 'Contacts',
-//             href : route('listContact')
-//             },
-//             {
-//             name: 'Organizations',
-//             href : route("listOrganization")
-//             },
-//             {
-//                 name: 'Fields',
-//                 href : route("listField")
-//             },
-//             {
-//                 name: 'Tags',
-//                 href : route("listTag")
-//             },{
-//                 name: 'Lists',
-//                 href : route("listCategory")
-//             },]
-//     },  
-    
-//     {
-//         name: "Sales",
-//         href: '#',
-//         icon: ShoppingCartIcon,
-//         show: ['all'],
-//         subMenu : [
-//             {
-//                 name: 'Opportunities',
-//                 href : route('listOpportunity')
-//             },                      
-//             {
-//             name: 'Orders',
-//             href : route('listOrder')
-//         },{
-//             name: 'Products',
-//             href : route('listProduct')
-//         },]
-//     },  
-//     {
-//         name: "Workspaces",
-//         href: route("listAdminCompany"),
+//         name: "Social Channels",
+//         href: route("dashboard"),
 //         icon: OfficeBuildingIcon,
-//         show: ['admin', 'global_admin'],
-//     },    
+//         show: ['all'],
+//     },
 //     {
-//         name: "Automations",
-//         href: route("listAutomation"),
+//         name: "API keys",
+//         href: route("listApi"),
 //         icon: ChipIcon,
 //         show: ['all'],
 //     },
@@ -122,41 +163,31 @@ import notie from 'notie';
 //         icon: ChatAltIcon,
 //         show: ['all'],
 //     },
-//     {
-//         name: "Wallet",
-//         href: route("wallet"),
-//         icon: BriefcaseIcon,
-//         show: ['all'],
-//     },
-//     {
-//         name: "Users",
-//         href: route("show_Users"),
-//         icon: UsersIcon,
-//         show: ['admin', 'global_admin'],
-//     },
-   
 // ];
-
-const navigation = [
-    {
-        name: "Home",
-        href: route("home"),
-        icon: HomeIcon,
-        show: ['all'],
-    },
-];
 
 const bottomNavigation = [
     {
         name: "Billing",
         href: route("wallet"),
-        icon: BriefcaseIcon,
+        icon: BillingIcon,
         show: ['all'],
+    },
+    {
+        name: "Templates",
+        href: route("listInteractiveMessage"),
+        icon: CampaignsIcon,
+        show: ['all'],
+    },
+    {
+        name: "Roles",
+        href: route("listRole"),
+        icon: AdjustmentsIcon,
+        show: ['admin', 'global_admin'],
     },
     {
         name: "Settings",
         href: route("wallet_subscription"),
-        icon: CogIcon,
+        icon: Setting2Icon,
         show: ['admin', 'global_admin'],
     },
 ];
@@ -164,7 +195,7 @@ const adminNavigation = [
     {
         name: "Dashboard",
         href: route("dashboard"),
-        icon: HomeIcon,
+        icon: DashboardIcon,
         show: ['global_admin'],
     },
     {    
@@ -255,53 +286,140 @@ const adminNavigation = [
     
 ];
 
+const menuBar = [
+    {
+        name: "Dashboard",
+        href: route("dashboard"),
+        icon: DashboardIcon,
+    },
+    {
+        name: "Conversations",
+        href: '#',
+        icon: ChatNewIcon,
+        subMenu : [
+        {
+            name: 'Social Profiles',
+            href : route('social_profile')
+        },     
+        {
+            name: 'Chats',
+            href : route('chat_list')
+        },
+        {
+            name: 'Campaigns',
+            href : route('listCampaign')
+        },  
+    ]
+    },   
+    {
+        name: "CRM",
+        href: '#',
+        icon: IdentificationIcon,
+        subMenu : [
+            {
+                name: 'Leads',
+                href : route("listLead")
+            },
+            {
+            name: 'Contacts',
+            href : route('listContact')
+            },
+            {
+            name: 'Organizations',
+            href : route("listOrganization")
+            },
+            {
+                name: 'Fields',
+                href : route("listField")
+            },
+            {
+                name: 'Tags',
+                href : route("listTag")
+            },{
+                name: 'Lists',
+                href : route("listCategory")
+            },]
+    },  
+    {
+        name: "Sales",
+        href: '#',
+        icon: SalesIcon,
+        subMenu : [
+            {
+                name: 'Deals',
+                href : route('listOpportunity')
+            },                      
+            {
+                name: 'Orders',
+                href : route('listOrder')
+            },
+            {
+                name: 'Catalogs',
+                href : route('listCatalog')
+            },
+            {
+                name: 'Products',
+                href : route('listProduct')
+            }]
+    },  
+    {
+        name: "Automations",
+        href: route("listAutomation"),
+        icon: NetworkIcon,
+    },
+    {
+        name: "Reports",
+        href: route("listMessage"),
+        icon: GraphIcon,
+    },
+];
+
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
 
-export default function Authenticated({ auth, header, children, hideHeader , current_page, message}) 
+export default function Authenticated({ auth, header, children, hideHeader , current_page, message, navigationMenu}) 
 {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
-
     const [sidebarOpen, setSidebarOpen] = useState(false);
-
     const [showSidebarText, setShowSidebarText] = useState(true);
     const [showAdminNav , setshowAdminNav] = useState(false);
+    const [returnMainUser , setReturnMainUser] = useState(false);
+    const [companyName , setcompanyName] = useState();
 
-    const [selectCompanyModal, setSelectedCompany] = useState(false);
-
-    const[returnMainUser , setReturnMainUser] = useState(false);
-    const[menuDropdownActive , setMenuDropdownActive] = useState({});
-
+    const [menuDropdownActive , setMenuDropdownActive] = useState({});
     const [notifications, setNotifications] = useState();
     const [timezone, setTimezone] = useState([]);
-    const[showModal,setshowModal]= useState(false);
+    const [showModal,setshowModal]= useState(false);
     const [count, setCount] = useState();
     const [id, setId] = useState();
     const [companyList, setCompany] = useState({});
     const [adminMenuText, setadminMenuText] = useState("Global Admin page");
     const [navigateField, setNavigateField] = useState();
     const pathname = window.location.pathname;
-
+  
     const [showWorkspaceForm, setShowWorkspaceForm] = useState(false);
+    const [navigationMenuBar, setNavigationMenuBar] = useState(navigationMenu);
+
     function hideForm() {
         setShowWorkspaceForm(false);
     }
 
     useEffect(() => {
-        getUserCompany();
-        getNotifications();
-        getTimezones();
-        axios.get(route('get_session_value')).then((response) => {
-            if(response.data.session_value){
-                setReturnMainUser(response.data.session_value);
-            }
-        });
-        if(message) {
-            alertMessage(message);
-        }
-        getNavigationfield();
-       // drownDownToggleAction();
+
+        //getTimezones();
+        //getNotifications();
+        //getNavigationfield();
+        // axios.get(route('get_session_value')).then((response) => {
+        //     if(response.data.session_value){
+        //         setReturnMainUser(response.data.session_value);
+        //     }
+        // });
+        checkInformation();
+        defaultOpenNavigationBar();
+        getCompanyDetail();
+        if(message) alertMessage(message);
+        if(!navigationMenu) fetchMenuBar();
     },[])
     
     useEffect(() => {
@@ -312,17 +430,52 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
         }
      }, [pathname])
 
-    // function drownDownToggleAction(){
+    function getCompanyDetail() {
+        axios.get(route('CurrentCompany')).then((response) => {
+            if(response.data){               
+               setcompanyName(response.data.currentCompany.name);
+            }
+        });
+    } 
 
-    //     const toggleElements = document.querySelectorAll('.gio-menu-item');
-    //     toggleElements.forEach(el => {
-    //     el.addEventListener('click', function() {
-    //         console.count()
-    //         this.querySelector('.gio-dropdown-icon').classList.toggle('rotate-180');
-    //     });
-    //     });
+    function defaultOpenNavigationBar() {
+        (menuBar).map( (menu) => {
+            if(menu.hasOwnProperty('subMenu')) {
+                (menu.subMenu).map( (sub) => {
+                    if(sub.name == current_page) {
+                        let defaultOpen = {};
+                        defaultOpen[menu.name] = true;
+                        setMenuDropdownActive(defaultOpen);
+                    }
+                })
+            }
+        })
+    } 
 
-    // }
+    function checkInformation() {
+        let url = route('check_information');
+
+        axios.get(url).then( (response) => {
+            if(!response.data.information){
+
+               Inertia.post(route('onBoarding'), {}, {
+                    onSuccess: (response) => {
+                       
+                    }
+               });
+            }
+        });
+    }
+
+    function fetchMenuBar() {
+        let url = route('sub_menu');
+
+        axios.get(url).then( (response) => {
+           if(response.data.status === true) {
+            setNavigationMenuBar(response.data.menu);
+           }
+        });
+    }
 
     function alertMessage(message) {
         notie.alert({type: 'warning', text: message, time: 5});
@@ -339,21 +492,11 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
         e.stopPropagation();
         e.nativeEvent.stopImmediatePropagation();
 
-        if(!item.subMenu) return;
-
-        // const dataset = e.target.dataset;
-        // debugger;
-        // console.log(dataset.index)
-
-        // if(navigation[index].hasOwnProperty('drop')){
-        //     navigation[index].drop = !navigation[index].drop
-        // }else{           
-        //     navigation[index].drop = true;
-        // }
+        if(!item.submenu) return;
 
         const DropdownActive = menuDropdownActive;
         const menu = item.name;
-        
+
         if(DropdownActive.hasOwnProperty(menu)){
             DropdownActive[menu] = !DropdownActive[menu]
         }else{
@@ -362,7 +505,6 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
         }
 
         setMenuDropdownActive(DropdownActive);
-
     }
 
     function setImpersonate(){
@@ -371,7 +513,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
         }
         Inertia.post(route('set_global_user'), data, {
             onSuccess: (response) => {
-                console.log(response);
+
             },
             onError: (errors) => {
                 setErrors(errors)
@@ -388,7 +530,6 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
         });
     }
 
-//to get timezones
     function getTimezones(){
         var url = route('get_time_zone');
         axios.get(url).then((response) => {
@@ -427,31 +568,63 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
         });
     }
 
-    function getUserCompany() {
-        nProgress.start(0.5);
-        nProgress.inc(0.2);
-        let url = route('get_selected_company');
-        axios.get(url).then( (response) => {
-            
-            if(response) {
-                if(response.data.register_step && response.data.register_step <= 2){
-                    Inertia.post(route('show_register_step'),
-                      {'step' : response.data.register_step, 'user_id': auth.user.id, 'company_id' :response.data.selected_company}
-                    );
-                }
-                const companies = response.data.companies;
-                if(Object.entries(companies).length) {
-                    //setshowModal(true)
-                    setCompany(companies);  
-                }
-                nProgress.done();
-            }
-        });
-    }
-
     return (
         <>
-            <div className="flex min-h-screen bg-[#f6f6f6]">
+            <div className="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 hidden">
+                <div className="sm:max-w-md w-full p-2 flex justify-center items-center flex-col">
+                    <img src="/img/OneMessage.ChatLOGO.png" />
+                    <h1 className="text-xl font-bold !mt-6">Sign up to the power</h1>
+
+                    <div className="w-full !mt-6 space-y-2 ">
+                        <FormGroup>
+                            <Label for="exampleEmail">E-mail</Label>
+                            <Input type="email" name="email" id="exampleEmail" placeholder="example@email.com"/>
+                        </FormGroup>
+                        <FormGroup>
+                            <Label for="exampleEmail">Password</Label>
+                            <Input type="password" name="password" id="password" placeholder="Password"/>
+                        </FormGroup>
+
+                        <div className="flex flex-col items-center">
+                            <Button className="!bg-[#363740] !px-8 !py-2">Sign up</Button>
+                        </div>
+
+                        <div className="!mt-8 relative">
+                            <hr/>
+                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-4 bg-gray-100 text-[#7E7F8C] font-semibold text-base">or</div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-white !mt-10">
+                            <button type="button" className="inline-flex bg-white rounded text-center text-[#7E7F8C] justify-center items-center drop-shadow !py-3 !gap-3 !text-semibold ">
+                                <img
+                                    src="./img/google-logo.png"
+                                    alt="google logo"
+                                />
+                                Sign up with Google
+                            </button>
+                            <button type="button" className="inline-flex bg-[#3B5998] rounded text-center  text-white justify-center !py-3 !gap-3  text-semibold">
+                            <svg xmlns="http://www.w3.org/2000/svg" width={18} height={19} fill="none">
+                                <path fill="#fff" d="M18 9.94C18 4.939 13.97.885 9 .885S0 4.939 0 9.94c0 4.52 3.291 8.266 7.594 8.945v-6.328H5.309V9.94h2.285V7.945c0-2.27 1.343-3.523 3.4-3.523.984 0 2.014.177 2.014.177v2.228h-1.135c-1.118 0-1.467.698-1.467 1.414V9.94h2.496l-.399 2.617h-2.097v6.328C14.71 18.205 18 14.459 18 9.94Z" />
+                            </svg>
+
+                                Sign up with Facebook
+                            </button>
+                        </div>
+
+                        <p class="font-semibold !mt-8 pt-1 mb-0 w-full text-center text-base">
+                        Already have an account?
+                        <a
+                            href="#!"
+                            class="text-[#363740] transition duration-200 ease-in-out"
+                        > 
+                            log in
+                        </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex min-h-screen bg-[#F1F4F6]">
                 <Transition.Root show={sidebarOpen} as={Fragment}>
                     <Dialog
                         as="div"
@@ -509,7 +682,10 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                         </div>
                                     </Transition.Child>
                                     <div className="flex-shrink-0 flex items-center px-4">
-                                        <ApplicationLogo className="block h-9 w-auto text-gray-500" />
+                                        {/* <ApplicationLogo className="block h-9 w-auto text-gray-500" /> */}
+                                        <div className="w-full flex">
+                                           <img src="/img/logo-boost.svg" />
+                                        </div>
                                     </div>
                                 </Dialog.Panel>
                             </Transition.Child>
@@ -531,9 +707,12 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                     } md:flex-col`}
                 >
                     {/* Sidebar component, swap this element with another sidebar if you like */}
-                    <div className="flex flex-col flex-grow border-r border-gray-200 pt-5 bg-[#F6FFFD] overflow-y-auto">
-                        <div className="flex items-center flex-shrink-0 px-4">
-                            <ApplicationLogo className="block h-9 w-auto text-gray-500" />
+                    <div className="h-screen sticky top-0 bg-white justify-between flex flex-col pt-5 overflow-y-auto">
+                        <div className="flex items-center flex-shrink-0 px-4 ">
+                            {/* <ApplicationLogo className="block h-9 w-auto text-gray-500" />  */}
+                            <div className="w-full flex">
+                               <img src="/img/logo-boost.svg" />
+                            </div>
                         </div>
                         <div
                             className="mt-4 mx-4 h-7 w-7 bg-white flex justify-center items-center shadow-sm text-[#3D4459] cursor-pointer"
@@ -544,118 +723,163 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                         <div className="mt-4 flex-grow flex flex-col">
                             <nav className="flex-1 px-2 pb-4 space-y-1 gio-navbar">
                                 <ul className="pl-0">
-                            {showAdminNav ?                                                     
-                                 adminNavigation.map((item,index) => {
-                                if(!item.show.includes('all') && !item.show.includes(auth.user.role)) {
-                                    
-                                    return;
-                                }
-                                return (
-                                           
-                                    <li data-index={index}  onClick={(e)=>{drownDownToggleAction(e,item)}}>
-                                        <Link
-                                            preserveState
-                                            key={item.name}
-                                            href={item.href}
-                                            className={classNames(
-                                                (item.name == current_page)
-                                                    ? "text-primary"                                                    
-                                                    :"text-[#3D4459]  hover:text-primary",
-                                                    "group flex items-center px-2 py-2 text-sm font-medium rounded-md gio-menu-item"
-                                            )}                                                
-                                        >
-                                            <item.icon
-                                                className={classNames(
-                                                    (item.name == current_page)
-                                                        ? "text-primary"
-                                                        : "text-[#3D4459] group-hover:text-primary",
-                                                    "mr-3 flex-shrink-0 h-6 w-6"
-                                                    
-                                                )}
+                                    {/* {showAdminNav ?                                                     
+                                        adminNavigation.map((item,index) => {
+                                            if(!item.show.includes('all') && !item.show.includes(auth.user.role)) {
                                                 
-                                                aria-hidden="true"
-                                               
-                                            />
-                                            {showSidebarText ? <div data-index={index} className="flex justify-between items-center flex-1">{item.name} {item.subMenu ? <ChevronDownIcon data-index={index} className={` ${(menuDropdownActive[item.name] ? 'rotate-180' : '')} h-6 w-6 gio-dropdown-icon  transition-all`} /> : '' }  </div>: ""}
-                                        </Link>
-                                        {
-                                            showSidebarText && menuDropdownActive[item.name] == true && item.subMenu ?
-
-                                            <ul>
-
-                                                { item.subMenu.map((subItem,index) => {
-                                                return <li><Link className={classNames(
-                                                    "text-[#3D4459]  hover:text-primary",
-                                                        "group flex items-center px-2 py-1 text-sm font-medium rounded-md gio-menu-item"
-                                                )} href={subItem.href}>{subItem.name}</Link></li>                          
-                                                    }) }
-
-                                            </ul> : ''
-
-                                        }
-                                       
-                                    </li>
-                                );
-                            }):
-                            navigation.map((item,index) => {
-                                if(!item.show.includes('all') && !item.show.includes(auth.user.role)) {
-                                    return;
-                                }
-                                if(navigateField && navigateField.hasOwnProperty(item.name)){
-                                    return;
-                                }
-                            
-                                return (
-                                    <li data-index={index}  onClick={(e)=>{drownDownToggleAction(e,item)}}>
-                                        <Link
-                                            preserveState
-                                            key={item.name}
-                                            href={item.href}
-                                            className={classNames(
-                                                (item.name == current_page)
-                                                    ? "text-primary"                                                    
-                                                    :"text-[#3D4459]  hover:text-primary",
-                                                    "group flex items-center px-2 py-2 text-sm font-medium rounded-md gio-menu-item"
-                                            )}                                                
-                                        >
-                                            <item.icon
-                                                className={classNames(
-                                                    (item.name == current_page)
-                                                        ? "text-primary"
-                                                        : "text-[#3D4459] group-hover:text-primary",
-                                                    "mr-3 flex-shrink-0 h-6 w-6"
+                                                return;
+                                            }
+                                            return (
                                                     
-                                                )}
-                                                
-                                                aria-hidden="true"
-                                               
-                                            />
+                                                <li data-index={index}  onClick={(e)=>{drownDownToggleAction(e,item)}}>
+                                                    <Link
+                                                        preserveState
+                                                        key={item.name}
+                                                        href={item.href}
+                                                        className={classNames(
+                                                            (item.name == current_page)
+                                                                ? "text-white  bg-primary"                                                    
+                                                                :"text-[#3D4459] group-hover:text-white  group-hover:bg-primary",
+                                                                "group flex items-center px-2 py-2 text-sm font-medium rounded-md gio-menu-item justify-center"
+                                                        )}                                                
+                                                    >
+                                                        <item.icon
+                                                            className={classNames(
+                                                                (item.name == current_page)
+                                                                    ? "text-white  bg-primary"
+                                                                    : "text-[#3D4459] group-hover:text-white  group-hover:bg-primary",
+                                                                " flex-shrink-0 h-6 w-6"
+                                                                
+                                                            )}
+                                                            
+                                                            aria-hidden="true"
+                                                        
+                                                        />
+                                                        {showSidebarText ? <div data-index={index} className="flex ml-3 justify-between items-center flex-1">{item.name} {item.subMenu ? <ChevronDownIcon data-index={index} className={` ${(menuDropdownActive[item.name] ? 'rotate-180' : '')} h-6 w-6 gio-dropdown-icon  transition-all`} /> : '' }  </div>: ""}
+                                                    </Link>
+                                                    { showSidebarText && menuDropdownActive[item.name] == true && item.subMenu ?
+                                                        <ul>
+                                                            {item.subMenu.map( (subItem, index) => {
+                                                                if(!navigateField.hasOwnProperty(subItem.name)) {
+                                                                    return (
+                                                                        <li>
+                                                                            <Link className={classNames("text-[#3D4459] hover:text-white  hover:bg-primary","group flex items-center px-2 py-1 text-sm font-medium rounded-md gio-menu-item")} href={subItem.href}>{subItem.name}</Link>
+                                                                        </li> 
+                                                                    );
+                                                                }
+                                                            }
+                                                        </ul> 
+                                                    : '' }
+                                                </li>
+                                            );
+                                        })
+                                        :
+                                        navigation.map((item,index) => {
+                                            // if(!item.show.includes('all') && !item.show.includes(auth.user.role)) {
+                                            //     return;
+                                            // }
+                                            // if(navigateField && navigateField.hasOwnProperty(item.name)){
+                                            //     return;
+                                            // }
+                                        
+                                            // return (
+                                            //     <li data-index={index}  onClick={(e)=>{drownDownToggleAction(e,item)}}>
+                                            //         <Link
+                                            //             preserveState
+                                            //             key={item.name}
+                                            //             href={item.href}
+                                            //             className={classNames(
+                                            //                 (item.name == current_page)
+                                            //                     ? "text-white  bg-primary"                                                    
+                                            //                     :"text-[#3D4459] hover:text-white  hover:bg-primary",
+                                            //                     "group flex items-center px-2 py-2 text-sm font-medium rounded-md gio-menu-item justify-center"
+                                            //             )}                                                
+                                            //         >
+                                            //             <item.icon
+                                            //                 className={classNames(
+                                            //                     (item.name == current_page)
+                                            //                         ? "text-white  bg-primary"
+                                            //                         : "text-[#3D4459] group-hover:text-white  group-hover:bg-primary",
+                                            //                     "flex-shrink-0 h-6 w-6"
+                                                                
+                                            //                 )}
+                                                            
+                                            //                 aria-hidden="true"
+                                                        
+                                            //             />
 
-                                            {showSidebarText ? <div data-index={index} className="flex justify-between items-center flex-1">{item.name} {item.subMenu ? <ChevronDownIcon data-index={index} className={` ${(menuDropdownActive[item.name] ? 'rotate-180' : '')} h-6 w-6 gio-dropdown-icon  transition-all`} /> : '' }  </div>: ""}
-                                        </Link>
-                                        {
-                                            showSidebarText && menuDropdownActive[item.name] == true && item.subMenu ?
+                                            //             {showSidebarText ? <div data-index={index} className="flex ml-3 justify-between items-center flex-1">{item.name} {item.subMenu ? <ChevronDownIcon data-index={index} className={` ${(menuDropdownActive[item.name] ? 'rotate-180' : '')} h-6 w-6 gio-dropdown-icon  transition-all`} /> : '' }  </div>: ""}
+                                            //         </Link>
+                                            //         {
+                                            //             showSidebarText && menuDropdownActive[item.name] == true && item.subMenu ?
 
-                                            <ul>
-                                                {item.subMenu.map( (subItem, index) => {
-                                                    if(!navigateField.hasOwnProperty(subItem.name)) {
-                                                        return (
-                                                            <li>
-                                                                <Link className={classNames("text-[#3D4459]  hover:text-primary","group flex items-center px-2 py-1 text-sm font-medium rounded-md gio-menu-item")} href={subItem.href}>{subItem.name}</Link>
-                                                            </li> 
-                                                        );
-                                                    }
-                                                })}
-                                            </ul> : ''
-                                        }
-                                    </li>
-                                );
-                            })  
-                            }
+                                            //             <ul>
+                                            //                 {item.subMenu.map( (subItem, index) => {
+                                            //                     if(!navigateField.hasOwnProperty(subItem.name)) {
+                                            //                         return (
+                                            //                             <li>
+                                            //                                 <Link className={classNames("text-[#3D4459] hover:text-white  hover:bg-primary","group flex items-center px-2 py-1 text-sm font-medium rounded-md gio-menu-item justify-center")} href={subItem.href}>{subItem.name}</Link>
+                                            //                             </li> 
+                                            //                         );
+                                            //                     }
+                                            //                 })}
+                                            //             </ul> : ''
+                                            //         }
+                                            //     </li>
+                                            // );
+                                        })  
+                                    } */}
+                                    {navigationMenuBar && Object.entries(navigationMenuBar).map( ([header,navigator]) => (
+                                        menuBar.map( (item, index) => {
+                                            if(item.name == header && navigator.show) {
+
+                                                return (
+                                                    <li data-index={index}  onClick={(e)=>{drownDownToggleAction(e,navigator)}}>
+                                                        <Link
+                                                            preserveState
+                                                            key={item.name}
+                                                            href={item.href}
+                                                            className={classNames(
+                                                                (item.name == current_page)
+                                                                    ? "text-[#7666B4] !underline font-bold"                                                    
+                                                                    :"  ",
+                                                                    "group flex items-center px-2 py-2  text-[#3D4459] hover:text-[#7666B4] text-sm font-medium rounded-md gio-menu-item justify-center 1"
+                                                            )}                                                
+                                                        >
+                                                            <item.icon
+                                                                className={classNames(
+                                                                    (item.name == current_page)
+                                                                        ? "font-bold underline text-[#7666B4]"
+                                                                        : "text-[#3D4459] group-hover:text-[#7666B4]",
+                                                                    "flex-shrink-0 h-6 w-6"
+                                                                    
+                                                                )}
+                                                                aria-hidden="true"
+                                                            />
+                                                            {showSidebarText ? <div data-index={index} className="flex ml-3 gap-2 items-center flex-1">{item.name} {item.subMenu ? <BsCaretDownFill data-index={index} className={`${(menuDropdownActive[item.name] ? 'rotate-180' : '')} h-4 w-4 text-[#878787] group-hover:text-[#7666B4] gio-dropdown-icon  transition-all`} /> : '' }  </div>: ""}
+                                                        </Link>
+                                                        {showSidebarText && menuDropdownActive[navigator.name] && navigator.submenu ? 
+                                                          <ul>
+                                                            {item.subMenu.map( (subItem, index) => {
+                                                                if(navigator['submenu'].hasOwnProperty(subItem.name)) {
+                                                                    return (
+                                                                        <li className="">
+                                                                            <Link className={classNames((subItem.name == current_page) ? "text-[#7666B4] !underline font-bold": '',"text-[#363740] hover:text-[#7666B4] group flex items-center px-2 py-1 text-sm rounded-md gio-menu-item submenu focus:bg-[#7666B4]/20")} href={subItem.href}>{subItem.name}</Link>
+                                                                        </li> 
+                                                                    );
+                                                                }
+                                                            })}
+                                                          </ul>
+                                                        : ''}
+                                                    </li>
+                                                );
+                                            }
+                                        })
+                                    ))}
+
                                 </ul>
                             </nav>
                         </div>
-                        
                         
                         <div className="flex-shrink-0 flex">
                             <nav className="flex-1 px-2 pb-4 space-y-1 gio-navbar">
@@ -670,22 +894,22 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                             href={item.href}
                                             className={classNames(
                                                 (item.name == current_page)
-                                                    ? "text-primary"                                                    
-                                                    :"text-[#3D4459]  hover:text-primary",
-                                                    "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+                                                    ? "text-[#7666B4] !underline font-bold"                                                    
+                                                    :"",
+                                                    `group flex items-center px-2 py-2 text-[#3D4459] hover:text-[#7666B4] text-sm font-medium rounded-md ${showSidebarText ? '' : "justify-center"}`
                                             )}
                                         >
                                             <item.icon
                                                 className={classNames(
                                                     (item.name == current_page)
-                                                        ? "text-primary"
-                                                        : "text-[#3D4459] group-hover:text-primary",
-                                                    "mr-3 flex-shrink-0 h-6 w-6"
+                                                        ? "text-[#7666B4]"
+                                                        : "text-[#3D4459] group-hover:text-[#7666B4] ",
+                                                    "flex-shrink-0 h-6 w-6"
                                                     
                                                 )}
                                                 aria-hidden="true"
                                             />
-                                            {showSidebarText ? item.name: ""}
+                                            {showSidebarText ? <div className="ml-3">{item.name}</div>: ""}
                                         </Link>     
                                     );
                                 })}
@@ -694,7 +918,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
 
                     </div>
                 </div>
-                <div className="flex flex-col flex-1 bg-[#FBFBFBBF]">
+                <div className="flex flex-col flex-1 bg-[#F1F4F6]">
                     {hideHeader !== true ?
                     <div className="py-4 px-6">
                         <nav>
@@ -705,16 +929,18 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                     
                                     <div className="hidden sm:flex sm:items-center sm:ml-6"> 
                                         <div className="ml-3 relative">
+                                            {/* 
                                             <Notification 
                                                 notificationClick={notificationClick}
                                                 showMore={showMore}
                                                 count={count}
                                                 notifications={notifications}
                                             />
+                                             */}
                                         </div>
                                         {auth && auth.user && (auth.user.role == 'global_admin' || auth.user.role == 'admin') ? 
                                         <div className="ml-3 relative">
-                                        <Link
+                                        {/* <Link
                                             preserveState
                                             key="supportrequest"
                                             href={route("listSupportRequest")}  
@@ -724,7 +950,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                 className="h-6 w-6"                                                 
                                                 aria-hidden="true"                                               
                                             />                                            
-                                        </Link>
+                                        </Link> */}
                                         </div> :''}                                            
                                           
                                         <div className="ml-3 relative z-10">
@@ -796,7 +1022,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                                 </div>
                                                                 <div className="flex flex-col">
                                                                     <span><b> {auth.user.name} </b></span>
-                                                                    <span>Company Name</span>
+                                                                    <span>{companyName}</span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -833,8 +1059,6 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                             </Col>
                                                             <Col className="border-r" > 
                                                                 <List type="unstyled">
-                                                                    <li className="p-1" > Workspace </li>
-                                                                    <li className="p-1" > Switch to full mode </li>
                                                                     <li className="p-1" > <Link href={route("wallet_subscription")} method="get"> Workspace settings </Link> </li>
                                                                 </List> 
                                                             </Col>
@@ -848,7 +1072,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                                     {returnMainUser &&
                                                                         <li className="p-1" > <button onClick={() => setImpersonate()} type="button"> Return to global admin </button> </li>
                                                                     }
-                                                                    <li className="p-1" > API key</li>
+                                                                    <li className="p-1" ><Link href={route('listApi')} method="get"> API keys</Link></li>
                                                                     <li className="p-1" > <Link href={route('logout')} method="post" as="button"> Log out </Link> </li>
                                                                 </List> 
                                                             </Col>
@@ -917,13 +1141,6 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                     <main>{children}</main>
                 </div>
             </div>
-
-            {/* Select company */}
-            <SelectCompany
-                user={auth.user}
-                openModal={selectCompanyModal}
-                setSelectedCompany={setSelectedCompany}
-            />
 
         {showModal && companyList[0].hasOwnProperty('name')?
             <UserRegistration

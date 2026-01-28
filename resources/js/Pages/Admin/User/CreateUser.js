@@ -18,8 +18,8 @@ export default function CreateUser(props) {
 
     const fieldList = {
         'Personal Information': {
-            'first_name': {'value': props.user.first_name, 'label': 'First Name', 'type': 'text', 'required': false },
-            'last_name': {'value': props.user.last_name, 'label': 'Last Name', 'type': 'text', 'required': true },
+            'first_name': {'value': props.user.first_name, 'label':  (props.translator['First Name']), 'type': 'text', 'required': false },
+            'last_name': {'value': props.user.last_name, 'label': (props.translator['Last Name']), 'type': 'text', 'required': true },
             'email': {'value': props.user.email, 'label': (props.translator['Email']), 'type': 'email', 'required': true},
             'phone_number': {'value': props.user.phone_number, 'label': (props.translator['Phone number']), 'type': 'phone_number', 'required': false },
             'language': {'value': props.user.language, 'label': (props.translator['Language']), 'type': 'select', 'required': false , 'options': { 'en': 'English', 'it': 'Italy'}},
@@ -27,8 +27,9 @@ export default function CreateUser(props) {
        //     'time_zone': {'value': props.user.time_zone, 'label': (props.translator['Time Zone']), 'type': 'select', 'required': false , 'options': props.time_zone },
             'token': {'value': props.token, 'label': (props.translator['Token']) , action:'regenarate', 'type': 'text', 'required': false },
             'status': {'value': (props.user.status == 1) ? 'Active': 'Inactive', 'label': (props.translator['Active Status']), 'type': 'checkbox', 'required': false },
-            'role': {'value': props.user.role , 'label': 'Role' , 'type': 'select', 'required': false, 'options': props.roles},
-        //    'created_at': {'value': formatDate(props.user.created_at), 'label': 'Created At', 'type': 'text', 'required': false },
+            'role': {'value': props.user.role , 'label': (props.translator['Role']) , 'type': 'select', 'required': false, 'options': props.roles},
+            'role_permission': {'value': props.user.role_permission , 'label': 'Permission role' , 'type': 'select', 'required': false, 'options': props.role_permission},
+            //    'created_at': {'value': formatDate(props.user.created_at), 'label': 'Created At', 'type': 'text', 'required': false },
         },
         // 'Billing Information': {
         //     'company_address': {'value': props.user.company_address, 'label': (props.translator['Company Address']), 'type': 'textarea', 'required': false },
@@ -103,7 +104,11 @@ export default function CreateUser(props) {
         if(!is_validated) {
             return false;
         }
-        post(route('store_user_data'));
+        if(props.user.id) {
+            post(route('update_user_data'));
+        } else {
+            post(route('store_user_data'));
+        }
     }
 
     // Password change modal

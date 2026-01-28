@@ -22,7 +22,6 @@ class CreateNotesTable extends Migration
             $table->foreignId('assigned_to')->nullable()->constrained('users');
             $table->boolean('status')->nullable();
             $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('company_id')->constrained('companies');            
             $table->timestamps();            
         });
     }

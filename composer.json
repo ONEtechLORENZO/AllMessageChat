@@ -7,6 +7,9 @@
     "require": {
         "php": "^7.3|^8.0",
         "barryvdh/laravel-dompdf": "^2.0",
+        "brick/phonenumber": "^0.4.0",
+        "facebook/graph-sdk": "^5.1",
+        "facebook/php-sdk": "^3.2",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "inertiajs/inertia-laravel": "^0.3.5",
@@ -15,6 +18,8 @@
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
         "league/csv": "^9.8",
+        "league/flysystem-aws-s3-v3": "^1.0",
+        "spatie/laravel-permission": "^5.9",
         "tightenco/ziggy": "^1.0"
     },
     "require-dev": {
@@ -55,7 +60,7 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": ["laravel/dusk"]
         }
     },
     "config": {

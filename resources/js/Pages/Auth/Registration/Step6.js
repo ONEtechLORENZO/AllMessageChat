@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import {ChevronRightIcon}from "@heroicons/react/outline";
 import { Link } from "@inertiajs/inertia-react";
+import ApplicationLogo from "@/Components/ApplicationLogo";
 
 export default function Step6 (props) {
 
     const [plan , setPlan] = useState('');
+
     useEffect(()=> {
         getCompanyPlan();
     }, []);
@@ -13,7 +15,7 @@ export default function Step6 (props) {
      * Fetch company plan
      */
     function getCompanyPlan(){
-        axios.get(route('get_company' , props.companyId)).then((response) => {
+        axios.get(route('get_company' , props.company.id)).then((response) => {
             if(response)
                 setPlan(response.data.plan)
         });
@@ -24,22 +26,12 @@ export default function Step6 (props) {
             <div className="max-w-7xl flex mx-auto items-center px-10">
                 <div className="w-full bg-white self-stretch flex justify-center py-24 rounded-xl px-4 lg:px-10">
                     <div className="">
-                        <div className="flex justify-center">
-                            <img
-                                src="./img/onemessage-logo.png"
-                                alt="One message logo"
-                                className="w-1/2"
-                            />
+                        <div className="flex justify-center px-4 text-indigo-600 text-4xl font-semibold italic">
+                           One message
+                           <ApplicationLogo className="block h-90 w-auto text-gray-500 px-2" />
                         </div>
                         <div className="pl-10 flex justify-center">
-                            <span>Already have an account
-                                <Link
-                                        href={route('login')}
-                                        className="text-primary px-2"
-                                        >
-                                        Log in
-                                </Link>
-                            </span>
+                           
                         </div>
                         
                         <div className="grid grid-cols-2 mt-5">

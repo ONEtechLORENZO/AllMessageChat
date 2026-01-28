@@ -18,7 +18,6 @@ class CreateEmailsTable extends Migration
             $table->string('emails')->nullable();
             $table->string('type')->nullable();
             $table->boolean('is_primary')->default(0);
-            $table->foreignId('company_id')->constrained('companies');
             $table->integer('emailable_id')->nullable();
             $table->string('emailable_type')->nullable();
             $table->timestamps();

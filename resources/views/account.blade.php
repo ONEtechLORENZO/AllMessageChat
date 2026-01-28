@@ -129,28 +129,38 @@
 					</td>
 				</tr>
 				
-				<tr class="item">
-                   
-					<td>Service</td>
-
-					<td>{{$data->service}}</td>
-                   
-				</tr>
-                <tr class="item">
-					<td>Name</td>
-
-					<td>{{$data->display_name}}</td>
-				</tr>
-                <tr class="item">
-					<td>Phone Number</td>
-
-					<td>{{$data->phone_number}}</td>
-				</tr>
-                <tr class="item">
-					<td>Source</td>
-
-					<td>{{$data->src_name}}</td>
-				</tr>
+			
+				@if($data->business_solution)         
+					<tr class="item">
+						<td>Service</td>
+						<td> {{$data->service}} </td>
+					</tr>
+					<tr class="item">
+						<td>Source (BSP)</td>
+						<td>{{$data->business_solution}}</td>
+					</tr>
+				@else
+					<tr class="item">
+						<td>Service</td>
+						<td>{{$data->service}}</td>
+					</tr>
+					<tr class="item">
+						<td>Name</td>
+						<td>{{$data->display_name}}</td>
+					</tr>
+					<tr class="item">
+						<td>Phone Number</td>
+						<td>{{$data->phone_number}}</td>
+					</tr>
+					<tr class="item">
+						<td>Source</td>
+						<td>{{$data->src_name}}</td>
+					</tr>
+				@endif
+					<tr class="item">
+						<td>URL</td>
+						<td>{{$url}}</td>
+					</tr>
 			</table>
             <div class="thanks">
                 Thank You

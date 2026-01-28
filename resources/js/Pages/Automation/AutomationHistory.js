@@ -32,13 +32,13 @@ function AutomationHistory(props){
                         <tr>
                             <th
                                 className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-[#3D4459] sm:pl-6"
-                            > Name </th>
+                            > {props.translator['Name']} </th>
                             <th
                                 className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-[#3D4459] sm:pl-6"
-                            > Status </th>
+                            > {props.translator['Status']} </th>
                             <th
                                 className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-[#3D4459] sm:pl-6"
-                            > Run at </th>
+                            > {props.translator['Run at']} </th>
                         </tr>
                     </thead>
                     <tbody className=" bg-white">
@@ -51,7 +51,7 @@ function AutomationHistory(props){
                                             {record.name}
                                         </a>
                                     </td>
-                                    <td className='px-2 py-2'>{record.status ? <>Success</> : <>Faild</>}</td>
+                                    <td className='px-2 py-2'>{record.status ? <>{props.translator['Success']}</> : <>{props.translator['Failed']}</>}</td>
                                     <td className='px-2 py-2'>{record.created_at}</td>
                                 </tr>
                             )
@@ -60,7 +60,7 @@ function AutomationHistory(props){
                             <tr>
                                 <td className = "" colSpan="3">
                                     <div className=" px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
-                                        Automation not run yet.
+                                        {props.translator['Automation not run yet.']}
                                     </div>
                                 </td>
                             </tr>

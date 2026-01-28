@@ -5,6 +5,8 @@ import Pagination from '@/Components/Pagination';
 import Button from '@/Components/Forms/Button';
 import ContactSelection from '@/Components/ContactSelection';
 import Form from '@/Components/Forms/Form';
+import { Inertia } from "@inertiajs/inertia";
+import notie from 'notie';
 
 function SubPanels(props){
     const [showForm, setShowForm] = useState(false);
@@ -45,6 +47,45 @@ function SubPanels(props){
         setRecordId('');
     }
 
+    function deleteRecord(record_id , soft_delete = false)
+    {
+        
+        var recordData = {id: record_id};
+
+        if(props.module == 'User'){
+           
+            if(props.auth.user.id == record_id) {
+                notie.alert({type: 'error', text: 'you can not delete your profile.', time: 5});
+                return false;
+            }
+
+            var msg = 'Are you sure you want to delete the user?';
+            if(soft_delete){
+                recordData['is_soft'] = true;
+                msg = 'Are you sure you want to unlink the user?'
+            }
+            let confirmUserDelete = window.confirm(msg);
+            if(!confirmUserDelete) {
+                return;
+            }
+
+        } else {
+            let confirm = window.confirm(props.translator['Are you sure you want to delete the record?']);
+            if(!confirm) {
+                return;
+            }
+        }
+      
+        Inertia.delete(route('delete' + props.module, recordData), {}, {
+            onSuccess: (response) => { 
+                notie.alert({type: 'success', text: (props.translator['Record deleted successfully']), time: 5});
+            },
+            onError: (errors) => {
+                notie.alert({type: 'error', text: errors.message, time: 5});
+            }
+        });
+    }
+
     return(
         <div className="">
             <div className="flex min-w-0 justify-between">
@@ -69,10 +110,10 @@ function SubPanels(props){
                         records={recordDetails}
                         actions={actions}
                         paginator={paginateDetail}
+                        deleteRecord={deleteRecord}
+                        {...props}
                     />
-                    {Object.entries(recordDetails).length == 0 ?         
-                        <Alert type='info' message= {'No record related yet.'} hideClose={true} />
-                    : 
+                    {Object.entries(recordDetails).length !== 0 &&                    
                         <Pagination paginator={paginateDetail} />
                     }
 
@@ -85,6 +126,7 @@ function SubPanels(props){
                     parent_module={props.parent_module}
                     parent_id={props.parent_id}
                     parent_name={parentName}
+                    {...props}
                 /> 
                 :
                 <Form 
@@ -96,6 +138,7 @@ function SubPanels(props){
                     parent_name={parentName}
                     parent_module={props.parent_module} 
                     parent_id={props.parent_id} 
+                    
                 />
             )}
             {/* {showForm ?

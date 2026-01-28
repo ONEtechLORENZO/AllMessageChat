@@ -3,12 +3,29 @@ import { Link } from '@inertiajs/inertia-react';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import Alert from '@/Components/Alert';
+import { Badge } from "reactstrap";
+import { Inertia } from "@inertiajs/inertia";
+import nProgress from 'nprogress';
+
+import { PencilAltIcon, ChevronLeftIcon, TrashIcon, PlusIcon, ChevronRightIcon  } from '@heroicons/react/solid';
 
 export default function Accounts(props) {
 
     const[ deleteAccoutId , setDeleteAccountId] = useState('');
     const[ accounts , setAccountList] = useState(props.accounts);
    
+    const tabs = [
+        { name: 'Whatsapp', href: '#', current: true, page: 'whatsapp' },
+        { name: 'Instagram', href: '#', current: false , page: 'instagram' },
+        { name: 'Facebook', href: '#', current: false , page: 'facebook' },
+      ];
+    
+    function classNames(...classes) {
+        return classes.filter(Boolean).join(' ')
+    }
+    const [page, setPage] = useState('whatsapp');
+
+
     // Delete Account
     function deleteAccount(accountId){
        
@@ -21,6 +38,8 @@ export default function Accounts(props) {
             {
               label: (props.translator['Yes']),
               onClick: () => {
+                nProgress.start(0.5);
+                nProgress.inc(0.2);
                 axios({
                     method: 'post',
                     url: route( 'delete_account'),
@@ -30,6 +49,7 @@ export default function Accounts(props) {
                 })
                 .then( (response) =>{
                     setAccountList(response.data.accounts);
+                    nProgress.done();
                 });
 
               }
@@ -43,90 +63,130 @@ export default function Accounts(props) {
     }
 
     return (
-        <div className="grid gap-4 grid-cols-1">
-            <div className="">
+        <>
+        <div className="grid gap-4 grid-cols-2 border-[#B9B9B9] border-b">
+            
+            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                {tabs.map((tab) => (
+                <a
+                    key={tab.name}
+                    href={tab.href}
+                    className={classNames(
+                    tab.page == page
+                        ? 'border-indigo-500 text-indigo-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                    'whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm'
+                    )}
+                    aria-current={tab.current ? 'page' : undefined}
+                    onClick={() => setPage(tab.page)}
+                >
+                    {tab.name}
+                </a>
+                ))}
+            </nav>
+               
+            <div className="flex justify-end items-center">
                 <Link
                         href={route('account_registration')}
-                        className='ml-3 inline-flex float-right justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                        className='ml-3 btn btn-primary'
                     >
-                        Create a new social profile
+                        {props.translator['Link Social Profile']}
                 </Link>
             </div>
+        </div>
 
-            <div className="bg-white shadow overflow-hidden rounded-md">
-                <ul role="list" className="divide-y divide-gray-200">
-                    {accounts.map((account) => {
-                        let status_class_names = 'bg-yellow-100 text-yellow-800';
-                        if(account.status == 'Success') {
-                            status_class_names = 'bg-green-100 text-green-800';
+        <div className="grid gap-4 grid-cols-1">
+            <div className=" overflow-hidden ">
+                <div className="space-y-4 my-4">
+                    {accounts && accounts.map((account) => {
+                        let status_class_names = 'text-[#e6e60b]';
+                        if(account.status == 'Active') {
+                            status_class_names = 'text-[#0be651]';
                         }
-                        else if(account.status == 'Rejected') {
-                            status_class_names = 'bg-red-100 text-red-800';
+                        else if(account.status == 'Inactive') {
+                            status_class_names = 'text-[#f50515]';
+                        }
+                        if(account.service != page){
+                            return true;
                         }
 
                         return (
-                            <li key={account.id} className="px-6 py-4">
-                                <div className="flex justify-between">
-                                    <div className="flex">
-                                    <h2>
-                                        <Link href={route('account_view', account.id)}>
-                                            {account.company_name} ({account.service})
-                                        </Link>
-                                    </h2>
-                                    <span className={`ml-3 text-sm inline-flex items-center px-2 py-0.5 rounded font-medium ${status_class_names}`}>
-                                        {account.status}
-                                    </span>
-                                    </div>
-                                    
-                                    <div className='inline-flex'>
-                                        <button
-                                            onClick={(e) => deleteAccount(account.id)}
-                                            type="button"
-                                            className="inline-flex items-center px-4 py-1 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                            >
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                    </div>
+                            <div key={account.id} className="pt-3 bg-white drop-shadow rounded-md grid grid-cols-12 px-6 py-4">
+
+                                <div className='col-span-6 flex flex-col'>
+                                    <Link className='text-[#393939] text-base font-semibold' href={route('account_view', account.id)} > {account.company_name} ({account.service}) </Link>
+                                    <span className='truncate'>Account Id : {account.id}</span>
+                                    {(account.service == 'instagram' || account.service == 'facebook') &&
+                                        <span className='truncate'>Page name : {account.fb_page_name} </span>
+                                    }
                                 </div>
-                            </li>
+
+                                <span className={`ml-3 text-sm inline-flex items-center px-2 col-span-5 py-0.5 rounded font-semibold ${status_class_names}`}>
+                                    {account.status}
+                                </span>
+                                
+                                <div className='inline-flex'>
+                                    <button
+                                        onClick={(e) => deleteAccount(account.id)}
+                                        type="button"
+                                        className="inline-flex items-center px-4 py-1 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                        >
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                
+                            </div>
                         );
                     })}
-                </ul>
+                </div>
+
+                {!accounts ||accounts.length == 0 && 
+                    <div className="text-center py-12 mt-5">
+                            <p className="mt-1 text-sm text-gray-500 w-1/3 border-2 p-3 ml-4" >
+                            {props.translator['Hi']} {props.auth.user.name}, {props.translator['you have not linked any social account to your OneMessage yet. To do this']} <a href="#" className="text-indigo-500" onClick={() => {Inertia.get(route('account_registration'));} }>{props.translator['click']}</a> {props.translator['here or the blue button at the top right. Good work!']}
+                            </p>
+                    </div>
+                }
+
+{/* 
                 {!accounts || accounts.length == 0 ? 
                     <>
                     {props.createAccount ? 
-                    <div className="text-center py-12">
-                        <svg
-                            className="mx-auto h-12 w-12 text-gray-400"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            aria-hidden="true"
-                        >
-                            <path
-                                vectorEffect="non-scaling-stroke"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
-                            />
-                        </svg>
-                        <h3 className="mt-2 text-sm font-medium text-gray-900">{props.translator['No profile']}</h3>
-                        <p className="mt-1 text-sm text-gray-500">{props.translator['Get started by creating a new social profile.']}</p>
-                        <div className="mt-6">
-                            <Link href={route('account_registration')} className="underline text-sm text-indigo-600 hover:text-indigo-900">
-                                {props.translator['Click here to create a new social profile']}
-                            </Link>
+                        <div className="text-center py-12">
+                            <svg
+                                className="mx-auto h-12 w-12 text-gray-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    vectorEffect="non-scaling-stroke"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+                                />
+                            </svg>
+                            <h3 className="mt-2 text-sm font-medium text-gray-900">{props.translator['No profile']}</h3>
+                            <p className="mt-1 text-sm text-gray-500">{props.translator['Get started by creating a new social profile.']}</p>
+                            <div className="mt-6">
+                                <Link href={route('account_registration')} className="underline text-sm text-indigo-600 hover:text-indigo-900">
+                                    {props.translator['Click here to create a new social profile']}
+                                </Link>
+                            </div>
                         </div>
-                    </div>
                     : 
                         <Alert type='info' message= {props.translator['No records']} hideClose={true} />
                     }
                     </>
                 : ''}
+                 */}
+
             </div>
         </div>
+        </>
     );
 }

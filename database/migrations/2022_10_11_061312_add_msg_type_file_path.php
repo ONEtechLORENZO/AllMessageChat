@@ -15,7 +15,7 @@ class AddMsgTypeFilePath extends Migration
     {
         Schema::table('msgs', function (Blueprint $table) {
             $table->string('msg_type')->nullable();
-            $table->string('file_path')->nullable();
+            $table->longText('file_path')->nullable();
         });
     }
 

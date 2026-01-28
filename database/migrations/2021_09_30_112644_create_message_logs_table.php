@@ -25,7 +25,6 @@ class CreateMessageLogsTable extends Migration
             $table->string('country')->nullable();
             $table->string('recipient')->nullable();
             $table->string('status')->nullable();
-            $table->foreignId('company_id')->constrained('companies');            
 
             $table->timestamps();
         });

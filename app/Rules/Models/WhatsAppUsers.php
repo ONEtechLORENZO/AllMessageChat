@@ -1,0 +1,247 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Facebook\Facebook;
+
+class WhatsAppUsers extends Model
+{
+    use HasFactory;
+
+    /**
+     * Check user Opt-in
+     */
+    public function checkUserOptin($number , $source_name)
+    {
+        $opt_in = WhatsAppUsers::where('number' , $number)->first();
+        Log::info('Check user already Opt-in?');
+        if(!$opt_in){
+            $url = config('app.api_url');
+            $url = str_replace('msg' , 'app/opt/in/'.$source_name, $url);
+            $headers = [
+                'apikey' => config('app.apiKey'),
+            ];
+            $data['user'] = $number;
+            $response = Http::asForm()->withHeaders($headers)->post($url, $data);
+            $statusCode = $response->getStatusCode();
+            if($statusCode == 202 || $statusCode == 200){
+                WhatsAppUsers::insert([
+                    'number' => $number,
+                    'status' => 'Active'
+                ]);
+                return true;
+                Log::info('User Opt-in success');
+            } else {
+                Log::info('User Opt-in error');
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Return long term user access token
+     */
+    /*
+    public function getLongTermAccessToken($account)
+    {
+        $appId = config('app.fb.app_id');
+        $appSecret = config('app.fb.app_secret');
+        $url = "https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id={$appId}&client_secret={$appSecret}&fb_exchange_token={$account->fb_token}";
+        try{
+
+            $response = Http::get($url);
+            $response_body = json_decode($response->body(), true);
+       
+            if(isset($response_body['error'])) {
+                $access_token = $response_body['access_token'];
+                $account->fb_token = $access_token;
+                $account->save();
+            }
+            $result = $response_body;
+        } catch( Exception $e){
+            $result = (['status' => false, 'message' => $e->getMessage()]);
+        }
+    }
+    */
+
+    /**
+     * Return page token
+     */
+    public function getFbPageAccessToken($account)
+    {
+        // Got the app's access token from below call
+        // https://developers.facebook.com/docs/facebook-login/guides/access-tokens/#apptokens
+        $app_access_token = config('app.fb.app_token');
+
+        $access_token = $account->fb_token; // Facebook user access token
+        $pageId = $account->fb_phone_number_id;
+        $version = config('app.fb.app_graph_version');
+        $pageAccessToken = $account->page_token; // Facebook page access token
+     
+        if($pageAccessToken) {
+            $fb = $this->connectFb();
+              
+            try {
+                // Debugging the token to find out whether token is valid or not.
+                $debugToken = $fb->get("/debug_token?input_token={$pageAccessToken}", $app_access_token)->getDecodedBody();
+               
+                if ($debugToken['data']['is_valid'] && !$debugToken['data']['expires_at']) {
+                    return $pageAccessToken;
+                } 
+                else {
+                    // Token is expired, refresh it
+                    $accessToken = $fb->getOAuth2Client()->getLongLivedAccessToken($pageAccessToken);
+                    $new_access_token = $accessToken->getValue();
+
+                    // Store the access token for future use
+                    $account->page_token = $new_access_token;
+                    $account->save();
+    
+                    return $new_access_token;
+                }
+            } catch(Facebook\Exceptions\FacebookResponseException $e) {
+                $result = ['status' => false, 'message' => 'Graph returned an error: ' . $e->getMessage()];
+                
+            } catch(Facebook\Exceptions\FacebookSDKException $e) {
+                $result = ['status' => false, 'message' => 'Facebook SDK returned an error: ' . $e->getMessage()];
+            }
+        } else if( $pageId && $access_token ) {
+            $url = "https://graph.facebook.com/{$version}/{$pageId}?fields=access_token&access_token={$access_token}";
+
+            try {
+                $response = Http::get($url);
+                $response_body = json_decode($response->body(), true);
+                if(isset($response_body['error'])){
+                    $result = (['status' => false, 'message' => $response_body['error']['message']]);
+                } else {
+                    $pageAccessToken = $response_body['access_token'];
+                    
+                    // Store the access token for future use
+                    $account->page_token = $pageAccessToken;
+                    $account->save();
+
+                    $result = (['status' => true, 'token' => $response_body['access_token']]);
+                    return $pageAccessToken;
+                }
+            } catch( Exception $e){
+                $result = (['status' => false, 'message' => $e->getMessage()]);
+            }
+        }
+        Log::info($result);
+        return $pageAccessToken;
+    }
+
+    /**
+     * Return Fetched User data 
+     */
+    public function getServiceUserInfo( $userId, $account )
+    {
+
+        $pageToken = $this->getFbPageAccessToken($account);
+        $result = ['status' => false, 'message' => 'Invalid page token'];
+        if($pageToken){
+            $version = config('app.fb.app_graph_version');
+            $url = "https://graph.facebook.com/{$version}/{$userId}?access_token={$pageToken}";
+            //echo $url;
+            try{
+                $response = Http::get($url);
+                $response_body = json_decode($response->body(), true);
+                $result = (['status' => true, 'contact_data' => $response_body]);
+            } catch( Exception $e){
+                $result = (['status' => false, 'message' => $e->getMessage()]);
+                log::info(['stats' =>$result ]);
+            }
+
+        }
+        return $result;
+    }
+
+    /**
+     * Return facebook page linked accounts
+     */
+    public function getLinkedAccounts($pageId , $account)
+    {
+        $account->fb_phone_number_id = $pageId;
+        $pageToken = $this->getFbPageAccessToken($account);
+        $result = ['status' => false, 'message' => 'Invalid page token'];
+       
+        if($pageToken){
+            //$fb = $this->connectFb();
+            $version = config('app.fb.app_graph_version');
+            $url = "https://graph.facebook.com/{$version}/{$pageId}?fields=connected_instagram_account&access_token={$pageToken}";
+            try{
+                $response = Http::get($url);
+                $response_body = json_decode($response->body(), true);
+                if(isset($response_body['error'])){
+                        $result = (['status' => false, 'message' => $response_body['error']['message']]);
+                    } else {
+                       
+                        $instaId = isset($response_body['connected_instagram_account']['id'] ) ? $response_body['connected_instagram_account']['id'] : '';
+
+                        if($instaId){
+                            // Get Instagram user data
+                            $url = "https://graph.facebook.com/{$version}/{$instaId}?fields=username,name&access_token={$pageToken}";
+                            try{
+                                $response = Http::get($url);
+                                $response_body = json_decode($response->body(), true);
+
+                                if(isset($response_body['error'])){
+                                    $result = (['status' => false, 'message' => $response_body['error']['message']]);
+                                } else {
+                                    $instaAccountData[$response_body['id']] = "{$response_body['name']} ({$response_body['username']})";
+                                    $result =(['status' => true, 'data' => $instaAccountData]);
+                                }
+                            } catch( Exception $e){
+                                $result = (['status' => false, 'message' => $e->getMessage()]);
+                            }
+                        }
+                    }
+            } catch( Exception $e){
+                $result = (['status' => false, 'message' => $e->getMessage()]);
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Subscripe page for trigger webhook
+     */
+    public function subscripe($account)
+    {
+        $pagesList = unserialize( base64_decode($account->fb_meta_data) );
+        $pageId = $account->fb_phone_number_id;
+        $pageToken = $pagesList[$pageId]['token'];
+
+        if($pageToken){
+            $version = config('app.fb.app_graph_version');
+            $url = "https://graph.facebook.com/{$version}/{$pageId}/subscribed_apps?subscribed_fields=messages,message_reads&access_token={$pageToken}";
+            try{
+                $response = Http::post($url);
+                $result = json_decode($response->body(), true);
+                
+            } catch( Exception $e){
+                $result = (['status' => false, 'message' => $e->getMessage()]);
+            }
+            
+            Log::info(['Subscripe App result' => $result]);
+        }
+    }
+
+    /**
+     * Return Facebook meta data object
+     */
+    public function connectFB(Type $var = null)
+    {
+        $return = new Facebook([
+            'app_id' => config('app.fb.app_id'),
+            'app_secret' => config('app.fb.app_secret'),
+            'default_graph_version' => config('app.fb.app_graph_version'),
+        ]);
+        return $return;
+    }
+}

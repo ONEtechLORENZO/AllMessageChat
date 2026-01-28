@@ -275,7 +275,7 @@ function ListView(props)
     
     return (
        <>
-            <div className="px-4 sm:px-6 lg:px-8 bg-[#FBFBFBBF]">
+            <div className="px-4 sm:px-6 lg:px-8 bg-[#F1F4F6]">
                 <div className="sm:flex sm:items-center sm:justify-between">
                     <div className="flex gap-3">
                         {/* <button 

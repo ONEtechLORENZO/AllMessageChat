@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Authenticated from "../../Layouts/Authenticated";
 import DetailView from "@/Components/Views/Detail/Index";
 import Form from '@/Components/Forms/Form';
+import NewForm from "@/Components/Forms/NewForm";
 
 
 export default function Detail(props) 
@@ -31,6 +32,8 @@ export default function Detail(props)
         <Authenticated
             auth={props.auth}
             errors={props.errors}
+            current_page={'Organizations'}
+            navigationMenu={props.menuBar}
         >
             <DetailView
                 record={props.record}
@@ -39,11 +42,11 @@ export default function Detail(props)
                 tabs={tabs}
                 headers={props.headers}    
                 translator={props.translator}           
-                      
+                {...props}   
             />
             
             {showForm ?
-                <Form 
+                <NewForm 
                     module={'Organization'}
                     heading={props.heading}
                     hideForm={hideForm}

@@ -10,9 +10,14 @@ import Input from '@/Components/Forms/Input';
 import Dropdown from '@/Components/Forms/Dropdown';
 import InputError from '@/Components/Forms/InputError';
 import  {defaultPristineConfig} from '@/Pages/Constants';
-import { PencilAltIcon, PencilIcon, TrashIcon } from '@heroicons/react/solid';
+import { PencilAltIcon, ChevronLeftIcon, TrashIcon, PlusIcon, ChevronRightIcon  } from '@heroicons/react/solid';
 import { FolderAddIcon } from '@heroicons/react/outline';
 import Checkbox from '@/Components/Forms/Checkbox';
+import nProgress from 'nprogress';
+
+import { Button } from 'reactstrap';
+import axios from 'axios';
+import notie from 'notie';
 
 function Detail(props) 
 {
@@ -20,20 +25,32 @@ function Detail(props)
     const [accountModalOpen, setAccountModalOpen ] = useState(false);
     const [incomingUrlModalOpen , setIncomingUrlModalOpen ] = useState(false);
     const cancelButtonRef = useRef(null);
-
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const [errors, setError] = useState({});
+    const { data, setData, post, processing, reset } = useForm({
         template_name: '',
         category: '',
         languages: '',
         incoming_url: '',
     });
 
+    const [ selectedTab , selectTab ] = useState('info');
+    const tabs = [
+        { name: 'Info', href: '#', current: true, page: 'info' },
+        { name: 'Templates', href: '#', current: false , page: 'templates' },
+        { name: 'WebHooks', href: '#', current: false , page: 'webhooks' },
+    ];
+
     const categories = props.categories;
+    const [templates, setTemplates] = useState(props.templates);
+      
+    function classNames(...classes) {
+        return classes.filter(Boolean).join(' ')
+    }
 
     /**
      * Handle input change
      */ 
-     function handleChange(event) {
+    function handleChange(event) {
         const name = event.target.name;
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         let newState = Object.assign({}, data);
@@ -78,17 +95,19 @@ function Detail(props)
      * Create new template
      */
     function createNewTemplate() {
-        var pristine = new PristineJS(document.getElementById("new_template"), defaultPristineConfig);
-        let is_validated = pristine.validate(document.querySelectorAll('input[data-pristine-required], select[data-pristine-required]'));
-        if(!is_validated) {
+        let validate = templateValidation(data);
+        if(!validate) {
             return false;
         }
 
         Inertia.post(route('create_new_template', props.account.id), data, {
-            onSuccess: () => {
+            onSuccess : () => {
                 setAccountModalOpen(false);
             },
-        });
+            onError: (errors) => {
+                setError(errors);
+            },
+        })
     }
 
     /**
@@ -132,6 +151,18 @@ function Detail(props)
         }
     }
 
+    // Delete Template
+    function deleteTemplate(id) {
+        var confirmation = window.confirm((props.translator['Are you sure you want to delete this Templete?']));
+        if(confirmation) {
+            axios.post(route('delete_template', id)).then( (response) => {
+                if(response) {
+                    setTemplates(response.data.template);
+                }
+            });
+        }
+    }
+
     /**
      * Edit webhook
      * 
@@ -158,81 +189,103 @@ function Detail(props)
         status_class_names = 'bg-red-100 text-red-800';
     }
 
+    function templateValidation(data) {
+        let check = true;
+        let field_name = ['template_name', 'category', 'languages'];
+        field_name.map( (field) => {
+            if(!data[field] && check) {
+                check = false;
+            }
+        })
+
+        if(!check) {
+            notie.alert({type: 'warning', text: 'All field are mandatory', time: 5});
+        }
+        return check;
+    }
+
+    /**
+     * Sync templates
+     */
+    function syncTemplates(){
+        nProgress.start(0.5);
+        nProgress.inc(0.2);
+        axios.get(route('sync_templates' , {'account': props.account.id})).then( (response) => {
+            if(response.data){
+                setTemplates(response.data.templates);
+            }
+            nProgress.done();
+            notie.alert({type: 'success', text: 'Template synced successfully', time: 5});
+        });
+    }
+
     return (
         <Authenticated
             auth={props.auth}
             errors={props.errors}
-            header={<div className="flex justify-between"> 
-                    <div className="flex">  
-                        <h2 className="font-semibold text-xl text-gray-800 leading-tight">{props.translator['Profile Info']}</h2>  
-                        <span className={`ml-3 text-sm inline-flex items-center px-2 py-0.5 rounded font-medium ${status_class_names}`}>
-                            {props['account'].status}
-                        </span>
-                        {props.auth.user.role == 'global_admin' &&
-                            <Link
-                                href={route('detail_global_Company' , props.company.id)}
-                            >
-                                <span className={`ml-3 text-sm inline-flex items-center px-2 py-0.5 rounded font-medium`}>
-                                {props.company.name}
-                                </span>
-                            </Link>
-                        }
-                        
-                    </div>
-                    <div className="inline-flex">
-                        {/*                         
-                        {props['account'].fb_token ? 
-                            <a href='#' className="rounded-md bg-blue-50 p-4 flex">
-                                <div className="ml-3 flex-1 md:flex md:justify-between">
-                                    <p className="text-sm text-blue-700">Connected with Facebook</p>
-                                </div>
-                            </a>
-                        :
-                            <>
-                                <a
-                                    href={route('connect_face_book' , props.account.id)}
-                                    className='ml-3 inline-flex align-middle justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-                                >
-                                    <img
-                                        src={'../../../../public/img/fb-Icon.png'}
-                                        alt="FB"
-                                        className="pr-2 h-7 w-8"
-                                    />
-                                    <span className='mt-1'> Connect with Facebook </span>
-                                </a> 
-                            </>
-                        }
-                         */}
-                         <Link 
-                            href={route('wallet_subscription' , {tab: 2})}
-                            className="mt-2"
-                        //    className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                        >
-                            Back to List
-                        </Link>
-
-                        <Link 
-                            href={route('edit_account' , props.account.id)}
-                            className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            {props.translator['Edit']}
-                        </Link>
-                    </div>
-            </div>}
         >
             <Head title={props.translator['Profile Info']} />
             
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                        <div className="px-4 py-5 sm:px-6">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900">{props.translator['Profile Information']}</h3>
-                        </div>
-                        <div className="border-t border-gray-200">
-                            <dl>
+            <div className="">
+                <div className='max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-2'>
+                    <Link
+                        class="flex text-sm font-bold"
+                        href={route('social_profile')}
+                    >
+                        <ChevronLeftIcon 
+                            className='w-5 h-5'
+                        />
+                        {props.translator['Back to list view']}
+                    </Link>
+                    <h3
+                        className='text-2xl font-semibold'
+                    >
+                        {props.account.service} {props.translator['channels']}
+                    </h3>
+                    <p className='text-lg font-semibold' > {props.account.company_name}  - {props.translator[props.account.category]}</p>
+                </div>
+                <div className='max-w-7xl mx-auto sm:px-6 lg:px-8 mt-6'>
+                    <div className="border-b border-gray-200">
+                        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                            {tabs.map((tab) => {
+                                
+                                if((tab.page == 'templates' ) && (props.account.service != 'whatsapp' || props['account'].status != 'Active') ){
+                                    return true;
+                                }
+                                if(tab.page == 'webhooks' && props['account'].status != 'Active'){
+                                    return true;
+                                }
+                                return(
+                                    <a
+                                        key={tab.name}
+                                        href={tab.href}
+                                        className={classNames(
+                                        tab.page == selectedTab
+                                            ? 'border-indigo-500 text-indigo-600'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                                        'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm'
+                                        )}
+                                        aria-current={tab.current ? 'page' : undefined}
+                                        onClick={() => selectTab(tab.page)}
+                                    >
+                                        {props.translator[tab.name]}
+                                    </a>
+                                    )
+                            })}
+                        </nav>
+                    </div>
+                </div> 
+                
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4">
+                    {selectedTab == 'info' &&
+                        <div className="bg-white shadow overflow-hidden sm:rounded-lg p-4">
+                            
+                            <div className='space-y-4'>
                                 {Object.keys(props.field_info).map((key, index) => {
-                                    let bg_color = 'bg-gray-50';
+                                    let bg_color = '';
+                                    let label_class = "text-sm";
                                     if(index % 2 == 0) {
-                                        bg_color = 'bg-white';
+                                        bg_color = '';
                                     }
 
                                     if(props.field_info[key].show && !props.field_info[key].show.includes(props.account.service)) {
@@ -247,123 +300,143 @@ function Detail(props)
                                     if(props.field_info[key].user_show && !props.field_info[key].user_show.includes(props.auth.user.role)) {
                                         return;
                                     }
-                                   
 
+                                    if(key === "company_name"){
+                                        label_class = "text-xl font-semibold"
+                                    }
+                                
                                     return (
-                                        <div key={key} className={`${bg_color} px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
-                                            <dt className="text-sm font-medium text-gray-500">{props.field_info[key]['label']}</dt>
+                                        <div key={key} className={`sm:grid sm:grid-cols-3 sm:gap-4 items-center`}>
+                                            <dt className={`text-sm font-medium text-[#A7A7A7]`}>{props.field_info[key]['label']}</dt>
                                             {props.field_info[key]['type'] == 'image' ? 
                                                 <img src={`/image/profile/${props['account']['id']}`} alt="Profile picture" className='h-64 w-64' />
                                             : 
-                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 overflow-x-auto">
+                                                <dd className={` text-gray-900 ${label_class}  sm:col-span-2 overflow-x-auto mb-0`}>
                                                     {key == 'api_partner' ?
                                                         <>
                                                             {props['account'][key] && <> Checked </>}
                                                         </>
-                                                     : <> {props['account'][key]} </>
+                                                    : <> {props['account'][key]} </>
                                                     }
                                                 </dd>
                                             }
                                         </div>
                                     );
                                 })}
-                            </dl>
-                        </div>
-                    </div>
-                    {(props.account.service == 'whatsapp' && props['account'].status == 'Active') &&
-                        <>
-                  
-                            <div className="pb-5 pt-5">
-                                <div className="flex justify-between">
-                                    <div>
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mt-3">{props.translator['Templates']}</h3>
-                                    </div>
-                                    <div>
-                                        <button type='button' onClick={() => setAccountModalOpen(true)} className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                        {props.translator['Add template']}
-                                        </button>
-                                    </div>
-                                </div>
                             </div>
-                            <div className="bg-white shadow overflow-hidden rounded-md">
-                                <ul role="list" className="divide-y divide-gray-200">
-                                    {props.templates.map((data) => {
-                                        let status_class_names = 'bg-yellow-100 text-yellow-800';
-                                        if((data.status).toLowerCase() == 'approved') {
-                                            status_class_names = 'bg-green-100 text-green-800';
-                                        }
-                                        else if(data.status == 'rejected' || (data.status).indexOf('REJECTED') != -1 ) {
-                                            status_class_names = 'bg-red-100 text-red-800';
-                                        }
+                            
+                            <div className='mt-4'> <Link className='' href={route('edit_account', props.account.id)}> {props.translator['Edit']}</Link> </div>
+                        </div>
+                    }
+                    {selectedTab == 'templates' &&
+                            <>
+                                <div className="pt-2 flex justify-between">
+                                    <Button
+                                        onClick={() => setAccountModalOpen(true)}
+                                        className="!flex gap-1 items-center"
+                                    >
+                                        {props.translator['Add template']}
+                                        <PlusIcon className='h-4 w-4 text-white'/>
+                                    </Button>   
 
-                                        return (
-                                            <li key={data.id} className="px-6 py-4">
-                                                <div className="flex">
-                                                    <h2><Link href={route('template_detail_view', [data.account_id, data.id])}>{data.name}</Link></h2>
-                                                    <span className={`ml-3 text-sm inline-flex items-center px-2 py-0.5 rounded font-medium ${status_class_names}`}>
-                                                        {(data.status).toUpperCase()}
+                                    <button
+                                        onClick={() => syncTemplates()}
+                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+                                    >
+                                        {props.translator['Sync Templates']}
+                                    </button>                                     
+                                </div>
+                                <div className="overflow-hidden "> 
+                                    <div  className="space-y-4 my-4">
+                                        {templates.map((data) => {
+                                            let status_class_names = 'text-[#E68D08]';
+                                            if((data.status).toLowerCase() == 'approved') {
+                                                status_class_names = 'text-[#25B222]';
+                                            }
+                                            else if(data.status == 'rejected' || (data.status).indexOf('REJECTED') != -1 ) {
+                                                status_class_names = 'text-[#E68D08]';
+                                            }
+
+                                            return (
+                                                <div key={data.id} className="pt-3 bg-white drop-shadow rounded-md grid grid-cols-12 px-6 py-4">
+
+                                                    <div className='col-span-6 flex flex-col'>
+                                                        <Link className='text-[#393939] text-base font-semibold' href={route('template_detail_view', [data.account_id, data.id])}>{data.name}</Link>
+                                                        <span className='truncate'>{props.translator['Created by']} {(data.creater_name)&& <>{data.creater_name.name} </>} on {new Date(data.created_at).toLocaleDateString("en-US")}</span>
+                                                        <span className='truncate'> {data.language} </span>
+                                                    </div>
+                                                    
+                                                    <span className={`ml-3 text-sm inline-flex items-center px-2 col-span-5 py-0.5 rounded font-semibold ${status_class_names}`}>
+                                                      {/* {(data.status).toUpperCase()} */}
                                                     </span>
+                                                    <div className='flex gap-1 justify-end items-center'>
+                                                        <TrashIcon className='h-6 w-6 cursor-pointer text-[#6C757D]' onClick={() => deleteTemplate(data.id)}/>
+                                                        <span>
+                                                            <Link className='text-[#393939] text-base font-semibold' href={route('template_detail_view', [data.account_id, data.id])}>
+                                                               <ChevronRightIcon className='text-primary h-6 w-6' />
+                                                            </Link>
+                                                        </span>
+                                                    </div>
+                                                    
                                                 </div>
-                                            </li>
+                                            );
+                                        })}
+                                    </div>
+                                    {!templates || templates.length == 0 ? 
+                                        <div className="text-center py-12">
+                                            <FolderAddIcon className='mx-auto h-12 w-12 text-gray-400' />
+                                            <h3 className="mt-2 text-sm font-medium text-gray-900">{props.translator['No templates found']}</h3>
+                                            <p className="mt-1 text-sm text-gray-500">{props.translator['Get started by creating a new template.']}</p>
+                                            <div className="mt-6">
+                                                <a onClick={() => setAccountModalOpen(true)} className="cursor-pointer underline text-sm text-indigo-600 hover:text-indigo-900">
+                                                {props.translator['Click here to create new template']}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    : ''}
+                                </div>
+                        </>
+                    }
+                    {selectedTab == 'webhooks' &&
+                        <>
+                            <div>                                    
+                                <Button
+                                    onClick={openWebhookForm}
+                                    className="!flex gap-1 items-center">
+                                        {props.translator['Add Webhook URL']}
+                                        <PlusIcon className='h-4 w-4 text-white'/>
+                                </Button>                                  
+                            </div>
+
+                            <div className="overflow-hidden ">
+                                <div  className="space-y-4 my-4">
+                                    {props.events.map((data) => {
+                                        return (
+                                            <div key={data.id} className="pt-3 bg-white drop-shadow rounded-md grid grid-cols-12 px-6 py-4">
+                                                
+                                                    <div className='col-span-4 flex flex-col'>
+                                                        <h2 className='text-[#393939] text-base font-semibold' >{data.name_url}</h2>
+                                                        <span className='truncate'>Created by {data.created_by} the {new Date(data.created_at).toLocaleDateString("en-US")}</span>
+                                                    </div>
+                                                    <span className='col-span-5'>{data.callback_url}</span>
+                                                    
+                                                    <div className='flex gap-3 col-span-3 justify-end items-center'>
+                                                        <PencilAltIcon className='h-6 w-6 cursor-pointer' onClick={() => editWebhookEvent(data)} />
+                                                        <TrashIcon className='h-6 w-6 text-red-700 cursor-pointer' onClick={() => deleteWebhookEvent(data.id)} />
+                                                    </div>
+                                                
+                                            </div>
                                         );
                                     })}
-                                </ul>
-                                {!props.templates || props.templates.length == 0 ? 
-                                    <div className="text-center py-12">
-                                        <FolderAddIcon className='mx-auto h-12 w-12 text-gray-400' />
-                                        <h3 className="mt-2 text-sm font-medium text-gray-900">{props.translator['No templates found']}</h3>
-                                        <p className="mt-1 text-sm text-gray-500">{props.translator['Get started by creating a new template.']}</p>
-                                        <div className="mt-6">
-                                            <a onClick={() => setAccountModalOpen(true)} className="cursor-pointer underline text-sm text-indigo-600 hover:text-indigo-900">
-                                            {props.translator['Click here to create new template']}
-                                            </a>
-                                        </div>
-                                    </div>
-                                : ''}
-                            </div>
-                        </>
-                    }
 
-                    {props['account'].status == 'Active' &&
-                        <>
-                        <div className="pb-5 pt-5">
-                            <div className="flex justify-between">
-                                <div>
-                                    <h3 className="text-lg leading-6 font-medium text-gray-900 mt-3"> Webhook URLs </h3>
-                                </div>
-                                <div>
-                                    <button type='button' onClick={openWebhookForm} className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                    {props.translator['Add Webhook URL']}
-                                    </button>
+                                    {props.events.length == 0 &&
+                                        <li className="flex pt-3"> {props.translator['Webhooks not configured yet.']} </li>
+                                    }
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="bg-white shadow overflow-hidden rounded-md">
-                            <ul role="list" className="divide-y divide-gray-200">
-                                {props.events.map((data) => {
-                                    return (
-                                        <li key={data.id} className="px-6 py-4">
-                                            <div className="flex justify-between">
-                                                <h2> {data.callback_url} </h2>
-                                                <div className='flex gap-3'>
-                                                    <PencilAltIcon className='h-6 w-6' onClick={() => editWebhookEvent(data)} />
-                                                    <TrashIcon className='h-6 w-6 text-red-700 cursor-pointer' onClick={() => deleteWebhookEvent(data.id)} />
-                                                </div>
-                                            </div>
-                                        </li>
-                                    );
-                                })}
-
-                                {props.events.length == 0 &&
-                                    <li className="flex p-5"> {props.translator['Webhooks not configured yet.']} </li>
-                                }
-                            </ul>
-                        </div>
-                        </>
                         
+                        </>
                     }
-
                 </div>
             </div>
 
@@ -395,7 +468,7 @@ function Detail(props)
                             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         >
-                            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                            <div className="inline-block  bg-white rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
                                 <div>
                                     <div className="">
                                         <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
@@ -410,7 +483,7 @@ function Detail(props)
                                             <div className="grid gap-6">                                                
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="template_name" className="block text-sm font-medium text-gray-700">
-                                                    {props.translator['Name']}
+                                                    {props.translator['Name']} <span className='text-red-600'> *</span>
                                                     </label>
                                                     <div className="mt-1 flex rounded-md shadow-sm">
                                                         <Input name='template_name' required={true} id='template_name' placeholder={props.translator['Template name']} handleChange={handleChange} />
@@ -420,7 +493,7 @@ function Detail(props)
 
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-                                                    {props.translator['Category']}
+                                                    {props.translator['Category']} <span className='text-red-600'> *</span>
                                                     </label>
                                                     <div className="mt-1">
                                                         <Dropdown 
@@ -437,7 +510,7 @@ function Detail(props)
 
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="languages" className="block text-sm font-medium text-gray-700">
-                                                    {props.translator['Languages']}
+                                                    {props.translator['Languages']} <span className='text-red-600'> *</span>
                                                     </label>
                                                     <div className="mt-1">
                                                         <Select 
@@ -468,7 +541,7 @@ function Detail(props)
                                     </button>
                                     <button
                                         type="button"
-                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
+                                        className="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
                                         onClick={() => setAccountModalOpen(false)}
                                     >
                                         {props.translator['Close']}
@@ -508,7 +581,7 @@ function Detail(props)
                             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         >
-                            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                            <div className="inline-block  bg-white rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
                                 <div>
                                     <div className="">
                                         <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
@@ -520,7 +593,15 @@ function Detail(props)
                                             </p>
 
                                             <form id="new_incoming_url">
-                                                <div className="space-y-4">                                                
+                                                <div className="space-y-4">
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <label htmlFor="incoming_url" className="block text-sm font-medium text-gray-700">
+                                                            Name
+                                                        </label>
+                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                            <Input name='name_url' value={webhookData.name_url} required={true} id='name_url' placeholder={props.translator['Name of URL']} handleChange={handleWebhookFormChange} />
+                                                        </div>
+                                                    </div>                                                
                                                     <div className="form-group col-span-6 sm:col-span-4">
                                                         <label htmlFor="incoming_url" className="block text-sm font-medium text-gray-700">
                                                             Webhook URL
@@ -533,6 +614,10 @@ function Detail(props)
                                                         let bg_color = 'bg-white';
                                                         if(index % 2 == 0) {
                                                             bg_color = 'bg-white';
+                                                        }
+                                                        var facebookHooks = ['received' , 'read', 'sent'];
+                                                        if(props.account.service != 'whatsapp' && !facebookHooks.includes(event_name) ){
+                                                            return true;
                                                         }
 
                                                         return (
@@ -547,7 +632,11 @@ function Detail(props)
                                                                 </div>
                                                                 <div className="ml-3 text-sm">
                                                                     <label htmlFor={event_name} className="font-medium text-gray-700">
-                                                                     {props.translator[props.webhook_events[event_name] ['label']]}
+                                                                        {(props.translator[props.webhook_events[event_name]['label']]) ? 
+                                                                            <>{props.translator[props.webhook_events[event_name]['label']]}</>
+                                                                            :
+                                                                            <> {props.webhook_events[event_name]['label']} </>
+                                                                        }
                                                                     </label>
                                                                     <p className="text-gray-500">{props.webhook_events[event_name]['help_text']}</p>
                                                                 </div>
@@ -559,21 +648,21 @@ function Detail(props)
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                                    <button
-                                        type="button"
-                                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
+                                <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense items-center">
+                                    <Button
+                                        color="primary"
+                                        
                                         onClick={processWebhookForm}
                                     >
                                         {webhookData.id ? (props.translator['Update']) : (props.translator['Create'])}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
+                                    </Button>
+                                    <Button
+                                        
+                                        
                                         onClick={() => setIncomingUrlModalOpen(false)}
                                     >
                                         {props.translator['Close']}
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         </Transition.Child>

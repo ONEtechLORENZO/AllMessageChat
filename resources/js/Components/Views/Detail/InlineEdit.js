@@ -21,8 +21,12 @@ export default function InlineEdit(props) {
 
         // Get current field name and type 
         newTemp['name'] = field_name
-        newTemp['value'] = props.value;
         newTemp['type'] = field_type;
+        if(field_type == 'selectable') {
+            newTemp['value'] = record[field_name] ? record[field_name] : '';
+        } else {
+            newTemp['value'] = props.value;
+        }
         setTemp(newTemp);
         setShowEditView(true);
     }
@@ -37,7 +41,7 @@ export default function InlineEdit(props) {
     function tempDataHandler(name, value) {
         let newTemp = Object.assign({}, temp); 
         newTemp['name'] = name;
-        newTemp['value'] =value;
+        newTemp['value'] = value;
         setTemp(newTemp);
     }
 
@@ -89,7 +93,7 @@ export default function InlineEdit(props) {
                 customfields[temp.name] = temp.value;
                 record['custom'] = customfields;
             }
-    
+
             Inertia.post(route('update' + props.module, {id: record.id}), record, {
                 onSuccess: (response) => {
                     cancelEdit();
@@ -97,7 +101,7 @@ export default function InlineEdit(props) {
             });
         }
     }
-
+    
     return (
         <>
             {showEditView ? 
@@ -107,7 +111,7 @@ export default function InlineEdit(props) {
                   temp={temp}
                   fieldOptions={props.fieldOptions}
                   tempDataHandler={tempDataHandler}
-                  moduleFields={props.moduleFields}
+                  moduleFields={props.moduleFields}                 
                 />
                 <div className="p-2 text-gray-900"><CheckIcon className="h-6 w-6 text-green-900"  onClick={() => saveEdit()}/></div>
                 <div className="p-2 text-gray-900"><XIcon className="h-6 w-6 text-red-900"  onClick={() => cancelEdit()}/></div>
@@ -115,7 +119,7 @@ export default function InlineEdit(props) {
              :
               <>
                 {props.value} 
-                {props.module != 'Plan' ? 
+                {(props.module != 'Plan' && props.field.name != 'api_key'&& props.field.type != 'phones' && props.field.type != 'emails') ? 
                     <span className="px-3"><PencilIcon className="h-4 w-4"  onClick={() => editCurrentField(currentInfo.name, currentInfo.type)}/></span>
                 : ''}
               </>

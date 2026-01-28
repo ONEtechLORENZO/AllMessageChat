@@ -17,29 +17,33 @@ function Search(props)
      */
     function triggerSearch()
     {
+        if(props.module=="Transaction")
+        {
+            Inertia.get(route('wallet') +'?current_page=Invoice&search_tab=Transaction&page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order); 
+        }
+        if(props.module=="Msg")
+        {
+            Inertia.get(route('wallet') +'?current_page=Expenses&search_tab=Msg&page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order); 
+        }
+
        if(props.module=="Field" && props.mod!='')
        {
         Inertia.get(route('list' + props.module) +'?mod='+ props.mod + '&page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order);
        }
         else 
         {
-            if(props.module=="Company" && !(pathname.includes('admin/'))) 
-                Inertia.get(route('listAdminCompany') +'?page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order); 
-            else if (props.module == "User" && props.mod != "") {
-                Inertia.get(route('show_Users') +'?page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order); 
-            }    
-            else
+            // if(props.module=="Company" && !(pathname.includes('admin/'))) 
+            //     Inertia.get(route('listAdminCompany') +'?page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order); 
+            // else
                 Inertia.get(route('list' + props.module) +'?page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order);
         }
     }
 
     return (
-        <div className='flex gap-4'>
-            <div className="mt-1 relative align-self-start">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none 3">
-                    <span className="text-gray-500 sm:text-sm">
-                        <SearchIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                    </span>
+        <div className='flex gap-2 items-center'>            
+            <div className="mt-1 relative align-self-start flex items-center gap-1.5">
+                <div className="inline-flex items-center justify-center rounded-md px-2 py-2 text-sm font-medium text-black focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto">
+                   <SearchIcon className="h-5 w-5 text-gray-400" aria-hidden="true" onClick={triggerSearch}/>
                 </div>
                 <Input 
                     name="search"
@@ -50,15 +54,16 @@ function Search(props)
                     className={`pl-9 appearance-none block w-full  py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`} 
                 />
             </div>
-            <div>
+            {/* <div>
                 <button
                     type='button'
-                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-grey px-4 py-2 text-sm font-medium text-black shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+                 //  className="inline-flex items-center justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
                     onClick={triggerSearch}
                 >                        
                     {props.translator['Search']}                        
                 </button>
-            </div>
+            </div> */}
         </div>
     );
 }

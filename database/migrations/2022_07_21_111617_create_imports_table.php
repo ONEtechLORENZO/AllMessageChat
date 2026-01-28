@@ -25,7 +25,6 @@ class CreateImportsTable extends Migration
             $table->string('error_message');
             $table->integer('offset');
             $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('company_id')->constrained('companies');            
             $table->timestamps();
         });
     }

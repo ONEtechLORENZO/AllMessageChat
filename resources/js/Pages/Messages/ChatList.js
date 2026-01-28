@@ -1,4 +1,4 @@
-import React ,{ useEffect , useState , Fragment} from 'react';
+import React ,{ useEffect , useState, useRef, Fragment} from 'react';
 import {Head, Link } from '@inertiajs/inertia-react';
 import MessageList from "./MessageList";
 import Authenticated from "../../Layouts/Authenticated";
@@ -10,6 +10,7 @@ import Filter from '@/Components/Views/List/Filter2';
 import { Inertia } from '@inertiajs/inertia';
 import nProgress from 'nprogress';
 import ChatBox from './ChatBox';
+import Axios from 'axios';
 
 import {
     DotsVerticalIcon,
@@ -26,6 +27,7 @@ import {
     WhatsAppIcon,
     NotifiIcon,
     InstaIcon,
+    fbIcon,
     SettingIcon,
 } from "../icons";
 
@@ -36,7 +38,7 @@ function classNames(...classes) {
 function ChatList(props) 
 {
     const [selectedContact, setSelectedContact] = useState(props.selected_contact);
-    const [messages, setMessages] = useState(props.messages);
+    const [messages, setMessages] = useState({});
     const [containerCategory, setContainerCategory] = useState(props.category);
     const [showForm, setShowForm] = useState(false);
     const [chatList, setChatList] = useState(props.contact_list);
@@ -50,17 +52,24 @@ function ChatList(props)
     const channels = {
         all : {label: props.translator['All Channel'], icon: ApplicationLogo },
         whatsapp : { label: 'WhatsApp', icon:  WhatsAppIcon },
-        instagram : {label: 'Instagram', icon: InstaIcon }
+        instagram : {label: 'Instagram', icon: InstaIcon },
+        facebook : {label: 'Facebook', icon: fbIcon }
     }
-    const[ current_tab, setCurrentTabId ] = useState(props.mode);
+    const[ current_tab, setCurrentTabId ] = useState('unread');
     const tabs = [
-        { name: (props.translator['All Chats']), id:'all', href: "#", current: false },
         { name: (props.translator['Unread']), id:'unread', href: "#", current: false },
+        { name: (props.translator['All Chats']), id:'all', href: "#", current: false },
         { name: (props.translator['Archive']), id:'archived', href: "#", current: false },
     ];
 
     const [time, setTime] = useState(Date.now());
     const accountList = props.account_list;
+    const [loadedStory, setLoadedStory] = useState({});
+
+    const listRef = useRef(null);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [pageLoading, setPageLoad] = useState(false)
 
     useEffect(() => {
         setChatList(props.contact_list);
@@ -69,6 +78,17 @@ function ChatList(props)
             clearInterval(interval);
         };
     }, [props]);
+
+    useEffect(() => {
+        if(accountList){
+            let accountLength =  Object.keys(accountList).length;
+            if(accountLength == 1){
+                Object.entries(accountList).map(([id, name]) => {
+                    setSelectedAccount(id);
+                })
+            }
+        }
+    },[]);
 
     // Update select contact
     function updateContactData(contact){
@@ -83,7 +103,7 @@ function ChatList(props)
 
     // Send Message when press enter
     function handleKeyUp(e){
-        if(e.key == 'Enter' && containerCategory){
+        if(e.key == 'Enter' && !e.shiftKey && containerCategory){
             sendMessage();
         }
     }
@@ -103,11 +123,15 @@ function ChatList(props)
     }
 
     function getContactMessage(contact, channel){
+
         setSelectedContact(contact);
         setContainerCategory(channel);
         if(!contact){
             return false;
         }
+        nProgress.start(0.5);
+        nProgress.inc(0.2);
+        setMessages({});
         var url = route('chat_list', {'contact_id': contact, 'category': channel});
         if(props.filter_id){
             url = url + '&filter_id='+props.filter_id;
@@ -115,22 +139,24 @@ function ChatList(props)
         if(current_tab){
             url += '&mode='+ current_tab;
         }
-        Inertia.get(url, {
-            onSuccess: (response) => {
-                console.log(response);
-            },
+
+        var url = route('get_message_list', {'contact_id': contact, 'category': channel, 'mode': 'ajax'});
+        axios({
+            method: 'get',
+            url: url,
+        })
+        .then( (response) =>{
+            setMessages(response.data);
+            nProgress.done();
         });
     }
 
     function setCurrentTab(tab){
         setCurrentTabId(tab);
-        var url = route('chat_list', {'mode': tab});
-
-        Inertia.get(url, {
-            onSuccess: (response) => {
-                console.log(response);
-            },
-        });
+        setSelectedContact('');
+        setChatList({});
+        fetchContactList();
+        setPage(1);
     }
 
     function selectContactCategory(name){
@@ -139,12 +165,53 @@ function ChatList(props)
         if(props.filter_id){
             url = url + '&filter_id='+props.filter_id;
         }
+        if(current_tab){
+            url += '&mode='+ current_tab;
+        }
         Inertia.get(url, {
             onSuccess: (response) => {
-                console.log(response);
+
             },
         });
     }
+
+    /**
+     * Update Contact list based on the scroll
+     */
+    useEffect(() => {
+        if (page > 1) {
+            fetchContactList();
+        }
+    }, [page]);
+
+    function fetchContactList () {
+        setPageLoad(true);
+        var url = route('chat_list', {'category': containerCategory});
+        if(props.filter_id){
+            url = url + '&filter_id='+props.filter_id;
+        }
+        if(current_tab){
+            url += '&mode='+ current_tab;
+        }
+        url += '&fetchContact=true&page=' + page;
+      
+        Axios.get(url).then((response) => {
+            if(response.data.status) {
+                var mergedList = { ...chatList, ...response.data.contact_list };
+                setChatList(mergedList);
+                setPageLoad(false);
+            }
+        });
+    }
+
+    // Auto-select the first contact if none is selected
+    useEffect(() => {
+        if (!selectedContact && Object.keys(chatList).length > 0) {
+            const firstContact = Object.values(chatList)[0];
+            setSelectedContact(firstContact.id);
+            getContactMessage(firstContact.id, 'whatsapp')
+        }
+    }, [chatList, selectedContact, current_tab]);
 
     // Return conversation history
     function getMessageList() {
@@ -185,7 +252,7 @@ function ChatList(props)
             }
             Inertia.get(url, {
                 onSuccess: (response) => {
-                    console.log(response);
+
                 },
             });
         }
@@ -198,7 +265,14 @@ function ChatList(props)
         if(containerCategory == 'all' || !selectedAccount){
             notie.alert({type: 'warning', text: 'Please select the correct account & channel ', time: 5});
         }
-        var destination = (containerCategory == 'whatsapp') ? chatList[selectedContact].number : chatList[selectedContact].insta_id;
+        var destination = '';
+        if(containerCategory == 'whatsapp'){
+            destination = chatList["contact_id_"+selectedContact].number;
+        } else if (containerCategory == 'instagram') {
+            destination = chatList["contact_id_"+selectedContact].insta_id;
+        } else if (containerCategory == 'facebook'){
+            destination = chatList["contact_id_"+selectedContact].fb_id;
+        }
         
         // Append form data
         formData.append('account_id' , selectedAccount);
@@ -207,7 +281,14 @@ function ChatList(props)
         formData.append('content', data.content);
         formData.append('attachment', data.attachment);
         formData.append('template_id', data.template_id);
+        formData.append('catalog_id', data.catalog_id);
+        formData.append('product_retailer_id', data.product_retailer_id);
+        formData.append('template_options', data.template_options);
+        formData.append('template_type', data.template_type);
         
+        if(!destination){
+            notie.alert({type: 'warning', text: 'There is no destination', time: 5});
+        }
         if(data.content && destination && selectedAccount ){
             nProgress.start(0.5);
             nProgress.inc(0.2);
@@ -229,6 +310,8 @@ function ChatList(props)
                     newState['content'] = '';
                     newState['template_id'] = '';
                     newState['attachment'] = '';
+                    newState['template_type'] = '';
+                    newState['template_options'] = '';
                     setData(newState);
                 }
                 
@@ -244,11 +327,51 @@ function ChatList(props)
      */
     function setTemplateInfo(template){
         let newState = Object.assign({}, data);
-        newState['content'] = template.body;
+        newState['content'] = template.name +" template selected ";
         newState['template_id'] = template.template_uid;
         setData(newState);
     }
+
+    function clearContent(){
+        let newState = Object.assign({}, data);
+        newState['content'] = "";
+        newState['template_id'] = "";
+        newState['catalog_id'] = "";
+        newState['product_retailer_id'] = "";
+        setData(newState);
+    }
+
+    function setProductInfo(product) {
+        let newState = Object.assign({}, data);
+        newState['content'] = product.name + " product selected";
+        newState['catalog_id'] = product.catalog_id ? product.catalog_id : "";
+        newState['product_retailer_id'] = product.retailer_id ? product.retailer_id : "";
+        setData(newState);
+    }
+
+    /** 
+     * Set interactive message content
+     */
+    function setInteractiveMessage(interactiveMessage){
+        let newState = Object.assign({}, data);
+        newState['content'] = interactiveMessage.content;
+        newState['template_options'] = interactiveMessage.options;
+        newState['template_type'] = interactiveMessage.option_type;
+
+        setData(newState);
+    }
+
+    // Update Page count based on scroll
+    const handleScroll = () => {
+        const container = listRef.current;
+        if (!container || !hasMore) return;
     
+        // Check if scrolled to the bottom
+        if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
+          setPage((prevPage) => prevPage + 1);
+        }
+    };
+
     var category = (containerCategory) ? containerCategory : 'all';
     const selectedChannel = channels[category] ;
 
@@ -257,13 +380,16 @@ function ChatList(props)
             hideHeader={true} 
             auth={props.auth}
             errors={props.errors}
-            current_page = {props.current_page}
+            current_page = {'Chats'}
+            navigationMenu={props.menuBar}
         >
             <Head title='Chat' />
             <div className="flex">
                 <div className="w-1/3">
+                    <div className='bg-white !ml-1 rounded h-full'>
                     <div className="flex justify-between items-center p-3 md:hidden">
                         <div>
+                           
                             <svg
                                 width={43}
                                 height={46}
@@ -305,8 +431,8 @@ function ChatList(props)
                             </div>
                         </div>
                     </div>
-                    <div className="flex justify-between p-4">
-                        <div className="w-10 h-10 bg-white shadow-sm flex items-center justify-center z-10 ">
+                    <div className="flex justify-between gap-3 !p-3">
+                        <div className="w-10 h-10 bg-white flex items-center justify-center z-10 ">
                             <Filter
                                 module='Contact'
                                 filter={props.filter}
@@ -314,7 +440,7 @@ function ChatList(props)
                                 is_chat={true}
                             />
                         </div>
-                        <div className="mt-1 relative rounded-md shadow-sm">
+                        <div className="mt-1 relative ">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <SearchIcon
                                     className="h-5 w-5 text-gray-400"
@@ -326,13 +452,13 @@ function ChatList(props)
                                 value={searchKey}
                                 onChange={(e) => setSearchKey(e.target.value)}
                                 onKeyPress={(e) => handleSearchContact(e)}
-                                className="focus:ring-indigo-500 focus:border-indigo-500 border-0 block w-full pl-10 sm:text-sm  rounded-md"
+                                className="focus:ring-indigo-500 focus:border-indigo-500 border block w-full pl-10 sm:text-sm  rounded-md"
                                 placeholder="search"
                             />
                         </div>
                         <button
                             type="button"
-                            className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-[4px] text-white bg-primary hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:bg-primary"
+                            className="inline-flex justify-center items-center whitespace-nowrap !py-2 !px-3 border border-transparent shadow-sm text-sm font-medium rounded-[4px] text-white bg-primary hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:bg-primary"
                             onClick={() => setShowForm(true)}
                         >
                             {props.translator['New Message']}
@@ -350,17 +476,17 @@ function ChatList(props)
                                       //  href={tab.href}
                                         onClick={() => setCurrentTab(tab.id)}
                                         className={classNames(
-                                            (tab.id == props.mode)
+                                            (tab.id == current_tab)
                                                 ? "border-purple-500 text-primary"
                                                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200",
-                                            "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base cursor-pointer"
+                                            "whitespace-nowrap !py-4 !px-1 border-b-2 font-medium text-base cursor-pointer"
                                         )}
                                     >
                                         {tab.name}
                                        
                                         <span
                                             className={classNames(
-                                                (tab.id == props.mode)
+                                                (tab.id == current_tab)
                                                     ? "bg-purple-100 text-primary"
                                                     : "bg-gray-100 text-gray-900",
                                                 "hidden ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block"
@@ -380,16 +506,17 @@ function ChatList(props)
                         <div className="relative">
                             <ul
                                 role="list"
-                                className="relative z-0 divide-y divide-gray-100"
+                                className="relative z-0 divide-y divide-gray-100 !pl-1 overflow-y-auto h-[700px]"
+                                ref={listRef}
+                                onScroll={handleScroll}                       
                             >           
-                                  
-                                {Object.entries(props.contact_list).map(([id, person], j) => (
+                                {Object.entries(chatList).map(([id, person], j) => (
                                     <li key={id}   >
-                                        <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
+                                        <div className="relative !px-3 !py-3 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
                                             
                                             <div className="flex-shrink-0">
-                                                <span className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gray-500">
-                                                    <span className="text-2xl font-medium leading-none text-white">
+                                                <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-500">
+                                                    <span className="text-xl font-normal leading-none text-white">
                                                         {(person.name).substring(0,2)}
                                                     </span>
                                                 </span>
@@ -397,7 +524,7 @@ function ChatList(props)
                                             <div className="flex-1 min-w-0">
                                                 <button
                                                     type='button'
-                                                    onClick={()=> getContactMessage(id, person.channel)}
+                                                    onClick={()=> getContactMessage(person.id, person.channel)}
                                                     className="focus:outline-none"
                                                 >
                                                     {/* Extend touch target to entire panel */}
@@ -405,16 +532,16 @@ function ChatList(props)
                                                         className="absolute inset-0"
                                                         aria-hidden="true"
                                                     />
-                                                    <p className="text-sm font-semibold text-[#3D4459] flex items-start">
+                                                    <span className="text-sm font-semibold text-[#3D4459] flex items-start">
                                                         {person && (person.name) ?
                                                             <>{person.name}</>
                                                             : 
                                                             <>{person.number}</>
                                                         }
-                                                    </p>
-                                                    <p className="text-sm text-[#3D4459] truncate flex items-start">
+                                                    </span>
+                                                    <span className="text-sm text-[#878ea5] truncate flex items-start">
                                                         {person.number}
-                                                    </p>
+                                                    </span>
                                                 </button>
                                             </div>
                                             <div 
@@ -433,9 +560,9 @@ function ChatList(props)
                                                         </span>
                                                     </Dropdown.Trigger>
 
-                                                    <Dropdown.Content align="right" contentClasses="py-1 bg-white w-64 shadow-lg">
+                                                    <Dropdown.Content align="right" contentClasses="py-1 bg-white w-64 shadow-md">
                                                             
-                                                    <ul role="list" className="divide-y divide-gray-200 overflow-y-auto m-h-64">
+                                                    <ul role="list" className="divide-y divide-gray-200 overflow-y-auto m-h-64 !pl-0">
                                                         
                                                         <li onClick={() => setArchived(person.id)} className={"px-4 py-2 text-gray-900 text-sm hover:bg-sky-700 cursor-pointer " }>
                                                             {current_tab == 'archived' ? <> Unarchive </> : <>Archive</> } 
@@ -448,28 +575,38 @@ function ChatList(props)
                                         </div>
                                     </li>
                                 ))}
-                                {Object.entries(props.contact_list).length == 0 &&
+                                {Object.entries(chatList).length == 0 &&
                                     <li>
-                                        <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
+                                        <div className="relative px-6 py-5 flex items-center justify-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
                                             {props.translator['Conversation not start yet.']}
                                         </div>
                                     </li>
                                 }
                             </ul>
+                            {pageLoading &&
+                                <div class="flex justify-center min-w-screen">
+                                    <div class="flex space-x-2 animate-pulse">
+                                        <div class="w-3 h-3 bg-gray-500 rounded-full"></div>
+                                        <div class="w-3 h-3 bg-gray-500 rounded-full"></div>
+                                        <div class="w-3 h-3 bg-gray-500 rounded-full"></div>
+                                    </div>
+                                </div>
+                            }
                         </div>
                     </nav>
+                    </div>
                 </div>
                 <div className="w-2/3">
-                    <div className="flex-1 p:2 sm:p-3 pr-0 justify-between flex flex-col h-screen bg-gray-100">
-                        {selectedContact &&
+                    <div className="flex-1 !sm:py-3 !sm:pr-3 pr-0 justify-between flex flex-col h-screen bg-gray-100">
+                        {(selectedContact && chatList["contact_id_"+selectedContact] ) &&
                             <>
-                            <div className="flex sm:items-center justify-between py-3 border-b-2 border-gray-200">
-                                <div className="relative flex items-center space-x-4">
+                            <div className="flex sm:items-center justify-between !py-3 !px-2 border-b-2 border-gray-200 bg-white">
+                                <div className="relative flex items-center space-x-2">
                                     <div className="flex gap-1">
                                         <div className="relative">
-                                        <span className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gray-500">
-                                                    <span className="text-3xl font-medium leading-none text-white">
-                                                        {(chatList[selectedContact].name).substring(0,2)}
+                                        <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-500">
+                                                    <span className="text-xl font-medium leading-none text-white">
+                                                        {(chatList["contact_id_"+selectedContact].name).substring(0,2)} 
                                                     </span>
                                                 </span>
                                         </div>
@@ -477,27 +614,29 @@ function ChatList(props)
                                     <div className="flex flex-col leading-tight">
                                         <div className="text-sm font-semibold mt-1 flex items-center">
                                             <span className="text-[#3D4459] mr-3">
-                                                { chatList[selectedContact].name }
+                                                <Link href={route('detailContact', {id:selectedContact })} className='cursor-pointer underline'>
+                                                    { chatList["contact_id_"+selectedContact].name } 
+                                                </Link>
                                             </span>
                                         </div>
                                         
                                     </div>
-                                    <DotsVerticalIcon
+                                    {/* <DotsVerticalIcon
                                         className="h-4 w-4"
                                         aria-hidden="true"
-                                    />
+                                    /> */}
                                 </div>
                                 
                                 <div className="flex items-center space-x-2">
                                     <Menu as="div" className="ml-3 relative">
                                         <div>
-                                            <Menu.Button className="max-w-xs ring-1 p-2 flex items-center text-sm rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                            <Menu.Button className="max-w-xs ring-1 !px-2 !py-1 flex items-center text-sm rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                                 
                                                 <selectedChannel.icon 
-                                                                    className="p-2 w-12 h-12 fill-current text-gray-500"
-                                                                />
+                                                    className="w-10 h-10 fill-current text-gray-500"
+                                                />
                                                 <span className="ml-2">
-                                                    {selectedChannel.label}
+                                                    {selectedChannel.label} 
                                                 </span>
                                             </Menu.Button>
                                         </div>
@@ -510,7 +649,7 @@ function ChatList(props)
                                             leaveFrom="transform opacity-100 scale-100"
                                             leaveTo="transform opacity-0 scale-95"
                                         >
-                                            <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
+                                            <Menu.Items className="origin-top-right absolute right-0 mt-2  rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
                                                 {Object.entries(channels).map(([name, channel]) => (
                                                     <Menu.Item key={name}>
                                                             <div 
@@ -518,16 +657,16 @@ function ChatList(props)
                                                                     (containerCategory ==  name)
                                                                         ? "bg-gray-100"
                                                                         : "",
-                                                                    "p-2 flex"
+                                                                    "p-2 flex items-center"
                                                                 )}
                                                             >
                                                                 <channel.icon 
-                                                                    className="p-2 w-12 h-12 fill-current text-gray-500"
+                                                                    className="w-10 h-10 fill-current text-gray-500"
                                                                 />
                                                                 <button
                                                                     onClick={() => selectContactCategory(name)}
                                                                     type={'button'}
-                                                                    className="block py-2 px-4 text-sm text-gray-700 w-full">
+                                                                    className="block py-2 px-2 text-sm text-gray-700 w-full">
                                                                     {channel.label} 
                                                                 </button>
                                                             </div>
@@ -540,7 +679,7 @@ function ChatList(props)
                                 <div className="flex items-center space-x-2">
                                     <Menu as="div" className="ml-3 relative">
                                         <div>
-                                            <Menu.Button className="max-w-xs ring-1 p-2 flex items-center text-sm rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                            <Menu.Button className="max-w-xs ring-0 p-2 flex items-center text-sm border-0 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                                 <div className="ml-2 flex grid-cols-2 ">
                                                     <span>
                                                     {selectedAccount ?
@@ -549,6 +688,15 @@ function ChatList(props)
                                                         props.translator['Account list']
                                                     }
                                                     </span>
+                                                    { (containerCategory == 'whatsapp' && selectedAccount && selectedContact ) &&
+                                                            <>
+                                                                {(props.sessions[selectedContact] && props.sessions[selectedContact][selectedAccount]) ?
+                                                                    <span title='Session active' class="rounded-full p-1 bg-green-500 m-2"></span>
+                                                                    :
+                                                                    <span title='Session inactive' class="rounded-full p-1 bg-red-500 m-2"></span>
+                                                                }
+                                                            </>
+                                                    }
                                                     <span className='float-right'>
                                                         <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -566,7 +714,7 @@ function ChatList(props)
                                             leaveFrom="transform opacity-100 scale-100"
                                             leaveTo="transform opacity-0 scale-95"
                                         >
-                                            <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
+                                            <Menu.Items className="origin-top-right absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
                                                 {Object.entries(accountList).map(([id, name]) => (
                                                     <Menu.Item key={id}>
                                                             <div 
@@ -574,13 +722,25 @@ function ChatList(props)
                                                                     (selectedAccount ==  id)
                                                                         ? "bg-gray-100"
                                                                         : "",
-                                                                    "p-2 flex"
+                                                                    "p-2 flex items-center"
                                                                 )}
                                                             >
+
                                                                 <span onClick={ () => setSelectedAccount(id)}
                                                                 className="block px-4 text-sm text-gray-700 w-full cursor-pointer">
                                                                     {name} 
                                                                 </span>
+                                                                
+                                                                {(containerCategory == 'whatsapp' && selectedContact && selectedContact) &&
+                                                                    <>
+                                                                        {(props.sessions[selectedContact] && props.sessions[selectedContact][id]) ?
+                                                                            <span title='Session active' class="rounded-full p-1 bg-green-500"></span>
+                                                                            :
+                                                                            <span title='Session inactive' class="rounded-full p-1 bg-red-500"></span>
+                                                                        }
+                                                                    </>
+                                                                }
+
                                                             </div>
                                                         
                                                     </Menu.Item>
@@ -591,7 +751,8 @@ function ChatList(props)
                                 </div>
                                 
                                 <div className="flex items-center space-x-2">
-                                    <div className="ml-4 flex items-center md:ml-6">
+                                    <div className="ml-4 flex items-center md:ml-6 gap-2">
+                                        {/*                                         
                                         <button
                                             type="button"
                                             className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -600,7 +761,8 @@ function ChatList(props)
                                                 {props.translator['View notifications']}
                                             </span>
                                             <NotifiIcon />
-                                        </button>
+                                        </button> 
+                                        */}
 
                                         <Dropdown>
                                                 <Dropdown.Trigger>
@@ -650,18 +812,26 @@ function ChatList(props)
                             <MessageList 
                                 messages = {messages}
                                 containerCategory = {containerCategory}
+                                loadedStory = {loadedStory}
+                                setLoadedStory = {setLoadedStory}
                             />
 
-                            <div className="border-t-2  border-gray-200 px-4 pt-4 mb-2 sm:mb-0">
+                            <div className="border-t-2  border-gray-200 px-4 pt-4 mb-2 sm:mb-0 bg-white">
                                 <ChatBox 
                                     handleChange = {handleChange}
                                     handleKeyUp = {handleKeyUp}
                                     templates = {props.templates}
+                                    products={props.products}
+                                    interactiveMessages={props.interactiveMessages}
                                     setTemplateInfo = {setTemplateInfo}
                                     selectedAccount = {selectedAccount}
+                                    clearContent={clearContent}
+                                    setProductInfo={setProductInfo}
+                                    setInteractiveMessage={setInteractiveMessage}
+                                    containerCategory={containerCategory}
                                     data = {data}
                                     sendMessage = {sendMessage}
-                                    logo = { (selectedContact)? (chatList[selectedContact].name).substring(0,2) : ''}
+                                    logo = { (selectedContact)? (chatList["contact_id_"+selectedContact].name).substring(0,2) : ''}
                                 />
 {/* 
                                 <div className="flex gap-4 items-end">
@@ -758,6 +928,7 @@ function ChatList(props)
                 <ContactSelection
                     setShowForm={setShowForm}
                     parent_module='Chat'
+                    {...props}
                 />
             : ''}
         </Authenticated>

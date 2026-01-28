@@ -7,6 +7,7 @@ import Input from "@/Components/Forms/Input";
 import { Inertia } from "@inertiajs/inertia";
 import {countries} from '@/Pages/Constants';
 import TextArea from "@/Components/Forms/TextArea";
+import ProfilePicture from "./profilePicture";
 
 import {
   
@@ -21,7 +22,7 @@ export default function CompanyDetail(props)
   const [fields, setFields] = useState();
   const [temp, setTemp] = useState({});
   const [currentCompany, setCurrentCompany] = useState(props.currentCompany);
-  const [relatedCompany, setRelatedCompany] = useState(props.relatedCompany);
+  const [changeProfile, setChangeProfile] = useState(false);
 
   useEffect(() => {
     fetchModuleFields();
@@ -67,23 +68,12 @@ export default function CompanyDetail(props)
     if(temp){
       Inertia.post(route('saveCompany'), temp, {
         onSuccess: (response) => {
+          setCurrentCompany(response.props.company.currentCompany)
+          
           setTemp({});
         }
       });
     } 
-  }
-
-  function changeCompany(event){
-    const id = event.target.value;
-    
-    if(id) {
-      var data = { 'company_id': id};
-      Inertia.post(route('setBaseCompany'), data, {
-        onSuccess: (response) => {
-          window.location.reload();
-        }
-      });
-    }
   }
 
     return (
@@ -108,28 +98,28 @@ export default function CompanyDetail(props)
                   </svg>
                   </div>
                   <div className="w-full">
-                      <p className="font-bold">This is your Workspace</p>
+                      <p className="font-bold">{props.translator['This is your Workspace']}</p>
                       <p className="text-gray-500 text-sm whitespace-initial pt-2">
-                          Here you can change your company settings, add, edit or remove informations, as you number, your address, link your channel, etc.
+                      {props.translator['Here you can change your company settings, add, edit or remove informations, as you number, your address, link your channel, etc.']}
                       </p>
                   </div>
                 </CardBody>
               </Card>
               <Card className="!bg-[#F6FFFD]"  >
                     <CardBody>
-                        <CardTitle>{currentCompany && currentCompany.plan} - Plan</CardTitle>
+                        <CardTitle>{currentCompany && currentCompany.plan} - {props.translator['Plan']}</CardTitle>
                         <div className="grid grid-cols-2 p-2">
                             <div className="">
-                                <p className="flex text-gray-500 gap-2"><span className="w-5 h-5"><CheckIcon/></span>Monthly Fee</p>
-                                <p className="flex text-gray-500 gap-2"><span className="w-5 h-5"><CheckIcon/></span>1 Number for channel</p>
-                                <p className="flex text-gray-500 gap-2"><span className="w-5 h-5"><CheckIcon/></span>1 User for Workspace</p>
+                                <p className="flex text-gray-500 gap-2"><span className="w-5 h-5"><CheckIcon/></span>{props.translator['Monthly Fee']}</p>
+                                <p className="flex text-gray-500 gap-2"><span className="w-5 h-5"><CheckIcon/></span>1 {props.translator['Number for channel']}</p>
+                                <p className="flex text-gray-500 gap-2"><span className="w-5 h-5"><CheckIcon/></span>1 {props.translator['User for Workspace']}</p>
                             </div>
                             <div className="p-4 sm:flex sm:flex-row-reverse self-center">
                                 <Link
-                                        href={route('updateSubscription')}
+                                        href={route('update_plan')}
                                         className="w-full inline-flex justify-center rounded-md px-4 py-2 text-base font-medium btn btn-secondary sm:ml-3 sm:w-auto sm:text-sm"
                                         >
-                                        Update
+                                        {props.translator['Update']}
                                 </Link>
                             </div>
                         </div>
@@ -143,29 +133,16 @@ export default function CompanyDetail(props)
                   <div className="flex p-4 gap-4">
                       <div className="w-28">
                         <div className="w-28 h-28 relative">
-                          <img src="https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80" className="object-cover w-full h-full rounded-full"/>
-                          <div className="absolute right-0 bottom-0 w-6 h-6 bg-gray-100 cursor-pointer flex justify-center items-center">
+                          <img src={props.currentCompany.file_path} className="object-cover w-full h-full rounded-full"/>
+                          <div className="absolute right-0 bottom-0 w-6 h-6 bg-gray-100 cursor-pointer flex justify-center items-center" onClick={() =>setChangeProfile(true)}>
                             <CameraIcon className="text-gray-800 w-5 h-5" />
                           </div>
                         </div>
                       </div>
-                      <div className="w-full">
+                      <div className="flex justify-center items-center">
                           <div className="p-2 flex">
-                            <div className="text-2xl font-bold flex gap-3 items-center">{currentCompany && currentCompany.name} <span className=" bg-gray-100 w-7 h-7 flex justify-center items-center"><PencilIcon className="h-5 w-5"/></span></div>
+                            <div className="text-2xl font-bold flex gap-3 items-center">{currentCompany && currentCompany.name} </div>
                             <div className="px-4 text-md text-gray-600 font-bold">{currentCompany && currentCompany.payment_method == 'Postpaid' ? '( Postpaid )' : ''}</div>
-                          </div>
-                          <div className="p-2">
-                              <Dropdown 
-                              id='switch_company'
-                              name='switch_company'
-                              options={relatedCompany}
-                              handleChange={changeCompany}
-                              emptyOption='Switch Company'
-                              className="hidden"
-                              />
-                              <Button className="mb-2 me-2" color="light">
-                              Switch Workspace
-                              </Button>
                           </div>
                       </div>
                   </div>
@@ -177,7 +154,7 @@ export default function CompanyDetail(props)
            
             <Card>
                 <CardBody className="rounded-lg p-4 gap-4">
-                <CardTitle>General</CardTitle>
+                <CardTitle>{props.translator['General']}</CardTitle>
                     
                       <div className="overflow-hidden">
                       <table className="min-w-full divide-y divide-gray-300">
@@ -200,7 +177,7 @@ export default function CompanyDetail(props)
                               }
                               return(
                                 <tr>
-                                  <td className="whitespace-nowrap px-3 py-4 w-1/4 text-sm font-bold text-gray-500">{field.field_label}</td>
+                                  <td className="whitespace-nowrap px-3 py-4 w-1/4 text-sm font-bold text-gray-500">{props.translator[field.field_label]}</td>
                                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900 flex w-2/5">
                                     {temp  && temp.hasOwnProperty(field_name)? 
                                     <>
@@ -222,6 +199,15 @@ export default function CompanyDetail(props)
                                             value={field_value}
                                             handleChange={saveTemp}
                                         />    
+                                      :  field.field_type == 'email' ?
+                                          <Input 
+                                            type="email" 
+                                            className={`mt-1 appearance-none block w-2/5 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                            id={field_name}
+                                            name={field_name}
+                                            value={field_value} 
+                                            handleChange={saveTemp}
+                                          />
                                       :
                                           <Dropdown
                                             id={field_name}
@@ -238,7 +224,7 @@ export default function CompanyDetail(props)
                                     : 
                                     <>
                                       {field_value}
-                                      {field_name != 'currency' && field_name != 'time_zone' ? 
+                                      {field_name != 'currency' && field_name != 'time_zone' && field_name != 'name' ? 
                                           <span className="ml-4 bg-gray-100 w-6 h-6 flex justify-center items-center" onClick={() => editCompany(field_name)}><PencilIcon className="h-4 w-4"/></span>
                                       : ''}
                                     </>
@@ -255,6 +241,13 @@ export default function CompanyDetail(props)
                   
                 </CardBody>
             </Card>
+
+            {changeProfile ? 
+             <ProfilePicture 
+             company={props.currentCompany}
+             setChangeProfile={setChangeProfile}
+             />
+            :''}
             
         </div>
     );

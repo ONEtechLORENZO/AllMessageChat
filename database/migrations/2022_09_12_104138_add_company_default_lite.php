@@ -14,7 +14,7 @@ class AddCompanyDefaultLite extends Migration
     public function up()
     {
         Schema::table('companies', function (Blueprint $table) {
-            $table->string('plan')->default('lite');
+            $table->string('plan')->default('CONVERSATION_API');
         });
     }
 

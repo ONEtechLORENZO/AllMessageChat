@@ -19,12 +19,19 @@
     width: 100% !important;
 }
 
+.react-tel-input .flag-dropdown{
+    background: transparent !important;
+}
+
 .gio-navbar li ul{
     margin:10px 0;
 }
 
-.gio-navbar li ul li {
-    padding-left:40px;
-    padding-top: 6px;
-    padding-bottom: 6px;
+.creatableselect-inner__control {
+    border: none !important;    
 }
+
+.creatableselect-inner__indicator-separator{
+    display: none !important;
+}
+

@@ -11,7 +11,7 @@ import notie from 'notie';
 import ItemTable from "@/Pages/Order/itemTable";
 import InlineEdit from "./InlineEdit";
 import { Disclosure } from '@headlessui/react'
-import { ChevronDownIcon } from "@heroicons/react/outline";
+import { ChevronDownIcon, SearchCircleIcon, TrashIcon } from "@heroicons/react/outline";
 import SubscriptionPlan from "./PlanEdit";
 import WorkspacePlan from "./WorkspacePlan";
 import WorkspacePaid from "./WorkspacePaid";
@@ -19,7 +19,9 @@ import axios from "axios";
 import Wallet from "@/Pages/Wallet/Index"
 import Form from '@/Components/Forms/Form';
 import Acitivies from "@/Pages/Company/Acitivies";
-import ListView from "../List/Index2";
+import Alert from '@/Components/Alert';
+import CatalogDetail from "@/Pages/Catalog/CatalogDetail";
+import ModulePermission from "@/Pages/Roles/ModulePermission";
 
 export default function Index(props) {
     const [record, setRecord] = useState(props.record);
@@ -59,9 +61,6 @@ export default function Index(props) {
             setActiveTab(props.current_tab);
         }
         setSubscribedServices(props.subscribedServices);
-        if(props.module == 'Company') {
-            setActiveTab('Acitivies');
-        }
     }, [props]);
 
       /**
@@ -170,9 +169,10 @@ export default function Index(props) {
                 }]
         });
     }
-    function lead_to_contact() {
+
+    function lead_to_opportunity() {
         confirmAlert({
-            message: ('Are you sure you want to convert the Lead to a Contact?'),
+            message: ('Are you sure you want to convert the Lead Deal?'),
             buttons: [
                 {
                     label: ('Confirm'),
@@ -250,32 +250,115 @@ export default function Index(props) {
         }
     }
 
+    function generateApiToken(){
+        let confirm = window.confirm('Do you want add the user token?');
+
+        if(confirm){
+            axios({
+                method: 'post',
+                url: route('regenerate_token'),
+                data: {
+                    user_id: props.user.id,
+                }
+            })
+            .then((response) => {
+                linkToken(response.data.token);
+            });
+        }
+    }
+
+    function linkToken(token) {
+        let data = {
+            'token' : token,
+            'id' : props.record.id
+        };
+        
+        let url = route('link_token');
+       
+        Inertia.post(url, data, {
+            onSuccess: (response) => {
+                if(response){
+                    notie.alert({ type: 'success', text: 'Your api token has been created.', time: 5 });
+                }
+            }
+        })
+    }
+
+    function deleteToken(id) {
+        if(id) {
+            let url = route('delete_token');
+            let data = {
+                'record_id' : props.record.id,
+                'token_id' : id
+            };
+
+            Inertia.post(url, data, {
+                onSuccess: (response) => {
+                    if(response){
+                        notie.alert({ type: 'success', text: 'Your api token has been deleted.', time: 5 });
+                    }
+                }
+            })
+        }
+    }
+
+    function deleteRecord() {
+
+        confirmAlert({
+            message: ('Are you sure you want to delete this record?'),
+            buttons: [
+                {
+                    label: ('Confirm'),
+                    onClick: () => {
+                        Inertia.delete(route('delete' + props.module, {id : record.id}), {}, {
+                            onSuccess: (response) => { 
+                                notie.alert({type: 'success', text: 'Record deleted successfully', time: 5});
+                            },
+                            onError: (errors) => {
+                                notie.alert({type: 'error', text: errors.message, time: 5});
+                            }
+                        });
+                    }
+                }, {
+                    label: 'No',
+                }]
+        });
+    }
+
     return (  
-        <>          
+        <>    
             <div>
-                <Head title={props.module}/>
+                <Head title={props.translator[props.module]}/>
                 <ul className="py-4 space-y-2 sm:px-6 sm:space-y-4 lg:px-8" role="list">
                     <li className="border border-gray-500 px-4 py-6 sm:rounded-xl sm:px-6">
                         <div className="sm:flex sm:justify-between sm:items-baseline">
                             <h3 className="text-base font-medium flex w-full">
                             {(props.module != 'SupportRequest') &&
-                                <div>
-                                    <span className="text-gray-900 p-3">
-                                        <span className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-gray-500">
-                                            <span className="text-3xl font-medium leading-none text-uppercase text-white">
-                                                {(props.module == 'Contact' || props.module == 'Lead') ?
-                                                    <> { record.first_name ? (record.first_name).substring(0,2) : (record.last_name).substring(0,2)} </>
-                                                    :
-                                                    <> {(record.name).substring(0, 2)} </>
-                                                }
+                                <>
+                                    {(props.module == 'Product' && record.media_id) ? 
+                                      <div>
+                                        <img  src={route('preview_document', record.media_id)} class={'object-cover w-24 h-24 rounded-full'}/>
+                                      </div>
+                                    :
+                                     <div>
+                                        <span className="text-gray-900 p-3">
+                                            <span className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-gray-500">
+                                                <span className="text-3xl font-medium leading-none text-uppercase text-white">
+                                                    {(props.module == 'Contact') ?
+                                                        <> { record.first_name ? (record.first_name).substring(0,2) : (record.last_name).substring(0,2)} </>
+                                                        : 
+                                                        <> {(record.name).substring(0, 2)} </>
+                                                    }
+                                                </span>
                                             </span>
                                         </span>
-                                    </span>
-                                </div>
+                                       </div> 
+                                    }
+                                </>
                             }
 
 
-                            {(props.module == 'Contact' || props.module == 'Lead') ?
+                            {(props.module == 'Contact' ) ?
                                 <>
                                     <div>
                                         <div className="text-gray-600"> {record.first_name} {record.last_name} </div>
@@ -307,6 +390,17 @@ export default function Index(props) {
                                 <>
                                     <div className="pl-3 w-full">                                    
                                         <div className="text-black-800">{(props.module == 'SupportRequest') ? <>{record.subject}</>:<>{record.name}</>} </div>
+                                        {props.module == 'Api' ? 
+                                            <div className="flex justify-start mt-2" > 
+                                                <button 
+                                                    type="button" 
+                                                    class="bg-gray-200 hover:bg-gray-400 py-1 px-2 font-medium rounded" 
+                                                    onClick={() => generateApiToken()}
+                                                >
+                                                    Re-generate Token 
+                                                </button>
+                                            </div>
+                                        : ''}
                                         {props.module == 'Tag' || props.module == 'Category' || props.module == 'Plan' ?
                                             <div className={classNames(
                                                 addClass ? 'text-gray-600 break-words w-3/4' : 'text-gray-600 w-1/2 truncate'
@@ -315,7 +409,15 @@ export default function Index(props) {
                                             <><div className="text-gray-600"> Status        : {record.status} </div>
                                                {props.role == 'global_admin'?
                                               <><div className="text-gray-600"> Created by: <a href={route('detail_global_User', { id: record.created_by })} className='text-indigo-600 mx-1'>{props.created_by}</a> </div>
-                                              <div className="text-gray-600"> Workspace name: <a href={route('detail_global_Company', { id: record.company_id })} className='text-indigo-600 mx-1'>{props.workspace} </a></div></>:''}</>: ''}
+                                              <div className="text-gray-600"> Workspace name: <a href={route('detail_global_Company', { id: record.company_id })} className='text-indigo-600 mx-1'>{props.workspace} </a></div></>:''}</>
+                                        : ''}
+                                        {props.module == 'Product' && record.catalog_id ?
+                                            <div className="flex justify-start mt-2" > 
+                                                <Link href={route('detailCatalog', {id: record.catalog_detail})} className='cursor-pointer underline'>
+                                                    {record.catalog_id}
+                                                </Link>
+                                            </div>
+                                        : ''}
                                     </div>
                                 </>
                             }
@@ -326,10 +428,10 @@ export default function Index(props) {
                                 {(props.module == 'Lead') ? <div>
                                     <button
                                         type="button"
-                                        onClick={() => lead_to_contact()}
+                                        onClick={() => lead_to_opportunity()}
                                         className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                     >
-                                        Convert Lead to Contact                                        
+                                        {props.translator['Convert Lead to Deal']}                                      
                                     </button>
                                 </div>:<div>
                                     <button
@@ -337,7 +439,7 @@ export default function Index(props) {
                                         onClick={() => setShowForm(true)}
                                         className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                     >
-                                        Convert Opportunity to Order 
+                                        {props.translator['Convert Deal to Order']} 
                                     </button>
                                 </div>}
                             </div>
@@ -353,16 +455,32 @@ export default function Index(props) {
                             </div>
                             : ''}
 
+                            <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
+                                <div>
+                                    {((!props.action || props.action == 'undefined') || props.action.delete === true) &&
+                                        <button
+                                            type="button"
+                                            onClick={() => deleteRecord()}
+                                            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                        >
+                                            {props.translator['Delete']}                                       
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+
                         <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
                             <div>
-                                <button
-                                    type="button"
-                                    onClick={() => props.updateRecord(record.id)}
-                                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                >
-                                    <PencilIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-                                    {props.translator['Edit']}
-                                </button>
+                                {((!props.action || props.action == 'undefined') || props.action.edit === true) &&
+                                    <button
+                                        type="button"
+                                        onClick={() => props.updateRecord(record.id)}
+                                        className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                    >
+                                        <PencilIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+                                        {props.translator['Edit']}
+                                    </button>
+                                }
                             </div>
                         </div>
                         </div>
@@ -370,7 +488,7 @@ export default function Index(props) {
                 </li> 
                 <li className="border border-gray-500 px-4 py-6 sm:rounded-xl sm:px-6">
                     <ul id="props.tabs" className="inline-flex w-full px-1 pt-2 border-bottom">
-                        {Object.entries(props.tabs).map(([key, tab]) => {
+                        {props.tabs && Object.entries(props.tabs).map(([key, tab]) => {
                             var activeClassName = "px-3 py-2 -mb-px font-semibold text-gray-800 rounded-t";
                             
                             let activeHrefClass = "text-gray-600"
@@ -393,6 +511,7 @@ export default function Index(props) {
                                   current_userid={props.current_userid}
                                   created_by = {props.created_by}
                                   creator_id ={props.creator_id}
+                                  {...props}
                                 />
                          
                          </>}                      
@@ -400,7 +519,7 @@ export default function Index(props) {
                         
                         <div id="tab-contents" className="my-3">
                             
-                            {activeTab == 'Detail' && (props.module != 'SupportRequest') &&
+                            {activeTab == 'Detail' && (props.module != 'SupportRequest') && (props.module != 'Catalog') &&
                                <>
                                <div className="bg-gray-50 ">
                                    <dl className="text-gray-200 divide-y">
@@ -409,7 +528,7 @@ export default function Index(props) {
                                            <>
                                                <dt className="p-2 bg-gray-200 rounded-lg">
                                                    <Disclosure.Button className="flex w-full items-start align-items-center justify-between text-left text-gray-500">
-                                                       <span className="px-2 -mb-px font-semibold text-gray-800 rounded-t">General</span>
+                                                       <span className="px-2 -mb-px font-semibold text-gray-800 rounded-t">{props.translator['General']}</span>
                                                        <span className="ml-6 flex h-7 items-center">
                                                        <ChevronDownIcon
                                                            className={classNames(open ? '-rotate-180' : 'rotate-0', 'h-4 w-4 transform')}
@@ -456,7 +575,7 @@ export default function Index(props) {
                                                            }
                                                            
                                                            if(field.type == 'checkbox') {
-                                                               value = (value) ? 'checked': 'unchecked';
+                                                               value = (value) ? 'Yes': 'No';
                                                            }
 
                                                            if(field.type == 'phones' && key == 'phones') {
@@ -482,19 +601,35 @@ export default function Index(props) {
                                                                value = emails ? (emails).join(', ') : '';
                                                            }
 
+                                                           if(field.type == 'selectable'){
+                                                                let ips = '';
+                                                                {record[key] && record[key].map( (select, index)=> {
+                                                                    ips += select.label;
+                                                                    var nextIndex = index + 1;
+                                                                    if(record[key][nextIndex]){
+                                                                        ips += ", ";
+                                                                    } 
+                                                                })}
+                                                                value = ips;
+                                                           }
+
                                                            if(showField) {
                                                                return(
                                                                    <div className="py-2 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4">
-                                                                       <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
-                                                                       <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex"> 
-                                                                         <InlineEdit 
-                                                                           module={props.module}
-                                                                           field={field}
-                                                                           value={value}
-                                                                           record={record}
-                                                                           fieldOptions={fieldOptions}
-                                                                           moduleFields={moduleFields}
-                                                                         />
+                                                                       <dt className="text-sm font-medium text-gray-500"> {props.translator[field.label]} </dt>
+                                                                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex"> 
+                                                                        
+                                                                            <InlineEdit 
+                                                                            module={props.module}
+                                                                            field={field}
+                                                                            value={value}
+                                                                            record={record}
+                                                                            user_list={props.user_list}
+                                                                            fieldOptions={fieldOptions}
+                                                                            moduleFields={moduleFields}
+                                                                            {...props}
+                                                                            />
+                                                                     
                                                                        </dd>
                                                                    </div>
                                                                )
@@ -513,6 +648,7 @@ export default function Index(props) {
                                                                            setOpen={setTagOpen}
                                                                            save={saveTag}
                                                                            openTag={tagOpen}
+                                                                           translator={props.translator}
                                                                            />
                                                                        </dd>
                                                                    </div>    
@@ -531,6 +667,7 @@ export default function Index(props) {
                                                                            setOpen={setListOpen}
                                                                            save={saveList}
                                                                            openTag={listOpen}
+                                                                           translator={props.translator}
                                                                            />
                                                                        </dd>
                                                                    </div>    
@@ -554,7 +691,7 @@ export default function Index(props) {
                                            <>
                                                <dt className="p-2 bg-gray-200 rounded-lg mt-3">
                                                <Disclosure.Button className="flex w-full items-start justify-between text-left text-gray-500">
-                                                   <span className="px-2 -mb-px font-semibold text-gray-800 rounded-t">{group}</span>
+                                                   <span className="px-2 -mb-px font-semibold text-gray-800 rounded-t">{props.translator[group]}</span>
                                                    <span className="ml-6 flex h-7 items-center">
                                                    <ChevronDownIcon
                                                        className={classNames(open ? '-rotate-180' : 'rotate-0', 'h-4 w-4 transform')}
@@ -581,7 +718,7 @@ export default function Index(props) {
                                                        }
 
                                                        if(field.type == 'checkbox') {
-                                                           value = (value) ? 'checked': 'unchecked';
+                                                           value = (value) ? 'Yes': 'No';
                                                        }
 
                                                        if(field.type == 'relate') {
@@ -602,7 +739,7 @@ export default function Index(props) {
 
                                                        return(
                                                            <div className="py-2 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4">
-                                                               <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
+                                                               <dt className="text-sm font-medium text-gray-500"> {props.translator[field.label]} </dt>
                                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex">
                                                                  <InlineEdit 
                                                                    module={props.module}
@@ -646,22 +783,18 @@ export default function Index(props) {
                                 <Notes
                                   module={props.module}                                                                                
                                   recordId={props.record.id} 
+                                  translator={props.translator}
                                 />
                             }
                             {activeTab == 'Users' &&
-                                <ListView 
-                                    auth={props.auth}
-                                    errors={props.errors}
-                                    module={'User'}
-                                    current_user={props.auth}
-                                    headers={props.users_columns}
-                                    records={props.user_List}
-                                    translator={props.translator}
-                                    actions={props.user_actions}
-                                    paginator={props.users_paginator}
-                                    sort_by={'created_at'}
-                                    sort_order={'desc'}
-                                />
+                                <ul role="list" className="divide-y divide-gray-200">
+                                    {Object.entries(props.users).map(([key, user]) => (
+                                        <li key={''} className="py-4 flex border-2 m-1 border-gray-100 p-4">
+                                            <span><UserIcon /> </span> 
+                                            <span className="ml-3">{user.name}</span>
+                                        </li>
+                                    ))}
+                                </ul>
                             }
                             {activeTab == 'Contact' &&
                                 <SubPanels 
@@ -669,6 +802,7 @@ export default function Index(props) {
                                     parent_id={props.record.id}
                                     parent_name={props.record.name}
                                     parent_module={props.module}
+                                    {...props}
                                 
                                 />
                             }
@@ -678,6 +812,7 @@ export default function Index(props) {
                                     parent_id={props.record.id}
                                     parent_module={props.module}
                                     parent_name={props.record.name}
+                                    {...props}
                                 />
                             }
                             {activeTab == 'Order' &&
@@ -686,6 +821,7 @@ export default function Index(props) {
                                     parent_id={props.record.id}
                                     parent_module={props.module}
                                     parent_name={props.record.name}
+                                    {...props}
                                 />
                             }
                             {activeTab == 'Product' &&
@@ -694,6 +830,7 @@ export default function Index(props) {
                                     parent_id={props.record.id}
                                     parent_module={props.module}
                                     parent_name={props.record.name}
+                                    {...props}
                                 />
                             }
                             {activeTab == 'Document' &&
@@ -702,18 +839,21 @@ export default function Index(props) {
                                     parent_id={props.record.id}
                                     parent_module={props.module}
                                     parent_name={props.record.name}
+                                    {...props}
                                 />
                             }
                             {activeTab == 'company_plan' &&
                                 <SubscriptionPlan 
                                   record={props.record}
                                   subscriptionPlan={props.subscriptionPlan}
+                                  {...props}
                                 />
                             }
                             {activeTab == 'workspacePlan' &&
                                 <WorkspacePlan 
                                   plan_id={props.record.id}
                                   workspaces={props.workspaces}
+                                  {...props}
                                 />
                             }
                             {activeTab == 'Acitivies' &&
@@ -722,6 +862,23 @@ export default function Index(props) {
                                   revenue={props.revenue_data}
                                   plan={props.companyPlan}
                                 />
+                            }
+                            {activeTab == 'Detail' && (props.module == 'Catalog') && 
+                               <CatalogDetail 
+                                  defaultHeader={defaultHeader}
+                                  record={record}
+                                  {...props}
+                               />
+                            }
+                            {activeTab == 'Permissions' &&
+                                <div className="">
+                                    <ModulePermission
+                                        modulePermissions={props.module_permissions}
+                                        DataHandler={props.DataHandler}
+                                        data={props.role_permissions}
+                                        readOnly={false}
+                                    />
+                                </div>
                             }
                         </div>
                     </li>

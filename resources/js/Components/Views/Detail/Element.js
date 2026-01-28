@@ -11,14 +11,25 @@ import PhoneInput2 from 'react-phone-input-2';
 import Time from "@/Components/Forms/DateTime";
 import Relate from '@/Components/Relate';
 import 'react-phone-input-2/lib/style.css';
+import Creatable from 'react-select/creatable';
 
 export default function Element(props) {
 
+    const [options, setOptions] = useState({});
     const [fieldInfo , setFieldInfo] = useState({});
     
     useEffect(()=>{
         setSelectedFieldInfo();
+        if(props.temp.type == 'selectable') {
+            setSelectableOptions();
+        }
     },[]);
+
+    function setSelectableOptions() {
+        let newState = Object.assign({}, options);
+        newState[props.temp.name] = props.temp.value;
+        setOptions(newState);
+    }
 
     // Selected field details
     function setSelectedFieldInfo(){
@@ -66,6 +77,7 @@ export default function Element(props) {
         if (event.target.name == 'field_type') {
             EventHandler(event);
         }
+
         props.tempDataHandler(field_name,value); 
     }
     
@@ -147,6 +159,14 @@ export default function Element(props) {
         }
 
         props.tempDataHandler(field_name, values);
+    }
+
+    function handleSelectable(event, field_name) {
+        let newState = Object.assign({}, options);
+        newState[field_name] = event;
+        setOptions(newState);
+
+        props.tempDataHandler(field_name, newState[field_name]);
     }
 
     return(
@@ -244,7 +264,7 @@ export default function Element(props) {
                             element = <Checkbox
                                 id={fieldInfo.field_name}
                                 name={fieldInfo.field_name}
-                                value={props.temp.value && (props.temp.value == 'checked' || props.temp.value == true ) ? 1 : '' }
+                                value={props.temp.value && (props.temp.value == 'checked' || props.temp.value == true || props.temp.value == 'Yes' ) ? 1 : '' }
                                 handleChange={handleChange}
                             />
                             break;
@@ -300,7 +320,16 @@ export default function Element(props) {
                                     handleChange={handleRelateChange}
                                     value={props.temp.value}
                                 />                                                    
-                            break;                                 
+                            break;
+
+                        case 'selectable':
+                                element = <Creatable
+                                    style={{width: '82%'}}  
+                                    isMulti
+                                    value={options[fieldInfo.field_name]}
+                                    onChange={(e) => handleSelectable(e, fieldInfo.field_name)}
+                                />
+                                break;                                     
                         case 'default':
                             element = <Input 
                                 type="text" 

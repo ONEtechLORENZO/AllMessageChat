@@ -616,7 +616,7 @@ function FilterGroups (props) {
 
             <div className="flex items-center justify-end p-6 border-t border-solid border-slate-200 rounded-b">
                 {errors.field_name &&
-                    <div className="absolute left-0 mx-2" ><small className="text-red-500"> Please fill the condition </small> </div>
+                    <div className="absolute left-0 mx-2" ><small className="text-red-500"> {props.translator['Please fill the condition']} </small> </div>
                 }
                 <button
                     className="bg-primary text-white active:bg-primary/80 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"

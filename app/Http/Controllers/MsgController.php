@@ -14,17 +14,27 @@ use App\Models\Template;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\MessageLogController;
+use Illuminate\Support\Str;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use App\Models\Price;
+use App\Models\Company;
 use App\Models\Wallet;
 use App\Models\Filter;
+use App\Models\Session;
+use App\Models\Setting;
+use App\Models\Product;
+use App\Models\WhatsAppUsers;
+use Carbon\Carbon;
 use Cache;
 use URL;
 use Storage;
 use App\Models\ChatListContact;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File; 
+use Brick\PhoneNumber\PhoneNumber;
+use Brick\PhoneNumber\PhoneNumberParseException;
+use App\Models\InteractiveMessage;
 
 class MsgController extends Controller
 {
@@ -119,9 +129,7 @@ class MsgController extends Controller
         $limit = $this->limit;
         $user = $request->user();
         $user_id = $user->id;
-
-        // Get company selected by the user.
-        $companyId = Cache::get('selected_company_'. $user->id);
+        $menuBar = $this->fetchMenuBar();
 
         // Search & Filter
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
@@ -141,11 +149,10 @@ class MsgController extends Controller
             'created_at' => ['label' => __('Date'), 'type' => 'text'],
         ]; 
         
-        $query_columns = ['msgs.id', 'msgs.service', 'msgs.status', 'error_response', 'msgs.created_at', 'message', 'accounts.company_name', 'accounts.phone_number as account_phone_number', 'accounts.company_name', 'contacts.phone_number', 'contacts.instagram_username', 'msg_mode'];
+        $query_columns = ['msgs.id', 'msgs.service', 'msgs.status', 'error_response', 'msgs.created_at', 'message', 'accounts.company_name', 'accounts.phone_number as account_phone_number', 'accounts.company_name', 'contacts.phone_number', 'contacts.facebook_username', 'contacts.instagram_username', 'msg_mode'];
         $query = Msg::select($query_columns)
             ->join('accounts', 'account_id', 'accounts.id')
-            ->join('contacts', 'contacts.id', 'msgable_id')
-            ->where('accounts.company_id', $companyId);
+            ->join('contacts', 'contacts.id', 'msgable_id');
 
 
         $searchData = '';
@@ -155,7 +162,7 @@ class MsgController extends Controller
 
         // If filter is selected, we should use the filter conditions
         if($filterId && $filterId != 'All') {
-            $filter = Filter::where('id', $filterId)->where('company_id', $companyId)->first();
+            $filter = Filter::where('id', $filterId)->first();
             if($filter) {
                 $searchData = unserialize( base64_decode($filter->condition) );
             }
@@ -183,6 +190,15 @@ class MsgController extends Controller
         $messages = $query->orderBy('msgs.id', 'desc')
             ->paginate($limit);
 
+        if($search || $filterId) {
+            if($search) {
+                $url = route(('listMessage'), ['search' => $search]);
+            } else {
+                $url = route(('listMessage'), ['filter_id' => $filterId]);
+            }
+            $messages->withPath($url);
+        }    
+
         foreach($messages as $message) {
             if($message->service == 'whatsapp') {
                 if($message->msg_mode == 'incoming') {
@@ -198,8 +214,18 @@ class MsgController extends Controller
                     $sender = $message->instagram_username;
                     $destination = $message->company_name;
                 } else {
+                  
                     $sender = $message->company_name;
                     $destination = $message->instagram_username;
+                }
+            }
+            else if($message->service == 'facebook') {
+                if($message->msg_mode == 'incoming') {
+                    $sender = $message->facebook_username;
+                    $destination = $message->company_name;
+                } else {
+                    $sender = $message->company_name;
+                    $destination = $message->facebook_username;
                 }
             }
 
@@ -215,7 +241,7 @@ class MsgController extends Controller
                 'created_at' => date_format($message->created_at, $this->dateListView),
             ];
         }
-        $filterData = $this->getFiltersInfo($companyId, $user_id, 'Message', false);
+        $filterData = $this->getFiltersInfo($user_id, 'Message', false);
 
         $module = new Msg();
         $messageTranslate = [
@@ -234,9 +260,12 @@ class MsgController extends Controller
             'records' => $messageList,
             'compact_type' => 'condense',
             'list_view_columns' => $list_view_columns,
+            'menuBar' => $menuBar,
 
             'search' => $search,
             'filter' => $filterData,
+            'filter_condition' =>$filter,
+            'filter_id' => $filterId,
 
             // Actions
             'actions' => [
@@ -265,8 +294,7 @@ class MsgController extends Controller
             'translator' => $this->getTranslations(),
             
         ];
-        
-       
+
         return Inertia::render('Messages/Messages', $data);
     }
 
@@ -281,14 +309,15 @@ class MsgController extends Controller
         $category = ($request->category) ? $request->category : '';
         $contactList = $messages = $accoutList= [];
         $user = $request->user();
+        $menuBar = $this->fetchMenuBar();
 
-        $companyId = Cache::get('selected_company_'. $user->id);
         $recordData = $this->getChatContactList($request);
+        $sessions = [];
 
         if($request->contact_id){
 
             // Check the contact in category
-            $isRecordContainCategory = array_key_exists($request->contact_id, $recordData['contact_list']);
+            $isRecordContainCategory = array_key_exists("contact_id_{$request->contact_id}", $recordData['contact_list']);
             if(!$isRecordContainCategory){
                 return Redirect::route('chat_list');
             }
@@ -297,10 +326,21 @@ class MsgController extends Controller
             $contactChaneel = ChatListContact::where('user_id', $user->id)->where('contact_id' , $selectedContact )->first();
             $category = ($request->category) ? $request->category : $contactChaneel->channel;
             $messages = $this->getMessageList($request);
+
+            // Check session 
+            $condition = [
+                'contact_id' => $request->contact_id,
+            ];
+            $getSessions = Session::where($condition)
+                ->where('created_at', '>=', Carbon::now()->subDay())
+                ->get();
+
+            foreach($getSessions as $session){
+                $sessions[$session->contact_id][$session->account_id] = true; 
+            }
         }
         
-        $accounts = Account::where('company_id', $companyId )
-            ->where(function($query) use ($category) {
+        $accounts = Account::where(function($query) use ($category) {
                 if($category != 'all' && $category != ''){
                     $query->where('service' , $category);
                 }
@@ -309,10 +349,10 @@ class MsgController extends Controller
             ->get();
         
         foreach($accounts as $account){
-            $accoutList[$account->id] = $account->company_name;
+            $accoutList[$account->id] = ($account->service != 'whatsapp') ?  $account->company_name."- {$account->fb_page_name}" : $account->company_name ;
         }
 
-        $filterData = $this->getFiltersInfo($companyId, $user->id, 'Contact', true);
+        $filterData = $this->getFiltersInfo( $user->id, 'Contact', true);
 
         $translator = [
             'Your Profile' => __('Your Profile'),
@@ -328,10 +368,17 @@ class MsgController extends Controller
             'Junior Developer' => __('Junior Developer'),
             'All Channel' => __('All Channel'),
             'Account list' => __('Account list'),
-            'Write your message!' => __('Write your message!')
+            'Write your message!' => __('Write your message!'),
+            'Select Contact' => __('Select Contact'),
+            'Add a contact' => __('Add a contact'),
+            'Add' => __('Add'),
+            'Cancel' => __('Cancel'),
         ];
         $translator = array_merge( $translator, $this->getTranslations());
-        $templates = $this->getTemplates($companyId);
+
+        $templates = $this->getTemplates();
+        $products = $this->getProducts();
+        $interactiveMessages = $this->getInteractiveMessages();
 
         $data = [
             'contact_list' => $contactList,
@@ -340,9 +387,13 @@ class MsgController extends Controller
             'selected_contact' => $selectedContact,
             'templates' => $templates,
             'current_page' => 'Chat',
-            'category' => ($category) ? $category : 'all',
+            'category' => ($category) ? $category : 'whatsapp',
             'translator' => $translator,
             'filter' => $filterData,
+            'menuBar' => $menuBar,
+            'sessions' => $sessions,
+            'products' => $products,
+            'interactiveMessages' => $interactiveMessages,
         ];
         $data = array_merge($data, $recordData);
         return Inertia::render('Messages/ChatList', $data);
@@ -359,7 +410,7 @@ class MsgController extends Controller
         $filterId = $request->has('filter_id') && $request->get('filter_id') ? $request->get('filter_id') : '';
         $searchData = ($filter)? json_decode($filter) : '';
         $query = ChatListContact::where('chat_list_contacts.user_id', $user->id );
-        
+        $query->join('contacts', 'contact_id', 'contacts.id');
         if($filterId && $filterId != 'All'){
             $filter = Filter::find($filterId);
             if($filter){
@@ -368,13 +419,13 @@ class MsgController extends Controller
         }
 
         if($searchData){
-            $query->join('contacts', 'contact_id', 'contacts.id');
+           // $query->join('contacts', 'contact_id', 'contacts.id');
             $query = $this->prepareQuery($searchData , $query, 'contacts');
         }
 
         if($search){
             $list_view_columns = ['first_name', 'last_name', 'phone_number', 'instagram_username', 'email'];
-            $query->join('contacts', 'contact_id', 'contacts.id');
+            
             $query->where(function ($query) use ($search, $list_view_columns) {  
                 foreach($list_view_columns as $field_name) {
                     if($field_name != 'tag' && $field_name != 'list')
@@ -385,6 +436,7 @@ class MsgController extends Controller
 
         // get count of categories
         $unreadCountQuery = clone $query;
+        
         $unreadCount = $unreadCountQuery->where('unread' , true )->count();
         $archiveQuery = clone $query;
         $archiveCount = $archiveQuery->where('is_archive' , true )->count();
@@ -395,7 +447,7 @@ class MsgController extends Controller
         $totalCount = $totalCount - abs($otherCount);
         $recordCounts = [ 'all' => $totalCount, 'unread' => $unreadCount , 'archived' => $archiveCount];
 
-        $mode = (isset($_GET['mode'])) ? ($_GET['mode']) : 'all';
+        $mode = (isset($_GET['mode'])) ? ($_GET['mode']) : 'unread';
         if($mode && $mode == 'archived'){
             $query->where('is_archive' , true);
         } else if($mode && $mode == 'unread'){
@@ -410,24 +462,31 @@ class MsgController extends Controller
         }
         $query->orderBy('chat_list_contacts.updated_at', 'desc');
       
-        $chatListContact = $query->get();
-
+        $chatListContact = $query->paginate(15);
+        
         $contactList = [];
         foreach($chatListContact as $contactId){
             $contact = Contact::find($contactId->contact_id);
             if($contact){
                 $name = $contact->first_name . ' ' .$contact->last_name;
                 if($name == ' '){
-                    $name = ($contact->phone_number != '') ? $contact->phone_number : $contact->instagram_username;
+                    if($contact->phone_number){
+                        $name = $contact->phone_number;
+                    } else if($contact->instagram_username){
+                        $name = $contact->instagram_username;
+                    } else if($contact->facebook_username){
+                        $name = $contact->facebook_username;
+                    }
                 } 
                 $name = trim($name , ' '); 
 
-                $contactList[$contact->id] = [
+                $contactList["contact_id_{$contact->id}"] = [
                     'id' => $contact->id,
                     'name' => $name,
                     'number' =>  $contact->phone_number,
                     'insta_id' => $contact->instagram_username,
                     'channel' => $contactId->channel, 
+                    'fb_id' => $contact->facebook_username,
                 ];
             }
         }
@@ -438,19 +497,22 @@ class MsgController extends Controller
             'mode' => $mode,
             'counts' => $recordCounts,
         ];
-    
+
+        if($request->ajax() && $request->fetchContact) {
+            $data['status'] = true;
+            echo json_encode($data); die;
+        }
         return $data;
     }
 
     /**
      * Return template list
      */
-    public function getTemplates($companyId)
+    public function getTemplates()
     {
         $templates = Template::join('messages', 'templates.id', 'template_id')
-            ->where('company_id', $companyId)
-            ->where('status' , 'APPROVED' )
-            ->get(['template_uid', 'account_id', 'body', 'name']);
+            ->where('messages.status' , 'APPROVED' )
+            ->get(['messages.template_uid', 'account_id', 'body', 'name']);
 
         return $templates;
     }
@@ -462,16 +524,13 @@ class MsgController extends Controller
     {
         $user = $request->user();
         $contactId = $request->contact_id;
-        $companyId = Cache::get('selected_company_'. $user->id);
         // Update Channel
         $this->updateChatChannel($user->id , $contactId, $request->category); 
-        $category = ($request->category == 'all') ?['instagram', 'whatsapp'] : [$request->category] ;
+        $category = ($request->category == 'all') ?['instagram', 'whatsapp', 'facebook'] : [$request->category] ;
         
         $messages = [];
         $account = Account::where('user_id', $user->id)->first();
-        $contact = Contact::where('company_id', $companyId)
-            ->where('id', $contactId)
-            ->first();
+        $contact = Contact::where('id', $contactId)->first();
         if(!$contact){
             return ( $messages);
         }
@@ -487,8 +546,11 @@ class MsgController extends Controller
                 'error' => $message->error_response,
                 'delivered' => $message->is_delivered,
                 'read' => $message->is_read,
+                'is_reply' => $message->is_reply,
+                'is_mention' => $message->is_mention,
             ];
         }
+
         return ($messages);
     }
 
@@ -506,6 +568,19 @@ class MsgController extends Controller
     }
 
     /**
+     * Handle Insta hooks
+     */
+    public function incomingFBInsta()
+    {
+        //log::info(['data' => $_REQUEST]);
+
+        $post_data = file_get_contents("php://input");
+        $response = json_decode($post_data, true);
+        //Log::info(['Incoming Insta message (or) response ' => $response ]);
+
+    }
+
+    /**
      * Handle FB webhook
      */
 	public function incomingFBWhatsApp() 
@@ -517,13 +592,13 @@ class MsgController extends Controller
 
         $post_data = file_get_contents("php://input");
         $response = json_decode($post_data, true);
-        Log::info(['Incoming message (or) response ' => $response ]);
+        //Log::info(['Incoming message (or) response ' => $response ]);
 
         $data = isset($response['entry'][0]['changes'][0]) ? $response['entry'][0]['changes'][0] : [];
         // Update template status
         if(isset($data['field']) && $data['field'] == 'message_template_status_update'){
             $tempId = $data['value']['message_template_id'];
-            $template = Template::where('template_uid', $tempId)
+            $template = Message::where('template_uid', $tempId)
                 ->first();
             if($template){
                 $status = strtoupper($data['value']['event']);
@@ -579,10 +654,10 @@ class MsgController extends Controller
                     if(!$account){
                         return true;
                     }
-                    $messageData['policy'] = $data['value']['statuses']['0']['pricing']['category'];
-                    $price = $this->handlePrice($data['value']['statuses']['0']['recipient_id'], $data['value']['statuses']['0']['pricing']['category'], $account->user_id);
-                    $this->reduceMessageAmount($price, $message->account_id);
-                    $messageData['amount'] = $price;
+                //    $messageData['policy'] = 'BIC';
+                //    $price = $this->handlePrice($data['value']['statuses']['0']['recipient_id'], $data['value']['statuses']['0']['pricing']['category'], $account->user_id);
+                //    $this->reduceMessageAmount($price, $message->account_id);
+                //    $messageData['amount'] = $price;
                 }
                 
             } else if( isset($data['value']['contacts']) ){
@@ -594,7 +669,7 @@ class MsgController extends Controller
                 }
 
                 $data['id'] = $data['value']['messages'][0]['id'];
-                $msgable_id = $this->getInfoUsingContactUniqueId($data['value']['contacts'][0]['wa_id'], 'whatsapp', $account->company_id,  $account->user_id, $data['value']['contacts'][0]['profile']['name']);
+                $msgable_id = $this->getInfoUsingContactUniqueId($data['value']['contacts'][0]['wa_id'], 'whatsapp',  $account->user_id, $data['value']['contacts'][0]['profile']['name']);
             
                 $content = isset($data['value']['messages'][0]['text']['body']) ? $data['value']['messages'][0]['text']['body'] : '';
                 // $content = ( $content == '' && isset($data['payload']['name'])) ? $data['payload']['name'] : $content;
@@ -606,8 +681,7 @@ class MsgController extends Controller
                     $document = new Document();
                     $fileData = $document->storeFBDocument( $account , $msgable_id , $data['value']['messages'][0][$type] );
                 }
-                log::info(['msg type' => $type]);
-
+                
                 $messageData = [
                     'service_id' => $data['id'],
                     'service' => 'whatsapp',
@@ -616,6 +690,7 @@ class MsgController extends Controller
                     'account_id' => $account->id,
                     'msgable_id' => $msgable_id,
                     'msgable_type' => $msgable_type,
+                    'policy' => 'UIC',
                     'msg_mode' => 'incoming',
                     'status' => 'received',
                     'is_delivered' => 0,
@@ -627,18 +702,18 @@ class MsgController extends Controller
                     $messageData = array_merge($messageData, $fileData);
                 }
 
-                $messageData['policy'] = 'business_initiated';
-                $price = $this->handlePrice($data['value']['messages']['0']['from'], 'business_initiated' , $account->user_id);
-                $this->reduceMessageAmount($price, $account->id);
-                $messageData['amount'] = $price;
+                // $messageData['policy'] = 'UIC';
+                // $price = $this->handlePrice($data['value']['messages']['0']['from'], 'business_initiated' , $account->user_id);
+                // $this->reduceMessageAmount($price, $account->id);
+                // $messageData['amount'] = $price;
             }
 
-            Log::info(['store Messages function start.', $messageData ]);
+           // Log::info(['store Messages function start.', $messageData ]);
             $this->processMessage($messageData);
-            Log::info('Messages stored successfully.');
+            //Log::info('Messages stored successfully.');
         }
 
-        log::info([ 'Incoming message (or) response' => $data ]);
+        //log::info([ 'Incoming message (or) response' => $data ]);
         return true;
 	}
 
@@ -651,18 +726,17 @@ class MsgController extends Controller
         $post_data = file_get_contents("php://input");
         $response = json_decode($post_data, true);
         log::info([ 'Incoming message (or) response' => $post_data]);
-
         // If call is coming to set the URL
         if(isset($_GET['botname']) && isset($_GET['channel'])) {
             parse_str($_GET, $parsed_data);
-            return true;
+            return ;
         }
 
         $data = isset($response['payload']) ? $response['payload'] : [];
 
         // For set callback url
         if((isset($data['type']) && $data['type'] == 'user-event' )|| (isset($data['phone']) && $data['phone'] == 'callbackSetPhone' )|| ( isset($data['type']) && $data['type'] == 'sandbox-start' )){
-            return true;
+            return ;
         }
 
         /**
@@ -675,13 +749,13 @@ class MsgController extends Controller
             if($parsed_data['channel'] == 'instagram') {
                 $this->handleInstagramMessage($parsed_data);
             }
-            return true;
+	    return;
         }
 
         if($response['type'] == 'template-event'){
-            $template = Template::where('template_uid', $data['id'])
+            $template = Message::where('template_uid', $data['id'])
                 ->first();
-            if($template){
+            if($template && isset($data['status'])){
                 $status = strtoupper($data['status']);
                 if($data['status'] == 'rejected'){
                     $status = strtoupper($data['status']). ' ( Reason: '.$data['rejectedReason']. ' )';
@@ -692,6 +766,7 @@ class MsgController extends Controller
         } else {
             $this->handleWhatsAppMessage( $data);
         }
+	return;
     }
 
     /**
@@ -704,70 +779,164 @@ class MsgController extends Controller
         $msg = new Msg();
         $attachment = isset($_FILES['attachment']) ? $_FILES['attachment'] : '';
 
-        if($request->channel == 'instagram'){
-            // TODO Get correct account based on instagram id
+        $document = '';
+        // Attachment handling
+        if($attachment) {
+            $attachment = $request->file('attachment');
+            $extention =  $attachment->getClientOriginalExtension();
+            $attachment_name = 'ba_'.time().$extention.'.'.$extention;
+            $path = public_path('/uploads/sent_files');
+            $attachment->move($path, $attachment_name);
+            $mimeType = $request->file('attachment')->getClientMimeType();
             
-            $response = $msg->sendInstagramMessage($request->content , $request->destination, $account->src_name);
-            $status = 'Failed';
-            if($response) {
-                $status = 'Send';
-            }
+            $type = explode('/', $mimeType);
+            $document = [
+                'type' => $type[0], 
+                'url' => url('uploads/sent_files/'.$attachment_name),
+                'caption' => $request->content,
+            ];
             
-            $result['status'] = $status;
-            $result['messageId'] = uniqid().'_'.date('ymdhis');
-        } else {
-           
-            $template = ($request->template_id) ? $request->template_id : '';
-            $document = '';
-            if($attachment){
-              //  $path = $request->file('attachment')->store('sent_files');
-
-                $attachment = $request->file('attachment');
-                $extention =  $attachment->getClientOriginalExtension();
-                $attachment_name = 'ba_'.time().$extention.'.'.$extention;
-                $path = public_path('/uploads/sent_files');
-                $attachment->move($path, $attachment_name);
-                $mimeType = $request->file('attachment')->getClientMimeType();
-                
-                $type = explode('/', $mimeType);
-                $document = [
-                    'type' => $type[0], 
-                    'caption' => $request->content,
-                    'file_url' => url('uploads/sent_files/'.$attachment_name),
+            if($type[0] == 'image'){
+                $docParams = [
+                    'previewUrl' => url('uploads/sent_files/'.$attachment_name),
+                    'originalUrl' => url('uploads/sent_files/'.$attachment_name),
+                ];
+            } else {
+                $docParams = [
+                    'url' => url('uploads/sent_files/'.$attachment_name),
+                    'filename' => $request->content,
                 ];
             }
-           
-            log::info(['Docuemnt data ' => $document ]);
-            $parent = $this->getInfoUsingContactUniqueId($request->destination, $request->channel, $account->company_id, $user->id);
-            $content = $request->content;
+            if($type[0] != 'image' && $type[0] != 'video'){
+                $document['type'] = ($account->service_engine == 'facebook')? 'document' : 'file';
+                unset($document['caption']);
+            }
+            $document = array_merge($document , $docParams);
+         
+            //log::info(['Docuemnt data ' => $document ]);
+        }
+       
+        $parent = $this->getInfoUsingContactUniqueId($request->destination, $request->channel, $user->id);
+        
+        // Send Message to Facebook or Instagram
+        if($request->channel == 'instagram' || $request->channel == 'facebook') {
+            
+            //$response = $msg->sendInstagramMessage($request->content , $request->destination, $account->src_name);
+            
+            // Get Page token
+            $helper = new WhatsAppUsers();
+            $pageToken = $helper->getFbPageAccessToken($account);
+
+            $msg = new Msg();
+            $response = $msg->sendInstaMessage($request->content, $request->destination, $account->fb_phone_number_id, $pageToken, $document);
+         
+            $status = 'Send';
+            if(isset($response['error'])) {
+                $status = 'Failed';
+                $request->channel = 'instgram';
+                $result['error'] = $response['error']['message'];
+            } else {
+                $result['messageId'] = $response['message_id'];
+            }
           
+            $result['status'] = $status;
+            
+        } else {
+            // Send Message to Whatsapp
+            $template = ($request->template_id) ? $request->template_id : '';
+            $catalog_id = ($request->catalog_id) ? $request->catalog_id : '';
+            $template_options = ($request->template_options) ? $request->template_options : '';
+
+            $product_retailer_id = ($request->product_retailer_id && $request->product_retailer_id != 'undefined') ? $request->product_retailer_id : '';
+            
+            $content = $request->content;
+        
             if($template && $template != 'undefined'){
+                
                 $content = [];
                 $message =  Message::join('templates', 'templates.id' , 'template_id')
-                    ->where('template_uid', $template)
+                    ->where('messages.template_uid', $template)
+                    ->where('account_id', $account->id)
                     ->first();
-                $sample = ($message->example) ? unserialize( base64_decode( $message->example) ) : [];
+                
+                $_POST['content'] = $messageBody = $message->body;
+               
+               // $message->example = base64_encode( serialize( $message->example) );
+                if(base64_decode($message->example, true)) {
+                    $sample = ($message->example) ? unserialize( base64_decode( $message->example) ) : [];
+                } else if($message->example){
+                    $sample = $message->example;
+                } else {
+                    $sample = [];
+                }
                 $contact = Contact::find($parent);
-                if($sample){
+                if(is_array($sample)){
                     foreach($sample as $key => $name){
-                        $fieldValue = $this->replaceFieldValue($name, $contact);
-                        $content[] = ['type' => 'text' , 'text' => $fieldValue];
+                        $content[] = $this->replaceFieldValue($name, $contact);
                     } 
+                    
+                    foreach($content as $key => $value){
+                        $index = $key + 1;
+                        if( strpos($messageBody , "{{".$index."}}") ){
+                            $messageBody = str_replace( "{{".$index."}}" , $value , $messageBody );
+                        }
+                    }   
+                    $_POST['content'] = $messageBody;
+                } else if($sample){
+                    $_POST['content'] = $sample;
+                }
+            }
+            $productData = [];
+            if($product_retailer_id){
+                $product = Product::where('retailer_id', $product_retailer_id)->first();
+                $_POST['content'] = $product->name ." - Product shared";
+                $productData = [
+                    'type' => 'product',
+                //    'body' => ['text' => $product->description],
+                    'footer' => ['text' => $product->description],
+                    'action' => [
+                        'catalog_id' => $catalog_id,
+                        'product_retailer_id' => $product_retailer_id,
+                    ],
+                ];
+            }
+
+            $interactiveMessage = [];
+
+            if($template_options && $template_options != 'undefined'){
+                if($request->template_type == 'list_option') {
+                    $menuData = json_decode($template_options)->menu_data;
+                    $options = json_decode($template_options)->list_option;
+
+                    $interactiveMessage = [
+                        "type" => "list",
+                        'title' => $menuData->title,
+                        'body' => $content,
+                        'globalButtons' => [["type" => "text", "title" => $menuData->button_title]],
+                        'items' => [
+                            [
+                                "title" => $menuData->title,
+                                "subtitle" => $menuData->title,
+                                "options" => $options,
+                            ]
+                        ]
+                    ];
+                } else {
+                    $interactiveMessage = [
+                        'type' => $request->template_type,
+                        'content' => [
+                                'caption' => '',
+                                'type' => 'text',
+                                'text' => $content,
+                            ],
+                        'options' => json_decode($template_options),
+                    ];
                 }
             }
            
-            $result = $msg->sendWhatsAppMessage($content , $request->destination, $account , $template, $document);
-            if($attachment){
-                // Store Document 
-                $file = file_get_contents($path.'/'.$attachment_name);
-                $docId = (new Document)->saveDocument($mimeType , $file, $parent, $account, 'sent');
-                $result['result']['file_path'] = $docId;
-
-                // Delete public storage file
-               // File::delete($path.'/'.$attachment_name);
-            }
-
-            if($result['result'] &&  $result['result']['status'] != 'error' ){
+            $result = $msg->sendWhatsAppMessage($content , $request->destination, $account , $template, $document, $productData, $interactiveMessage);
+            
+            if($result['result'] && $result['result']['status'] && $result['result']['status'] != 'error' ){
                 if( $result['result']['status'] == 'submitted'){
                     $result['status'] = 'Queued';
                 }
@@ -778,6 +947,19 @@ class MsgController extends Controller
                 $result['error'] = $error ? $error : 'Please check the configuration';
             }
         }
+        if($attachment){
+            // Store Document 
+            $file = file_get_contents($path.'/'.$attachment_name);
+            $path = "document/{$account->id}/{$parent}/sent/{$attachment_name}";
+            $docId = (new Document)->saveDocument($attachment_name, $mimeType , $file, $parent, 'Contact', $path, '');
+            $result['result']['file_path'] = $docId;
+            $result['result']['msg_type'] = ($type) ? $type[0] : '';
+       
+        } else {
+            $result['result']['msg_type'] = 'Text';
+        }
+        
+       
         if(isset($result['messageId']))
             $this->handleMessageResult($request, $account->id, $result);
 
@@ -791,23 +973,23 @@ class MsgController extends Controller
     {
         $account = Account::find($accountId);
         $user_id = $account->user_id;
-        $companyId = $account->company_id;
 
         $_REQUEST['is_sent'] = 'sent';
-        $msgable_id = $this->getInfoUsingContactUniqueId($request->destination, $request->channel, $companyId, $user_id);
+        $msgable_id = $this->getInfoUsingContactUniqueId($request->destination, $request->channel, $user_id);
         $msgable_type = 'App\Models\Contact';
 
         $messageData = [
             'service_id' => $data['messageId'],
             'service' => $request->channel,
-            'message' => $request->content,
+            'message' => $_POST['content'],
             'account_id' => $accountId,
             'msgable_id' => $msgable_id,
             'msgable_type' => $msgable_type,
             'msg_mode' => 'outgoing',
             'status' => $data['status'],
-            'msg_type' => isset($data['result']['msg_type']) ? $data['result']['msg_type'] : '',
+            'msg_type' => isset($data['result']['msg_type']) ? $data['result']['msg_type'] : 'Text',
             'file_path' => isset($data['result']['file_path']) ? $data['result']['file_path'] : '',
+            'template_id' => isset($data['result']['template_id']) ? $data['result']['template_id'] : '',
             'is_delivered' => 0,
             'is_read' => 0
         ];
@@ -828,24 +1010,39 @@ class MsgController extends Controller
         foreach($data as $field => $value) {
             $message->$field = $value;
         }
+
+        // Update Session and Price 
+       // if(($message->msg_mode == 'outgoing' && $message->status == 'Sent') || $message->msg_mode == 'incoming' ){
+       if( $message->msg_mode == 'incoming' ){
+            $message = $this->updateMessageSession($message);
+        }
+
         $message->save();
     }
 
     /**
      * Return record id using instagram ID
      */
-    public function getInfoUsingContactUniqueId($uniqueId, $type, $companyId, $user_id , $name = '') 
+    public function getInfoUsingContactUniqueId($uniqueId, $type, $user_id , $name = '') 
     {
         $phoneNumber = $instagramId = '';
-        $field = ($type == 'whatsapp') ? 'phone_number' : 'instagram_username';
+        $field = '';
+        if($type == 'whatsapp'){
+            $field = 'phone_number';
+        } else if($type == 'instagram'){
+            $field = 'instagram_username';
+        } else if($type == 'facebook'){
+            $field = 'facebook_username';
+        } else {
+            $field = 'phone_number';
+        }
+       // $field = ($type == 'whatsapp') ? 'phone_number' : 'instagram_username';
 
         if(strpos($uniqueId, '+') === false){
             $uniqueId = ($type == 'whatsapp') ? '+'.$uniqueId : $uniqueId;
         }
 
-        $contact = Contact::where($field , $uniqueId)
-            ->where('company_id', $companyId)
-            ->first();
+        $contact = Contact::where($field , $uniqueId)->first();
 
         if(!$contact) {
             // Create new contact if instagram id is not found
@@ -859,7 +1056,6 @@ class MsgController extends Controller
 
             $contact->$field = $uniqueId;
             $contact->creater_id = $user_id;
-            $contact->company_id = $companyId;
             $contact->save();
         }
 
@@ -917,13 +1113,12 @@ class MsgController extends Controller
         $account_id = $data['account_id'];
         $account = Account::find($account_id);
 
-        $companyId = $account->company_id;
         $user_id = $account->user_id; 
 
 
-        log::info(['insta content' => $message_content]);
+        //log::info(['insta content' => $message_content]);
         // Get Contact information
-        $msgable_id = $this->getInfoUsingContactUniqueId($sender_id, 'instagram', $companyId, $user_id);
+        $msgable_id = $this->getInfoUsingContactUniqueId($sender_id, 'instagram', $user_id);
         $msgable_type = 'App\Models\Contact';
         
         // TODO Need to get instagram profile information when creating new Contact - https://documenter.getpostman.com/view/12788798/UzBtkNQb#b38d5004-215b-41d8-a993-8bf47be3199b
@@ -950,18 +1145,34 @@ class MsgController extends Controller
      */
     public function handleWhatsAppMessage($data)
     {
-        log::info([ 'handle message data: ', $data ]);
+        //log::info([ 'handle message data: ', $data ]);
 
         $account = Account::where('phone_number', $_GET['origin'])->first();
-        $companyId = $account->company_id;
-
+        if(!$account){
+            //log::info([ 'status' => false , 'message' => 'Invalid account.' ]);
+            return;
+        }
         $user_id = $account->user_id; 
         $msgable_type = 'App\Models\Contact';
 
         if ( isset($data['sender']) &&  $_GET['origin'] != $data['sender']['phone']) {
-            $msgable_id = $this->getInfoUsingContactUniqueId($data['sender']['phone'], 'whatsapp', $companyId, $user_id, $data['sender']['name']);
+            $msgable_id = $this->getInfoUsingContactUniqueId($data['sender']['phone'], 'whatsapp', $user_id, $data['sender']['name']);
             
             $content = isset($data['payload']['text']) ? $data['payload']['text'] : '';
+            $replyTo = $templateId = '';
+            if(isset($data['type']) && ($data['type'] == 'list_reply' || $data['type'] == 'button_reply')) {
+                $content = $data['payload']['title'];
+                if( $data['type'] == 'list_reply' ){
+                    $content .= $data['payload']['description'];
+                }
+
+                $replyTo = $data['context']['gsId'];
+                $message = Msg::where('service_id', $replyTo)->first();
+                if($message){
+                    $templateId = $message->template_id;
+                }
+            }
+
             $content = ( $content == '' && isset($data['payload']['name'])) ? $data['payload']['name'] : $content;
             $countryCode = $data['sender']['country_code'];
             $price = Price::where('country_code', $countryCode)->first();
@@ -975,16 +1186,17 @@ class MsgController extends Controller
                 'msgable_type' => $msgable_type,
                 'msg_mode' => 'incoming',
                 'status' => 'received',
-                'policy' => 'FEP',
-                'amount' => $price->message,
+                'policy' => 'UIC',
                 'is_delivered' => 0,
-                'is_read' => 0
+                'is_read' => 0,
+                'reply_to' => $replyTo,
+                'template_id' => $templateId,
             ];
+
             if(isset($data['payload']['contentType'])){
                 // Store document
                 $document = new Document();
                 $filePath = $document->storeDocument( $data['payload']['contentType'], $data['payload']['url'] , $msgable_id , $account);
-        
                 $type = explode('/' , $data['payload']['contentType']);
                 $messageData['msg_type'] = $type[0];
                 $messageData['message'] = isset($data['payload']['caption']) ?  $data['payload']['caption'] : '';
@@ -1019,20 +1231,10 @@ class MsgController extends Controller
             }
         }
 
-        if(isset($data['pricing'])){
-            $messageData['policy'] = $data['pricing']['category'];
-            $price = $this->handlePrice($data['destination'], $data['pricing']['category'] ,$user_id);
-            if($message->status != 'Sent'){
-                $this->reduceMessageAmount($price, $message->account_id);
-            }
-            $messageData['amount'] = $price;
-        }
-        
-        
-        Log::info(['store Messages function start.', $messageData ]);
+        //Log::info(['store Messages function start.', $messageData ]);
         $this->processMessage($messageData);
-        Log::info('Messages stored successfully.');
-        return true;
+        //Log::info('Messages stored successfully.');
+        //return true;
     }
 
     /**
@@ -1040,42 +1242,199 @@ class MsgController extends Controller
      */
     public function sendAPIMessage(Request $request)
     {
+      
         if($request->from_crm){
             $_REQUEST['FROM_CRM'] = true;
         }
-        
+        Log::info(['Send message via API' => $_POST ]);
+
         $current_user = $request->user();
-        $companies = (new UserController)->UserRelatedCompany($current_user->id);//$current_user->commpany;
         $account_id = $request->account_number;
         $account = Account::where('id' , $account_id)->orWhere('phone_number', $account_id )->first();
-        if($account) {
-            // Check whether current user can access this account
-            if( !array_key_exists($account->company_id , $companies)) {
-                return response()->json(['status' => 'failed', 'message' => 'Invalid API token']);
-            }
-        } else {
-            return response()->json(['status' => 'failed', 'message' => 'Invalid account id']);
+
+        if(! $account) {
+            return response()->json(['status' => false, 'message' => 'Invalid account id'], 400);
         }
 
         // Validate the request
-        if(!$request->content && !$request->template) {
-            return response()->json(['status' => 'failed', 'message' => 'Content is missing']);
+        if(!$request->content && !$request->template && !$request->template_id) {
+            return response()->json(['status' => false, 'message' => 'Content is missing'], 400);
         }
 
         if(!$request->destination) {
-            return response()->json(['status' => 'failed', 'message' => 'Destination is missing']);
+            return response()->json(['status' => false, 'message' => 'Destination is missing'], 400);
         }
+        if($account->service == 'instagram'){
+            $retuen = $this->sendInstaAPIMessage($request);
+            return $retuen;
+        }
+
+        if(! $account->src_name) {
+            return response()->json(['status' => false, 'message' => 'Invalid account.'], 400);
+        }
+
+        $content = $request->content;
+        $type = 'Text';
+        if($request->template){
+            
+            $content = [];
+            if(is_array($request->template_params)){
+                $content = $request->template_params;
+            } else {
+                $content = json_decode($request->template_params);
+            }
+
+            $type = 'Template';
+            
+            $message =  Message::join('templates', 'templates.id' , 'messages.template_id')
+                ->where('messages.template_uid', $request->template)
+                ->orWhere('templates.template_uid', $request->template)
+                ->first();
+            if(!$message) {
+                return response()->json(['status' => false, 'message' => 'Template not found.'], 400);
+            }
+
+            $messageBody = $message->body;
+            if($content && count($content)){
+                foreach($content as $key => $value){
+                    $index = $key + 1;
+                    if( strpos($messageBody , "{{".$index."}}") ){
+                        $messageBody = str_replace( "{{".$index."}}" , $value , $messageBody );
+                    }
+                }   
+            }
+            $_POST['content'] = $messageBody;
+        }
+
+        // Check message type
+        $interactiveMessage = [];
+        if($request->template_type && $request->template_type == 'interactive') {
+            $template = InteractiveMessage::find($request->template_id);
+            
+            // Update Params with values
+            $content = [];
+            if(is_array($request->template_params)){
+                $content = $request->template_params;
+            } else {
+                $content = json_decode($request->template_params);
+            }
+            $messageBody = $template->content;
+            if($content && count($content)){
+                foreach($content as $key => $value){
+                    $index = $key + 1;
+                    if( strpos($messageBody , "{{".$index."}}") ){
+                        $messageBody = str_replace( "{{".$index."}}" , $value , $messageBody );
+                    }
+                }   
+            }
+            $_POST['content'] = $messageBody;
+
+            if(!$template) {
+                return response()->json(['status' => false, 'message' => 'Invalid template id.'], 400);
+            }
+           // dd($template);
+            if($template->option_type == 'list_option') {
+                $menuData = json_decode($template->options)->menu_data;
+                $options = json_decode($template->options)->list_option;
+
+                    $interactiveMessage = [
+                        "type" => "list",
+                        'title' => $menuData->title,
+                        'body' => $messageBody,
+                        'globalButtons' => [["type" => "text", "title" => $menuData->button_title]],
+                        'items' => [
+                            [
+                                "title" => $menuData->title,
+                                "subtitle" => $menuData->title,
+                                "options" => $options,
+                            ]
+                        ]
+                    ];
+            } else {
+                $interactiveMessage = [
+                    'type' => $template->option_type,
+                    'content' => [
+                            'caption' => '',
+                            'type' => 'text',
+                            'text' => $messageBody,
+                        ],
+                    'options' => json_decode($template->options),
+                ];
+            }
+        }
+
+        $attachment = isset($_FILES['attachment']) ? $_FILES['attachment'] : '';
+        $document = '';
+        
+        // Attachment handling
+        if($attachment) {
+            $content = '';
+            $attachment = $request->file('attachment');
+           
+            $extention =  $attachment->getClientOriginalExtension();
+            $attachment_name = 'ba_'.time().$extention.'.'.$extention;
+            $path = public_path('/uploads/sent_files');
+            $attachment->move($path, $attachment_name);
+            $mimeType = $request->file('attachment')->getClientMimeType();
+          //  $mimeType = "{$request->attachment_type}/{$extention}";
+
+            $type = explode('/', $mimeType);
+            $document = [
+                'type' => $type[0], 
+                'url' => url('uploads/sent_files/'.$attachment_name),
+                'caption' => $request->content,
+            ];
+            
+            if($type[0] == 'image'){
+                $docParams = [
+                    'previewUrl' => url('uploads/sent_files/'.$attachment_name),
+                    'originalUrl' => url('uploads/sent_files/'.$attachment_name),
+                ];
+            } else {
+                $docParams = [
+                    'url' => url('uploads/sent_files/'.$attachment_name),
+                    'filename' => basename(parse_url($document['url'], PHP_URL_PATH)),
+                ];
+            }
+            if($type[0] != 'image' && $type[0] != 'video'){
+                $document['type'] = ($account->service_engine == 'facebook')? 'document' : 'file';
+                unset($document['caption']);
+            }
+            $content = basename(parse_url($document['url'], PHP_URL_PATH));
+            $_POST['content'] = $content;
+            $document = array_merge($document , $docParams);
+        // dd($document);
+        }
+        $parent = $this->getInfoUsingContactUniqueId($request->destination, 'whatsapp', $current_user->id);
 
         $msg = new Msg();
-        $result = $msg->sendWhatsAppMessage($request->content, $request->destination, $account , $request->template);
-        if($result['result']['status'] == 'submitted') {
-            $result['status'] = 'Queued';
-        }
+        $result = $msg->sendWhatsAppMessage($content, $request->destination, $account , $request->template, $document, '', $interactiveMessage);
+        $statusCode = 400;
+        if($result['result']['status'] != 'failed' && $result['result']['status'] && $result['result']['status'] != 'error') {
+            $statusCode = 200;
+            if($result['result']['status'] == 'submitted') {
+                $result['status'] = 'Queued';
+            }
+            $result['result']['msg_type'] = $type;
+            
+            if($attachment){
+                // Store Document 
+                $file = file_get_contents($path.'/'.$attachment_name);
+                $path = "document/{$account->id}/{$parent}/sent/{$attachment_name}";
+                $docId = (new Document)->saveDocument($attachment_name, $mimeType , $file, $parent, 'Contact', $path, '');
+                $result['result']['file_path'] = $docId;
+                $result['result']['msg_type'] = ($type) ? $type[0] : '';
+            }
 
-        $result['messageId'] = $result['result']['messageId'];
-        $request->channel = 'whatsapp';
-        $this->handleMessageResult($request, $account->id, $result);
-        return response()->json($result['result']);
+            $result['messageId'] = $result['result']['messageId'];
+            $request->channel = 'whatsapp';
+
+            if($interactiveMessage) {
+                $result['result']['template_id'] = $request->template_id;
+            }
+            $this->handleMessageResult($request, $account->id, $result);
+        }
+        return response()->json($result['result'], $statusCode);
     }
 
     /**
@@ -1084,17 +1443,20 @@ class MsgController extends Controller
      * @param STRING $nummber
      * @param STRING $category
      */
-    public function handlePrice($number , $category, $user_id)
+    public function handlePrice($contactId , $category)
     {
         $return = 0;
-        $number = '+'.$number ;
         $price = '';
-        $companyId = Cache::get('selected_company_'. $user_id);
-        $contact = Contact::where('phone_number' , $number)
-            ->where('company_id', $companyId)
-            ->first();
+        $contact = Contact::find($contactId);  
         if($contact ){
-            $price = Price::where('country_code' , $contact->country_code)->first();
+            $countryCode = $contact->country_code;
+            if(!$countryCode){
+                $number = PhoneNumber::parse($contact->phone_number);
+                $countryCode = $number->getCountryCode();
+                $contact->country_code = $countryCode;
+                $contact->save();
+            }
+            $price = Price::where('country_code' , $countryCode)->first();
         } 
 
         if(! $price){
@@ -1106,10 +1468,8 @@ class MsgController extends Controller
                 $return = $price->user_initiated;
             } else if($category == 'BIC'){
                 $return = $price->business_initiated;
-            } else {
-                $return = $price->message;
             }
-        } 
+        }
         return $return;
     }
 
@@ -1119,18 +1479,353 @@ class MsgController extends Controller
      * @param FLOAT $price
      * @param INTEGER $account_id
      */
-    public function reduceMessageAmount($price, $account_id)
+    public function reduceMessageAmount($price)
     {
         DB::beginTransaction();
-        $user_id = $this->getUserIdUsingAccountId($account_id);
-        $wallet = Wallet::where('user_id', $user_id)->lockForUpdate()->first();
-       
+        
+        $wallet = Wallet::lockForUpdate()->first();
         if($wallet){
             $balance_amount = ($wallet->balance_amount - $price);
             $wallet->balance_amount = $balance_amount;
             $wallet->save();
-            //DB::update("update wallets set balance_amount = {$balance_amount} where user_id = {$user_id}");
         }
         DB::commit();
+        // Auto Top-up 
+        if($wallet && $wallet->balance_amount < 1){
+            $this->autoTopUp();
+        }
+    }
+
+    /**
+     * Update message session
+     */
+    public function updateMessageSession($msg)
+    {
+        $price = 0;
+        $policy = '';
+        $updateSession = false;
+        if($msg->msg_mode == 'outgoing' && $msg->status == 'Sent'){
+            $updateSession = true;
+            $policy = 'BIC';
+        } else if($msg->msg_mode == 'incoming'){
+            $updateSession = true;
+            $policy = 'UIC';
+        }
+
+        if($updateSession){
+            $condition = [
+                'account_id' => $msg->account_id,
+                'contact_id' => $msg->msgable_id,
+            ];
+            $session = Session::where($condition)
+                ->where('created_at', '>=', Carbon::now()->subDay())
+                ->first();
+    
+            if(! $session){
+
+                if($msg->service == 'whatsapp'){
+                    $price = $this->handlePrice( $msg->msgable_id, $policy);
+                } 
+                $sessions = Session::where($condition)->count();
+
+                if($sessions < 1000) {
+                    if($msg->service == 'whatsapp'){
+                        $price = config('stripe.wp_msg_price');
+                    } 
+                } else {
+                    if($msg->service == 'whatsapp'){
+                        $price = $price + config('stripe.wp_msg_price');
+                    } else if($msg->service == 'facebook'){
+                        $price = config('stripe.fb_msg_price');
+                    } else if($msg->service == 'instagram'){
+                        $price = config('stripe.ig_msg_price');
+                    } 
+                }
+
+
+                $this->reduceMessageAmount($price);
+                $msg->amount = $price;
+                $msg->policy = $policy;
+
+                // Create Session 
+                DB::beginTransaction();
+                $session = new Session();
+                $session->account_id = $msg->account_id;
+                $session->contact_id = $msg->msgable_id;
+                $session->policy = $policy;
+                $session->amount = $price;
+                $session->uuid = Str::uuid()->toString();
+                $session->save();
+                DB::commit();
+            } else if(!$msg->amount && $msg->amount == 0){
+                $msg->amount = 0;
+                $msg->policy = 'FEP';
+            }
+            $msg->session_id = $session->uuid;
+        }
+        return $msg;
+    }
+
+
+    /**
+     * Auto Top-up 
+     */
+    public function autoTopUp()
+    {
+        $autoTopup = Setting::get();
+        $autoTopUpSetup = [];
+        foreach($autoTopup as $metedata){
+            $autoTopUpSetup[$metedata->meta_key] = $metedata->meta_value;
+        }
+        if( isset($autoTopUpSetup['auto_topup_status']) && $autoTopUpSetup['auto_topup_status'] == 'ON' && isset($autoTopUpSetup['auto_topup_value'])){
+    
+            $selectedTopUp = $autoTopUpSetup['auto_topup_value'];
+          
+            $company = Company::first();
+            $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
+            $subscription = $stripe->subscriptions->retrieve($company->subscription_id);
+            $subscription_info = [];
+            foreach($subscription->items->data as $subscriptionItem) {
+                $price_id = $subscriptionItem->price->id;
+                $quantity = 0;
+        
+                if($price_id && ($price_id == config("stripe.top_up_{$selectedTopUp}") )){
+                    $quantity = 1;
+                }
+            
+                if($quantity > 0){
+                    $subscription_info[] = $stripe->subscriptionItems->createUsageRecord($subscriptionItem->id, [
+                        'action' => 'set',
+                        'quantity' => $quantity
+                    ]);
+                }
+            }
+            $wallet = Wallet::lockForUpdate()->first();
+            $wallet->balance_amount = $selectedTopUp + $wallet->balance_amount;
+            $wallet->save();
+        }
+    }
+
+    public function resetWalletBalance(Request $request) {
+    
+        $wallet = Wallet::first();
+        $wallet->balance_amount = 0;
+        $wallet->save();
+
+        return response()->json(['status' => 'Success', 'message' => 'Reset the wallet Balance'], 200);
+    }
+
+    /**
+     * Send Instagram message (Function will be called from OneMessage API)
+     */
+    public function sendInstaAPIMessage($request)
+    {
+        $user = $request->user();
+        $account_id = $request->account_number;
+        $account = Account::where('id' , $account_id)->orWhere('phone_number', $account_id )->first();
+        $access_token = $account->fb_token;
+        $pageId = $account->fb_phone_number_id;
+        if(!$access_token){
+            return response()->json(['status' => false, 'message' => 'Access token not generated.'], 400);
+        } 
+        if(!$pageId){
+            return response()->json(['status' => false, 'message' => 'This account has not connected to any page.'], 400);
+        }
+
+        $helper = new WhatsAppUsers();
+        $pageToken = $helper->getFbPageAccessToken($account);
+       
+        $msg = new Msg();
+        $result = $msg->sendInstaMessage($request->content, $request->destination, $pageId, $pageToken);
+       // $statusCode = 400;
+        if(isset($result['error'])) {
+                $result['status'] = 'Failed';
+                $result['result']['msg_type'] = 'TEXT';
+                $request->channel = 'instgram';
+        } else {
+            $result['status'] = 'Sent';
+            $result['messageId'] = $result['message_id'];
+        }
+        $this->handleMessageResult($request, $account->id, $result);
+
+        return response()->json($result, 200);
+
+    }
+
+    /**
+     * Handle FB & Insta Msgs
+     */
+    public function fbInstaMsgHandler(Request $request)
+    {
+        $post = file_get_contents('php://input');
+        //log::info(['facebook incoming message handle' => $post]);
+        $account = Account::find($request->account);
+        if(! $account) {
+            return response()->json(['status' => false, 'message' => 'Invalid account.'], 400);
+        }
+
+        if($request->is_delete){
+            $message = Msg::where('service_id', $request->messageId)->first();
+            $message->delete();
+            return response()->json(['status' => true, 'message' => 'Message stored successfully.'], 200);
+        }
+        
+        if($request->status == 'Read' && ($request->service == 'instagram' || $request->service == 'facebook')) {
+            return false;
+        }
+       
+        $fileUrl = '';
+        $isAttachment = '';
+        if($request->reply_to){
+            $fileUrl = $request->reply_to;
+            $isAttachment = true; 
+        }
+        if($request->story_mention){
+            $fileUrl = $request->story_mention;
+            $isAttachment = true; 
+        }
+        if($request->attachment_type && $request->attachment){
+            $fileUrl = $request->attachment;
+            $isAttachment = true; 
+        }
+
+        $contactServiceId = ($request->type == 'incoming') ? $request->sender : $request->recipient;
+        $status = ($request->type == 'incoming') ? 'Received' : $request->status;
+      
+        if($request->service != 'whatsapp') {
+            $field = ($request->service == 'instagram') ?  'instagram_username' : 'facebook_username';
+            $contact = Contact::where( $field, $contactServiceId)->first();
+        } else {
+            $field = 'phone_number';
+            $contactServiceId = '+'.$contactServiceId;
+            $contact = Contact::where('phone_number', $contactServiceId )
+                ->orWhere('whatsapp_number', $contactServiceId)
+                ->first();
+        }
+
+        $messagableId = ''; 
+        if(! $contact){
+            if($request->service != 'whatsapp'){
+                $facebookData = new WhatsAppUsers();
+                $contactData = $facebookData->getServiceUserInfo($contactServiceId, $account);
+            
+               // log::info(['contact_data' => $contactData]);
+                $contact = new Contact();
+                if($contactData['status']){
+                    if($request->service == 'instagram'){
+                        $name = isset($contactData['contact_data']['name']) ? explode(' ', $contactData['contact_data']['name']) : ['', $contactData['contact_data']['username']];
+                        $lastName = $name[1];
+                        $firstName = $name[0];
+                    } else {
+                        $lastName = isset($contactData['contact_data']['last_name']) ? $contactData['contact_data']['last_name'] : '';
+                        $firstName = isset($contactData['contact_data']['first_name']) ? $contactData['contact_data']['first_name'] : '';
+                    }
+                    $contact->last_name = $lastName;
+                    $contact->first_name = $firstName;
+                }
+            } else {
+                $contact->last_name = $request->name;
+            }
+            $contact->$field = $contactServiceId;
+            $contact->creater_id = 1;
+           
+            $contact->save();
+        }
+        $msgable_type = 'App\Models\Contact';
+        $messagableId = $contact->id; 
+ 
+        $messageData = [
+            'service_id' => $request->messageId,
+            'service' => $request->service,
+            'account_id' => $request->account,
+            'msgable_id' => $messagableId,
+            'msgable_type' => $msgable_type,
+            'msg_mode' => $request->type,
+            'status' => $status,
+            'msg_type' => ($fileUrl) ? 'story' : 'Text',
+            'file_path' => $fileUrl,
+            'is_delivered' => ($request->status == 'Delivered') ? true : false,
+            'is_read' => ($request->status == 'Read') ? true : false,
+        ];
+        if($request->type == 'incoming' && $request->service == 'whatsapp'){
+            $messageData['message'] = $request->message;
+        } else if($request->service != 'whatsapp') {
+            $messageData['message'] = $request->message;
+        }
+        if($status == 'Failed') {
+            $messageData['error_response'] = $request->error_msg;
+        }
+
+        $msgType = 'story';
+        if($request->story_type == 'reply_to' ){
+            $messageData['is_reply'] = true;
+        }
+        if($request->story_type == 'story_mention' ){
+            $messageData['is_mention'] = true;
+        }
+        if($request->story_type == 'story_mentiond' ){
+            $messageData['is_expired'] = true;
+        }
+        if($request->attachment_type && $request->attachment){
+            $msgType = $request->attachment_type;
+        }
+        $mediaType = '';
+        // Handle whatsapp media file
+        if($request->media_id){
+            $url = config('app.fb.api_url');
+            $response = Http::get($url."/". $request->media_id."?access_token={$account->fb_token}");
+            $response_body = json_decode($response->body(), true);
+            
+            if(isset($response_body['url'])) {
+                $fileUrl = $response_body['url'];
+                $isAttachment = true;
+                $mediaType = $request->media_type;
+                $msgType = explode('/', $mediaType)[0];
+            }
+        }
+      
+        if($isAttachment){
+            $document = new Document();
+            $filePath = $document->storeDocument($mediaType, $fileUrl , $messagableId , $account);
+
+            $messageData['msg_type'] = $msgType;
+            $messageData['file_path'] = $filePath;
+        }
+          
+        $this->processMessage($messageData);
+
+        $chatList = ChatListContact::where(['contact_id' => $messagableId , 'channel' => $request->service ])->first();
+        if(! $chatList){
+            $chatList = new ChatListContact();
+            $chatList->contact_id = $messagableId;
+            $chatList->channel = $request->service;
+            $chatList->user_id = 1;
+        }
+        $chatList->unread = true;
+        $chatList->save();
+        return response()->json(['status' => true, 'message' => 'Message stored successfully.'], 200);
+    }
+
+    /**
+     * Return product list
+     */
+    public function getProducts() {
+
+        $query = Product::select('products.id', 'products.name', 'products.retailer_id', 'catalogs.catalog_id as catalog_id');
+        $query->where('products.catalog_id', '!=', NULL);
+        $query->leftjoin('catalogs', 'catalogs.id', 'products.catalog_id');
+
+        $products = $query->limit(5)->get();
+
+        return $products;
+    }
+
+    /**
+     * Return Interactive messages list
+     */
+    public function getInteractiveMessages(){
+        $interactiveMessages = InteractiveMessage::where('is_active', true)->get();
+       
+        return $interactiveMessages;
     }
 }
