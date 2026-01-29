@@ -4,9 +4,8 @@ import Axios from "axios";
 import notie from 'notie';
 import nProgress, { settings } from 'nprogress';
 import Creatable from 'react-select/creatable';
-            
-function InviteUser(props) 
-{
+
+function InviteUser(props) {
     const [open, setOpen] = useState(true)
     const [issueFlag, setIssueFlag] = useState(true)
     const [emails, setEmails] = useState(null);
@@ -15,29 +14,29 @@ function InviteUser(props)
     const [errors, setErrors] = useState(null);
     const [control, setControl] = useState();
 
-    useEffect( () => {
+    useEffect(() => {
         checkInviteAccess();
-    },[]);
+    }, []);
 
-    function checkInviteAccess () {
-        Axios.get(route('max_users')).then( (response) => {
+    function checkInviteAccess() {
+        Axios.get(route('max_users')).then((response) => {
             let result = response.data.result;
             setInvite(result.access);
             setControl(result);
         });
     }
 
-    function checkToInvite () {
+    function checkToInvite() {
         let message = "";
         let check = true;
-        
-        if(control.remain != '-') {
-            if(invite) {
+
+        if (control.remain != '-') {
+            if (invite) {
                 let count = emails.length;
-                if(control.remain < count) {
+                if (control.remain < count) {
                     message = 'You has been invite more user your current plan';
                     check = false;
-                } 
+                }
             } else {
                 message = "Please update your plan";
                 check = false;
@@ -51,41 +50,41 @@ function InviteUser(props)
     /**
      * Send invite link
      */
-    function sendInviteLink(){
-       
-        if(emails) {
+    function sendInviteLink() {
+
+        if (emails) {
             let issue = true;
 
-            Object.entries(emails).map(([key, email])=>{
+            Object.entries(emails).map(([key, email]) => {
                 var isValid = isEmail(email.value);
-              
-                if(!isValid && issue){
+
+                if (!isValid && issue) {
                     issue = false;
                 }
             })
             setIssueFlag(issue);
-            if(issue) {
+            if (issue) {
                 let checkInvite = checkToInvite();
-                if(checkInvite){
+                if (checkInvite) {
                     nProgress.start(0.5);
                     nProgress.inc(0.2);
-                    Axios.post(route('send_invite_link'),{email: emails}).then((response) => {
-                        
-                        if(response.data.result == 'success'){
+                    Axios.post(route('send_invite_link'), { email: emails }).then((response) => {
+
+                        if (response.data.result == 'success') {
                             nProgress.done();
                             props.setInviteUser(false);
-                            notie.alert({type: 'success', text: 'Invitation sent successfully', time: 5});
+                            notie.alert({ type: 'success', text: 'Invitation sent successfully', time: 5 });
                         }
                     });
-                } 
+                }
             }
-             
+
         }
     }
 
     function isEmail(val) {
         let regEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        if(!regEmail.test(val)){
+        if (!regEmail.test(val)) {
             return false;
         } else {
             return true;
@@ -94,7 +93,7 @@ function InviteUser(props)
 
     return (
         <Transition.Root show={open} as={Fragment}>
-            <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => {}} >
+            <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => { }} >
                 <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-300"
@@ -123,13 +122,13 @@ function InviteUser(props)
                                     <div className="sm:flex sm:items-start">
                                         <div className="mt-3 text-center sm:mt-0 sm:text-left">
                                             <Dialog.Title as="h3" className="text-lg leading-6 font-semibold text-gray-900 flex">
-                                            {props.translator['Invite people']} {control && control.remain != '-' && <div className='text-sm text-red-500 justify-center flex px-2'>({(control.max_user) - control.remain + '/' + control.max_user})</div>}
+                                                {props.translator['Invite people']} {control && control.remain != '-' && <div className='text-sm text-red-500 justify-center flex px-2'>({(control.max_user) - control.remain + '/' + control.max_user})</div>}
                                             </Dialog.Title>
                                         </div>
                                     </div>
                                 </div>
 
-                                {errors && 
+                                {errors &&
                                     <div className='text-sm text-red-500 justify-center flex'> <small> {errors}</small> </div>
                                 }
 
@@ -137,7 +136,7 @@ function InviteUser(props)
                                     <div className='px-4 py-2 space-y-4'>
                                         <div className='form-group' >
                                             <label className="block text-sm font-medium text-gray-700 py-2">
-                                            {props.translator['Email addresses']}
+                                                {props.translator['Email addresses']}
                                             </label>
                                             <div className="mt-1">
                                                 <Creatable

@@ -7,7 +7,7 @@ import { Link } from "@inertiajs/inertia-react";
 import { Dialog, Transition } from "@headlessui/react";
 import UserRegistration from '@/Components/UserRegistration';
 import nProgress from 'nprogress';
-import { Container , Row , Col, List} from 'reactstrap';
+import { Container, Row, Col, List } from 'reactstrap';
 import Form from '@/Components/Forms/Form';
 
 import {
@@ -42,18 +42,18 @@ import {
     LightBulbIcon,
     PlusIcon,
     IdentificationIcon,
-    ShoppingCartIcon 
+    ShoppingCartIcon
 
-} from "@heroicons/react/outline";                                                                      
+} from "@heroicons/react/outline";
 import { CurrencyDollarIcon } from "@heroicons/react/solid";
 import axios from "axios";
 import Notification from "./Notification";
 import notie from 'notie';
-import { BsCaretDownFill,BsCaretUpFill } from "react-icons/bs";
+import { BsCaretDownFill, BsCaretUpFill } from "react-icons/bs";
 
-import { DashboardIcon,ChatNewIcon,CampaignsIcon,BillingIcon,Setting2Icon,SalesIcon,NetworkIcon,GraphIcon } from "@/Pages/icons";
+import { DashboardIcon, ChatNewIcon, CampaignsIcon, BillingIcon, Setting2Icon, SalesIcon, NetworkIcon, GraphIcon } from "@/Pages/icons";
 
- const navigation = [
+const navigation = [
     {
         name: "Dashboard",
         href: route("dashboard"),
@@ -65,65 +65,65 @@ import { DashboardIcon,ChatNewIcon,CampaignsIcon,BillingIcon,Setting2Icon,SalesI
         href: '#',
         icon: ChatNewIcon,
         show: ['all'],
-        subMenu : [{
+        subMenu: [{
             name: 'Chats',
-            href : route('chat_list')
+            href: route('chat_list')
         },
         {
             name: 'Campaigns',
-            href : route('listCampaign')
-        },  
-    ]
-    },   
+            href: route('listCampaign')
+        },
+        ]
+    },
     {
         name: "CRM",
         href: '#',
         icon: IdentificationIcon,
         show: ['all'],
-        subMenu : [
+        subMenu: [
             {
                 name: 'Leads',
-                href : route("listLead")
+                href: route("listLead")
             },
             {
-            name: 'Contacts',
-            href : route('listContact')
+                name: 'Contacts',
+                href: route('listContact')
             },
             {
-            name: 'Organizations',
-            href : route("listOrganization")
+                name: 'Organizations',
+                href: route("listOrganization")
             },
             {
                 name: 'Fields',
-                href : route("listField")
+                href: route("listField")
             },
             {
                 name: 'Tags',
-                href : route("listTag")
-            },{
+                href: route("listTag")
+            }, {
                 name: 'Lists',
-                href : route("listCategory")
+                href: route("listCategory")
             },]
-    },  
-    
+    },
+
     {
         name: "Sales",
         href: '#',
         icon: SalesIcon,
         show: ['all'],
-        subMenu : [
+        subMenu: [
             {
                 name: 'Opportunities',
-                href : route('listOpportunity')
-            },                      
+                href: route('listOpportunity')
+            },
             {
-            name: 'Orders',
-            href : route('listOrder')
-        },{
-            name: 'Products',
-            href : route('listProduct')
-        },]
-    },  
+                name: 'Orders',
+                href: route('listOrder')
+            }, {
+                name: 'Products',
+                href: route('listProduct')
+            },]
+    },
     {
         name: "Automations",
         href: route("listAutomation"),
@@ -198,16 +198,16 @@ const adminNavigation = [
         icon: DashboardIcon,
         show: ['global_admin'],
     },
-    {    
+    {
         name: "Customers",
         href: '#',
         icon: UsersIcon,
         show: ['global_admin'],
-        subMenu : [
+        subMenu: [
             {
                 name: "Workspaces",
                 href: route("listCompany"),
-            }, 
+            },
             {
                 name: "Social profiles",
                 href: route("listAccount"),
@@ -215,14 +215,14 @@ const adminNavigation = [
             {
                 name: "Users",
                 href: route("list_global_user"),
-            }, ]
-    },   
-    {    
+            },]
+    },
+    {
         name: "Notifications",
         href: '#',
         icon: LightBulbIcon,
         show: ['global_admin'],
-        subMenu : [
+        subMenu: [
             {
                 name: "Emails",
                 href: '#',
@@ -230,47 +230,47 @@ const adminNavigation = [
             {
                 name: "Push",
                 href: '#',
-            }, 
+            },
             {
                 name: "Notifications Log",
                 href: '#',
-            }, ]
-    },  
+            },]
+    },
     {
         name: "Billing",
         href: '#',
         icon: CurrencyDollarIcon,
         show: ['global_admin'],
-        subMenu : [ 
+        subMenu: [
             {
                 name: "Plans",
                 href: route("listPlan"),
             },
             {
                 name: "Pricing",
-                href: route("listPrice"), 
-             },
-             {
+                href: route("listPrice"),
+            },
+            {
                 name: "Addons",
-                href: route("listPrice"), 
-             },
-            ]
-   },
+                href: route("listPrice"),
+            },
+        ]
+    },
     {
         name: "Roles",
         href: '#',
         icon: UserGroupIcon,
         show: ['global_admin'],
-        subMenu : [ 
+        subMenu: [
             {
                 name: "Workspace Roles & Permissions",
                 href: '#',
             },
             {
                 name: "Superadmin Roles & Permissions",
-                href: '#', 
+                href: '#',
             },]
-        },
+    },
     // {
     //     name: "Activities",
     //     href: route("worksapce_activities"),
@@ -283,7 +283,7 @@ const adminNavigation = [
         icon: QuestionMarkCircleIcon,
         show: ['global_admin'],
     },
-    
+
 ];
 
 const menuBar = [
@@ -296,72 +296,72 @@ const menuBar = [
         name: "Conversations",
         href: '#',
         icon: ChatNewIcon,
-        subMenu : [
-        {
-            name: 'Social Profiles',
-            href : route('social_profile')
-        },     
-        {
-            name: 'Chats',
-            href : route('chat_list')
-        },
-        {
-            name: 'Campaigns',
-            href : route('listCampaign')
-        },  
-    ]
-    },   
+        subMenu: [
+            {
+                name: 'Social Profiles',
+                href: route('social_profile')
+            },
+            {
+                name: 'Chats',
+                href: route('chat_list')
+            },
+            {
+                name: 'Campaigns',
+                href: route('listCampaign')
+            },
+        ]
+    },
     {
         name: "CRM",
         href: '#',
         icon: IdentificationIcon,
-        subMenu : [
+        subMenu: [
             {
                 name: 'Leads',
-                href : route("listLead")
+                href: route("listLead")
             },
             {
-            name: 'Contacts',
-            href : route('listContact')
+                name: 'Contacts',
+                href: route('listContact')
             },
             {
-            name: 'Organizations',
-            href : route("listOrganization")
+                name: 'Organizations',
+                href: route("listOrganization")
             },
             {
                 name: 'Fields',
-                href : route("listField")
+                href: route("listField")
             },
             {
                 name: 'Tags',
-                href : route("listTag")
-            },{
+                href: route("listTag")
+            }, {
                 name: 'Lists',
-                href : route("listCategory")
+                href: route("listCategory")
             },]
-    },  
+    },
     {
         name: "Sales",
         href: '#',
         icon: SalesIcon,
-        subMenu : [
+        subMenu: [
             {
                 name: 'Deals',
-                href : route('listOpportunity')
-            },                      
+                href: route('listOpportunity')
+            },
             {
                 name: 'Orders',
-                href : route('listOrder')
+                href: route('listOrder')
             },
             {
                 name: 'Catalogs',
-                href : route('listCatalog')
+                href: route('listCatalog')
             },
             {
                 name: 'Products',
-                href : route('listProduct')
+                href: route('listProduct')
             }]
-    },  
+    },
     {
         name: "Automations",
         href: route("listAutomation"),
@@ -378,26 +378,25 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
 
-export default function Authenticated({ auth, header, children, hideHeader , current_page, message, navigationMenu}) 
-{
+export default function Authenticated({ auth, header, children, hideHeader, current_page, message, navigationMenu }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showSidebarText, setShowSidebarText] = useState(true);
-    const [showAdminNav , setshowAdminNav] = useState(false);
-    const [returnMainUser , setReturnMainUser] = useState(false);
-    const [companyName , setcompanyName] = useState();
+    const [showAdminNav, setshowAdminNav] = useState(false);
+    const [returnMainUser, setReturnMainUser] = useState(false);
+    const [companyName, setcompanyName] = useState();
 
-    const [menuDropdownActive , setMenuDropdownActive] = useState({});
+    const [menuDropdownActive, setMenuDropdownActive] = useState({});
     const [notifications, setNotifications] = useState();
     const [timezone, setTimezone] = useState([]);
-    const [showModal,setshowModal]= useState(false);
+    const [showModal, setshowModal] = useState(false);
     const [count, setCount] = useState();
     const [id, setId] = useState();
     const [companyList, setCompany] = useState({});
     const [adminMenuText, setadminMenuText] = useState("Global Admin page");
     const [navigateField, setNavigateField] = useState();
     const pathname = window.location.pathname;
-  
+
     const [showWorkspaceForm, setShowWorkspaceForm] = useState(false);
     const [navigationMenuBar, setNavigationMenuBar] = useState(navigationMenu);
 
@@ -418,31 +417,30 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
         checkInformation();
         defaultOpenNavigationBar();
         getCompanyDetail();
-        if(message) alertMessage(message);
-        if(!navigationMenu) fetchMenuBar();
-    },[])
-    
+        if (message) alertMessage(message);
+        if (!navigationMenu) fetchMenuBar();
+    }, [])
+
     useEffect(() => {
-        if(pathname.includes('admin/'))
-        {
+        if (pathname.includes('admin/')) {
             setshowAdminNav(true)
             setadminMenuText("Go to Dashboard")
         }
-     }, [pathname])
+    }, [pathname])
 
     function getCompanyDetail() {
         axios.get(route('CurrentCompany')).then((response) => {
-            if(response.data){               
-               setcompanyName(response.data.currentCompany.name);
+            if (response.data) {
+                setcompanyName(response.data.currentCompany.name);
             }
         });
-    } 
+    }
 
     function defaultOpenNavigationBar() {
-        (menuBar).map( (menu) => {
-            if(menu.hasOwnProperty('subMenu')) {
-                (menu.subMenu).map( (sub) => {
-                    if(sub.name == current_page) {
+        (menuBar).map((menu) => {
+            if (menu.hasOwnProperty('subMenu')) {
+                (menu.subMenu).map((sub) => {
+                    if (sub.name == current_page) {
                         let defaultOpen = {};
                         defaultOpen[menu.name] = true;
                         setMenuDropdownActive(defaultOpen);
@@ -450,19 +448,19 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                 })
             }
         })
-    } 
+    }
 
     function checkInformation() {
         let url = route('check_information');
 
-        axios.get(url).then( (response) => {
-            if(!response.data.information){
+        axios.get(url).then((response) => {
+            if (!response.data.information) {
 
-               Inertia.post(route('onBoarding'), {}, {
+                Inertia.post(route('onBoarding'), {}, {
                     onSuccess: (response) => {
-                       
+
                     }
-               });
+                });
             }
         });
     }
@@ -470,36 +468,36 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
     function fetchMenuBar() {
         let url = route('sub_menu');
 
-        axios.get(url).then( (response) => {
-           if(response.data.status === true) {
-            setNavigationMenuBar(response.data.menu);
-           }
+        axios.get(url).then((response) => {
+            if (response.data.status === true) {
+                setNavigationMenuBar(response.data.menu);
+            }
         });
     }
 
     function alertMessage(message) {
-        notie.alert({type: 'warning', text: message, time: 5});
+        notie.alert({ type: 'warning', text: message, time: 5 });
     }
 
     function getNavigationfield() {
-        axios.get(route('navigation_field')).then( (response) => {
+        axios.get(route('navigation_field')).then((response) => {
             setNavigateField(response.data.navigate);
         })
     }
 
-    function drownDownToggleAction(e,item){
+    function drownDownToggleAction(e, item) {
         e.preventDefault();
         e.stopPropagation();
         e.nativeEvent.stopImmediatePropagation();
 
-        if(!item.submenu) return;
+        if (!item.submenu) return;
 
         const DropdownActive = menuDropdownActive;
         const menu = item.name;
 
-        if(DropdownActive.hasOwnProperty(menu)){
+        if (DropdownActive.hasOwnProperty(menu)) {
             DropdownActive[menu] = !DropdownActive[menu]
-        }else{
+        } else {
             DropdownActive[menu] = {};
             DropdownActive[menu] = true;
         }
@@ -507,7 +505,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
         setMenuDropdownActive(DropdownActive);
     }
 
-    function setImpersonate(){
+    function setImpersonate() {
         var data = {
             user_id: returnMainUser
         }
@@ -521,49 +519,47 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
         });
     }
 
-    function getNotifications(){
+    function getNotifications() {
         var url = route('notification');
         axios.get(url).then((response) => {
-          setCount(response.data.count);
-          setNotifications(response.data.notifications);
-          setId(response.data.id);
+            setCount(response.data.count);
+            setNotifications(response.data.notifications);
+            setId(response.data.id);
         });
     }
 
-    function getTimezones(){
+    function getTimezones() {
         var url = route('get_time_zone');
         axios.get(url).then((response) => {
-          setTimezone(response.data.time_zone);          
+            setTimezone(response.data.time_zone);
         });
     }
 
-    function notificationClick(){
-        var url = route('clickNotification')+'?id='+ id;
+    function notificationClick() {
+        var url = route('clickNotification') + '?id=' + id;
         axios.get(url).then((response) => {
-    
+
         });
     }
 
-    function showadminpage(e){
-        if(adminMenuText=='Global Admin page') 
-        {    
-        Inertia.visit(route('list_global_user'));
+    function showadminpage(e) {
+        if (adminMenuText == 'Global Admin page') {
+            Inertia.visit(route('list_global_user'));
         }
-        else
-        {
+        else {
             Inertia.visit(route('dashboard'));
         }
-        e.preventDefault();           
+        e.preventDefault();
     }
 
-    function showMore(){
+    function showMore() {
         var url = route('showMore');
         axios.get(url).then((response) => {
             setCount(response.data.count);
             setId(response.data.id)
 
             let newState = Object.assign({}, notifications);
-            newState = {...newState, ...response.data.notifications};
+            newState = { ...newState, ...response.data.notifications };
             setNotifications(newState);
         });
     }
@@ -578,11 +574,11 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                     <div className="w-full !mt-6 space-y-2 ">
                         <FormGroup>
                             <Label for="exampleEmail">E-mail</Label>
-                            <Input type="email" name="email" id="exampleEmail" placeholder="example@email.com"/>
+                            <Input type="email" name="email" id="exampleEmail" placeholder="example@email.com" />
                         </FormGroup>
                         <FormGroup>
                             <Label for="exampleEmail">Password</Label>
-                            <Input type="password" name="password" id="password" placeholder="Password"/>
+                            <Input type="password" name="password" id="password" placeholder="Password" />
                         </FormGroup>
 
                         <div className="flex flex-col items-center">
@@ -590,7 +586,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                         </div>
 
                         <div className="!mt-8 relative">
-                            <hr/>
+                            <hr />
                             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-4 bg-gray-100 text-[#7E7F8C] font-semibold text-base">or</div>
                         </div>
 
@@ -603,22 +599,22 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                 Sign up with Google
                             </button>
                             <button type="button" className="inline-flex bg-[#3B5998] rounded text-center  text-white justify-center !py-3 !gap-3  text-semibold">
-                            <svg xmlns="http://www.w3.org/2000/svg" width={18} height={19} fill="none">
-                                <path fill="#fff" d="M18 9.94C18 4.939 13.97.885 9 .885S0 4.939 0 9.94c0 4.52 3.291 8.266 7.594 8.945v-6.328H5.309V9.94h2.285V7.945c0-2.27 1.343-3.523 3.4-3.523.984 0 2.014.177 2.014.177v2.228h-1.135c-1.118 0-1.467.698-1.467 1.414V9.94h2.496l-.399 2.617h-2.097v6.328C14.71 18.205 18 14.459 18 9.94Z" />
-                            </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width={18} height={19} fill="none">
+                                    <path fill="#fff" d="M18 9.94C18 4.939 13.97.885 9 .885S0 4.939 0 9.94c0 4.52 3.291 8.266 7.594 8.945v-6.328H5.309V9.94h2.285V7.945c0-2.27 1.343-3.523 3.4-3.523.984 0 2.014.177 2.014.177v2.228h-1.135c-1.118 0-1.467.698-1.467 1.414V9.94h2.496l-.399 2.617h-2.097v6.328C14.71 18.205 18 14.459 18 9.94Z" />
+                                </svg>
 
                                 Sign up with Facebook
                             </button>
                         </div>
 
-                        <p class="font-semibold !mt-8 pt-1 mb-0 w-full text-center text-base">
-                        Already have an account?
-                        <a
-                            href="#!"
-                            class="text-[#363740] transition duration-200 ease-in-out"
-                        > 
-                            log in
-                        </a>
+                        <p className="font-semibold !mt-8 pt-1 mb-0 w-full text-center text-base">
+                            Already have an account?
+                            <a
+                                href="#!"
+                                className="text-[#363740] transition duration-200 ease-in-out"
+                            >
+                                log in
+                            </a>
                         </p>
                     </div>
                 </div>
@@ -684,7 +680,7 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                     <div className="flex-shrink-0 flex items-center px-4">
                                         {/* <ApplicationLogo className="block h-9 w-auto text-gray-500" /> */}
                                         <div className="w-full flex">
-                                           <img src="/img/logo-boost.svg" />
+                                            <img src="/img/logo-boost.svg" />
                                         </div>
                                     </div>
                                 </Dialog.Panel>
@@ -702,16 +698,15 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
 
                 {/* Static sidebar for desktop */}
                 <div
-                    className={`transition-all hidden md:flex ${
-                        showSidebarText ? "md:w-64" : "md:w-auto"
-                    } md:flex-col`}
+                    className={`transition-all hidden md:flex ${showSidebarText ? "md:w-64" : "md:w-auto"
+                        } md:flex-col`}
                 >
                     {/* Sidebar component, swap this element with another sidebar if you like */}
                     <div className="h-screen sticky top-0 bg-white justify-between flex flex-col pt-5 overflow-y-auto">
                         <div className="flex items-center flex-shrink-0 px-4 ">
                             {/* <ApplicationLogo className="block h-9 w-auto text-gray-500" />  */}
                             <div className="w-full flex">
-                               <img src="/img/logo-boost.svg" />
+                                <img src="/img/logo-boost.svg" />
                             </div>
                         </div>
                         <div
@@ -829,22 +824,22 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                             // );
                                         })  
                                     } */}
-                                    {navigationMenuBar && Object.entries(navigationMenuBar).map( ([header,navigator]) => (
-                                        menuBar.map( (item, index) => {
-                                            if(item.name == header && navigator.show) {
+                                    {navigationMenuBar && Object.entries(navigationMenuBar).map(([header, navigator]) => (
+                                        menuBar.map((item, index) => {
+                                            if (item.name == header && navigator.show) {
 
                                                 return (
-                                                    <li data-index={index}  onClick={(e)=>{drownDownToggleAction(e,navigator)}}>
+                                                    <li data-index={index} onClick={(e) => { drownDownToggleAction(e, navigator) }}>
                                                         <Link
                                                             preserveState
                                                             key={item.name}
                                                             href={item.href}
                                                             className={classNames(
                                                                 (item.name == current_page)
-                                                                    ? "text-[#7666B4] !underline font-bold"                                                    
-                                                                    :"  ",
-                                                                    "group flex items-center px-2 py-2  text-[#3D4459] hover:text-[#7666B4] text-sm font-medium rounded-md gio-menu-item justify-center 1"
-                                                            )}                                                
+                                                                    ? "text-[#7666B4] !underline font-bold"
+                                                                    : "  ",
+                                                                "group flex items-center px-2 py-2  text-[#3D4459] hover:text-[#7666B4] text-sm font-medium rounded-md gio-menu-item justify-center 1"
+                                                            )}
                                                         >
                                                             <item.icon
                                                                 className={classNames(
@@ -852,25 +847,25 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                                         ? "font-bold underline text-[#7666B4]"
                                                                         : "text-[#3D4459] group-hover:text-[#7666B4]",
                                                                     "flex-shrink-0 h-6 w-6"
-                                                                    
+
                                                                 )}
                                                                 aria-hidden="true"
                                                             />
-                                                            {showSidebarText ? <div data-index={index} className="flex ml-3 gap-2 items-center flex-1">{item.name} {item.subMenu ? <BsCaretDownFill data-index={index} className={`${(menuDropdownActive[item.name] ? 'rotate-180' : '')} h-4 w-4 text-[#878787] group-hover:text-[#7666B4] gio-dropdown-icon  transition-all`} /> : '' }  </div>: ""}
+                                                            {showSidebarText ? <div data-index={index} className="flex ml-3 gap-2 items-center flex-1">{item.name} {item.subMenu ? <BsCaretDownFill data-index={index} className={`${(menuDropdownActive[item.name] ? 'rotate-180' : '')} h-4 w-4 text-[#878787] group-hover:text-[#7666B4] gio-dropdown-icon  transition-all`} /> : ''}  </div> : ""}
                                                         </Link>
-                                                        {showSidebarText && menuDropdownActive[navigator.name] && navigator.submenu ? 
-                                                          <ul>
-                                                            {item.subMenu.map( (subItem, index) => {
-                                                                if(navigator['submenu'].hasOwnProperty(subItem.name)) {
-                                                                    return (
-                                                                        <li className="">
-                                                                            <Link className={classNames((subItem.name == current_page) ? "text-[#7666B4] !underline font-bold": '',"text-[#363740] hover:text-[#7666B4] group flex items-center px-2 py-1 text-sm rounded-md gio-menu-item submenu focus:bg-[#7666B4]/20")} href={subItem.href}>{subItem.name}</Link>
-                                                                        </li> 
-                                                                    );
-                                                                }
-                                                            })}
-                                                          </ul>
-                                                        : ''}
+                                                        {showSidebarText && menuDropdownActive[navigator.name] && navigator.submenu ?
+                                                            <ul>
+                                                                {item.subMenu.map((subItem, index) => {
+                                                                    if (navigator['submenu'].hasOwnProperty(subItem.name)) {
+                                                                        return (
+                                                                            <li className="">
+                                                                                <Link className={classNames((subItem.name == current_page) ? "text-[#7666B4] !underline font-bold" : '', "text-[#363740] hover:text-[#7666B4] group flex items-center px-2 py-1 text-sm rounded-md gio-menu-item submenu focus:bg-[#7666B4]/20")} href={subItem.href}>{subItem.name}</Link>
+                                                                            </li>
+                                                                        );
+                                                                    }
+                                                                })}
+                                                            </ul>
+                                                            : ''}
                                                     </li>
                                                 );
                                             }
@@ -880,23 +875,23 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                 </ul>
                             </nav>
                         </div>
-                        
+
                         <div className="flex-shrink-0 flex">
                             <nav className="flex-1 px-2 pb-4 space-y-1 gio-navbar">
                                 {bottomNavigation.map((item) => {
-                                    if(!item.show.includes('all') && !item.show.includes(auth.user.role)) {
+                                    if (!item.show.includes('all') && !item.show.includes(auth.user.role)) {
                                         return;
                                     }
-                                    
+
                                     return (
                                         <Link
                                             key={item.name}
                                             href={item.href}
                                             className={classNames(
                                                 (item.name == current_page)
-                                                    ? "text-[#7666B4] !underline font-bold"                                                    
-                                                    :"",
-                                                    `group flex items-center px-2 py-2 text-[#3D4459] hover:text-[#7666B4] text-sm font-medium rounded-md ${showSidebarText ? '' : "justify-center"}`
+                                                    ? "text-[#7666B4] !underline font-bold"
+                                                    : "",
+                                                `group flex items-center px-2 py-2 text-[#3D4459] hover:text-[#7666B4] text-sm font-medium rounded-md ${showSidebarText ? '' : "justify-center"}`
                                             )}
                                         >
                                             <item.icon
@@ -905,12 +900,12 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                         ? "text-[#7666B4]"
                                                         : "text-[#3D4459] group-hover:text-[#7666B4] ",
                                                     "flex-shrink-0 h-6 w-6"
-                                                    
+
                                                 )}
                                                 aria-hidden="true"
                                             />
-                                            {showSidebarText ? <div className="ml-3">{item.name}</div>: ""}
-                                        </Link>     
+                                            {showSidebarText ? <div className="ml-3">{item.name}</div> : ""}
+                                        </Link>
                                     );
                                 })}
                             </nav>
@@ -920,16 +915,16 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                 </div>
                 <div className="flex flex-col flex-1 bg-[#F1F4F6]">
                     {hideHeader !== true ?
-                    <div className="py-4 px-6">
-                        <nav>
-                            <div>
-                                <div className="flex justify-between h-16">
-                                    <div className="flex">
-                                    </div>
-                                    
-                                    <div className="hidden sm:flex sm:items-center sm:ml-6"> 
-                                        <div className="ml-3 relative">
-                                            {/* 
+                        <div className="py-4 px-6">
+                            <nav>
+                                <div>
+                                    <div className="flex justify-between h-16">
+                                        <div className="flex">
+                                        </div>
+
+                                        <div className="hidden sm:flex sm:items-center sm:ml-6">
+                                            <div className="ml-3 relative">
+                                                {/* 
                                             <Notification 
                                                 notificationClick={notificationClick}
                                                 showMore={showMore}
@@ -937,10 +932,10 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                 notifications={notifications}
                                             />
                                              */}
-                                        </div>
-                                        {auth && auth.user && (auth.user.role == 'global_admin' || auth.user.role == 'admin') ? 
-                                        <div className="ml-3 relative">
-                                        {/* <Link
+                                            </div>
+                                            {auth && auth.user && (auth.user.role == 'global_admin' || auth.user.role == 'admin') ?
+                                                <div className="ml-3 relative">
+                                                    {/* <Link
                                             preserveState
                                             key="supportrequest"
                                             href={route("listSupportRequest")}  
@@ -951,39 +946,39 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                 aria-hidden="true"                                               
                                             />                                            
                                         </Link> */}
-                                        </div> :''}                                            
-                                          
-                                        <div className="ml-3 relative z-10">
-                                            <Dropdown>
-                                                <Dropdown.Trigger>
-                                                    <span className="inline-flex rounded-md">
-                                                        <button
-                                                            type="button"
-                                                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
-                                                        >
-                                                            {auth && auth.user && auth.user.imageUrl ?
-                                                                <img className="h-8 w-8 rounded-full mr-2" src={auth.user.imageUrl} alt="" /> 
-                                                            : ''}
+                                                </div> : ''}
 
-                                                            {auth && auth.user ? auth.user.name : ''}
-                                                            <svg
-                                                                className="ml-2 -mr-0.5 h-4 w-4"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                viewBox="0 0 20 20"
-                                                                fill="currentColor"
+                                            <div className="ml-3 relative z-10">
+                                                <Dropdown>
+                                                    <Dropdown.Trigger>
+                                                        <span className="inline-flex rounded-md">
+                                                            <button
+                                                                type="button"
+                                                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                                             >
-                                                                <path
-                                                                    fillRule="evenodd"
-                                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                                    clipRule="evenodd"
-                                                                />
-                                                            </svg>
-                                                        </button>
-                                                    </span>
-                                                </Dropdown.Trigger>
+                                                                {auth && auth.user && auth.user.imageUrl ?
+                                                                    <img className="h-8 w-8 rounded-full mr-2" src={auth.user.imageUrl} alt="" />
+                                                                    : ''}
 
-                                                <Dropdown.Content width={96}>
-{/*                                                      
+                                                                {auth && auth.user ? auth.user.name : ''}
+                                                                <svg
+                                                                    className="ml-2 -mr-0.5 h-4 w-4"
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    viewBox="0 0 20 20"
+                                                                    fill="currentColor"
+                                                                >
+                                                                    <path
+                                                                        fillRule="evenodd"
+                                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                        clipRule="evenodd"
+                                                                    />
+                                                                </svg>
+                                                            </button>
+                                                        </span>
+                                                    </Dropdown.Trigger>
+
+                                                    <Dropdown.Content width={96}>
+                                                        {/*                                                      
                                                     <Dropdown.Link href={route('profile')} method="get" as="button">
                                                         Profile
                                                     </Dropdown.Link>
@@ -1014,123 +1009,123 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                                                     <Dropdown.Link href={route('logout')} method="post" as="button">
                                                         Log Out
                                                     </Dropdown.Link> */}
-                                                    <Container >
-                                                        <div className="w-full flex justify-center">
-                                                            <div className="flex gap-2 mx-auto py-4 items-center">
-                                                                <div className="w-10 h-10 flex justify-center items-center bg-gray-700 rounded-full">
-                                                                    <UserIcon className="w-6 h-6 text-white" />
-                                                                </div>
-                                                                <div className="flex flex-col">
-                                                                    <span><b> {auth.user.name} </b></span>
-                                                                    <span>{companyName}</span>
+                                                        <Container >
+                                                            <div className="w-full flex justify-center">
+                                                                <div className="flex gap-2 mx-auto py-4 items-center">
+                                                                    <div className="w-10 h-10 flex justify-center items-center bg-gray-700 rounded-full">
+                                                                        <UserIcon className="w-6 h-6 text-white" />
+                                                                    </div>
+                                                                    <div className="flex flex-col">
+                                                                        <span><b> {auth.user.name} </b></span>
+                                                                        <span>{companyName}</span>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                        <Row> 
-                                                            <Col 
-                                                                className="border-r  col-3"
-                                                            >  
-                                                                <List type="unstyled" className="space-y-1">
-                                                                    {Object.entries(companyList).map(([key , company]) => {
-                                                                        return(
-                                                                            <li className="p-1 text-center" >
-                                                                                <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-primary">
-                                                                                    <span className="text-lg font-medium leading-none text-white">
-                                                                                        {company &&
-                                                                                            <> {(company).substring(0,2)} </>
-                                                                                        }
+                                                            <Row>
+                                                                <Col
+                                                                    className="border-r  col-3"
+                                                                >
+                                                                    <List type="unstyled" className="space-y-1">
+                                                                        {Object.entries(companyList).map(([key, company]) => {
+                                                                            return (
+                                                                                <li className="p-1 text-center" >
+                                                                                    <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-primary">
+                                                                                        <span className="text-lg font-medium leading-none text-white">
+                                                                                            {company &&
+                                                                                                <> {(company).substring(0, 2)} </>
+                                                                                            }
+                                                                                        </span>
                                                                                     </span>
+                                                                                </li>
+                                                                            )
+                                                                        })}
+
+                                                                        <li className="p-1 text-center" >
+                                                                            <button
+                                                                                type='button'
+                                                                                onClick={() => setShowWorkspaceForm(true)}
+                                                                            >
+                                                                                <span className="w-9 h-9 bg-gray-100 flex justify-center items-center rounded-full cursor-pointer mx-auto">
+                                                                                    <PlusIcon className="w-6 h-6 " />
                                                                                 </span>
-                                                                            </li>
-                                                                        )
-                                                                    })}
-                                                                    
-                                                                    <li className="p-1 text-center" >
-                                                                        <button 
-                                                                            type='button'
-                                                                            onClick={() => setShowWorkspaceForm(true)}
-                                                                        >
-                                                                            <span className="w-9 h-9 bg-gray-100 flex justify-center items-center rounded-full cursor-pointer mx-auto">
-                                                                                <PlusIcon className="w-6 h-6 " />
-                                                                            </span>
-                                                                        </button>
-                                                                    </li>
-                                                                </List> 
-                                                            </Col>
-                                                            <Col className="border-r" > 
-                                                                <List type="unstyled">
-                                                                    <li className="p-1" > <Link href={route("wallet_subscription")} method="get"> Workspace settings </Link> </li>
-                                                                </List> 
-                                                            </Col>
-                                                            <Col> 
-                                                                <List type="unstyled">
-                                                                    <li className="p-1" > <b> {auth.user.name} </b> </li>
-                                                                    <li className="p-1" > <Link href={route('profile')} method="get"> Profile </Link> </li>
-                                                                    {auth && auth.user && auth.user.role == 'global_admin' &&
-                                                                        <li className="p-1" > <Link href={route('list_global_user')} method="get" as="button"> Global Admin </Link> </li>
-                                                                    }
-                                                                    {returnMainUser &&
-                                                                        <li className="p-1" > <button onClick={() => setImpersonate()} type="button"> Return to global admin </button> </li>
-                                                                    }
-                                                                    <li className="p-1" ><Link href={route('listApi')} method="get"> API keys</Link></li>
-                                                                    <li className="p-1" > <Link href={route('logout')} method="post" as="button"> Log out </Link> </li>
-                                                                </List> 
-                                                            </Col>
-                                                        </Row>
-                                                    </Container>
-                                                </Dropdown.Content>
-                                            </Dropdown>
+                                                                            </button>
+                                                                        </li>
+                                                                    </List>
+                                                                </Col>
+                                                                <Col className="border-r" >
+                                                                    <List type="unstyled">
+                                                                        <li className="p-1" > <Link href={route("wallet_subscription")} method="get"> Workspace settings </Link> </li>
+                                                                    </List>
+                                                                </Col>
+                                                                <Col>
+                                                                    <List type="unstyled">
+                                                                        <li className="p-1" > <b> {auth.user.name} </b> </li>
+                                                                        <li className="p-1" > <Link href={route('profile')} method="get"> Profile </Link> </li>
+                                                                        {auth && auth.user && auth.user.role == 'global_admin' &&
+                                                                            <li className="p-1" > <Link href={route('list_global_user')} method="get" as="button"> Global Admin </Link> </li>
+                                                                        }
+                                                                        {returnMainUser &&
+                                                                            <li className="p-1" > <button onClick={() => setImpersonate()} type="button"> Return to global admin </button> </li>
+                                                                        }
+                                                                        <li className="p-1" ><Link href={route('listApi')} method="get"> API keys</Link></li>
+                                                                        <li className="p-1" > <Link href={route('logout')} method="post" as="button"> Log out </Link> </li>
+                                                                    </List>
+                                                                </Col>
+                                                            </Row>
+                                                        </Container>
+                                                    </Dropdown.Content>
+                                                </Dropdown>
+                                            </div>
+                                        </div>
+
+                                        <div className="-mr-2 flex items-center sm:hidden">
+                                            <button
+                                                onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
+                                                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out"
+                                            >
+                                                <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                                                    <path
+                                                        className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M4 6h16M4 12h16M4 18h16"
+                                                    />
+                                                    <path
+                                                        className={showingNavigationDropdown ? 'inline-flex' : 'hidden'}
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M6 18L18 6M6 6l12 12"
+                                                    />
+                                                </svg>
+                                            </button>
                                         </div>
                                     </div>
-
-                                    <div className="-mr-2 flex items-center sm:hidden">
-                                        <button
-                                            onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
-                                            className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out"
-                                        >
-                                            <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                                                <path
-                                                    className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M4 6h16M4 12h16M4 18h16"
-                                                />
-                                                <path
-                                                    className={showingNavigationDropdown ? 'inline-flex' : 'hidden'}
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M6 18L18 6M6 6l12 12"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
-                                <div className="pt-2 pb-3 space-y-1">
-                                    <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
-                                        Dashboard
-                                    </ResponsiveNavLink>
                                 </div>
 
-                                <div className="pt-4 pb-1 border-t border-gray-200">
-                                    <div className="px-4">
-                                        <div className="font-medium text-base text-gray-800">{auth && auth.user && auth.user.name ? auth.user.name : ''}</div>
-                                        <div className="font-medium text-sm text-gray-500">{auth && auth.user && auth.user.email ? auth.user.email : ''}</div>
-                                    </div>
-
-                                    <div className="mt-3 space-y-1">
-                                        <ResponsiveNavLink method="post" href={route('logout')} as="button">
-                                            Log Out
+                                <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
+                                    <div className="pt-2 pb-3 space-y-1">
+                                        <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
+                                            Dashboard
                                         </ResponsiveNavLink>
                                     </div>
+
+                                    <div className="pt-4 pb-1 border-t border-gray-200">
+                                        <div className="px-4">
+                                            <div className="font-medium text-base text-gray-800">{auth && auth.user && auth.user.name ? auth.user.name : ''}</div>
+                                            <div className="font-medium text-sm text-gray-500">{auth && auth.user && auth.user.email ? auth.user.email : ''}</div>
+                                        </div>
+
+                                        <div className="mt-3 space-y-1">
+                                            <ResponsiveNavLink method="post" href={route('logout')} as="button">
+                                                Log Out
+                                            </ResponsiveNavLink>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </nav>
-                    </div> : ''}
+                            </nav>
+                        </div> : ''}
 
                     {header && (
                         <header className="bg-white shadow">
@@ -1142,27 +1137,27 @@ export default function Authenticated({ auth, header, children, hideHeader , cur
                 </div>
             </div>
 
-        {showModal && companyList[0].hasOwnProperty('name')?
-            <UserRegistration
-              user={auth.user}
-              time_zone={timezone}
-              setshowModal={setshowModal}
-              company={companyList[0]}
-            />:''
-        }
+            {showModal && companyList[0].hasOwnProperty('name') ?
+                <UserRegistration
+                    user={auth.user}
+                    time_zone={timezone}
+                    setshowModal={setshowModal}
+                    company={companyList[0]}
+                /> : ''
+            }
 
-        {showWorkspaceForm ?
-                <Form 
+            {showWorkspaceForm ?
+                <Form
                     module={'Company'}
                     heading={'Create Company'}
                     hideForm={hideForm}
                     recordId={''}
-                   // translator={translator}
-                   // mod={''}
-                   // productList={props.productList}
-                   // current_user={props.current_user}
+                // translator={translator}
+                // mod={''}
+                // productList={props.productList}
+                // current_user={props.current_user}
                 />
-            : ''}
+                : ''}
 
         </>
     );

@@ -4,17 +4,16 @@ import ListView from '@/Components/Views/List/Index2';
 import InviteUser from './InviteUsers';
 import ShowCompany from './ShowCompany';
 
-function List(props)
-{
-    const[ inviteUser, setInviteUser] = useState(false);
-    const[ parent, setParent ] = useState();
-    const[ showCompanies , setShowCompanies] = useState(false);
+function List(props) {
+    const [inviteUser, setInviteUser] = useState(false);
+    const [parent, setParent] = useState();
+    const [showCompanies, setShowCompanies] = useState(false);
 
     return (
         <Authenticated
             auth={props.auth}
             errors={props.errors}
-            current_page= {props.current_page}
+            current_page={props.current_page}
         >
 
             <ListView
@@ -25,10 +24,11 @@ function List(props)
                 setParent={setParent}
                 {...props}
             />
-            
+
             {inviteUser &&
-                <InviteUser 
+                <InviteUser
                     setInviteUser={setInviteUser}
+                    {...props}
                 />
             }
             {showCompanies &&

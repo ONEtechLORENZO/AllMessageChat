@@ -11,8 +11,8 @@ use App\Models\Msg;
 use Illuminate\Http\Request;
 use App\Models\Automation;
 use Illuminate\Support\Facades\Redirect;
-use DB;
-use Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class PlanController extends Controller
 {
@@ -24,11 +24,11 @@ class PlanController extends Controller
     public function index(Request $request)
     {
         $list_view_columns = [
-            'name' => ['label' => __('Name'), 'type' => 'text'],
-            'description' =>  ['label' => __('Description'), 'type' => 'textarea'],
-            'amount' =>  ['label' => __('Amount'), 'type' => 'text'],
-            'billing_period' => ['label' => __('Billing Period'), 'type' => 'dropdown'],
-            'pricing_model' => ['label' => __('Price Model'), 'type' => 'dropdown'],
+            'plan' => ['label' => __('Name'), 'type' => 'text'],
+            // 'description' =>  ['label' => __('Description'), 'type' => 'textarea'],
+            'price' =>  ['label' => __('Amount'), 'type' => 'text'],
+            // 'billing_period' => ['label' => __('Billing Period'), 'type' => 'dropdown'],
+            'plan_id' => ['label' => __('Price Model'), 'type' => 'dropdown'],
         ];
 
         $module = new Plan();
@@ -39,7 +39,7 @@ class PlanController extends Controller
             'singular' => __('Plan'),
             'plural' => __('Plans'),
             'module' => 'Plan',
-            'current_page' => 'Plans', 
+            'current_page' => 'Plans',
             // Actions
             'actions' => [
                 'create' => true,
@@ -50,10 +50,10 @@ class PlanController extends Controller
                 'import' => false,
                 'search' => true,
                 'filter' => true,
-                'select_field'=>true
+                'select_field' => true
             ],
         ];
-        
+
         $data = array_merge($moduleData, $listViewData);
         return Inertia::render('Plans/List', $data);
     }
@@ -66,19 +66,50 @@ class PlanController extends Controller
     public function create(Request $request)
     {
         $field_name = [
-           'plan', 'price', 'target', 'setup_workspace', 'monthly_workspace', 'channels', 'accounts', 'offical_whatsapp', 'unoffical_whatsapp', 'facebook', 'users', 'include_users', 'extra_users', 'crm_contacts', 'chat_cost', 'per_message', 'per_allegato', 'fatturazione', 'contacts', 'lists_tags', 'custom_fields', 'multichannel_chat', 'campaigns', 'workflow', 'opportunities', 'category', 'orders', 'lead_webhook', 'integrations', 'api', 'custom_integrations', 'plan_id'
+            'plan',
+            'price',
+            'target',
+            'setup_workspace',
+            'monthly_workspace',
+            'channels',
+            'accounts',
+            'offical_whatsapp',
+            'unoffical_whatsapp',
+            'facebook',
+            'users',
+            'include_users',
+            'extra_users',
+            'crm_contacts',
+            'chat_cost',
+            'per_message',
+            'per_allegato',
+            'fatturazione',
+            'contacts',
+            'lists_tags',
+            'custom_fields',
+            'multichannel_chat',
+            'campaigns',
+            'workflow',
+            'opportunities',
+            'category',
+            'orders',
+            'lead_webhook',
+            'integrations',
+            'api',
+            'custom_integrations',
+            'plan_id'
         ];
 
-        if($request->plan) {
-            
+        if ($request->plan) {
+
             $plans = [];
-            
+
             foreach ($field_name as $field) {
                 $plans[$field] = $request->$field;
             }
-            
+
             // Insert record value into the table
-            if($request->id) {
+            if ($request->id) {
                 DB::table('plans')->where('id', $request->id)->update($plans);
             } else {
                 DB::table('plans')->insert($plans);
@@ -94,9 +125,9 @@ class PlanController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request,Plan $plan)
+    public function store(Request $request, Plan $plan)
     {
-        
+
         $request->validate([
             'name' => 'required|max:255',
             'description' => 'required',
@@ -110,8 +141,8 @@ class PlanController extends Controller
 
         // Create a Plan
         $create_plan = $stripe->products->create([
-          'name' => $request->name,
-          'description' => $request->description,
+            'name' => $request->name,
+            'description' => $request->description,
         ]);
 
         // Attach plan price details
@@ -132,10 +163,11 @@ class PlanController extends Controller
         $plan->price_id = $plan_price->id;
         $plan->save();
 
-        return Redirect::route('detailPlan', ['id' => $plan->id,
-        'translator' => Controller::getTranslations(),
-    
-    ]);
+        return Redirect::route('detailPlan', [
+            'id' => $plan->id,
+            'translator' => Controller::getTranslations(),
+
+        ]);
     }
 
     /**
@@ -146,42 +178,43 @@ class PlanController extends Controller
      */
     public function show(Request $request)
     {
-        if($request->id) {
+        if ($request->id) {
 
-           $subscription_plan = '';
-           $workspaces = [];
+            $subscription_plan = '';
+            $workspaces = [];
 
-           $plan = Plan::findOrFail($request->id);
-           
-           if(!$plan) {
-             about('401');
-           }
-           $headers = $this->getModuleHeader(1 , 'Plan');
+            $plan = Plan::findOrFail($request->id);
 
-           // Get plan record value
-           $subscription_plan = DB::table('plans')->where('plan_id', $request->id)->first();
+            if (!$plan) {
+                about('401');
+            }
+            $headers = $this->getModuleHeader(1, 'Plan');
 
-           // Get all related plan workspace
-           $plan_workspace = DB::table('plan_workspaces')->where('plan_id', $request->id)->get(['company_id']);
+            // Get plan record value
+            $subscription_plan = DB::table('plans')->where('plan_id', $request->id)->first();
 
-           if($plan_workspace) {
+            // Get all related plan workspace
+            $plan_workspace = DB::table('plan_workspaces')->where('plan_id', $request->id)->get(['company_id']);
+
+            if ($plan_workspace) {
                 $workspaces[] = Company::first();
-           }
-           
-           return Inertia::render('Plans/Detail', [
-            'record' => $plan,            
-            'headers' => $headers,
-            'subscription_plan' => $subscription_plan,
-            'workspaces' => $workspaces,
+            }
 
-            'translator' => [
-                'Detail' => __('Detail'),
-                'Edit'  =>__('Edit'),
-                'Plan Detail' => _('Plan Detail'),
-                'Workspace' => _('Workspace'),
-            ],       
+            return Inertia::render('Plans/Detail', [
+                'module' => 'Plan',
+                'record' => $plan,
+                'headers' => $headers,
+                'subscription_plan' => $subscription_plan,
+                'workspaces' => $workspaces,
 
-          ]);
+                'translator' => [
+                    'Detail' => __('Detail'),
+                    'Edit'  => __('Edit'),
+                    'Plan Detail' => __('Plan Detail'),
+                    'Workspace' => __('Workspace'),
+                ],
+
+            ]);
         }
     }
 
@@ -195,7 +228,7 @@ class PlanController extends Controller
     {
         $plan = Plan::find($id);
 
-        if(!$plan) {
+        if (!$plan) {
             abort(401);
         }
 
@@ -212,7 +245,7 @@ class PlanController extends Controller
     public function update(Request $request, $id)
     {
         $plan = Plan::find($id);
-        
+
         $request->validate([
             'name' => 'required|max:255',
             'description' => 'required',
@@ -221,14 +254,14 @@ class PlanController extends Controller
             'pricing_model' => 'required',
         ]);
 
-        if($plan) {
+        if ($plan) {
             $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
 
             $update_plan = $stripe->products->update($plan->stripe_id, [
                 'name' => $request->name,
                 'description' => $request->description
             ]);
-  
+
             $plan->name = $request->name;
             $plan->description = $request->description;
             $plan->save();
@@ -247,25 +280,25 @@ class PlanController extends Controller
     {
         $plan = Plan::find($id);
         $errors = '';
-    
-        if($plan->stripe_id) {
-           
+
+        if ($plan->stripe_id) {
+
             $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
 
             // Delete the Plan
             try {
                 $stripe->products->delete(
-                    $plan->stripe_id,  
+                    $plan->stripe_id,
                     []
-                 );
-              }  catch (\Stripe\Exception\InvalidRequestException $e) {
-                  $errors = $e->getMessage();
-              } catch (Exception $e) {
+                );
+            } catch (\Stripe\Exception\InvalidRequestException $e) {
                 $errors = $e->getMessage();
-              }
+            } catch (Exception $e) {
+                $errors = $e->getMessage();
+            }
         }
 
-        if($errors) {
+        if ($errors) {
             return redirect()->back()->withErrors(['message' => $errors]);
         }
 
@@ -274,40 +307,42 @@ class PlanController extends Controller
         return Redirect::route('listPlan');
     }
 
-    public function workspacePlan(Request $request) {
-        
-        if($request->plan_id) {
-            
+    public function workspacePlan(Request $request)
+    {
+
+        if ($request->plan_id) {
+
             $plan['plan_id'] = $request->plan_id;
             $plan['company_id'] = $request->value;
-            
+
             DB::table('plan_workspaces')->insert($plan);
 
             return Redirect::route('detailPlan', ['id' => $request->plan_id]);
         }
     }
 
-    public function setDefaultPlan(Request $request, $id) {
-        
-        if($id) {
-            
+    public function setDefaultPlan(Request $request, $id)
+    {
+
+        if ($id) {
+
             $flag = '';
             $subscriptionRecords = DB::table('plans')->get();
             $plans = [];
             $count = [];
 
-            foreach($subscriptionRecords as $record) {
+            foreach ($subscriptionRecords as $record) {
                 $plans[] = $record;
 
-                if($id == $record->id){
+                if ($id == $record->id) {
                     $flag = $record->default_plan;
                 }
-                if($record->default_plan == 'true') {
+                if ($record->default_plan == 'true') {
                     $count[] = $record->default_plan;
                 }
             }
-            
-            if($flag == 'true'){
+
+            if ($flag == 'true') {
                 DB::table('plans')->where('id', $id)->update(['default_plan' => 'false']);
 
                 return response()->json(['status' => true, 'show' => false]);
@@ -318,7 +353,7 @@ class PlanController extends Controller
 
                 return response()->json(['status' => true, 'show' => true]);
             }
-            
+
             return response()->json(['status' => true, 'message' => true]);
         }
     }
@@ -328,110 +363,124 @@ class PlanController extends Controller
      */
     public function getPlanDetail(Request $request, $plan)
     {
-        
+
         $user = $request->user();
         $company =  Company::first();
         $accounts = Account::select('id')->get();
         $accountId = [];
-        foreach($accounts as $account){
+        foreach ($accounts as $account) {
             $accountId[] = $account->id;
         }
-        
+
         $users = User::count();
-       
+
         $activeUsers = User::where('status', true)->count();
         $automations = Automation::count();
-     
+
         $plan = DB::table('plans')->where('plan_id', $company->plan)->first();
-      
+
         $messages = Msg::select(DB::raw('count(distinct(msgable_id)) as category_count, service '))
-            ->where(['account_id' => $accountId ])
+            ->where(['account_id' => $accountId])
             ->groupBy(['service'])
             ->get();
-        $category = [ 'whatsapp' => 0 , 'instagram' => 0];
-        foreach($messages as $message){
-            $category[$message->service] = $message->category_count + $category[$message->service] ;
-        } 
-       
+        $category = ['whatsapp' => 0, 'instagram' => 0];
+        foreach ($messages as $message) {
+            $category[$message->service] = $message->category_count + $category[$message->service];
+        }
+
         $planUser = ($plan && $plan->users) ? (int)$plan->users : 0;
         $fatturazione = ($plan && $plan->fatturazione) ? (int)$plan->fatturazione : 0;
         $offical_whatsapp = ($plan && $plan->offical_whatsapp) ? (int)$plan->offical_whatsapp : 0;
-       // $offical_whatsapp = ($plan && $plan->users) ? $plan->users : 0;
+        // $offical_whatsapp = ($plan && $plan->users) ? $plan->users : 0;
 
         $planData = [
-            'user' => ['label' => 'Users', 'current' => $users , 'limit' => $planUser , 'percentage' => ($planUser != 0) ? ($users / $planUser)*100 : 0  ] ,
-            'monthly_active_user' => ['label' => 'Active users', 'current' => $activeUsers , 'limit' => $planUser, 'percentage' => ($planUser != 0) ? ($users / $planUser)*100 : 0],
-            'automations' => ['label' => 'Automations', 'current' => $automations , 'limit' => $fatturazione, 'percentage' => ($fatturazione != 0) ? ($automations / $plan->fatturazione)*100 : 0],
-            'whatsapp' => ['label' => 'Whatsapp number' , 'current' => $category['whatsapp'] , 'limit' => $offical_whatsapp , 'percentage' => ($offical_whatsapp != 0) ? ($category['whatsapp'] / $plan->offical_whatsapp)*100 : 0],
-            'instagram' => ['label' => 'Instagram accounts' , 'current' => $category['instagram'] , 'limit' => $offical_whatsapp , 'percentage' =>  ($offical_whatsapp != 0) ? ($category['instagram'] / $plan->offical_whatsapp)*100 : 0],
-            ];
-            
-        return response()->json([ 'price' => ($plan) ? $plan->price : 0 , 'plan_data' => $planData]);
+            'user' => ['label' => 'Users', 'current' => $users, 'limit' => $planUser, 'percentage' => ($planUser != 0) ? ($users / $planUser) * 100 : 0],
+            'monthly_active_user' => ['label' => 'Active users', 'current' => $activeUsers, 'limit' => $planUser, 'percentage' => ($planUser != 0) ? ($users / $planUser) * 100 : 0],
+            'automations' => ['label' => 'Automations', 'current' => $automations, 'limit' => $fatturazione, 'percentage' => ($fatturazione != 0) ? ($automations / $plan->fatturazione) * 100 : 0],
+            'whatsapp' => ['label' => 'Whatsapp number', 'current' => $category['whatsapp'], 'limit' => $offical_whatsapp, 'percentage' => ($offical_whatsapp != 0) ? ($category['whatsapp'] / $plan->offical_whatsapp) * 100 : 0],
+            'instagram' => ['label' => 'Instagram accounts', 'current' => $category['instagram'], 'limit' => $offical_whatsapp, 'percentage' => ($offical_whatsapp != 0) ? ($category['instagram'] / $plan->offical_whatsapp) * 100 : 0],
+        ];
+
+        return response()->json(['price' => ($plan) ? $plan->price : 0, 'plan_data' => $planData]);
     }
 
-    public function deleteCustomPlan(Request $request) {
-        
-        $plan_workspace = DB::table('plan_workspaces')             
-                         ->where('plan_id', $request->plan_id)
-                         ->delete();
-        
+    public function deleteCustomPlan(Request $request)
+    {
+
+        $plan_workspace = DB::table('plan_workspaces')
+            ->where('plan_id', $request->plan_id)
+            ->delete();
+
         return Redirect::route('detailPlan', ['id' => $request->plan_id]);
     }
 
-    public function companyCurrentPlan(Request $request) {
-        
+    public function companyCurrentPlan(Request $request)
+    {
+
         $flag = false;
         $company = Company::first();
         $company_plan = $company->plan;
         $paymentMethod = $company->payment_method;
-        $result = [ 'remain' => '-', 'access' => true ];
+        $result = ['remain' => '-', 'access' => true];
 
-        if($paymentMethod == 'Prepaid') {
+        if ($paymentMethod == 'Prepaid') {
             $plan = Plan::where('plan_id', $company_plan)->first();
             $current_users = User::count();
             $max_users = $plan->users;
-            
-            if($max_users != '-') {
+
+            if ($max_users != '-') {
                 $remaining_user = $max_users - $current_users;
-    
-                if($max_users > $current_users) {
+
+                if ($max_users > $current_users) {
                     $flag = true;
                 }
-        
-                $result = [ 'remain' => $remaining_user, 'access' => $flag , 'max_user' => $max_users];
+
+                $result = ['remain' => $remaining_user, 'access' => $flag, 'max_user' => $max_users];
             }
         }
 
         return response()->json(['status' => true, 'result' => $result]);
     }
 
-    public function subMenu() {
-        
+    public function subMenu()
+    {
+
         $company = Company::first();
         $plan = Plan::where('plan_id', $company->plan)->first();
 
         $navigations = [
-            'Dashboard' => [ 
-                'name' => 'Dashboard','show' => true
+            'Dashboard' => [
+                'name' => 'Dashboard',
+                'show' => true
             ],
             'Conversations' => [
                 'name' => 'Conversations',
                 'submenu' => [
-                    'Chats' => 'chat_conversation', 'Campaigns' => 'campaigns', 'Social Profiles' => 'social_profile'
+                    'Chats' => 'chat_conversation',
+                    'Campaigns' => 'campaigns',
+                    'Social Profiles' => 'social_profile'
                 ],
                 'show' => false
             ],
             'CRM' => [
-                'name' => 'CRM', 
-                'submenu' => [ 
-                    'Leads' =>  'crm_leads', 'Contacts' => 'crm_contacts','Organizations' => 'crm_organizations','Fields' => 'Fields','Tags' => 'Tags', 'Lists' => 'Lists'
+                'name' => 'CRM',
+                'submenu' => [
+                    'Leads' =>  'crm_leads',
+                    'Contacts' => 'crm_contacts',
+                    'Organizations' => 'crm_organizations',
+                    'Fields' => 'Fields',
+                    'Tags' => 'Tags',
+                    'Lists' => 'Lists'
                 ],
                 'show' => false
             ],
             'Sales' => [
                 'name' => 'Sales',
                 'submenu' => [
-                    'Deals' => 'crm_deals','Orders' => 'sale_orders', 'Products' => 'product_category', 'Catalogs' => 'catalogs'
+                    'Deals' => 'crm_deals',
+                    'Orders' => 'sale_orders',
+                    'Products' => 'product_category',
+                    'Catalogs' => 'catalogs'
                 ],
                 'show' => false
             ],
@@ -441,31 +490,32 @@ class PlanController extends Controller
                 'show' => false
             ],
             'Reports' => [
-                'name' => 'Reports','show' => true
+                'name' => 'Reports',
+                'show' => true
             ]
 
         ];
 
-        foreach($navigations as $key => $navigation) {
-            if(!$navigation['show']) {
-                if($key == 'Automations') {
+        foreach ($navigations as $key => $navigation) {
+            if (!$navigation['show']) {
+                if ($key == 'Automations') {
                     $name = $navigation['access'];
-                    if(isset($plan->$name) && $plan->$name == 'true') {
+                    if (isset($plan->$name) && $plan->$name == 'true') {
                         $navigations[$key]['show'] = true;
                     }
                 } else {
                     $submenu = $navigation['submenu'];
                     $status = true;
-                    foreach($submenu as $header => $name) {
-                        if(isset($plan->$name) && $plan->$name == 'false'){
-                           unset($navigations[$key]['submenu'][$header]);
-                           $status = false;
+                    foreach ($submenu as $header => $name) {
+                        if (isset($plan->$name) && $plan->$name == 'false') {
+                            unset($navigations[$key]['submenu'][$header]);
+                            $status = false;
                         }
                     }
-                    if(count($navigations[$key]['submenu'])){
+                    if (count($navigations[$key]['submenu'])) {
                         $navigations[$key]['show'] = true;
                     }
-                    if(!$status && $key == 'CRM') {
+                    if (!$status && $key == 'CRM') {
                         $navigations[$key]['show'] = false;
                     }
                 }
@@ -475,14 +525,15 @@ class PlanController extends Controller
         return response()->json(['status' => true, 'menu' => $navigations]);
     }
 
-    public function updatePlan(Request $request) {
+    public function updatePlan(Request $request)
+    {
 
         $user = $request->user();
         $company = Company::first();
         $stripe_public_key = config('stripe.stripe_key');
         $plans = DB::table('plans')->where('default_plan', 'true')->get();
-        
-        return Inertia::render('PlanComponent',[
+
+        return Inertia::render('PlanComponent', [
             'user' => $user,
             'company' => $company,
             'stripe_public_key' => $stripe_public_key,
