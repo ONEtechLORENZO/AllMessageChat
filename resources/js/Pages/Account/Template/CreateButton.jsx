@@ -1,0 +1,143 @@
+import React from 'react';
+import {button_types, call_to_action_lists, url_types} from '@/Pages/Constants'; 
+import Dropdown from '@/Components/Forms/Dropdown';
+import InputError from '@/Components/Forms/InputError';
+import { DeleteIcon } from '@/Pages/icons';
+
+export default function CreateButton(props) {
+
+    return (
+        <>
+            <input type="hidden" name="id" value={props.data.id} />
+            <div className="form-group col-span-6 sm:col-span-4">
+                <div className='grid grid-cols-2'>
+                    <label htmlFor="button_type" className="block text-sm text-[#878787] font-bold'">
+                        {props.translator['Button No']} {props.index  + 1}
+                    </label>
+                    <div className='flex justify-end' onClick={() => {props.deleteButton(props.index)}}>
+                       <DeleteIcon className="cursor-pointer" /> 
+                    </div>
+                </div>
+                
+                <div className="mt-1 flex rounded-md shadow-sm">
+                    <Dropdown 
+                        id="button_type"
+                        name="button_type"
+                        handleChange={props.handleChange}
+                        options={button_types}
+                        value={props.data.button_type}
+                    />
+                </div>
+                <InputError message={props.errors.button_type} />
+            </div>
+
+            {props.data.button_type == 'Quick Reply' ?                                         
+                <div className="form-group col-span-6 sm:col-span-4">
+                    <div className="mt-1">
+                        <input name='button_text' id='button_text' type={'text'} className="form-control" maxLength={'20'} onChange={(e) => props.handleChange(e)} value={props.data.button_text} required={true}/>
+                    </div>
+                    <small className="form-text text-muted"> {props.quick_reply_max_length - props.data.button_text.length} / {props.quick_reply_max_length} </small>
+                    <InputError message={props.errors.button_text} />
+                </div> 
+            : ''}
+
+            {props.data.button_type == 'Call to Action' ?      
+                <>                                   
+                    <div className="form-group col-span-6 sm:col-span-4">
+                        <label htmlFor="action" className="block text-sm font-medium text-gray-700">
+                            Type of action
+                        </label>
+                        <div className="mt-1">
+                            <Dropdown 
+                                required={true} 
+                                id="action"
+                                name="action"
+                                handleChange={props.handleChange}
+                                options={call_to_action_lists}
+                                value={props.data.action}
+                            />
+                        </div>
+                        <InputError message={props.errors.action} />
+                    </div> 
+
+                    {props.data.action == 'call_phone_number' ?
+                        <>
+                            <div className="form-group col-span-6 sm:col-span-4">
+                                <label htmlFor="button_text" className="block text-sm font-medium text-gray-700">
+                                    Button text
+                                </label>
+                                <div className="mt-1">
+                                   <input name='button_text' id='button_text' type={'text'} className="form-control" maxLength={'60'} onChange={(e) => props.handleChange(e)} value={props.data.button_text} required={true}/>
+                                </div>
+                                <small className="form-text text-muted"> {props.quick_reply_max_length - props.data.button_text.length} / {props.quick_reply_max_length} </small>
+                                <InputError message={props.errors.button_text} />
+                            </div> 
+                            <div className="form-group col-span-6 sm:col-span-4">
+                                <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700">
+                                    Phone number (format: +XXXXXXXXXX)
+                                </label>
+                                <div className="mt-1">
+                                   <input name='phone_number' id='phone_number' type={'text'} className="form-control" maxLength={'60'} onChange={(e) => props.handleChange(e)} value={props.data.phone_number} required={true}/>
+                                </div>
+                                <small className="form-text text-muted">Max {props.quick_reply_max_length - props.data.phone_number.length} characters </small>
+                                <InputError message={props.errors.phone_number} />
+                            </div> 
+                        </>
+                    : ''}
+
+                    {props.data.action == 'visit_website' ? 
+                        <>
+                            <div className="form-group col-span-6 sm:col-span-4">
+                                <div className="mt-1">
+                                    <input name='button_text' id='button_text' type={'text'} className="form-control" maxLength={'20'} onChange={(e) => props.handleChange(e)} value={props.data.button_text} required={true}/>
+                                </div>
+                                <small className="form-text text-muted"> {props.quick_reply_max_length - props.data.button_text.length} / {props.quick_reply_max_length} </small>
+                                <InputError message={props.errors.button_text} />
+                            </div> 
+
+                            <div className="form-group col-span-6 sm:col-span-4">
+                                <label htmlFor="url_type" className="block text-sm font-medium text-gray-700">
+                                    URL Type
+                                </label>
+                                <div className="mt-1">
+                                    <Dropdown 
+                                        required={true} 
+                                        id="url_type"
+                                        name="url_type"
+                                        handleChange={props.handleChange}
+                                        options={url_types}
+                                        value={props.data.url_type}
+                                    />
+                                </div>
+                                <InputError message={props.errors.url_type} />
+                            </div> 
+                            <div className="form-group col-span-6 sm:col-span-4">
+                                <label htmlFor="url" className="block text-sm font-medium text-gray-700">
+                                    URL
+                                </label>
+                                <div className="mt-1">
+                                   <input name='url' id='url' type={'text'} maxlength="2000" className="form-control" onChange={(e) => props.handleChange(e)} value={props.data.url} required={true}/>
+                                </div>
+                                <small className="form-text text-muted"> {props.url_max_length - props.data.url.length} / {props.url_max_length} </small>
+                                <InputError message={props.errors.url} />
+                            </div> 
+                        </>
+                    : ''}
+                </>
+            : ''}
+            
+            <div className='col-span-6 sm:col-span-4'>
+                <hr className="my-2" />
+            </div>
+        </>
+    );
+}
+
+
+
+
+
+
+
+
+

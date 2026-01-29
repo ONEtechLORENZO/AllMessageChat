@@ -1,0 +1,709 @@
+import { Fragment, useEffect, useRef, useState } from 'react'
+import { Dialog, Transition } from '@headlessui/react'
+import Axios from "axios";
+import notie from 'notie';
+import nProgress from 'nprogress';
+import Dropdown from './Dropdown';
+import TextArea from './TextArea';
+import Input from './Input';
+import Pristine from "pristinejs";
+import { useForm, router as Inertia } from '@inertiajs/react';
+import ValidationErrors from '@/Components/ValidationErrors';
+import Checkbox from '../Checkbox';
+import Creatable from 'react-select/creatable';
+import { parsePhoneNumber } from 'react-phone-number-input';
+import Number from './Number';
+import DateTime from './DateTime';
+import PhoneInput2 from 'react-phone-input-2';
+import Relate from '@/Components/Relate';
+import 'react-phone-input-2/lib/style.css';
+import Date from './Date';
+import Time from './Time';
+import MultiSelect from './MultiSelect';
+import LineItem from '@/Pages/Order/Form';
+import InputError from './InputError';
+import MultiContainer from './MultiContainer';
+
+const defaultConfig = {
+    // class of the parent element where the error/success class is added
+    classTo: 'form-group',
+    errorClass: 'has-danger',
+    successClass: 'has-success',
+    // class of the parent element where error text element is appended
+    errorTextParent: 'form-group',
+    // type of element to create for the error text
+    errorTextTag: 'div',
+    // class of the error text element
+    errorTextClass: 'text-red-500 text-xs pt-1'
+};
+
+const optionField = {
+    'field_name': 'options',
+    'field_label': 'Options',
+    'field_type': 'selectable',
+    'is_mandatory': 1,
+    'is_custom': 1
+}
+
+function Form(props) {
+    const [open, setOpen] = useState(true)
+    const [fields, setFields] = useState([]);
+    const [formErrors, setErrors] = useState({});
+    const [options, setOptions] = useState(null);
+    const [lineItems, setLineItems] = useState([]);
+    const [totalPrice, setTotalPrice] = useState('0.00');
+    const [productList, setProductList] = useState(props.productList);
+
+    const cancelButtonRef = useRef(null)
+
+    const { data, setData, post, processing, errors, reset } = useForm({});
+
+    useEffect(() => {
+        fetchModuleFields();
+
+        //prefill the module_name in addfield form  
+        props.module == 'Field' && props.mod != '' && setData('module_name', props.mod);
+
+        props.module == 'Order' && props.OpportunityrecordId != '' && setData('opportunity', { 'value': props.OpportunityrecordId, 'label': props.opportunityname });
+
+
+        //prefill relate field in subpanel
+        if (props.parent_module == 'Organization' && props.module == 'Contact') {
+            setData('organization_id', { 'value': props.parent_id, 'label': props.parent_name });
+        }
+        if (props.parent_module == 'Contact' && props.module == 'Opportunity') {
+            setData('contact_id', { 'value': props.parent_id, 'label': props.parent_name });
+        }
+        if (props.parent_module == 'Contact' && props.module == 'Order') {
+            setData('contact', { 'value': props.parent_id, 'label': props.parent_name });
+        }
+
+        if (props.recordId) {
+            fetchRecord();
+        }
+
+        if (props.module == "Api") {
+            setData({ read_only: true, write_only: true });
+        }
+
+    }, [props]);
+
+    /**
+     * Fetch record
+     */
+    function fetchRecord() {
+        nProgress.start(0.5);
+        nProgress.inc(0.2);
+
+        let endpoint_url = route('edit' + props.module, { 'id': props.recordId });
+
+        Axios.get(endpoint_url).then((response) => {
+            nProgress.done(true);
+            if (response.data.status !== false) {
+                setData(response.data.record);
+                setLineItems((response.data.lineItems) ? response.data.lineItems : props.lineItems);
+                setProductList((response.data.productList) ? response.data.productList : productList)
+            }
+            else {
+                notie.alert({ type: 'error', text: response.data.message, time: 5 });
+            }
+        }).catch((error) => {
+            nProgress.done(true);
+            let error_message = 'Something went wrong';
+            if (error.response) {
+                error_message = error.response.data.message;
+                if (error_message == undefined) {
+                    error_message = error.response.statusText;
+                }
+            }
+            else {
+                error_message = error.message;
+            }
+
+            notie.alert({ type: 'error', text: error_message, time: 5 });
+        });
+    }
+
+    /**
+     * Fetch module fields
+     */
+    function fetchModuleFields() {
+        nProgress.start(0.5);
+        nProgress.inc(0.2);
+
+        let endpoint_url = route('fetchModuleFields', { 'module': props.module });
+        Axios.get(endpoint_url).then((response) => {
+            nProgress.done(true);
+            if (response.data.status !== false) {
+                var fields = (typeof (response.data.fields) === 'object') ? Object.values(response.data.fields) : response.data.fields;
+                setFields(fields);
+            }
+            else {
+                notie.alert({ type: 'error', text: response.data.message, time: 5 });
+            }
+        }).catch((error) => {
+            nProgress.done(true);
+            let error_message = 'Something went wrong';
+            if (error.response) {
+                error_message = error.response.data.message;
+                if (error_message == undefined) {
+                    error_message = error.response.statusText;
+                }
+            }
+            else {
+                error_message = error.message;
+            }
+
+            notie.alert({ type: 'error', text: error_message, time: 5 });
+        });
+    }
+
+    /**
+     * Handle Input Change
+     */
+    const handleChange = (event) => {
+        const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+        let field_name = event.target.name;
+        if (event.target.name == 'field_type') {
+            EventHandler(event);
+        }
+        DataHandler(field_name, value);
+    }
+
+    const EventHandler = (event) => {
+        if (event.target.value == 'dropdown' || event.target.value == 'multiselect') {
+            fields.map((field, key) => {
+                if (field.field_type == 'selectable' && field.field_name == 'options') {
+                    fields.pop(key);
+                    setOptions(null);
+                }
+            });
+            fields.push(optionField);
+        } else {
+            fields.map((field, key) => {
+                if (field.field_type == 'selectable') {
+                    fields.pop(key);
+                    setOptions(null);
+                }
+            });
+        }
+    }
+
+    /**
+     * Phone number change event
+     */
+    function changePhoneNumber(value, name) {
+        let newState = Object.assign({}, data);
+        value = '+' + value;
+        newState[name] = value;
+        if (value && parsePhoneNumber(value)) {
+            newState['country_code'] = parsePhoneNumber(value).countryCallingCode;
+        }
+
+        setData(newState);
+    }
+
+    /**
+     * Save form
+     */
+    function saveForm() {
+        // Validate the data
+        let is_validated = false;
+        var pristine = new Pristine(document.getElementById(`form`), defaultConfig);
+        is_validated = pristine.validate(
+            document.querySelectorAll(
+                'input[required], input[data-pristine-required="true"], input[data-pristine-required="required"]',
+                'textarea[data-pristine-required="true"], textarea[data-pristine-required="required"]',
+            )
+        );
+
+        if (!is_validated) {
+            return false;
+        }
+
+        data['options'] = options;
+        data['lineItems'] = (props.lineItems) ? props.lineItems : lineItems;
+
+        // Set parent module detail
+        data['parent_id'] = (props.parent_id) ? props.parent_id : '';
+        data['parent_module'] = (props.parent_module) ? props.parent_module : '';
+
+        Inertia.post(props.recordId ? route('update' + props.module, { id: props.recordId }) : route('store' + props.module), data, {
+            onSuccess: (response) => {
+                props.hideForm();
+                if (props.is_chat) {
+                    props.getUserContacts();
+                }
+                if (props.newcontact) {
+                    props.addNewContact();
+                }
+            },
+            onError: (errors) => {
+                setErrors(errors)
+            }
+        });
+    }
+
+    /**
+     * Added custom dropdown options
+     */
+    function addSelectableField() {
+        var isAdded = false;
+        Object.entries(fields).map(([key, field]) => {
+            if (field.field_type == 'selectable') {
+                isAdded = true;
+            }
+        });
+
+        if (!isAdded) {
+            fields.push(optionField);
+            setOptions(data.options);
+        }
+    }
+
+    /**
+     * Form Data Handling
+     */
+    function DataHandler(name, value) {
+        let newState = Object.assign({}, data);
+        let customfields = (data.custom) ? data.custom : {};
+        Object.entries(fields).map(([key, field]) => {
+            if (name == field.field_name && field.is_custom == 0) {
+                newState[name] = value;
+            }
+
+            if (name == field.field_name && field.is_custom == 1) {
+                customfields[name] = value;
+                newState['custom'] = customfields;
+            }
+        });
+
+        setData(newState);
+    }
+
+    // Change Date & Time Format
+    function changeDateTime(name, event) {
+        let dateTime = '';
+        if (event) {
+            var date = event.toISOString().substring(0, 10);
+            var time = event.getHours() + ':' + String(event.getMinutes()).padStart(2, '0');
+            dateTime = date + ' ' + time;
+        }
+        DataHandler(name, dateTime);
+    }
+
+    // Remove characters
+    function changeNumber(name, event) {
+        let result = event.target.value;
+
+        if (result) {
+            result = result.replace(/[^0-9\.]/g, '');
+            if (result.split('.').length > 2) {
+                result = result.replace(/\.+$/, "")
+            }
+        }
+        DataHandler(name, result);
+    }
+
+    // Change Date format
+    function changeDate(name, event) {
+        let date = '';
+        if (event) {
+            date = event.getFullYear() + '-' + ('0' + (event.getMonth() + 1)).slice(-2) + '-' + ('0' + event.getDate()).slice(-2);
+        }
+        DataHandler(name, date);
+    }
+
+    // Change Time format
+    function changeTime(name, event) {
+        let time = '';
+        if (event) {
+            time = ('0' + event.getHours()).slice(-2) + ':' + ('0' + event.getMinutes()).slice(-2) + ':00';
+        }
+        DataHandler(name, time);
+    }
+
+    function classNames(...classes) {
+        return classes.filter(Boolean).join(" ");
+    }
+
+    /**
+     * Handle relate field change
+     * 
+     * @param {object} value 
+     * @param {string} field_name 
+     */
+    function handleRelateChange(value, field_name) {
+        DataHandler(field_name, value);
+    }
+
+    /**
+     * Handle multi select change
+     * 
+     * @param {object} event 
+     */
+    function handleMultiSelectChange(event) {
+        let field_name = event.target.name;
+        var options = event.target.options;
+        var values = [];
+        for (var i = 0; i < options.length; i++) {
+            if (options[i].selected) {
+                values.push(options[i].value);
+            }
+        }
+
+        DataHandler(field_name, values);
+    }
+
+    function fileHandler(event) {
+        let field_name = event.target.name;
+        let field_value = event.target.files[0];
+
+        DataHandler(field_name, field_value);
+    }
+
+    return (
+        <Transition.Root show={open} as={Fragment}>
+            <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => { }} >
+                <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                >
+                    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                </Transition.Child>
+
+                <div className="fixed z-10 inset-0 overflow-y-auto">
+                    <div className="flex items-end sm:items-center justify-center min-h-full p-4 text-center sm:p-0">
+                        <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-300"
+                            enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                            enterTo="opacity-100 translate-y-0 sm:scale-100"
+                            leave="ease-in duration-200"
+                            leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                            leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                        >
+                            <Dialog.Panel
+                                className={classNames(
+                                    props && props.module == 'Order'
+                                        ? "relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-1/2"
+                                        : "relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-xl sm:w-full"
+                                )} >
+                                <div className="bg-gray-50 px-4 sm:p-4 sm:pb-4">
+                                    <div className="sm:flex sm:items-start">
+                                        <div className="text-center sm:mt-0 sm:text-left">
+                                            <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
+                                                {props.recordId ? 'Update' : 'Create'} {props.heading}
+                                            </Dialog.Title>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {Object.keys(formErrors) > 0 ?
+                                    <div className='p-4'>
+                                        <ValidationErrors errors={formErrors} />
+                                    </div>
+                                    : ''}
+
+                                <form id='form'>
+                                    <div className='space-y-4 p-3'>
+
+                                        {fields.length > 0 && fields && fields.map((field_info, index) => {
+                                            let element = '';
+                                            let readOnly = true;
+                                            if (data && data.is_custom == '1' && data.module_name == 'Contact' || data.module_name == 'Opportunity' && data.field_type == 'dropdown') {
+                                                addSelectableField();
+                                            }
+                                            var field_value = data[field_info.field_name];
+                                            if (data.custom) {
+                                                const custom = data.custom;
+                                                let custom_field = field_info.field_name;
+
+                                                if (custom.hasOwnProperty(custom_field)) {
+                                                    field_value = custom[custom_field];
+                                                }
+                                            }
+                                            if (field_info.readonly_on_edit == 'true' && data.id) {
+                                                readOnly = false;
+                                            }
+
+                                            switch (field_info.field_type) {
+                                                case "text":
+                                                    element = <Input
+                                                        type="text"
+                                                        className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        value={field_value}
+                                                        handleChange={handleChange}
+                                                        required={field_info.is_mandatory === 1 ? true : false}
+                                                        readOnly={(readOnly) ? '' : 'disabled'}
+                                                    />;
+                                                    break;
+
+                                                case "url":
+                                                    element = <Input
+                                                        type="text"
+                                                        className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        value={field_value}
+                                                        handleChange={handleChange}
+                                                        required={field_info.is_mandatory === 1 ? true : false}
+                                                        readOnly={(readOnly) ? '' : 'disabled'}
+                                                    />;
+                                                    break;
+
+                                                case 'phone_number':
+                                                    element = <PhoneInput2
+                                                        inputProps={{
+                                                            name: 'field_info.field_name',
+                                                            required: field_info.is_mandatory === 1 ? true : false,
+                                                            autoFocus: true
+                                                        }}
+                                                        containerStyle={{ marginTop: "15px" }}
+                                                        searchclassName="search-class"
+                                                        searchStyle={{ margin: "0", width: "97%", height: "30px" }}
+                                                        enableSearchField
+                                                        disableSearchIcon
+                                                        placeholder="Enter phone number"
+                                                        value={field_value}
+                                                        onChange={(value) => changePhoneNumber(value, field_info.field_name)}
+                                                        required={field_info.is_mandatory === 1 ? true : false}
+                                                    />
+
+                                                    break;
+                                                case "amount":
+                                                    element = <div className="mt-1 relative rounded-md shadow-sm">
+                                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                            <span className="text-gray-500 sm:text-sm">$</span>
+                                                        </div>
+
+                                                        <Number
+                                                            type="text"
+                                                            className={`pl-6 mt-1 appearance-none block w-full pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                            id={field_info.field_name}
+                                                            name={field_info.field_name}
+                                                            value={field_value}
+                                                            required={field_info.is_mandatory === 1 ? true : false}
+                                                            handleChange={(event) => changeNumber(field_info.field_name, event)}
+                                                        />
+                                                    </div>
+                                                    break;
+                                                case "textarea":
+                                                    element = <TextArea
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        required={field_info.is_mandatory === 1 ? true : false}
+                                                        rows="2"
+                                                        className={`mt-1 max-w-lg shadow-sm block w-full focus:ring-skin-primary focus:border-skin-primary sm:text-sm border border-gray-300 rounded-md`}
+                                                        value={field_value}
+                                                        handleChange={handleChange}
+                                                    />
+                                                    break;
+                                                case 'dropdown':
+                                                    element = <Dropdown
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        options={field_info.options ? field_info.options : {}}
+                                                        handleChange={handleChange}
+                                                        emptyOption={field_info.field_name == 'field_group' ? 'General' : 'Select'}
+                                                        value={field_value}
+                                                        required={field_info.is_mandatory === 1 ? true : false}
+                                                        readOnly={(readOnly) ? '' : 'disabled'}
+                                                    />
+                                                    break;
+                                                case 'selectable':
+                                                    element = <Creatable
+                                                        isMulti
+                                                        value={options}
+                                                        defaultValue={options}
+                                                        onChange={setOptions}
+                                                    />
+                                                    break;
+                                                case 'checkbox':
+                                                    element = <Checkbox
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        value={field_value}
+                                                        handleChange={handleChange}
+                                                    />
+                                                    break;
+                                                case 'number':
+                                                    element = <Number
+                                                        type="text"
+                                                        className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        value={field_value}
+                                                        handleChange={(event) => changeNumber(field_info.field_name, event)}
+                                                    />
+                                                    break;
+                                                case 'datetime':
+                                                    element = <DateTime
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        value={field_value}
+                                                        handleChange={(event) => changeDateTime(field_info.field_name, event)}
+                                                    />
+                                                    break;
+                                                case 'date':
+                                                    element = <Date
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        value={field_value}
+                                                        handleChange={(event) => changeDate(field_info.field_name, event)}
+                                                    />
+                                                    break;
+                                                case 'time':
+                                                    element = <Time
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        value={field_value}
+                                                        handleChange={(event) => changeTime(field_info.field_name, event)}
+                                                    />
+                                                    break;
+                                                case 'multiselect':
+                                                    element = <MultiSelect
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        options={field_info.options ? field_info.options : {}}
+                                                        handleChange={handleMultiSelectChange}
+                                                        emptyOption={field_info.field_name == 'field_group' ? 'General' : 'Select'}
+                                                        value={field_value}
+                                                        required={field_info.is_mandatory === 1 ? true : false}
+                                                        readOnly={(readOnly) ? '' : 'disabled'}
+                                                    />
+                                                    break;
+                                                case 'relate':
+                                                    element = <Relate
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        module={field_info.options.module}
+                                                        handleChange={handleRelateChange}
+                                                        value={field_value}
+                                                        required={field_info.is_mandatory === 1 ? true : false}
+                                                        readOnly={(readOnly) ? '' : 'disabled'}
+                                                    />
+                                                    break;
+                                                case 'email':
+                                                    element = <Input
+                                                        type="email"
+                                                        className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        value={field_value}
+                                                        handleChange={handleChange}
+                                                        required={field_info.is_mandatory === 1 ? true : false}
+                                                        readOnly={(readOnly) ? '' : 'disabled'}
+                                                    />;
+                                                    break;
+                                                case 'phones':
+                                                    element = <MultiContainer
+                                                        type="text"
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        value={field_value}
+                                                        DataHandler={DataHandler}
+                                                    />;
+                                                    break;
+                                                case 'emails':
+                                                    element = <MultiContainer
+                                                        type="text"
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        value={field_value}
+                                                        DataHandler={DataHandler}
+                                                    />;
+                                                    break;
+                                                case "file":
+                                                    element = <Input
+                                                        type="file"
+                                                        className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        handleChange={fileHandler}
+                                                        required={field_info.is_mandatory === 1 ? true : false}
+                                                    />;
+                                                    break;
+                                                case 'default':
+                                                    element = <Input
+                                                        type="text"
+                                                        className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                        id={field_info.field_name}
+                                                        name={field_info.field_name}
+                                                        value={field_value}
+                                                        handleChange={handleChange}
+                                                        required={field_info.is_mandatory === 1 ? true : false}
+                                                        readOnly={(readOnly) ? '' : 'disabled'}
+                                                    />;
+                                                    break;
+                                            }
+
+                                            return (
+                                                <div className='form-group' key={field_info.field_name}>
+                                                    <label htmlFor={field_info.field_name} className="block text-sm font-medium text-gray-700">
+                                                        {field_info.field_label} {field_info.is_mandatory === 1 ? <span className='text-red-600'>*</span> : ''}
+                                                    </label>
+                                                    <div className="mt-1">
+                                                        {element}
+                                                    </div>
+                                                    <InputError message={formErrors[field_info.field_name]} />
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                    <div>
+                                        {props && props.module == 'Order' ?
+                                            <LineItem
+                                                productList={productList}
+                                                lineItems={(props.lineItems) ? props.lineItems : lineItems}
+                                                totalPrice={totalPrice}
+                                                setLineItems={setLineItems}
+                                                setTotalPrice={setTotalPrice}
+                                            />
+                                            : ''}
+                                    </div>
+                                </form>
+
+                                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                    <button
+                                        type="button"
+                                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+                                        onClick={saveForm}
+                                    >
+                                        {props.recordId ? <>Update</> : <>Create</>}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                                        onClick={() => props.hideForm()}
+                                        ref={cancelButtonRef}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </Dialog.Panel>
+                        </Transition.Child>
+                    </div>
+                </div>
+            </Dialog>
+        </Transition.Root>
+    )
+}
+
+export default Form;
+
+
+
+
+
+
+
+
+

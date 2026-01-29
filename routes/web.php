@@ -64,14 +64,13 @@ Route::middleware('guest')->group(function () {
     Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('login');
 });
 
-Route::get('/new-ui', function(){
+Route::get('/new-ui', function () {
     return Inertia::render('new_ui', []);
 });
 
 // Test
-Route::get('/test', function(){
-});
- 
+Route::get('/test', function () {});
+
 
 // Invite User
 Route::get('/user-invite', [UserInviteController::class, 'inviteUser']);
@@ -80,44 +79,44 @@ Route::get('/invitedUserRelation', [UserInviteController::class, 'relateUser']);
 Route::post('/incoming', [MsgController::class, 'incoming']);
 Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
 
-Route::get('/fb-whatsapp',[MsgController::class, 'incomingFBWhatsApp']);
-Route::post('/fb-whatsapp',[MsgController::class, 'incomingFBWhatsApp']);
+Route::get('/fb-whatsapp', [MsgController::class, 'incomingFBWhatsApp']);
+Route::post('/fb-whatsapp', [MsgController::class, 'incomingFBWhatsApp']);
 
-Route::get('/fb-insta',[MsgController::class, 'incomingFBInsta']);
-Route::post('/fb-insta',[MsgController::class, 'incomingFBInsta']);
+Route::get('/fb-insta', [MsgController::class, 'incomingFBInsta']);
+Route::post('/fb-insta', [MsgController::class, 'incomingFBInsta']);
 
-Route::get('/login-admin-user', [UserController::class , 'loginAdminUser']);
+Route::get('/login-admin-user', [UserController::class, 'loginAdminUser']);
 
 Route::middleware('planrestriction')->group(function () {
 
     // Check user login
     Route::middleware(['auth', 'verified'])->group(function () {
-        
+
         Route::get('/home', [UserController::class, 'home'])->name('home');
         Route::get('/social-profile', [UserController::class, 'socialProfile'])->name('social_profile');
         Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
-        Route::get('/user/timezone',[UserController::class, 'getUserTimeZone'])->name('get_time_zone');
-        Route::post('/show_register_step',[RegisteredUserController:: class, 'create'])->name('show_register_step');
+        Route::get('/user/timezone', [UserController::class, 'getUserTimeZone'])->name('get_time_zone');
+        Route::post('/show_register_step', [RegisteredUserController::class, 'create'])->name('show_register_step');
         Route::get('/user/checkInformation', [UserController::class, 'checkInformation'])->name('check_information');
         Route::post('/company/information', [UserController::class, 'onBoardingInformation'])->name('onBoarding');
         Route::post('/subscription/complete', [UserController::class, 'informationComplete'])->name('subcription_complete');
         Route::get('/fetch-social-profile-pages', [UserController::class, 'fetchSocialPages'])->name('fetch_social_profile_pages');
 
         // FaceBook
-        Route::get('/connect/fb/{accountId}',[WhatsAppUsersController::class, 'connectFaceBook'])->name('connect_face_book');
-        Route::get('/store-access-token/{app_name}/{token}',[WhatsAppUsersController::class, 'storeUserToken'])->name('store_user_code');
-        
+        Route::get('/connect/fb/{accountId}', [WhatsAppUsersController::class, 'connectFaceBook'])->name('connect_face_book');
+        Route::get('/store-access-token/{app_name}/{token}', [WhatsAppUsersController::class, 'storeUserToken'])->name('store_user_code');
+
         // Wallet
         Route::get('/wallet', [UserController::class, 'wallet'])->name('wallet');
         Route::post('/charge', [UserController::class, 'charge'])->name('charge');
         Route::get('/user-balance', [UserController::class, 'userBalance'])->name('userBalance');
-       // Route::get('/transactions', [UserController::class, 'transactions'])->name('listTransaction');
-        Route::get('/invoices/{id}', [UserController::class, 'invoices'])->name('invoices');    
+        // Route::get('/transactions', [UserController::class, 'transactions'])->name('listTransaction');
+        Route::get('/invoices/{id}', [UserController::class, 'invoices'])->name('invoices');
         Route::get('/getPaymentMethods', [UserController::class, 'getPaymentMethods'])->name('getPaymentMethods');
         Route::get('/getPlanDetail/{plan}', [PlanController::class, 'getPlanDetail'])->name('get_plan_data');
         Route::post('/update-payment-method', [SettingsController::class, 'updatePaymentMethod'])->name('setDefaultPaymentMethod');
         Route::post('/delete-payment-method', [SettingsController::class, 'deletePaymentMethod'])->name('deletePaymentMethod');
-         
+
         // Stripe
         Route::get('/createStripeSetupIntent', [UserController::class, 'createStripeSetupIntent'])->name('createStripeSetupIntent');
         Route::post('/relatePaymentMethod', [UserController::class, 'relatePaymentMethod'])->name('relatePaymentMethod');
@@ -126,9 +125,9 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/workspace/settings', [SettingsController::class, 'walletSubscription'])->name('wallet_subscription');
         Route::get('/user/company/pricing', [SettingsController::class, 'updateSubscription'])->name('updateSubscription');
         Route::post('/save/subscription/{plan}', [SettingsController::class, 'SubscriptionPlan'])->name('subscribe_plan');
-        Route::post('/edit/company',[SettingsController::class, 'saveCompany'])->name('saveCompany');
-        Route::post('/autotopup',[SettingsController::class, 'setAutoTopupStatus'])->name('setAutoTopupStatus');
-        Route::get('/currentcompany',[SettingsController::class, 'CurrentCompany'])->name('CurrentCompany');
+        Route::post('/edit/company', [SettingsController::class, 'saveCompany'])->name('saveCompany');
+        Route::post('/autotopup', [SettingsController::class, 'setAutoTopupStatus'])->name('setAutoTopupStatus');
+        Route::get('/currentcompany', [SettingsController::class, 'CurrentCompany'])->name('CurrentCompany');
 
         // Profile
         Route::get('/user/profile', [UserController::class, 'profile'])->name('profile');
@@ -141,7 +140,7 @@ Route::middleware('planrestriction')->group(function () {
 
         // Messages
         Route::get('/messages/list', [MessageLogController::class, 'list'])->name('messages');
-        Route::post('/messages/search_content', [MessageLogController::class, 'searchContent'])->name('searchContent');   
+        Route::post('/messages/search_content', [MessageLogController::class, 'searchContent'])->name('searchContent');
         Route::get('/messages', [MsgController::class, 'messageList'])->name('listMessage');
 
         // Accounts
@@ -187,7 +186,7 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/contact/getContactDetail', [ContactController::class, 'edit'])->name('editContact');
         Route::get('/contact/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
         Route::post('/contact/groupDelete', [ContactController::class, 'groupDeleteRecord'])->name('group_delete');
-        
+
         Route::get('/subpanelRecords', [ContactController::class, 'show_subpanel'])->name('subpanel_list');
         Route::get('/getLatestContact', [ContactController::class, 'getLatestContact'])->name('new_contact');
 
@@ -202,7 +201,7 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/deal/update/{id}', [OpportunityController::class, 'update'])->name('updateOpportunity');
         Route::post('/deal/store', [OpportunityController::class, 'store'])->name('storeOpportunity');
         Route::get('/deal/edit/{id}', [OpportunityController::class, 'edit'])->name('editOpportunity');
-    
+
         //Leads
         Route::get('/leads', [LeadController::class, 'index'])->name('listLead');
         Route::delete('/lead/delete/{id}', [LeadController::class, 'destroy'])->name('deleteLead');
@@ -211,14 +210,14 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/lead/updateLead', [LeadController::class, 'store'])->name('storeLead');
         Route::get('/lead/getLeadDetail/{id}', [LeadController::class, 'edit'])->name('editLead');
         Route::post('/lead/convertLead/{id}', [LeadController::class, 'convert_lead'])->name('convertLead');
-         //Groups
-         Route::get('/groups', [GroupController::class, 'index'])->name('listGroup');
-         Route::delete('/group/delete/{id}', [GroupController::class, 'destroy'])->name('deleteGroup');
-         Route::get('/group/detail/{id}', [GroupController::class, 'show'])->name('detailGroup');
-         Route::post('/group/updategroup/{id}', [GroupController::class, 'update'])->name('updateGroup');
-         Route::post('/group/updateGroup', [GroupController::class, 'store'])->name('storeGroup');
-         Route::get('/group/getgroupDetail/{id}', [GroupController::class, 'edit'])->name('editGroup');
-        
+        //Groups
+        Route::get('/groups', [GroupController::class, 'index'])->name('listGroup');
+        Route::delete('/group/delete/{id}', [GroupController::class, 'destroy'])->name('deleteGroup');
+        Route::get('/group/detail/{id}', [GroupController::class, 'show'])->name('detailGroup');
+        Route::post('/group/updategroup/{id}', [GroupController::class, 'update'])->name('updateGroup');
+        Route::post('/group/updateGroup', [GroupController::class, 'store'])->name('storeGroup');
+        Route::get('/group/getgroupDetail/{id}', [GroupController::class, 'edit'])->name('editGroup');
+
         //Organization
         Route::get('/organizations', [OrganizationController::class, 'index'])->name('listOrganization');
         Route::delete('/organization/delete/{id}', [OrganizationController::class, 'destroy'])->name('deleteOrganization');
@@ -234,7 +233,7 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/product/updateProduct/{id}', [ProductController::class, 'update'])->name('updateProduct');
         Route::post('/product/updateProduct', [ProductController::class, 'store'])->name('storeProduct');
         Route::get('/product/edit/{id}', [ProductController::class, 'edit'])->name('editProduct');
-    
+
         // Order
         Route::get('/orders', [OrderController::class, 'index'])->name('listOrder');
         Route::delete('/order/delete/{id}', [OrderController::class, 'destroy'])->name('deleteOrder');
@@ -242,8 +241,8 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/order/update/{id}', [OrderController::class, 'update'])->name('updateOrder');
         Route::post('/order/store', [OrderController::class, 'store'])->name('storeOrder');
         Route::get('/order/detail/{id}', [OrderController::class, 'edit'])->name('editOrder');
-        Route::get('/productPrice/{id}', [OrderController::class , 'getProductPrice'])->name('get_product_price');
-    
+        Route::get('/productPrice/{id}', [OrderController::class, 'getProductPrice'])->name('get_product_price');
+
         // Filter
         Route::get('/getFilterData', [FilterController::class, 'getFilterData'])->name('get_filter_data');
         Route::post('/storeFilter', [FilterController::class, 'storeFilter'])->name('store_filter');
@@ -251,13 +250,13 @@ Route::middleware('planrestriction')->group(function () {
 
         // Form
         Route::get('/fetchModuleFields/{module}', [FormController::class, 'fetchModuleFields'])->name('fetchModuleFields');
-        Route::get('/field/getFieldOptions',[FormController::class,'getFieldOptions'])->name('get_field_options');
+        Route::get('/field/getFieldOptions', [FormController::class, 'getFieldOptions'])->name('get_field_options');
         Route::get('/getRelateContacts', [FormController::class, 'getRelateContacts'])->name('get_relate_contacts_list');
         Route::get('/lookup', [FormController::class, 'lookup'])->name('lookup');
         Route::post('/massEdit', [FormController::class, 'massEdit'])->name('mass_edit');
         Route::get('/fetchModuleGroupFields/{module}', [FormController::class, 'fetchModuleGroupFields'])->name('fetch_module_groupfields');
         Route::get('/fetchTagListOptions', [FormController::class, 'fetchTagListOption'])->name('tag_list_options');
-        
+
         // Import
         Route::get('/imports', [ImportController::class, 'index'])->name('listImport');
         Route::get('/import/create', [ImportController::class, 'create'])->name('new_import');
@@ -320,40 +319,40 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/fields', [FieldController::class, 'index'])->name('listField');
         Route::get('/field/{id}', [FieldController::class, 'edit'])->name('editField');
         Route::post('/field/store', [FieldController::class, 'store'])->name('storeField');
-        Route::post('/field/updateField/{id}',[FieldController::class, 'update'])->name('updateField');
-        Route::delete('/field/deleteField/{id}',[FieldController::class, 'destroy'])->name('deleteField');
+        Route::post('/field/updateField/{id}', [FieldController::class, 'update'])->name('updateField');
+        Route::delete('/field/deleteField/{id}', [FieldController::class, 'destroy'])->name('deleteField');
 
         // Campaign
-        Route::get('/campaigns',[CampaignController::class, 'index'])->name('listCampaign');
-        Route::post('/campaign/store',[Campaigncontroller::class, 'store'])->name('storeCampaign');
-        Route::get('/campaign/detail/{id}',[CampaignController::class, 'show'])->name('detailCampaign');
-        Route::get('/campaign/search',[CampaignController::class, 'searchRecords'])->name('searchfilter');
-        Route::delete('/campaign/deleteCampaign/{id}',[CampaignController::class, 'destroy'])->name('deleteCampaign');
-        Route::get('/campaign/company/{service}',[CampaignController::class, 'getCompanyName'])->name('get_company_name');
-        Route::get('/campaign/getTemplates/{account_id}',[CampaignController::class, 'getTemplateList'])->name('get_template_list');
+        Route::get('/campaigns', [CampaignController::class, 'index'])->name('listCampaign');
+        Route::post('/campaign/store', [Campaigncontroller::class, 'store'])->name('storeCampaign');
+        Route::get('/campaign/detail/{id}', [CampaignController::class, 'show'])->name('detailCampaign');
+        Route::get('/campaign/search', [CampaignController::class, 'searchRecords'])->name('searchfilter');
+        Route::delete('/campaign/deleteCampaign/{id}', [CampaignController::class, 'destroy'])->name('deleteCampaign');
+        Route::get('/campaign/company/{service}', [CampaignController::class, 'getCompanyName'])->name('get_company_name');
+        Route::get('/campaign/getTemplates/{account_id}', [CampaignController::class, 'getTemplateList'])->name('get_template_list');
 
         // Impersonate User
-        Route::get('/user/getUserSession',[UserController::class, 'getUserSession'])->name('get_session_value');
-        Route::post('/user/setGlobalUser',[UserController::class, 'setGlobalUser'])->name('set_global_user');
+        Route::get('/user/getUserSession', [UserController::class, 'getUserSession'])->name('get_session_value');
+        Route::post('/user/setGlobalUser', [UserController::class, 'setGlobalUser'])->name('set_global_user');
 
         // Notification
-        Route::get('/notifications',[Notification::class, 'getNotifications'])->name('notification');
-        Route::get('/clickNotification',[Notification::class, 'clickNotification'])->name('clickNotification');
-        Route::get('/showMore',[Notification::class, 'showMore'])->name('showMore');
+        Route::get('/notifications', [Notification::class, 'getNotifications'])->name('notification');
+        Route::get('/clickNotification', [Notification::class, 'clickNotification'])->name('clickNotification');
+        Route::get('/showMore', [Notification::class, 'showMore'])->name('showMore');
 
         // Automation
         Route::get('/automations', [AutomationController::class, 'index'])->name('listAutomation');
-        Route::post('/automation/store',[AutomationController::class, 'store'])->name('storeAutomation');
-        Route::post('/automation/update/{id}',[AutomationController::class, 'update'])->name('updateAutomation');
+        Route::post('/automation/store', [AutomationController::class, 'store'])->name('storeAutomation');
+        Route::post('/automation/update/{id}', [AutomationController::class, 'update'])->name('updateAutomation');
         Route::get('/automation/create/{id}', [AutomationController::class, 'create'])->name('createAutomation');
         Route::get('/automation/edit/{id}', [AutomationController::class, 'edit'])->name('editAutomation');
-        Route::delete('/automation/delete/{id}',[AutomationController::class, 'destroy'])->name('deleteAutomation');
+        Route::delete('/automation/delete/{id}', [AutomationController::class, 'destroy'])->name('deleteAutomation');
 
         Route::get('/getActionData', [AutomationController::class, 'getActionData'])->name('get_action_data');
-        Route::get('/webhook/sample/{id}/{uuid}', [AutomationController::class , 'getSampleData'])->name('get_webhook_data');
+        Route::get('/webhook/sample/{id}/{uuid}', [AutomationController::class, 'getSampleData'])->name('get_webhook_data');
         Route::post('/testCall', [AutomationController::class, 'testPostData'])->name('test_post_data');
         Route::get('/automationHistory/{id}', [AutomationController::class, 'getHistoryList'])->name('get_automation_history');
-        Route::get('/automation/result/{id}' , [AutomationController::class, 'show'])->name('automation_result');
+        Route::get('/automation/result/{id}', [AutomationController::class, 'show'])->name('automation_result');
 
         // LineItem
         Route::get('/lineitems', [LineItemController::class, 'index'])->name('listLineItem');
@@ -361,15 +360,15 @@ Route::middleware('planrestriction')->group(function () {
 
         // Company
         Route::post('/company/setBaseCompany', [CompanyController::class, 'setBaseCompany'])->name('setBaseCompany');
-        
+
         Route::get('/navigate/fields', [SettingsController::class, 'navigationField'])->name('navigation_field');
         Route::get('/record/merge', [SettingsController::class, 'recordMerger'])->name('record_merge');
         Route::post('/merge/remain', [SettingsController::class, 'deleteRemainRecords'])->name('remain_record');
 
         // API
-        Route::get('/api-key/list',[ApiController::class, 'index'])->name('listApi');
-        Route::post('/api-key/store',[ApiController::class, 'store'])->name('storeApi');
-        Route::post('/api-key/update',[ApiController::class, 'store'])->name('updateApi');
+        Route::get('/api-key/list', [ApiController::class, 'index'])->name('listApi');
+        Route::post('/api-key/store', [ApiController::class, 'store'])->name('storeApi');
+        Route::post('/api-key/update', [ApiController::class, 'store'])->name('updateApi');
         Route::get('/api-key/detail/{id}', [ApiController::class, 'show'])->name('detailApi');
         Route::get('/api-key/edit/{id}', [ApiController::class, 'create'])->name('editApi');
         Route::delete('/api-key/delete/{id}', [ApiController::class, 'destroy'])->name('deleteApi');
@@ -383,19 +382,18 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/fetchTemplates', [TemplateController::class, 'syncTemplate'])->name('sync_templates');
 
         //Roles
-        Route::get('/roles',[RoleController::class, 'index'])->name('listRole');
-        Route::get('/role/detail/{id}',[RoleController::class, 'show'])->name('detailRole');
-        Route::get('/role/edit/{id}',[RoleController::class, 'edit'])->name('editRole');
-        Route::post('/role/store',[RoleController::class, 'store'])->name('storeRole');
-        Route::post('/role/update',[RoleController::class, 'store'])->name('updateRole');
+        Route::get('/roles', [RoleController::class, 'index'])->name('listRole');
+        Route::get('/role/detail/{id}', [RoleController::class, 'show'])->name('detailRole');
+        Route::get('/role/edit/{id}', [RoleController::class, 'edit'])->name('editRole');
+        Route::post('/role/store', [RoleController::class, 'store'])->name('storeRole');
+        Route::post('/role/update', [RoleController::class, 'store'])->name('updateRole');
     });
-
 });
 
 
 // Check user is admin
 Route::middleware('auth', IsAdmin::class)->group(function () {
-    
+
     //users
     Route::get('/users', [UserController::class, 'usersListing'])->name('show_Users');
     Route::get('/user/create', [UserController::class, 'createUser'])->name('create_user');
@@ -409,15 +407,15 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::post('/storeFieldGroup', [FieldGroupController::class, 'store'])->name('storeFieldGroup');
     Route::get('/getFieldsGroup', [FieldGroupController::class, 'getFieldsGroup'])->name('get_fields_group');
     Route::post('/storeFieldOrder', [FieldGroupController::class, 'storeFieldOrder'])->name('store_field_order');
-    
+
     //SupportRequests  
-     Route::get('/support-requests', [SupportRequestController::class, 'index'])->name('listSupportRequest');
-     Route::delete('/support-requests/delete/{id}', [SupportRequestController::class, 'destroy'])->name('deleteSupportRequest');
-     Route::get('/support-requests/{id}', [SupportRequestController::class, 'show'])->name('detailSupportRequest');
-     Route::post('/support-requests/{id}', [SupportRequestController::class, 'update'])->name('updateSupportRequest');
-     Route::post('/support-requests', [SupportRequestController::class, 'store'])->name('storeSupportRequest');
-     Route::get('/support-requests/edit/{id}', [SupportRequestController::class, 'edit'])->name('editSupportRequest');
-    
+    Route::get('/support-requests', [SupportRequestController::class, 'index'])->name('listSupportRequest');
+    Route::delete('/support-requests/delete/{id}', [SupportRequestController::class, 'destroy'])->name('deleteSupportRequest');
+    Route::get('/support-requests/{id}', [SupportRequestController::class, 'show'])->name('detailSupportRequest');
+    Route::post('/support-requests/{id}', [SupportRequestController::class, 'update'])->name('updateSupportRequest');
+    Route::post('/support-requests', [SupportRequestController::class, 'store'])->name('storeSupportRequest');
+    Route::get('/support-requests/edit/{id}', [SupportRequestController::class, 'edit'])->name('editSupportRequest');
+
     //Company   
     //Route::get('/workspaces', [CompanyController::class, 'index'])->name('listAdminCompany');
     Route::post('/storeCompany', [CompanyController::class, 'store'])->name('storeCompany');
@@ -434,14 +432,14 @@ Route::middleware('auth', IsAdmin::class)->group(function () {
     Route::get('/InteractiveMessages/edit/{id}', [InteractiveMessageController::class, 'edit'])->name('editInteractiveMessage');
     Route::post('/InteractiveMessages/update/{id}', [InteractiveMessageController::class, 'store'])->name('updateInteractiveMessage');
     Route::delete('/InteractiveMessages/delete/{id}', [InteractiveMessageController::class, 'destroy'])->name('deleteInteractiveMessage');
-    
-    
+
+
     Route::get('/company/current/plan', [PlanController::class, 'companyCurrentPlan'])->name('max_users');
 });
 
 // Check user is global admin
 Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
-    
+
     // Users
     Route::get('/admin/users', [UserController::class, 'usersListing'])->name('list_global_user');
     Route::get('/admin/user/create', [UserController::class, 'createUser'])->name('create_global_user');
@@ -457,8 +455,8 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::get('/admin/workspace/activity', [CompanyController::class, 'workspaceActivities'])->name('worksapce_activities');
 
     // Social profile 
-    Route::get('/admin/account/list' , [UserController::class , 'listAccounts'])->name('listAccount');
-    Route::get('/admin/account/detail/{id}' , [UserController::class , 'showAccount'])->name('detailAccount');
+    Route::get('/admin/account/list', [UserController::class, 'listAccounts'])->name('listAccount');
+    Route::get('/admin/account/detail/{id}', [UserController::class, 'showAccount'])->name('detailAccount');
 
 
     //SupportRequests  
@@ -468,7 +466,7 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::post('/admin/support-requests/{id}', [SupportRequestController::class, 'update'])->name('update_global_SupportRequest');
     Route::post('/admin/support-requests', [SupportRequestController::class, 'store'])->name('store_global_SupportRequest');
     Route::post('/admin/support-requests/{id}', [SupportRequestController::class, 'edit'])->name('edit_global_SupportRequest');
-    
+
     // Settings
     Route::get('/admin/settings/outgoing_server', [SettingsController::class, 'settings'])->name('settings');
     Route::get('/admin/settings/template_notification', [SettingsController::class, 'toMail'])->name('template_notification');
@@ -476,7 +474,7 @@ Route::middleware('auth', IsGlobalAdmin::class)->group(function () {
     Route::post('/admin/settings/saveToAddress', [SettingsController::class, 'saveToAddressData'])->name('store_toAddress_data');
     Route::get('/subscription/plan/editor', [SettingsController::class, 'getPlanDetails'])->name('plan_editor');
     Route::post('/subscription/plan/save', [SettingsController::class, 'saveSubscriptionChange'])->name('subscription_save');
-    
+
     Route::get('/user/company/Detail', [SettingsController::class, 'CurrentCompany'])->name('user_company');
 
     // Pricing
