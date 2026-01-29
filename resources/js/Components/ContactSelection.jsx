@@ -1,6 +1,6 @@
 import React, { useState, useRef, Fragment, useEffect } from 'react';
 import { Dialog, Transition } from '@headlessui/react'
-import CreatableSelect, { useAsync } from 'react-select';
+import CreatableSelect from 'react-select';
 import nProgress from 'nprogress';
 import Axios from "axios";
 import { router as Inertia } from "@inertiajs/react";
@@ -11,50 +11,50 @@ export default function ContactSelection(props) {
     const [show, setShow] = useState(true);
     const [createForm, setCreateForm] = useState(false);
     const cancelButtonRef = useRef(null);
-    const[contactList, setContactList] = useState();
-    const[selectedContact , setSelectedContact] = useState();
+    const [contactList, setContactList] = useState();
+    const [selectedContact, setSelectedContact] = useState();
 
-    useEffect(() => {    
+    useEffect(() => {
         getUserContacts('');
-    },[]);
- 
+    }, []);
+
     /**
      * Get User contact list
      */
-    function getUserContacts(key){
+    function getUserContacts(key) {
         nProgress.start(0.5);
         nProgress.inc(0.2);
         var url = route('get_user_contacts_list');
-        url += '?parent='+props.parent_module;
-        if(props.parent_id){
-            url += '&record='+props.parent_id;
+        url += '?parent=' + props.parent_module;
+        if (props.parent_id) {
+            url += '&record=' + props.parent_id;
         }
-        if(key){
-            url += '&key='+key;
+        if (key) {
+            url += '&key=' + key;
         }
         Axios.get(url).then((response) => {
             nProgress.done(true);
             setContactList(response.data.records);
-        });    
+        });
     }
 
     /**
      * Get Contact list based on input 
      */
-    function handleInputChange(value){
-        if(value){
+    function handleInputChange(value) {
+        if (value) {
             getUserContacts(value);
         }
     }
 
-    function addContacts(){
-      
+    function addContacts() {
+
         var data = {
             'contacts': selectedContact,
             'parent': props.parent_module,
             'record': (props.parent_id) ? props.parent_id : ''
         }
-        Inertia.post( route('store_user_contact_list') , data, {
+        Inertia.post(route('store_user_contact_list'), data, {
             onSuccess: (response) => {
                 props.setShowForm(false)
             },
@@ -70,15 +70,15 @@ export default function ContactSelection(props) {
     function addNewContact() {
         let url = route('new_contact');
         Axios.get(url).then((response) => {
-            if(response.data.status === true) {
+            if (response.data.status === true) {
                 let contact = response.data.contact;
-                if(contact) {
+                if (contact) {
                     let newContact = Object.assign([], selectedContact);
                     let id = contact.id;
                     let first_name = contact['first_name'] ? contact['first_name'] : '';
                     let last_name = contact['last_name'] ? contact['last_name'] : '';
                     let name = first_name + ' ' + last_name;
-                    let data = {'label' : name, 'value' : id };
+                    let data = { 'label': name, 'value': id };
                     newContact.push(data);
                     setSelectedContact(newContact);
                 }
@@ -88,8 +88,8 @@ export default function ContactSelection(props) {
 
     return (
         <>
-        <Transition.Root show={show} as={Fragment}>
-                <Dialog as="div" className="fixed z-10 inset-0 overflow-y-auto" initialFocus={cancelButtonRef} onClose={ () => props.setShowForm(false)}>
+            <Transition.Root show={show} as={Fragment}>
+                <Dialog as="div" className="fixed z-10 inset-0 overflow-y-auto" initialFocus={cancelButtonRef} onClose={() => props.setShowForm(false)}>
                     <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                         <Transition.Child
                             as={Fragment}
@@ -122,8 +122,8 @@ export default function ContactSelection(props) {
                                         <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
                                             {props.translator['Select Contact']}
                                             <span className=' float-right'>
-                                                <button 
-                                                    onClick={()=> setCreateForm(true)}
+                                                <button
+                                                    onClick={() => setCreateForm(true)}
                                                     className='text-sm text-indigo-900'
                                                 >
                                                     {props.translator['Add a contact']}
@@ -133,13 +133,13 @@ export default function ContactSelection(props) {
 
                                         <div className="mt-2">
                                             <div>
-                                                    <CreatableSelect
-                                                        isMulti
-                                                        value={selectedContact}
-                                                        options={contactList}
-                                                        onInputChange={handleInputChange}
-                                                        onChange={setSelectedContact}
-                                                    />
+                                                <CreatableSelect
+                                                    isMulti
+                                                    value={selectedContact}
+                                                    options={contactList}
+                                                    onInputChange={handleInputChange}
+                                                    onChange={setSelectedContact}
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -157,7 +157,7 @@ export default function ContactSelection(props) {
                                         className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
                                         onClick={() => props.setShowForm(false)}
                                     >
-                                      {props.translator['Cancel']}
+                                        {props.translator['Cancel']}
                                     </button>
                                 </div>
                             </div>
@@ -167,21 +167,24 @@ export default function ContactSelection(props) {
             </Transition.Root>
 
             {createForm ?
-                <NewForm 
+                <NewForm
                     module={'Contact'}
                     hideForm={hideForm}
                     parent_module={props.parent_module}
-                    parent_id= {props.parent_id ? props.parent_id : ''}
-                    parent_name= {props.parent_name}
+                    parent_id={props.parent_id ? props.parent_id : ''}
+                    parent_name={props.parent_name}
                     getUserContacts={getUserContacts}
                     addNewContact={addNewContact}
                     newcontact={true}
                 />
-            : ''}
+                : ''}
 
         </>
     );
 }
+
+
+
 
 
 

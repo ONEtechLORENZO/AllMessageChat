@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { CheckIcon, XMarkIcon  } from "@heroicons/react/24/solid";
-import { AiFillCaretDown,AiFillCaretUp,AiOutlineInfoCircle } from "react-icons/ai";
+import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { AiFillCaretDown, AiFillCaretUp, AiOutlineInfoCircle } from "react-icons/ai";
 import { Disclosure } from '@headlessui/react'
 import { Dialog, Transition } from '@headlessui/react';
 import { Elements, CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
@@ -21,7 +21,7 @@ function classNames(...classes) {
 }
 
 export default function PlanSubscription(props) {
-  
+
   const [showFeatures, setShowFeatures] = useState(false);
   const [plans, setPlan] = useState(props.plans);
   const [showForm, setShowForm] = useState(false);
@@ -31,13 +31,13 @@ export default function PlanSubscription(props) {
   const tiers = [
     {
       name: 'Api only',
-      isFree : true,
+      isFree: true,
       href: '#',
-      
+
       description: 'Short sentence to indicate what type of business is this plan aimed at.',
       includedFeatures: ['Particularity of the plan', 'Particularity of the plan'],
-      btnText : 'Start for free',
-      plan : 'Api'
+      btnText: 'Start for free',
+      plan: 'Api'
     },
     {
       name: 'Starter',
@@ -45,8 +45,8 @@ export default function PlanSubscription(props) {
       priceMonthly: '€15',
       description: 'Short sentence to indicate what type of business is this plan aimed at.',
       includedFeatures: ['Particularity of the plan', 'Particularity of the plan',],
-      btnText : 'Choose Plan',
-      plan : 'Starter'
+      btnText: 'Choose Plan',
+      plan: 'Starter'
     },
     {
       name: 'Pro',
@@ -58,8 +58,8 @@ export default function PlanSubscription(props) {
         'Particularity of the plan',
         'Particularity of the plan',
       ],
-      btnText : 'Choose Plan',
-      plan : 'Pro'
+      btnText: 'Choose Plan',
+      plan: 'Pro'
     },
     {
       name: 'Business',
@@ -67,98 +67,98 @@ export default function PlanSubscription(props) {
       priceMonthly: '€50',
       description: 'Short sentence to indicate what type of business is this plan aimed at.',
       includedFeatures: [
-          'Particularity of the plan',
-          'Particularity of the plan',
-          'Particularity of the plan',
-          'Particularity of the plan',
+        'Particularity of the plan',
+        'Particularity of the plan',
+        'Particularity of the plan',
+        'Particularity of the plan',
       ],
-      btnText : 'Choose Plan',
-      plan : 'Business'
+      btnText: 'Choose Plan',
+      plan: 'Business'
     },
     {
       name: 'Enterprise',
       href: '#',
-      isEnterprice : true,
+      isEnterprice: true,
       description: 'Short sentence to indicate what type of business is this plan aimed at.',
       includedFeatures: [
-          'Particularity of the plan',
-          'Particularity of the plan',
-          'Particularity of the plan',
-          'Particularity of the plan',
-          'Particularity of the plan',
-          'Particularity of the plan',
+        'Particularity of the plan',
+        'Particularity of the plan',
+        'Particularity of the plan',
+        'Particularity of the plan',
+        'Particularity of the plan',
+        'Particularity of the plan',
       ],
-      btnText : 'Contact sales', 
-      plan : 'Enterprise'
+      btnText: 'Contact sales',
+      plan: 'Enterprise'
     },
   ]
-  
+
   const sections = [
     {
       header: 'Active users',
-      rows : [
-        { label : 'Monthly Max Active Users', name : 'active_users'}
-      ] 
+      rows: [
+        { label: 'Monthly Max Active Users', name: 'active_users' }
+      ]
     },
     {
       header: 'CRM',
-      rows : [
-        { label : 'CRM Leads', name : 'crm_leads'},
-        { label : 'CRM Contacts', name : 'crm_contacts'},
-        { label : 'Organization', name : 'crm_organizations'},
-        { label : 'Deals', name : 'crm_deals'},
-        { label : 'Custom Fields', name : 'crm_custom_fields'},
-      ] 
+      rows: [
+        { label: 'CRM Leads', name: 'crm_leads' },
+        { label: 'CRM Contacts', name: 'crm_contacts' },
+        { label: 'Organization', name: 'crm_organizations' },
+        { label: 'Deals', name: 'crm_deals' },
+        { label: 'Custom Fields', name: 'crm_custom_fields' },
+      ]
     },
     {
       header: 'Conversations',
-      rows : [
-        { label : 'Broadcasting (Campaigns)', name : 'campaigns'},
-        { label : '121 Chats', name : 'chat_conversation'},
-      ] 
+      rows: [
+        { label: 'Broadcasting (Campaigns)', name: 'campaigns' },
+        { label: '121 Chats', name: 'chat_conversation' },
+      ]
     },
     {
       header: 'Automations',
-      rows : [
-        { label : 'Visual Workflow Designer Builder', name : 'workflows'},
-        { label : 'Number of Operations per month', name : 'workflow_operations'},
-      ] 
+      rows: [
+        { label: 'Visual Workflow Designer Builder', name: 'workflows' },
+        { label: 'Number of Operations per month', name: 'workflow_operations' },
+      ]
     },
     {
       header: 'Sales Features',
-      rows : [
-        { label : 'Product Catalogs', name : 'product_category'},
-        { label : 'Sales Orders', name : 'sale_orders'},
+      rows: [
+        { label: 'Product Catalogs', name: 'product_category' },
+        { label: 'Sales Orders', name: 'sale_orders' },
       ]
     },
     {
       header: 'Analytics',
-      rows : [
-        { label : 'Analytics Reports', name : 'reports'},
-      ] 
+      rows: [
+        { label: 'Analytics Reports', name: 'reports' },
+      ]
     },
     {
       header: 'API Endpoints',
-      rows : [
-        { label : 'Conversations', name : 'api_conversation'},
-        { label : 'Leads, Deals, Contacts & Organizations', name : 'api_module_access'},
-        { label : 'Products & Orders', name : 'api_product_order'},
-      ] 
+      rows: [
+        { label: 'Conversations', name: 'api_conversation' },
+        { label: 'Leads, Deals, Contacts & Organizations', name: 'api_module_access' },
+        { label: 'Products & Orders', name: 'api_product_order' },
+      ]
     },
   ];
-  
-  useEffect(() => {
-    if(props.status) {
-        setStatus('update');
-    }
-  },[]);
 
-  if(props.errors && props.errors.message){
+  useEffect(() => {
+    if (props.status) {
+      setStatus('update');
+    }
+  }, []);
+
+  if (props.errors && props.errors.message) {
     notie.alert({ type: 'warning', text: props.errors.message, time: 5 });
   }
 
   function buySubscription(planStatus, view, subscribe_id) {
-    axios.post(route('subcription_complete')).then( (response) => {
+    axios.post(route('subcription_complete')).then((response) => {
       props.redirectDashBoard();
     })
     //waxios.post(route('subcription_complete')).then( (response) => {})
@@ -179,24 +179,24 @@ export default function PlanSubscription(props) {
     */
   }
 
-  function checkToChangePlan(plan_id){
+  function checkToChangePlan(plan_id) {
     let checkUpdate = false;
     const current_plan = props.company.plan;
     let current_plan_index = '';
     let update_plan_index = '';
-    subscriptionPlan.map( (plan, index) => {
-       if(plan == current_plan){
-         current_plan_index = index;
-       }
-       if(plan == plan_id) {
+    subscriptionPlan.map((plan, index) => {
+      if (plan == current_plan) {
+        current_plan_index = index;
+      }
+      if (plan == plan_id) {
         update_plan_index = index
-       }
+      }
     });
 
-    if(current_plan_index < update_plan_index) {
+    if (current_plan_index < update_plan_index) {
       checkUpdate = true;
-    } else if(current_plan_index == update_plan_index) {
-      if(status != 'new') {
+    } else if (current_plan_index == update_plan_index) {
+      if (status != 'new') {
         notie.alert({ type: 'error', text: 'You are already in this plan.', time: 5 });
       } else {
         checkUpdate = true;
@@ -210,35 +210,35 @@ export default function PlanSubscription(props) {
 
   function confirmToSubscribe(id) {
 
-    if(id == 'CUSTOM') {
+    if (id == 'CUSTOM') {
       return false;
     }
 
     let confirm = window.confirm('Are you sure to update your plan?');
 
-    if(confirm) {
-        let url = route('subscribe_plan', {'plan' : id});
-        let data = {status : 'update', user_id: props.user.id}
+    if (confirm) {
+      let url = route('subscribe_plan', { 'plan': id });
+      let data = { status: 'update', user_id: props.user.id }
 
-        Inertia.post(url, data, {
-            onSuccess: (response) => {
-                if(response){
-                  notie.alert({ type: 'success', text: 'Your plan has been updated.', time: 5 });
-                }
-            }
-        });
+      Inertia.post(url, data, {
+        onSuccess: (response) => {
+          if (response) {
+            notie.alert({ type: 'success', text: 'Your plan has been updated.', time: 5 });
+          }
+        }
+      });
     }
   }
 
-  function Subscribe(){
-    axios.post(route('subscribe_plan',{'plan': subscriptionId}), {user_id: props.user.id, is_register_step: true, status : 'new' })
-    .then((response) => {
+  function Subscribe() {
+    axios.post(route('subscribe_plan', { 'plan': subscriptionId }), { user_id: props.user.id, is_register_step: true, status: 'new' })
+      .then((response) => {
         props.redirectDashBoard();
-    });
+      });
   }
 
   function redirectToHome() {
-    if(status == 'update') {
+    if (status == 'update') {
       Inertia.get(route('home'), {}, {});
     }
   }
@@ -247,19 +247,19 @@ export default function PlanSubscription(props) {
     <div className="bg-[#F1F4F6]">
       <div className="mx-auto max-w-7xl py-24 px-4 sm:px-6 lg:px-8">
         <div className="sm:align-center sm:flex sm:flex-col">
-            <div className="w-full p-2 flex justify-center items-center flex-col">
-                <div className="w-1/2 flex justify-center items-center" onClick={() => redirectToHome()}>
-                  <img src="/img/OneMessage.ChatLOGO.png" alt="One Message" />
-                </div>
-                <h1 className="text-[32px] font-bold !mt-6">{props.translator['We have finally arrived']}</h1>
-                <p className="text-[#363740] text-base">{props.translator['let us drop anchor.']}</p>
-
-                <p className="text-base font-bold text-[#878787] !mt-8">{props.translator['Choose the right plan for you.']}</p>
+          <div className="w-full p-2 flex justify-center items-center flex-col">
+            <div className="w-1/2 flex justify-center items-center" onClick={() => redirectToHome()}>
+              <img src="/img/OneMessage.ChatLOGO.png" alt="One Message" />
             </div>
+            <h1 className="text-[32px] font-bold !mt-6">{props.translator['We have finally arrived']}</h1>
+            <p className="text-[#363740] text-base">{props.translator['let us drop anchor.']}</p>
+
+            <p className="text-base font-bold text-[#878787] !mt-8">{props.translator['Choose the right plan for you.']}</p>
+          </div>
         </div>
 
         <div className="mt-12 space-y-4 sm:mt-16 sm:grid sm:grid-cols-2 sm:gap-6 sm:space-y-0 lg:mx-auto lg:max-w-4xl xl:mx-0 xl:max-w-none xl:grid-cols-5">
-          {tiers.map((tier) => { 
+          {tiers.map((tier) => {
 
             const headingColor = tier.isEnterprice ? 'text-white' : 'text-[#7653FF]';
             const textColor = tier.isEnterprice ? 'text-white' : 'text-gray-500';
@@ -268,56 +268,53 @@ export default function PlanSubscription(props) {
 
             var isShowable = false;
             plans.forEach(plan => {
-              if(plan.plan == tier.plan) {
+              if (plan.plan == tier.plan) {
                 isShowable = true;
               }
             })
-            if( !isShowable ) {
-              return true;
-            } 
+            if (!isShowable) {
+              return null;
+            }
+            const matchedPlan = plans.find((p) => p.plan === tier.plan);
 
-            return(
-              <div key={tier.name} className={`${tier.isFree ? 'bg-white' : tier.isEnterprice ? "bg-[#363740]" : "bg-[#ECE8FA]" } shadow-sm flex flex-col justify-between items-start`} >
+            return (
+              <div key={tier.name} className={`${tier.isFree ? 'bg-white' : tier.isEnterprice ? "bg-[#363740]" : "bg-[#ECE8FA]"} shadow-sm flex flex-col justify-between items-start`} >
                 <div className="p-6">
                   <h2 className={`text-xl font-bold text-center ${headingColor}`}>{props.translator[tier.name]}</h2>
                   <p className={`mt-4 text-sm text-gray-500 text-center ${textColor}`}>{props.translator[tier.description]}</p>
-                  <p className={`mt-8 ${textColor} ${(tier.isFree || tier.isEnterprice) ? 'hidden' : ''}`}>
+                  <div className={`mt-8 ${textColor} ${(tier.isFree || tier.isEnterprice) ? 'hidden' : ''}`}>
                     <div className="flex items-center gap-1">
-                          <span className="text-right">
-                              <span className="text-3xl font-semibold leading-8 -tracking-[2%] text-gray-900">{tier.priceMonthly}</span><br/>
-                              <span className="text-base font-normal tracking-tight text-[#363740]">{props.translator['per month']}</span>
-                          </span>
-                          <span className="text-[64px] font-extralight leading-5">/</span>
-                          <span className="text-base font-bold">{props.translator['user']}</span>
-                      </div>                  
-                  </p>
+                      <span className="text-right">
+                        <span className="text-3xl font-semibold leading-8 -tracking-[2%] text-gray-900">{tier.priceMonthly}</span><br />
+                        <span className="text-base font-normal tracking-tight text-[#363740]">{props.translator['per month']}</span>
+                      </span>
+                      <span className="text-[64px] font-extralight leading-5">/</span>
+                      <span className="text-base font-bold">{props.translator['user']}</span>
+                    </div>
+                  </div>
 
                   <p className={`py-4 text-2xl text-center leading-8 font-semibold ${tier.isFree ? 'text-[#363740]' : textColor} ${(tier.isFree || tier.isEnterprice) ? '' : 'hidden'}`}>
-                      {(tier.isFree) ? props.translator['Free'] : props.translator['Contact us']} 
-                  </p>                
-                  
+                    {(tier.isFree) ? props.translator['Free'] : props.translator['Contact us']}
+                  </p>
+
                   <ul role="list" className="mt-6 space-y-4 !pl-0">
-                  {tier.includedFeatures.map((feature) => (
-                      <li key={feature} className="flex space-x-3">
-                      <span className={`text-sm ${textColor}`}>{props.translator[feature]}</span>
+                    {tier.includedFeatures.map((feature, idx) => (
+                      <li key={`${tier.plan}-feature-${idx}`} className="flex space-x-3">
+                        <span className={`text-sm ${textColor}`}>{props.translator[feature]}</span>
                       </li>
-                  ))}
+                    ))}
                   </ul>
-                  
+
                 </div>
                 <div className="p-6 w-full !mb-8">
-                  {plans.map( (plan) => (
-                    <>
-                     {tier.plan == plan.plan &&
-                      <button
-                        className={`block w-full rounded-md py-2 text-center text-sm font-bold ${btnColor}`}
-                        onClick={() => buySubscription(status, showForm, plan.plan_id)}
-                      >
-                        {props.translator[tier.btnText]}
-                      </button>
-                     }
-                    </>
-                  ))}
+                  {matchedPlan && (
+                    <button
+                      className={`block w-full rounded-md py-2 text-center text-sm font-bold ${btnColor}`}
+                      onClick={() => buySubscription(status, showForm, matchedPlan.plan_id)}
+                    >
+                      {props.translator[tier.btnText]}
+                    </button>
+                  )}
                 </div>
               </div>
             )
@@ -325,86 +322,87 @@ export default function PlanSubscription(props) {
         </div>
 
         <div className="w-full text-center !mt-6 flex flex-col items-center">
-            {/* <p className="text-sm">Write here if the prices include taxes or not</p> */}
-            {/* <p className="text-[#7653FF] text-base flex gap-2 items-center" onClick={() => setShowFeatures(!showFeatures)}>{props.translator['View all plan features']} {(showFeatures) ? <AiFillCaretDown size={'1.5rem'} className='cursor-pointer'/> : <AiFillCaretUp size={'1.5rem'} className='cursor-pointer'/> }</p> */}
+          {/* <p className="text-sm">Write here if the prices include taxes or not</p> */}
+          {/* <p className="text-[#7653FF] text-base flex gap-2 items-center" onClick={() => setShowFeatures(!showFeatures)}>{props.translator['View all plan features']} {(showFeatures) ? <AiFillCaretDown size={'1.5rem'} className='cursor-pointer'/> : <AiFillCaretUp size={'1.5rem'} className='cursor-pointer'/> }</p> */}
         </div>
 
         {showFeatures &&
-           <div className='w-full mt-10'>
-              <div className='grid grid-cols-7 font-semibold text-xl leading-8 border-b border-[#DEDEDE] !pb-2 '>
-                  <div className='col-span-2 text-[#878787]'>
-                  {props.translator['Features']}
-                  </div>
-                  <div className='text-center text-[#7653FF]'>{props.translator['Api only']}</div>
-                  <div className='text-center text-[#7653FF]'>{props.translator['Starter']}</div>
-                  <div className='text-center text-[#7653FF]'>{props.translator['Pro']}</div>
-                  <div className='text-center text-[#7653FF]'>{props.translator['Business']}</div>
-                  <div className='text-center text-[#363740]'>{props.translator['Enterprise']}</div>
+          <div className='w-full mt-10'>
+            <div className='grid grid-cols-7 font-semibold text-xl leading-8 border-b border-[#DEDEDE] !pb-2 '>
+              <div className='col-span-2 text-[#878787]'>
+                {props.translator['Features']}
               </div>
+              <div className='text-center text-[#7653FF]'>{props.translator['Api only']}</div>
+              <div className='text-center text-[#7653FF]'>{props.translator['Starter']}</div>
+              <div className='text-center text-[#7653FF]'>{props.translator['Pro']}</div>
+              <div className='text-center text-[#7653FF]'>{props.translator['Business']}</div>
+              <div className='text-center text-[#363740]'>{props.translator['Enterprise']}</div>
+            </div>
 
-              {sections.map( (section) => (
-                <div className='space-y-3 !mt-6'>
-                  <Disclosure as="div" key={'Active users'} className="!py-3 !px-6 !pr-7 relative bg-white drop-shadow" >
-                      {({ open }) => (
-                      <>
-                          <Disclosure.Button className="flex w-full items-start justify-between text-left text-gray-500">
-                              <span className="px-2 text-xl font-semibold text-[#363740] mb-2">{props.translator[section.header]}</span>
-                              <span className="ml-6 flex h-7 items-center">
-                              <AiFillCaretDown 
-                                  size={'1.5rem'}
-                                  className={classNames(open ? '-rotate-180' : 'rotate-0', 'transform cursor-pointer text-[#7653FF]')}
-                                  aria-hidden="true"
-                              />
-                              </span>
-                          </Disclosure.Button>
-                          <Disclosure.Panel as="dd" className="mt-1">
-                            {(section.rows).map( (row) => (
-                                <div className='grid grid-cols-7 items-center '>
-                                  <div className='font-normal text-base items-center py-2 px-2'>{props.translator[row.label]}</div>
-                                  <div className='font-normal text-base flex justify-end'><AiOutlineInfoCircle className='cursor-pointer'/></div>
-                                  {plans.map( (plan) => {
-                                    let value = plan[row.name];
+            {sections.map((section) => (
+              <div key={section.header} className="space-y-3 !mt-6">
+                <Disclosure as="div" className="!py-3 !px-6 !pr-7 relative bg-white drop-shadow">
+                  {({ open }) => (
+                    <>
+                      <Disclosure.Button className="flex w-full items-start justify-between text-left text-gray-500">
+                        <span className="px-2 text-xl font-semibold text-[#363740] mb-2">
+                          {props.translator[section.header]}
+                        </span>
+                        <span className="ml-6 flex h-7 items-center">
+                          <AiFillCaretDown
+                            size="1.5rem"
+                            className={classNames(open ? "-rotate-180" : "rotate-0", "transform cursor-pointer text-[#7653FF]")}
+                          />
+                        </span>
+                      </Disclosure.Button>
 
-                                    if(value == '-') {
-                                      value = '∞';
-                                    } else if(value == 'true') {
-                                      value = <CheckIcon className="h-5 w-5 text-green-500" aria-hidden="true" />;
-                                    } else if(value == 'false') {
-                                      value = <XMarkIcon className="h-5 w-5 text-red-900" aria-hidden="true" />;
-                                    }
+                      <Disclosure.Panel as="dd" className="mt-1">
+                        {section.rows.map((row) => (
+                          <div key={`${section.header}-${row.name}`} className="grid grid-cols-7 items-center">
+                            <div className="font-normal text-base items-center py-2 px-2">
+                              {props.translator[row.label]}
+                            </div>
 
-                                    return (
-                                      <>
-                                      {(plan.plan == 'Starter' || plan.plan == 'Pro') && (row.name == 'product_category' || row.name == 'sale_orders')? 
-                                        <div className='flex justify-center '>
-                                          {'+' + value+props.translator['€/user']}
-                                          {console.log(row, plan)}
-                                        </div>
-                                      : 
-                                        <div className='flex justify-center '>
-                                          {value}
-                                        </div>
-                                      }
-                                      </>
-                                    )
-                                  })}
+                            <div className="font-normal text-base flex justify-end">
+                              <AiOutlineInfoCircle className="cursor-pointer" />
+                            </div>
+
+                            {plans.map((plan) => {
+                              let value = plan[row.name];
+
+                              if (value === "-") value = "∞";
+                              else if (value === "true") value = <CheckIcon className="h-5 w-5 text-green-500" />;
+                              else if (value === "false") value = <XMarkIcon className="h-5 w-5 text-red-900" />;
+
+                              const content =
+                                (plan.plan === "Starter" || plan.plan === "Pro") &&
+                                  (row.name === "product_category" || row.name === "sale_orders")
+                                  ? `+${value}${props.translator["€/user"]}`
+                                  : value;
+
+                              return (
+                                <div key={`${section.header}-${row.name}-${plan.plan}`} className="flex justify-center">
+                                  {content}
                                 </div>
-                            ))}
-                          </Disclosure.Panel>
-                      </>
-                      )}
-                  </Disclosure>
-                </div>
-              ))}
+                              );
+                            })}
+                          </div>
+                        ))}
+                      </Disclosure.Panel>
+                    </>
+                  )}
+                </Disclosure>
+              </div>
+            ))}
           </div>
         }
       </div>
 
-      {showForm && 
-        <BuyPlan 
-         setShowForm={setShowForm}
-         Subscribe={Subscribe}
-         {...props}
+      {showForm &&
+        <BuyPlan
+          setShowForm={setShowForm}
+          Subscribe={Subscribe}
+          {...props}
         />
       }
     </div>
@@ -412,7 +410,7 @@ export default function PlanSubscription(props) {
 }
 
 const BuyPlan = (props) => {
-  
+
   const [formErrors, setErrors] = useState({});
 
   const [stripePromise, setStripePromise] = useState('');
@@ -428,88 +426,88 @@ const BuyPlan = (props) => {
   }, []);
 
   function createStripeSetupIntent() {
-      axios({
-          method: 'get',
-          url: route('createStripeSetupIntent'),
-      })
+    axios({
+      method: 'get',
+      url: route('createStripeSetupIntent'),
+    })
       .then((response) => {
-          if(response.status == 200) {
-              setIntent(response.data.intent);
-          }
+        if (response.status == 200) {
+          setIntent(response.data.intent);
+        }
       });
   }
 
-  return(
+  return (
     <Transition.Root show={open} as={Fragment}>
-        <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => {}} >
+      <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => { }} >
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+        </Transition.Child>
+
+        <div className="fixed z-10 inset-0 overflow-y-auto">
+          <div className="flex items-end sm:items-center justify-center min-h-full p-4 text-center sm:p-0">
             <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0"
-                enterTo="opacity-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              enterTo="opacity-100 translate-y-0 sm:scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-            </Transition.Child>
+              <Dialog.Panel className="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-xl sm:w-full">
+                <div>
+                  <div className="bg-gray-50 px-4 pt-2 pb-2 sm:p-4 sm:pb-4">
+                    <div className="sm:flex sm:items-start">
+                      <div className="mt-3 text-center sm:mt-0 sm:text-left">
+                        <Dialog.Title as="h3" className="text-lg leading-6 font-bold text-gray-900">
+                          {props.translator['Add your Card']}
+                        </Dialog.Title>
+                      </div>
+                    </div>
+                  </div>
 
-            <div className="fixed z-10 inset-0 overflow-y-auto">
-                <div className="flex items-end sm:items-center justify-center min-h-full p-4 text-center sm:p-0">
-                    <Transition.Child
-                        as={Fragment}
-                        enter="ease-out duration-300"
-                        enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        enterTo="opacity-100 translate-y-0 sm:scale-100"
-                        leave="ease-in duration-200"
-                        leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-                        leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                  {Object.keys(formErrors) > 0 ?
+                    <div className='p-4'>
+                      <ValidationErrors errors={formErrors} />
+                    </div>
+                    : ''}
+
+                  <div className='p-8 space-y-4'>
+                    {stripePromise && intent.client_secret ?
+                      <Elements stripe={stripePromise} options={{ clientSecret: intent.client_secret }}>
+                        <Form
+                          Subscribe={props.Subscribe}
+                          {...props}
+                        />
+                      </Elements>
+                      : ''}
+                  </div>
+
+                  <div className="bg-gray-50 px-4 py-3 sm:px-3 sm:flex sm:flex-row-reverse">
+                    <button
+                      type="button"
+                      className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                      onClick={() => props.setShowForm(false)}
+                      ref={cancelButtonRef}
                     >
-                        <Dialog.Panel className="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-xl sm:w-full">
-                          <div>
-                              <div className="bg-gray-50 px-4 pt-2 pb-2 sm:p-4 sm:pb-4">
-                                  <div className="sm:flex sm:items-start">
-                                      <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                                          <Dialog.Title as="h3" className="text-lg leading-6 font-bold text-gray-900">
-                                              {props.translator['Add your Card']}
-                                          </Dialog.Title>
-                                      </div>
-                                  </div>
-                              </div>
-
-                              {Object.keys(formErrors) > 0 ?
-                                  <div className='p-4'>
-                                      <ValidationErrors errors={formErrors} />
-                                  </div>
-                              : ''}
-
-                              <div className='p-8 space-y-4'>
-                                  {stripePromise && intent.client_secret ?
-                                      <Elements stripe={stripePromise} options={{clientSecret: intent.client_secret}}>
-                                          <Form 
-                                              Subscribe={props.Subscribe}
-                                              {...props} 
-                                          />
-                                      </Elements>
-                                  : ''}
-                              </div>
-
-                              <div className="bg-gray-50 px-4 py-3 sm:px-3 sm:flex sm:flex-row-reverse">
-                                    <button
-                                        type="button"
-                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                                        onClick={() => props.setShowForm(false)}
-                                        ref={cancelButtonRef}
-                                    >
-                                        {props.translator['Cancel']}
-                                    </button>
-                              </div>
-                          </div>
-                        </Dialog.Panel>
-                    </Transition.Child>
+                      {props.translator['Cancel']}
+                    </button>
+                  </div>
                 </div>
-            </div>
-        </Dialog>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </div>
+      </Dialog>
     </Transition.Root>
   )
 }
@@ -523,62 +521,65 @@ const Form = (props) => {
 
   const handleSubmit = async (event) => {
 
-      event.preventDefault();
-  
-      if (!stripe || !elements) {
-          // Stripe.js has not yet loaded.
-          return;
-      }
+    event.preventDefault();
 
-      const element = elements.getElement(CardElement);
+    if (!stripe || !elements) {
+      // Stripe.js has not yet loaded.
+      return;
+    }
 
-      setLoading(true);
-      const result = await stripe.createPaymentMethod({
-          type: 'card',
-          card: element,
-      });
+    const element = elements.getElement(CardElement);
 
-      if (result.error) {
-          notie.alert({type: 'error', text: result.error.message, time: 5});
+    setLoading(true);
+    const result = await stripe.createPaymentMethod({
+      type: 'card',
+      card: element,
+    });
+
+    if (result.error) {
+      notie.alert({ type: 'error', text: result.error.message, time: 5 });
+      setLoading(false);
+    } else {
+      nProgress.start(0.5);
+      nProgress.inc(0.2);
+
+      axios({
+        method: 'post',
+        url: route('relatePaymentMethod'),
+        data: {
+          id: result.paymentMethod.id,
+        }
+      })
+        .then((response) => {
+          nProgress.done(true);
+          notie.alert({ type: 'success', text: response.data.message, time: 5 });
           setLoading(false);
-      } else {
-          nProgress.start(0.5);
-          nProgress.inc(0.2);
 
-          axios({
-              method: 'post',
-              url: route('relatePaymentMethod'),
-              data: {
-                  id: result.paymentMethod.id,
-              }
-          })
-          .then((response) => {
-              nProgress.done(true);
-              notie.alert({type: 'success', text: response.data.message, time: 5});
-              setLoading(false);
-
-              if(response.data.status == true) {
-                props.Subscribe();
-                props.setShowForm(false);
-              }
-          });
-      }
+          if (response.data.status == true) {
+            props.Subscribe();
+            props.setShowForm(false);
+          }
+        });
+    }
   };
 
   return (
-      <form onSubmit={handleSubmit}>
-          <CardElement />
-          <div className='pt-10'>
-              <button
-                  className="border border-transparent rounded-md w-full px-8 py-4 flex items-center justify-center text-lg leading-6 font-medium bg-primary text-white md:px-10"
-                  disabled={!stripe || loading}
-              >
-                  {loading ? 'Loading...' : 'Subscribe'}
-              </button>
-          </div>
-      </form>
+    <form onSubmit={handleSubmit}>
+      <CardElement />
+      <div className='pt-10'>
+        <button
+          className="border border-transparent rounded-md w-full px-8 py-4 flex items-center justify-center text-lg leading-6 font-medium bg-primary text-white md:px-10"
+          disabled={!stripe || loading}
+        >
+          {loading ? 'Loading...' : 'Subscribe'}
+        </button>
+      </div>
+    </form>
   );
 };
+
+
+
 
 
 

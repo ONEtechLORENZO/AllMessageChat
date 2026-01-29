@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import {currencies} from '@/Pages/Constants';
+import { currencies } from '@/Pages/Constants';
 import CreatableSelect from 'react-select';
 import nProgress from 'nprogress';
 
@@ -13,7 +13,7 @@ import {
 } from "reactstrap";
 
 const defaultValue = {
-    'currency' : { value: "EUR", label: "Euro" },'time_zone': { value: "Europe/Rome", label: "(GMT+01:00) Rome" }
+    'currency': { value: "EUR", label: "Euro" }, 'time_zone': { value: "Europe/Rome", label: "(GMT+01:00) Rome" }
 };
 
 export default function Workspace(props) {
@@ -25,47 +25,49 @@ export default function Workspace(props) {
     useEffect(() => {
         getTimezones();
         getCurrencies();
-        setWorkspaceInformation(defaultValue);
-    },[]);
-    
+        setWorkspaceInformation((prev) => ({
+            ...prev,
+            ...defaultValue,
+            name: props.company?.name ?? prev?.name ?? "",
+        }));
+    }, []);
+
     // Get Time Zone
-    function getTimezones(){
+    function getTimezones() {
         var url = route('get_timezone');
         axios.get(url).then((response) => {
             setTimezone(response.data.time_zone);
-            liveTimezone(response.data.time_zone);          
+            liveTimezone(response.data.time_zone);
         });
     }
-    
+
     function liveTimezone(time_zone) {
-        let newWorkspace = Object.assign({}, workspaceInformation);
-        let currentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        (time_zone).map( (zone) => {
-            if(currentTimezone == zone.value) {
-                newWorkspace['currency'] = { value: "EUR", label: "Euro" };
-                newWorkspace['time_zone'] = zone;
-            }
-        });
-        newWorkspace['name'] = props.company.name;
-        setWorkspaceInformation(newWorkspace);
+        const currentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const matchedZone = time_zone?.find((z) => z.value === currentTimezone);
+
+        setWorkspaceInformation((prev) => ({
+            ...prev,
+            name: props.company?.name ?? prev?.name ?? "",
+            currency: { value: "EUR", label: "Euro" },
+            time_zone: matchedZone ?? prev?.time_zone,
+        }));
     }
 
     function getCurrencies() {
-        let newCurrency = Object.assign([], currencyType);
-        Object.entries(currencies).map( ([key,currency]) => {
-            let type = {'value' : key, 'label' : currency };
-            newCurrency.push(type);
-        });
+        const newCurrency = Object.entries(currencies).map(([key, currency]) => ({
+            value: key,
+            label: currency,
+        }));
         setCurrency(newCurrency);
     }
 
-    function searchHandler(event, name){
+    function searchHandler(event, name) {
         let newWorkspace = Object.assign({}, workspaceInformation);
         newWorkspace[name] = event;
         setWorkspaceInformation(newWorkspace);
     }
 
-    function updateWorkspaceInformation () {
+    function updateWorkspaceInformation() {
         nProgress.start(0.5);
         nProgress.inc(0.2);
 
@@ -80,9 +82,9 @@ export default function Workspace(props) {
         <>
             <div className="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
                 <div className="sm:max-w-md w-full p-2 flex justify-center items-center flex-col">
-                    <img src="/img/OneMessage.ChatLOGO.png" alt="One Message"/>
+                    <img src="/img/OneMessage.ChatLOGO.png" alt="One Message" />
                     <h1 className="text-[32px] leading-5 font-bold !mt-6 mb-0">
-                        Land! 
+                        Land!
                     </h1>
                     <p className="text-base !mt-4 mb-0">Ready to disembark</p>
 
@@ -112,7 +114,8 @@ export default function Workspace(props) {
                                 type="text"
                                 className="w-full p-2  border-b !border-t-0 !border-r-0 !ring-offset-0 !ring-0 !border-l-0 border-[#D3D3D3] !outline-none placeholder:text-[#B4B5BF] focus:border-primary"
                                 placeholder="Workspace Name"
-                                value={workspaceInformation['name'] ? workspaceInformation['name'] : ''}
+                                value={workspaceInformation?.name ?? ""}
+                                onChange={(e) => searchHandler(e.target.value, "name")}
                             />
                         </div>
                     </div>
@@ -139,7 +142,7 @@ export default function Workspace(props) {
                         <div className="card !rounded-2xl !p-8 w-full space-y-4 !mt-6 text-base">
                             <div className="w-full pt-2  border-b !border-t-0 !border-r-0 !ring-offset-0 !ring-0 !border-l-0 border-[#D3D3D3] !outline-none placeholder:text-[#B4B5BF] focus:border-primary">
                                 <CreatableSelect
-                                    value={workspaceInformation['currency'] ? workspaceInformation['currency'] : ''}
+                                    value={workspaceInformation?.currency ?? null}
                                     options={currencyType}
                                     onChange={(e) => searchHandler(e, 'currency')}
                                     classNamePrefix="creatableselect-inner"
@@ -169,7 +172,7 @@ export default function Workspace(props) {
                         <div className="card !rounded-2xl !p-8 w-full space-y-4 !mt-6 text-base">
                             <div className="w-full pt-2  border-b !border-t-0 !border-r-0 !ring-offset-0 !ring-0 !border-l-0 border-[#D3D3D3] !outline-none placeholder:text-[#B4B5BF] focus:border-primary">
                                 <CreatableSelect
-                                    value={workspaceInformation['time_zone'] ? workspaceInformation['time_zone'] : ''}
+                                    value={workspaceInformation?.time_zone ?? null}
                                     options={timeZone}
                                     onChange={(e) => searchHandler(e, 'time_zone')}
                                     classNamePrefix="creatableselect-inner"
@@ -179,21 +182,24 @@ export default function Workspace(props) {
                     </div>
 
                     <div className='!mt-6 w-full'>
-                    <div className="flex justify-center">
-                        <button
-                            type="button"
-                            className="w-full inline-flex justify-end rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary hover:bg-primary/80 text-semibold font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm mt-4"
-                            onClick={() => updateWorkspaceInformation()}
-                        >
-                            Next
-                        </button>
+                        <div className="flex justify-center">
+                            <button
+                                type="button"
+                                className="w-full inline-flex justify-end rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary hover:bg-primary/80 text-semibold font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm mt-4"
+                                onClick={() => updateWorkspaceInformation()}
+                            >
+                                Next
+                            </button>
+                        </div>
                     </div>
-                </div>
                 </div>
             </div>
         </>
     )
 }
+
+
+
 
 
 

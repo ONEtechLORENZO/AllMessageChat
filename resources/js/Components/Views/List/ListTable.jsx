@@ -136,7 +136,7 @@ function ListTable(props) {
                                 </tr>}
 
                             {Object.entries(props.records).map(([key, record]) => (
-                                <tr key={key}>
+                                <tr>
                                     {(props.actions.mass_edit === true || props.actions.merge === true) &&
                                         <td className='px-2 py-2'>
                                             <Checkbox
@@ -362,6 +362,9 @@ function ListTable(props) {
 }
 
 export default ListTable;
+
+
+
 
 
 

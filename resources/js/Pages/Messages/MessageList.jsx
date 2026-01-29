@@ -11,12 +11,12 @@ import {
 } from "../icons";
 
 import StoryContent from './StoryContent';
-import { BsFacebook  } from "react-icons/bs";
-import { PopoverHeader,PopoverBody,UncontrolledPopover} from "reactstrap";
+import { BsFacebook } from "react-icons/bs";
+import { PopoverHeader, PopoverBody, UncontrolledPopover } from "reactstrap";
 
 export default function MessageList(props) {
 
-    return(
+    return (
         <>
             <div
                 id="messages"
@@ -25,61 +25,61 @@ export default function MessageList(props) {
                 {Object.entries(props.messages).map(([key, message], j) => {
                     var content = message.content;
                     var mediaClass = "object-contain h-48 w-96";
-                    switch(message.type) {
+                    switch (message.type) {
                         case 'image':
                             content = <div className=" ">
-                                        <img 
-                                            src={message.path} 
-                                            className={mediaClass}
-                                        />
-                                        {content}
-                                    </div>;
+                                <img
+                                    src={message.path}
+                                    className={mediaClass}
+                                />
+                                {content}
+                            </div>;
                             break;
-                        
+
                         case 'video':
                             content = <div className=" ">
-                                    <video 
-                                        src={message.path} 
-                                        autoPlay  
-                                        loop
-                                        muted
-                                        className={mediaClass}
-                                    />
-                                    {content}
-                                </div>;
+                                <video
+                                    src={message.path}
+                                    autoPlay
+                                    loop
+                                    muted
+                                    className={mediaClass}
+                                />
+                                {content}
+                            </div>;
                             break;
-                        
+
                         case 'audio':
                             content = <div className=" ">
-                                    <ReactAudioPlayer
-                                        src={message.path} 
-                                        className={''}
-                                        controls
-                                    />
-                                    {content}
-                                </div>;
+                                <ReactAudioPlayer
+                                    src={message.path}
+                                    className={''}
+                                    controls
+                                />
+                                {content}
+                            </div>;
                             break;
 
                         case 'application':
                             content = <div className=" ">
-                                    <a href={message.path} >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                    </a>
-                                    {message.content}
-                                </div>;
+                                <a href={message.path} >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </a>
+                                {message.content}
+                            </div>;
                             break;
                         case 'story':
-                            content = <StoryContent 
-                                    data={message}
-                                    className={mediaClass}
-                                    loadedStory = {props.loadedStory}
-                                    setLoadedStory = {props.setLoadedStory}
-                                />
+                            content = <StoryContent
+                                data={message}
+                                className={mediaClass}
+                                loadedStory={props.loadedStory}
+                                setLoadedStory={props.setLoadedStory}
+                            />
                             break;
                     }
-                    return(
+                    return (
                         <>
                             {message.mode == 'incoming' ?
                                 <div className="chat-message">
@@ -90,23 +90,23 @@ export default function MessageList(props) {
                                                     {content}
                                                 </span>
                                                 <div className='flex w-full !mt-4 items-center gap-2'>
-                                                <span className="text-xs text-left">
+                                                    <span className="text-xs text-left">
                                                         {props.containerCategory == 'all' &&
                                                             <>
-                                                            {message.category == 'whatsapp' &&
-                                                                <WhatsAppIcon width={`20`} height={`20`} />
-                                                            }
-                                                            
-                                                            {message.category == 'instagram' &&
-                                                                <InstaIcon width={`20`} height={`20`} />
-                                                            } 
+                                                                {message.category == 'whatsapp' &&
+                                                                    <WhatsAppIcon width={`20`} height={`20`} />
+                                                                }
+
+                                                                {message.category == 'instagram' &&
+                                                                    <InstaIcon width={`20`} height={`20`} />
+                                                                }
                                                             </>
-                                                                
-                                                        }  
-                                                </span>
-                                                <span className="text-xs text-right text-gray-500">
-                                                    {message.date} 
-                                                </span>
+
+                                                        }
+                                                    </span>
+                                                    <span className="text-xs text-right text-gray-500">
+                                                        {message.date}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -124,29 +124,30 @@ export default function MessageList(props) {
                                                     <span className="text-xs text-left">
                                                         {props.containerCategory == 'all' &&
                                                             <>
-                                                            {message.category == 'whatsapp' &&
-                                                                <WhatsAppIcon width={`20`} height={`20`} />
-                                                            }
-                                                            
-                                                            {message.category == 'instagram' &&
-                                                                <InstaIcon width={`20`} height={`20`} />
-                                                            }
-                                                            {message.category == 'facebook' && 
-                                                               <BsFacebook className="w-5 h-4 fill-current text-indigo-500"/>
-                                                            } 
+                                                                {message.category == 'whatsapp' &&
+                                                                    <WhatsAppIcon width={`20`} height={`20`} />
+                                                                }
+
+                                                                {message.category == 'instagram' &&
+                                                                    <InstaIcon width={`20`} height={`20`} />
+                                                                }
+                                                                {message.category == 'facebook' &&
+                                                                    <BsFacebook className="w-5 h-4 fill-current text-indigo-500" />
+                                                                }
                                                             </>
                                                         }
                                                     </span>
                                                     <span className="text-xs text-right flex text-gray-500">
-                                                        {message.date} 
-                                                        <span className='!pl-2' id={message.type+key}>
-                                                            {(message.status == 'Failed' || message.status == 'FAILED') ? 
+                                                        {message.date}
+                                                        <span className='!pl-2' id={message.type + key}>
+                                                            {(message.status == 'Failed' || message.status == 'FAILED') ?
                                                                 <>
-                                                                    <ErrorIcon /> 
+                                                                    <ErrorIcon />
                                                                     <UncontrolledPopover
                                                                         placement="top"
-                                                                        target={message.type+key}
+                                                                        target={message.type + key}
                                                                         trigger="hover"
+                                                                        transition={{ timeout: 150 }}
                                                                     >
                                                                         <PopoverHeader></PopoverHeader>
                                                                         <PopoverBody>
@@ -154,22 +155,22 @@ export default function MessageList(props) {
                                                                         </PopoverBody>
                                                                     </UncontrolledPopover>
                                                                 </>
-                                                                :''
+                                                                : ''
                                                             }
                                                             {(message.status == 'Queued' && message.delivered == 0 && message.read == 0) &&
-                                                                <QueueIcon /> 
+                                                                <QueueIcon />
                                                             }
                                                             {((message.status == 'Sent' || message.status == 'Send') && message.delivered == 0 && message.read == 0) &&
-                                                                <SentIcon /> 
+                                                                <SentIcon />
                                                             }
                                                             {(message.delivered == 1 && message.read == 0) &&
-                                                                <DeliveredIcon /> 
+                                                                <DeliveredIcon />
                                                             }
-                                                            {(message.read == 1 || message.status == 'Read')&&
-                                                                <ReadIcon /> 
+                                                            {(message.read == 1 || message.status == 'Read') &&
+                                                                <ReadIcon />
                                                             }
-                                                            
-                                                        </span> 
+
+                                                        </span>
                                                     </span>
                                                 </div>
                                             </div>
@@ -184,6 +185,9 @@ export default function MessageList(props) {
         </>
     );
 }
+
+
+
 
 
 

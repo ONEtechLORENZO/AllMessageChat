@@ -377,6 +377,7 @@ function ListView(props) {
                     <div className="">
                         <div className="inline-block min-w-full py-2 align-middle">
                             <ListViewTable
+                                sortRoute={props.module === 'Dashboard' ? 'dashboard' : null}
                                 module={props.module}
                                 headers={props.headers}
                                 records={props.records}
@@ -525,6 +526,9 @@ function DropDown(props) {
 
 
 export default ListView;
+
+
+
 
 
 

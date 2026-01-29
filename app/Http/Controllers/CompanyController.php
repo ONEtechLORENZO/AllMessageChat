@@ -33,9 +33,9 @@ class CompanyController extends Controller
         'name' => ['label' => 'Name', 'type' => 'text'],
         'company_address' =>  ['label' => 'Address', 'type' => 'text'],
         'company_country' =>  ['label' => 'Country', 'type' => 'text'],
-        'email' => ['label' =>'Email', 'type' => 'email'],
-        'currency' => ['label' =>'Currency', 'type' => 'text'],
-        'plan' => ['label' =>'Plan', 'type' => 'text'],       
+        'email' => ['label' => 'Email', 'type' => 'email'],
+        'currency' => ['label' => 'Currency', 'type' => 'text'],
+        'plan' => ['label' => 'Plan', 'type' => 'text'],
     ];
 
     /**
@@ -44,18 +44,18 @@ class CompanyController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
-    {      
+    {
         $module = new Company();
         $currentUser = $request->user();
-        
-        $columnlist = Cache::get('Company'.'_selected_column_list_'. $request->user()->id);       
+
+        $columnlist = Cache::get('Company' . '_selected_column_list_' . $request->user()->id);
         $listViewData = $this->listView($request, $module, $this->list_view_columns);
         $moduleData = [
             'singular' => 'Company',
             'plural' => 'Workspaces',
             'module' => 'Company',
             'current_user' => $request->user(),
-            'current_page' => 'Company', 
+            'current_page' => 'Company',
             // Actions
             'actions' => [
                 'create' => true,
@@ -66,13 +66,13 @@ class CompanyController extends Controller
                 'import' => false,
                 'search' => true,
                 'filter' => false,
-                'select_field'=>true,
+                'select_field' => true,
             ],
             'translator' => Controller::getTranslations(),
         ];
 
         $data = array_merge($moduleData, $listViewData);
-        
+
         return Inertia::render('Company/List', $data);
     }
 
@@ -94,7 +94,7 @@ class CompanyController extends Controller
      */
     public function store(Request $request)
     {
-    
+
         $request->validate([
             'name' => 'required|max:255',
         ]);
@@ -117,17 +117,17 @@ class CompanyController extends Controller
         $company->email = $request->get('email');
 
         $company->save();
-        if(!$request->id){
+        if (!$request->id) {
             DB::table('company_user')->insert([
                 'user_id' => $request->user()->id,
                 'company_id' => $company->id
             ]);
         }
-        if(($request->user()->role == 'global_admin') && ($request->is('admin/*')))
-             return Redirect::route('detail_global_Company', $company->id );
+        if (($request->user()->role == 'global_admin') && ($request->is('admin/*')))
+            return Redirect::route('detail_global_Company', $company->id);
         else
-             return Redirect::route('detailCompany', $company->id );
-       //return Redirect::route('dashboard');
+            return Redirect::route('detailCompany', $company->id);
+        //return Redirect::route('dashboard');
     }
 
     /**
@@ -144,55 +144,55 @@ class CompanyController extends Controller
 
         // Check user can access the record
         $access = $this->checkPermissin($id, $user);
-        if(!$access && $user->role != 'global_admin'){
+        if (!$access && $user->role != 'global_admin') {
             abort('401');
         }
         $wallet = Wallet::where('company_id', $id)->first();
-        
+
         $balance = 0.00;
-        if($wallet) {
+        if ($wallet) {
             $balance = $wallet->balance_amount;
         }
-       
-        $companyId = Cache::get('selected_company_'. $user->id);
+
+        $companyId = Cache::get('selected_company_' . $user->id);
         //get current company details
         $currentCompany =  Company::where('id', $companyId)->first();
 
         // Get message amount deduction
         $messageDeduction = (new UserController)->getMsgAmountDeduction($user->id);
-        $paymentMethods = (new UserController)->getPaymentMethods($request , 'direct');
+        $paymentMethods = (new UserController)->getPaymentMethods($request, 'direct');
 
         $stripe_public_key = config('stripe.stripe_key');
-        $headers = $this->getModuleHeader(1 , 'Company');   
+        $headers = $this->getModuleHeader(1, 'Company');
 
         $account_id = [];
-        $accounts = Account::where('company_id',$id)->get();
-        
-        foreach($accounts as $account) {
-            $account_id[] = $account->id;
-        } 
+        $accounts = Account::where('company_id', $id)->get();
 
-        if($company) {
+        foreach ($accounts as $account) {
+            $account_id[] = $account->id;
+        }
+
+        if ($company) {
             $user_count = $users->count();
             $user_id = [];
 
-            foreach($users as $company_User) {
+            foreach ($users as $company_User) {
                 $user_id[] = $company_User->id;
-            } 
-            
-            $last_signUp = User::whereIn('id',$user_id)->max('user_login');
-            
+            }
+
+            $last_signUp = User::whereIn('id', $user_id)->max('user_login');
+
             $company['last_signUp'] = $last_signUp;
             $company['users'] = $user_count;
         }
 
         $plan = Plan::find($company->plan);
-        
-        if($plan) {
+
+        if ($plan) {
             $plan['payment_method'] = $company->payment_method;
             $plan['monthly_consumption'] =  $this->monthlyConsumptin($account_id, $companyId);
         }
-        
+
         // GET Company msg revenue data
         $revenue_data = $this->getRevenueData($account_id);
 
@@ -213,7 +213,7 @@ class CompanyController extends Controller
             'translator' => [
                 'Detail' => __('Detail'),
                 'Notes' => __('Notes'),
-                'Edit'  =>__('Edit'),
+                'Edit'  => __('Edit'),
                 'Wallet' => __('Wallet'),
                 'Hi' => __('Hi'),
                 'Acitivies' => __('Acitivies'),
@@ -231,11 +231,14 @@ class CompanyController extends Controller
                 'Add a Payment Method' => __('Add a Payment Method'),
                 'See Transactions History' => __('See Transactions History'),
                 'See Details' => __('See Details'),
-                'Download your VAT Invoices' => __('Download your VAT Invoices'),'Go to Invoices'=>__('Go to Invoices'),
-                'Recharge your account'=> __('Recharge your account'),'Cancel'=> __('Cancel'),'Enter the amount' => __('Enter the amount')
-                ]
+                'Download your VAT Invoices' => __('Download your VAT Invoices'),
+                'Go to Invoices' => __('Go to Invoices'),
+                'Recharge your account' => __('Recharge your account'),
+                'Cancel' => __('Cancel'),
+                'Enter the amount' => __('Enter the amount')
+            ]
         ];
-        return Inertia::render('Company/Detail', $data);       
+        return Inertia::render('Company/Detail', $data);
     }
 
     /**
@@ -269,19 +272,19 @@ class CompanyController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request,$id)
+    public function destroy(Request $request, $id)
     {
         $company = Company::find($id);
         Schema::disableForeignKeyConstraints();
         if ($company->delete()) {
             Log::info('Company deleted.');
             Schema::enableForeignKeyConstraints();
-         }
+        }
         //if(($request->user()->role == 'global_admin') && ($request->is('admin/*')))
-            return Redirect::route('listCompany');
+        return Redirect::route('listCompany');
         //  else
         //     return Redirect::route('listAdminCompany');
-        
+
     }
 
     /**
@@ -293,24 +296,23 @@ class CompanyController extends Controller
         $user = $request->user();
         $company = Company::first();
 
-        foreach($request->email as $email){
+        foreach ($request->email as $email) {
             $emailAddress = $email['value'];
             $emailAddress = filter_var($emailAddress, FILTER_SANITIZE_EMAIL);
 
             if (filter_var($emailAddress, FILTER_VALIDATE_EMAIL)) {
-                
+
                 $uuid = Str::uuid()->toString();
-                $url = url('/') . '/user-invite?unique_id='.$uuid;
+                $url = url('/') . '/user-invite?unique_id=' . $uuid;
                 $data = [
                     'url' => $url,
                     'name' => $company->name
                 ];
 
-                Mail::send('InviteUser', $data, function($message) use($emailAddress) {
-                    $message->to($emailAddress)->subject
-                    ('User invitation ');
+                Mail::send('InviteUser', $data, function ($message) use ($emailAddress) {
+                    $message->to($emailAddress)->subject('User invitation ');
                 });
-                
+
                 $userInvite = new UserInvite();
                 $userInvite->email = $emailAddress;
                 $userInvite->user_id = $user->id;
@@ -318,7 +320,8 @@ class CompanyController extends Controller
                 $userInvite->save();
             }
         }
-        echo json_encode(['result' => 'success']); die;
+        echo json_encode(['result' => 'success']);
+        die;
     }
 
     /**
@@ -327,29 +330,29 @@ class CompanyController extends Controller
     public function setBaseCompany(Request $request)
     {
         $companyId = $request->company_id;
-        Cache::put('selected_company_'. $request->user()->id  , $companyId);
-       
+        Cache::put('selected_company_' . $request->user()->id, $companyId);
+
         return Redirect::to(url()->previous());
     }
-    public function showColumn(Request $request,$module)
+    public function showColumn(Request $request, $module)
     {
-        $columnList = $request->columns; 
+        $columnList = $request->columns;
         $customHeader = [];
 
-        if($module == 'Contact') {
+        if ($module == 'Contact') {
             $customHeader = ['widget_tag', 'widget_list'];   // Check to you want to view this header in list view
-            foreach($columnList as $name =>$field) {
-                foreach($customHeader as $index => $header) {
-                    if($header == $name) {
+            foreach ($columnList as $name => $field) {
+                foreach ($customHeader as $index => $header) {
+                    if ($header == $name) {
                         unset($customHeader[$index]);
                     }
                     unset($columnList[$header]);
-                }            
+                }
             }
         }
 
-        Cache::put($module.'_custom_column_list_'.$request->user()->id, $customHeader);
-        Cache::put($module.'_selected_column_list_'. $request->user()->id  , $columnList);              
+        Cache::put($module . '_custom_column_list_' . $request->user()->id, $customHeader);
+        Cache::put($module . '_selected_column_list_' . $request->user()->id, $columnList);
         return Redirect::to(url()->previous());
     }
 
@@ -357,21 +360,22 @@ class CompanyController extends Controller
     /**
      * Check permission to user can access the record
      */
-    public function checkPermissin( $recordId , $user)
+    public function checkPermissin($recordId, $user)
     {
-        $companyId = Cache::get('selected_company_'.$user->id);
+        $companyId = Cache::get('selected_company_' . $user->id);
         $userCompanies = $user->company;
-        $return = false; 
-        foreach($userCompanies as $company){
-            if($company->id == $recordId ){
+        $return = false;
+        foreach ($userCompanies as $company) {
+            if ($company->id == $recordId) {
                 $return = true;
             }
         }
         return $return;
     }
 
-    public function saveWorkspace(Request $request) {
-        
+    public function saveWorkspace(Request $request)
+    {
+
         $request->validate([
             'name' => 'required|max:255',
             'currency' => 'required',
@@ -385,46 +389,55 @@ class CompanyController extends Controller
         $company->time_zone = $request->time_zone['value'];
         $company->save();
 
-       if($request->user()){
+        if ($request->user()) {
             DB::table('company_user')->insert([
                 'user_id' => $request->user()->id,
                 'company_id' => $company->id
             ]);
-       }
+        }
 
-       if($company->id){
-          Cache::put('selected_company_'. $request->user()->id  , $company->id);
-       }
+        if ($company->id) {
+            Cache::put('selected_company_' . $request->user()->id, $company->id);
+        }
 
-       Cache::put('user_steps_status_'. $request->user()->id , 3 );
+        Cache::put('user_steps_status_' . $request->user()->id, 3);
 
-       return response()->json(['status' => true, 'company_id' => $company->id]);
+        return response()->json(['status' => true, 'company_id' => $company->id]);
     }
 
-    public function billingInformation(Request $request) {
-        
+    public function billingInformation(Request $request)
+    {
+
         $user_id = $request->user()->id;
         $currentUser = User::find($user_id);
         $currentCompany = Company::first();
-        
+
         $company = $request->company;
         $user = $request->user;
 
         $companyFields = [
-            'company_country', 'company_vat_id', 'company_address', 'email', 'city', 'state', 'country', 'codice_destinatario','organization', 'phone_number'
+            'company_country',
+            'company_vat_id',
+            'company_address',
+            'email',
+            'city',
+            'state',
+            'country',
+            'codice_destinatario',
+            'organization',
+            'phone_number'
         ];
 
         $userFields = ['first_name', 'last_name', 'name'];
 
-        foreach($userFields as $field) {
+        foreach ($userFields as $field) {
             $currentUser->$field = $user[$field];
-            if($field == 'name') {
-                $currentUser->$field = $user['first_name'].' '.$user['last_name'];
+            if ($field == 'name') {
+                $currentUser->$field = $user['first_name'] . ' ' . $user['last_name'];
             }
-
         }
 
-        foreach($companyFields as $field) {
+        foreach ($companyFields as $field) {
             $currentCompany->$field = $company[$field];
         }
 
@@ -434,54 +447,56 @@ class CompanyController extends Controller
         return response()->json(['status' => true]);
     }
 
-    public function paymentMethod(Request $request) {
-        
-        if($request->id) {
+    public function paymentMethod(Request $request)
+    {
+
+        if ($request->id) {
 
             $company = Company::findOrFail($request->id);
 
             $company->payment_method = $request->method;
             $company->save();
-        if(($request->user()->role == 'global_admin') && ($request->is('admin/*')))
-             return Redirect::route('detail_global_Company', ['id' => $request->id] );
-        else
-            return Redirect::route('detailCompany', ['id' => $request->id]);
+            if (($request->user()->role == 'global_admin') && ($request->is('admin/*')))
+                return Redirect::route('detail_global_Company', ['id' => $request->id]);
+            else
+                return Redirect::route('detailCompany', ['id' => $request->id]);
         }
     }
 
-    public function workspaceActivities(Request $request) {
+    public function workspaceActivities(Request $request)
+    {
 
         $account_id = [];
         $accounts = Account::get();
-        
-        foreach($accounts as $account) {
+
+        foreach ($accounts as $account) {
             $account_id[] = $account->id;
-        } 
+        }
 
         $workspace = Company::first();
 
-        if($workspace) {
+        if ($workspace) {
 
             $users = User::get();
             $user_id = [];
 
-            foreach($users as $user) {
+            foreach ($users as $user) {
                 $user_id[] = $user->user_id;
-            } 
-            
-            $last_signUp = User::whereIn('id',$user_id)->max('user_login');
-            
+            }
+
+            $last_signUp = User::whereIn('id', $user_id)->max('user_login');
+
             $workspace['last_signUp'] = $last_signUp;
             $workspace['users'] = count($user_id);
         }
 
         $plan = Plan::find($workspace->plan);
-        
-        if($plan) {
+
+        if ($plan) {
             $plan['payment_method'] = $workspace->payment_method;
             $plan['monthly_consumption'] =  $this->monthlyConsumptin($account_id, $company_id);
         }
-        
+
         // GET Company msg revenue data
         $revenue_data = $this->getRevenueData($account_id);
 
@@ -492,39 +507,40 @@ class CompanyController extends Controller
         ]);
     }
 
-    public function getRevenueData($account_id) {
+    public function getRevenueData($account_id)
+    {
 
         $query = Msg::whereIn('account_id', $account_id);
 
-        $fields = ['last_month' => 1, 'last_three_month' => 3, 'last_one_year' => 12, 'life_time' => 0];    
-  
-        foreach($fields as $key => $month) {
-            
+        $fields = ['last_month' => 1, 'last_three_month' => 3, 'last_one_year' => 12, 'life_time' => 0];
+
+        foreach ($fields as $key => $month) {
+
             $clone[$key] = clone $query;
 
-            if($month != 0) {
+            if ($month != 0) {
                 $avg = $clone[$key]->where('msgs.created_at', '>=', now()->startOfMonth()->subMonth($month))->avg('msgs.amount');
             } else {
                 $avg = $clone[$key]->avg('msgs.amount');
             }
 
-            if(!$avg) {
+            if (!$avg) {
                 $return[$key] = '0';
             } else {
-                $return[$key] = number_format($avg , 4, '.', '');
+                $return[$key] = number_format($avg, 4, '.', '');
             }
         }
 
-        return $return; 
+        return $return;
     }
 
     public function monthlyConsumptin($account_id, $company_id)
     {
-        $messages = Msg::whereIn('account_id',$account_id)->count();
+        $messages = Msg::whereIn('account_id', $account_id)->count();
         $automations = Automation::where('company_id', $company_id)->count();
 
         $average = $messages + $automations;
-        
+
         return $average;
     }
 
@@ -534,16 +550,16 @@ class CompanyController extends Controller
     public function getCompanies(Request $request)
     {
         $userId = $request->parent;
-        $company_id = Cache::get('selected_company_'.$request->user()->id);
+        $company_id = Cache::get('selected_company_' . $request->user()->id);
         $companyList = [];
         $user = User::find($userId);
         $companies = $user->company;
-        foreach($companies as $company){
-            if($request->user()->id != $userId && $company_id != $company->id){ 
-                $companyList[] = $company; 
+        foreach ($companies as $company) {
+            if ($request->user()->id != $userId && $company_id != $company->id) {
+                $companyList[] = $company;
             }
         }
-        return response()->json(['status' => true , 'companies' => $companyList]);
+        return response()->json(['status' => true, 'companies' => $companyList]);
     }
 
     /**
@@ -563,14 +579,14 @@ class CompanyController extends Controller
     /**
      * Return company data
      */
-    public function getCompanyDetail(Request $request , $id)
+    public function getCompanyDetail(Request $request, $id)
     {
         $company = Company::find($id);
         $planid = $company->plan;
 
         $plan = Plan::find($planid);
         $planName = $plan->name;
-        return response()->json(['status' => true , 'plan' => $planName]);
+        return response()->json(['status' => true, 'plan' => $planName]);
     }
 
     /**
@@ -581,11 +597,11 @@ class CompanyController extends Controller
         $company = Company::where('id', 1)->first();
         $emailAddress = config('app.admin_email');
 
-        if($company && $emailAddress){
+        if ($company && $emailAddress) {
 
             $accessCode = Str::uuid()->toString();
             $data['url'] = url("/login-admin-user") . "?access_code={$accessCode}";
-     
+
             // Mail::send('ImpersonateCompany', $data, function($message) use($emailAddress) {
             //     $message->to($emailAddress)->subject
             //     ('Login Company admin ');
@@ -593,26 +609,27 @@ class CompanyController extends Controller
 
             // Store token 
             DB::table('company_access_token')->insert(['token' => $accessCode, 'created_at' => Carbon::now()]);
-           
+
             $result = ['status' => 'Success', 'message' => 'Check admin email to access the company', 'token' => $accessCode];
         } else {
 
-            $result = [ 'status' => 'Failed', 'message' => 'You cannot access that company'];
+            $result = ['status' => 'Failed', 'message' => 'You cannot access that company'];
         }
 
         return response()->json($result);
     }
 
-    public function updatePaymentMethod(Request $request) {
-        
+    public function updatePaymentMethod(Request $request)
+    {
+
         $company = Company::first();
         $method = $request->method;
-        
+
         $subscription_id = $company->subscription_id;
 
         $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
 
-        if($method == 'Postpaid') {
+        if ($method == 'Postpaid') {
             $data = [
                 'billing_cycle_anchor' => 'now', // Send invoice immediately
                 'collection_method' => 'send_invoice', // Change the mode
@@ -624,25 +641,29 @@ class CompanyController extends Controller
 
         try {
             $subscription = $stripe->subscriptions->update($subscription_id, $data);
-        }
-        catch(\Exception $e) {
+        } catch (\Exception $e) {
             // Log the issue
-            Log::info( ['Payment method change issue' => $e->getMessage()]);
-            return response()->json(['status' => false,'message' => $e->getMessage()]);
+            Log::info(['Payment method change issue' => $e->getMessage()]);
+            return response()->json(['status' => false, 'message' => $e->getMessage()]);
         }
 
         $company->payment_method = $method;
         $company->save();
 
-        return response()->json(['status' => 'Success', 'message' => 'You can be successfully changed the paymethod of this workspace.' ]);
+        return response()->json(['status' => 'Success', 'message' => 'You can be successfully changed the paymethod of this workspace.']);
     }
 
-    public function workspaceInformation (Request $request) {
+    public function workspaceInformation(Request $request)
+    {
+        $request->validate([
+            'time_zone' => 'required',
+            'currency'  => 'required',
+        ]);
 
-        $company = Company::first();
+        $company = Company::firstOrFail();
 
-        $company->time_zone = $request->time_zone['value'];
-        $company->currency= $request->currency['value'];
+        $company->time_zone = data_get($request, 'time_zone.value', $request->time_zone);
+        $company->currency  = data_get($request, 'currency.value', $request->currency);
 
         $company->save();
 
@@ -677,14 +698,14 @@ class CompanyController extends Controller
     public function getSessionsData(Request $request)
     {
 
-        $sessions = Session::select(DB::raw('count(id) as `data`'),DB::raw("DATE_FORMAT(created_at, '%m') month"))
+        $sessions = Session::select(DB::raw('count(id) as `data`'), DB::raw("DATE_FORMAT(created_at, '%m') month"))
             ->where('created_at', '>=', Carbon::now()->subMonth(2))
             ->get();
-            
-        $sessionArr = [ 'current_month' => 0, 'last_month' => 0];
+
+        $sessionArr = ['current_month' => 0, 'last_month' => 0];
         $currentMonth = date('m');
-        foreach($sessions as $session ) {
-            if($session['month'] == $currentMonth) {
+        foreach ($sessions as $session) {
+            if ($session['month'] == $currentMonth) {
                 $sessionArr['current_month'] = $session['data'];
             } else {
                 $sessionArr['last_month'] = $session['data'];

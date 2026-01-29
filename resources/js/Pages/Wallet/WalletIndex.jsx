@@ -47,7 +47,7 @@ function WalletIndex(props) {
           <nav className="-mb-px flex space-x-8 border-b border-[#B9B9B9]" aria-label="Tabs">
             {tabs.map((tab) => (
               <a
-                active
+                key={tab.page}
                 href={tab.href}
                 className={classNames(
                   tab.page == currentTab
@@ -156,6 +156,9 @@ function WalletIndex(props) {
 }
 
 export default WalletIndex;
+
+
+
 
 
 

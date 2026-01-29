@@ -143,7 +143,7 @@ const navigation = [
 //     {
 //         name: "Social Channels",
 //         href: route("dashboard"),
-//         icon: OfficeBuildingIcon,
+//         icon: BuildingOfficeIcon,
 //         show: ['all'],
 //     },
 //     {
@@ -581,10 +581,7 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-white !mt-10">
                             <button type="button" className="inline-flex bg-white rounded text-center text-[#7E7F8C] justify-center items-center drop-shadow !py-3 !gap-3 !text-semibold ">
-                                <img
-                                    src="./img/google-logo.png"
-                                    alt="google logo"
-                                />
+                                <img src="/img/google-logo.png" alt="google logo" />
                                 Sign up with Google
                             </button>
                             <button type="button" className="inline-flex bg-[#3B5998] rounded text-center  text-white justify-center !py-3 !gap-3  text-semibold">
@@ -1180,6 +1177,9 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
         </>
     );
 }
+
+
+
 
 
 

@@ -684,3 +684,6 @@ export default Detail;
 
 
 
+
+
+

@@ -1,5 +1,5 @@
-import React, { useEffect, useState, router as Inertia } from 'react';
-import { Link } from '@inertiajs/react';
+import React, { useEffect, useState } from 'react';
+import { Link, router as Inertia } from '@inertiajs/react';
 import { WiTime8 } from "react-icons/wi";
 import Checkbox from '@/Components/Forms/Checkbox';
 import Axios from "axios";
@@ -63,19 +63,28 @@ export default function ListViewTable(props) {
     }
 
     function sortColumn(field_name, sort_order) {
+        if (field_name === 'widget_name') field_name = 'last_name';
 
-        if (field_name == 'widget_name') {
-            field_name = 'last_name';
-        }
-        if (props.module == "Transaction" || props.module == 'Msg') {
-            Inertia.get(route('wallet') + '?current_page=Expenses&page=' + props.currentPage + '&search=' + props.search + '&sort_by=' + field_name + '&sort_order=' + sort_order);
-        } else {
-            Inertia.get(route('list' + props.module) + '?page=' + props.paginator.currentPage + '&search=' + props.search + '&sort_by=' + field_name + '&sort_order=' + sort_order);
-        }
+        const url =
+            props.sortRoute
+                ? route(props.sortRoute)
+                : (props.module === 'Transaction' || props.module === 'Msg')
+                    ? route('wallet')
+                    : (props.module === 'Dashboard')
+                        ? route('dashboard')
+                        : route('list' + props.module);
 
-        if (props.errors.message) {
-            notie.alert({ type: 'error', text: props.errors.message, time: 5 });
-        }
+
+        const page =
+            (props.module === 'Transaction' || props.module === 'Msg')
+                ? props.currentPage
+                : (props.paginator?.currentPage ?? 1);
+
+        Inertia.get(
+            url +
+            `?page=${page}&search=${props.search}&sort_by=${field_name}&sort_order=${sort_order}` +
+            (props.module === 'Transaction' || props.module === 'Msg' ? `&current_page=Expenses` : '')
+        );
     }
 
     return (
@@ -136,7 +145,7 @@ export default function ListViewTable(props) {
                             if (showAll === false && key > 4) return false;
 
                             return (
-                                <tr key={key} className="bg-white">
+                                <tr key={record.id ?? key} className="bg-white">
                                     {(props.actions.mass_edit === true || props.actions.merge === true) &&
                                         <td className='px-2 py-2'>
                                             <Checkbox
@@ -175,7 +184,7 @@ export default function ListViewTable(props) {
                                                     phoneNumbers && phoneNumbers.map((phone, index) => {
                                                         widget = true;
                                                         if (index === 0) {
-                                                            tmpWidgets.push(<div className="text-gray-900 flex items-center gap-2">
+                                                            tmpWidgets.push(<div key={`phone-0`} className="text-gray-900 flex items-center gap-2">
                                                                 <SlScreenSmartphone /> {phone['phones']}
                                                                 {(phoneNumbers).length > 1 ?
                                                                     <div className='flex items-center text-[#7666B4]'> + {((phoneNumbers).length - 1)} </div>
@@ -192,7 +201,7 @@ export default function ListViewTable(props) {
                                                     EmailAddress && EmailAddress.map((email, index) => {
                                                         widget = true;
                                                         if (index === 0) {
-                                                            tmpWidgets.push(<div className="text-gray-900 flex items-center gap-2">
+                                                            tmpWidgets.push(<div key={`email-0`} className="text-gray-900 flex items-center gap-2">
                                                                 <GoMail />{email['emails']}
                                                                 {(EmailAddress).length > 1 ?
                                                                     <div className='flex items-center text-[#7666B4]'> + {((EmailAddress).length - 1)} </div>
@@ -221,7 +230,7 @@ export default function ListViewTable(props) {
                                                 widget = true;
                                                 (record.tags).map((tag, tagIndex) => {
                                                     if (tagIndex === 0 || tagIndex === 1) {
-                                                        tmpWidgets.push(<span className="inline-flex items-center !rounded bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">
+                                                        tmpWidgets.push(<span key={`tag-${tag.id ?? tagIndex}`} className="inline-flex items-center !rounded bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">
                                                             {tag.name}
                                                         </span>)
                                                     }
@@ -310,10 +319,8 @@ export default function ListViewTable(props) {
 
                                         return (
                                             <td key={name} title={title} className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]">
-                                                {widget === true ?
-                                                    tmpWidgets.map((tmp) => {
-                                                        return tmp;
-                                                    })
+                                                {widget === true
+                                                    ? tmpWidgets.map((tmp, i) => React.cloneElement(tmp, { key: i }))
                                                     : column_value}
                                             </td>
                                         );
@@ -340,6 +347,9 @@ export default function ListViewTable(props) {
         </div>
     );
 }
+
+
+
 
 
 

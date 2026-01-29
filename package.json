@@ -20,6 +20,7 @@
         "@heroicons/react": "^2.2.0",
         "@inertiajs/progress": "^0.1.2",
         "@inertiajs/react": "^2.3.12",
+        "@popperjs/core": "^2.11.8",
         "@stripe/react-stripe-js": "^5.6.0",
         "@stripe/stripe-js": "^8.7.0",
         "axios": "^1.6.7",
@@ -46,6 +47,7 @@
         "react-phone-number-input": "^3.4.14",
         "react-select": "^5.10.2",
         "react-toastify": "^11.0.5",
+        "react-transition-group": "^4.4.5",
         "reactstrap": "^9.2.3",
         "recharts": "^3.7.0",
         "ziggy-js": "^2.6.0"

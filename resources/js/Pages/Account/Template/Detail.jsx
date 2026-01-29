@@ -3,7 +3,7 @@ import Authenticated from '@/Layouts/Authenticated';
 import Input from '@/Components/Forms/Input';
 import TextArea from '@/Components/Forms/TextArea';
 import PristineJS from 'pristinejs';
-import { Head, useForm, Link, Inertia } from '@inertiajs/react';
+import { Head, useForm, Link, router as Inertia } from '@inertiajs/react';
 import Dropdown from '@/Components/Forms/Dropdown';
 import InputError from '@/Components/Forms/InputError';
 import { defaultPristineConfig, header_templates } from '@/Pages/Constants';
@@ -309,17 +309,17 @@ function NewTemplate(props) {
 
                     <div>
                         {temp_status.toLowerCase() == 'approved' ?
-                            <span className="shadow-sm mr-3 text-sm font-medium rounded-md text-green-700  p-3 bg-green-100">
+                            <span class="shadow-sm mr-3 text-sm font-medium rounded-md text-green-700  p-3 bg-green-100">
                                 {temp_status}
                             </span>
                             :
                             <>
                                 {(temp_status).toLowerCase() == 'submitted' || temp_status == 'draft' ?
-                                    <span className="shadow-sm text-sm mr-3 font-medium rounded-md text-yellow-700  p-3 bg-yellow-100">
+                                    <span class="shadow-sm text-sm mr-3 font-medium rounded-md text-yellow-700  p-3 bg-yellow-100">
                                         {temp_status.toUpperCase()}
                                     </span>
                                     :
-                                    <span className="shadow-sm text-sm mr-3 font-medium rounded-md text-red-700  p-3 bg-red-100">
+                                    <span class="shadow-sm text-sm mr-3 font-medium rounded-md text-red-700  p-3 bg-red-100">
                                         {temp_status}
                                     </span>
                                 }
@@ -558,12 +558,3 @@ function NewTemplate(props) {
 }
 
 export default NewTemplate;
-
-
-
-
-
-
-
-
-

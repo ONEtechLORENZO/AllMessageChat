@@ -71,3 +71,6 @@ export default function CatalogDetail(props) {
 
 
 
+
+
+
