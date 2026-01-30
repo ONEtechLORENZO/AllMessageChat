@@ -29,6 +29,7 @@ import {
     XMarkIcon,
     ChevronRightIcon,
     ChevronLeftIcon,
+    Bars3Icon as IconMenu,
     AdjustmentsHorizontalIcon,
     Cog6ToothIcon,
     PlusCircleIcon,
@@ -606,7 +607,29 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                 </div>
             </div>
 
-            <div className="flex min-h-screen bg-[#F1F4F6]">
+            <div
+                className="relative flex min-h-screen bg-black text-white overflow-hidden"
+                style={{
+                    background:
+                        "radial-gradient(900px circle at 15% 15%, rgba(191,0,255,0.18), transparent 45%), radial-gradient(900px circle at 85% 10%, rgba(56,189,248,0.14), transparent 50%), #000000",
+                }}
+            >
+                <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+                    <div
+                        className="absolute -top-32 -left-32 h-80 w-80 rounded-full"
+                        style={{
+                            background:
+                                "radial-gradient(circle, rgba(191,0,255,0.35), rgba(191,0,255,0.0) 70%)",
+                        }}
+                    />
+                    <div
+                        className="absolute top-24 right-[-120px] h-96 w-96 rounded-full"
+                        style={{
+                            background:
+                                "radial-gradient(circle, rgba(56,189,248,0.28), rgba(56,189,248,0.0) 70%)",
+                        }}
+                    />
+                </div>
                 <Transition.Root show={sidebarOpen} as={Fragment}>
                     <Dialog
                         as="div"
@@ -622,7 +645,7 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                             leaveFrom="opacity-100"
                             leaveTo="opacity-0"
                         >
-                            <div className="fixed inset-0 bg-gray-600 bg-opacity-75" />
+                            <div className="fixed inset-0 bg-black/80" />
                         </Transition.Child>
 
                         <div className="fixed inset-0 flex z-40">
@@ -635,7 +658,7 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                 leaveFrom="translate-x-0"
                                 leaveTo="-translate-x-full"
                             >
-                                <Dialog.Panel className="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-white">
+                                <Dialog.Panel className="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-[rgba(255,255,255,0.06)] border-r border-white/10 backdrop-blur-xl text-white shadow-2xl">
                                     <Transition.Child
                                         as={Fragment}
                                         enter="ease-in-out duration-300"
@@ -666,7 +689,7 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                     <div className="flex-shrink-0 flex items-center px-4">
                                         {/* <ApplicationLogo className="block h-9 w-auto text-gray-500" /> */}
                                         <div className="w-full flex">
-                                            <img src="/img/logo-boost.svg" />
+                                            <img src="/img/logo-boost.svg" className="h-7 w-auto" />
                                         </div>
                                     </div>
                                 </Dialog.Panel>
@@ -688,15 +711,15 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                         } md:flex-col`}
                 >
                     {/* Sidebar component, swap this element with another sidebar if you like */}
-                    <div className="h-screen sticky top-0 bg-white justify-between flex flex-col pt-5 overflow-y-auto">
+                    <div className="h-screen sticky top-0 bg-[rgba(255,255,255,0.04)] border-r border-white/10 justify-between flex flex-col pt-5 overflow-y-auto backdrop-blur-xl text-white">
                         <div className="flex items-center flex-shrink-0 px-4 ">
                             {/* <ApplicationLogo className="block h-9 w-auto text-gray-500" />  */}
                             <div className="w-full flex">
-                                <img src="/img/logo-boost.svg" />
+                                <img src="/img/logo-boost.svg" className="h-7 w-auto" />
                             </div>
                         </div>
                         <div
-                            className="mt-4 mx-4 h-7 w-7 bg-white flex justify-center items-center shadow-sm text-[#3D4459] cursor-pointer"
+                            className="mt-4 mx-4 h-7 w-7 bg-[rgba(255,255,255,0.08)] ring-1 ring-white/10 flex justify-center items-center text-white/80 hover:text-white hover:bg-[rgba(255,255,255,0.12)] cursor-pointer transition"
                             onClick={() => setShowSidebarText(!showSidebarText)}
                         >
                             {showSidebarText ? <ChevronRightIcon /> : <ChevronLeftIcon />}
@@ -831,15 +854,15 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                                         preserveState
                                                         href={item.href}
                                                         className={classNames(
-                                                            item.name === current_page ? "text-[#7666B4] !underline font-bold" : "",
-                                                            "group flex items-center px-2 py-2 text-[#3D4459] hover:text-[#7666B4] text-sm font-medium rounded-md gio-menu-item justify-center"
+                                                            item.name === current_page ? "text-[#38BDF8] font-semibold" : "",
+                                                            "group flex items-center px-2 py-2 text-white/70 hover:text-white hover:bg-[rgba(255,255,255,0.06)] text-sm font-medium rounded-md gio-menu-item justify-center transition"
                                                         )}
                                                     >
                                                         <item.icon
                                                             className={classNames(
                                                                 item.name === current_page
-                                                                    ? "font-bold underline text-[#7666B4]"
-                                                                    : "text-[#3D4459] group-hover:text-[#7666B4]",
+                                                                    ? "text-[#38BDF8]"
+                                                                    : "text-white/70 group-hover:text-[#38BDF8]",
                                                                 "flex-shrink-0 h-6 w-6"
                                                             )}
                                                             aria-hidden="true"
@@ -848,14 +871,14 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                                         {showSidebarText && (
                                                             <div className="flex ml-3 gap-2 items-center flex-1">
                                                                 {item.name}
-                                                                {hasSubMenu && (
-                                                                    <BsCaretDownFill
-                                                                        className={classNames(
-                                                                            isOpen ? "rotate-180" : "",
-                                                                            "h-4 w-4 text-[#878787] group-hover:text-[#7666B4] transition-all"
+                                                                        {hasSubMenu && (
+                                                                            <BsCaretDownFill
+                                                                                className={classNames(
+                                                                                    isOpen ? "rotate-180" : "",
+                                                                                    "h-4 w-4 text-white/40 group-hover:text-[#38BDF8] transition-all"
+                                                                                )}
+                                                                            />
                                                                         )}
-                                                                    />
-                                                                )}
                                                             </div>
                                                         )}
                                                     </Link>
@@ -871,9 +894,9 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                                                             href={subItem.href}
                                                                             className={classNames(
                                                                                 subItem.name === current_page
-                                                                                    ? "text-[#7666B4] !underline font-bold"
+                                                                                    ? "text-[#38BDF8] font-semibold"
                                                                                     : "",
-                                                                                "text-[#363740] hover:text-[#7666B4] group flex items-center px-2 py-1 text-sm rounded-md gio-menu-item submenu focus:bg-[#7666B4]/20"
+                                                                                "text-white/60 hover:text-white hover:bg-[rgba(255,255,255,0.06)] group flex items-center px-2 py-1 text-sm rounded-md gio-menu-item submenu focus:bg-[rgba(56,189,248,0.15)] transition"
                                                                             )}
                                                                         >
                                                                             {subItem.name}
@@ -887,54 +910,66 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                             );
                                         })}
 
+                                    <li className="my-3">
+                                        <div className="h-px w-full bg-white/10" />
+                                    </li>
+
+                                    {bottomNavigation.map((item) => {
+                                        if (!item.show.includes('all') && !item.show.includes(auth.user.role)) {
+                                            return;
+                                        }
+
+                                        return (
+                                            <li key={item.name}>
+                                                <Link
+                                                    href={item.href}
+                                                    className={classNames(
+                                                        (item.name == current_page)
+                                                            ? "text-[#38BDF8] font-semibold"
+                                                            : "",
+                                                        `group flex items-center px-2 py-2 text-white/70 hover:text-white hover:bg-[rgba(255,255,255,0.06)] text-sm font-medium rounded-md transition ${showSidebarText ? '' : "justify-center"}`
+                                                    )}
+                                                >
+                                                    <item.icon
+                                                        className={classNames(
+                                                            (item.name == current_page)
+                                                                ? "text-[#38BDF8]"
+                                                                : "text-white/70 group-hover:text-[#38BDF8] ",
+                                                            "flex-shrink-0 h-6 w-6"
+
+                                                        )}
+                                                        aria-hidden="true"
+                                                    />
+                                                    {showSidebarText ? <div className="ml-3">{item.name}</div> : ""}
+                                                </Link>
+                                            </li>
+                                        );
+                                    })}
                                 </ul>
-                            </nav>
-                        </div>
-
-                        <div className="flex-shrink-0 flex">
-                            <nav className="flex-1 px-2 pb-4 space-y-1 gio-navbar">
-                                {bottomNavigation.map((item) => {
-                                    if (!item.show.includes('all') && !item.show.includes(auth.user.role)) {
-                                        return;
-                                    }
-
-                                    return (
-                                        <Link
-                                            key={item.name}
-                                            href={item.href}
-                                            className={classNames(
-                                                (item.name == current_page)
-                                                    ? "text-[#7666B4] !underline font-bold"
-                                                    : "",
-                                                `group flex items-center px-2 py-2 text-[#3D4459] hover:text-[#7666B4] text-sm font-medium rounded-md ${showSidebarText ? '' : "justify-center"}`
-                                            )}
-                                        >
-                                            <item.icon
-                                                className={classNames(
-                                                    (item.name == current_page)
-                                                        ? "text-[#7666B4]"
-                                                        : "text-[#3D4459] group-hover:text-[#7666B4] ",
-                                                    "flex-shrink-0 h-6 w-6"
-
-                                                )}
-                                                aria-hidden="true"
-                                            />
-                                            {showSidebarText ? <div className="ml-3">{item.name}</div> : ""}
-                                        </Link>
-                                    );
-                                })}
                             </nav>
                         </div>
 
                     </div>
                 </div>
-                <div className="flex flex-col flex-1 bg-[#F1F4F6]">
+                <div className="flex flex-col flex-1 bg-transparent">
                     {hideHeader !== true ?
-                        <div className="py-4 px-6">
+                        <div className="py-4 px-6 bg-[rgba(255,255,255,0.04)] border-b border-white/10 backdrop-blur-md">
                             <nav>
                                 <div>
                                     <div className="flex justify-between h-16">
-                                        <div className="flex">
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                onClick={() => setSidebarOpen((v) => !v)}
+                                                className="rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] px-3 py-2 transition-all duration-300 hover:scale-110 active:scale-90 md:hidden"
+                                                aria-label="Toggle sidebar"
+                                            >
+                                                <IconMenu className="h-5 w-5 text-white/70" />
+                                            </button>
+                                            <img
+                                                src="/img/logo-boost.svg"
+                                                className="h-6 w-auto md:hidden"
+                                                alt="Logo"
+                                            />
                                         </div>
 
                                         <div className="hidden sm:flex sm:items-center sm:ml-6">
@@ -969,7 +1004,7 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                                         <span className="inline-flex rounded-md">
                                                             <button
                                                                 type="button"
-                                                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                                                className="inline-flex items-center px-3 py-2 border border-white/10 text-sm leading-4 font-medium rounded-md text-white/80 hover:text-white hover:bg-[rgba(255,255,255,0.06)] focus:outline-none transition ease-in-out duration-150"
                                                             >
                                                                 {auth && auth.user && auth.user.imageUrl ?
                                                                     <img className="h-8 w-8 rounded-full mr-2" src={auth.user.imageUrl} alt="" />
@@ -1024,28 +1059,28 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                                     <Dropdown.Link href={route('logout')} method="post" as="button">
                                                         Log Out
                                                     </Dropdown.Link> */}
-                                                        <Container >
+                                                        <Container className="rounded-xl border border-white/10 bg-[rgba(0,0,0,0.92)] text-white shadow-2xl">
                                                             <div className="w-full flex justify-center">
                                                                 <div className="flex gap-2 mx-auto py-4 items-center">
-                                                                    <div className="w-10 h-10 flex justify-center items-center bg-gray-700 rounded-full">
-                                                                        <UserIcon className="w-6 h-6 text-white" />
+                                                                    <div className="w-10 h-10 flex justify-center items-center bg-[rgba(56,189,248,0.2)] ring-1 ring-white/10 rounded-full">
+                                                                        <UserIcon className="w-6 h-6 text-[#38BDF8]" />
                                                                     </div>
                                                                     <div className="flex flex-col">
-                                                                        <span><b> {auth.user.name} </b></span>
-                                                                        <span>{companyName}</span>
+                                                                        <span className="text-white"><b> {auth.user.name} </b></span>
+                                                                        <span className="text-white/60">{companyName}</span>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                             <Row>
                                                                 <Col
-                                                                    className="border-r  col-3"
+                                                                    className="border-r border-white/10 col-3"
                                                                 >
                                                                     <List type="unstyled" className="space-y-1">
                                                                         {Object.entries(companyList).map(([key, company]) => {
                                                                             return (
                                                                                 <li key={companyKey} className="p-1 text-center">
-                                                                                    <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-primary">
-                                                                                        <span className="text-lg font-medium leading-none text-white">
+                                                                                    <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#38BDF8] text-white shadow-sm">
+                                                                                        <span className="text-lg font-medium leading-none">
                                                                                             {company &&
                                                                                                 <> {(company).substring(0, 2)} </>
                                                                                             }
@@ -1060,30 +1095,30 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                                                                 type='button'
                                                                                 onClick={() => setShowWorkspaceForm(true)}
                                                                             >
-                                                                                <span className="w-9 h-9 bg-gray-100 flex justify-center items-center rounded-full cursor-pointer mx-auto">
-                                                                                    <PlusIcon className="w-6 h-6 " />
+                                                                                <span className="w-9 h-9 bg-[rgba(255,255,255,0.08)] ring-1 ring-white/10 flex justify-center items-center rounded-full cursor-pointer mx-auto text-white/70 hover:text-white">
+                                                                                    <PlusIcon className="w-6 h-6" />
                                                                                 </span>
                                                                             </button>
                                                                         </li>
                                                                     </List>
                                                                 </Col>
-                                                                <Col className="border-r" >
-                                                                    <List type="unstyled">
-                                                                        <li className="p-1" > <Link href={route("wallet_subscription")} method="get"> Workspace settings </Link> </li>
+                                                                <Col className="border-r border-white/10" >
+                                                                    <List type="unstyled" className="text-white/70">
+                                                                        <li className="p-1" > <Link className="hover:text-white" href={route("wallet_subscription")} method="get"> Workspace settings </Link> </li>
                                                                     </List>
                                                                 </Col>
                                                                 <Col>
-                                                                    <List type="unstyled">
-                                                                        <li className="p-1" > <b> {auth.user.name} </b> </li>
-                                                                        <li className="p-1" > <Link href={route('profile')} method="get"> Profile </Link> </li>
+                                                                    <List type="unstyled" className="text-white/70">
+                                                                        <li className="p-1 text-white" > <b> {auth.user.name} </b> </li>
+                                                                        <li className="p-1" > <Link className="hover:text-white" href={route('profile')} method="get"> Profile </Link> </li>
                                                                         {auth && auth.user && auth.user.role == 'global_admin' &&
-                                                                            <li className="p-1" > <Link href={route('list_global_user')} method="get" as="button"> Global Admin </Link> </li>
+                                                                            <li className="p-1" > <Link className="hover:text-white" href={route('list_global_user')} method="get" as="button"> Global Admin </Link> </li>
                                                                         }
                                                                         {returnMainUser &&
-                                                                            <li className="p-1" > <button onClick={() => setImpersonate()} type="button"> Return to global admin </button> </li>
+                                                                            <li className="p-1" > <button className="hover:text-white" onClick={() => setImpersonate()} type="button"> Return to global admin </button> </li>
                                                                         }
-                                                                        <li className="p-1" ><Link href={route('listApi')} method="get"> API keys</Link></li>
-                                                                        <li className="p-1" > <Link href={route('logout')} method="post" as="button"> Log out </Link> </li>
+                                                                        <li className="p-1" ><Link className="hover:text-white" href={route('listApi')} method="get"> API keys</Link></li>
+                                                                        <li className="p-1" > <Link className="hover:text-white" href={route('logout')} method="post" as="button"> Log out </Link> </li>
                                                                     </List>
                                                                 </Col>
                                                             </Row>
@@ -1096,7 +1131,7 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                         <div className="-mr-2 flex items-center sm:hidden">
                                             <button
                                                 onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
-                                                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out"
+                                                className="inline-flex items-center justify-center p-2 rounded-md text-white/60 hover:text-white hover:bg-white/10 focus:outline-none focus:bg-white/10 focus:text-white transition duration-150 ease-in-out"
                                             >
                                                 <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                                                     <path
@@ -1126,10 +1161,10 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                         </ResponsiveNavLink>
                                     </div>
 
-                                    <div className="pt-4 pb-1 border-t border-gray-200">
+                                    <div className="pt-4 pb-1 border-t border-white/10">
                                         <div className="px-4">
-                                            <div className="font-medium text-base text-gray-800">{auth && auth.user && auth.user.name ? auth.user.name : ''}</div>
-                                            <div className="font-medium text-sm text-gray-500">{auth && auth.user && auth.user.email ? auth.user.email : ''}</div>
+                                            <div className="font-medium text-base text-white">{auth && auth.user && auth.user.name ? auth.user.name : ''}</div>
+                                            <div className="font-medium text-sm text-white/60">{auth && auth.user && auth.user.email ? auth.user.email : ''}</div>
                                         </div>
 
                                         <div className="mt-3 space-y-1">
@@ -1143,7 +1178,7 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                         </div> : ''}
 
                     {header && (
-                        <header className="bg-white shadow">
+                        <header className="bg-[rgba(255,255,255,0.04)] border-b border-white/10 backdrop-blur-md shadow-none">
                             <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">{header}</div>
                         </header>
                     )}
