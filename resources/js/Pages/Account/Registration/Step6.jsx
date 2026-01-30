@@ -38,9 +38,9 @@ export default function Step6(props) {
                     </div>
                 </div>
             </div>
-            <form id='form p-2'>
+            <form id="form" className="p-2">
                 <div>
-                    <h3> {props.translator['Link Whatsapp via WABA']}A</h3>
+                    <h3> {props.translator['Link Whatsapp via WABA']}</h3>
                     <p>{props.translator['Whatsapp Business API to unlock Whatsapp superpowers.']}</p>
                     <div className='text-center '>
                         <div className='text-xl'>
@@ -55,14 +55,23 @@ export default function Step6(props) {
                         {props.translator['Have you ever registered your number to any BSP?']}
                     </label>
 
-                    <fieldset className="mt-4 text-center flex justify-center">
-                        <div className="space-y-2 ">
+                    <fieldset className="mt-4 flex flex-col items-center">
+                        <div className="flex flex-col gap-3">
                             {events.map((event) => (
-                                <div key={event.id} className="text-center">
-                                    <div className="flex items-center">
-                                        ...
-                                    </div>
-                                </div>
+                                <label
+                                    key={event.id}
+                                    className="flex items-center gap-2 cursor-pointer"
+                                >
+                                    <input
+                                        type="radio"
+                                        name="useAPI"
+                                        value={event.id}
+                                        checked={useAPI === event.id}
+                                        onChange={(e) => setAPI(e.target.value)}
+                                        className="h-4 w-4"
+                                    />
+                                    <span>{event.title}</span>
+                                </label>
                             ))}
                         </div>
                     </fieldset>

@@ -553,9 +553,9 @@ function Filter(props) {
 
                                             <div className="overscroll-auto">
                                                 {Object.entries(filter).map(([grpCondition_index, grpConditions]) =>
-                                                    <React.Fragment key={`group-${grpCondition_index}`}>
+                                                    <>
                                                         {Object.entries(grpConditions).map(([grpCondition, conditions], group_index) =>
-                                                            <React.Fragment key={`group-${grpCondition_index}-${grpCondition}`}>
+                                                            <>
                                                                 <div className="relative mt-3 border border-gray-200 rounded-sm px-3 py-4 shadow-sm focus-within:ring-1 focus-within:ring-indigo-200 focus-within:border-indigo-200">
                                                                     <fieldset>
                                                                         <legend className="w-full">
