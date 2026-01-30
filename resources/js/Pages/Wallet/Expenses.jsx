@@ -8,7 +8,7 @@ import Axios from "axios";
 import notie from 'notie';
 import nProgress from 'nprogress';
 import ListView from "@/Components/Views/List/Index2";
-import { router as Inertia } from "@inertiajs/react";
+import { Head, router as Inertia } from "@inertiajs/react";
 import { CalenderIcon } from '@/Pages/icons';
 
 import { ChevronDownIcon } from '@heroicons/react/24/solid';

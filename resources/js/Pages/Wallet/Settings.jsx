@@ -89,7 +89,7 @@ export default function Settings(props) {
     }
 
     function updataSettingsData(data) {
-        axios({
+        Axios({
             method: 'post',
             url: route('setAutoTopupStatus'),
             data: data
@@ -116,7 +116,7 @@ export default function Settings(props) {
     function syncTemplates() {
         nProgress.start(0.5);
         nProgress.inc(0.2);
-        axios.get(route('sync_templates')).then((response) => {
+        Axios.get(route('sync_templates')).then((response) => {
             nProgress.done();
 
             if (response.data.status) {

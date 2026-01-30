@@ -55,7 +55,6 @@ function classNames(...classes) {
 }
 
 export default function NewForm(props) {
-
     const [show, setShow] = useState(true);
     const [group, setGroup] = useState('General');
     const [fields, setFields] = useState();
