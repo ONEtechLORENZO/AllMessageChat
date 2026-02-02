@@ -459,7 +459,7 @@ export default function DashboardNew(props) {
             </div>
 
 
-            <GlassCard className="col-span-2">
+            <GlassCard className="col-span-2 mt-8">
                 <div className='text-base font-semibold text-[#424242]'>{props.translator['Message log']}</div>
                 <div className='text-[#878787]'>{props.translator['Good Work!']}</div>
                 <div className='flex gap-2 items-center'>
