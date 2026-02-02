@@ -4,10 +4,10 @@ import Dropdown from "@/Components/Dropdown";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link, router as Inertia } from "@inertiajs/react";
 import { Dialog, Transition } from "@headlessui/react";
-import UserRegistration from '@/Components/UserRegistration';
-import nProgress from 'nprogress';
-import { Container, Row, Col, List } from 'reactstrap';
-import Form from '@/Components/Forms/Form';
+import UserRegistration from "@/Components/UserRegistration";
+import nProgress from "nprogress";
+import { Container, Row, Col, List } from "reactstrap";
+import Form from "@/Components/Forms/Form";
 
 import {
     Button,
@@ -43,99 +43,107 @@ import {
 import { CurrencyDollarIcon } from "@heroicons/react/24/solid";
 import axios from "axios";
 import Notification from "./Notification";
-import notie from 'notie';
+import notie from "notie";
 import { BsCaretDownFill, BsCaretUpFill } from "react-icons/bs";
 
-import { DashboardIcon, ChatNewIcon, CampaignsIcon, BillingIcon, Setting2Icon, SalesIcon, NetworkIcon, GraphIcon } from "@/Pages/icons";
+import {
+    DashboardIcon,
+    ChatNewIcon,
+    CampaignsIcon,
+    BillingIcon,
+    Setting2Icon,
+    SalesIcon,
+    NetworkIcon,
+    GraphIcon,
+} from "@/Pages/icons";
 
 const navigation = [
-    {
-        name: "Home",
-        href: route("home"),
-        icon: HomeIcon,
-        show: ['all'],
-    },
     {
         name: "Dashboard",
         href: route("dashboard"),
         icon: DashboardIcon,
-        show: ['all'],
+        show: ["all"],
     },
     {
         name: "Conversation",
-        href: '#',
+        href: "#",
         icon: ChatNewIcon,
-        show: ['all'],
-        subMenu: [{
-            name: 'Chats',
-            href: route('chat_list')
-        },
-        {
-            name: 'Campaigns',
-            href: route('listCampaign')
-        },
-        ]
+        show: ["all"],
+        subMenu: [
+            {
+                name: "Chats",
+                href: route("chat_list"),
+            },
+            {
+                name: "Campaigns",
+                href: route("listCampaign"),
+            },
+        ],
     },
     {
         name: "CRM",
-        href: '#',
+        href: "#",
         icon: IdentificationIcon,
-        show: ['all'],
+        show: ["all"],
         subMenu: [
             {
-                name: 'Leads',
-                href: route("listLead")
+                name: "Leads",
+                href: route("listLead"),
             },
             {
-                name: 'Contacts',
-                href: route('listContact')
+                name: "Contacts",
+                href: route("listContact"),
             },
             {
-                name: 'Organizations',
-                href: route("listOrganization")
+                name: "Organizations",
+                href: route("listOrganization"),
             },
             {
-                name: 'Fields',
-                href: route("listField")
+                name: "Fields",
+                href: route("listField"),
             },
             {
-                name: 'Tags',
-                href: route("listTag")
-            }, {
-                name: 'Lists',
-                href: route("listCategory")
-            },]
+                name: "Tags",
+                href: route("listTag"),
+            },
+            {
+                name: "Lists",
+                href: route("listCategory"),
+            },
+        ],
     },
 
     {
         name: "Sales",
-        href: '#',
+        href: "#",
         icon: SalesIcon,
-        show: ['all'],
+        show: ["all"],
         subMenu: [
             {
-                name: 'Opportunities',
-                href: route('listOpportunity')
+                name: "Opportunities",
+                href: route("listOpportunity"),
             },
             {
-                name: 'Orders',
-                href: route('listOrder')
-            }, {
-                name: 'Products',
-                href: route('listProduct')
-            },]
+                name: "Orders",
+                href: route("listOrder"),
+            },
+            {
+                name: "Products",
+                href: route("listProduct"),
+            },
+        ],
     },
     {
         name: "Automations",
         href: route("listAutomation"),
         icon: NetworkIcon,
-        show: ['all'],
+        show: ["all"],
     },
     {
         name: "Reports",
         href: route("listMessage"),
         icon: GraphIcon,
-        show: ['all'],
+        show: ["all"],
     },
 ];
 
@@ -171,25 +179,25 @@ const bottomNavigation = [
         name: "Billing",
         href: route("wallet"),
         icon: BillingIcon,
-        show: ['all'],
+        show: ["all"],
     },
     {
         name: "Templates",
         href: route("listInteractiveMessage"),
         icon: CampaignsIcon,
-        show: ['all'],
+        show: ["all"],
     },
     {
         name: "Roles",
         href: route("listRole"),
         icon: AdjustmentsHorizontalIcon,
-        show: ['admin', 'global_admin'],
+        show: ["admin", "global_admin"],
     },
     {
         name: "Settings",
         href: route("wallet_subscription"),
         icon: Setting2Icon,
-        show: ['admin', 'global_admin'],
+        show: ["admin", "global_admin"],
     },
 ];
 const adminNavigation = [
@@ -197,13 +205,13 @@ const adminNavigation = [
         name: "Dashboard",
         href: route("dashboard"),
         icon: DashboardIcon,
-        show: ['global_admin'],
+        show: ["global_admin"],
     },
     {
         name: "Customers",
-        href: '#',
+        href: "#",
         icon: UsersIcon,
-        show: ['global_admin'],
+        show: ["global_admin"],
         subMenu: [
             {
                 name: "Workspaces",
@@ -216,32 +224,34 @@ const adminNavigation = [
             {
                 name: "Users",
                 href: route("list_global_user"),
-            },]
+            },
+        ],
     },
     {
         name: "Notifications",
-        href: '#',
+        href: "#",
         icon: LightBulbIcon,
-        show: ['global_admin'],
+        show: ["global_admin"],
         subMenu: [
             {
                 name: "Emails",
-                href: '#',
+                href: "#",
             },
             {
                 name: "Push",
-                href: '#',
+                href: "#",
             },
             {
                 name: "Notifications Log",
-                href: '#',
-            },]
+                href: "#",
+            },
+        ],
     },
     {
         name: "Billing",
-        href: '#',
+        href: "#",
         icon: CurrencyDollarIcon,
-        show: ['global_admin'],
+        show: ["global_admin"],
         subMenu: [
             {
                 name: "Plans",
@@ -255,22 +265,23 @@ const adminNavigation = [
                 name: "Addons",
                 href: route("listPrice"),
             },
-        ]
+        ],
     },
     {
         name: "Roles",
-        href: '#',
+        href: "#",
         icon: UserGroupIcon,
-        show: ['global_admin'],
+        show: ["global_admin"],
         subMenu: [
             {
                 name: "Workspace Roles & Permissions",
-                href: '#',
+                href: "#",
             },
             {
                 name: "Superadmin Roles & Permissions",
-                href: '#',
-            },]
+                href: "#",
+            },
+        ],
     },
     // {
     //     name: "Activities",
@@ -282,17 +293,11 @@ const adminNavigation = [
         name: "Support Requests",
         href: route("list_global_SupportRequest"),
         icon: QuestionMarkCircleIcon,
-        show: ['global_admin'],
+        show: ["global_admin"],
     },
-
 ];
 
 const menuBar = [
-     {
-        name: "Home",
-        href: route("home"),
-        icon: HomeIcon,
-    },
     {
         name: "Dashboard",
         href: route("dashboard"),
@@ -300,73 +305,76 @@ const menuBar = [
     },
     {
         name: "Conversations",
-        href: '#',
+        href: "#",
         icon: ChatNewIcon,
         subMenu: [
             {
-                name: 'Social Profiles',
-                href: route('social_profile')
+                name: "Social Profiles",
+                href: route("social_profile"),
             },
             {
-                name: 'Chats',
-                href: route('chat_list')
+                name: "Chats",
+                href: route("chat_list"),
             },
             {
-                name: 'Campaigns',
-                href: route('listCampaign')
+                name: "Campaigns",
+                href: route("listCampaign"),
             },
-        ]
+        ],
     },
     {
         name: "CRM",
-        href: '#',
+        href: "#",
         icon: IdentificationIcon,
         subMenu: [
             {
-                name: 'Leads',
-                href: route("listLead")
+                name: "Leads",
+                href: route("listLead"),
             },
             {
-                name: 'Contacts',
-                href: route('listContact')
+                name: "Contacts",
+                href: route("listContact"),
             },
             {
-                name: 'Organizations',
-                href: route("listOrganization")
+                name: "Organizations",
+                href: route("listOrganization"),
             },
             {
-                name: 'Fields',
-                href: route("listField")
+                name: "Fields",
+                href: route("listField"),
             },
             {
-                name: 'Tags',
-                href: route("listTag")
-            }, {
-                name: 'Lists',
-                href: route("listCategory")
-            },]
+                name: "Tags",
+                href: route("listTag"),
+            },
+            {
+                name: "Lists",
+                href: route("listCategory"),
+            },
+        ],
     },
     {
         name: "Sales",
-        href: '#',
+        href: "#",
         icon: SalesIcon,
         subMenu: [
             {
-                name: 'Deals',
-                href: route('listOpportunity')
+                name: "Deals",
+                href: route("listOpportunity"),
             },
             {
-                name: 'Orders',
-                href: route('listOrder')
+                name: "Orders",
+                href: route("listOrder"),
             },
             {
-                name: 'Catalogs',
-                href: route('listCatalog')
+                name: "Catalogs",
+                href: route("listCatalog"),
             },
             {
-                name: 'Products',
-                href: route('listProduct')
-            }]
+                name: "Products",
+                href: route("listProduct"),
+            },
+        ],
     },
     {
         name: "Automations",
@@ -385,69 +393,82 @@ function classNames(...classes) {
 }
 
 function NavItem({
-  icon: Icon,
-  label,
-  href,
-  active,
-  compact,
-  rightSlot,
-  preserveState,
+    icon: Icon,
+    label,
+    href,
+    active,
+    compact,
+    rightSlot,
+    preserveState,
 }) {
-  return (
-    <Link
-      href={href}
-      preserveState={preserveState}
-      className={[
-        "group flex items-center gap-3 rounded-2xl px-3.5 py-2.5 no-underline hover:no-underline focus:outline-none focus-visible:outline-none",
-        "transition-colors duration-200",
-        active
-          ? compact
-            ? "bg-transparent"
-            : "bg-white/[0.06] border border-white/10"
-          : "bg-transparent hover:bg-white/[0.03]",
-      ].join(" ")}
-    >
-      <div
-        className={[
-          "h-10 w-10 shrink-0 rounded-2xl flex items-center justify-center",
-          "transition-transform duration-200",
-          "bg-white/[0.03] border-0",
-          "group-hover:scale-110",
-          active ? "shadow-[0_0_24px_rgba(56,189,248,0.18)]" : "",
-        ].join(" ")}
-      >
-        <Icon
-          className={[
-            "h-5 w-5 transition-colors duration-200",
-            active ? "text-[#38bdf8]" : "text-white/60 group-hover:text-white",
-          ].join(" ")}
-        />
-      </div>
-
-      {!compact && (
-        <div className="min-w-0 flex-1">
-          <div
+    return (
+        <Link
+            href={href}
+            preserveState={preserveState}
             className={[
-              "text-sm font-semibold truncate",
-              active ? "text-white" : "text-white/70 group-hover:text-white",
+                "group flex items-center gap-3 rounded-2xl px-3.5 py-2.5 no-underline hover:no-underline focus:outline-none focus-visible:outline-none",
+                "transition-colors duration-200",
+                active
+                    ? compact
+                        ? "bg-transparent"
+                        : "bg-white/[0.06] border border-white/10"
+                    : "bg-transparent hover:bg-white/[0.03]",
             ].join(" ")}
-          >
-            {label}
-          </div>
-        </div>
-      )}
+        >
+            <div
+                className={[
+                    "h-10 w-10 shrink-0 rounded-2xl flex items-center justify-center",
+                    "transition-transform duration-200",
+                    "bg-white/[0.03] border-0",
+                    "group-hover:scale-110",
+                    active ? "shadow-[0_0_24px_rgba(56,189,248,0.18)]" : "",
+                ].join(" ")}
+            >
+                <Icon
+                    className={[
+                        "h-5 w-5 transition-colors duration-200",
+                        active
+                            ? "text-[#38bdf8]"
+                            : "text-white/60 group-hover:text-white",
+                    ].join(" ")}
+                />
+            </div>
 
-      {!compact && rightSlot ? (
-        <div className="ml-auto shrink-0 flex items-center">
-          {rightSlot}
-        </div>
-      ) : null}
-    </Link>
-  );
+            {!compact && (
+                <div className="min-w-0 flex-1">
+                    <div
+                        className={[
+                            "text-sm font-semibold truncate",
+                            active
+                                ? "text-white"
+                                : "text-white/70 group-hover:text-white",
+                        ].join(" ")}
+                    >
+                        {label}
+                    </div>
+                </div>
+            )}
+
+            {!compact && rightSlot ? (
+                <div className="ml-auto shrink-0 flex items-center">
+                    {rightSlot}
+                </div>
+            ) : null}
+        </Link>
+    );
 }
 
-export default function Authenticated({ auth, header, children, hideHeader, current_page, message, navigationMenu }) {
-    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+export default function Authenticated({
+    auth,
+    header,
+    children,
+    hideHeader,
+    current_page,
+    message,
+    navigationMenu,
+}) {
+    const [showingNavigationDropdown, setShowingNavigationDropdown] =
+        useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showSidebarText, setShowSidebarText] = useState(true);
     const [showAdminNav, setshowAdminNav] = useState(false);
@@ -474,7 +495,6 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
     }
 
     useEffect(() => {
-
         //getTimezones();
         //getNotifications();
         //getNavigationfield();
@@ -488,7 +508,7 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
         getCompanyDetail();
         if (message) alertMessage(message);
         if (!navigationMenu) fetchMenuBar();
-    }, [])
+    }, []);
 
     useEffect(() => {
         const handleMouseMove = (event) => {
@@ -500,14 +520,14 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
     }, []);
 
     useEffect(() => {
-        if (pathname.includes('admin/')) {
-            setshowAdminNav(true)
-            setadminMenuText("Go to Dashboard")
+        if (pathname.includes("admin/")) {
+            setshowAdminNav(true);
+            setadminMenuText("Go to Dashboard");
         }
-    }, [pathname])
+    }, [pathname]);
 
     function getCompanyDetail() {
-        axios.get(route('CurrentCompany')).then((response) => {
+        axios.get(route("CurrentCompany")).then((response) => {
             if (response.data) {
                 setcompanyName(response.data.currentCompany.name);
             }
@@ -515,36 +535,37 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
     }
 
     function defaultOpenNavigationBar() {
-        (menuBar).map((menu) => {
-            if (menu.hasOwnProperty('subMenu')) {
-                (menu.subMenu).map((sub) => {
+        menuBar.map((menu) => {
+            if (menu.hasOwnProperty("subMenu")) {
+                menu.subMenu.map((sub) => {
                     if (sub.name == current_page) {
                         let defaultOpen = {};
                         defaultOpen[menu.name] = true;
                         setMenuDropdownActive(defaultOpen);
-                    }
-                })
-            }
-        })
-    }
-
-    function checkInformation() {
-        let url = route('check_information');
-
-        axios.get(url).then((response) => {
-            if (!response.data.information) {
-
-                Inertia.post(route('onBoarding'), {}, {
-                    onSuccess: (response) => {
-
                     }
                 });
             }
         });
     }
 
+    function checkInformation() {
+        let url = route("check_information");
+
+        axios.get(url).then((response) => {
+            if (!response.data.information) {
+                Inertia.post(
+                    route("onBoarding"),
+                    {},
+                    {
+                        onSuccess: (response) => {},
+                    },
+                );
+            }
+        });
+    }
+
     function fetchMenuBar() {
-        let url = route('sub_menu');
+        let url = route("sub_menu");
 
         axios.get(url).then((response) => {
             if (response.data.status === true) {
@@ -554,13 +575,13 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
     }
 
     function alertMessage(message) {
-        notie.alert({ type: 'warning', text: message, time: 5 });
+        notie.alert({ type: "warning", text: message, time: 5 });
     }
 
     function getNavigationfield() {
-        axios.get(route('navigation_field')).then((response) => {
+        axios.get(route("navigation_field")).then((response) => {
             setNavigateField(response.data.navigate);
-        })
+        });
     }
 
     function drownDownToggleAction(e, item) {
@@ -576,23 +597,20 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
         }));
     }
 
-
     function setImpersonate() {
         var data = {
-            user_id: returnMainUser
-        }
-        Inertia.post(route('set_global_user'), data, {
-            onSuccess: (response) => {
-
-            },
+            user_id: returnMainUser,
+        };
+        Inertia.post(route("set_global_user"), data, {
+            onSuccess: (response) => {},
             onError: (errors) => {
-                setErrors(errors)
-            }
+                setErrors(errors);
+            },
         });
     }
 
     function getNotifications() {
-        var url = route('notification');
+        var url = route("notification");
         axios.get(url).then((response) => {
             setCount(response.data.count);
             setNotifications(response.data.notifications);
@@ -601,34 +619,31 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
     }
 
     function getTimezones() {
-        var url = route('get_time_zone');
+        var url = route("get_time_zone");
         axios.get(url).then((response) => {
             setTimezone(response.data.time_zone);
         });
     }
 
     function notificationClick() {
-        var url = route('clickNotification') + '?id=' + id;
-        axios.get(url).then((response) => {
-
-        });
+        var url = route("clickNotification") + "?id=" + id;
+        axios.get(url).then((response) => {});
     }
 
     function showadminpage(e) {
-        if (adminMenuText == 'Global Admin page') {
-            Inertia.visit(route('list_global_user'));
-        }
-        else {
-            Inertia.visit(route('dashboard'));
+        if (adminMenuText == "Global Admin page") {
+            Inertia.visit(route("list_global_user"));
+        } else {
+            Inertia.visit(route("dashboard"));
         }
         e.preventDefault();
     }
 
     function showMore() {
-        var url = route('showMore');
+        var url = route("showMore");
         axios.get(url).then((response) => {
             setCount(response.data.count);
-            setId(response.data.id)
+            setId(response.data.id);
 
             let newState = Object.assign({}, notifications);
             newState = { ...newState, ...response.data.notifications };
@@ -644,7 +659,9 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
         menuBar.forEach((item) => {
             if (!resolvedNavigationMenuBar[item.name]) {
                 const submenu = item.subMenu
-                    ? Object.fromEntries(item.subMenu.map((sub) => [sub.name, true]))
+                    ? Object.fromEntries(
+                          item.subMenu.map((sub) => [sub.name, true]),
+                      )
                     : {};
                 resolvedNavigationMenuBar[item.name] = { show: true, submenu };
             }
@@ -653,11 +670,11 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
 
     const menuOrder = resolvedNavigationMenuBar
         ? [
-            ...menuBar.map((item) => item.name),
-            ...Object.keys(resolvedNavigationMenuBar).filter(
-                (name) => !menuBar.some((item) => item.name === name)
-            ),
-        ]
+              ...menuBar.map((item) => item.name),
+              ...Object.keys(resolvedNavigationMenuBar).filter(
+                  (name) => !menuBar.some((item) => item.name === name),
+              ),
+          ]
         : [];
 
     return (
@@ -665,37 +682,69 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
             <div className="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 hidden">
                 <div className="sm:max-w-md w-full p-2 flex justify-center items-center flex-col">
                     <img src="/img/OneMessage.ChatLOGO.png" />
-                    <h1 className="text-xl font-bold !mt-6">Sign up to the power</h1>
+                    <h1 className="text-xl font-bold !mt-6">
+                        Sign up to the power
+                    </h1>
 
                     <div className="w-full !mt-6 space-y-2 ">
                         <FormGroup>
                             <Label for="exampleEmail">E-mail</Label>
-                            <Input type="email" name="email" id="exampleEmail" placeholder="example@email.com" />
+                            <Input
+                                type="email"
+                                name="email"
+                                id="exampleEmail"
+                                placeholder="example@email.com"
+                            />
                         </FormGroup>
                         <FormGroup>
                             <Label for="exampleEmail">Password</Label>
-                            <Input type="password" name="password" id="password" placeholder="Password" />
+                            <Input
+                                type="password"
+                                name="password"
+                                id="password"
+                                placeholder="Password"
+                            />
                         </FormGroup>
 
                         <div className="flex flex-col items-center">
-                            <Button className="!bg-[#363740] !px-8 !py-2">Sign up</Button>
+                            <Button className="!bg-[#363740] !px-8 !py-2">
+                                Sign up
+                            </Button>
                         </div>
 
                         <div className="!mt-8 relative">
                             <hr />
-                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-4 bg-gray-100 text-[#7E7F8C] font-semibold text-base">or</div>
+                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-4 bg-gray-100 text-[#7E7F8C] font-semibold text-base">
+                                or
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-white !mt-10">
-                            <button type="button" className="inline-flex bg-white rounded text-center text-[#7E7F8C] justify-center items-center drop-shadow !py-3 !gap-3 !text-semibold ">
-                                <img src="/img/google-logo.png" alt="google logo" />
+                            <button
+                                type="button"
+                                className="inline-flex bg-white rounded text-center text-[#7E7F8C] justify-center items-center drop-shadow !py-3 !gap-3 !text-semibold "
+                            >
+                                <img
+                                    src="/img/google-logo.png"
+                                    alt="google logo"
+                                />
                                 Sign up with Google
                             </button>
-                            <button type="button" className="inline-flex bg-[#3B5998] rounded text-center  text-white justify-center !py-3 !gap-3  text-semibold">
-                                <svg xmlns="http://www.w3.org/2000/svg" width={18} height={19} fill="none">
-                                    <path fill="#fff" d="M18 9.94C18 4.939 13.97.885 9 .885S0 4.939 0 9.94c0 4.52 3.291 8.266 7.594 8.945v-6.328H5.309V9.94h2.285V7.945c0-2.27 1.343-3.523 3.4-3.523.984 0 2.014.177 2.014.177v2.228h-1.135c-1.118 0-1.467.698-1.467 1.414V9.94h2.496l-.399 2.617h-2.097v6.328C14.71 18.205 18 14.459 18 9.94Z" />
+                            <button
+                                type="button"
+                                className="inline-flex bg-[#3B5998] rounded text-center  text-white justify-center !py-3 !gap-3  text-semibold"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width={18}
+                                    height={19}
+                                    fill="none"
+                                >
+                                    <path
+                                        fill="#fff"
+                                        d="M18 9.94C18 4.939 13.97.885 9 .885S0 4.939 0 9.94c0 4.52 3.291 8.266 7.594 8.945v-6.328H5.309V9.94h2.285V7.945c0-2.27 1.343-3.523 3.4-3.523.984 0 2.014.177 2.014.177v2.228h-1.135c-1.118 0-1.467.698-1.467 1.414V9.94h2.496l-.399 2.617h-2.097v6.328C14.71 18.205 18 14.459 18 9.94Z"
+                                    />
                                 </svg>
-
                                 Sign up with Facebook
                             </button>
                         </div>
@@ -728,7 +777,10 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                 />
 
                 {/* Animated orbs / glows */}
-                <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+                <div
+                    className="fixed inset-0 pointer-events-none overflow-hidden"
+                    aria-hidden="true"
+                >
                     <div
                         className="absolute h-[650px] w-[650px] rounded-full bg-[#BF00FF] opacity-[0.08] mix-blend-screen blur-[130px] transition-transform duration-700 ease-out"
                         style={{
@@ -805,7 +857,10 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                     </Transition.Child>
                                     <div className="flex-shrink-0 flex items-center px-6">
                                         {/* <ApplicationLogo className="block h-9 w-auto text-gray-500" /> */}
-                                        <Link href="/" className="flex items-center gap-3 select-none">
+                                        <Link
+                                            href="/"
+                                            className="flex items-center gap-3 select-none"
+                                        >
                                             <img
                                                 src="/img/logo-boost.svg"
                                                 className="h-10 w-auto select-none opacity-90"
@@ -839,7 +894,10 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                         ].join(" ")}
                     >
                         <div className="px-6 py-6 flex items-center justify-between">
-                            <Link href="/" className="flex items-center gap-3 select-none">
+                            <Link
+                                href="/"
+                                className="flex items-center gap-3 select-none"
+                            >
                                 <img
                                     src="/img/logo-boost.svg"
                                     alt="Allmessage Chat"
@@ -859,7 +917,7 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
 
                         <nav className="px-6 pb-6 space-y-2 gio-navbar">
                             <ul className="list-none !pl-0 space-y-2">
-                                    {/* {showAdminNav ?                                                     
+                                {/* {showAdminNav ?                                                     
                                         adminNavigation.map((item,index) => {
                                             if(!item.show.includes('all') && !item.show.includes(auth.user.role)) {
                                                 
@@ -965,84 +1023,42 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                             // );
                                         })  
                                     } */}
-                                    {resolvedNavigationMenuBar &&
-                                        menuOrder.map((header) => {
-                                            const navigator = resolvedNavigationMenuBar[header];
-                                            // find matching menu item
-                                            const item = menuBar.find((m) => m.name === header);
+                                {resolvedNavigationMenuBar &&
+                                    menuOrder.map((header) => {
+                                        const navigator =
+                                            resolvedNavigationMenuBar[header];
+                                        // find matching menu item
+                                        const item = menuBar.find(
+                                            (m) => m.name === header,
+                                        );
 
-                                            // if no item or not allowed -> render nothing
-                                            if (!item || !navigator?.show) return null;
-
-                                            const isOpen = !!menuDropdownActive[item.name];
-                                            const hasSubMenu = Array.isArray(item.subMenu) && item.subMenu.length > 0;
-                                            const canRenderSubMenu = showSidebarText && isOpen && navigator?.submenu && hasSubMenu;
-                                            const isActive = item.name === current_page;
-
-                                            return (
-                                                <li
-                                                    key={header}
-                                                    onClick={(e) => drownDownToggleAction(e, item)}
-                                                >
-                                                    <NavItem
-                                                        icon={item.icon}
-                                                        label={item.name}
-                                                        href={item.href}
-                                                        active={isActive}
-                                                        compact={!showSidebarText}
-                                                        preserveState
-                                                        rightSlot={
-                                                            hasSubMenu ? (
-                                                                <BsCaretDownFill
-                                                                    className={classNames(
-                                                                        isOpen ? "rotate-180" : "",
-                                                                        "h-3 w-3 text-white/40 group-hover:text-white/70 transition-transform"
-                                                                    )}
-                                                                />
-                                                            ) : null
-                                                        }
-                                                    />
-
-                                                    {canRenderSubMenu && (
-                                                        <ul className="list-none mt-2 space-y-1 !pl-14">
-                                                            {item.subMenu.map((subItem) => {
-                                                                if (!navigator.submenu.hasOwnProperty(subItem.name)) return null;
-
-                                                                return (
-                                                                    <li key={`${header}-${subItem.name}`}>
-                                                                        <Link
-                                                                            href={subItem.href}
-                                                                            className={classNames(
-                                                                                subItem.name === current_page
-                                                                                    ? "text-white bg-white/[0.05]"
-                                                                                    : "text-white/50 hover:text-white hover:bg-white/[0.04]",
-                                                                                "block rounded-xl px-3 py-2 text-sm transition no-underline hover:no-underline"
-                                                                            )}
-                                                                        >
-                                                                            {subItem.name}
-                                                                        </Link>
-                                                                    </li>
-                                                                );
-                                                            })}
-                                                        </ul>
-                                                    )}
-                                                </li>
-                                            );
-                                        })}
-
-                                    <li>
-                                        <div className="h-px bg-white/10 my-3" />
-                                    </li>
-
-                                    {bottomNavigation.map((item) => {
-                                        if (!item.show.includes('all') && !item.show.includes(auth.user.role)) {
+                                        // if no item or not allowed -> render nothing
+                                        if (!item || !navigator?.show)
                                             return null;
-                                        }
 
-                                        const isActive = item.name === current_page;
+                                        const isOpen =
+                                            !!menuDropdownActive[item.name];
+                                        const hasSubMenu =
+                                            Array.isArray(item.subMenu) &&
+                                            item.subMenu.length > 0;
+                                        const canRenderSubMenu =
+                                            showSidebarText &&
+                                            isOpen &&
+                                            navigator?.submenu &&
+                                            hasSubMenu;
+                                        const isActive =
+                                            item.name === current_page;
 
                                         return (
-                                            <li key={item.name}>
+                                            <li
+                                                key={header}
+                                                onClick={(e) =>
+                                                    drownDownToggleAction(
+                                                        e,
+                                                        item,
+                                                    )
+                                                }
+                                            >
                                                 <NavItem
                                                     icon={item.icon}
                                                     label={item.name}
@@ -1050,13 +1066,91 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                                     active={isActive}
                                                     compact={!showSidebarText}
                                                     preserveState
+                                                    rightSlot={
+                                                        hasSubMenu ? (
+                                                            <BsCaretDownFill
+                                                                className={classNames(
+                                                                    isOpen
+                                                                        ? "rotate-180"
+                                                                        : "",
+                                                                    "h-3 w-3 text-white/40 group-hover:text-white/70 transition-transform",
+                                                                )}
+                                                            />
+                                                        ) : null
+                                                    }
                                                 />
+
+                                                {canRenderSubMenu && (
+                                                    <ul className="list-none mt-2 space-y-1 !pl-14">
+                                                        {item.subMenu.map(
+                                                            (subItem) => {
+                                                                if (
+                                                                    !navigator.submenu.hasOwnProperty(
+                                                                        subItem.name,
+                                                                    )
+                                                                )
+                                                                    return null;
+
+                                                                return (
+                                                                    <li
+                                                                        key={`${header}-${subItem.name}`}
+                                                                    >
+                                                                        <Link
+                                                                            href={
+                                                                                subItem.href
+                                                                            }
+                                                                            className={classNames(
+                                                                                subItem.name ===
+                                                                                    current_page
+                                                                                    ? "text-white bg-white/[0.05]"
+                                                                                    : "text-white/50 hover:text-white hover:bg-white/[0.04]",
+                                                                                "block rounded-xl px-3 py-2 text-sm transition no-underline hover:no-underline",
+                                                                            )}
+                                                                        >
+                                                                            {
+                                                                                subItem.name
+                                                                            }
+                                                                        </Link>
+                                                                    </li>
+                                                                );
+                                                            },
+                                                        )}
+                                                    </ul>
+                                                )}
                                             </li>
                                         );
                                     })}
-                                </ul>
-                            </nav>
-                        </aside>
+
+                                <li>
+                                    <div className="h-px bg-white/10 my-3" />
+                                </li>
+
+                                {bottomNavigation.map((item) => {
+                                    if (
+                                        !item.show.includes("all") &&
+                                        !item.show.includes(auth.user.role)
+                                    ) {
+                                        return null;
+                                    }
+
+                                    const isActive = item.name === current_page;
+
+                                    return (
+                                        <li key={item.name}>
+                                            <NavItem
+                                                icon={item.icon}
+                                                label={item.name}
+                                                href={item.href}
+                                                active={isActive}
+                                                compact={!showSidebarText}
+                                                preserveState
+                                            />
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </nav>
+                    </aside>
 
                     {/* Content Area */}
                     <main className="flex-1 min-w-0 flex flex-col min-h-screen">
@@ -1066,14 +1160,19 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                     <div className="px-4 md:px-8 py-3 flex items-center justify-between">
                                         <div className="flex items-center gap-4 min-w-0">
                                             <button
-                                                onClick={() => setSidebarOpen((v) => !v)}
+                                                onClick={() =>
+                                                    setSidebarOpen((v) => !v)
+                                                }
                                                 className="rounded-xl bg-white/[0.03] hover:bg-white/[0.06] px-3 py-2 transition-all duration-300 hover:scale-110 active:scale-90 md:hidden"
                                                 aria-label="Toggle sidebar"
                                             >
                                                 <IconMenu className="h-5 w-5 text-white/70" />
                                             </button>
                                             <div className="md:hidden">
-                                                <Link href="/" className="flex items-center gap-2">
+                                                <Link
+                                                    href="/"
+                                                    className="flex items-center gap-2"
+                                                >
                                                     <img
                                                         src="/img/logo-boost.svg"
                                                         className="h-9 w-auto select-none"
@@ -1082,28 +1181,6 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                                     />
                                                 </Link>
                                             </div>
-                                            <div className="min-w-0 space-y-0">
-                                                {header ? (
-                                                    typeof header === "string" ? (
-                                                        <h1 className="!m-0 !text-base md:!text-lg !font-semibold leading-tight tracking-tight truncate text-white">
-                                                            {header}
-                                                        </h1>
-                                                    ) : (
-                                                        <div className="!m-0 !text-base md:!text-lg !font-semibold leading-tight tracking-tight truncate text-white">
-                                                            {header}
-                                                        </div>
-                                                    )
-                                                ) : (
-                                                    <h1 className="!m-0 !text-base md:!text-lg !font-semibold leading-tight tracking-tight truncate text-white">
-                                                        {"Cloud Overview"}
-                                                    </h1>
-                                                )}
-
-                                                <p className="!m-0 text-sm text-white/50 leading-tight truncate">
-                                                    {"Real-time usage, health, costs and recent changes"}
-                                                </p>
-                                            </div>
-
                                         </div>
 
                                         <div className="flex items-center gap-3">
@@ -1118,7 +1195,12 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                                 />
                                                  */}
                                                 </div>
-                                                {auth && auth.user && (auth.user.role == 'global_admin' || auth.user.role == 'admin') ?
+                                                {auth &&
+                                                auth.user &&
+                                                (auth.user.role ==
+                                                    "global_admin" ||
+                                                    auth.user.role ==
+                                                        "admin") ? (
                                                     <div className="relative">
                                                         {/* <Link
                                                 preserveState
@@ -1131,7 +1213,10 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                                     aria-hidden="true"                                               
                                                 />                                            
                                             </Link> */}
-                                                    </div> : ''}
+                                                    </div>
+                                                ) : (
+                                                    ""
+                                                )}
 
                                                 <div className="relative z-10">
                                                     <Dropdown>
@@ -1141,11 +1226,29 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                                                     type="button"
                                                                     className="inline-flex items-center gap-2 rounded-xl bg-white/[0.03] px-3 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/[0.06] transition"
                                                                 >
-                                                                    {auth && auth.user && auth.user.imageUrl ?
-                                                                        <img className="h-8 w-8 rounded-full" src={auth.user.imageUrl} alt="" />
-                                                                        : ''}
+                                                                    {auth &&
+                                                                    auth.user &&
+                                                                    auth.user
+                                                                        .imageUrl ? (
+                                                                        <img
+                                                                            className="h-8 w-8 rounded-full"
+                                                                            src={
+                                                                                auth
+                                                                                    .user
+                                                                                    .imageUrl
+                                                                            }
+                                                                            alt=""
+                                                                        />
+                                                                    ) : (
+                                                                        ""
+                                                                    )}
 
-                                                                    {auth && auth.user ? auth.user.name : ''}
+                                                                    {auth &&
+                                                                    auth.user
+                                                                        ? auth
+                                                                              .user
+                                                                              .name
+                                                                        : ""}
                                                                     <svg
                                                                         className="h-4 w-4"
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -1162,8 +1265,10 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                                             </span>
                                                         </Dropdown.Trigger>
 
-                                                        <Dropdown.Content width={96}>
-                                                        {/*                                                      
+                                                        <Dropdown.Content
+                                                            width={96}
+                                                        >
+                                                            {/*                                                      
                                                     <Dropdown.Link href={route('profile')} method="get" as="button">
                                                         Profile
                                                     </Dropdown.Link>
@@ -1194,70 +1299,207 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                                     <Dropdown.Link href={route('logout')} method="post" as="button">
                                                         Log Out
                                                     </Dropdown.Link> */}
-                                                        <Container className="rounded-xl border border-white/10 bg-[rgba(0,0,0,0.92)] text-white shadow-2xl">
-                                                            <div className="w-full flex justify-center">
-                                                                <div className="flex gap-2 mx-auto py-4 items-center">
-                                                                    <div className="w-10 h-10 flex justify-center items-center bg-[rgba(56,189,248,0.2)] ring-1 ring-white/10 rounded-full">
-                                                                        <UserIcon className="w-6 h-6 text-[#38BDF8]" />
-                                                                    </div>
-                                                                    <div className="flex flex-col">
-                                                                        <span className="text-white"><b> {auth.user.name} </b></span>
-                                                                        <span className="text-white/60">{companyName}</span>
+                                                            <Container className="rounded-xl border border-white/10 bg-[rgba(0,0,0,0.92)] text-white shadow-2xl">
+                                                                <div className="w-full flex justify-center">
+                                                                    <div className="flex gap-2 mx-auto py-4 items-center">
+                                                                        <div className="w-10 h-10 flex justify-center items-center bg-[rgba(56,189,248,0.2)] ring-1 ring-white/10 rounded-full">
+                                                                            <UserIcon className="w-6 h-6 text-[#38BDF8]" />
+                                                                        </div>
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-white">
+                                                                                <b>
+                                                                                    {" "}
+                                                                                    {
+                                                                                        auth
+                                                                                            .user
+                                                                                            .name
+                                                                                    }{" "}
+                                                                                </b>
+                                                                            </span>
+                                                                            <span className="text-white/60">
+                                                                                {
+                                                                                    companyName
+                                                                                }
+                                                                            </span>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                            <Row>
-                                                                <Col
-                                                                    className="border-r border-white/10 col-3"
-                                                                >
-                                                                    <List type="unstyled" className="space-y-1">
-                                                                        {Object.entries(companyList).map(([key, company]) => {
-                                                                            return (
-                                                                                <li key={companyKey} className="p-1 text-center">
-                                                                                    <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#38BDF8] text-white shadow-sm">
-                                                                                        <span className="text-lg font-medium leading-none">
-                                                                                            {company &&
-                                                                                                <> {(company).substring(0, 2)} </>
+                                                                <Row>
+                                                                    <Col className="border-r border-white/10 col-3">
+                                                                        <List
+                                                                            type="unstyled"
+                                                                            className="space-y-1"
+                                                                        >
+                                                                            {Object.entries(
+                                                                                companyList,
+                                                                            ).map(
+                                                                                ([
+                                                                                    key,
+                                                                                    company,
+                                                                                ]) => {
+                                                                                    return (
+                                                                                        <li
+                                                                                            key={
+                                                                                                companyKey
                                                                                             }
-                                                                                        </span>
-                                                                                    </span>
-                                                                                </li>
-                                                                            )
-                                                                        })}
+                                                                                            className="p-1 text-center"
+                                                                                        >
+                                                                                            <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#38BDF8] text-white shadow-sm">
+                                                                                                <span className="text-lg font-medium leading-none">
+                                                                                                    {company && (
+                                                                                                        <>
+                                                                                                            {" "}
+                                                                                                            {company.substring(
+                                                                                                                0,
+                                                                                                                2,
+                                                                                                            )}{" "}
+                                                                                                        </>
+                                                                                                    )}
+                                                                                                </span>
+                                                                                            </span>
+                                                                                        </li>
+                                                                                    );
+                                                                                },
+                                                                            )}
 
-                                                                        <li className="p-1 text-center">
-                                                                            <button
-                                                                                type='button'
-                                                                                onClick={() => setShowWorkspaceForm(true)}
-                                                                            >
-                                                                                <span className="w-9 h-9 bg-[rgba(255,255,255,0.08)] ring-1 ring-white/10 flex justify-center items-center rounded-full cursor-pointer mx-auto text-white/70 hover:text-white">
-                                                                                    <PlusIcon className="w-6 h-6" />
-                                                                                </span>
-                                                                            </button>
-                                                                        </li>
-                                                                    </List>
-                                                                </Col>
-                                                                <Col className="border-r border-white/10" >
-                                                                    <List type="unstyled" className="text-white/70">
-                                                                        <li className="p-1" > <Link className="hover:text-white" href={route("wallet_subscription")} method="get"> Workspace settings </Link> </li>
-                                                                    </List>
-                                                                </Col>
-                                                                <Col>
-                                                                    <List type="unstyled" className="text-white/70">
-                                                                        <li className="p-1 text-white" > <b> {auth.user.name} </b> </li>
-                                                                        <li className="p-1" > <Link className="hover:text-white" href={route('profile')} method="get"> Profile </Link> </li>
-                                                                        {auth && auth.user && auth.user.role == 'global_admin' &&
-                                                                            <li className="p-1" > <Link className="hover:text-white" href={route('list_global_user')} method="get" as="button"> Global Admin </Link> </li>
-                                                                        }
-                                                                        {returnMainUser &&
-                                                                            <li className="p-1" > <button className="hover:text-white" onClick={() => setImpersonate()} type="button"> Return to global admin </button> </li>
-                                                                        }
-                                                                        <li className="p-1" ><Link className="hover:text-white" href={route('listApi')} method="get"> API keys</Link></li>
-                                                                        <li className="p-1" > <Link className="hover:text-white" href={route('logout')} method="post" as="button"> Log out </Link> </li>
-                                                                    </List>
-                                                                </Col>
-                                                            </Row>
-                                                        </Container>
+                                                                            <li className="p-1 text-center">
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() =>
+                                                                                        setShowWorkspaceForm(
+                                                                                            true,
+                                                                                        )
+                                                                                    }
+                                                                                >
+                                                                                    <span className="w-9 h-9 bg-[rgba(255,255,255,0.08)] ring-1 ring-white/10 flex justify-center items-center rounded-full cursor-pointer mx-auto text-white/70 hover:text-white">
+                                                                                        <PlusIcon className="w-6 h-6" />
+                                                                                    </span>
+                                                                                </button>
+                                                                            </li>
+                                                                        </List>
+                                                                    </Col>
+                                                                    <Col className="border-r border-white/10">
+                                                                        <List
+                                                                            type="unstyled"
+                                                                            className="text-white/70"
+                                                                        >
+                                                                            <li className="p-1">
+                                                                                {" "}
+                                                                                <Link
+                                                                                    className="hover:text-white"
+                                                                                    href={route(
+                                                                                        "wallet_subscription",
+                                                                                    )}
+                                                                                    method="get"
+                                                                                >
+                                                                                    {" "}
+                                                                                    Workspace
+                                                                                    settings{" "}
+                                                                                </Link>{" "}
+                                                                            </li>
+                                                                        </List>
+                                                                    </Col>
+                                                                    <Col>
+                                                                        <List
+                                                                            type="unstyled"
+                                                                            className="text-white/70"
+                                                                        >
+                                                                            <li className="p-1 text-white">
+                                                                                {" "}
+                                                                                <b>
+                                                                                    {" "}
+                                                                                    {
+                                                                                        auth
+                                                                                            .user
+                                                                                            .name
+                                                                                    }{" "}
+                                                                                </b>{" "}
+                                                                            </li>
+                                                                            <li className="p-1">
+                                                                                {" "}
+                                                                                <Link
+                                                                                    className="hover:text-white"
+                                                                                    href={route(
+                                                                                        "profile",
+                                                                                    )}
+                                                                                    method="get"
+                                                                                >
+                                                                                    {" "}
+                                                                                    Profile{" "}
+                                                                                </Link>{" "}
+                                                                            </li>
+                                                                            {auth &&
+                                                                                auth.user &&
+                                                                                auth
+                                                                                    .user
+                                                                                    .role ==
+                                                                                    "global_admin" && (
+                                                                                    <li className="p-1">
+                                                                                        {" "}
+                                                                                        <Link
+                                                                                            className="hover:text-white"
+                                                                                            href={route(
+                                                                                                "list_global_user",
+                                                                                            )}
+                                                                                            method="get"
+                                                                                            as="button"
+                                                                                        >
+                                                                                            {" "}
+                                                                                            Global
+                                                                                            Admin{" "}
+                                                                                        </Link>{" "}
+                                                                                    </li>
+                                                                                )}
+                                                                            {returnMainUser && (
+                                                                                <li className="p-1">
+                                                                                    {" "}
+                                                                                    <button
+                                                                                        className="hover:text-white"
+                                                                                        onClick={() =>
+                                                                                            setImpersonate()
+                                                                                        }
+                                                                                        type="button"
+                                                                                    >
+                                                                                        {" "}
+                                                                                        Return
+                                                                                        to
+                                                                                        global
+                                                                                        admin{" "}
+                                                                                    </button>{" "}
+                                                                                </li>
+                                                                            )}
+                                                                            <li className="p-1">
+                                                                                <Link
+                                                                                    className="hover:text-white"
+                                                                                    href={route(
+                                                                                        "listApi",
+                                                                                    )}
+                                                                                    method="get"
+                                                                                >
+                                                                                    {" "}
+                                                                                    API
+                                                                                    keys
+                                                                                </Link>
+                                                                            </li>
+                                                                            <li className="p-1">
+                                                                                {" "}
+                                                                                <Link
+                                                                                    className="hover:text-white"
+                                                                                    href={route(
+                                                                                        "logout",
+                                                                                    )}
+                                                                                    method="post"
+                                                                                    as="button"
+                                                                                >
+                                                                                    {" "}
+                                                                                    Log
+                                                                                    out{" "}
+                                                                                </Link>{" "}
+                                                                            </li>
+                                                                        </List>
+                                                                    </Col>
+                                                                </Row>
+                                                            </Container>
                                                         </Dropdown.Content>
                                                     </Dropdown>
                                                 </div>
@@ -1265,19 +1507,37 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
 
                                             <div className="flex items-center sm:hidden">
                                                 <button
-                                                    onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
+                                                    onClick={() =>
+                                                        setShowingNavigationDropdown(
+                                                            (previousState) =>
+                                                                !previousState,
+                                                        )
+                                                    }
                                                     className="inline-flex items-center justify-center p-2 rounded-md text-white/60 hover:text-white hover:bg-white/10 focus:outline-none focus:bg-white/10 focus:text-white transition duration-150 ease-in-out"
                                                 >
-                                                    <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                                                    <svg
+                                                        className="h-6 w-6"
+                                                        stroke="currentColor"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                    >
                                                         <path
-                                                            className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
+                                                            className={
+                                                                !showingNavigationDropdown
+                                                                    ? "inline-flex"
+                                                                    : "hidden"
+                                                            }
                                                             strokeLinecap="round"
                                                             strokeLinejoin="round"
                                                             strokeWidth="2"
                                                             d="M4 6h16M4 12h16M4 18h16"
                                                         />
                                                         <path
-                                                            className={showingNavigationDropdown ? 'inline-flex' : 'hidden'}
+                                                            className={
+                                                                showingNavigationDropdown
+                                                                    ? "inline-flex"
+                                                                    : "hidden"
+                                                            }
                                                             strokeLinecap="round"
                                                             strokeLinejoin="round"
                                                             strokeWidth="2"
@@ -1289,21 +1549,48 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                         </div>
                                     </div>
 
-                                    <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
+                                    <div
+                                        className={
+                                            (showingNavigationDropdown
+                                                ? "block"
+                                                : "hidden") + " sm:hidden"
+                                        }
+                                    >
                                         <div className="pt-2 pb-3 space-y-1">
-                                            <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
+                                            <ResponsiveNavLink
+                                                href={route("dashboard")}
+                                                active={route().current(
+                                                    "dashboard",
+                                                )}
+                                            >
                                                 Dashboard
                                             </ResponsiveNavLink>
                                         </div>
 
                                         <div className="pt-4 pb-1 border-t border-white/10">
                                             <div className="px-4">
-                                                <div className="font-medium text-base text-white">{auth && auth.user && auth.user.name ? auth.user.name : ''}</div>
-                                                <div className="font-medium text-sm text-white/60">{auth && auth.user && auth.user.email ? auth.user.email : ''}</div>
+                                                <div className="font-medium text-base text-white">
+                                                    {auth &&
+                                                    auth.user &&
+                                                    auth.user.name
+                                                        ? auth.user.name
+                                                        : ""}
+                                                </div>
+                                                <div className="font-medium text-sm text-white/60">
+                                                    {auth &&
+                                                    auth.user &&
+                                                    auth.user.email
+                                                        ? auth.user.email
+                                                        : ""}
+                                                </div>
                                             </div>
 
                                             <div className="mt-3 space-y-1">
-                                                <ResponsiveNavLink method="post" href={route('logout')} as="button">
+                                                <ResponsiveNavLink
+                                                    method="post"
+                                                    href={route("logout")}
+                                                    as="button"
+                                                >
                                                     Log Out
                                                 </ResponsiveNavLink>
                                             </div>
@@ -1313,9 +1600,7 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                             </header>
                         ) : null}
 
-                        <div className="flex-1 p-3 md:p-8">
-                            {children}
-                        </div>
+                        <div className="flex-1 p-3 md:p-8">{children}</div>
                     </main>
                 </div>
             </div>
@@ -1329,31 +1614,20 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                 />
             ) : null}
 
-            {showWorkspaceForm ?
+            {showWorkspaceForm ? (
                 <Form
-                    module={'Company'}
-                    heading={'Create Company'}
+                    module={"Company"}
+                    heading={"Create Company"}
                     hideForm={hideForm}
-                    recordId={''}
-                // translator={translator}
-                // mod={''}
-                // productList={props.productList}
-                // current_user={props.current_user}
+                    recordId={""}
+                    // translator={translator}
+                    // mod={''}
+                    // productList={props.productList}
+                    // current_user={props.current_user}
                 />
-                : ''}
-
+            ) : (
+                ""
+            )}
         </>
     );
 }
-
-
-
-
-
-
-
-
-
-
-
-

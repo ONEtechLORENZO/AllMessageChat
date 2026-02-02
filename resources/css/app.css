@@ -12,3 +12,13 @@ a:hover,
 a:focus {
   text-decoration: none;
 }
+
+/* Ensure readable text on white backgrounds */
+.bg-white.text-white {
+  color: #111111 !important;
+}
+
+/* Default text color for white cards when no text-* utility is set */
+:where(.bg-white):not([class*="text-"]) {
+  color: #111111;
+}
