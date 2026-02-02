@@ -1,3 +1,4 @@
+import "bootstrap/dist/css/bootstrap.min.css";
 import "../css/app.css";
 
 import $ from "jquery";
@@ -9,7 +10,6 @@ window.moment = moment;
 import { createInertiaApp } from "@inertiajs/react";
 import { createRoot } from "react-dom/client";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
-import "bootstrap/dist/css/bootstrap.min.css";
 
 createInertiaApp({
     resolve: (name) =>

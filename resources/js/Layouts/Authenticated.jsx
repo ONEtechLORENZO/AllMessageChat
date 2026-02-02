@@ -27,13 +27,12 @@ import {
     UsersIcon,
     UserGroupIcon,
     XMarkIcon,
-    ChevronRightIcon,
-    ChevronLeftIcon,
     Bars3Icon as IconMenu,
     AdjustmentsHorizontalIcon,
     Cog6ToothIcon,
     PlusCircleIcon,
-    ChevronDownIcon,
+    ChartBarIcon,
+    Squares2X2Icon,
     QuestionMarkCircleIcon,
     LightBulbIcon,
     PlusIcon,
@@ -50,6 +49,12 @@ import { BsCaretDownFill, BsCaretUpFill } from "react-icons/bs";
 import { DashboardIcon, ChatNewIcon, CampaignsIcon, BillingIcon, Setting2Icon, SalesIcon, NetworkIcon, GraphIcon } from "@/Pages/icons";
 
 const navigation = [
+    {
+        name: "Home",
+        href: route("home"),
+        icon: HomeIcon,
+        show: ['all'],
+    },
     {
         name: "Dashboard",
         href: route("dashboard"),
@@ -283,10 +288,15 @@ const adminNavigation = [
 ];
 
 const menuBar = [
+     {
+        name: "Home",
+        href: route("home"),
+        icon: HomeIcon,
+    },
     {
         name: "Dashboard",
         href: route("dashboard"),
-        icon: DashboardIcon,
+        icon: Squares2X2Icon,
     },
     {
         name: "Conversations",
@@ -366,12 +376,74 @@ const menuBar = [
     {
         name: "Reports",
         href: route("listMessage"),
-        icon: GraphIcon,
+        icon: ChartBarIcon,
     },
 ];
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
+}
+
+function NavItem({
+  icon: Icon,
+  label,
+  href,
+  active,
+  compact,
+  rightSlot,
+  preserveState,
+}) {
+  return (
+    <Link
+      href={href}
+      preserveState={preserveState}
+      className={[
+        "group flex items-center gap-3 rounded-2xl px-3.5 py-2.5 no-underline hover:no-underline focus:outline-none focus-visible:outline-none",
+        "transition-colors duration-200",
+        active
+          ? compact
+            ? "bg-transparent"
+            : "bg-white/[0.06] border border-white/10"
+          : "bg-transparent hover:bg-white/[0.03]",
+      ].join(" ")}
+    >
+      <div
+        className={[
+          "h-10 w-10 shrink-0 rounded-2xl flex items-center justify-center",
+          "transition-transform duration-200",
+          "bg-white/[0.03] border-0",
+          "group-hover:scale-110",
+          active ? "shadow-[0_0_24px_rgba(56,189,248,0.18)]" : "",
+        ].join(" ")}
+      >
+        <Icon
+          className={[
+            "h-5 w-5 transition-colors duration-200",
+            active ? "text-[#38bdf8]" : "text-white/60 group-hover:text-white",
+          ].join(" ")}
+        />
+      </div>
+
+      {!compact && (
+        <div className="min-w-0 flex-1">
+          <div
+            className={[
+              "text-sm font-semibold truncate",
+              active ? "text-white" : "text-white/70 group-hover:text-white",
+            ].join(" ")}
+          >
+            {label}
+          </div>
+        </div>
+      )}
+
+      {!compact && rightSlot ? (
+        <div className="ml-auto shrink-0 flex items-center">
+          {rightSlot}
+        </div>
+      ) : null}
+    </Link>
+  );
 }
 
 export default function Authenticated({ auth, header, children, hideHeader, current_page, message, navigationMenu }) {
@@ -381,6 +453,7 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
     const [showAdminNav, setshowAdminNav] = useState(false);
     const [returnMainUser, setReturnMainUser] = useState(false);
     const [companyName, setcompanyName] = useState();
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
     const [menuDropdownActive, setMenuDropdownActive] = useState({});
     const [notifications, setNotifications] = useState();
@@ -416,6 +489,15 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
         if (message) alertMessage(message);
         if (!navigationMenu) fetchMenuBar();
     }, [])
+
+    useEffect(() => {
+        const handleMouseMove = (event) => {
+            setMousePosition({ x: event.clientX, y: event.clientY });
+        };
+
+        window.addEventListener("mousemove", handleMouseMove);
+        return () => window.removeEventListener("mousemove", handleMouseMove);
+    }, []);
 
     useEffect(() => {
         if (pathname.includes('admin/')) {
@@ -554,6 +636,30 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
         });
     }
 
+    const resolvedNavigationMenuBar = navigationMenuBar
+        ? { ...navigationMenuBar }
+        : null;
+
+    if (resolvedNavigationMenuBar) {
+        menuBar.forEach((item) => {
+            if (!resolvedNavigationMenuBar[item.name]) {
+                const submenu = item.subMenu
+                    ? Object.fromEntries(item.subMenu.map((sub) => [sub.name, true]))
+                    : {};
+                resolvedNavigationMenuBar[item.name] = { show: true, submenu };
+            }
+        });
+    }
+
+    const menuOrder = resolvedNavigationMenuBar
+        ? [
+            ...menuBar.map((item) => item.name),
+            ...Object.keys(resolvedNavigationMenuBar).filter(
+                (name) => !menuBar.some((item) => item.name === name)
+            ),
+        ]
+        : [];
+
     return (
         <>
             <div className="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 hidden">
@@ -607,28 +713,39 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                 </div>
             </div>
 
-            <div
-                className="relative flex min-h-screen bg-black text-white overflow-hidden"
-                style={{
-                    background:
-                        "radial-gradient(900px circle at 15% 15%, rgba(191,0,255,0.18), transparent 45%), radial-gradient(900px circle at 85% 10%, rgba(56,189,248,0.14), transparent 50%), #000000",
-                }}
-            >
-                <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <div className="min-h-screen bg-black text-white relative overflow-hidden flex font-sans selection:bg-[#38bdf8]/30">
+                {/* Tech grid background with spotlight effect */}
+                <div
+                    className="fixed inset-0 opacity-40 transition-opacity duration-1000 pointer-events-none"
+                    style={{
+                        backgroundSize: "50px 50px",
+                        backgroundImage:
+                            "linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)",
+                        maskImage: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, black 0%, transparent 70%)`,
+                        WebkitMaskImage: `radial-gradient(1000px circle at ${mousePosition.x}px ${mousePosition.y}px, black 0%, transparent 80%)`,
+                    }}
+                    aria-hidden="true"
+                />
+
+                {/* Animated orbs / glows */}
+                <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
                     <div
-                        className="absolute -top-32 -left-32 h-80 w-80 rounded-full"
+                        className="absolute h-[650px] w-[650px] rounded-full bg-[#BF00FF] opacity-[0.08] mix-blend-screen blur-[130px] transition-transform duration-700 ease-out"
                         style={{
-                            background:
-                                "radial-gradient(circle, rgba(191,0,255,0.35), rgba(191,0,255,0.0) 70%)",
+                            top: "5%",
+                            left: "10%",
+                            transform: `translate(${mousePosition.x * 0.02}px, ${mousePosition.y * 0.02}px)`,
                         }}
                     />
                     <div
-                        className="absolute top-24 right-[-120px] h-96 w-96 rounded-full"
+                        className="absolute h-[650px] w-[650px] rounded-full bg-[#BF00FF] opacity-[0.08] mix-blend-screen blur-[140px] transition-transform duration-700 ease-out"
                         style={{
-                            background:
-                                "radial-gradient(circle, rgba(56,189,248,0.28), rgba(56,189,248,0.0) 70%)",
+                            bottom: "5%",
+                            right: "10%",
+                            transform: `translate(${mousePosition.x * -0.02}px, ${mousePosition.y * -0.02}px)`,
                         }}
                     />
+                    <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[420px] w-[900px] rounded-full bg-white/5 blur-[120px] opacity-40" />
                 </div>
                 <Transition.Root show={sidebarOpen} as={Fragment}>
                     <Dialog
@@ -658,7 +775,7 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                 leaveFrom="translate-x-0"
                                 leaveTo="-translate-x-full"
                             >
-                                <Dialog.Panel className="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-[rgba(255,255,255,0.06)] border-r border-white/10 backdrop-blur-xl text-white shadow-2xl">
+                                <Dialog.Panel className="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-white/[0.02] border-r border-white/10 backdrop-blur-3xl text-white">
                                     <Transition.Child
                                         as={Fragment}
                                         enter="ease-in-out duration-300"
@@ -686,11 +803,16 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                             </button>
                                         </div>
                                     </Transition.Child>
-                                    <div className="flex-shrink-0 flex items-center px-4">
+                                    <div className="flex-shrink-0 flex items-center px-6">
                                         {/* <ApplicationLogo className="block h-9 w-auto text-gray-500" /> */}
-                                        <div className="w-full flex">
-                                            <img src="/img/logo-boost.svg" className="h-7 w-auto" />
-                                        </div>
+                                        <Link href="/" className="flex items-center gap-3 select-none">
+                                            <img
+                                                src="/img/logo-boost.svg"
+                                                className="h-10 w-auto select-none opacity-90"
+                                                alt="Logo"
+                                                draggable="false"
+                                            />
+                                        </Link>
                                     </div>
                                 </Dialog.Panel>
                             </Transition.Child>
@@ -705,28 +827,38 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                     </Dialog>
                 </Transition.Root>
 
-                {/* Static sidebar for desktop */}
-                <div
-                    className={`transition-all hidden md:flex ${showSidebarText ? "md:w-64" : "md:w-auto"
-                        } md:flex-col`}
-                >
-                    {/* Sidebar component, swap this element with another sidebar if you like */}
-                    <div className="h-screen sticky top-0 bg-[rgba(255,255,255,0.04)] border-r border-white/10 justify-between flex flex-col pt-5 overflow-y-auto backdrop-blur-xl text-white">
-                        <div className="flex items-center flex-shrink-0 px-4 ">
-                            {/* <ApplicationLogo className="block h-9 w-auto text-gray-500" />  */}
-                            <div className="w-full flex">
-                                <img src="/img/logo-boost.svg" className="h-7 w-auto" />
-                            </div>
+                {/* Main Layout Container */}
+                <div className="relative z-10 flex w-full">
+                    {/* Sidebar */}
+                    <aside
+                        className={[
+                            "hidden md:flex flex-col",
+                            showSidebarText ? "w-72" : "w-[86px]",
+                            "transition-all duration-300",
+                            "border-r border-white/10 bg-white/[0.02] backdrop-blur-3xl sticky top-0 h-screen overflow-y-auto",
+                        ].join(" ")}
+                    >
+                        <div className="px-6 py-6 flex items-center justify-between">
+                            <Link href="/" className="flex items-center gap-3 select-none">
+                                <img
+                                    src="/img/logo-boost.svg"
+                                    alt="Allmessage Chat"
+                                    className="h-10 w-auto select-none opacity-90 hover:opacity-100 transition-opacity"
+                                    draggable="false"
+                                />
+                            </Link>
+
+                            <button
+                                onClick={() => setShowSidebarText((v) => !v)}
+                                className="rounded-xl bg-white/[0.02] hover:bg-white/[0.05] px-3 py-2 transition-all duration-300 hover:scale-110 active:scale-90"
+                                aria-label="Toggle sidebar"
+                            >
+                                <IconMenu className="h-5 w-5 text-white/70" />
+                            </button>
                         </div>
-                        <div
-                            className="mt-4 mx-4 h-7 w-7 bg-[rgba(255,255,255,0.08)] ring-1 ring-white/10 flex justify-center items-center text-white/80 hover:text-white hover:bg-[rgba(255,255,255,0.12)] cursor-pointer transition"
-                            onClick={() => setShowSidebarText(!showSidebarText)}
-                        >
-                            {showSidebarText ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-                        </div>
-                        <div className="mt-4 flex-grow flex flex-col">
-                            <nav className="flex-1 px-2 pb-4 space-y-1 gio-navbar">
-                                <ul className="pl-0">
+
+                        <nav className="px-6 pb-6 space-y-2 gio-navbar">
+                            <ul className="list-none !pl-0 space-y-2">
                                     {/* {showAdminNav ?                                                     
                                         adminNavigation.map((item,index) => {
                                             if(!item.show.includes('all') && !item.show.includes(auth.user.role)) {
@@ -833,8 +965,9 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                             // );
                                         })  
                                     } */}
-                                    {navigationMenuBar &&
-                                        Object.entries(navigationMenuBar).map(([header, navigator]) => {
+                                    {resolvedNavigationMenuBar &&
+                                        menuOrder.map((header) => {
+                                            const navigator = resolvedNavigationMenuBar[header];
                                             // find matching menu item
                                             const item = menuBar.find((m) => m.name === header);
 
@@ -844,47 +977,34 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                             const isOpen = !!menuDropdownActive[item.name];
                                             const hasSubMenu = Array.isArray(item.subMenu) && item.subMenu.length > 0;
                                             const canRenderSubMenu = showSidebarText && isOpen && navigator?.submenu && hasSubMenu;
+                                            const isActive = item.name === current_page;
 
                                             return (
                                                 <li
                                                     key={header}
                                                     onClick={(e) => drownDownToggleAction(e, item)}
                                                 >
-                                                    <Link
-                                                        preserveState
+                                                    <NavItem
+                                                        icon={item.icon}
+                                                        label={item.name}
                                                         href={item.href}
-                                                        className={classNames(
-                                                            item.name === current_page ? "text-[#38BDF8] font-semibold" : "",
-                                                            "group flex items-center px-2 py-2 text-white/70 hover:text-white hover:bg-[rgba(255,255,255,0.06)] text-sm font-medium rounded-md gio-menu-item justify-center transition"
-                                                        )}
-                                                    >
-                                                        <item.icon
-                                                            className={classNames(
-                                                                item.name === current_page
-                                                                    ? "text-[#38BDF8]"
-                                                                    : "text-white/70 group-hover:text-[#38BDF8]",
-                                                                "flex-shrink-0 h-6 w-6"
-                                                            )}
-                                                            aria-hidden="true"
-                                                        />
-
-                                                        {showSidebarText && (
-                                                            <div className="flex ml-3 gap-2 items-center flex-1">
-                                                                {item.name}
-                                                                        {hasSubMenu && (
-                                                                            <BsCaretDownFill
-                                                                                className={classNames(
-                                                                                    isOpen ? "rotate-180" : "",
-                                                                                    "h-4 w-4 text-white/40 group-hover:text-[#38BDF8] transition-all"
-                                                                                )}
-                                                                            />
-                                                                        )}
-                                                            </div>
-                                                        )}
-                                                    </Link>
+                                                        active={isActive}
+                                                        compact={!showSidebarText}
+                                                        preserveState
+                                                        rightSlot={
+                                                            hasSubMenu ? (
+                                                                <BsCaretDownFill
+                                                                    className={classNames(
+                                                                        isOpen ? "rotate-180" : "",
+                                                                        "h-3 w-3 text-white/40 group-hover:text-white/70 transition-transform"
+                                                                    )}
+                                                                />
+                                                            ) : null
+                                                        }
+                                                    />
 
                                                     {canRenderSubMenu && (
-                                                        <ul>
+                                                        <ul className="list-none mt-2 space-y-1 !pl-14">
                                                             {item.subMenu.map((subItem) => {
                                                                 if (!navigator.submenu.hasOwnProperty(subItem.name)) return null;
 
@@ -894,9 +1014,9 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                                                             href={subItem.href}
                                                                             className={classNames(
                                                                                 subItem.name === current_page
-                                                                                    ? "text-[#38BDF8] font-semibold"
-                                                                                    : "",
-                                                                                "text-white/60 hover:text-white hover:bg-[rgba(255,255,255,0.06)] group flex items-center px-2 py-1 text-sm rounded-md gio-menu-item submenu focus:bg-[rgba(56,189,248,0.15)] transition"
+                                                                                    ? "text-white bg-white/[0.05]"
+                                                                                    : "text-white/50 hover:text-white hover:bg-white/[0.04]",
+                                                                                "block rounded-xl px-3 py-2 text-sm transition no-underline hover:no-underline"
                                                                             )}
                                                                         >
                                                                             {subItem.name}
@@ -910,124 +1030,139 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                             );
                                         })}
 
-                                    <li className="my-3">
-                                        <div className="h-px w-full bg-white/10" />
+                                    <li>
+                                        <div className="h-px bg-white/10 my-3" />
                                     </li>
 
                                     {bottomNavigation.map((item) => {
                                         if (!item.show.includes('all') && !item.show.includes(auth.user.role)) {
-                                            return;
+                                            return null;
                                         }
+
+                                        const isActive = item.name === current_page;
 
                                         return (
                                             <li key={item.name}>
-                                                <Link
+                                                <NavItem
+                                                    icon={item.icon}
+                                                    label={item.name}
                                                     href={item.href}
-                                                    className={classNames(
-                                                        (item.name == current_page)
-                                                            ? "text-[#38BDF8] font-semibold"
-                                                            : "",
-                                                        `group flex items-center px-2 py-2 text-white/70 hover:text-white hover:bg-[rgba(255,255,255,0.06)] text-sm font-medium rounded-md transition ${showSidebarText ? '' : "justify-center"}`
-                                                    )}
-                                                >
-                                                    <item.icon
-                                                        className={classNames(
-                                                            (item.name == current_page)
-                                                                ? "text-[#38BDF8]"
-                                                                : "text-white/70 group-hover:text-[#38BDF8] ",
-                                                            "flex-shrink-0 h-6 w-6"
-
-                                                        )}
-                                                        aria-hidden="true"
-                                                    />
-                                                    {showSidebarText ? <div className="ml-3">{item.name}</div> : ""}
-                                                </Link>
+                                                    active={isActive}
+                                                    compact={!showSidebarText}
+                                                    preserveState
+                                                />
                                             </li>
                                         );
                                     })}
                                 </ul>
                             </nav>
-                        </div>
+                        </aside>
 
-                    </div>
-                </div>
-                <div className="flex flex-col flex-1 bg-transparent">
-                    {hideHeader !== true ?
-                        <div className="py-4 px-6 bg-[rgba(255,255,255,0.04)] border-b border-white/10 backdrop-blur-md">
-                            <nav>
-                                <div>
-                                    <div className="flex justify-between h-16">
-                                        <div className="flex items-center gap-3">
+                    {/* Content Area */}
+                    <main className="flex-1 min-w-0 flex flex-col min-h-screen">
+                        {hideHeader !== true ? (
+                            <header className="sticky top-0 z-20 border-b border-white/10 bg-black/40 backdrop-blur-2xl">
+                                <nav>
+                                    <div className="px-4 md:px-8 py-3 flex items-center justify-between">
+                                        <div className="flex items-center gap-4 min-w-0">
                                             <button
                                                 onClick={() => setSidebarOpen((v) => !v)}
-                                                className="rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] px-3 py-2 transition-all duration-300 hover:scale-110 active:scale-90 md:hidden"
+                                                className="rounded-xl bg-white/[0.03] hover:bg-white/[0.06] px-3 py-2 transition-all duration-300 hover:scale-110 active:scale-90 md:hidden"
                                                 aria-label="Toggle sidebar"
                                             >
                                                 <IconMenu className="h-5 w-5 text-white/70" />
                                             </button>
-                                            <img
-                                                src="/img/logo-boost.svg"
-                                                className="h-6 w-auto md:hidden"
-                                                alt="Logo"
-                                            />
+                                            <div className="md:hidden">
+                                                <Link href="/" className="flex items-center gap-2">
+                                                    <img
+                                                        src="/img/logo-boost.svg"
+                                                        className="h-9 w-auto select-none"
+                                                        alt="Logo"
+                                                        draggable="false"
+                                                    />
+                                                </Link>
+                                            </div>
+                                            <div className="min-w-0 space-y-0">
+                                                {header ? (
+                                                    typeof header === "string" ? (
+                                                        <h1 className="!m-0 !text-base md:!text-lg !font-semibold leading-tight tracking-tight truncate text-white">
+                                                            {header}
+                                                        </h1>
+                                                    ) : (
+                                                        <div className="!m-0 !text-base md:!text-lg !font-semibold leading-tight tracking-tight truncate text-white">
+                                                            {header}
+                                                        </div>
+                                                    )
+                                                ) : (
+                                                    <h1 className="!m-0 !text-base md:!text-lg !font-semibold leading-tight tracking-tight truncate text-white">
+                                                        {"Cloud Overview"}
+                                                    </h1>
+                                                )}
+
+                                                <p className="!m-0 text-sm text-white/50 leading-tight truncate">
+                                                    {"Real-time usage, health, costs and recent changes"}
+                                                </p>
+                                            </div>
+
                                         </div>
 
-                                        <div className="hidden sm:flex sm:items-center sm:ml-6">
-                                            <div className="ml-3 relative">
-                                                {/* 
-                                            <Notification 
-                                                notificationClick={notificationClick}
-                                                showMore={showMore}
-                                                count={count}
-                                                notifications={notifications}
-                                            />
-                                             */}
-                                            </div>
-                                            {auth && auth.user && (auth.user.role == 'global_admin' || auth.user.role == 'admin') ?
-                                                <div className="ml-3 relative">
-                                                    {/* <Link
-                                            preserveState
-                                            key="supportrequest"
-                                            href={route("listSupportRequest")}  
-                                            className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"                                                                                    
-                                        >
-                                            <QuestionMarkCircleIcon
-                                                className="h-6 w-6"                                                 
-                                                aria-hidden="true"                                               
-                                            />                                            
-                                        </Link> */}
-                                                </div> : ''}
+                                        <div className="flex items-center gap-3">
+                                            <div className="hidden sm:flex items-center gap-3">
+                                                <div className="relative">
+                                                    {/* 
+                                                <Notification 
+                                                    notificationClick={notificationClick}
+                                                    showMore={showMore}
+                                                    count={count}
+                                                    notifications={notifications}
+                                                />
+                                                 */}
+                                                </div>
+                                                {auth && auth.user && (auth.user.role == 'global_admin' || auth.user.role == 'admin') ?
+                                                    <div className="relative">
+                                                        {/* <Link
+                                                preserveState
+                                                key="supportrequest"
+                                                href={route("listSupportRequest")}  
+                                                className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"                                                                                    
+                                            >
+                                                <QuestionMarkCircleIcon
+                                                    className="h-6 w-6"                                                 
+                                                    aria-hidden="true"                                               
+                                                />                                            
+                                            </Link> */}
+                                                    </div> : ''}
 
-                                            <div className="ml-3 relative z-10">
-                                                <Dropdown>
-                                                    <Dropdown.Trigger>
-                                                        <span className="inline-flex rounded-md">
-                                                            <button
-                                                                type="button"
-                                                                className="inline-flex items-center px-3 py-2 border border-white/10 text-sm leading-4 font-medium rounded-md text-white/80 hover:text-white hover:bg-[rgba(255,255,255,0.06)] focus:outline-none transition ease-in-out duration-150"
-                                                            >
-                                                                {auth && auth.user && auth.user.imageUrl ?
-                                                                    <img className="h-8 w-8 rounded-full mr-2" src={auth.user.imageUrl} alt="" />
-                                                                    : ''}
-
-                                                                {auth && auth.user ? auth.user.name : ''}
-                                                                <svg
-                                                                    className="ml-2 -mr-0.5 h-4 w-4"
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                    viewBox="0 0 20 20"
-                                                                    fill="currentColor"
+                                                <div className="relative z-10">
+                                                    <Dropdown>
+                                                        <Dropdown.Trigger>
+                                                            <span className="inline-flex rounded-md">
+                                                                <button
+                                                                    type="button"
+                                                                    className="inline-flex items-center gap-2 rounded-xl bg-white/[0.03] px-3 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/[0.06] transition"
                                                                 >
-                                                                    <path
-                                                                        fillRule="evenodd"
-                                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                                        clipRule="evenodd"
-                                                                    />
-                                                                </svg>
-                                                            </button>
-                                                        </span>
-                                                    </Dropdown.Trigger>
+                                                                    {auth && auth.user && auth.user.imageUrl ?
+                                                                        <img className="h-8 w-8 rounded-full" src={auth.user.imageUrl} alt="" />
+                                                                        : ''}
 
-                                                    <Dropdown.Content width={96}>
+                                                                    {auth && auth.user ? auth.user.name : ''}
+                                                                    <svg
+                                                                        className="h-4 w-4"
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        viewBox="0 0 20 20"
+                                                                        fill="currentColor"
+                                                                    >
+                                                                        <path
+                                                                            fillRule="evenodd"
+                                                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                            clipRule="evenodd"
+                                                                        />
+                                                                    </svg>
+                                                                </button>
+                                                            </span>
+                                                        </Dropdown.Trigger>
+
+                                                        <Dropdown.Content width={96}>
                                                         {/*                                                      
                                                     <Dropdown.Link href={route('profile')} method="get" as="button">
                                                         Profile
@@ -1123,67 +1258,65 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                                                                 </Col>
                                                             </Row>
                                                         </Container>
-                                                    </Dropdown.Content>
-                                                </Dropdown>
+                                                        </Dropdown.Content>
+                                                    </Dropdown>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center sm:hidden">
+                                                <button
+                                                    onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
+                                                    className="inline-flex items-center justify-center p-2 rounded-md text-white/60 hover:text-white hover:bg-white/10 focus:outline-none focus:bg-white/10 focus:text-white transition duration-150 ease-in-out"
+                                                >
+                                                    <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                                                        <path
+                                                            className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M4 6h16M4 12h16M4 18h16"
+                                                        />
+                                                        <path
+                                                            className={showingNavigationDropdown ? 'inline-flex' : 'hidden'}
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M6 18L18 6M6 6l12 12"
+                                                        />
+                                                    </svg>
+                                                </button>
                                             </div>
                                         </div>
-
-                                        <div className="-mr-2 flex items-center sm:hidden">
-                                            <button
-                                                onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
-                                                className="inline-flex items-center justify-center p-2 rounded-md text-white/60 hover:text-white hover:bg-white/10 focus:outline-none focus:bg-white/10 focus:text-white transition duration-150 ease-in-out"
-                                            >
-                                                <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                                                    <path
-                                                        className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="M4 6h16M4 12h16M4 18h16"
-                                                    />
-                                                    <path
-                                                        className={showingNavigationDropdown ? 'inline-flex' : 'hidden'}
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="M6 18L18 6M6 6l12 12"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
-                                    <div className="pt-2 pb-3 space-y-1">
-                                        <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
-                                            Dashboard
-                                        </ResponsiveNavLink>
                                     </div>
 
-                                    <div className="pt-4 pb-1 border-t border-white/10">
-                                        <div className="px-4">
-                                            <div className="font-medium text-base text-white">{auth && auth.user && auth.user.name ? auth.user.name : ''}</div>
-                                            <div className="font-medium text-sm text-white/60">{auth && auth.user && auth.user.email ? auth.user.email : ''}</div>
-                                        </div>
-
-                                        <div className="mt-3 space-y-1">
-                                            <ResponsiveNavLink method="post" href={route('logout')} as="button">
-                                                Log Out
+                                    <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
+                                        <div className="pt-2 pb-3 space-y-1">
+                                            <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
+                                                Dashboard
                                             </ResponsiveNavLink>
                                         </div>
+
+                                        <div className="pt-4 pb-1 border-t border-white/10">
+                                            <div className="px-4">
+                                                <div className="font-medium text-base text-white">{auth && auth.user && auth.user.name ? auth.user.name : ''}</div>
+                                                <div className="font-medium text-sm text-white/60">{auth && auth.user && auth.user.email ? auth.user.email : ''}</div>
+                                            </div>
+
+                                            <div className="mt-3 space-y-1">
+                                                <ResponsiveNavLink method="post" href={route('logout')} as="button">
+                                                    Log Out
+                                                </ResponsiveNavLink>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </nav>
-                        </div> : ''}
+                                </nav>
+                            </header>
+                        ) : null}
 
-                    {header && (
-                        <header className="bg-[rgba(255,255,255,0.04)] border-b border-white/10 backdrop-blur-md shadow-none">
-                            <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">{header}</div>
-                        </header>
-                    )}
-
-                    <main>{children}</main>
+                        <div className="flex-1 p-5 md:p-8">
+                            {children}
+                        </div>
+                    </main>
                 </div>
             </div>
 
