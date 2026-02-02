@@ -1,7 +1,7 @@
 
 import React, { Fragment, useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Card } from 'reactstrap'
+// import { Card } from 'reactstrap'
 import { BsHeadset } from "react-icons/bs";
 import { FaPlusCircle ,FaAngleDown} from "react-icons/fa";
 import Authenticated from '@/Layouts/Authenticated';
@@ -90,7 +90,7 @@ export default function DashboardNew(props) {
             </div>
             <div className='grid grid-cols-3 gap-4'>
             
-                <Card className='p-6 col-span-2'>
+                <GlassCard className="col-span-2">
                 
                     <div className='grid grid-cols-2 divide-x gap-3'>
                         <div>
@@ -206,7 +206,7 @@ export default function DashboardNew(props) {
 
 
 
-                </Card>
+                </GlassCard>
                 <div className='flex flex-col gap-4'>
 
                     {/* <div className="card rm-border   gap-4 flex-1 !p-4">
@@ -272,7 +272,7 @@ export default function DashboardNew(props) {
                             </div>
                         </div>
                     </div> */}
-                    <div className="card rm-border   gap-4 flex-1 !p-4">
+                    <GlassCard className="flex-1">
                         <div className="text-[#878787] text-base font-normal">
                             Your Sessions
                         </div>
@@ -300,8 +300,8 @@ export default function DashboardNew(props) {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div className="card rm-border   gap-4 flex-1 !p-4">
+                    </GlassCard>
+                    <GlassCard className="flex-1">
                         <div className="text-[#878787] text-base font-normal">
                         {props.translator['Spent this month']}
                         </div>
@@ -329,7 +329,7 @@ export default function DashboardNew(props) {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </GlassCard>
 
                 </div>
 
@@ -459,7 +459,7 @@ export default function DashboardNew(props) {
             </div>
 
 
-            <Card className='p-6 !mt-4 space-y-3'>
+            <GlassCard className="col-span-2">
                 <div className='text-base font-semibold text-[#424242]'>{props.translator['Message log']}</div>
                 <div className='text-[#878787]'>{props.translator['Good Work!']}</div>
                 <div className='flex gap-2 items-center'>
@@ -488,7 +488,7 @@ export default function DashboardNew(props) {
                        {...props.msgTransactionList}     
                        {...props}         
                  /> 
-            </Card>
+            </GlassCard>
             </div>
             </div>
             </Authenticated>
@@ -496,14 +496,20 @@ export default function DashboardNew(props) {
     )
 }
 
-
-
-
-
-
-
-
-
-
-
-
+export function GlassCard({ className = "", children }) {
+    return (
+        <div
+            className={[
+                "relative rounded-3xl bg-white/5 backdrop-blur-3xl group",
+                "border border-white/10 ring-1 ring-white/5",
+                "transition-all duration-500 hover:border-[#38bdf8]/50 hover:-translate-y-3 hover:scale-[1.02]",
+                "hover:shadow-[0_20px_40px_-15px_rgba(56,189,248,0.3)]",
+                className,
+            ].join(" ")}
+        >
+            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#38bdf8]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-30" />
+            <div className="p-6 relative z-10">{children}</div>
+        </div>
+    );
+}

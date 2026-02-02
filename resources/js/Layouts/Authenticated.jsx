@@ -1313,7 +1313,7 @@ export default function Authenticated({ auth, header, children, hideHeader, curr
                             </header>
                         ) : null}
 
-                        <div className="flex-1 p-5 md:p-8">
+                        <div className="flex-1 p-3 md:p-8">
                             {children}
                         </div>
                     </main>
