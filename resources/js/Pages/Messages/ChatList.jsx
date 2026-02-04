@@ -386,7 +386,7 @@ function ChatList(props)
             <Head title='Chat' />
             <div className="flex">
                 <div className="w-1/3">
-                    <div className='bg-white !ml-1 rounded h-full'>
+                    <div className="bg-[#140816]/70 !ml-1 rounded h-full text-white">
                     <div className="flex justify-between items-center p-3 md:hidden">
                         <div>
                            
@@ -443,7 +443,7 @@ function ChatList(props)
                         <div className="mt-1 relative ">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <MagnifyingGlassIcon
-                                    className="h-5 w-5 text-gray-400"
+                                    className="h-5 w-5 text-[#878787]"
                                     aria-hidden="true"
                                 />
                             </div>
@@ -452,7 +452,7 @@ function ChatList(props)
                                 value={searchKey}
                                 onChange={(e) => setSearchKey(e.target.value)}
                                 onKeyPress={(e) => handleSearchContact(e)}
-                                className="focus:ring-indigo-500 focus:border-indigo-500 border block w-full pl-10 sm:text-sm  rounded-md"
+                                className="focus:ring-indigo-500 focus:border-indigo-500 border block w-full pl-10 sm:text-sm rounded-md h-10"
                                 placeholder="search"
                             />
                         </div>
@@ -477,8 +477,8 @@ function ChatList(props)
                                         onClick={() => setCurrentTab(tab.id)}
                                         className={classNames(
                                             (tab.id == current_tab)
-                                                ? "border-purple-500 text-primary"
-                                                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200",
+                                                ? "border-purple-500 text-white"
+                                                : "border-transparent text-white hover:text-white hover:border-gray-200",
                                             "whitespace-nowrap !py-4 !px-1 border-b-2 font-medium text-base cursor-pointer"
                                         )}
                                     >
@@ -487,8 +487,8 @@ function ChatList(props)
                                         <span
                                             className={classNames(
                                                 (tab.id == current_tab)
-                                                    ? "bg-purple-100 text-primary"
-                                                    : "bg-gray-100 text-gray-900",
+                                                    ? "bg-white/10 text-white"
+                                                    : "bg-white/5 text-white",
                                                 "hidden ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block"
                                             )}
                                         >
@@ -532,14 +532,14 @@ function ChatList(props)
                                                         className="absolute inset-0"
                                                         aria-hidden="true"
                                                     />
-                                                    <span className="text-sm font-semibold text-[#3D4459] flex items-start">
+                                                    <span className="text-sm font-semibold text-white flex items-start">
                                                         {person && (person.name) ?
                                                             <>{person.name}</>
                                                             : 
                                                             <>{person.number}</>
                                                         }
                                                     </span>
-                                                    <span className="text-sm text-[#878ea5] truncate flex items-start">
+                                                    <span className="text-sm text-[#878787] truncate flex items-start">
                                                         {person.number}
                                                     </span>
                                                 </button>
@@ -577,7 +577,7 @@ function ChatList(props)
                                 ))}
                                 {Object.entries(chatList).length == 0 &&
                                     <li>
-                                        <div className="relative px-6 py-5 flex items-center justify-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
+                                        <div className="relative px-6 py-5 flex items-center justify-center space-x-3 text-[#878787] hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
                                             {props.translator['Conversation not start yet.']}
                                         </div>
                                     </li>

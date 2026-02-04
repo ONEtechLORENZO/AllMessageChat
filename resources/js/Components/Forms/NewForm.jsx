@@ -418,10 +418,10 @@ export default function NewForm(props) {
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="w-full max-w-4xl max-h-[640px] transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
+                            <Dialog.Panel className="w-full max-w-4xl max-h-[640px] transform overflow-hidden rounded-2xl bg-transparent text-left align-middle shadow-xl transition-all border border-white/10">
                                 <div className="flex min-h-[300px]">
-                                    <div className="w-2/6 bg-[#3F3F3F] text-white flex flex-col gap-4 items-center p-6 overflow-y-auto max-h-[640px]">
-                                        <div className="text-xl font-semibold">
+                                    <div className="w-2/6 bg-black text-white flex flex-col gap-4 items-center p-6 overflow-y-auto max-h-[640px] border-r border-white/10">
+                                        <div className="text-xl font-semibold text-white">
                                             {props.translator['Add']} {props.module}
                                         </div>
                                         {/* <div className="flex items-center gap-2">
@@ -449,10 +449,26 @@ export default function NewForm(props) {
                                                 Add photo
                                             </div>                                                
                                         </div> */}
-                                        <ul className="divide-y w-full pl-0">
+                                        <ul className="divide-y divide-white/10 w-full pl-0">
                                             {fieldGroupList && Object.entries(fieldGroupList).map(([index, grouplist]) => (
-                                                <li key={index} className={classNames(group == grouplist ? 'text-[#AA94FF]' : 'text-white', 'flex gap-2 items-center w-full !p-3 cursor-pointer')} onClick={() => setGroup(grouplist)}>
-                                                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                                                <li
+                                                    key={index}
+                                                    className={classNames(
+                                                        group == grouplist
+                                                            ? 'text-[#878787] bg-white/5 border-l-2 border-white/40'
+                                                            : 'text-[#878787]',
+                                                        'flex gap-2 items-center w-full !p-3 cursor-pointer'
+                                                    )}
+                                                    onClick={() => setGroup(grouplist)}
+                                                >
+                                                    <div
+                                                        className={classNames(
+                                                            group == grouplist
+                                                                ? 'bg-white'
+                                                                : 'bg-white/30',
+                                                            'w-3 h-3 rounded-full'
+                                                        )}
+                                                    ></div>
                                                     {props.translator[grouplist]}
                                                 </li>
                                             ))}
@@ -464,7 +480,7 @@ export default function NewForm(props) {
                                             <ValidationErrors errors={formErrors} />
                                         </div>
                                         : ''}
-                                    <div className='w-4/6'>
+                                    <div className="w-4/6 bg-[#140816]/70 text-white backdrop-blur-xl">
                                         <div className=" !p-6 flex flex-col overflow-y-auto !pb-8 h-[576px]">
                                             <div className="flex-1 ">
                                                 <form id='form'>
@@ -719,7 +735,7 @@ export default function NewForm(props) {
 
                                                                         return (
                                                                             <div className="sm:grid sm:grid-cols-12 sm:gap-4">
-                                                                                <label htmlFor={field.field_name} className="block col-span-4 text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
+                                                                                <label htmlFor={field.field_name} className="block col-span-4 text-sm font-medium text-white sm:mt-px sm:pt-2">
                                                                                     {props.translator[field.field_label]}  {field.is_mandatory === 1 ? <span className='text-red-600'> *</span> : ''}
                                                                                 </label>
                                                                                 <div className="mt-1 col-span-8 !sm:mt-0">

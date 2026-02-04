@@ -473,12 +473,19 @@ function Filter(props) {
                         <span className="inline-flex rounded-md">
                             <button
                                 type="button"
-                                className="p-2 bg-white shadow-sm flex items-center justify-center"
+                                className="p-2 bg-[#140816]/70 text-white shadow-sm flex items-center justify-center border border-white/10 backdrop-blur-xl"
                             >
-                                <svg width={20} height={20} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M17.6638 3.66855C17.6638 2.74855 16.9175 2.00293 15.9975 2.00293C15.0775 2.00293 14.3313 2.74855 14.3313 3.66855C14.3313 4.47418 14.9038 5.14668 15.6644 5.30105V16.6636H16.3307V5.30105C17.0913 5.14668 17.6638 4.47418 17.6638 3.66855V3.66855ZM15.9975 4.66855C15.4463 4.66855 14.9982 4.22043 14.9982 3.66918C14.9982 3.11793 15.4463 2.6698 15.9975 2.6698C16.5488 2.6698 16.9969 3.11793 16.9969 3.66918C16.9969 4.22043 16.5488 4.66855 15.9975 4.66855Z" fill="#363740" />
-                                    <path d="M4.33566 14.6984V3.33594H3.66941V14.6984C2.90879 14.8528 2.33691 15.5247 2.33691 16.3309C2.33691 17.2509 3.08316 17.9972 4.00316 17.9972C4.92316 17.9972 5.66941 17.2509 5.66941 16.3309C5.66941 15.5247 5.09691 14.8528 4.33629 14.6984H4.33566ZM4.00254 17.3309C3.45129 17.3309 3.00316 16.8828 3.00316 16.3316C3.00316 15.7803 3.45129 15.3322 4.00254 15.3322C4.55379 15.3322 5.00191 15.7803 5.00191 16.3316C5.00191 16.8828 4.55379 17.3309 4.00254 17.3309Z" fill="#363740" />
-                                    <path d="M10.3331 8.36719V3.33594H9.66687V8.36719C8.90624 8.52156 8.33374 9.19406 8.33374 9.99969C8.33374 10.8053 8.90624 11.4778 9.66687 11.6322V16.6634H10.3331V11.6322C11.0937 11.4778 11.6662 10.8053 11.6662 9.99969C11.6662 9.19406 11.0937 8.52156 10.3331 8.36719V8.36719ZM9.99999 10.9991C9.44874 10.9991 9.00062 10.5509 9.00062 9.99969C9.00062 9.44844 9.44874 9.00031 9.99999 9.00031C10.5512 9.00031 10.9994 9.44844 10.9994 9.99969C10.9994 10.5509 10.5512 10.9991 9.99999 10.9991Z" fill="#363740" />
+                                <svg
+                                    width={20}
+                                    height={20}
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="text-white"
+                                >
+                                    <path d="M17.6638 3.66855C17.6638 2.74855 16.9175 2.00293 15.9975 2.00293C15.0775 2.00293 14.3313 2.74855 14.3313 3.66855C14.3313 4.47418 14.9038 5.14668 15.6644 5.30105V16.6636H16.3307V5.30105C17.0913 5.14668 17.6638 4.47418 17.6638 3.66855V3.66855ZM15.9975 4.66855C15.4463 4.66855 14.9982 4.22043 14.9982 3.66918C14.9982 3.11793 15.4463 2.6698 15.9975 2.6698C16.5488 2.6698 16.9969 3.11793 16.9969 3.66918C16.9969 4.22043 16.5488 4.66855 15.9975 4.66855Z" fill="currentColor" />
+                                    <path d="M4.33566 14.6984V3.33594H3.66941V14.6984C2.90879 14.8528 2.33691 15.5247 2.33691 16.3309C2.33691 17.2509 3.08316 17.9972 4.00316 17.9972C4.92316 17.9972 5.66941 17.2509 5.66941 16.3309C5.66941 15.5247 5.09691 14.8528 4.33629 14.6984H4.33566ZM4.00254 17.3309C3.45129 17.3309 3.00316 16.8828 3.00316 16.3316C3.00316 15.7803 3.45129 15.3322 4.00254 15.3322C4.55379 15.3322 5.00191 15.7803 5.00191 16.3316C5.00191 16.8828 4.55379 17.3309 4.00254 17.3309Z" fill="currentColor" />
+                                    <path d="M10.3331 8.36719V3.33594H9.66687V8.36719C8.90624 8.52156 8.33374 9.19406 8.33374 9.99969C8.33374 10.8053 8.90624 11.4778 9.66687 11.6322V16.6634H10.3331V11.6322C11.0937 11.4778 11.6662 10.8053 11.6662 9.99969C11.6662 9.19406 11.0937 8.52156 10.3331 8.36719V8.36719ZM9.99999 10.9991C9.44874 10.9991 9.00062 10.5509 9.00062 9.99969C9.00062 9.44844 9.44874 9.00031 9.99999 9.00031C10.5512 9.00031 10.9994 9.44844 10.9994 9.99969C10.9994 10.5509 10.5512 10.9991 9.99999 10.9991Z" fill="currentColor" />
                                 </svg>
 
 
@@ -486,23 +493,23 @@ function Filter(props) {
                         </span>
                     </Dropdown.Trigger>
 
-                    <Dropdown.Content align="" contentClasses="right-4 py-1 bg-white w-64 shadow-lg">
+                    <Dropdown.Content align="" contentClasses="right-4 py-1 bg-[#140816]/70 backdrop-blur-xl w-64 shadow-lg border border-white/10">
 
-                        <ul role="list" className="divide-y divide-gray-200 overflow-y-auto m-h-64 !pl-0 mb-0">
+                        <ul role="list" className="divide-y divide-white/10 overflow-y-auto m-h-64 !pl-0 mb-0">
 
-                            <li onClick={() => applyFilter('All')} className={"px-4 py-2 text-gray-900 text-sm hover:bg-sky-700 cursor-pointer " + (selectedFilter == 'All' && 'bg-gray-100')}>
+                            <li onClick={() => applyFilter('All')} className={"px-4 py-2 text-[#878787] text-sm hover:bg-white/10 hover:text-white cursor-pointer " + (selectedFilter == 'All' && 'bg-white/10 text-white')}>
                                 {props.translator['All']}
                             </li>
                             {props.filter && Object.entries(props.filter.filter_list).map(([filter_index, filterData]) =>
-                                <li key={filterData['id']} className={"px-4 py-2 hover:bg-sky-700 cursor-pointer " + (selectedFilter == filterData['id'] ? 'bg-gray-100' : '')}>
-                                    <div className="flex text-white hover:text-gray-900">
-                                        <div className="flex-auto w-80 text-gray-900 text-sm" onClick={() => applyFilter(filterData['id'])}> {filterData['name']} </div>
+                                <li key={filterData['id']} className={"px-4 py-2 hover:bg-white/10 cursor-pointer group " + (selectedFilter == filterData['id'] ? 'bg-white/10' : '')}>
+                                    <div className="flex text-[#878787] group-hover:text-white">
+                                        <div className="flex-auto w-80 text-[#878787] text-sm group-hover:text-white" onClick={() => applyFilter(filterData['id'])}> {filterData['name']} </div>
                                         <div className=" flex-initial right-3 p-1 ml-1" onClick={() => editFilter(filterData['id'])} >  <PencilIcon className="float-right" /></div>
                                         <div className="flex-initial right-0 p-1 ml-1" onClick={() => deleteFilter(filterData['id'])} >  <DeleteIcon className="float-right" /></div>
                                     </div>
                                 </li>
                             )}
-                            <li onClick={() => createFilter()} className="px-4 py-2 text-gray-900 text-sm hover:bg-sky-700 cursor-pointer">
+                            <li onClick={() => createFilter()} className="px-4 py-2 text-[#878787] text-sm hover:bg-white/10 hover:text-white cursor-pointer">
                                 {props.translator['Add New']}
                             </li>
                         </ul>
@@ -516,9 +523,9 @@ function Filter(props) {
                             className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none"
                         >
                             <div className="relative w-auto my-6 mx-auto max-w-5xl lg:min-w-[900px]">
-                                <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
-                                    <div className="flex items-start justify-between p-5 border-b border-solid border-slate-200 rounded-t">
-                                        <h3 className="text-3xl font-semibold">
+                                <div className="border border-white/10 rounded-lg shadow-lg relative flex flex-col w-full bg-[#140816]/70 backdrop-blur-xl text-white outline-none focus:outline-none">
+                                    <div className="flex items-start justify-between p-5 border-b border-solid border-white/10 rounded-t">
+                                        <h3 className="text-3xl font-semibold text-white">
                                             {props.translator['Search Filter']}
                                         </h3>
                                         <button
@@ -556,7 +563,7 @@ function Filter(props) {
                                                     <>
                                                         {Object.entries(grpConditions).map(([grpCondition, conditions], group_index) =>
                                                             <>
-                                                                <div className="relative mt-3 border border-gray-200 rounded-sm px-3 py-4 shadow-sm focus-within:ring-1 focus-within:ring-indigo-200 focus-within:border-indigo-200">
+                                                                <div className="relative mt-3 border border-white/10 bg-white/5 rounded-sm px-3 py-4 shadow-sm focus-within:ring-1 focus-within:ring-white/20 focus-within:border-white/20">
                                                                     <fieldset>
                                                                         <legend className="w-full">
                                                                             <div className="flex w-full justify-between">
@@ -567,7 +574,7 @@ function Filter(props) {
                                                                                         value={grpCondition}
                                                                                         group_index={grpCondition_index}
                                                                                         onChange={(e) => handleChange(e)}
-                                                                                        className='mt-1 inline-flex w-28 py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                                        className="mt-1 inline-flex w-28 py-2 px-3 bg-[#0F0B1A] text-[#878787] border border-white/10 rounded-sm shadow-sm focus:outline-none focus:ring-[#1C9AE1] focus:border-[#1C9AE1] sm:text-sm"
                                                                                     >
                                                                                         {(logic_operators).map((value) => {
                                                                                             return (
@@ -583,7 +590,7 @@ function Filter(props) {
                                                                                     group_index={grpCondition_index}
                                                                                     type="button"
                                                                                     onClick={(e) => deleteGroup(grpCondition_index)}
-                                                                                    className=" right-0 p-2 mx-2 cursor-pointer text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded">
+                                                                                    className=" right-0 p-2 mx-2 cursor-pointer text-[#878787] hover:text-white hover:bg-white/10 rounded">
                                                                                     <TrashIcon
                                                                                         className='h-4 w-4 text-red-600 cursor-pointer'
                                                                                     />
@@ -625,7 +632,7 @@ function Filter(props) {
                                                                                                 id="condition_value"
                                                                                                 value={condition.condition_value}
                                                                                                 onChange={(e) => handleChange(e)}
-                                                                                                className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                                                className="mt-1 block w-full py-2 px-3 bg-[#0F0B1A] text-[#878787] border border-white/10 rounded-sm shadow-sm focus:outline-none focus:ring-[#1C9AE1] focus:border-[#1C9AE1] sm:text-sm"
                                                                                             >
                                                                                                 <option value={''}> Select </option>
                                                                                                 {Object.entries(field.options).map(([name, label]) =>
@@ -641,7 +648,7 @@ function Filter(props) {
                                                                                                 id="condition_value"
                                                                                                 value={condition.condition_value}
                                                                                                 onChange={(e) => handleChange(e)}
-                                                                                                className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                                                className="mt-1 block w-full py-2 px-3 bg-[#0F0B1A] text-[#878787] border border-white/10 rounded-sm shadow-sm focus:outline-none focus:ring-[#1C9AE1] focus:border-[#1C9AE1] sm:text-sm"
                                                                                             >
                                                                                                 <option value={''}> Select </option>
                                                                                                 {Object.entries(field.options).map(([name, label]) =>
@@ -652,7 +659,7 @@ function Filter(props) {
                                                                                         case 'text':
                                                                                             valueField = <input
                                                                                                 type='text'
-                                                                                                className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                                                className="bg-[#0F0B1A] text-white placeholder-[#878787] flex-1 block w-full rounded-sm sm:text-sm border border-white/10 focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
                                                                                                 name="condition_value"
                                                                                                 group_index={grpCondition_index}
                                                                                                 condition_index={condition_index}
@@ -664,7 +671,7 @@ function Filter(props) {
                                                                                         case 'checkbox':
                                                                                             valueField = <input
                                                                                                 type='checkbox'
-                                                                                                className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD]  block rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                                                className="bg-[#0F0B1A] text-white block rounded-sm sm:text-sm border border-white/10 focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
                                                                                                 name="condition_value"
                                                                                                 group_index={grpCondition_index}
                                                                                                 condition_index={condition_index}
@@ -675,7 +682,7 @@ function Filter(props) {
                                                                                             break;
                                                                                         case 'textarea':
                                                                                             valueField = <textarea
-                                                                                                className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                                                className="bg-[#0F0B1A] text-white placeholder-[#878787] flex-1 block w-full rounded-sm sm:text-sm border border-white/10 focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
                                                                                                 name="condition_value"
                                                                                                 group_index={grpCondition_index}
                                                                                                 condition_index={condition_index}
@@ -688,7 +695,7 @@ function Filter(props) {
                                                                                         default:
                                                                                             valueField = <input
                                                                                                 type='text'
-                                                                                                className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                                                className="bg-[#0F0B1A] text-white placeholder-[#878787] flex-1 block w-full rounded-sm sm:text-sm border border-white/10 focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
                                                                                                 name="condition_value"
                                                                                                 group_index={grpCondition_index}
                                                                                                 condition_index={condition_index}
@@ -713,7 +720,7 @@ function Filter(props) {
                                                                                                     id="field_name"
                                                                                                     value={condition.field_name}
                                                                                                     onChange={(e) => handleChange(e)}
-                                                                                                    className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                                                    className="mt-1 block w-full py-2 px-3 bg-[#0F0B1A] text-[#878787] border border-white/10 rounded-sm shadow-sm focus:outline-none focus:ring-[#1C9AE1] focus:border-[#1C9AE1] sm:text-sm"
                                                                                                 >
                                                                                                     <option value=""></option>
                                                                                                     {Object.entries(fields).map(([key, field]) =>
@@ -729,7 +736,7 @@ function Filter(props) {
                                                                                                     id="record_condition"
                                                                                                     value={condition.record_condition}
                                                                                                     onChange={(e) => handleChange(e)}
-                                                                                                    className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                                                    className="mt-1 block w-full py-2 px-3 bg-[#0F0B1A] text-[#878787] border border-white/10 rounded-sm shadow-sm focus:outline-none focus:ring-[#1C9AE1] focus:border-[#1C9AE1] sm:text-sm"
                                                                                                 >
                                                                                                     {Object.entries(condition_operators[condition.field_type]).map(([name, label]) =>
                                                                                                         <option defaultValue={condition.record_condition === name} value={name}> {label} </option>
@@ -751,7 +758,7 @@ function Filter(props) {
                                                                                                                 //    loadOptions={loadTagOptions}
                                                                                                                 options={optionValues[condition.field_name]}
                                                                                                                 name={condition.field_name}
-                                                                                                                className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                                                                className="mt-1 block w-full text-[#878787]"
 
                                                                                                             />
                                                                                                         }
@@ -766,7 +773,7 @@ function Filter(props) {
                                                                                                     value={condition.condition_operator}
                                                                                                     condition_index={condition_index}
                                                                                                     onChange={(e) => handleChange(e)}
-                                                                                                    className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                                                    className="mt-1 block w-full py-2 px-3 bg-[#0F0B1A] text-[#878787] border border-white/10 rounded-sm shadow-sm focus:outline-none focus:ring-[#1C9AE1] focus:border-[#1C9AE1] sm:text-sm"
                                                                                                 >
                                                                                                     {(logic_operators).map((value) =>
                                                                                                         <option defaultValue={condition.condition_operator === value} value={value}> {value} </option>
@@ -778,12 +785,12 @@ function Filter(props) {
                                                                                             <button
                                                                                                 type="button"
                                                                                                 onClick={(e) => deleteCondition(grpCondition_index, condition_index)}
-                                                                                                className="inline-flex  items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+                                                                                                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-white bg-red-500/10 hover:bg-red-500/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500/40"
                                                                                             >
                                                                                                 <TrashIcon
                                                                                                     group_index={grpCondition_index}
                                                                                                     condition_index={condition_index}
-                                                                                                    className='h-4 w-4 text-red-600 cursor-pointer'
+                                                                                                    className='h-4 w-4 text-red-400 cursor-pointer'
                                                                                                 />
 
                                                                                             </button>
@@ -798,7 +805,7 @@ function Filter(props) {
                                                                                 type="button"
                                                                                 grp_count={grpCondition_index}
                                                                                 onClick={(e) => addCondition(e)}
-                                                                                className="inline-flex items-center mt-6 px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-[#F6FFFD] hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+                                                                                className="inline-flex items-center mt-6 px-3 py-2 border border-white/10 shadow-sm text-sm leading-4 font-medium rounded-sm text-white bg-white/10 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/20"
                                                                             >
                                                                                 <AddIcon
                                                                                     type="button"
@@ -820,7 +827,7 @@ function Filter(props) {
                                                     <button
                                                         type="button"
                                                         onClick={addConditionGroup}
-                                                        className="inline-flex items-center mt-6 px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-[#F6FFFD] hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+                                                        className="inline-flex items-center mt-6 px-3 py-2 border border-white/10 shadow-sm text-sm leading-4 font-medium rounded-sm text-white bg-white/10 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/20"
                                                     >
                                                         <AddIcon
                                                             type="button"
@@ -832,8 +839,8 @@ function Filter(props) {
                                                 </div>
                                                 <br />
                                                 <div className="mt-6 sm:mt-5 space-y-6 sm:space-y-5 clear-both">
-                                                    <div className="sm:grid sm:grid-cols-4 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                                                        <label htmlFor="filter_name" className="block text-sm text-right font-medium text-gray-700 sm:mt-px sm:pt-2">
+                                                    <div className="sm:grid sm:grid-cols-4 sm:gap-4 sm:items-start sm:border-t sm:border-white/10 sm:pt-5">
+                                                        <label htmlFor="filter_name" className="block text-sm text-right font-medium text-white sm:mt-px sm:pt-2">
                                                             {props.translator['Filter name']}
                                                         </label>
                                                         <div className="mt-1 sm:mt-0 sm:col-span-3">
@@ -845,7 +852,7 @@ function Filter(props) {
                                                                     id="filter_name"
                                                                     autoComplete="filter_name"
                                                                     onChange={(e) => handleChange(e)}
-                                                                    className="flex-1 block w-full focus:ring-indigo-500 focus:border-indigo-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
+                                                                    className="flex-1 block w-full bg-[#0F0B1A] text-white placeholder-[#878787] focus:ring-[#1C9AE1] focus:border-[#1C9AE1] min-w-0 rounded-none rounded-r-md sm:text-sm border border-white/10"
                                                                 />
                                                             </div>
                                                             <div>
@@ -864,7 +871,7 @@ function Filter(props) {
                                     </div>
 
                                     {/*footer*/}
-                                    <div className="flex items-center justify-end p-6 border-t border-solid border-slate-200 rounded-b">
+                                    <div className="flex items-center justify-end p-6 border-t border-solid border-white/10 rounded-b">
                                         {errors.field_name &&
                                             <div className="absolute left-0 mx-2" ><small className="text-red-500"> Please fill the condition </small> </div>
                                         }

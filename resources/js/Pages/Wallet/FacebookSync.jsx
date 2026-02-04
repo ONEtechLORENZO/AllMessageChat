@@ -6,6 +6,26 @@ import CatalogSync from "../Catalog/CatalogSync";
 import nProgress from 'nprogress';
 import axios from "axios";
 
+export function GlassCard({ className = "", children }) {
+    return (
+        <div
+            className={[
+                "relative rounded-3xl bg-[#140816]/70 backdrop-blur-3xl group",
+                "border border-white/10 ring-1 ring-white/5",
+                "transition-all duration-500 hover:border-[#38bdf8]/50 hover:-translate-y-3 hover:scale-[1.02]",
+                "hover:shadow-[0_20px_40px_-15px_rgba(56,189,248,0.3)]",
+                className,
+            ].join(" ")}
+        >
+            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#38bdf8]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-30" />
+            <div className="p-6 relative z-10 flex flex-col h-full">
+                {children}
+            </div>
+        </div>
+    );
+}
+
 export default function FacebookSync(props) {
 
     const tabs = [
@@ -114,7 +134,7 @@ export default function FacebookSync(props) {
 
     return (
         <>
-            <div className="grid gap-4 grid-cols-2 border-[#B9B9B9] border-b pt-3 bg-white drop-shadow rounded-md px-6 py-4">
+            <GlassCard>
                 <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                     {tabs.map((tab) => (
                         <a
@@ -122,8 +142,8 @@ export default function FacebookSync(props) {
                             href={tab.href}
                             className={classNames(
                                 tab.page == page
-                                    ? 'border-indigo-500 text-indigo-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                                    ? 'border-white text-white'
+                                    : 'border-transparent text-[#878787] hover:text-white hover:border-white/30',
                                 'whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm'
                             )}
                             aria-current={tab.current ? 'page' : undefined}
@@ -133,14 +153,14 @@ export default function FacebookSync(props) {
                         </a>
                     ))}
                 </nav>
-            </div>
+            </GlassCard>
             <div className="grid gap-4 grid-cols-1">
                 {page == 'config' &&
                     <div className=" overflow-hidden ">
                         {fbToken ?
                             <div className="space-y-4 my-4">
                                 <div className="">
-                                    <h2 className="text-xl font-semibold text-gray-900 flex md:flex md:justify-between">
+                                    <h2 className="text-xl font-semibold text-white flex md:flex md:justify-between">
                                         {props.translator['Facebook Catalogs and Products Sync']}
                                         <div className="flex">
                                             <span className="mx-2">
@@ -159,10 +179,11 @@ export default function FacebookSync(props) {
                                         </div>
                                     </h2>
                                 </div>
-                                <div className="pt-3 bg-white drop-shadow rounded-md grid grid-cols-2 px-6 py-4 flex md:flex md:justify-between">
+                                <GlassCard>
+                                    <div className="grid grid-cols-2 items-center">
                                     <div className="form-group flex px-4 w-full">
                                         <div className="w-1/4 mt-2">
-                                            <label htmlFor="name" className="block text-sm font-medium text-gray-700" >
+                                            <label htmlFor="name" className="block text-sm font-medium text-white" >
                                                 Select Business <span className="text-sm text-red-700"> *</span>
                                             </label>
                                         </div>
@@ -187,7 +208,8 @@ export default function FacebookSync(props) {
                                             Schedule
                                         </button>
                                     </div>
-                                </div>
+                                    </div>
+                                </GlassCard>
                             </div>
                             :
                             <div className="space-y-4 my-4">

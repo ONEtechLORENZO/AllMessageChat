@@ -220,7 +220,8 @@ function ListView(props) {
         <>
             <div className="px-4 sm:px-6 lg:px-8 ">
                 {(props.show_header && props.show_header === true) || (props.show_header == undefined) ?
-                    <div className="flex min-w-0 justify-between">
+                    <div className="mb-3 rounded-2xl bg-[#140816]/70 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5 p-3">
+                        <div className="flex min-w-0 justify-between">
                         <Head title={props.translator[props.module]} />
                         <div className='flex gap-3'>
                             {(props.module === 'Transaction') || (props.module === 'Msg') ?
@@ -369,6 +370,7 @@ function ListView(props) {
                                 multiRecordDeleter={multiRecordDeleter}
                                 {...props}
                             />
+                        </div>
                         </div>
                     </div>
                     : ''}

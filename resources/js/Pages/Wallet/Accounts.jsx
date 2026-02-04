@@ -111,13 +111,25 @@ export default function Accounts(props) {
                         }
 
                         return (
-                            <div key={account.id} className="pt-3 bg-white drop-shadow rounded-md grid grid-cols-12 px-6 py-4">
+                            <div
+                                key={account.id}
+                                className="pt-3 bg-[#140816]/70 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5 drop-shadow rounded-2xl grid grid-cols-12 px-6 py-4"
+                            >
 
                                 <div className='col-span-6 flex flex-col'>
-                                    <Link className='text-[#393939] text-base font-semibold' href={route('account_view', account.id)} > {account.company_name} ({account.service}) </Link>
-                                    <span className='truncate'>Account Id : {account.id}</span>
+                                    <Link
+                                        className="text-white text-base font-semibold"
+                                        href={route('account_view', account.id)}
+                                    >
+                                        {account.company_name} ({account.service})
+                                    </Link>
+                                    <span className="truncate text-white">
+                                        Account Id : {account.id}
+                                    </span>
                                     {(account.service == 'instagram' || account.service == 'facebook') &&
-                                        <span className='truncate'>Page name : {account.fb_page_name} </span>
+                                        <span className="truncate text-[#878787]">
+                                            Page name : {account.fb_page_name}
+                                        </span>
                                     }
                                 </div>
 

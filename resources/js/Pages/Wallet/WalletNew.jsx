@@ -5,21 +5,41 @@ import { Row, Col, Button } from "reactstrap";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { CirclePlusIcons } from "../icons";
 
+export function GlassCard({ className = "", children }) {
+    return (
+        <div
+            className={[
+                "relative rounded-3xl bg-[#140816]/70 backdrop-blur-3xl group",
+                "border border-white/10 ring-1 ring-white/5",
+                "transition-all duration-500 hover:border-[#38bdf8]/50 hover:-translate-y-3 hover:scale-[1.02]",
+                "hover:shadow-[0_20px_40px_-15px_rgba(56,189,248,0.3)]",
+                className,
+            ].join(" ")}
+        >
+            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#38bdf8]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-30" />
+            <div className="p-6 relative z-10 flex flex-col h-full">
+                {children}
+            </div>
+        </div>
+    );
+}
+
 export default function WalletNew() {
     return (
         <div>
             <Row>
                 <Col sm="2">
-                    <div className="card flex gap-[20px] flex-row p-[20px]">
+                    <GlassCard className="flex gap-[20px] flex-row p-[20px]">
                         <img
                             src="./img/instagram-icon.png"
                             alt="One message logo"
                             className="w-8"
                         />
-                        <span className="font-semibold text-base">
+                        <span className="font-semibold text-base text-white">
                             Instagram
                         </span>
-                    </div>
+                    </GlassCard>
                 </Col>
                 <Col sm="2">
                     <div className="space-y-1 flex flex-col">
@@ -57,7 +77,7 @@ export default function WalletNew() {
 
             <Row>
                 <Col sm="2">
-                    <div className="card !shadow-card  p-4 h-full">
+                    <GlassCard className="p-4 h-full">
                         <div className="flex flex-col items-center gap-2">
                             <svg
                                 width={32}
@@ -72,24 +92,24 @@ export default function WalletNew() {
                                 />
                             </svg>
 
-                            <div className="text-sm text-[#363740] font-normal">
+                            <div className="text-sm text-white font-normal">
                                 Social accounts
                             </div>
 
-                            <div className="text-[#363740] text-xl font-normal">
-                                1/3
+                            <div className="text-white text-xl font-normal">
+                                1/∞
                             </div>
 
-                            <div className="flex gap-1 items-center text-sm text-[#545CD8]">
+                            <div className="flex gap-1 items-center text-sm text-white">
                                 <CirclePlusIcons />
                                 Add account
                             </div>
                         </div>
-                    </div>
+                    </GlassCard>
                 </Col>
 
                 <Col sm="2">
-                    <div className="card !shadow-card  p-4 h-full">
+                    <GlassCard className="p-4 h-full">
                         <div className="flex flex-col items-center gap-2">
                             <svg
                                 width={32}
@@ -104,24 +124,24 @@ export default function WalletNew() {
                                 />
                             </svg>
 
-                            <div className="text-sm text-[#363740] font-normal">
+                            <div className="text-sm text-white font-normal">
                                 Users
                             </div>
 
-                            <div className="text-[#363740] text-xl font-normal">
-                                1/3
+                            <div className="text-white text-xl font-normal">
+                                2/1
                             </div>
 
-                            <div className="flex gap-1 items-center text-sm text-[#545CD8]">
+                            <div className="flex gap-1 items-center text-sm text-white">
                                 <CirclePlusIcons />
                                 Add user
                             </div>
                         </div>
-                    </div>
+                    </GlassCard>
                 </Col>
 
                 <Col sm="2">
-                    <div className="card !shadow-card  p-4 h-full">
+                    <GlassCard className="p-4 h-full">
                         <div className="flex flex-col items-center gap-2">
                             <svg
                                 width={32}
@@ -136,22 +156,20 @@ export default function WalletNew() {
                                 />
                             </svg>
 
-                            <div className="text-sm text-[#363740] font-normal text-center">
-                                Automations
-                                <br />
-                                <span className="text-[10px]">Monthly</span>
+                            <div className="text-sm text-white font-normal text-center">
+                                Spending
                             </div>
 
-                            <div className="text-[#363740] text-xl font-normal">
-                                4.000/10.000
+                            <div className="text-white text-xl font-normal">
+                                $0
                             </div>
 
-                            <div className="flex gap-1 items-center text-sm text-[#545CD8]">
-                                <CirclePlusIcons />
-                                Add tasks
+                            <div className="text-sm text-white">
+                                Total conversations
                             </div>
+                            <div className="text-white text-xl font-normal">0</div>
                         </div>
-                    </div>
+                    </GlassCard>
                 </Col>
             </Row>
 

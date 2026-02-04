@@ -49,7 +49,7 @@ export default function ModulePermission(props){
 
     return(
         <>
-            <div className="grid grid-cols-4 gap-4 text-center text-sm font-medium text-gray-900">
+            <div className="grid grid-cols-4 gap-4 text-center text-sm font-medium text-white">
                 <div>Module Name</div>
                 <div>Create</div>
                 <div>Edit</div>

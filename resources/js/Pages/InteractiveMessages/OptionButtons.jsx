@@ -90,7 +90,7 @@ export default function OptionButtons(props)
     return (
         <div className='mb-5'>
 
-            <div className='text-lg font-medium text-gray-900'> {buttonFormTitle} </div>
+            <div className='text-lg font-medium text-white'> {buttonFormTitle} </div>
                         
             {(props.data.option_type && props.data.option_type == 'list_option') &&
                 <> 
@@ -134,7 +134,7 @@ export default function OptionButtons(props)
                 </>
             }
 
-            <div className={"grid gap-4 text-center text-sm font-medium text-gray-900 m-4 "+ divClassName} >
+            <div className={"grid gap-4 text-center text-sm font-medium text-white m-4 "+ divClassName} >
               
                     <div>Title</div>
                     {(props.data.option_type && props.data.option_type == 'list_option') &&

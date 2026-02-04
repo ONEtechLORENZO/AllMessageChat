@@ -1,46 +1,66 @@
 import React, { useEffect, useState } from "react";
 import PaymentMethodForm from "./PaymentMethodForm";
-import notie from 'notie';
-import nProgress from 'nprogress';
+import notie from "notie";
+import nProgress from "nprogress";
 import axios from "axios";
-import { confirmAlert } from 'react-confirm-alert';
-import 'react-confirm-alert/src/react-confirm-alert.css';
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css";
 import { Row, Col, Button } from "reactstrap";
 import { HiOutlineTrash } from "react-icons/hi";
 import { BsPlusCircle } from "react-icons/bs";
 import { CirclePlusIcons } from "../icons";
-import { Link } from '@inertiajs/react';
+import { Link } from "@inertiajs/react";
 import { router as Inertia } from "@inertiajs/react";
+
+export function GlassCard({ className = "", children }) {
+    return (
+        <div
+            className={[
+                "relative rounded-3xl bg-[#140816]/70 backdrop-blur-3xl group",
+                "border border-white/10 ring-1 ring-white/5",
+                "transition-all duration-500 hover:border-[#38bdf8]/50 hover:-translate-y-3 hover:scale-[1.02]",
+                "hover:shadow-[0_20px_40px_-15px_rgba(56,189,248,0.3)]",
+                className,
+            ].join(" ")}
+        >
+            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#38bdf8]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-30" />
+            <div className="p-6 relative z-10 flex flex-col h-full">
+                {children}
+            </div>
+        </div>
+    );
+}
 
 export default function WalletTab(props) {
     const [paymentMethods, setPaymentMethods] = useState([]);
     const [paymentMethodForm, setPaymentMethodForm] = useState(false);
-    const [defaultPaymentMethod, setDefaultPaymentMethod] = useState(props.defaultPaymentMethod);
+    const [defaultPaymentMethod, setDefaultPaymentMethod] = useState(
+        props.defaultPaymentMethod,
+    );
     const [balance, setBalance] = useState(props.balance);
     const [addOn, setAddOn] = useState(props.add_on);
-    const [plans, setPlans] = useState(props.plans); 
+    const [plans, setPlans] = useState(props.plans);
 
-    useEffect(() => {       
+    useEffect(() => {
         setPaymentMethods(props.paymentMethods);
     }, [props.balance]);
 
-    useEffect(()=>{},[paymentMethods]);
+    useEffect(() => {}, [paymentMethods]);
 
     /**
      * Refresh Payment Methods
      */
-    function refreshPaymentMethods()
-    {
+    function refreshPaymentMethods() {
         nProgress.start(0.5);
         nProgress.inc(0.2);
 
         axios({
-            method: 'get',
-            url: route('getPaymentMethods'),
-        })
-        .then((response) => {
+            method: "get",
+            url: route("getPaymentMethods"),
+        }).then((response) => {
             nProgress.done(true);
-            if(response.status == 200) {
+            if (response.status == 200) {
                 setPaymentMethods(response.data.paymentMethods);
             }
         });
@@ -48,87 +68,103 @@ export default function WalletTab(props) {
 
     /**
      * Update default payment method
-     * 
-     * @param {String} paymentMethod 
+     *
+     * @param {String} paymentMethod
      */
-    function updateDefaultPaymentMethod(paymentMethodId){
+    function updateDefaultPaymentMethod(paymentMethodId) {
         nProgress.start(0.5);
         nProgress.inc(0.2);
 
         axios({
-            method: 'post',
-            data: { 'payment_method_id': paymentMethodId},
-            url: route('setDefaultPaymentMethod'),
-        })
-        .then((response) => {
+            method: "post",
+            data: { payment_method_id: paymentMethodId },
+            url: route("setDefaultPaymentMethod"),
+        }).then((response) => {
             nProgress.done(true);
-            if(response.data.status){
-                setDefaultPaymentMethod(paymentMethodId)
-                notie.alert({type: 'success', text: response.data.message, time: 5});
+            if (response.data.status) {
+                setDefaultPaymentMethod(paymentMethodId);
+                notie.alert({
+                    type: "success",
+                    text: response.data.message,
+                    time: 5,
+                });
             } else {
-                notie.alert({type: 'success', text: response.data.message, time: 5});
+                notie.alert({
+                    type: "success",
+                    text: response.data.message,
+                    time: 5,
+                });
             }
         });
     }
 
     /**
      * Delete payment method
-     * 
-     * @param {string} paymentMethodId 
+     *
+     * @param {string} paymentMethodId
      */
     function confirmDeletePaymentMethod(id) {
         confirmAlert({
-            title: (props.translator['Confirm to Delete']),
-            message: (props.translator['Are you sure to do this?']),
+            title: props.translator["Confirm to Delete"],
+            message: props.translator["Are you sure to do this?"],
             buttons: [
-            {
-              label: (props.translator['Yes']),
-              onClick: () => {
-                deletePaymentMethod(id);
-              }
-            },
-            {
-              label: 'No',
-              onClick: () => {}
-            }
-          ]
+                {
+                    label: props.translator["Yes"],
+                    onClick: () => {
+                        deletePaymentMethod(id);
+                    },
+                },
+                {
+                    label: "No",
+                    onClick: () => {},
+                },
+            ],
         });
     }
 
-    function deletePaymentMethod(paymentMethodId){
-       
+    function deletePaymentMethod(paymentMethodId) {
         nProgress.start(0.5);
         nProgress.inc(0.2);
 
         axios({
-            method: 'post',
-            data: { 'payment_method_id': paymentMethodId},
-            url: route('deletePaymentMethod'),
-        })
-        .then((response) => {
+            method: "post",
+            data: { payment_method_id: paymentMethodId },
+            url: route("deletePaymentMethod"),
+        }).then((response) => {
             nProgress.done(true);
-            if(response.data.status){
-                notie.alert({type: 'success', text: response.data.message, time: 5});
+            if (response.data.status) {
+                notie.alert({
+                    type: "success",
+                    text: response.data.message,
+                    time: 5,
+                });
                 refreshPaymentMethods();
             } else {
-                notie.alert({type: 'error', text: response.data.message, time: 5});
+                notie.alert({
+                    type: "error",
+                    text: response.data.message,
+                    time: 5,
+                });
             }
         });
     }
 
     function addUser() {
         let role = props.auth.user.role;
-        if(role == 'admin') {
-            Inertia.get(route('wallet_subscription', { tab: 'users'}));
+        if (role == "admin") {
+            Inertia.get(route("wallet_subscription", { tab: "users" }));
         } else {
-            notie.alert({type: 'warning', text: 'Admin only create new user.', time: 5});
+            notie.alert({
+                type: "warning",
+                text: "Admin only create new user.",
+                time: 5,
+            });
         }
     }
 
     return (
         <>
             <div>
-
                 {/* <Row>
                     <Col sm="2">
                       <div className="pr-4">
@@ -178,7 +214,6 @@ export default function WalletTab(props) {
                         </div>
                     </Col>
                 </Row> */}
-                
             </div>
 
             {/* <hr className="my-3 px-2" /> */}
@@ -188,62 +223,102 @@ export default function WalletTab(props) {
                     <Col sm="12">
                         <div className="flex gap-3 items-center">
                             <h3 className="text-base font-semibold mb-0">
-                            {props.translator['Your payment methods']}
+                                {props.translator["Your payment methods"]}
                             </h3>
                         </div>
                     </Col>
                 </Row>
 
                 <Row className="!mt-4">
-                {paymentMethods.length > 0 && paymentMethods.map((paymentMethod) => {
-                return(            
-                        <Col sm="6" className="my-3 px-2">
-                            <div className="card p-4">
-                                <div className="flex justify-between">
-                                    <div>
-                                        <div className="flex items-center gap-3">
-                                            <img src="./img/visa-card.png" />
+                    {paymentMethods.length > 0 &&
+                        paymentMethods.map((paymentMethod) => {
+                            return (
+                                <Col sm="6" className="my-3 px-2">
+                                    <div className="card p-4">
+                                        <div className="flex justify-between">
+                                            <div>
+                                                <div className="flex items-center gap-3">
+                                                    <img src="./img/visa-card.png" />
 
-                                            <div className="text-[#3D4459] text-sm flex flex-col">
-                                                <span className="font-bold">{paymentMethod.card.brand}</span>
-                                                <span>{paymentMethod.card.holder}</span>
-                                                <span>************{paymentMethod.card.last4}</span>
+                                                    <div className="text-[#3D4459] text-sm flex flex-col">
+                                                        <span className="font-bold">
+                                                            {
+                                                                paymentMethod
+                                                                    .card.brand
+                                                            }
+                                                        </span>
+                                                        <span>
+                                                            {
+                                                                paymentMethod
+                                                                    .card.holder
+                                                            }
+                                                        </span>
+                                                        <span>
+                                                            ************
+                                                            {
+                                                                paymentMethod
+                                                                    .card.last4
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <label className="!mt-5">
+                                                    <input
+                                                        type="radio"
+                                                        name="payment"
+                                                        checked={
+                                                            defaultPaymentMethod ==
+                                                            paymentMethod.id
+                                                        }
+                                                        onClick={() =>
+                                                            updateDefaultPaymentMethod(
+                                                                paymentMethod.id,
+                                                            )
+                                                        }
+                                                    />
+                                                    <span className="pl-2">
+                                                        {
+                                                            props.translator[
+                                                                "Primary method"
+                                                            ]
+                                                        }
+                                                    </span>
+                                                </label>
                                             </div>
-                                        </div>
-                                        <label className="!mt-5">
-                                            <input 
-                                                type="radio"  
-                                                name="payment" 
-                                                checked={(defaultPaymentMethod == paymentMethod.id)}
-                                                onClick={() => updateDefaultPaymentMethod(paymentMethod.id)}
-                                            />
-                                            <span className="pl-2">{props.translator['Primary method']}</span>
-                                        </label>
-                                    </div>
-                                    <div className="flex gap-2"  >
-                                        {/* <MdOutlineEdit
+                                            <div className="flex gap-2">
+                                                {/* <MdOutlineEdit
                                             size="1.5rem"
                                             className="text-[#6C6D7D] cursor-pointer"
                                         /> */}
 
-                                        <button type="button" onClick={() => confirmDeletePaymentMethod(paymentMethod.id)}>
-                                            <HiOutlineTrash
-                                                size="1.5rem"
-                                                className="text-[#6C6D7D] "
-                                            />
-                                        </button>
-                                        
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        confirmDeletePaymentMethod(
+                                                            paymentMethod.id,
+                                                        )
+                                                    }
+                                                >
+                                                    <HiOutlineTrash
+                                                        size="1.5rem"
+                                                        className="text-[#6C6D7D] "
+                                                    />
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <span />
                                     </div>
-                                </div>
-                                <span/>
-                            </div>
-                        </Col>
-                    )
-                })}
+                                </Col>
+                            );
+                        })}
                 </Row>
                 <div className="flex text-primary gap-2 items-center mt-6 cursor-pointer">
-                    <div className="flex " onClick={() => setPaymentMethodForm(true)}>
-                        <BsPlusCircle size="1.5em" className="mr-2" /> {props.translator['Add method']}
+                    <div
+                        className="flex "
+                        onClick={() => setPaymentMethodForm(true)}
+                    >
+                        <BsPlusCircle size="1.5em" className="mr-2" />{" "}
+                        {props.translator["Add method"]}
                     </div>
                 </div>
             </div>
@@ -255,7 +330,7 @@ export default function WalletTab(props) {
                     <Col sm="12">
                         <div className="flex gap-3 items-center">
                             <h3 className="text-base font-semibold mb-0 text-gray-800">
-                            {props.translator['Add Ons']}
+                                {props.translator["Add Ons"]}
                             </h3>
                         </div>
                     </Col>
@@ -263,91 +338,140 @@ export default function WalletTab(props) {
 
                 <Row>
                     <Col sm="2">
-                        <div className="card !shadow-card  p-4 h-full">
+                        <GlassCard className="p-4 h-full">
                             <div className="flex flex-col items-center gap-2">
-                                <svg width={32} height={32} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M27.0117 14.7139C27.0117 8.79968 22.1565 4 16.1738 4C10.1912 4 5.33594 8.79968 5.33594 14.7139V19.0853H5.37902C5.37902 19.2138 5.37902 19.3424 5.37902 19.4284C5.37902 22.2569 7.67698 24.5712 10.5383 24.5712V14.2856H10.4952C8.67436 14.2856 7.11367 15.1856 6.20326 16.5999V14.7139C6.20326 9.27137 10.6683 4.8566 16.1746 4.8566C21.681 4.8566 26.146 9.27057 26.146 14.7139V16.5999C25.2356 15.2282 23.6318 14.2856 21.8541 14.2856H21.811V24.5712H21.8541C22.2874 24.5712 22.6775 24.5286 23.1116 24.4C21.811 25.6432 20.2073 26.4998 18.3864 26.9289V25.4286H14.0076V28H18.3426V27.8288C21.1169 27.272 23.5018 25.6857 25.0625 23.4575C26.233 22.5149 27.0134 21.0572 27.0134 19.4292C27.0134 19.3006 27.0134 19.1721 27.0134 19.0861V14.7147L27.0117 14.7139ZM9.67012 15.2282V23.6278C7.71925 23.2421 6.20164 21.4847 6.20164 19.4276C6.20164 17.3705 7.71925 15.6131 9.67012 15.2274V15.2282ZM17.4736 27.1426H14.8724V26.2852H17.4736V27.1426ZM22.6759 23.6278V15.2282C24.6699 15.6139 26.1444 17.3713 26.1444 19.4284C26.1444 21.4855 24.6707 23.2429 22.6759 23.6286V23.6278Z" fill="#545CD8"/>
+                                <svg
+                                    width={32}
+                                    height={32}
+                                    viewBox="0 0 32 32"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        d="M27.0117 14.7139C27.0117 8.79968 22.1565 4 16.1738 4C10.1912 4 5.33594 8.79968 5.33594 14.7139V19.0853H5.37902C5.37902 19.2138 5.37902 19.3424 5.37902 19.4284C5.37902 22.2569 7.67698 24.5712 10.5383 24.5712V14.2856H10.4952C8.67436 14.2856 7.11367 15.1856 6.20326 16.5999V14.7139C6.20326 9.27137 10.6683 4.8566 16.1746 4.8566C21.681 4.8566 26.146 9.27057 26.146 14.7139V16.5999C25.2356 15.2282 23.6318 14.2856 21.8541 14.2856H21.811V24.5712H21.8541C22.2874 24.5712 22.6775 24.5286 23.1116 24.4C21.811 25.6432 20.2073 26.4998 18.3864 26.9289V25.4286H14.0076V28H18.3426V27.8288C21.1169 27.272 23.5018 25.6857 25.0625 23.4575C26.233 22.5149 27.0134 21.0572 27.0134 19.4292C27.0134 19.3006 27.0134 19.1721 27.0134 19.0861V14.7147L27.0117 14.7139ZM9.67012 15.2282V23.6278C7.71925 23.2421 6.20164 21.4847 6.20164 19.4276C6.20164 17.3705 7.71925 15.6131 9.67012 15.2274V15.2282ZM17.4736 27.1426H14.8724V26.2852H17.4736V27.1426ZM22.6759 23.6278V15.2282C24.6699 15.6139 26.1444 17.3713 26.1444 19.4284C26.1444 21.4855 24.6707 23.2429 22.6759 23.6286V23.6278Z"
+                                        fill="#545CD8"
+                                    />
                                 </svg>
 
-                                <div className="text-sm text-[#363740] font-normal">
-                                    {props.translator['Social accounts']}
+                                <div className="text-sm text-white font-normal">
+                                    {props.translator["Social accounts"]}
                                 </div>
 
-                                <div className="text-[#363740] text-xl font-normal">
-                                    {addOn.total_account}/{(addOn.max_account == '-' || addOn.max_account == 'Custom') ? '∞': addOn.max_account}
+                                <div className="text-white text-xl font-normal">
+                                    {addOn.total_account}/
+                                    {addOn.max_account == "-" ||
+                                    addOn.max_account == "Custom"
+                                        ? "∞"
+                                        : addOn.max_account}
                                 </div>
 
-                                <div className="flex gap-1 items-center text-sm text-[#545CD8]">
-                                    <Link 
-                                        href={route('social_profile')}
-                                        className='d-flex gap-1 items-center px-4 py-2 font-semibold text-sm text-gray-700 hover:text-indigo-700'
-                                        > 
-                                        <CirclePlusIcons/><span className="text-[#545CD8]"> {props.translator['Add account']}</span> 
+                                <div className="flex gap-1 items-center text-sm text-white">
+                                    <Link
+                                        href={route("social_profile")}
+                                        className="d-flex gap-1 items-center px-4 py-2 font-semibold text-sm text-white hover:text-white"
+                                    >
+                                        <CirclePlusIcons />
+                                        <span className="text-white">
+                                            {" "}
+                                            {props.translator["Add account"]}
+                                        </span>
                                     </Link>
                                 </div>
                             </div>
-                        </div>
+                        </GlassCard>
                     </Col>
 
                     <Col sm="2">
-                        <div className="card !shadow-card  p-4 h-full">
+                        <GlassCard className="p-4 h-full">
                             <div className="flex flex-col items-center gap-2">
-                                <svg width={32} height={32} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M16 3.20508C8.93302 3.20508 3.20502 8.93308 3.20502 16.0001C3.20502 23.0671 8.93302 28.7951 16 28.7951C23.067 28.7951 28.795 23.0671 28.795 16.0001C28.795 8.93308 23.067 3.20508 16 3.20508ZM16 4.27108C22.467 4.27108 27.729 9.53208 27.729 16.0001C27.729 18.8451 26.71 21.4571 25.018 23.4901C23.849 23.0021 21.088 22.0441 19.38 21.5391C19.234 21.4931 19.211 21.4861 19.211 20.8791C19.211 20.3781 19.417 19.8741 19.618 19.4471C19.836 18.9831 20.094 18.2031 20.187 17.5031C20.446 17.2021 20.799 16.6081 21.026 15.4771C21.225 14.4801 21.132 14.1171 21 13.7771C20.986 13.7411 20.972 13.7061 20.961 13.6701C20.911 13.4361 20.98 12.2221 21.15 11.2791C21.268 10.6321 21.12 9.25708 20.229 8.12008C19.667 7.40108 18.591 6.51908 16.626 6.39608L15.548 6.39708C13.616 6.51908 12.54 7.40108 11.978 8.12008C11.088 9.25708 10.94 10.6331 11.058 11.2791C11.23 12.2221 11.297 13.4361 11.249 13.6661C11.239 13.7061 11.224 13.7411 11.209 13.7771C11.078 14.1181 10.984 14.4801 11.184 15.4771C11.41 16.6081 11.763 17.2021 12.023 17.5031C12.115 18.2031 12.373 18.9831 12.592 19.4471C12.751 19.7861 12.826 20.2481 12.826 20.9011C12.826 21.5081 12.803 21.5151 12.667 21.5581C10.9 22.0801 8.08802 23.0961 7.03902 23.5551C5.31402 21.5131 4.27102 18.8761 4.27102 16.0001C4.27102 9.53308 9.53202 4.27108 16 4.27108ZM7.81102 24.3861C9.01202 23.8961 11.405 23.0421 12.978 22.5781C13.892 22.2901 13.892 21.5201 13.892 20.9011C13.892 20.3881 13.857 19.6321 13.557 18.9931C13.351 18.5551 13.115 17.8041 13.063 17.2171C13.052 17.0801 12.987 16.9521 12.883 16.8621C12.732 16.7301 12.425 16.2461 12.229 15.2691C12.074 14.4961 12.14 14.3271 12.203 14.1631C12.23 14.0931 12.256 14.0241 12.277 13.9471C12.405 13.4791 12.262 11.9421 12.107 11.0891C12.039 10.7181 12.125 9.66508 12.818 8.77808C13.44 7.98308 14.381 7.54008 15.582 7.46308L16.593 7.46208C17.826 7.54008 18.767 7.98308 19.39 8.77808C20.084 9.66508 20.168 10.7181 20.1 11.0901C19.946 11.9421 19.802 13.4801 19.93 13.9471C19.952 14.0251 19.977 14.0941 20.004 14.1641C20.068 14.3271 20.133 14.4971 19.979 15.2701C19.783 16.2471 19.475 16.7311 19.324 16.8631C19.221 16.9541 19.156 17.0811 19.144 17.2181C19.093 17.8061 18.858 18.5561 18.652 18.9941C18.416 19.4961 18.144 20.1651 18.144 20.8801C18.144 21.4991 18.144 22.2691 19.068 22.5601C20.573 23.0051 22.978 23.8311 24.248 24.3301C22.127 26.4301 19.213 27.7301 16 27.7301C12.817 27.7301 9.92702 26.4531 7.81202 24.3881L7.81102 24.3861Z" fill="#545CD8" />
+                                <svg
+                                    width={32}
+                                    height={32}
+                                    viewBox="0 0 32 32"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        d="M16 3.20508C8.93302 3.20508 3.20502 8.93308 3.20502 16.0001C3.20502 23.0671 8.93302 28.7951 16 28.7951C23.067 28.7951 28.795 23.0671 28.795 16.0001C28.795 8.93308 23.067 3.20508 16 3.20508ZM16 4.27108C22.467 4.27108 27.729 9.53208 27.729 16.0001C27.729 18.8451 26.71 21.4571 25.018 23.4901C23.849 23.0021 21.088 22.0441 19.38 21.5391C19.234 21.4931 19.211 21.4861 19.211 20.8791C19.211 20.3781 19.417 19.8741 19.618 19.4471C19.836 18.9831 20.094 18.2031 20.187 17.5031C20.446 17.2021 20.799 16.6081 21.026 15.4771C21.225 14.4801 21.132 14.1171 21 13.7771C20.986 13.7411 20.972 13.7061 20.961 13.6701C20.911 13.4361 20.98 12.2221 21.15 11.2791C21.268 10.6321 21.12 9.25708 20.229 8.12008C19.667 7.40108 18.591 6.51908 16.626 6.39608L15.548 6.39708C13.616 6.51908 12.54 7.40108 11.978 8.12008C11.088 9.25708 10.94 10.6331 11.058 11.2791C11.23 12.2221 11.297 13.4361 11.249 13.6661C11.239 13.7061 11.224 13.7411 11.209 13.7771C11.078 14.1181 10.984 14.4801 11.184 15.4771C11.41 16.6081 11.763 17.2021 12.023 17.5031C12.115 18.2031 12.373 18.9831 12.592 19.4471C12.751 19.7861 12.826 20.2481 12.826 20.9011C12.826 21.5081 12.803 21.5151 12.667 21.5581C10.9 22.0801 8.08802 23.0961 7.03902 23.5551C5.31402 21.5131 4.27102 18.8761 4.27102 16.0001C4.27102 9.53308 9.53202 4.27108 16 4.27108ZM7.81102 24.3861C9.01202 23.8961 11.405 23.0421 12.978 22.5781C13.892 22.2901 13.892 21.5201 13.892 20.9011C13.892 20.3881 13.857 19.6321 13.557 18.9931C13.351 18.5551 13.115 17.8041 13.063 17.2171C13.052 17.0801 12.987 16.9521 12.883 16.8621C12.732 16.7301 12.425 16.2461 12.229 15.2691C12.074 14.4961 12.14 14.3271 12.203 14.1631C12.23 14.0931 12.256 14.0241 12.277 13.9471C12.405 13.4791 12.262 11.9421 12.107 11.0891C12.039 10.7181 12.125 9.66508 12.818 8.77808C13.44 7.98308 14.381 7.54008 15.582 7.46308L16.593 7.46208C17.826 7.54008 18.767 7.98308 19.39 8.77808C20.084 9.66508 20.168 10.7181 20.1 11.0901C19.946 11.9421 19.802 13.4801 19.93 13.9471C19.952 14.0251 19.977 14.0941 20.004 14.1641C20.068 14.3271 20.133 14.4971 19.979 15.2701C19.783 16.2471 19.475 16.7311 19.324 16.8631C19.221 16.9541 19.156 17.0811 19.144 17.2181C19.093 17.8061 18.858 18.5561 18.652 18.9941C18.416 19.4961 18.144 20.1651 18.144 20.8801C18.144 21.4991 18.144 22.2691 19.068 22.5601C20.573 23.0051 22.978 23.8311 24.248 24.3301C22.127 26.4301 19.213 27.7301 16 27.7301C12.817 27.7301 9.92702 26.4531 7.81202 24.3881L7.81102 24.3861Z"
+                                        fill="#545CD8"
+                                    />
                                 </svg>
 
-                                <div className="text-sm text-[#363740] font-normal">
-                                {props.translator['Users']}
+                                <div className="text-sm text-white font-normal">
+                                    {props.translator["Users"]}
                                 </div>
 
-                                <div className="text-[#363740] text-xl font-normal">
-                                    {addOn.total_users}/{addOn.max_users == '-' ? '∞': addOn.max_users}
+                                <div className="text-white text-xl font-normal">
+                                    {addOn.total_users}/
+                                    {addOn.max_users == "-"
+                                        ? "∞"
+                                        : addOn.max_users}
                                 </div>
 
-                                <div className="flex gap-1 items-center text-sm text-[#545CD8]">
-                                    <button 
+                                <div className="flex gap-1 items-center text-sm text-white">
+                                    <button
                                         onClick={() => addUser()}
-                                        className='d-flex gap-1 items-center px-4 py-2 font-semibold text-sm text-gray-700 hover:text-indigo-700'
-                                    > 
-                                        <CirclePlusIcons/><span className="text-[#545CD8]"> {props.translator['Add user']}</span> 
+                                        className="d-flex gap-1 items-center px-4 py-2 font-semibold text-sm text-white hover:text-white"
+                                    >
+                                        <CirclePlusIcons />
+                                        <span className="text-white">
+                                            {" "}
+                                            {props.translator["Add user"]}
+                                        </span>
                                     </button>
                                 </div>
                             </div>
-                        </div>
+                        </GlassCard>
                     </Col>
-                    
-                    {addOn.max_workflow === 'true' ? 
-                       <Col sm="2">
-                        <div className="card !shadow-card  p-4 h-full">
-                            <div className="flex flex-col items-center gap-2">
-                                <svg width={32} height={32} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" >
-                                    <path d="M23.456 18.0981V15.4751H16.113V13.9021H20.834V3.41309H10.344V13.9021H15.065V15.4751H7.72198V18.0981H3.00098V28.5881H13.491V18.0981H8.76998V16.5241H22.407V18.0981H17.686V28.5881H28.176V18.0981H23.455H23.456ZM11.392 4.46209H19.784V12.8531H11.392V4.46209ZM12.441 27.5391H4.04898V19.1471H12.441V27.5391ZM27.128 27.5391H18.736V19.1471H27.128V27.5391Z" fill="#545CD8" />
-                                </svg>
 
-                                <div className="text-sm text-[#363740] font-normal text-center">
-                                {props.translator['Automations']}
-                                    <span className="text-gray-500 px-2 text-[12px]">({props.translator['Monthly']})</span>
-                                </div>
+                    {addOn.max_workflow === "true" ? (
+                        <Col sm="2">
+                            <GlassCard className="p-4 h-full">
+                                <div className="flex flex-col items-center gap-2">
+                                    <svg
+                                        width={32}
+                                        height={32}
+                                        viewBox="0 0 32 32"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            d="M23.456 18.0981V15.4751H16.113V13.9021H20.834V3.41309H10.344V13.9021H15.065V15.4751H7.72198V18.0981H3.00098V28.5881H13.491V18.0981H8.76998V16.5241H22.407V18.0981H17.686V28.5881H28.176V18.0981H23.455H23.456ZM11.392 4.46209H19.784V12.8531H11.392V4.46209ZM12.441 27.5391H4.04898V19.1471H12.441V27.5391ZM27.128 27.5391H18.736V19.1471H27.128V27.5391Z"
+                                            fill="#545CD8"
+                                        />
+                                    </svg>
 
-                                <div className="text-[#363740] text-xl font-normal">
-                                    {addOn.total_workflow}/∞
-                                </div>
+                                    <div className="text-sm text-white font-normal text-center">
+                                        {props.translator["Automations"]}
+                                        <span className="text-white px-2 text-[12px]">
+                                            ({props.translator["Monthly"]})
+                                        </span>
+                                    </div>
 
-                                <div className="flex gap-1 items-center text-sm text-[#545CD8]">
-                                    <Link 
-                                        href={route('listAutomation')}
-                                        className='d-flex gap-1 items-center px-4 py-2 font-semibold text-sm text-gray-700 hover:text-indigo-700'
-                                        > 
-                                        <CirclePlusIcons/><span className="text-[#545CD8]"> {props.translator['Add tasks']}</span> 
-                                    </Link>
+                                    <div className="text-white text-xl font-normal">
+                                        {addOn.total_workflow}/∞
+                                    </div>
+
+                                    <div className="flex gap-1 items-center text-sm text-white">
+                                        <Link
+                                            href={route("listAutomation")}
+                                            className="d-flex gap-1 items-center px-4 py-2 font-semibold text-sm text-white hover:text-white"
+                                        >
+                                            <CirclePlusIcons />
+                                            <span className="text-white">
+                                                {" "}
+                                                {props.translator["Add tasks"]}
+                                            </span>
+                                        </Link>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </Col>
-                    : ''}
+                            </GlassCard>
+                        </Col>
+                    ) : (
+                        ""
+                    )}
                 </Row>
             </div>
-
 
             {/* <hr className="my-3 px-2" />
             <div>
@@ -386,7 +510,7 @@ export default function WalletTab(props) {
                                             <span className="text-right">
                                                 <span className="text-3xl font-semibold leading-8 -tracking-[2%] text-gray-900">${plan.price}</span>
                                                 <br />
-                                                <span className="text-base font-normal tracking-tight text-[#363740]">{props.translator['per month']}</span>
+                                                <span className="text-base font-normal tracking-tight text-white">{props.translator['per month']}</span>
                                             </span>
                                             <span className="text-[64px] font-extralight leading-5"> / </span>
                                             <span className="text-base font-bold"> {props.translator['user']} </span>
@@ -400,7 +524,7 @@ export default function WalletTab(props) {
                                                 {button_text}
                                             </button>
                                             <button 
-                                                className={`block w-full rounded-md !shadow-card py-2 px-2 text-center text-sm font-bold bg-white text-[#363740]`}
+                                                className={`block w-full rounded-md !shadow-card py-2 px-2 text-center text-sm font-bold bg-white text-white`}
                                             >
                                                 {props.translator['See features']}
                                             </button>
@@ -420,7 +544,7 @@ export default function WalletTab(props) {
                             {props.translator['Short sentence to indicate what type of business is this plan aimed at.']}
                             </div>
                             <Link href={route('update_plan')} className="space-y-1">
-                                <button className={`block w-full rounded-md !shadow-card py-2 px-2 text-center text-sm font-bold bg-white text-[#363740]`}>
+                                <button className={`block w-full rounded-md !shadow-card py-2 px-2 text-center text-sm font-bold bg-white text-white`}>
                                 {props.translator['Contact sales']}
                                 </button>
                                 <button className={`block w-full rounded-md py-2 px-2 text-center text-sm font-normal text-white`}>
@@ -432,26 +556,16 @@ export default function WalletTab(props) {
                 </Row>
             </div> */}
 
-            {paymentMethodForm ?
-                <PaymentMethodForm 
+            {paymentMethodForm ? (
+                <PaymentMethodForm
                     refreshPaymentMethods={refreshPaymentMethods}
                     setPaymentMethodForm={setPaymentMethodForm}
                     stripe_public_key={props.stripe_public_key}
                     translator={props.translator}
                 />
-            : ''}
+            ) : (
+                ""
+            )}
         </>
     );
 }
-
-
-
-
-
-
-
-
-
-
-
-

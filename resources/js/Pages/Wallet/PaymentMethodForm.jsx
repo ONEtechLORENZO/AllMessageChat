@@ -38,7 +38,12 @@ function PaymentMethodForm(props)
 
     return (
         <Transition.Root show={open} as={Fragment}>
-            <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => {}} >
+            <Dialog
+                as="div"
+                className="relative z-10"
+                initialFocus={cancelButtonRef}
+                onClose={() => {}}
+            >
                 <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-300"
@@ -48,7 +53,7 @@ function PaymentMethodForm(props)
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity" />
                 </Transition.Child>
 
                 <div className="fixed z-10 inset-0 overflow-y-auto">
@@ -62,40 +67,40 @@ function PaymentMethodForm(props)
                             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         >
-                            <Dialog.Panel className="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-xl sm:w-full">
-                                <div className="bg-gray-50 px-4 !py-4 sm:p-4 sm:pb-4">
+                            <Dialog.Panel className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#140816]/80 text-left text-white shadow-[0_25px_60px_-25px_rgba(56,189,248,0.35)] ring-1 ring-white/5 backdrop-blur-3xl sm:my-8 sm:max-w-xl sm:w-full">
+                                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#38bdf8]/50 to-transparent opacity-70" />
+                                <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-40" />
+                                <div className="px-6 pt-6 pb-2">
                                     <div className="sm:flex sm:items-start">
                                         <div className="text-center sm:mt-0 sm:text-left">
-                                            <Dialog.Title as="h3" className="text-lg leading-6 mb-0 font-bold text-gray-900">
-                                                {props.translator['Add your Card']} 1
+                                            <Dialog.Title
+                                                as="h3"
+                                                className="text-lg leading-6 mb-0 font-semibold text-white"
+                                            >
+                                                {props.translator["Add your Card"]}
                                             </Dialog.Title>
                                         </div>
                                     </div>
                                 </div>
 
                                 {Object.keys(formErrors) > 0 ?
-                                    <div className='p-4'>
+                                    <div className="px-6 pb-2">
                                         <ValidationErrors errors={formErrors} />
                                     </div>
                                 : ''}
 
-                                <div className='p-4 space-y-4'>
+                                <div className="px-6 pb-6 space-y-4">
                                     {stripePromise && intent.client_secret ?
-                                        <Elements stripe={stripePromise} options={{clientSecret: intent.client_secret}}>
-                                            <Form {...props} />
+                                        <Elements
+                                            stripe={stripePromise}
+                                            options={{ clientSecret: intent.client_secret }}
+                                        >
+                                            <Form
+                                                {...props}
+                                                cancelButtonRef={cancelButtonRef}
+                                            />
                                         </Elements>
                                     : ''}
-                                </div>
-
-                                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                                    <button
-                                        type="button"
-                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                                        onClick={() => props.setPaymentMethodForm(false)}
-                                        ref={cancelButtonRef}
-                                    >
-                                        {props.translator['Cancel']}
-                                    </button>
                                 </div>
                             </Dialog.Panel>
                         </Transition.Child>
@@ -159,14 +164,24 @@ const Form = (props) => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <CardElement />
-            <div className='pt-10'>
+        <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="rounded-md border border-white/20 bg-[#0F0B1A] px-4 py-3 text-white shadow-sm">
+                <CardElement />
+            </div>
+            <div className="pt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
                 <button
-                    className="border border-transparent rounded-md w-full px-8 py-3 flex items-center justify-center text-lg leading-6 font-medium bg-primary text-white md:px-10"
+                    className="border border-transparent rounded-md w-full sm:w-44 px-8 py-3 flex items-center justify-center text-lg leading-6 font-medium bg-primary text-white hover:brightness-110 md:px-10"
                     disabled={!stripe || loading}
                 >
                     {loading ? 'Loading...' : 'Add'}
+                </button>
+                <button
+                    type="button"
+                    className="w-full sm:w-44 inline-flex justify-center rounded-md border border-white/20 shadow-sm px-4 py-3 bg-white/10 text-base font-medium text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-[#38bdf8]/50"
+                    onClick={() => props.setPaymentMethodForm(false)}
+                    ref={props.cancelButtonRef}
+                >
+                    {props.translator['Cancel']}
                 </button>
             </div>
         </form>

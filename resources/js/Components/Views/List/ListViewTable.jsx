@@ -26,6 +26,12 @@ export default function ListViewTable(props) {
     const [headers, setHeaders] = useState({});
     const [showAll, setShowAll] = useState(true);
     const pathname = window.location.pathname;
+    const tableColSpan =
+        Object.keys(headers).length +
+        (props.actions.mass_edit === true || props.actions.merge === true
+            ? 1
+            : 0) +
+        1;
 
     useEffect(() => {
         fetchModuleFields();
@@ -97,10 +103,10 @@ export default function ListViewTable(props) {
 
     return (
         <div className="">
-            <div className="overflow-hidden  md:rounded-lg">
-                <table className="min-w-full divide-y divide-gray-300 ">
+            <div className="overflow-hidden md:rounded-lg bg-[#140816]/70 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5">
+                <table className="min-w-full divide-y divide-white/10">
                     <thead>
-                        <tr className="text-[#363740] text-sm">
+                        <tr className="text-white text-sm">
                             {(props.actions.mass_edit === true ||
                                 props.actions.merge === true) && (
                                 <th>
@@ -139,10 +145,10 @@ export default function ListViewTable(props) {
                                     <th
                                         scope="col"
                                         key={name}
-                                        className="py-3.5 pl-4 pr-3 text-left text-sm font-medium !text-white/50 sm:pl-4"
+                                        className="py-3.5 pl-4 pr-3 text-left text-sm font-medium text-white sm:pl-4"
                                     >
                                         <span
-                                            className="pb-[6px] border-b border-[#C8C8C8] block !text-white"
+                                            className="pb-[6px] border-b border-white/20 block text-white"
                                             onClick={() => {
                                                 sortable
                                                     ? sortColumn(
@@ -168,10 +174,10 @@ export default function ListViewTable(props) {
                             </th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y-4 divide-gray-200 bg-white/30">
+                    <tbody className="divide-y divide-white/10">
                         {props.records.length === 0 && (
                             <tr>
-                                <td className="px-6 py-4 border-t" colSpan="8">
+                                <td className="px-6 py-4 border-t border-white/10 text-[#878787]" colSpan="8">
                                     {" "}
                                     {props.translator["No records found!"]}{" "}
                                 </td>
@@ -181,7 +187,7 @@ export default function ListViewTable(props) {
                             if (showAll === false && key > 4) return false;
 
                             return (
-                                <tr key={record.id ?? key} className="bg-white">
+                                <tr key={record.id ?? key} className="bg-transparent">
                                     {(props.actions.mass_edit === true ||
                                         props.actions.merge === true) && (
                                         <td className="px-2 py-2">
@@ -268,7 +274,7 @@ export default function ListViewTable(props) {
                                                                         tmpWidgets.push(
                                                                             <div
                                                                                 key={`phone-0`}
-                                                                                className="text-gray-900 flex items-center gap-2"
+                                                                                className="text-[#878787] flex items-center gap-2"
                                                                             >
                                                                                 <SlScreenSmartphone />{" "}
                                                                                 {
@@ -278,7 +284,7 @@ export default function ListViewTable(props) {
                                                                                 }
                                                                                 {phoneNumbers.length >
                                                                                 1 ? (
-                                                                                    <div className="flex items-center text-[#7666B4]">
+                                                                                    <div className="flex items-center text-[#878787]">
                                                                                         {" "}
                                                                                         +{" "}
                                                                                         {phoneNumbers.length -
@@ -313,7 +319,7 @@ export default function ListViewTable(props) {
                                                                         tmpWidgets.push(
                                                                             <div
                                                                                 key={`email-0`}
-                                                                                className="text-gray-900 flex items-center gap-2"
+                                                                                className="text-[#878787] flex items-center gap-2"
                                                                             >
                                                                                 <GoMail />
                                                                                 {
@@ -323,7 +329,7 @@ export default function ListViewTable(props) {
                                                                                 }
                                                                                 {EmailAddress.length >
                                                                                 1 ? (
-                                                                                    <div className="flex items-center text-[#7666B4]">
+                                                                                    <div className="flex items-center text-[#878787]">
                                                                                         {" "}
                                                                                         +{" "}
                                                                                         {EmailAddress.length -
@@ -341,10 +347,10 @@ export default function ListViewTable(props) {
                                                 }
                                             }
 
-                                            if (name == "widget_socials") {
-                                                widget = true;
-                                                tmpWidgets.push(
-                                                    <div className="inline-grid gap-2 grid-cols-4 text-[#7666B4]">
+                                                if (name == "widget_socials") {
+                                                    widget = true;
+                                                    tmpWidgets.push(
+                                                    <div className="inline-grid gap-2 grid-cols-4 text-[#878787]">
                                                         {record[
                                                             "facebook_username"
                                                         ] && (
@@ -384,28 +390,28 @@ export default function ListViewTable(props) {
                                                     widget = true;
                                                     record.tags.map(
                                                         (tag, tagIndex) => {
-                                                            if (
-                                                                tagIndex ===
-                                                                    0 ||
-                                                                tagIndex === 1
-                                                            ) {
-                                                                tmpWidgets.push(
-                                                                    <span
-                                                                        key={`tag-${tag.id ?? tagIndex}`}
-                                                                        className="inline-flex items-center !rounded bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800"
-                                                                    >
-                                                                        {
-                                                                            tag.name
-                                                                        }
-                                                                    </span>,
-                                                                );
-                                                            }
-                                                        },
-                                                    );
+                                                                if (
+                                                                    tagIndex ===
+                                                                        0 ||
+                                                                    tagIndex === 1
+                                                                ) {
+                                                                    tmpWidgets.push(
+                                                                        <span
+                                                                            key={`tag-${tag.id ?? tagIndex}`}
+                                                                            className="inline-flex items-center !rounded bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800"
+                                                                        >
+                                                                            {
+                                                                                tag.name
+                                                                            }
+                                                                        </span>,
+                                                                    );
+                                                                }
+                                                            },
+                                                        );
                                                     {
                                                         record.tags.length > 2
                                                             ? tmpWidgets.push(
-                                                                  <div className="flex items-center text-[#7666B4]">
+                                                                  <div className="flex items-center text-[#878787]">
                                                                       {" "}
                                                                       +{" "}
                                                                       {record[
@@ -447,7 +453,7 @@ export default function ListViewTable(props) {
                                                         record.categorys
                                                             .length > 2
                                                             ? tmpWidgets.push(
-                                                                  <div className="flex items-center text-[#7666B4]">
+                                                                  <div className="flex items-center text-[#878787]">
                                                                       {" "}
                                                                       +{" "}
                                                                       {record[
@@ -480,7 +486,7 @@ export default function ListViewTable(props) {
                                                           props.module;
                                                 column_value = (
                                                     <div className="ml-4">
-                                                        <div className="font-medium text-gray-900 ">
+                                                        <div className="font-medium text-[#878787]">
                                                             <Link
                                                                 href={route(
                                                                     url,
@@ -488,13 +494,13 @@ export default function ListViewTable(props) {
                                                                         id: record.id,
                                                                     },
                                                                 )}
-                                                                className="cursor-pointer underline"
+                                                                className="cursor-pointer underline text-[#878787]"
                                                             >
                                                                 {column_value}
                                                             </Link>
                                                         </div>
                                                         {record.updated_at && (
-                                                            <div className="text-gray-500 flex items-center gap-1">
+                                                            <div className="text-[#878787] flex items-center gap-1">
                                                                 <WiTime8 />{" "}
                                                                 <ListViewTimeFormate
                                                                     time={
@@ -597,7 +603,7 @@ export default function ListViewTable(props) {
                                                 <td
                                                     key={name}
                                                     title={title}
-                                                    className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]"
+                                                    className="whitespace-nowrap px-2 py-2 text-sm text-[#878787]"
                                                 >
                                                     {widget === true
                                                         ? tmpWidgets.map(
@@ -636,6 +642,11 @@ export default function ListViewTable(props) {
                                 </tr>
                             );
                         })}
+                        {props.records.length > 0 && (
+                            <tr>
+                                <td colSpan={tableColSpan} className="pt-3"></td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>

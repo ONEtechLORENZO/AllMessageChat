@@ -278,7 +278,7 @@ function Detail(props)
                 
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4">
                     {selectedTab == 'info' &&
-                        <div className="bg-white shadow overflow-hidden sm:rounded-lg p-4">
+                        <div className="bg-[#140816]/70 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5 shadow overflow-hidden sm:rounded-2xl p-4">
                             
                             <div className='space-y-4'>
                                 {Object.keys(props.field_info).map((key, index) => {
@@ -306,12 +306,14 @@ function Detail(props)
                                     }
                                 
                                     return (
-                                        <div key={key} className={`sm:grid sm:grid-cols-3 sm:gap-4 items-center`}>
-                                            <dt className={`text-sm font-medium text-[#A7A7A7]`}>{props.field_info[key]['label']}</dt>
+                                        <div key={key} className="sm:grid sm:grid-cols-3 sm:gap-4 items-center">
+                                            <dt className="text-sm font-medium text-[#878787]">
+                                                {props.field_info[key]['label']}
+                                            </dt>
                                             {props.field_info[key]['type'] == 'image' ? 
                                                 <img src={`/image/profile/${props['account']['id']}`} alt="Profile picture" className='h-64 w-64' />
                                             : 
-                                                <dd className={` text-gray-900 ${label_class}  sm:col-span-2 overflow-x-auto mb-0`}>
+                                                <dd className={`text-white ${label_class} sm:col-span-2 overflow-x-auto mb-0`}>
                                                     {key == 'api_partner' ?
                                                         <>
                                                             {props['account'][key] && <> Checked </>}
@@ -325,7 +327,14 @@ function Detail(props)
                                 })}
                             </div>
                             
-                            <div className='mt-4'> <Link className='' href={route('edit_account', props.account.id)}> {props.translator['Edit']}</Link> </div>
+                            <div className="mt-4">
+                                <Link
+                                    className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                                    href={route('edit_account', props.account.id)}
+                                >
+                                    {props.translator['Edit']}
+                                </Link>
+                            </div>
                         </div>
                     }
                     {selectedTab == 'templates' &&

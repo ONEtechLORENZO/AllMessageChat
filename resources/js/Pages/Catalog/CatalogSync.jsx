@@ -7,6 +7,26 @@ import { EllipsisVerticalIcon, AdjustmentsHorizontalIcon, StopIcon, XMarkIcon, F
 
 const catalogfields = ['name', 'business_id', 'status', 'total_product', 'sync_count'];
 
+export function GlassCard({ className = "", children }) {
+    return (
+        <div
+            className={[
+                "relative rounded-3xl bg-[#140816]/70 backdrop-blur-3xl group",
+                "border border-white/10 ring-1 ring-white/5",
+                "transition-all duration-500 hover:border-[#38bdf8]/50 hover:-translate-y-3 hover:scale-[1.02]",
+                "hover:shadow-[0_20px_40px_-15px_rgba(56,189,248,0.3)]",
+                className,
+            ].join(" ")}
+        >
+            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#38bdf8]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-30" />
+            <div className="p-6 relative z-10 flex flex-col h-full">
+                {children}
+            </div>
+        </div>
+    );
+}
+
 export default function CatalogSync(props) {
 
     const [catalogs, setCatalog] = useState();
@@ -75,38 +95,38 @@ export default function CatalogSync(props) {
             <div className="mt-8 flex flex-col">
                 <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-                    <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                        <table className="min-w-full divide-y divide-gray-300">
-                            <thead className="bg-gray-50">
+                    <GlassCard className="overflow-hidden">
+                        <table className="min-w-full divide-y divide-white/10">
+                            <thead className="bg-transparent">
                             <tr>
-                                <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
+                                <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6">
                                 {props.translator['Catalog Name']}
 
                                 </th>
-                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">
                                 {props.translator['Business Owner']}
                                 </th>
-                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">
                                 {props.translator['Status']}
                                 </th>
-                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">
                                 {props.translator['Total products']}
                                 </th>
-                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">
                                 {props.translator['Imported products']}
                                 </th>
-                                <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6 font-semibold text-gray-900">
+                                <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6 font-semibold text-white">
                                    <span className="">{props.translator['Actions']}</span>
                                 </th>
                             </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-200 bg-white">
+                            <tbody className="divide-y divide-white/10">
                                 {catalogs &&
                                     (catalogs).map( (catalog) => (
                                         <tr>
                                             {(catalogfields).map( (field) => {
                                                 let catalog_value = '';
-                                                let status = 'text-gray-500';
+                                                let status = 'text-[#878787]';
                                                 catalog_value = catalog[field];
 
                                                 if(field == 'business_id') {
@@ -114,23 +134,14 @@ export default function CatalogSync(props) {
                                                 } 
 
                                                 if(field == 'status') {
-                                                    status = 'text-[#4338ca]';
-                                                    if (catalog_value == 'Completed'){
-                                                        status = 'text-[#0be651]';
-                                                    } else if (catalog_value == 'Canceled') {
-                                                        status = 'text-[#f50515]';
-                                                    } else if (catalog_value == 'New') {
-                                                        status = 'text-[#facc15]';
-                                                    } else if(catalog_value == 'Stopped') {
-                                                        status = 'text-[#a21caf]';
-                                                    } 
+                                                    status = 'text-[#878787]';
                                                 }
 
                                                 return(
                                                     <td className={`whitespace-nowrap px-3 py-4 text-sm font-semibold ${status}`}>{catalog_value}</td>   
                                                 )
                                             })}
-                                            <td className="whitespace-nowrap px-3 py-4">
+                                            <td className="whitespace-nowrap px-3 py-4 text-[#878787]">
                                                 <div>
                                                    <ActionMenu 
                                                      fbFieldMapping={fbFieldMapping}
@@ -146,14 +157,14 @@ export default function CatalogSync(props) {
                                 }
                                 { (!catalogs || catalogs.length == 0 )&&
                                     <tr>
-                                        <td colSpan={7} className="text-bold p-3">
+                                        <td colSpan={7} className="text-[#878787] p-3">
                                             {props.translator['No records synced.']}
                                         </td>
                                     </tr>
                                 }
                             </tbody>
                         </table>
-                    </div>
+                    </GlassCard>
                     {showMapping &&
                       <FBMapping 
                         catalog={catalogMap}
@@ -365,7 +376,7 @@ const ActionMenu = (props) => {
     return (
         <Menu as="div" className="relative inline-block text-left">
             <div>
-                <Menu.Button className="inline-flex w-full justify-center rounded-md  px-4 py-2 text-sm font-medium text-[#363740] hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
+                <Menu.Button className="inline-flex w-full justify-center rounded-md px-4 py-2 text-sm font-medium text-[#878787] hover:text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
                     <EllipsisVerticalIcon className="h-5 w-5" aria-hidden="true" />
                 </Menu.Button>
             </div>

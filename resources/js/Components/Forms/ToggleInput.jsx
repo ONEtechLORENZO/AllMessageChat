@@ -38,7 +38,7 @@ export default function ToggleInput(props) {
             />
             </Switch>
                 <Switch.Label as="span" className="ml-3">
-                <span className="text-sm font-medium text-gray-900">{props.label}</span>
+                <span className="text-sm font-medium text-white">{props.label}</span>
             </Switch.Label>
         </Switch.Group>
     );
