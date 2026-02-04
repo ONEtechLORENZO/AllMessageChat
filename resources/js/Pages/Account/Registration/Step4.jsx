@@ -5,17 +5,17 @@ export default function Step4(props) {
     return (
         <div className="p-8 ">
             <div>
-                <h2 className="text-lg font-medium">{props.translator['Link Whatsapp via WABA']}</h2>
+                <h2 className="text-lg font-medium text-white">{props.translator['Link Whatsapp via WABA']}</h2>
                 <p className="text-[#878787]">{props.translator['Whatsapp Business API to unlock Whatsapp superpowers.']}</p>
             </div>
-            <p className="text-center w-52 text-[#424242] mx-auto text-lg font-semibold mt-8" >
+            <p className="text-center w-52 text-white mx-auto text-lg font-semibold mt-8" >
             {props.translator['Your request has been successfully submitted']}
             </p>
             <div className="block space-y-2 mt-6">
-                <p className=" text-sm mb-0">
+                <p className="text-[#878787] text-sm mb-0">
                 {props.translator['It will processed as soon as possible(within 48 hours).']}
                 </p>
-                <p className=" text-sm">
+                <p className="text-[#878787] text-sm">
                 {props.translator['You will recieve a notification with link via email into your OneMessage Workspace.']}
                 </p>
                 <p className=" text-sm">

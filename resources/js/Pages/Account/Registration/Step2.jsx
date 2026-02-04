@@ -96,7 +96,7 @@ export default function Step2(props){
             >
                 
                 <div>
-                    <label className="text-base font-medium text-gray-900">
+                    <label className="text-base font-medium text-white">
                     {props.translator[' The phone number that you want to use on OneMessage is already associated to a whatsapp account or a whatsapp Business account?']}
                     </label>
 
@@ -112,7 +112,7 @@ export default function Step2(props){
                                 defaultChecked={source}
                                 onChange={() => setSource(event.id)}
                             />
-                            <label htmlFor={event.id} className="ml-3 block text-sm font-medium text-gray-700">
+                            <label htmlFor={event.id} className="ml-3 block text-sm font-medium text-white">
                                 {event.title}
                             </label>
                             </div>
@@ -159,9 +159,9 @@ export default function Step2(props){
                 
             </form>
 
-            <div className="flex mt-6">
+            <div className="flex mt-6 text-[#878787]">
                 <div className='flex items-center w-2/3'>
-                {props.translator['Not sure? Go to']} <a className='px-2 text-blue-500' href='#'> FAQ</a>{props.translator['or Get in Contact with']} <a className='px-2 text-blue-500' href='#'> {props.translator['Customer Service']}</a>
+                {props.translator['Not sure? Go to']} <a className='px-2 text-[#878787] underline' href='#'> FAQ</a>{props.translator['or Get in Contact with']} <a className='px-2 text-[#878787] underline' href='#'> {props.translator['Customer Service']}</a>
                 </div>
                 <div className='w-1/3 flex justify-end'>
                     <button
