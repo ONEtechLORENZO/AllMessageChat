@@ -67,7 +67,7 @@ function PaymentMethodForm(props)
                             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         >
-                            <Dialog.Panel className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#140816]/80 text-left text-white shadow-[0_25px_60px_-25px_rgba(56,189,248,0.35)] ring-1 ring-white/5 backdrop-blur-3xl sm:my-8 sm:max-w-xl sm:w-full">
+                            <Dialog.Panel className="relative overflow-hidden rounded-3xl bg-[#140816]/80 text-left text-white shadow-[0_25px_60px_-25px_rgba(56,189,248,0.35)] backdrop-blur-3xl sm:my-8 sm:max-w-xl sm:w-full">
                                 <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#38bdf8]/50 to-transparent opacity-70" />
                                 <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-40" />
                                 <div className="px-6 pt-6 pb-2">

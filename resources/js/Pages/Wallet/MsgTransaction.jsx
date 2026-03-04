@@ -90,6 +90,7 @@ function MessageTransaction(props) {
                 paginator={props.transaction_paginator}
                 actions={props.transaction_actions}
                 {...props}
+                noCardBorder
             />
 
             {showStripeForm ?

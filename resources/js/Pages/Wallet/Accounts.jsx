@@ -113,7 +113,7 @@ export default function Accounts(props) {
                         return (
                             <div
                                 key={account.id}
-                                className="pt-3 bg-[#140816]/70 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5 drop-shadow rounded-2xl grid grid-cols-12 px-6 py-4"
+                                className="pt-3 bg-[#140816]/70 backdrop-blur-3xl drop-shadow rounded-2xl grid grid-cols-12 px-6 py-4"
                             >
 
                                 <div className='col-span-6 flex flex-col'>

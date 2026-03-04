@@ -1,8 +1,8 @@
-import React, { useState, Fragment, useEffect } from "react";
+import React, { useState, Fragment, useEffect, useMemo } from "react";
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
-import { Link, router as Inertia } from "@inertiajs/react";
+import { Link, router as Inertia, usePage } from "@inertiajs/react";
 import { Dialog, Transition } from "@headlessui/react";
 import UserRegistration from "@/Components/UserRegistration";
 import nProgress from "nprogress";
@@ -38,7 +38,9 @@ import {
     PlusIcon,
     IdentificationIcon,
     ShoppingCartIcon,
+    CodeBracketIcon,
 } from "@heroicons/react/24/outline";
+import { createTranslator, getLocale, setLocale } from "@/i18n/translator";
 
 import { CurrencyDollarIcon } from "@heroicons/react/24/solid";
 import axios from "axios";
@@ -176,13 +178,19 @@ const navigation = [
 
 const bottomNavigation = [
     {
+        name: "API Documentation",
+        href: route("api_documentation"),
+        icon: CodeBracketIcon,
+        show: ["all"],
+    },
+    {
         name: "Billing",
         href: route("wallet"),
         icon: BillingIcon,
         show: ["all"],
     },
     {
-        name: "Templates",
+        name: "Interactive Templates",
         href: route("listInteractiveMessage"),
         icon: CampaignsIcon,
         show: ["all"],
@@ -400,11 +408,13 @@ function NavItem({
     compact,
     rightSlot,
     preserveState,
+    onClick,
 }) {
     return (
         <Link
             href={href}
             preserveState={preserveState}
+            onClick={onClick}
             className={[
                 "group flex items-center gap-3 rounded-2xl px-3.5 py-2.5 no-underline hover:no-underline focus:outline-none focus-visible:outline-none",
                 "transition-colors duration-200",
@@ -467,6 +477,14 @@ export default function Authenticated({
     message,
     navigationMenu,
 }) {
+    const { props: pageProps } = usePage();
+    const [locale, setLocaleState] = useState(
+        pageProps?.locale ?? getLocale(),
+    );
+    const translator = useMemo(
+        () => createTranslator(pageProps?.translator ?? {}, locale),
+        [pageProps?.translator, locale],
+    );
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -651,6 +669,24 @@ export default function Authenticated({
         });
     }
 
+    const language = (locale ?? "en").toUpperCase();
+
+    function handleLocaleChange(eventOrValue) {
+        const nextLocale =
+            typeof eventOrValue === "string"
+                ? eventOrValue
+                : eventOrValue?.target?.value;
+
+        if (!nextLocale) return;
+        setLocale(nextLocale);
+        setLocaleState(nextLocale);
+        window.location.reload();
+    }
+
+    function setLanguage(nextLanguage) {
+        handleLocaleChange(nextLanguage.toLowerCase());
+    }
+
     const resolvedNavigationMenuBar = navigationMenuBar
         ? { ...navigationMenuBar }
         : null;
@@ -762,7 +798,7 @@ export default function Authenticated({
                 </div>
             </div>
 
-            <div className="min-h-screen bg-black text-white relative overflow-hidden flex font-sans selection:bg-[#38bdf8]/30">
+            <div className="min-h-screen bg-black text-white relative overflow-x-hidden flex font-sans selection:bg-[#38bdf8]/30">
                 {/* Tech grid background with spotlight effect */}
                 <div
                     className="fixed inset-0 opacity-40 transition-opacity duration-1000 pointer-events-none"
@@ -909,7 +945,10 @@ export default function Authenticated({
                             <button
                                 onClick={() => setShowSidebarText((v) => !v)}
                                 className="rounded-xl bg-white/[0.02] hover:bg-white/[0.05] px-3 py-2 transition-all duration-300 hover:scale-110 active:scale-90"
-                                aria-label="Toggle sidebar"
+                                aria-label={
+                                    translator["Toggle sidebar"] ??
+                                    "Toggle sidebar"
+                                }
                             >
                                 <IconMenu className="h-5 w-5 text-white/70" />
                             </button>
@@ -1050,22 +1089,26 @@ export default function Authenticated({
                                             item.name === current_page;
 
                                         return (
-                                            <li
-                                                key={header}
-                                                onClick={(e) =>
-                                                    drownDownToggleAction(
-                                                        e,
-                                                        item,
-                                                    )
-                                                }
-                                            >
+                                            <li key={header}>
                                                 <NavItem
                                                     icon={item.icon}
-                                                    label={item.name}
+                                                    label={
+                                                        translator[item.name] ??
+                                                        item.name
+                                                    }
                                                     href={item.href}
                                                     active={isActive}
                                                     compact={!showSidebarText}
                                                     preserveState
+                                                    onClick={
+                                                        hasSubMenu
+                                                            ? (e) =>
+                                                                  drownDownToggleAction(
+                                                                      e,
+                                                                      item,
+                                                                  )
+                                                            : undefined
+                                                    }
                                                     rightSlot={
                                                         hasSubMenu ? (
                                                             <BsCaretDownFill
@@ -1107,9 +1150,11 @@ export default function Authenticated({
                                                                                 "block rounded-xl px-3 py-2 text-sm transition no-underline hover:no-underline",
                                                                             )}
                                                                         >
-                                                                            {
-                                                                                subItem.name
-                                                                            }
+                                                                            {translator[
+                                                                                subItem
+                                                                                    .name
+                                                                            ] ??
+                                                                                subItem.name}
                                                                         </Link>
                                                                     </li>
                                                                 );
@@ -1139,7 +1184,10 @@ export default function Authenticated({
                                         <li key={item.name}>
                                             <NavItem
                                                 icon={item.icon}
-                                                label={item.name}
+                                                label={
+                                                    translator[item.name] ??
+                                                    item.name
+                                                }
                                                 href={item.href}
                                                 active={isActive}
                                                 compact={!showSidebarText}
@@ -1164,7 +1212,11 @@ export default function Authenticated({
                                                     setSidebarOpen((v) => !v)
                                                 }
                                                 className="rounded-xl bg-white/[0.03] hover:bg-white/[0.06] px-3 py-2 transition-all duration-300 hover:scale-110 active:scale-90 md:hidden"
-                                                aria-label="Toggle sidebar"
+                                                aria-label={
+                                                    translator[
+                                                        "Toggle sidebar"
+                                                    ] ?? "Toggle sidebar"
+                                                }
                                             >
                                                 <IconMenu className="h-5 w-5 text-white/70" />
                                             </button>
@@ -1217,6 +1269,49 @@ export default function Authenticated({
                                                 ) : (
                                                     ""
                                                 )}
+
+                                                <div
+                                                    className="inline-grid grid-cols-2 items-stretch rounded-full bg-black/70 ring-1 ring-white/15 overflow-hidden"
+                                                    data-selected={language.toLowerCase()}
+                                                    aria-label={
+                                                        translator[
+                                                            "Language"
+                                                        ] ?? "Language"
+                                                    }
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            setLanguage("IT")
+                                                        }
+                                                        aria-pressed={
+                                                            language === "IT"
+                                                        }
+                                                        className={`px-2 py-0.5 text-[8px] font-semibold uppercase leading-none transition-colors duration-200 ${
+                                                            language === "IT"
+                                                                ? "bg-[#38bdf8] text-white rounded-l-full"
+                                                                : "text-white/60 hover:text-white/90"
+                                                        }`}
+                                                    >
+                                                        IT
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            setLanguage("EN")
+                                                        }
+                                                        aria-pressed={
+                                                            language === "EN"
+                                                        }
+                                                        className={`px-2 py-0.5 text-[8px] font-semibold uppercase leading-none transition-colors duration-200 ${
+                                                            language === "EN"
+                                                                ? "bg-[#38bdf8] text-white rounded-r-full"
+                                                                : "text-white/60 hover:text-white/90"
+                                                        }`}
+                                                    >
+                                                        EN
+                                                    </button>
+                                                </div>
 
                                                 <div className="relative z-10">
                                                     <Dropdown>
@@ -1393,8 +1488,10 @@ export default function Authenticated({
                                                                                     method="get"
                                                                                 >
                                                                                     {" "}
-                                                                                    Workspace
-                                                                                    settings{" "}
+                                                                                    {translator[
+                                                                                        "Workspace settings"
+                                                                                    ] ??
+                                                                                        "Workspace settings"}{" "}
                                                                                 </Link>{" "}
                                                                             </li>
                                                                         </List>
@@ -1425,7 +1522,10 @@ export default function Authenticated({
                                                                                     method="get"
                                                                                 >
                                                                                     {" "}
-                                                                                    Profile{" "}
+                                                                                    {translator[
+                                                                                        "Profile"
+                                                                                    ] ??
+                                                                                        "Profile"}{" "}
                                                                                 </Link>{" "}
                                                                             </li>
                                                                             {auth &&
@@ -1445,8 +1545,10 @@ export default function Authenticated({
                                                                                             as="button"
                                                                                         >
                                                                                             {" "}
-                                                                                            Global
-                                                                                            Admin{" "}
+                                                                                            {translator[
+                                                                                                "Global Admin"
+                                                                                            ] ??
+                                                                                                "Global Admin"}{" "}
                                                                                         </Link>{" "}
                                                                                     </li>
                                                                                 )}
@@ -1461,10 +1563,10 @@ export default function Authenticated({
                                                                                         type="button"
                                                                                     >
                                                                                         {" "}
-                                                                                        Return
-                                                                                        to
-                                                                                        global
-                                                                                        admin{" "}
+                                                                                        {translator[
+                                                                                            "Return to global admin"
+                                                                                        ] ??
+                                                                                            "Return to global admin"}{" "}
                                                                                     </button>{" "}
                                                                                 </li>
                                                                             )}
@@ -1477,8 +1579,10 @@ export default function Authenticated({
                                                                                     method="get"
                                                                                 >
                                                                                     {" "}
-                                                                                    API
-                                                                                    keys
+                                                                                    {translator[
+                                                                                        "API keys"
+                                                                                    ] ??
+                                                                                        "API keys"}
                                                                                 </Link>
                                                                             </li>
                                                                             <li className="p-1">
@@ -1492,8 +1596,10 @@ export default function Authenticated({
                                                                                     as="button"
                                                                                 >
                                                                                     {" "}
-                                                                                    Log
-                                                                                    out{" "}
+                                                                                    {translator[
+                                                                                        "Log Out"
+                                                                                    ] ??
+                                                                                        "Log Out"}{" "}
                                                                                 </Link>{" "}
                                                                             </li>
                                                                         </List>
@@ -1563,7 +1669,8 @@ export default function Authenticated({
                                                     "dashboard",
                                                 )}
                                             >
-                                                Dashboard
+                                                {translator["Dashboard"] ??
+                                                    "Dashboard"}
                                             </ResponsiveNavLink>
                                         </div>
 
@@ -1591,7 +1698,8 @@ export default function Authenticated({
                                                     href={route("logout")}
                                                     as="button"
                                                 >
-                                                    Log Out
+                                                    {translator["Log Out"] ??
+                                                        "Log Out"}
                                                 </ResponsiveNavLink>
                                             </div>
                                         </div>

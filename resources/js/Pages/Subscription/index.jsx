@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Authenticated from "@/Layouts/Authenticated";
 import CompanyDetail from "./company";
-import axios from "axios";
 import Accounts from "../Wallet/Accounts";
 import Settings from "../Wallet/Settings";
 import ListView from "@/Components/Views/List/Index2";
@@ -10,14 +9,10 @@ import SubPanels from "@/Components/Views/Detail/SubPanels";
 import Group from "../Group/List";
 
 const tabs = [
-  { name: 'Workspace Settings', href: '#', current: true, page: 1 },
-  //{ name: 'Social Profilie', href: '#', current: false , page: 'social_profile' },
+  { name: 'Company', href: '#', current: true, page: 1 },
   { name: 'Users', href: '#', current: false , page: 'users' },
   { name: 'Settings', href: '#', current: false , page: 'settings' },
   { name: 'Groups', href: route("listGroup"), current: false , page: 'groups' },
-//  { name: 'Templates', href: route("listInteractiveMessage"), current: false , page: 'templates' },
-
- // { name: 'API', href: '#', current: false , page: 'api' },
 ];
 
 function classNames(...classes) {
@@ -30,7 +25,7 @@ export default function Subscription(props)
   const[ inviteUser, setInviteUser] = useState(false);
 
   useEffect(() => {
-    setPage(props.current_tab);
+    setPage(props.current_tab ?? 1);
   }, [props.current_tab]);
 
   return(
@@ -57,7 +52,7 @@ export default function Subscription(props)
                 aria-current={tab.current ? 'page' : undefined}
                 onClick={() => setPage(tab.page)}
             >
-                {props.translator[tab.name]}
+                {props.translator[tab.name] ?? tab.name}
             </a>
             ))}
           </nav>
@@ -71,7 +66,7 @@ export default function Subscription(props)
                 {...props}
               />
             : ''}
-            
+
             {page && page == 'social_profile' ? 
               <Accounts 
                accounts={props.accounts}
@@ -86,12 +81,13 @@ export default function Subscription(props)
                     {...props}
                 /> 
             : ''}
-            {page && page == 'users' ? 
+              {page && page == 'users' ? 
               <ListView 
                 headers={props.list_view_columns}
                 setInviteUser={setInviteUser}
                 current_user={props.current_user}
                 {...props}
+                noCardBorder
               />
 
             : ''}
@@ -114,12 +110,13 @@ export default function Subscription(props)
                 />
             }
                  
-            {page && page == 'templates' ? 
+              {page && page == 'templates' ? 
               <ListView 
                 headers={props.list_view_columns}
                 setInviteUser={setInviteUser}
                 current_user={props.current_user}
                 {...props}
+                noCardBorder
               />
 
             : ''}

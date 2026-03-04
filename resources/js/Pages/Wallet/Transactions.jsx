@@ -14,6 +14,7 @@ function List(props)
                 headers={props.list_view_columns}
                 {...props}
                 translator={props.translator}
+                noCardBorder
             />
             
         </Authenticated>

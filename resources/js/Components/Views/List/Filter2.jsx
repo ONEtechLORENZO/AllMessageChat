@@ -473,7 +473,11 @@ function Filter(props) {
                         <span className="inline-flex rounded-md">
                             <button
                                 type="button"
-                                className="p-2 bg-[#140816]/70 text-white shadow-sm flex items-center justify-center border border-white/10 backdrop-blur-xl"
+                                className={`p-2 text-white shadow-sm flex items-center justify-center ${
+                                    props.is_chat
+                                        ? "bg-primary border border-primary"
+                                        : "bg-[#140816]/70 border border-white/10"
+                                } backdrop-blur-xl`}
                             >
                                 <svg
                                     width={20}

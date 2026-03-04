@@ -38,14 +38,12 @@ export function GlassCard({ className = "", children }) {
         <div
             className={[
                 "relative rounded-3xl bg-[#140816]/70 backdrop-blur-3xl group",
-                "border border-white/10 ring-1 ring-white/5",
                 "transition-all duration-500 hover:border-[#38bdf8]/50 hover:-translate-y-3 hover:scale-[1.02]",
                 "hover:shadow-[0_20px_40px_-15px_rgba(56,189,248,0.3)]",
                 className,
             ].join(" ")}
         >
             <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#38bdf8]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-30" />
             <div className="p-6 relative z-10 flex flex-col h-full">
                 {children}
             </div>
@@ -387,6 +385,7 @@ export default function WalletUsage(props) {
                     translator={props.translator}
                     showAll={showTransactions}
                     {...props.msgTransactionList}
+                    noCardBorder
                 />
             </GlassCard>
 
@@ -429,6 +428,7 @@ export default function WalletUsage(props) {
                     translator={props.translator}
                     showAll={showInvoices}
                     {...props.transactionHistory}
+                    noCardBorder
                 />
             </GlassCard>
 

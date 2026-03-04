@@ -101,9 +101,16 @@ export default function ListViewTable(props) {
         );
     }
 
+    const tableCardClassName = [
+        "overflow-hidden md:rounded-lg bg-[#140816]/70 backdrop-blur-3xl",
+        props.noCardBorder ? "" : "border border-white/10 ring-1 ring-white/5",
+    ]
+        .filter(Boolean)
+        .join(" ");
+
     return (
         <div className="">
-            <div className="overflow-hidden md:rounded-lg bg-[#140816]/70 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5">
+            <div className={tableCardClassName}>
                 <table className="min-w-full divide-y divide-white/10">
                     <thead>
                         <tr className="text-white text-sm">
@@ -158,7 +165,8 @@ export default function ListViewTable(props) {
                                                     : "";
                                             }}
                                         >
-                                            {field.label}
+                                            {props.translator?.[field.label] ??
+                                                field.label}
                                         </span>
                                     </th>
                                 );

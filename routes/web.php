@@ -142,6 +142,7 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/messages/list', [MessageLogController::class, 'list'])->name('messages');
         Route::post('/messages/search_content', [MessageLogController::class, 'searchContent'])->name('searchContent');
         Route::get('/messages', [MsgController::class, 'messageList'])->name('listMessage');
+        Route::get('/reports/api-documentation', [MsgController::class, 'apiDocumentation'])->name('api_documentation');
 
         // Accounts
         Route::get('/account/registration', [UserController::class, 'accountRegistration'])->name('account_registration');
@@ -324,6 +325,8 @@ Route::middleware('planrestriction')->group(function () {
 
         // Campaign
         Route::get('/campaigns', [CampaignController::class, 'index'])->name('listCampaign');
+        Route::get('/campaigns/new', [CampaignController::class, 'create'])->name('createCampaign');
+        Route::get('/campaigns/success/{id?}', [CampaignController::class, 'success'])->name('campaign_success');
         Route::post('/campaign/store', [Campaigncontroller::class, 'store'])->name('storeCampaign');
         Route::get('/campaign/detail/{id}', [CampaignController::class, 'show'])->name('detailCampaign');
         Route::get('/campaign/search', [CampaignController::class, 'searchRecords'])->name('searchfilter');

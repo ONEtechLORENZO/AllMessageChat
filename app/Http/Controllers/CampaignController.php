@@ -64,9 +64,25 @@ class CampaignController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
-        //
+        $user_id = $request->user()->id;
+        $company_id = Cache::get('selected_company_' . $user_id);
+
+        $campaign = new Campaign();
+        $campaign->current_page = 1;
+        $campaign->status = 'draft';
+
+        $translator = Controller::getTranslations();
+        $filter = Controller::getFiltersInfo($company_id, $user_id, 'Campaign', '');
+
+        return Inertia::render('Campaign/Form', [
+            'translator' => $translator,
+            'filter' => $filter,
+            'campaign' => $campaign,
+            'status' => $campaign->status,
+            'count' => '',
+        ]);
     }
 
     /**
@@ -121,7 +137,7 @@ class CampaignController extends Controller
                 $campaign->status = 'new';
                 $campaign->save();
 
-                return Redirect::route('listCampaign');
+                return Redirect::route('campaign_success', ['id' => $campaign->id]);
             }
 
             $campaign->current_page = $currentPage + 1;
@@ -149,6 +165,42 @@ class CampaignController extends Controller
             'status' => $campaign->status,
             'count' => $count,
         ]); 
+    }
+
+    public function success(Request $request, $id = null)
+    {
+        $translator = Controller::getTranslations();
+        $menuBar = $this->fetchMenuBar();
+        $summary = null;
+
+        if ($id) {
+            $campaign = Campaign::find($id);
+
+            if ($campaign) {
+                $accountName = null;
+                if ($campaign->account_id) {
+                    $account = Account::find($campaign->account_id);
+                    if ($account) {
+                        $accountName = $account->company_name;
+                    }
+                }
+
+                $summary = [
+                    'name' => $campaign->name,
+                    'account' => $accountName,
+                    'channel' => $campaign->service,
+                    'scheduled_at' => $campaign->scheduled_at,
+                    'audience' => $campaign->conditions ? 'Filtered' : 'All contacts',
+                ];
+            }
+        }
+
+        return Inertia::render('Campaign/Success', [
+            'translator' => $translator,
+            'menuBar' => $menuBar,
+            'current_page' => 'Campaigns',
+            'campaign' => $summary,
+        ]);
     }
 
     /**

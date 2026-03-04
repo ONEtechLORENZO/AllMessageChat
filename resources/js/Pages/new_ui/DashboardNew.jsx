@@ -86,8 +86,8 @@ export default function DashboardNew(props) {
             >
                 <Head title={props.translator["Dashboard"]} />
 
-                <div className="py-12">
-                    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="pt-4 pb-8">
+                    <div className="px-4 sm:px-6 lg:px-8">
                         <div className="pb-4">
                             <h3 className="text-2xl leading-6 font-semibold !text-white">
                                 {props.translator["Dashboard"]}
@@ -273,7 +273,7 @@ export default function DashboardNew(props) {
                             <div className="flex flex-col gap-4 h-full">
                                 <GlassCard className="h-[228px]">
                                     <div className="!text-white text-base font-normal">
-                                        Your Sessions
+                                        {props.translator["Your Sessions"]}
                                     </div>
                                     <div className="flex justify-between items-center w-full mt-10">
                                         <div className="flex justify-center items-center gap-4">
@@ -321,17 +321,23 @@ export default function DashboardNew(props) {
                                                     <span className="">
                                                         {props.total_session_limit -
                                                             props.current_session_count}{" "}
-                                                        sessions
+                                                        {props.translator[
+                                                            "sessions"
+                                                        ]}
                                                     </span>
                                                 </div>
                                                 <div className="!text-white/50 text-base font-normal">
-                                                    You spent{" "}
+                                                    {props.translator[
+                                                        "You spent"
+                                                    ]}{" "}
                                                     {
                                                         props.current_session_count
                                                     }{" "}
-                                                    of{" "}
+                                                    {props.translator["of"]}{" "}
                                                     {props.total_session_limit}{" "}
-                                                    sessions
+                                                    {props.translator[
+                                                        "sessions"
+                                                    ]}
                                                 </div>
                                             </div>
                                         </div>
@@ -830,14 +836,12 @@ export function GlassCard({ className = "", children }) {
         <div
             className={[
                 "relative rounded-3xl bg-white/5 backdrop-blur-3xl group",
-                "border border-white/10 ring-1 ring-white/5",
                 "transition-all duration-500 hover:border-[#38bdf8]/50 hover:-translate-y-3 hover:scale-[1.02]",
                 "hover:shadow-[0_20px_40px_-15px_rgba(56,189,248,0.3)]",
                 className,
             ].join(" ")}
         >
             <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#38bdf8]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-30" />
             <div className="p-6 relative z-10 flex flex-col h-full">
                 {children}
             </div>

@@ -507,6 +507,9 @@ class PlanController extends Controller
                     $submenu = $navigation['submenu'];
                     $status = true;
                     foreach ($submenu as $header => $name) {
+                        if ($key === 'Conversations' && $header === 'Campaigns') {
+                            continue;
+                        }
                         if (isset($plan->$name) && $plan->$name == 'false') {
                             unset($navigations[$key]['submenu'][$header]);
                             $status = false;

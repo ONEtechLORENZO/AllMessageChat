@@ -248,13 +248,6 @@ function Detail(props)
                     <div className="border-b border-gray-200">
                         <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                             {tabs.map((tab) => {
-                                
-                                if((tab.page == 'templates' ) && (props.account.service != 'whatsapp' || props['account'].status != 'Active') ){
-                                    return true;
-                                }
-                                if(tab.page == 'webhooks' && props['account'].status != 'Active'){
-                                    return true;
-                                }
                                 return(
                                     <a
                                         key={tab.name}
@@ -450,231 +443,235 @@ function Detail(props)
             </div>
 
             <Transition.Root show={accountModalOpen} as={Fragment}>
-                <Dialog as="div" className="fixed z-10 inset-0 overflow-y-auto" initialFocus={cancelButtonRef} onClose={setAccountModalOpen}>
-                    <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                        <Transition.Child
-                            as={Fragment}
-                            enter="ease-out duration-300"
-                            enterFrom="opacity-0"
-                            enterTo="opacity-100"
-                            leave="ease-in duration-200"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                        >
-                            <Dialog.Overlay className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-                        </Transition.Child>
+                <Dialog
+                    as="div"
+                    className="relative z-50"
+                    initialFocus={cancelButtonRef}
+                    onClose={setAccountModalOpen}
+                >
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                    </Transition.Child>
 
-                        {/* This element is to trick the browser into centering the modal contents. */}
-                        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
-                            &#8203;
-                        </span>
-                        <Transition.Child
-                            as={Fragment}
-                            enter="ease-out duration-300"
-                            enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                            enterTo="opacity-100 translate-y-0 sm:scale-100"
-                            leave="ease-in duration-200"
-                            leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-                            leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        >
-                            <div className="inline-block  bg-white rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-                                <div>
-                                    <div className="">
-                                        <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
-                                        {props.translator['Add template']}
-                                        </Dialog.Title>
-                                        <div className="mt-2">
-                                            <p className="text-sm text-gray-500 pt-2 pb-4">
-                                            {props.translator['Create a new WhatsApp template. Each template must have a unique name consisting of lowercase alphanumeric characters.Spaces must be replaced with underscores (_). Only WhatsApp templates within the pre-defined categories can be accepted.']}
-                                            </p>
+                    <div className="fixed inset-0 overflow-y-auto">
+                        <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-6">
+                            <Transition.Child
+                                as={Fragment}
+                                enter="ease-out duration-300"
+                                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                                enterTo="opacity-100 translate-y-0 sm:scale-100"
+                                leave="ease-in duration-200"
+                                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                            >
+                                <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:p-6">
+                                    <div>
+                                        <div className="">
+                                            <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
+                                                {props.translator['Add template']}
+                                            </Dialog.Title>
+                                            <div className="mt-2">
+                                                <p className="text-sm text-gray-500 pt-2 pb-4">
+                                                    {props.translator['Create a new WhatsApp template. Each template must have a unique name consisting of lowercase alphanumeric characters.Spaces must be replaced with underscores (_). Only WhatsApp templates within the pre-defined categories can be accepted.']}
+                                                </p>
 
-                                            <form id="new_template">
-                                            <div className="grid gap-6">                                                
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="template_name" className="block text-sm font-medium text-gray-700">
-                                                    {props.translator['Name']} <span className='text-red-600'> *</span>
-                                                    </label>
-                                                    <div className="mt-1 flex rounded-md shadow-sm">
-                                                        <Input name='template_name' required={true} id='template_name' placeholder={props.translator['Template name']} handleChange={handleChange} />
+                                                <form id="new_template">
+                                                    <div className="grid gap-6">
+                                                        <div className="form-group col-span-6 sm:col-span-4">
+                                                            <label htmlFor="template_name" className="block text-sm font-medium text-gray-700">
+                                                                {props.translator['Name']} <span className='text-red-600'> *</span>
+                                                            </label>
+                                                            <div className="mt-1 flex rounded-md shadow-sm">
+                                                                <Input name='template_name' required={true} id='template_name' placeholder={props.translator['Template name']} handleChange={handleChange} />
+                                                            </div>
+                                                            <InputError message={errors.template_name} />
+                                                        </div>
+
+                                                        <div className="form-group col-span-6 sm:col-span-4">
+                                                            <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+                                                                {props.translator['Category']} <span className='text-red-600'> *</span>
+                                                            </label>
+                                                            <div className="mt-1">
+                                                                <Dropdown
+                                                                    required={true}
+                                                                    id="category"
+                                                                    name="category"
+                                                                    handleChange={handleChange}
+                                                                    options={categories}
+                                                                    value={data.category}
+                                                                />
+                                                            </div>
+                                                            <InputError message={errors.category} />
+                                                        </div>
+
+                                                        <div className="form-group col-span-6 sm:col-span-4">
+                                                            <label htmlFor="languages" className="block text-sm font-medium text-gray-700">
+                                                                {props.translator['Languages']} <span className='text-red-600'> *</span>
+                                                            </label>
+                                                            <div className="mt-1">
+                                                                <Select
+                                                                    options={languages}
+                                                                    isMulti
+                                                                    getOptionLabel ={(option) => option.name}
+                                                                    getOptionValue ={(option )=> option.code}
+                                                                    required={true}
+                                                                    id="languages"
+                                                                    name="languages"
+                                                                    onChange={handleSelectChange}
+                                                                />
+                                                            </div>
+                                                            <InputError message={errors.languages} />
+                                                        </div>
                                                     </div>
-                                                    <InputError message={errors.template_name} />
-                                                </div>
-
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-                                                    {props.translator['Category']} <span className='text-red-600'> *</span>
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <Dropdown 
-                                                            required={true} 
-                                                            id="category"
-                                                            name="category"
-                                                            handleChange={handleChange}
-                                                            options={categories}
-                                                            value={data.category}
-                                                        />
-                                                    </div>
-                                                    <InputError message={errors.category} />
-                                                </div>
-
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="languages" className="block text-sm font-medium text-gray-700">
-                                                    {props.translator['Languages']} <span className='text-red-600'> *</span>
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <Select 
-                                                            options={languages} 
-                                                            isMulti
-                                                            getOptionLabel ={(option) => option.name}
-                                                            getOptionValue ={(option )=> option.code} 
-                                                            required={true}
-                                                            id="languages"
-                                                            name="languages"
-                                                            onChange={handleSelectChange}
-                                                        />
-                                                    </div>
-                                                    <InputError message={errors.languages} />
-                                                </div>
+                                                </form>
                                             </div>
-                                            </form>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                                    <button
-                                        type="button"
-                                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
-                                        onClick={() => createNewTemplate()}
-                                    >
-                                        {props.translator['Create']}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
-                                        onClick={() => setAccountModalOpen(false)}
-                                    >
-                                        {props.translator['Close']}
-                                    </button>
-                                </div>
-                            </div>
-                        </Transition.Child>
+                                    <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                                        <button
+                                            type="button"
+                                            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
+                                            onClick={() => createNewTemplate()}
+                                        >
+                                            {props.translator['Create']}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
+                                            onClick={() => setAccountModalOpen(false)}
+                                        >
+                                            {props.translator['Close']}
+                                        </button>
+                                    </div>
+                                </Dialog.Panel>
+                            </Transition.Child>
+                        </div>
                     </div>
                 </Dialog>
             </Transition.Root>
 
-            <Transition.Root show={incomingUrlModalOpen} as={Fragment}>
-                <Dialog as="div" className="fixed z-10 inset-0 overflow-y-auto" initialFocus={cancelButtonRef} onClose={setIncomingUrlModalOpen}>
-                    <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                        <Transition.Child
-                            as={Fragment}
-                            enter="ease-out duration-300"
-                            enterFrom="opacity-0"
-                            enterTo="opacity-100"
-                            leave="ease-in duration-200"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                        >
-                            <Dialog.Overlay className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-                        </Transition.Child>
+<Transition.Root show={incomingUrlModalOpen} as={Fragment}>
+                <Dialog
+                    as="div"
+                    className="relative z-50"
+                    initialFocus={cancelButtonRef}
+                    onClose={setIncomingUrlModalOpen}
+                >
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                    </Transition.Child>
 
-                        {/* This element is to trick the browser into centering the modal contents. */}
-                        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
-                            &#8203;
-                        </span>
-                        <Transition.Child
-                            as={Fragment}
-                            enter="ease-out duration-300"
-                            enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                            enterTo="opacity-100 translate-y-0 sm:scale-100"
-                            leave="ease-in duration-200"
-                            leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-                            leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        >
-                            <div className="inline-block  bg-white rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-                                <div>
-                                    <div className="">
-                                        <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
-                                            {webhookData.id ? (props.translator['Update']) : (props.translator['Add'])} Webhook
-                                        </Dialog.Title>
-                                        <div className="mt-2">
-                                            <p className="text-sm text-gray-500 pt-2 pb-4">
-                                                {props.translator['Create a new WhatsApp Webhook URL to receive notifications about events like sent, failed etc...']}
-                                            </p>
+                    <div className="fixed inset-0 overflow-y-auto">
+                        <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-6">
+                            <Transition.Child
+                                as={Fragment}
+                                enter="ease-out duration-300"
+                                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                                enterTo="opacity-100 translate-y-0 sm:scale-100"
+                                leave="ease-in duration-200"
+                                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                            >
+                                <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:p-6">
+                                    <div>
+                                        <div className="">
+                                            <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
+                                                {webhookData.id ? (props.translator['Update']) : (props.translator['Add'])} Webhook
+                                            </Dialog.Title>
+                                            <div className="mt-2">
+                                                <p className="text-sm text-gray-500 pt-2 pb-4">
+                                                    {props.translator['Create a new WhatsApp Webhook URL to receive notifications about events like sent, failed etc...']}
+                                                </p>
 
-                                            <form id="new_incoming_url">
-                                                <div className="space-y-4">
-                                                    <div className="form-group col-span-6 sm:col-span-4">
-                                                        <label htmlFor="incoming_url" className="block text-sm font-medium text-gray-700">
-                                                            Name
-                                                        </label>
-                                                        <div className="mt-1 flex rounded-md shadow-sm">
-                                                            <Input name='name_url' value={webhookData.name_url} required={true} id='name_url' placeholder={props.translator['Name of URL']} handleChange={handleWebhookFormChange} />
-                                                        </div>
-                                                    </div>                                                
-                                                    <div className="form-group col-span-6 sm:col-span-4">
-                                                        <label htmlFor="incoming_url" className="block text-sm font-medium text-gray-700">
-                                                            Webhook URL
-                                                        </label>
-                                                        <div className="mt-1 flex rounded-md shadow-sm">
-                                                            <Input name='callback_url' value={webhookData.callback_url} required={true} id='callback_url' placeholder={props.translator['Callback URL']} handleChange={handleWebhookFormChange} />
-                                                        </div>
-                                                    </div>
-                                                    {Object.keys(props.webhook_events).map((event_name, index) => {
-                                                        let bg_color = 'bg-white';
-                                                        if(index % 2 == 0) {
-                                                            bg_color = 'bg-white';
-                                                        }
-                                                        var facebookHooks = ['received' , 'read', 'sent'];
-                                                        if(props.account.service != 'whatsapp' && !facebookHooks.includes(event_name) ){
-                                                            return true;
-                                                        }
-
-                                                        return (
-                                                            <div className="flex items-start">
-                                                                <div className="flex items-center h-5">
-                                                                    <Checkbox
-                                                                        id={event_name}
-                                                                        name={event_name}
-                                                                        handleChange={handleWebhookFormChange}
-                                                                        value={webhookData[event_name]}
-                                                                    />
-                                                                </div>
-                                                                <div className="ml-3 text-sm">
-                                                                    <label htmlFor={event_name} className="font-medium text-gray-700">
-                                                                        {(props.translator[props.webhook_events[event_name]['label']]) ? 
-                                                                            <>{props.translator[props.webhook_events[event_name]['label']]}</>
-                                                                            :
-                                                                            <> {props.webhook_events[event_name]['label']} </>
-                                                                        }
-                                                                    </label>
-                                                                    <p className="text-gray-500">{props.webhook_events[event_name]['help_text']}</p>
-                                                                </div>
+                                                <form id="new_incoming_url">
+                                                    <div className="space-y-4">
+                                                        <div className="form-group col-span-6 sm:col-span-4">
+                                                            <label htmlFor="incoming_url" className="block text-sm font-medium text-gray-700">
+                                                                Name
+                                                            </label>
+                                                            <div className="mt-1 flex rounded-md shadow-sm">
+                                                                <Input name='name_url' value={webhookData.name_url} required={true} id='name_url' placeholder={props.translator['Name of URL']} handleChange={handleWebhookFormChange} />
                                                             </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </form>
+                                                        </div>
+                                                        <div className="form-group col-span-6 sm:col-span-4">
+                                                            <label htmlFor="incoming_url" className="block text-sm font-medium text-gray-700">
+                                                                Webhook URL
+                                                            </label>
+                                                            <div className="mt-1 flex rounded-md shadow-sm">
+                                                                <Input name='callback_url' value={webhookData.callback_url} required={true} id='callback_url' placeholder={props.translator['Callback URL']} handleChange={handleWebhookFormChange} />
+                                                            </div>
+                                                        </div>
+                                                        {Object.keys(props.webhook_events).map((event_name, index) => {
+                                                            let bg_color = 'bg-white';
+                                                            if(index % 2 == 0) {
+                                                                bg_color = 'bg-white';
+                                                            }
+                                                            var facebookHooks = ['received' , 'read', 'sent'];
+                                                            if(props.account.service != 'whatsapp' && !facebookHooks.includes(event_name) ){
+                                                                return true;
+                                                            }
+
+                                                            return (
+                                                                <div
+                                                                    key={event_name}
+                                                                    className="flex items-start"
+                                                                >
+                                                                    <div className="flex items-center h-5">
+                                                                        <Checkbox
+                                                                            id={event_name}
+                                                                            name={event_name}
+                                                                            handleChange={handleWebhookFormChange}
+                                                                            value={webhookData[event_name]}
+                                                                        />
+                                                                    </div>
+                                                                    <div className="ml-3 text-sm">
+                                                                        <label htmlFor={event_name} className="font-medium text-gray-700">
+                                                                            {(props.translator[props.webhook_events[event_name]['label']]) ?
+                                                                                <>{props.translator[props.webhook_events[event_name]['label']]}</>
+                                                                                :
+                                                                                <> {props.webhook_events[event_name]['label']} </>
+                                                                            }
+                                                                        </label>
+                                                                        <p className="text-gray-500">{props.webhook_events[event_name]['help_text']}</p>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense items-center">
-                                    <Button
-                                        color="primary"
-                                        
-                                        onClick={processWebhookForm}
-                                    >
-                                        {webhookData.id ? (props.translator['Update']) : (props.translator['Create'])}
-                                    </Button>
-                                    <Button
-                                        
-                                        
-                                        onClick={() => setIncomingUrlModalOpen(false)}
-                                    >
-                                        {props.translator['Close']}
-                                    </Button>
-                                </div>
-                            </div>
-                        </Transition.Child>
+                                    <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense items-center">
+                                        <Button
+                                            color="primary"
+                                            onClick={processWebhookForm}
+                                        >
+                                            {webhookData.id ? (props.translator['Update']) : (props.translator['Create'])}
+                                        </Button>
+                                        <Button onClick={() => setIncomingUrlModalOpen(false)}>
+                                            {props.translator['Close']}
+                                        </Button>
+                                    </div>
+                                </Dialog.Panel>
+                            </Transition.Child>
+                        </div>
                     </div>
                 </Dialog>
             </Transition.Root>

@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { createTranslator, getLocale, setLocale } from '@/i18n/translator';
 
-export default function Login({ status, canResetPassword }) {
+export default function Login({ status, canResetPassword, translator, locale }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -10,6 +11,10 @@ export default function Login({ status, canResetPassword }) {
 
     const [showPassword, setShowPassword] = useState(false);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    const [language, setLanguage] = useState(
+        (locale ?? getLocale()).toUpperCase(),
+    );
+    const t = translator ?? createTranslator({}, getLocale());
 
     useEffect(() => {
         const handleMouseMove = (e) => {
@@ -36,6 +41,12 @@ export default function Login({ status, canResetPassword }) {
         e.preventDefault();
         post(route('login'));
     };
+
+    function handleLanguageChange(nextLanguage) {
+        setLocale(nextLanguage.toLowerCase());
+        setLanguage(nextLanguage);
+        window.location.reload();
+    }
 
     return (
         <>
@@ -86,6 +97,38 @@ export default function Login({ status, canResetPassword }) {
                         />
                     </Link>
                 </div>
+                <div className="absolute top-0 right-0 p-8 z-20">
+                    <div
+                        className="inline-grid grid-cols-2 items-stretch rounded-full bg-black/70 ring-1 ring-white/15 overflow-hidden"
+                        data-selected={language.toLowerCase()}
+                        aria-label={t["Language"] ?? "Language"}
+                    >
+                        <button
+                            type="button"
+                            onClick={() => handleLanguageChange("IT")}
+                            aria-pressed={language === "IT"}
+                            className={`px-2 py-0.5 text-[8px] font-semibold uppercase leading-none transition-colors duration-200 ${
+                                language === "IT"
+                                    ? "bg-[#38bdf8] text-white rounded-l-full"
+                                    : "text-white/60 hover:text-white/90"
+                            }`}
+                        >
+                            IT
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handleLanguageChange("EN")}
+                            aria-pressed={language === "EN"}
+                            className={`px-2 py-0.5 text-[8px] font-semibold uppercase leading-none transition-colors duration-200 ${
+                                language === "EN"
+                                    ? "bg-[#38bdf8] text-white rounded-r-full"
+                                    : "text-white/60 hover:text-white/90"
+                            }`}
+                        >
+                            EN
+                        </button>
+                    </div>
+                </div>
 
                 {/* 4. Main Content Area */}
                 <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 pb-32">
@@ -111,7 +154,7 @@ export default function Login({ status, canResetPassword }) {
 
                             <div className="p-8 sm:p-10 relative z-10">
                                 <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-center mb-8">
-                                    Welcome back
+                                    {t["Welcome back"] ?? "Welcome back"}
                                 </h1>
 
                                 {/* Status Messages */}
@@ -149,7 +192,10 @@ export default function Login({ status, canResetPassword }) {
                                             value={data.email}
                                             onChange={onHandleChange}
                                             required
-                                            placeholder="Email address"
+                                            placeholder={
+                                                t["Email address"] ??
+                                                "Email address"
+                                            }
                                             className="w-full rounded-2xl border border-white/10 bg-white/[0.03] pl-12 pr-5 py-4 text-base text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-[#BF00FF]/50 focus:bg-white/[0.08] focus:ring-4 focus:ring-[#BF00FF]/10 hover:border-white/20 hover:bg-white/[0.05]"
                                         />
                                     </div>
@@ -167,7 +213,7 @@ export default function Login({ status, canResetPassword }) {
                                             value={data.password}
                                             onChange={onHandleChange}
                                             required
-                                            placeholder="Password"
+                                            placeholder={t["Password"] ?? "Password"}
                                             className="w-full rounded-2xl border border-white/10 bg-white/[0.03] pl-12 pr-12 py-4 text-base text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-[#BF00FF]/50 focus:bg-white/[0.08] focus:ring-4 focus:ring-[#BF00FF]/10 hover:border-white/20 hover:bg-white/[0.05]"
                                         />
                                         <button
@@ -193,14 +239,17 @@ export default function Login({ status, canResetPassword }) {
                                                 onChange={onHandleChange}
                                                 className="w-4 h-4 rounded border-white/10 bg-white/5 text-[#BF00FF] focus:ring-[#BF00FF]/50 transition-all"
                                             />
-                                            <span className="ml-2 text-white/50 group-hover/check:text-white/80 transition-colors">Remember me</span>
+                                            <span className="ml-2 text-white/50 group-hover/check:text-white/80 transition-colors">
+                                                {t["Remember me"] ?? "Remember me"}
+                                            </span>
                                         </label>
                                         {canResetPassword && (
                                             <Link
                                                 href={route("password.request")}
                                                 className="font-medium text-[#BF00FF] hover:text-[#d946ef] transition-colors hover:underline underline-offset-4"
                                             >
-                                                Forgot password?
+                                                {t["Forgot password?"] ??
+                                                    "Forgot password?"}
                                             </Link>
                                         )}
                                     </div>
@@ -224,7 +273,10 @@ export default function Login({ status, canResetPassword }) {
                                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
                                             )}
-                                            {processing ? "Signing in..." : "Sign in"}
+                                            {processing
+                                                ? t["Signing in..."] ??
+                                                  "Signing in..."
+                                                : t["Sign in"] ?? "Sign in"}
                                         </span>
                                     </button>
                                 </form>

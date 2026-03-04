@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { CheckIcon, PencilIcon, XMarkIcon, CameraIcon } from "@heroicons/react/24/outline";
 import Dropdown from "@/Components/Forms/Dropdown";
-import { Link } from "@inertiajs/react";
 import Axios from "axios";
 import Input from "@/Components/Forms/Input";
 import { router as Inertia } from "@inertiajs/react";
@@ -14,14 +13,12 @@ export function GlassCard({ className = "", children }) {
     <div
       className={[
         "relative rounded-3xl bg-[#140816]/70 backdrop-blur-3xl group",
-        "border border-white/10 ring-1 ring-white/5",
         "transition-all duration-500 hover:border-[#38bdf8]/50 hover:-translate-y-3 hover:scale-[1.02]",
         "hover:shadow-[0_20px_40px_-15px_rgba(56,189,248,0.3)]",
         className,
       ].join(" ")}
     >
       <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#38bdf8]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-30" />
       <div className="p-6 relative z-10 flex flex-col h-full">
         {children}
       </div>
@@ -89,56 +86,6 @@ export default function CompanyDetail(props) {
 
   return (
     <div className="space-y-4">
-      <div className="sm:grid grid grid-cols-2 gap-4">
-        <GlassCard>
-          <div className="flex rounded-lg gap-4 items-center">
-            <div className="pl-2 w-40 text-white">
-              <svg
-                width={80}
-                height={83}
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-white"
-              >
-                <path
-                  d="M57.333 25.076V9.888c0-3.61 0-5.415-.759-6.524a4.333 4.333 0 0 0-2.847-1.825c-1.324-.225-2.96.531-6.232 2.044l-38.44 17.77c-2.918 1.348-4.377 2.023-5.446 3.07a8.682 8.682 0 0 0-2.108 3.3C1 29.133 1 30.743 1 33.963v21.495m58.5-2.17h.043M1 38.965v28.646c0 4.862 0 7.292.945 9.15a8.674 8.674 0 0 0 3.787 3.793c1.854.946 4.28.946 9.135.946h50.266c4.854 0 7.281 0 9.135-.946a8.674 8.674 0 0 0 3.787-3.794C79 74.903 79 72.473 79 67.611V38.965c0-4.861 0-7.292-.945-9.15a8.673 8.673 0 0 0-3.787-3.793c-1.854-.946-4.28-.946-9.135-.946H14.867c-4.854 0-7.281 0-9.135.946a8.674 8.674 0 0 0-3.787 3.794C1 31.673 1 34.104 1 38.966Zm60.667 14.323c0 1.199-.97 2.17-2.167 2.17a2.168 2.168 0 0 1-2.167-2.17c0-1.198.97-2.17 2.167-2.17 1.197 0 2.167.972 2.167 2.17Z"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-            <div className="w-full">
-              <p className="font-bold text-white">{props.translator['This is your Workspace']}</p>
-              <p className="text-[#878787] text-sm whitespace-initial pt-2">
-                {props.translator['Here you can change your company settings, add, edit or remove informations, as you number, your address, link your channel, etc.']}
-              </p>
-            </div>
-          </div>
-        </GlassCard>
-        <GlassCard>
-          <div className="text-white text-lg font-semibold">
-            {currentCompany && currentCompany.plan} - {props.translator['Plan']}
-          </div>
-          <div className="grid grid-cols-2 p-2">
-            <div className="">
-              <p className="flex text-white gap-2"><span className="w-5 h-5"><CheckIcon /></span>{props.translator['Monthly Fee']}</p>
-              <p className="flex text-white gap-2"><span className="w-5 h-5"><CheckIcon /></span>1 {props.translator['Number for channel']}</p>
-              <p className="flex text-white gap-2"><span className="w-5 h-5"><CheckIcon /></span>1 {props.translator['User for Workspace']}</p>
-            </div>
-            <div className="p-4 sm:flex sm:flex-row-reverse self-center">
-              <Link
-                href={route('update_plan')}
-                className="w-full inline-flex justify-center rounded-md px-4 py-2 text-base font-medium btn btn-secondary sm:ml-3 sm:w-auto sm:text-sm"
-              >
-                {props.translator['Update']}
-              </Link>
-            </div>
-          </div>
-        </GlassCard>
-      </div>
-
       <GlassCard>
         <div className="sm:grid grid grid-cols-2 gap-4 p-2 w-full">
           <div className="flex p-4 gap-4">
