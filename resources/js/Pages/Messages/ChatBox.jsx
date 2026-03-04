@@ -68,15 +68,15 @@ function ChatBox(props)
        <>
        <div className="flex items-start space-x-4">
             <div className="flex-shrink-0">
-                <span className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gray-500">
+                <span className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-[#A31EFF]/25 border border-[#A31EFF]/40">
                     <span className="text-2xl font-medium leading-none text-white">
                         {props.logo}
                     </span>
                 </span>
             </div>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 bg-white/5 border border-white/10 rounded-2xl p-4">
                 <form action="#">
-                <div className="border-b border-gray-200 focus-within:border-indigo-600">
+                <div className="border-b border-white/10 focus-within:border-[#A31EFF]/70">
                     <label htmlFor="comment" className="sr-only">
                         Add your comment
                     </label>
@@ -88,7 +88,7 @@ function ChatBox(props)
                         name="content"
                         disabled={(props.data.template_id || props.data.catalog_id)? true : false }
                         value={props.data.content}
-                        className="block w-full resize-none border-0 border-b border-transparent p-0 pb-2 focus:border-indigo-600 focus:ring-0 sm:text-sm"
+                        className="block w-full resize-none border-0 border-b border-transparent p-0 pb-2 focus:border-[#A31EFF]/70 focus:ring-0 sm:text-sm bg-transparent text-white placeholder-white/40"
                         placeholder="Add your comment..."
                         defaultValue={''}
                     />
@@ -98,7 +98,7 @@ function ChatBox(props)
                         <div className="flow-root">
                             <button
                                 type="button"
-                                className="-m-2 inline-flex h-10 w-10 items-center justify-center rounded-full text-gray-400 hover:text-gray-500"
+                                className="-m-2 inline-flex h-10 w-10 items-center justify-center rounded-full text-white/60 hover:text-white"
                             >
                                     <div className="flex justify-center">
                                         <AttachIcon />
@@ -210,7 +210,7 @@ function ChatBox(props)
                             {(props.data.template_id || props.data.catalog_id) ?
                                 <span
                                     title="Clear template"
-                                    className='cursor-pointer'
+                                    className='cursor-pointer text-white/70 hover:text-white'
                                     onClick={() => props.clearContent()}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
@@ -224,7 +224,7 @@ function ChatBox(props)
                     <button
                         type="button"
                         onClick={props.sendMessage}
-                        className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="inline-flex items-center rounded-md border border-transparent bg-[#A31EFF] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#8a19d9] focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/60 focus:ring-offset-0"
                     >
                         Post
                     </button>

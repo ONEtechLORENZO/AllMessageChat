@@ -64,7 +64,7 @@ export default function Accounts(props) {
 
     return (
         <>
-        <div className="grid gap-4 grid-cols-2 border-[#B9B9B9] border-b">
+        <div className="grid gap-4 grid-cols-2 border-white/10 border-b">
             
             <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                 {tabs.map((tab) => (
@@ -73,14 +73,23 @@ export default function Accounts(props) {
                     href={tab.href}
                     className={classNames(
                     tab.page == page
-                        ? 'border-indigo-500 text-indigo-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                    'whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm'
+                        ? 'text-white'
+                        : 'text-white/70 hover:text-white',
+                    'group whitespace-nowrap py-3 px-1 border-b-2 border-transparent font-medium text-sm'
                     )}
                     aria-current={tab.current ? 'page' : undefined}
                     onClick={() => setPage(tab.page)}
                 >
-                    {tab.name}
+                    <span
+                        className={classNames(
+                            'px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide border transition',
+                            tab.page == page
+                                ? 'bg-[#A31EFF]/20 border-[#A31EFF] text-white shadow-[0_0_18px_rgba(163,30,255,0.9)] ring-1 ring-[#A31EFF]/50'
+                                : 'bg-white/5 border-white/10 text-white/70 group-hover:text-white group-hover:border-[#A31EFF]/40 group-hover:shadow-[0_0_10px_rgba(163,30,255,0.4)]'
+                        )}
+                    >
+                        {tab.name}
+                    </span>
                 </a>
                 ))}
             </nav>
@@ -88,7 +97,8 @@ export default function Accounts(props) {
             <div className="flex justify-end items-center">
                 <Link
                         href={route('account_registration')}
-                        className='ml-3 btn btn-primary'
+                        style={{ backgroundColor: "#BF00FF", borderColor: "#BF00FF" }}
+                        className='ml-3 btn text-white hover:opacity-90'
                     >
                         {props.translator['Link Social Profile']}
                 </Link>

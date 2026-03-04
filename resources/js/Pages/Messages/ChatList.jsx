@@ -495,7 +495,8 @@ function ChatList(props) {
                             </div>
                             <button
                                 type="button"
-                                className="inline-flex justify-center items-center whitespace-nowrap !py-2 !px-3 border border-transparent shadow-sm text-sm font-medium rounded-[4px] text-white bg-primary hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:bg-primary"
+                                style={{ backgroundColor: "#BF00FF" }}
+                                className="inline-flex justify-center items-center whitespace-nowrap !py-2 !px-3 border border-transparent shadow-sm text-sm font-medium rounded-[4px] text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
                                 onClick={() => setShowForm(true)}
                             >
                                 {props.translator["New Message"]}
@@ -549,7 +550,12 @@ function ChatList(props) {
                                     {Object.entries(chatList).map(
                                         ([id, person], j) => (
                                             <li key={id}>
-                                                <div className="relative !px-3 !py-3 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
+                                                <div className={classNames(
+                                                    "group relative !px-3 !py-3 flex items-center space-x-3 hover:bg-white/5 focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#BF00FF]/40",
+                                                    selectedContact == person.id
+                                                        ? "ring-1 ring-[#BF00FF] shadow-[0_0_14px_rgba(191,0,255,0.6)]"
+                                                        : "",
+                                                )}>
                                                     <div className="flex-shrink-0">
                                                         <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-500">
                                                             <span className="text-xl font-normal leading-none text-white">
@@ -576,7 +582,7 @@ function ChatList(props) {
                                                                 className="absolute inset-0"
                                                                 aria-hidden="true"
                                                             />
-                                                            <span className="text-sm font-semibold text-white flex items-start">
+                                                            <span className="text-sm font-semibold text-white flex items-start transition-colors group-hover:text-[#BF00FF]">
                                                                 {person &&
                                                                 person.name ? (
                                                                     <>
@@ -675,15 +681,15 @@ function ChatList(props) {
                     </div>
                 </div>
                 <div className="w-2/3 h-full min-h-0">
-                    <div className="flex-1 min-h-0 !sm:py-3 !sm:pr-3 pr-0 justify-between flex flex-col h-full bg-gray-100">
+                    <div className="flex-1 min-h-0 !sm:py-3 !sm:pr-3 pr-0 justify-between flex flex-col h-full bg-[#0b0b10] gap-3">
                         {selectedContact &&
                             chatList["contact_id_" + selectedContact] && (
                                 <>
-                                    <div className="flex sm:items-center justify-between !py-3 !px-2 border-b-2 border-gray-200 bg-white">
+                                    <div className="flex sm:items-center justify-between !py-3 !px-3 border border-white/10 rounded-2xl bg-[#140816]/80 text-white">
                                         <div className="relative flex items-center space-x-2">
                                             <div className="flex gap-1">
                                                 <div className="relative">
-                                                    <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-500">
+                                                    <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/10 border border-white/10">
                                                         <span className="text-xl font-medium leading-none text-white">
                                                             {chatList[
                                                                 "contact_id_" +
@@ -698,7 +704,7 @@ function ChatList(props) {
                                             </div>
                                             <div className="flex flex-col leading-tight">
                                                 <div className="text-sm font-semibold mt-1 flex items-center">
-                                                    <span className="text-[#3D4459] mr-3">
+                                                    <span className="text-white mr-3">
                                                         <Link
                                                             href={route(
                                                                 "detailContact",
@@ -706,7 +712,7 @@ function ChatList(props) {
                                                                     id: selectedContact,
                                                                 },
                                                             )}
-                                                            className="cursor-pointer underline"
+                                                            className="cursor-pointer underline decoration-white/40 hover:decoration-white"
                                                         >
                                                             {
                                                                 chatList[
@@ -724,15 +730,15 @@ function ChatList(props) {
                                     /> */}
                                         </div>
 
-                                        <div className="flex items-center space-x-2">
+                                        <div className="flex items-center gap-3">
                                             <Menu
                                                 as="div"
-                                                className="ml-3 relative"
+                                                className="relative"
                                             >
                                                 <div>
-                                                    <Menu.Button className="max-w-xs ring-1 !px-2 !py-1 flex items-center text-sm rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                                        <selectedChannel.icon className="w-10 h-10 fill-current text-gray-500" />
-                                                        <span className="ml-2">
+                                                    <Menu.Button className="max-w-xs !px-3 !py-1.5 flex items-center gap-2 text-sm rounded-full border border-white/10 bg-white/5 text-white/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/60 focus:ring-offset-0">
+                                                        <selectedChannel.icon className="w-8 h-8 fill-current text-white/70" />
+                                                        <span>
                                                             {
                                                                 selectedChannel.label
                                                             }
@@ -748,7 +754,7 @@ function ChatList(props) {
                                                     leaveFrom="transform opacity-100 scale-100"
                                                     leaveTo="transform opacity-0 scale-95"
                                                 >
-                                                    <Menu.Items className="origin-top-right absolute right-0 mt-2  rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
+                                                    <Menu.Items className="origin-top-right absolute right-0 mt-2 rounded-xl shadow-lg bg-[#0f0a14] border border-white/10 py-1 focus:outline-none">
                                                         {Object.entries(
                                                             channels,
                                                         ).map(
@@ -763,12 +769,12 @@ function ChatList(props) {
                                                                         className={classNames(
                                                                             containerCategory ==
                                                                                 name
-                                                                                ? "bg-gray-100"
+                                                                                ? "bg-white/10"
                                                                                 : "",
-                                                                            "p-2 flex items-center",
+                                                                            "p-2 flex items-center gap-2",
                                                                         )}
                                                                     >
-                                                                        <channel.icon className="w-10 h-10 fill-current text-gray-500" />
+                                                                        <channel.icon className="w-8 h-8 fill-current text-white/70" />
                                                                         <button
                                                                             onClick={() =>
                                                                                 selectContactCategory(
@@ -778,7 +784,7 @@ function ChatList(props) {
                                                                             type={
                                                                                 "button"
                                                                             }
-                                                                            className="block py-2 px-2 text-sm text-gray-700 w-full"
+                                                                            className="block py-2 px-2 text-sm text-white/80 hover:text-white w-full text-left"
                                                                         >
                                                                             {
                                                                                 channel.label
@@ -791,15 +797,13 @@ function ChatList(props) {
                                                     </Menu.Items>
                                                 </Transition>
                                             </Menu>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
                                             <Menu
                                                 as="div"
-                                                className="ml-3 relative"
+                                                className="relative"
                                             >
                                                 <div>
-                                                    <Menu.Button className="max-w-xs ring-0 p-2 flex items-center text-sm border-0 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                                        <div className="ml-2 flex grid-cols-2 ">
+                                                    <Menu.Button className="max-w-xs px-3 py-1.5 flex items-center text-sm rounded-full border border-white/10 bg-white/5 text-white/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/60 focus:ring-offset-0">
+                                                        <div className="flex items-center gap-2">
                                                             <span>
                                                                 {selectedAccount ? (
                                                                     <>
@@ -833,17 +837,17 @@ function ChatList(props) {
                                                                         ] ? (
                                                                             <span
                                                                                 title="Session active"
-                                                                                className="rounded-full p-1 bg-green-500 m-2"
+                                                                                className="rounded-full p-1 bg-green-500"
                                                                             ></span>
                                                                         ) : (
                                                                             <span
                                                                                 title="Session inactive"
-                                                                                className="rounded-full p-1 bg-red-500 m-2"
+                                                                                className="rounded-full p-1 bg-red-500"
                                                                             ></span>
                                                                         )}
                                                                     </>
                                                                 )}
-                                                            <span className="float-right">
+                                                            <span className="ml-1">
                                                                 <svg
                                                                     className="-mr-1 ml-2 h-5 w-5"
                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -870,7 +874,7 @@ function ChatList(props) {
                                                     leaveFrom="transform opacity-100 scale-100"
                                                     leaveTo="transform opacity-0 scale-95"
                                                 >
-                                                    <Menu.Items className="origin-top-right absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
+                                                    <Menu.Items className="origin-top-right absolute right-0 mt-2 rounded-xl shadow-lg bg-[#0f0a14] border border-white/10 py-1 focus:outline-none">
                                                         {Object.entries(
                                                             accountList,
                                                         ).map(([id, name]) => (
@@ -879,9 +883,9 @@ function ChatList(props) {
                                                                     className={classNames(
                                                                         selectedAccount ==
                                                                             id
-                                                                            ? "bg-gray-100"
+                                                                            ? "bg-white/10"
                                                                             : "",
-                                                                        "p-2 flex items-center",
+                                                                        "p-2 flex items-center gap-2",
                                                                     )}
                                                                 >
                                                                     <span
@@ -890,7 +894,7 @@ function ChatList(props) {
                                                                                 id,
                                                                             )
                                                                         }
-                                                                        className="block px-4 text-sm text-gray-700 w-full cursor-pointer"
+                                                                        className="block px-4 text-sm text-white/80 hover:text-white w-full cursor-pointer"
                                                                     >
                                                                         {name}
                                                                     </span>
@@ -939,7 +943,7 @@ function ChatList(props) {
                                         setLoadedStory={setLoadedStory}
                                     />
 
-                                    <div className="border-t-2  border-gray-200 px-4 pt-4 mb-2 sm:mb-0 bg-white">
+                                    <div className="border border-white/10 rounded-2xl px-4 pt-4 mb-2 sm:mb-0 bg-[#140816]/80">
                                         <ChatBox
                                             handleChange={handleChange}
                                             handleKeyUp={handleKeyUp}

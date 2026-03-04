@@ -71,7 +71,7 @@ export default function ToolMenu(props) {
     return (
         <Menu as="div" className="inline-block text-left ml-auto">
             <div>
-                <Menu.Button className="w-12 h-12 bg-[#38bdf8] rounded shadow-sm flex justify-center items-center text-white">
+                <Menu.Button className="w-12 h-12 bg-[#BF00FF] hover:bg-[#a000d6] rounded shadow-sm flex justify-center items-center text-white">
                     <BsTools />
                 </Menu.Button>
             </div>

@@ -22,3 +22,40 @@ a:focus {
 :where(.bg-white):not([class*="text-"]) {
   color: #111111;
 }
+
+/* Dashboard background accents */
+.purple-giant-arc {
+  position: fixed;
+  top: -38%;
+  right: -22%;
+  width: clamp(420px, 70vw, 900px);
+  height: clamp(420px, 70vw, 900px);
+  border-radius: 50%;
+  background: #7c3aed;
+  box-shadow: 0 30px 90px rgba(124, 58, 237, 0.45);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@media (max-width: 768px) {
+  .purple-giant-arc {
+    top: -45%;
+    right: -35%;
+    width: clamp(320px, 85vw, 720px);
+    height: clamp(320px, 85vw, 720px);
+    opacity: 0.8;
+  }
+}
+
+
+/* Chat pattern background */
+.chat-pattern-bg {
+  background-color: #0b0b10;
+  background-image:
+    radial-gradient(circle, rgba(163, 30, 255, 0.2) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 36px 36px, 18px 18px;
+  background-position: 0 0, 9px 9px;
+}
+

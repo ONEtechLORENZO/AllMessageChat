@@ -77,7 +77,8 @@ export default function DashboardNew(props) {
 
     return (
         <>
-            <Authenticated
+                        
+<Authenticated
                 auth={props.auth}
                 errors={props.errors}
                 current_page="Dashboard"
@@ -87,7 +88,7 @@ export default function DashboardNew(props) {
                 <Head title={props.translator["Dashboard"]} />
 
                 <div className="pt-4 pb-8">
-                    <div className="px-4 sm:px-6 lg:px-8">
+<div className="px-4 sm:px-6 lg:px-8">
                         <div className="pb-4">
                             <h3 className="text-2xl leading-6 font-semibold !text-white">
                                 {props.translator["Dashboard"]}
@@ -221,7 +222,7 @@ export default function DashboardNew(props) {
                                             alt="Instagram"
                                             className="w-8"
                                         />
-                                        <div className="text-base">
+                                        <div className="text-sm text-white/60">
                                             {props.services.instagram
                                                 ? props.services.instagram.count
                                                 : "-"}
@@ -234,7 +235,7 @@ export default function DashboardNew(props) {
                                             alt="WhatsApp"
                                             className="w-9"
                                         />
-                                        <div className="text-base">
+                                        <div className="text-sm text-white/60">
                                             {props.services.whatsapp
                                                 ? props.services.whatsapp.count
                                                 : "-"}
@@ -247,7 +248,7 @@ export default function DashboardNew(props) {
                                             alt="Telegram"
                                             className="w-8"
                                         />
-                                        <div className="text-base">
+                                        <div className="text-sm text-white/60">
                                             {props.services.telegram
                                                 ? props.services.telegram.count
                                                 : "-"}
@@ -260,7 +261,7 @@ export default function DashboardNew(props) {
                                             alt="Facebook"
                                             className="w-8"
                                         />
-                                        <div className="text-base">
+                                        <div className="text-sm text-white/60">
                                             {props.services.facebook
                                                 ? props.services.facebook.count
                                                 : "-"}

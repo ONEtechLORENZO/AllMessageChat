@@ -354,7 +354,8 @@ function ListView(props) {
                                     {props.add_link &&
                                         <Link
                                             href={props.add_link}
-                                            className='inline-flex items-center px-4 py-2 bg-primary border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest active:bg-gray-900 transition ease-in-out duration-150'
+                                            style={{ backgroundColor: "#BF00FF" }}
+                                            className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest transition ease-in-out duration-150 hover:opacity-90'
                                         >
                                             {props.add_button_text}
                                         </Link>
@@ -363,8 +364,9 @@ function ListView(props) {
                                     {!props.add_link &&
                                         <Button
                                             type='button'
-                                            color='primary'
                                             onClick={() => setShowForm(true)}
+                                            style={{ backgroundColor: "#BF00FF", borderColor: "#BF00FF" }}
+                                            className='text-white hover:opacity-90'
                                         >
                                             {props.add_button_text ? props.add_button_text : `${props.translator['Add']} ${props.singular}`}
                                         </Button>
