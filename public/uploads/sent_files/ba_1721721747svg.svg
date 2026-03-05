@@ -1,0 +1,18 @@
+<?xml version="1.0"?><svg width="350" height="350" xmlns="http://www.w3.org/2000/svg">
+ <title>Cute Cartoon Ant head</title>
+
+ <metadata id="metadata9564">image/svg+xml</metadata>
+ <g>
+  <title>Layer 1</title>
+  <path d="m246.264999,271.320984c-43.466995,39.827026 -110.418991,43.295013 -149.5401,7.744995c-39.121201,-35.549973 -35.597599,-96.654984 7.870102,-136.481979c43.468002,-39.827698 110.419006,-43.295403 149.539993,-7.746002c39.121994,35.550003 35.598007,96.654999 -7.869995,136.482986z" stroke-width="27.6726" stroke-miterlimit="4" stroke="#000000" fill="#ffffff" id="path8672"/>
+  <path d="m102.087898,236.574997c0,0 41.664101,33.330002 74.994102,0" stroke-width="12.6375" stroke-miterlimit="4" stroke="#000000" fill="none" id="path9254"/>
+  <path d="m221.960007,181.768997c0,15.296997 -11.847,27.697998 -26.462006,27.697998c-14.615005,0 -26.462997,-12.401001 -26.462997,-27.697998c0,-15.298004 11.847992,-27.697998 26.462997,-27.697998c14.615005,0 26.462006,12.399994 26.462006,27.697998z" stroke-miterlimit="4" stroke="#000000" fill="#000000" id="path8672-2"/>
+  <g transform="matrix(1.17093, 0, 0, 1.17093, 322.126, 942.895)" id="g9504">
+   <path d="m-107.89669,-681.644897c0,0 1.379997,-91.666016 108.333643,-91.666016" stroke-width="12.6375" stroke-miterlimit="4" stroke-linecap="round" stroke="#000000" fill="none" id="path9300"/>
+   <path d="m-146.78569,-681.644897c0,0 -1.378998,-91.666016 -108.332779,-91.666016" stroke-width="12.6375" stroke-miterlimit="4" stroke-linejoin="round" stroke-linecap="round" stroke="#000000" fill="none" id="path9300-0"/>
+  </g>
+  <path d="m159.682999,182.595001c0,15.296997 -11.847992,27.697998 -26.46199,27.697998c-14.615005,0 -26.462807,-12.401001 -26.462807,-27.697998c0,-15.296997 11.847801,-27.697998 26.462807,-27.697998c14.613998,0 26.46199,12.401001 26.46199,27.697998z" stroke-miterlimit="4" stroke="#000000" fill="#000000" id="svg_2"/>
+  <ellipse ry="12" rx="6" cy="175.595" cx="122.721" stroke-width="12.6375" stroke-linejoin="null" stroke-linecap="null" stroke-dasharray="null" fill="#ffffff" id="svg_4"/>
+  <ellipse ry="12" rx="6" cy="174.105" cx="185.731" stroke-width="12.6375" stroke-linejoin="null" stroke-linecap="null" stroke-dasharray="null" fill="#ffffff" id="svg_5"/>
+ </g>
+</svg>

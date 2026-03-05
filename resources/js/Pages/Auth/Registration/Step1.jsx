@@ -1,0 +1,300 @@
+import React, {useEffect, useState} from "react";
+import {UserIcon, UserPlusIcon, PhoneIcon, KeyIcon, EnvelopeIcon, ChevronRightIcon, EyeIcon}from "@heroicons/react/24/outline";
+import { Link } from "@inertiajs/react";
+import axios from "axios";
+import notie from 'notie';
+import nProgress from 'nprogress';
+import { Col, Row, Button, FormGroup, Label, Input } from "reactstrap";
+
+const validateList = [
+    'first_name','last_name','email','password','confirm_password'
+];
+
+export default function Step1 (props) {
+
+    const [user, setUser] = useState({});
+    const [passwordType, setPasswordType] = useState("password");
+    const [condition, setCondition] = useState(false);
+    
+    useEffect( () => { 
+        if(props.userMail) {
+            updateUserData();
+        }
+    },[]);
+
+    /**
+     * Update user data
+     */
+    function updateUserData(){
+        let newUser = Object.assign({}, user);
+        newUser['email'] = props.userMail;
+        newUser['uuid'] = props.uuid ? props.uuid : '';
+        setUser(newUser);
+    }
+    
+    // User detail Handling
+    function userHandler (event) {
+        let newUser = Object.assign({}, user);
+        const name = event.target.name;
+        const value = event.target.value;
+        newUser[name] = value;
+        setUser(newUser);
+    }
+
+    // Phone number change event
+    function changePhoneNumber (event) {
+        let newUser = Object.assign({}, user);
+        const name = event.target.name;
+        let result = event.target.value;
+
+        if(result) {
+            result = result.replace(/[^0-9]/g,'');
+        }
+        newUser[name] = result;
+        setUser(newUser)
+    }
+
+    // Password show Or not
+    function showPassword () {
+        if(passwordType == 'password') {
+            setPasswordType('text')
+        }
+        if(passwordType == 'text') {
+            setPasswordType('password');
+        }
+    }
+    
+    function userValidation (user) {
+       let validate = true;
+       let field_value = '';
+       if(user) {
+           validateList.map( (list) => {
+             field_value = user[list];
+             if(validate && !field_value ) {
+                notie.alert({type: 'error', text: 'Please enter the required field value', time: 5});
+                validate = false;
+             }
+        } );
+       }
+       return validate;
+    }
+
+    function errorHandler(message) {
+        Object.entries(message.errors).map( ([key,error]) => {
+            notie.alert({type: 'error', text: error[0], time: 5});
+        } )
+    }
+    
+    // Check Password and Re-enter are match 
+    function confirmPassword(user) {
+
+       let check = true;
+       const password = user['password'];
+       const confirm_password = user['confirm_password']; 
+
+       if(password != confirm_password){
+          notie.alert({type: 'warning', text: 'Password and Confirm password should be same', time: 5});
+          check = false;
+       }
+       return check;
+    }
+
+    function checkCondition(check) {
+        let terms = check ? false : true;
+        setCondition(terms);
+    }
+
+    function saveUserDetail () {
+
+        let is_validate = userValidation(user);
+        if(!is_validate) {
+            return false;
+        }
+        let confirmation = confirmPassword(user);
+        if(!confirmation){
+            return false;
+        }
+        if(!condition){
+            notie.alert({type: 'warning', text: 'Please accept the terms and conditions', time: 5});
+            return false;
+        }
+        nProgress.start(0.5);
+        nProgress.inc(0.2);
+
+        let url = route('new_user');
+        axios.post(url, user).then( (response) => {
+            if(response.data.step) {
+                nProgress.done(true);
+                props.setOpenTab(response.data.step);
+            } else {
+                nProgress.done(true);
+                let newUser = Object.assign({}, user);
+                newUser['user_id'] = response.data.user_id;
+                props.setUserMail(newUser);
+   
+                props.setOpenTab(2);
+            }
+        })
+        .catch((error) => {
+            errorHandler(error.response.data)
+        });
+    }
+
+    return (
+        <div className="w-full bg-blue-50 flex justify-center items-center">
+            <div className="max-w-7xl flex mx-auto items-center px-10 h-screen">
+                <div className="w-full bg-white flex justify-center py-8 rounded-xl px-4 lg:px-10 shadow-2xl">
+                  <form id="form">
+                    <div className="py-8">
+                        <div className="flex justify-end pl-4">
+                            <img
+                                src="./img/onemessage-logo.png"
+                                alt="One message logo"
+                                className="w-1/2"
+                            />
+                        </div>
+                        <div className="flex justify-end">
+                            <span>Already have an account 
+                                <Link
+                                  href={route('login')}
+                                  className="text-primary px-2"
+                                >
+                                    Log in
+                                </Link>
+                            </span>
+                        </div> 
+
+                        <div className="grid grid-cols-2 mt-4">
+                            <div className="flex justify-start font-semibold text-lg text-primary">Step 1 of 3</div>
+                            <div className="flex justify-end font-semibold text-lg">About You</div>
+                        </div>
+
+                        <div className="w-full px-10 py-2 flex gap-8 items-center mt-5">
+                            <div className="text-gray-500">
+                               <UserIcon className="h-6 w-6" />
+                            </div>
+                            <div className="flex flex-col flex-1">
+                                <label>First Name <span className="text-red-500">  * </span>  </label>
+                                <Input type="text"
+                                    name="first_name"  autoComplete="off"
+                                    className="mt-2"
+                                    value={user['first_name'] ? user['first_name'] : ''}
+                                    onChange={(e) => userHandler(e)} />
+                               
+                            </div>
+                        </div>
+
+                        <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
+                            <div className="text-gray-500">
+                               <UserPlusIcon className="h-6 w-6" />
+                            </div>
+                            <div className="flex flex-col flex-1">
+                                <label>Last Name <span className="text-red-500">  * </span>  </label>
+                                <Input type="text"
+                                    name="last_name"  autoComplete="off"
+                                    className="mt-2"
+                                    value={user['last_name'] ? user['last_name'] : ''}
+                                    onChange={(e) => userHandler(e)} />
+                                
+                            </div>
+                        </div>
+
+                        <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
+                            <div className="text-gray-500">
+                               <EnvelopeIcon className="h-6 w-6" />
+                            </div>
+                            <div className="flex flex-col flex-1">
+                                <label>Email <span className="text-red-500">  * </span>  </label>
+                                <Input type="email"
+                                    name="email"  autoComplete="off"
+                                    className="mt-2"
+                                    value={user['email'] ? user['email'] : ''}
+                                    onChange={(e) => userHandler(e)} />                                
+                            </div>
+                            
+                        </div>
+
+                        <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
+                            <div className="text-gray-500">
+                               <KeyIcon className="h-6 w-6" />
+                            </div>
+                            <div className="flex flex-col flex-1">
+                                <label>Password <span className="text-red-500">  * </span>  </label>
+                                <div className="relative">
+                                    <Input type={passwordType}
+                                        name="password"  autoComplete="off"
+                                        className="mt-2"
+                                        value={user['password'] ? user['password'] : ''} 
+                                        onChange={(e) => userHandler(e)} />
+                                    <div className="text-gray-500 absolute right-2 bottom-2 cursor-pointer">
+                                        <EyeIcon className="h-4 w-4" onClick={() => showPassword()}/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="w-full px-10 py-2 flex gap-8 items-center mt-2">
+                            <div className="text-gray-500">
+                               <KeyIcon className="h-6 w-6" />
+                            </div>
+                            <div className="flex flex-col flex-1">
+                                <label>Confirm Password <span className="text-red-500">  * </span>  </label>
+                                <div className="relative">
+                                    <Input
+                                        type={passwordType}
+                                        name="confirm_password"
+                                        className="mt-2"
+                                        autoComplete="off"
+                                        value={user['confirm_password'] ? user['confirm_password'] : ''}
+                                        onChange={(e) => userHandler(e)}
+                                    /> 
+                                    <div className="text-gray-500 absolute right-2 bottom-2 cursor-pointer">
+                                        <EyeIcon className="h-4 w-4" onClick={() => showPassword()}/>
+                                    </div>                
+                                </div>              
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 mt-4">
+                            <div className="flex justify-start items-center">
+                                <div className="">
+                                    <input
+                                        type="checkbox"
+                                        checked={condition == true ? 'checked' : ''}
+                                        className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                        onChange={() => checkCondition(condition)}
+                                    />
+                                </div>
+                                <div className="px-3 flex">Accept Privacy Policy and <a href="http://onemessage.chat" target={"_blank"} className="inline-flex px-2">Terms and Condition</a></div>
+                            </div>
+                            <div className="flex justify-end">
+                                <button
+                                    type="button"
+                                    className="w-full inline-flex justify-end rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary hover:bg-primary/80 text-semibold font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm mt-4"
+                                    onClick={() => saveUserDetail()}
+                            >
+                                    Next
+                                    <span className="flex justify-end pt-1"><ChevronRightIcon className="h-4 w-4"/></span>
+                                </button>
+                            </div>
+                        </div>
+            
+                    </div>
+                  </form>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+
+
+
+
+
+
+
+
+
+
+

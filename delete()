@@ -1,0 +1,49 @@
+
+Deprecated: Opis\Closure\unserialize(): Implicitly marking parameter $options as nullable is deprecated, the explicit nullable type must be used instead in C:\code\chat_backup\dev.allmessage.chat\vendor\opis\closure\functions.php on line 32
+
+Deprecated: optional(): Implicitly marking parameter $callback as nullable is deprecated, the explicit nullable type must be used instead in C:\code\chat_backup\dev.allmessage.chat\vendor\laravel\framework\src\Illuminate\Support\helpers.php on line 184
+
+Deprecated: with(): Implicitly marking parameter $callback as nullable is deprecated, the explicit nullable type must be used instead in C:\code\chat_backup\dev.allmessage.chat\vendor\laravel\framework\src\Illuminate\Support\helpers.php on line 375
+
+Deprecated: Illuminate\Container\Container::beforeResolving(): Implicitly marking parameter $callback as nullable is deprecated, the explicit nullable type must be used instead in C:\code\chat_backup\dev.allmessage.chat\vendor\laravel\framework\src\Illuminate\Container\Container.php on line 1114
+
+Deprecated: Illuminate\Container\Container::resolving(): Implicitly marking parameter $callback as nullable is deprecated, the explicit nullable type must be used instead in C:\code\chat_backup\dev.allmessage.chat\vendor\laravel\framework\src\Illuminate\Container\Container.php on line 1134
+
+Deprecated: Illuminate\Container\Container::afterResolving(): Implicitly marking parameter $callback as nullable is deprecated, the explicit nullable type must be used instead in C:\code\chat_backup\dev.allmessage.chat\vendor\laravel\framework\src\Illuminate\Container\Container.php on line 1154
+
+Deprecated: Illuminate\Container\Container::setInstance(): Implicitly marking parameter $container as nullable is deprecated, the explicit nullable type must be used instead in C:\code\chat_backup\dev.allmessage.chat\vendor\laravel\framework\src\Illuminate\Container\Container.php on line 1393
+
+Deprecated: Illuminate\Contracts\Container\Container::resolving(): Implicitly marking parameter $callback as nullable is deprecated, the explicit nullable type must be used instead in C:\code\chat_backup\dev.allmessage.chat\vendor\laravel\framework\src\Illuminate\Contracts\Container\Container.php on line 173
+
+Deprecated: Illuminate\Contracts\Container\Container::afterResolving(): Implicitly marking parameter $callback as nullable is deprecated, the explicit nullable type must be used instead in C:\code\chat_backup\dev.allmessage.chat\vendor\laravel\framework\src\Illuminate\Contracts\Container\Container.php on line 182
+
+Deprecated: Illuminate\Support\Arr::first(): Implicitly marking parameter $callback as nullable is deprecated, the explicit nullable type must be used instead in C:\code\chat_backup\dev.allmessage.chat\vendor\laravel\framework\src\Illuminate\Collections\Arr.php on line 183
+
+Deprecated: Illuminate\Support\Arr::last(): Implicitly marking parameter $callback as nullable is deprecated, the explicit nullable type must be used instead in C:\code\chat_backup\dev.allmessage.chat\vendor\laravel\framework\src\Illuminate\Collections\Arr.php on line 212
+
+Deprecated: Illuminate\Events\Dispatcher::__construct(): Implicitly marking parameter $container as nullable is deprecated, the explicit nullable type must be used instead in C:\code\chat_backup\dev.allmessage.chat\vendor\laravel\framework\src\Illuminate\Events\Dispatcher.php on line 65
+
+Deprecated: Illuminate\Support\Str::createUuidsUsing(): Implicitly marking parameter $factory as nullable is deprecated, the explicit nullable type must be used instead in C:\code\chat_backup\dev.allmessage.chat\vendor\laravel\framework\src\Illuminate\Support\Str.php on line 1007
+
+Deprecated: voku\helper\ASCII::to_ascii(): Implicitly marking parameter $replace_single_chars_only as nullable is deprecated, the explicit nullable type must be used instead in C:\code\chat_backup\dev.allmessage.chat\vendor\voku\portable-ascii\src\voku\helper\ASCII.php on line 830
+
+   Psy\Exception\ParseErrorException 
+
+  PHP Parse error: Syntax error, unexpected ';' on line 1
+
+  at C:\code\chat_backup\dev.allmessage.chat\vendor\psy\psysh\src\Exception\ParseErrorException.php:44
+     40▕      * @param \PhpParser\Error $e
+     41▕      */
+     42▕     public static function fromParseError(\PhpParser\Error $e): self
+     43▕     {
+  ➜  44▕         return new self($e->getRawMessage(), $e->getAttributes());
+     45▕     }
+     46▕ }
+     47▕
+
+  1   C:\code\chat_backup\dev.allmessage.chat\vendor\psy\psysh\src\CodeCleaner.php:306
+      Psy\Exception\ParseErrorException::fromParseError(Object(PhpParser\Error))
+
+  2   C:\code\chat_backup\dev.allmessage.chat\vendor\psy\psysh\src\CodeCleaner.php:240
+      Psy\CodeCleaner::parse("<?php DB::table('companies')-;
+")
