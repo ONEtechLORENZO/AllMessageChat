@@ -77,6 +77,10 @@ const navigation = [
                 href: route("chat_list"),
             },
             {
+                name: "Templates",
+                href: route("account_templates"),
+            },
+            {
                 name: "Campaigns",
                 href: route("listCampaign"),
             },
@@ -190,7 +194,7 @@ const bottomNavigation = [
         show: ["all"],
     },
     {
-        name: "Interactive Templates",
+        name: "Interactive Messages",
         href: route("listInteractiveMessage"),
         icon: CampaignsIcon,
         show: ["all"],
@@ -319,6 +323,10 @@ const menuBar = [
             {
                 name: "Social Profiles",
                 href: route("social_profile"),
+            },
+            {
+                name: "Templates",
+                href: route("account_templates"),
             },
             {
                 name: "Chats",

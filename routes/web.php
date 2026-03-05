@@ -94,6 +94,7 @@ Route::middleware('planrestriction')->group(function () {
 
         Route::get('/home', [UserController::class, 'home'])->name('home');
         Route::get('/social-profile', [UserController::class, 'socialProfile'])->name('social_profile');
+        Route::get('/templates', [UserController::class, 'accountTemplates'])->name('account_templates');
         Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
         Route::get('/user/timezone', [UserController::class, 'getUserTimeZone'])->name('get_time_zone');
         Route::post('/show_register_step', [RegisteredUserController::class, 'create'])->name('show_register_step');

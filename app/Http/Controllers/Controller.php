@@ -1459,7 +1459,8 @@ class Controller extends BaseController
                 'submenu' => [
                     'Chats' => 'chat_conversation',
                     'Campaigns' => 'campaigns',
-                    'Social Profiles' => 'social_profile'
+                    'Social Profiles' => 'social_profile',
+                    'Templates' => 'chat_conversation'
                 ],
                 'show' => false
             ],

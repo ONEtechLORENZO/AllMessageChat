@@ -830,6 +830,71 @@ class UserController extends Controller
     }
 
     /**
+     * Show templates list page
+     */
+    public function accountTemplates(Request $request)
+    {
+        $accounts = Account::select('company_name', 'service', 'accounts.id', 'accounts.status', 'fb_page_name', 'category')->get();
+        $selectedAccountId = $request->get('account_id');
+        $account = null;
+
+        if ($selectedAccountId) {
+            $account = Account::where('id', $selectedAccountId)->first();
+        }
+
+        $template_details = [];
+        if ($account) {
+            $templates = Template::where('account_id', $account->id)->get();
+            $messages = Message::select('messages.template_id', 'messages.template_uid', 'messages.language')
+                ->join('templates', 'messages.template_id', 'templates.id')
+                ->where('account_id', $account->id)
+                ->get();
+
+            $templateIds = [];
+            foreach ($messages as $message) {
+                if ($message->template_uid) {
+                    $templateIds[$message->template_id][] = [
+                        'language' => $message->language,
+                        'id' => $message->template_uid,
+                    ];
+                }
+            }
+
+            if (count($templates)) {
+                foreach ($templates as $template) {
+                    $creater_name = User::where('id', $template->created_by)->select('name')->first();
+
+                    $templateLanguageId = '';
+                    if (isset($templateIds[$template->id])) {
+                        foreach ($templateIds[$template->id] as $templateLan) {
+                            $templateLanguageId .= " {$templateLan['language']} - {$templateLan['id']},";
+                        }
+                        $templateLanguageId = trim($templateLanguageId, ',');
+                    }
+
+                    $template_details[] = [
+                        'id' => $template->id,
+                        'creater_name' => $creater_name,
+                        'account_id' => $template->account_id,
+                        'name' => $template->name,
+                        'status' => $template->status,
+                        'language' => $templateLanguageId,
+                        'created_at' => $template->created_at,
+                    ];
+                }
+            }
+        }
+
+        return Inertia::render('Account/Templates', [
+            'accounts' => $accounts,
+            'account' => $account,
+            'templates' => $template_details,
+            'current_page' => 'Templates',
+            'translator' => Controller::getTranslations(),
+        ]);
+    }
+
+    /**
      * Edit Account Data
      */
     public function editAccountData($id)

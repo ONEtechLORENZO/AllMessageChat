@@ -65,8 +65,8 @@ class InteractiveMessageController extends Controller
                     'select_field'=> false,
                 ]; 
                 $moduleData = [
-                    'singular' => 'Interactive Template',
-                    'plural' => 'Interactive Templates',
+                    'singular' => 'Interactive Message',
+                    'plural' => 'Interactive Messages',
                     'module' => 'InteractiveMessage',
                     'current_page' => 'InteractiveMessage', 
                     // Actions
