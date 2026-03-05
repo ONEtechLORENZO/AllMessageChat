@@ -36,7 +36,6 @@ import {
     QuestionMarkCircleIcon,
     LightBulbIcon,
     PlusIcon,
-    IdentificationIcon,
     ShoppingCartIcon,
     CodeBracketIcon,
 } from "@heroicons/react/24/outline";
@@ -54,7 +53,6 @@ import {
     CampaignsIcon,
     BillingIcon,
     Setting2Icon,
-    SalesIcon,
     NetworkIcon,
     GraphIcon,
 } from "@/Pages/icons";
@@ -79,59 +77,6 @@ const navigation = [
             {
                 name: "Campaigns",
                 href: route("listCampaign"),
-            },
-        ],
-    },
-    {
-        name: "CRM",
-        href: "#",
-        icon: IdentificationIcon,
-        show: ["all"],
-        subMenu: [
-            {
-                name: "Leads",
-                href: route("listLead"),
-            },
-            {
-                name: "Contacts",
-                href: route("listContact"),
-            },
-            {
-                name: "Organizations",
-                href: route("listOrganization"),
-            },
-            {
-                name: "Fields",
-                href: route("listField"),
-            },
-            {
-                name: "Tags",
-                href: route("listTag"),
-            },
-            {
-                name: "Lists",
-                href: route("listCategory"),
-            },
-        ],
-    },
-
-    {
-        name: "Sales",
-        href: "#",
-        icon: SalesIcon,
-        show: ["all"],
-        subMenu: [
-            {
-                name: "Opportunities",
-                href: route("listOpportunity"),
-            },
-            {
-                name: "Orders",
-                href: route("listOrder"),
-            },
-            {
-                name: "Products",
-                href: route("listProduct"),
             },
         ],
     },
@@ -327,60 +272,6 @@ const menuBar = [
             {
                 name: "Campaigns",
                 href: route("listCampaign"),
-            },
-        ],
-    },
-    {
-        name: "CRM",
-        href: "#",
-        icon: IdentificationIcon,
-        subMenu: [
-            {
-                name: "Leads",
-                href: route("listLead"),
-            },
-            {
-                name: "Contacts",
-                href: route("listContact"),
-            },
-            {
-                name: "Organizations",
-                href: route("listOrganization"),
-            },
-            {
-                name: "Fields",
-                href: route("listField"),
-            },
-            {
-                name: "Tags",
-                href: route("listTag"),
-            },
-            {
-                name: "Lists",
-                href: route("listCategory"),
-            },
-        ],
-    },
-    {
-        name: "Sales",
-        href: "#",
-        icon: SalesIcon,
-        subMenu: [
-            {
-                name: "Deals",
-                href: route("listOpportunity"),
-            },
-            {
-                name: "Orders",
-                href: route("listOrder"),
-            },
-            {
-                name: "Catalogs",
-                href: route("listCatalog"),
-            },
-            {
-                name: "Products",
-                href: route("listProduct"),
             },
         ],
     },

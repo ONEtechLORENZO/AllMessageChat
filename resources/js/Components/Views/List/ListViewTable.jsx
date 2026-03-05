@@ -101,9 +101,13 @@ export default function ListViewTable(props) {
         );
     }
 
+    const isDashboard = (props.module || "").toLowerCase() === "dashboard";
     const tableCardClassName = [
-        "overflow-hidden md:rounded-lg bg-[#140816]/70 backdrop-blur-3xl",
-        props.noCardBorder ? "" : "border border-white/10 ring-1 ring-white/5",
+        "overflow-hidden md:rounded-lg backdrop-blur-xl",
+        isDashboard
+            ? "bg-[#12041f]/65 ring-1 ring-[#6b2a91]/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+            : "bg-[#140816]/70 backdrop-blur-3xl",
+        props.noCardBorder ? "" : isDashboard ? "" : "border border-white/10 ring-1 ring-white/5",
     ]
         .filter(Boolean)
         .join(" ");
@@ -111,7 +115,7 @@ export default function ListViewTable(props) {
     return (
         <div className="">
             <div className={tableCardClassName}>
-                <table className="min-w-full divide-y divide-white/10">
+                <table className={isDashboard ? "min-w-full divide-y divide-[#6b2a91]/20" : "min-w-full divide-y divide-white/10"}>
                     <thead>
                         <tr className="text-white text-sm">
                             {(props.actions.mass_edit === true ||
@@ -155,7 +159,7 @@ export default function ListViewTable(props) {
                                         className="py-3.5 pl-4 pr-3 text-left text-sm font-medium text-white sm:pl-4"
                                     >
                                         <span
-                                            className="pb-[6px] border-b border-white/20 block text-white"
+                                            className={isDashboard ? "pb-[6px] border-b border-[#6b2a91]/25 block text-white" : "pb-[6px] border-b border-white/20 block text-white"}
                                             onClick={() => {
                                                 sortable
                                                     ? sortColumn(
@@ -182,10 +186,10 @@ export default function ListViewTable(props) {
                             </th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/10">
+                    <tbody className={isDashboard ? "divide-y divide-[#6b2a91]/18" : "divide-y divide-white/10"}>
                         {props.records.length === 0 && (
                             <tr>
-                                <td className="px-6 py-4 border-t border-white/10 text-[#878787]" colSpan="8">
+                                <td className={isDashboard ? "px-6 py-4 text-[#878787]" : "px-6 py-4 border-t border-white/10 text-[#878787]"} colSpan="8">
                                     {" "}
                                     {props.translator["No records found!"]}{" "}
                                 </td>

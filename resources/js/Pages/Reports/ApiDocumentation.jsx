@@ -132,8 +132,9 @@ export default function ApiDocumentation(props) {
 
             <div className="px-4 sm:px-6 lg:px-8 space-y-4">
                 <div className="px-0">
-                    <h1 className="text-2xl font-semibold text-white">
-                        {pageTitle}
+                    <h1 className="text-2xl font-semibold text-white flex items-baseline gap-2">
+                        <span className="one-tech-special font-black">API</span>
+                        <span>{translator["Documentation"] ?? "Documentation"}</span>
                     </h1>
                     <p className="text-sm text-[#878787] mt-1">
                         {translator[
@@ -148,7 +149,9 @@ export default function ApiDocumentation(props) {
                             <GlassCard>
                                 <div className="flex items-center gap-3 text-white text-lg font-semibold">
                                     <ShieldCheckIcon className="h-5 w-5" />
-                                    {translator["Overview"] ?? "Overview"}
+                                    <span className="text-[#03cada]">
+                                        {translator["Overview"] ?? "Overview"}
+                                    </span>
                                 </div>
                                 <div className="mt-4 space-y-3 text-sm">
                                     <div className="flex items-center justify-between text-white">
@@ -181,8 +184,10 @@ export default function ApiDocumentation(props) {
                             <GlassCard>
                                 <div className="flex items-center gap-3 text-white text-lg font-semibold">
                                     <KeyIcon className="h-5 w-5" />
-                                    {translator["Authentication"] ??
-                                        "Authentication"}
+                                    <span className="text-[#ecdc00]">
+                                        {translator["Authentication"] ??
+                                            "Authentication"}
+                                    </span>
                                 </div>
                                 <p className="text-[#878787] text-sm mt-4">
                                     {translator[
@@ -203,7 +208,10 @@ export default function ApiDocumentation(props) {
                             <GlassCard>
                                 <div className="flex items-center gap-3 text-white text-lg font-semibold">
                                     <ClockIcon className="h-5 w-5" />
-                                    {translator["Rate Limits"] ?? "Rate Limits"}
+                                    <span className="text-[#ed0820]">
+                                        {translator["Rate Limits"] ??
+                                            "Rate Limits"}
+                                    </span>
                                 </div>
                                 <div className="mt-4 space-y-3">
                                     {apiData.rateLimits.map((limit) => (
@@ -233,7 +241,9 @@ export default function ApiDocumentation(props) {
                     <GlassCard>
                         <div className="flex items-center gap-3 text-white text-lg font-semibold">
                             <CodeBracketIcon className="h-5 w-5" />
-                            {translator["Endpoints"] ?? "Endpoints"}
+                            <span className="text-[#08e1ed]">
+                                {translator["Endpoints"] ?? "Endpoints"}
+                            </span>
                         </div>
                         <div className="mt-4 space-y-3">
                             {apiData.endpoints.map((endpoint) => {

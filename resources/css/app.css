@@ -59,3 +59,63 @@ a:focus {
   background-position: 0 0, 9px 9px;
 }
 
+/* Neon purple palette inspired by reference dashboard */
+.theme-neon-dashboard {
+  background:
+    radial-gradient(1200px 700px at 18% 0%, rgba(127, 33, 189, 0.36), transparent 60%),
+    radial-gradient(900px 620px at 82% 24%, rgba(50, 13, 95, 0.52), transparent 65%),
+    linear-gradient(180deg, #130023 0%, #0a0016 55%, #090012 100%) !important;
+}
+
+.theme-neon-dashboard .gio-menu-item,
+.theme-neon-dashboard .gio-menu-item:hover {
+  border: 1px solid transparent;
+}
+
+.theme-neon-dashboard .bg-primary,
+.theme-neon-dashboard .gio-menu-item.bg-primary {
+  background: linear-gradient(90deg, #f146c1 0%, #7a2ce2 55%, #29e9ff 100%) !important;
+  border-color: rgba(120, 64, 214, 0.8) !important;
+}
+
+.theme-neon-dashboard .gio-dropdown-icon {
+  color: rgba(196, 175, 235, 0.9);
+}
+
+.theme-neon-dashboard .gio-navbar {
+  color: #eee7ff;
+}
+
+/* Dashboard-specific arc placement */
+.dashboard-page .purple-giant-arc {
+  z-index: 1;
+  top: -50%;
+  right: -18%;
+  width: clamp(500px, 74vw, 1100px);
+  height: clamp(500px, 74vw, 1100px);
+  opacity: 0.5;
+}
+
+/* The "Liquid Purple" Shimmer Effect */
+.one-tech-special {
+  background: linear-gradient(to right, #BF00FF, #6366f1, #d946ef, #BF00FF);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textShimmer 3s linear infinite;
+  filter: drop-shadow(0 0 10px rgba(191, 0, 255, 0.3));
+}
+
+/* The Animation Keyframes */
+@keyframes textShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+

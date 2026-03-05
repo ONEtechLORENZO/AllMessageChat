@@ -216,9 +216,11 @@ function ListView(props) {
         }
     }
 
+    const isDashboard = (props.module || "").toLowerCase() === "dashboard";
     const headerCardClassName = [
-        "mb-3 rounded-2xl bg-[#140816]/70 backdrop-blur-3xl p-3",
-        props.noCardBorder ? "" : "border border-white/10 ring-1 ring-white/5",
+        "mb-3 rounded-2xl backdrop-blur-xl p-3",
+        isDashboard ? "bg-[#12041f]/70 ring-1 ring-[#6b2a91]/20" : "bg-[#140816]/70",
+        props.noCardBorder ? "" : isDashboard ? "" : "border border-white/10 ring-1 ring-white/5",
     ]
         .filter(Boolean)
         .join(" ");
@@ -538,7 +540,6 @@ function DropDown(props) {
 
 
 export default ListView;
-
 
 
 

@@ -52,6 +52,16 @@ export default function DashboardNew(props) {
     const [startDate, setStartDate] = useState({ date });
     const [messageDetails, setMessageDetails] = useState(props.message_details);
     const [balance, setBalance] = useState(0);
+    const totalSessions = Number(props.total_session_limit) || 0;
+    const usedSessions = Number(props.current_session_count) || 0;
+    const remainingSessions = Math.max(totalSessions - usedSessions, 0);
+    const sessionPercent =
+        totalSessions > 0
+            ? Math.max(
+                  0,
+                  Math.min(100, Math.round((remainingSessions / totalSessions) * 100)),
+              )
+            : 0;
 
     useEffect(() => {
         setBalance(props.balance);
@@ -87,12 +97,15 @@ export default function DashboardNew(props) {
             >
                 <Head title={props.translator["Dashboard"]} />
 
-                <div className="pt-4 pb-8">
-<div className="px-4 sm:px-6 lg:px-8">
+                <div className="dashboard-page pt-4 pb-8 relative">
+<div className="purple-giant-arc" aria-hidden="true"></div>
+<div className="px-4 sm:px-6 lg:px-8 relative z-10">
                         <div className="pb-4">
-                            <h3 className="text-2xl leading-6 font-semibold !text-white">
-                                {props.translator["Dashboard"]}
-                            </h3>
+                            <h2 className="mb-6 flex flex-wrap items-baseline gap-x-3 leading-none">
+                                <span className="one-tech-special text-4xl sm:text-5xl font-black tracking-tight">
+                                    {props.translator["Dashboard"]}
+                                </span>
+                            </h2>
                         </div>
 
                         {/* ✅ TOP SECTION LAYOUT (3 columns like you asked) */}
@@ -276,7 +289,7 @@ export default function DashboardNew(props) {
                                     <div className="!text-white text-base font-normal">
                                         {props.translator["Your Sessions"]}
                                     </div>
-                                    <div className="flex justify-between items-center w-full mt-10">
+                                    <div className="flex justify-between items-center w-full mt-6">
                                         <div className="flex justify-center items-center gap-4">
                                             <div className="w-[60px] h-[60px] rounded-lg flex justify-center items-center">
                                                 <svg
@@ -320,8 +333,7 @@ export default function DashboardNew(props) {
                                             <div className="widget-chart-content">
                                                 <div className="text-2xl font-medium !mt-0 !text-white ">
                                                     <span className="">
-                                                        {props.total_session_limit -
-                                                            props.current_session_count}{" "}
+                                                        {remainingSessions}{" "}
                                                         {props.translator[
                                                             "sessions"
                                                         ]}
@@ -331,15 +343,30 @@ export default function DashboardNew(props) {
                                                     {props.translator[
                                                         "You spent"
                                                     ]}{" "}
-                                                    {
-                                                        props.current_session_count
-                                                    }{" "}
+                                                    {usedSessions}{" "}
                                                     {props.translator["of"]}{" "}
-                                                    {props.total_session_limit}{" "}
+                                                    {totalSessions}{" "}
                                                     {props.translator[
                                                         "sessions"
                                                     ]}
                                                 </div>
+                                            </div>
+                                        </div>
+                                        <div
+                                            className="relative h-[112px] w-[112px] rounded-full shrink-0"
+                                            style={{
+                                                background: `conic-gradient(#d80cff 0% ${sessionPercent}%, #5f1d93 ${sessionPercent}% 100%)`,
+                                            }}
+                                        >
+                                            <div className="absolute left-1/2 top-[-2px] h-5 w-3 -translate-x-1/2 rounded-b bg-[#170024]" />
+                                            <div className="absolute inset-[9px] rounded-full bg-[#12001d] ring-1 ring-white/10 flex flex-col items-center justify-center">
+                                                <span className="text-[11px] text-white/55 leading-none">
+                                                    {props.translator["Available"] ??
+                                                        "Available"}
+                                                </span>
+                                                <span className="mt-1 text-2xl font-semibold text-white leading-none">
+                                                    {sessionPercent}%
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -836,7 +863,7 @@ export function GlassCard({ className = "", children }) {
     return (
         <div
             className={[
-                "relative rounded-3xl bg-white/5 backdrop-blur-3xl group",
+                "relative rounded-3xl bg-[#170024]/80 backdrop-blur-sm group",
                 "transition-all duration-500 hover:border-[#38bdf8]/50 hover:-translate-y-3 hover:scale-[1.02]",
                 "hover:shadow-[0_20px_40px_-15px_rgba(56,189,248,0.3)]",
                 className,
