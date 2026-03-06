@@ -96,36 +96,38 @@ const Tabs = (props) => {
                         >
                             <li className="-mb-px mr-2 last:mr-0 flex-auto text-left">
                                 <Link
-                                    className={ "text-lg font-bold uppercase px-5 py-3 shadow-lg rounded block leading-normal bg-white-600" +
+                                    className={
+                                        "text-lg font-bold uppercase px-5 py-3 rounded block leading-normal bg-white/5 text-white/60 border-b-2 border-transparent" +
                                         (openTab === 1
-                                            ? "border-indigo-500 text-indigo-700 "
+                                            ? " border-[#BF00FF] text-white "
                                             : "")
                                     }
                                     data-toggle="tab" href="#" role="tablist"
                                 >
                                     STEP 1
-                                    <div className="text-black font-medium text-base">
+                                    <div className="text-white/70 font-medium text-base">
                                         Import
                                     </div>
                                 </Link>
                             </li>
                             <li className="-mb-px mr-2 last:mr-0 flex-auto text-left">
                                 <Link
-                                    className={ "text-lg font-bold uppercase px-5 py-3 shadow-lg rounded block leading-normal bg-white-600" +
+                                    className={
+                                        "text-lg font-bold uppercase px-5 py-3 rounded block leading-normal bg-white/5 text-white/60 border-b-2 border-transparent" +
                                         (openTab === 2
-                                            ? "border-indigo-500 text-indigo-700 "
+                                            ? " border-[#BF00FF] text-white "
                                             : "")
                                     }
                                     data-toggle="tab" href="#" role="tablist"
                                 >
                                     STEP 2
-                                    <div className="text-base font-medium text-black">
+                                    <div className="text-base font-medium text-white/70">
                                         Mapping
                                     </div>
                                 </Link>
                             </li>
                         </ul>
-                        <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+                        <div className="relative flex flex-col min-w-0 break-words bg-[#120b1f]/80 border border-white/10 w-full mb-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)] rounded-2xl">
                             <div className="px-4 py-5 flex-auto">
                                 <div className="tab-content tab-space">
                                     <div

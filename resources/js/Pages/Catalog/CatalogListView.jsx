@@ -86,25 +86,29 @@ export default function CatalogListView (props) {
                <div className="mt-2 px-2 ml-3">
                     <div className="!mt-4 grid grid-cols-12 !gap-5 px-2">
                         <div className="col-span-4 flex flex-col !gap-2">
-                            <div className='text-base text-[#363740] font-semibold'>Catalog List</div>
+                            <div className='text-base text-white font-semibold'>Catalog List</div>
         
                             <div className="grid gap-2 grid-cols-2">
                                 <Button 
                                     type = 'button'
-                                    color='primary'
+                                    color='link'
                                     onClick={() => props.setShowCatalog(true)}
+                                    className="!no-underline"
+                                    style={{ backgroundColor: '#BF00FF', borderColor: '#BF00FF', color: '#fff' }}
                                 > 
                                     <div className='flex justify-center items-center font-semibold'> <BriefcaseIcon className='h-4 w-4 mr-1' />Create New Catalog </div>
                                 </Button>
                                 <Button 
                                     type = 'button'
-                                    color='primary'
+                                    color='link'
                                     onClick={() => setShowImport(true)}
+                                    className="!no-underline"
+                                    style={{ backgroundColor: '#BF00FF', borderColor: '#BF00FF', color: '#fff' }}
                                 > 
                                     <div className='flex justify-center items-center font-semibold'> <ArrowDownTrayIcon className='h-4 w-4 mr-1' />Import Catalog </div>
                                 </Button>
                             </div>
-                            <div className="card !shadow-card justify-between items-center flex-row !px-4 !py-2.5">
+                            <div className="card !shadow-card justify-between items-center flex-row !px-4 !py-2.5 !bg-[#140816]/70 border border-white/10">
                                 <div className="flex items-center gap-1.5">
                                     <Search 
                                         module={props.module} 
@@ -118,7 +122,7 @@ export default function CatalogListView (props) {
                                 </div>
                                 <div>
                                     <svg width={20} height={20} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M17.9453 13.5703L14.8203 16.6953H14.8125C14.8047 16.7109 14.7891 16.7188 14.7734 16.7344L14.75 16.75L14.7188 16.7734L14.6953 16.7891L14.6719 16.8047H14.6406L14.6172 16.8203H14.5859L14.5547 16.8359H14.1953L14.1641 16.8203H14.1328L14.1094 16.8047H14.0781L14.0547 16.7891L14.0312 16.7734L14 16.75L13.9766 16.7344L13.9375 16.6953H13.9297L10.8047 13.5703C10.705 13.4489 10.6541 13.2947 10.6618 13.1378C10.6695 12.9809 10.7353 12.8325 10.8464 12.7214C10.9575 12.6103 11.1059 12.5445 11.2628 12.5368C11.4197 12.5291 11.5739 12.58 11.6953 12.6797L13.75 14.7422V8.75C13.75 8.58424 13.8158 8.42527 13.9331 8.30806C14.0503 8.19085 14.2092 8.125 14.375 8.125C14.5408 8.125 14.6997 8.19085 14.8169 8.30806C14.9342 8.42527 15 8.58424 15 8.75V14.7422L17.0547 12.6797C17.1761 12.58 17.3303 12.5291 17.4872 12.5368C17.6441 12.5445 17.7925 12.6103 17.9036 12.7214C18.0147 12.8325 18.0805 12.9809 18.0882 13.1378C18.0959 13.2947 18.045 13.4489 17.9453 13.5703ZM9.375 9.375H3.75C3.58424 9.375 3.42527 9.44085 3.30806 9.55806C3.19085 9.67527 3.125 9.83424 3.125 10C3.125 10.1658 3.19085 10.3247 3.30806 10.4419C3.42527 10.5592 3.58424 10.625 3.75 10.625H9.375C9.54076 10.625 9.69973 10.5592 9.81694 10.4419C9.93415 10.3247 10 10.1658 10 10C10 9.83424 9.93415 9.67527 9.81694 9.55806C9.69973 9.44085 9.54076 9.375 9.375 9.375ZM3.75 5.625H14.375C14.5408 5.625 14.6997 5.55915 14.8169 5.44194C14.9342 5.32473 15 5.16576 15 5C15 4.83424 14.9342 4.67527 14.8169 4.55806C14.6997 4.44085 14.5408 4.375 14.375 4.375H3.75C3.58424 4.375 3.42527 4.44085 3.30806 4.55806C3.19085 4.67527 3.125 4.83424 3.125 5C3.125 5.16576 3.19085 5.32473 3.30806 5.44194C3.42527 5.55915 3.58424 5.625 3.75 5.625ZM8.125 14.375H3.75C3.58424 14.375 3.42527 14.4408 3.30806 14.5581C3.19085 14.6753 3.125 14.8342 3.125 15C3.125 15.1658 3.19085 15.3247 3.30806 15.4419C3.42527 15.5592 3.58424 15.625 3.75 15.625H8.125C8.29076 15.625 8.44973 15.5592 8.56694 15.4419C8.68415 15.3247 8.75 15.1658 8.75 15C8.75 14.8342 8.68415 14.6753 8.56694 14.5581C8.44973 14.4408 8.29076 14.375 8.125 14.375Z" fill="black" />
+                                        <path d="M17.9453 13.5703L14.8203 16.6953H14.8125C14.8047 16.7109 14.7891 16.7188 14.7734 16.7344L14.75 16.75L14.7188 16.7734L14.6953 16.7891L14.6719 16.8047H14.6406L14.6172 16.8203H14.5859L14.5547 16.8359H14.1953L14.1641 16.8203H14.1328L14.1094 16.8047H14.0781L14.0547 16.7891L14.0312 16.7734L14 16.75L13.9766 16.7344L13.9375 16.6953H13.9297L10.8047 13.5703C10.705 13.4489 10.6541 13.2947 10.6618 13.1378C10.6695 12.9809 10.7353 12.8325 10.8464 12.7214C10.9575 12.6103 11.1059 12.5445 11.2628 12.5368C11.4197 12.5291 11.5739 12.58 11.6953 12.6797L13.75 14.7422V8.75C13.75 8.58424 13.8158 8.42527 13.9331 8.30806C14.0503 8.19085 14.2092 8.125 14.375 8.125C14.5408 8.125 14.6997 8.19085 14.8169 8.30806C14.9342 8.42527 15 8.58424 15 8.75V14.7422L17.0547 12.6797C17.1761 12.58 17.3303 12.5291 17.4872 12.5368C17.6441 12.5445 17.7925 12.6103 17.9036 12.7214C18.0147 12.8325 18.0805 12.9809 18.0882 13.1378C18.0959 13.2947 18.045 13.4489 17.9453 13.5703ZM9.375 9.375H3.75C3.58424 9.375 3.42527 9.44085 3.30806 9.55806C3.19085 9.67527 3.125 9.83424 3.125 10C3.125 10.1658 3.19085 10.3247 3.30806 10.4419C3.42527 10.5592 3.58424 10.625 3.75 10.625H9.375C9.54076 10.625 9.69973 10.5592 9.81694 10.4419C9.93415 10.3247 10 10.1658 10 10C10 9.83424 9.93415 9.67527 9.81694 9.55806C9.69973 9.44085 9.54076 9.375 9.375 9.375ZM3.75 5.625H14.375C14.5408 5.625 14.6997 5.55915 14.8169 5.44194C14.9342 5.32473 15 5.16576 15 5C15 4.83424 14.9342 4.67527 14.8169 4.55806C14.6997 4.44085 14.5408 4.375 14.375 4.375H3.75C3.58424 4.375 3.42527 4.44085 3.30806 4.55806C3.19085 4.67527 3.125 4.83424 3.125 5C3.125 5.16576 3.19085 5.32473 3.30806 5.44194C3.42527 5.55915 3.58424 5.625 3.75 5.625ZM8.125 14.375H3.75C3.58424 14.375 3.42527 14.4408 3.30806 14.5581C3.19085 14.6753 3.125 14.8342 3.125 15C3.125 15.1658 3.19085 15.3247 3.30806 15.4419C3.42527 15.5592 3.58424 15.625 3.75 15.625H8.125C8.29076 15.625 8.44973 15.5592 8.56694 15.4419C8.68415 15.3247 8.75 15.1658 8.75 15C8.75 14.8342 8.68415 14.6753 8.56694 14.5581C8.44973 14.4408 8.29076 14.375 8.125 14.375Z" fill="#E5E7EB" />
                                     </svg>
                                 </div>
                             </div>
@@ -126,18 +130,18 @@ export default function CatalogListView (props) {
                             <div className="space-y-2">
                                 {(props.records).length === 0 &&
                                     <tr>
-                                        <td className="px-6 py-4 border-t" colSpan="8"> {props.translator['No records found!']} </td>
+                                        <td className="px-6 py-4 border-t border-white/10 text-white/70" colSpan="8"> {props.translator['No records found!']} </td>
                                     </tr>
                                 }
                                 {Object.entries(props.records).map( ([key, record]) => (
-                                    <div className={classNames(catalogId == record.id ? 'border-1 border-indigo-500 relative rounded flex' :'card', ' !shadow-card flex-row justify-between items-center !py-2 !px-4 cursor-pointer')} onClick={() => setCatalogId(record.id)}>
+                                    <div className={classNames(catalogId == record.id ? 'border-1 border-[#BF00FF] relative rounded flex' :'card', ' !shadow-card flex-row justify-between items-center !py-2 !px-4 cursor-pointer !bg-[#140816]/70 border border-white/10 hover:border-[#BF00FF]/40')} onClick={() => setCatalogId(record.id)}>
                                         <div className="flex !gap-2">
                                             <div className="flex flex-col !gap-1">
-                                                <span className="font-semibold text-sm text-black">{record.name}</span>
-                                                <span className="text-[12px] text-[#878787]">ID : {record.catalog_id ? record.catalog_id : ''}</span>
+                                                <span className="font-semibold text-sm text-white">{record.name}</span>
+                                                <span className="text-[12px] text-white/60">ID : {record.catalog_id ? record.catalog_id : ''}</span>
                                             </div> 
                                             {record.business_id ?
-                                                <span className="bg-[#9F9F9F] text-white !py-1 !px-2 !rounded self-start font-semibold">Facebook</span>
+                                                <span className="bg-white/15 text-white !py-1 !px-2 !rounded self-start font-semibold">Facebook</span>
                                             : ''}
                                         </div>
                                         <div className='flex justify-end'>

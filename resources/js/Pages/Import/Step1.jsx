@@ -12,12 +12,12 @@ function Step1(props){
 
     return (
         <>
-           <form className="space-y-8 divide-y divide-gray-200" id="update_csv" >
-                <div className="space-y-8 divide-y divide-gray-200 sm:space-y-5">
+           <form className="space-y-8 divide-y divide-white/10" id="update_csv" >
+                <div className="space-y-8 divide-y divide-white/10 sm:space-y-5">
                     <div>
-                        <div className="sm:grid sm:grid-cols-2 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
+                        <div className="sm:grid sm:grid-cols-2 sm:gap-4 sm:items-start sm:border-t sm:border-white/10 sm:pt-5">
                             <div className="form-group">
-                                <label htmlFor="name" className="block text-sm font-medium text-gray-700" >
+                                <label htmlFor="name" className="block text-sm font-medium text-white/70" >
                                     Name <span className="text-sm text-red-700"> *</span>
                                 </label>
                                 <div className="mt-1 flex rounded-md shadow-sm">
@@ -28,12 +28,13 @@ function Step1(props){
                                         placeholder="Name"
                                         handleChange={props.handleChange}
                                         value={props.data['name']}
+                                        className="bg-[#0F0B1A] text-white border-white/10 placeholder:text-[#878787] focus:ring-[#BF00FF]/60 focus:border-[#BF00FF]/60"
                                     />
                                 </div>
                                 <InputError message={props.errors.name} />
                             </div>
                             <div className="form-group">
-                                <label htmlFor="name" className="block text-sm font-medium text-gray-700" >
+                                <label htmlFor="name" className="block text-sm font-medium text-white/70" >
                                     Module<span className="text-sm text-red-700"> *</span>
                                 </label>
                                 <div className="mt-1 flex rounded-md shadow-sm px-2">
@@ -50,12 +51,12 @@ function Step1(props){
                                 <InputError message={props.errors.name} />
                             </div>
                         </div>
-                        <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
+                        <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-white/10 sm:pt-5">
                             <div className="mt-1 sm:mt-0 sm:col-span-2">
-                                <div className="max-w-lg flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                <div className="max-w-lg flex justify-center px-6 pt-5 pb-6 border-2 border-white/20 border-dashed rounded-md bg-white/5">
                                     <div className="space-y-1 text-center">
                                         <svg
-                                            className="mx-auto h-12 w-12 text-gray-400"
+                                            className="mx-auto h-12 w-12 text-white/50"
                                             stroke="currentColor"
                                             fill="none"
                                             viewBox="0 0 48 48"
@@ -68,10 +69,10 @@ function Step1(props){
                                                 strokeLinejoin="round"
                                             />
                                         </svg>
-                                        <div className="flex text-sm text-gray-600 form-group">
+                                        <div className="flex text-sm text-white/70 form-group">
                                             <label
                                                 htmlFor="file-upload"
-                                                className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                                                className="relative cursor-pointer bg-white/10 rounded-md font-medium text-[#BF00FF] hover:text-[#d27bff] focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-[#0b0815] focus-within:ring-[#BF00FF]/60 px-2 py-1"
                                             >
                                                 <span>Upload a CSV file</span>
                                                 <Input
@@ -96,13 +97,13 @@ function Step1(props){
                     <div className="flex justify-end">
                         <Link
                             href={route("listImport")}
-                            className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="bg-white/10 py-2 px-4 border border-white/15 rounded-md shadow-sm text-sm font-medium text-white/80 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60"
                         >
                             Cancel
                         </Link>
                         <button
                             type="button"
-                            className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#BF00FF] hover:bg-[#9c00d9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60"
                             onClick={() =>
                                 props.importStep()
                             }

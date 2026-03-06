@@ -329,7 +329,7 @@ export default function Index(props) {
             <div>
                 <Head title={props.translator[props.module]} />
                 <ul className="py-4 space-y-2 sm:px-6 sm:space-y-4 lg:px-8" role="list">
-                    <li className="border border-gray-500 px-4 py-6 sm:rounded-xl sm:px-6">
+                    <li className="border border-white/10 bg-[#120b1f]/80 shadow-[0_20px_40px_rgba(0,0,0,0.35)] px-4 py-6 sm:rounded-xl sm:px-6">
                         <div className="sm:flex sm:justify-between sm:items-baseline">
                             <h3 className="text-base font-medium flex w-full">
                                 {(props.module != 'SupportRequest') &&
@@ -340,8 +340,8 @@ export default function Index(props) {
                                             </div>
                                             :
                                             <div>
-                                                <span className="text-gray-900 p-3">
-                                                    <span className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-gray-500">
+                                                <span className="text-white p-3">
+                                                    <span className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-white/10">
                                                         <span className="text-3xl font-medium leading-none text-uppercase text-white">
                                                             {(props.module == 'Contact') ?
                                                                 <> {record.first_name ? record.first_name.substring(0, 2) : (record.last_name ? record.last_name.substring(0, 2) : '??')} </>
@@ -360,9 +360,9 @@ export default function Index(props) {
                                 {(props.module == 'Contact') ?
                                     <>
                                         <div>
-                                            <div className="text-gray-600"> {record.first_name} {record.last_name} </div>
-                                            <div className="text-gray-600"> {record.phone_number} </div>
-                                            <div className="text-gray-600"> {record.email} </div>
+                                            <div className="text-white/70"> {record.first_name} {record.last_name} </div>
+                                            <div className="text-white/70"> {record.phone_number} </div>
+                                            <div className="text-white/70"> {record.email} </div>
                                         </div>
                                         {props.module == 'Contact' ?
                                             <div>
@@ -375,8 +375,8 @@ export default function Index(props) {
                                                                 name={service.name}
                                                                 id={service.value}
                                                                 value={service.name}
-                                                                className={`inline-flex items-left ml-2 px-4 py-2 h-10 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${subscribedServices.includes(service.name) ? "bg-green-600" : "bg-gray-700"
-                                                                    } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+                                                                className={`inline-flex items-left ml-2 px-4 py-2 h-10 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${subscribedServices.includes(service.name) ? "bg-green-600" : "bg-white/10"
+                                                                    } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60`}
                                                             >
                                                                 {service.name}
                                                             </button>
@@ -388,12 +388,12 @@ export default function Index(props) {
                                     :
                                     <>
                                         <div className="pl-3 w-full">
-                                            <div className="text-black-800">{(props.module == 'SupportRequest') ? <>{record.subject}</> : <>{record.name}</>} </div>
+                                            <div className="text-white">{(props.module == 'SupportRequest') ? <>{record.subject}</> : <>{record.name}</>} </div>
                                             {props.module == 'Api' ?
                                                 <div className="flex justify-start mt-2" >
                                                     <button
                                                         type="button"
-                                                        className="bg-gray-200 hover:bg-gray-400 py-1 px-2 font-medium rounded"
+                                                        className="bg-white/10 hover:bg-white/20 py-1 px-2 font-medium rounded"
                                                         onClick={() => generateApiToken()}
                                                     >
                                                         Re-generate Token
@@ -402,13 +402,13 @@ export default function Index(props) {
                                                 : ''}
                                             {props.module == 'Tag' || props.module == 'Category' || props.module == 'Plan' ?
                                                 <div className={classNames(
-                                                    addClass ? 'text-gray-600 break-words w-3/4' : 'text-gray-600 w-1/2 truncate'
+                                                    addClass ? 'text-white/70 break-words w-3/4' : 'text-white/70 w-1/2 truncate'
                                                 )} onClick={() => removeClass()}>{record.description} </div>
                                                 : (props.module == 'SupportRequest') ?
-                                                    <><div className="text-gray-600"> Status        : {record.status} </div>
+                                                    <><div className="text-white/70"> Status        : {record.status} </div>
                                                         {props.role == 'global_admin' ?
-                                                            <><div className="text-gray-600"> Created by: <a href={route('detail_global_User', { id: record.created_by })} className='text-indigo-600 mx-1'>{props.created_by}</a> </div>
-                                                                <div className="text-gray-600"> Workspace name: <a href={route('detail_global_Company', { id: record.company_id })} className='text-indigo-600 mx-1'>{props.workspace} </a></div></> : ''}</>
+                                                            <><div className="text-white/70"> Created by: <a href={route('detail_global_User', { id: record.created_by })} className='text-[#BF00FF] mx-1'>{props.created_by}</a> </div>
+                                                                <div className="text-white/70"> Workspace name: <a href={route('detail_global_Company', { id: record.company_id })} className='text-[#BF00FF] mx-1'>{props.workspace} </a></div></> : ''}</>
                                                     : ''}
                                             {props.module == 'Product' && record.catalog_id ?
                                                 <div className="flex justify-start mt-2" >
@@ -423,12 +423,12 @@ export default function Index(props) {
                             </h3>
                             <div className="d-flex align-items-center">
                                 {(props.module == 'Lead') || (props.module == 'Opportunity') ?
-                                    <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
+                                    <div className="mt-1 text-sm text-white/70 whitespace-nowrap sm:mt-0 sm:ml-3">
                                         {(props.module == 'Lead') ? <div>
                                             <button
                                                 type="button"
                                                 onClick={() => lead_to_opportunity()}
-                                                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60"
                                             >
                                                 {props.translator['Convert Lead to Deal']}
                                             </button>
@@ -436,7 +436,7 @@ export default function Index(props) {
                                             <button
                                                 type="button"
                                                 onClick={() => setShowForm(true)}
-                                                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60"
                                             >
                                                 {props.translator['Convert Deal to Order']}
                                             </button>
@@ -445,7 +445,7 @@ export default function Index(props) {
                                     : ''}
 
                                 {(props.module == 'Company' && props.role == 'global_admin') ?
-                                    <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
+                                    <div className="mt-1 text-sm text-white/70 whitespace-nowrap sm:mt-0 sm:ml-3">
                                         <div>
                                             <WorkspacePaid
                                                 company={record}
@@ -454,13 +454,13 @@ export default function Index(props) {
                                     </div>
                                     : ''}
 
-                                <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
+                                <div className="mt-1 text-sm text-white/70 whitespace-nowrap sm:mt-0 sm:ml-3">
                                     <div>
                                         {((!props.action || props.action == 'undefined') || props.action.delete === true) &&
                                             <button
                                                 type="button"
                                                 onClick={() => deleteRecord()}
-                                                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60"
                                             >
                                                 {props.translator['Delete']}
                                             </button>
@@ -468,13 +468,13 @@ export default function Index(props) {
                                     </div>
                                 </div>
 
-                                <div className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
+                                <div className="mt-1 text-sm text-white/70 whitespace-nowrap sm:mt-0 sm:ml-3">
                                     <div>
                                         {((!props.action || props.action == 'undefined') || props.action.edit === true) &&
                                             <button
                                                 type="button"
                                                 onClick={() => props.updateRecord(record.id)}
-                                                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60"
                                             >
                                                 <PencilIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
                                                 {props.translator['Edit']}
@@ -485,12 +485,12 @@ export default function Index(props) {
                             </div>
                         </div>
                     </li>
-                    <li className="border border-gray-500 px-4 py-6 sm:rounded-xl sm:px-6">
+                    <li className="border border-white/10 bg-[#120b1f]/80 shadow-[0_20px_40px_rgba(0,0,0,0.35)] px-4 py-6 sm:rounded-xl sm:px-6">
                         <ul id="props.tabs" className="inline-flex w-full px-1 pt-2 border-bottom">
                             {props.tabs && Object.entries(props.tabs).map(([key, tab]) => {
-                                var activeClassName = "px-3 py-2 -mb-px font-semibold text-gray-800 rounded-t";
+                                var activeClassName = "px-3 py-2 -mb-px font-semibold text-white rounded-t";
 
-                                let activeHrefClass = "text-gray-600"
+                                let activeHrefClass = "text-white/70"
                                 if (activeTab == tab.name) {
                                     activeClassName += ' border-b-2 border-blue-400';
                                     activeHrefClass = "text-primary"
@@ -520,14 +520,14 @@ export default function Index(props) {
 
                             {activeTab == 'Detail' && (props.module != 'SupportRequest') && (props.module != 'Catalog') &&
                                 <>
-                                    <div className="bg-gray-50 ">
-                                        <dl className="text-gray-200 divide-y">
+                                    <div className="bg-white/5 ">
+                                        <dl className="text-white/80 divide-y divide-white/10">
                                             <Disclosure as="div" key='General' className="" defaultOpen>
                                                 {({ open }) => (
                                                     <>
-                                                        <dt className="p-2 bg-gray-200 rounded-lg">
-                                                            <Disclosure.Button className="flex w-full items-start align-items-center justify-between text-left text-gray-500">
-                                                                <span className="px-2 -mb-px font-semibold text-gray-800 rounded-t">{props.translator['General']}</span>
+                                                        <dt className="p-2 bg-white/10 rounded-lg">
+                                                            <Disclosure.Button className="flex w-full items-start align-items-center justify-between text-left text-white/60">
+                                                                <span className="px-2 -mb-px font-semibold text-white rounded-t">{props.translator['General']}</span>
                                                                 <span className="ml-6 flex h-7 items-center">
                                                                     <ChevronDownIcon
                                                                         className={classNames(open ? '-rotate-180' : 'rotate-0', 'h-4 w-4 transform')}
@@ -537,7 +537,7 @@ export default function Index(props) {
                                                             </Disclosure.Button>
                                                         </dt>
                                                         <Disclosure.Panel as="dd" className="mt-2 pr-12">
-                                                            <div className="divide-y divide-gray-200">
+                                                            <div className="divide-y divide-white/10">
                                                                 {defaultHeader && Object.entries(defaultHeader).map(([key, field]) => {
                                                                     var field_name = key;
                                                                     let showField = true;
@@ -621,8 +621,8 @@ export default function Index(props) {
                                                                     if (showField) {
                                                                         return (
                                                                             <div className="py-2 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4">
-                                                                                <dt className="text-sm font-medium text-gray-500"> {props.translator[field.label]} </dt>
-                                                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex">
+                                                                                <dt className="text-sm font-medium text-white/60"> {props.translator[field.label]} </dt>
+                                                                                <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2 flex">
 
                                                                                     <InlineEdit
                                                                                         module={props.module}
@@ -643,7 +643,7 @@ export default function Index(props) {
                                                                     if (key == 'tag') {
                                                                         return (
                                                                             <div className="py-2 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4">
-                                                                                <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
+                                                                                <dt className="text-sm font-medium text-white/60"> {field.label} </dt>
                                                                                 <dd className="flex">
                                                                                     <ReactSelect
                                                                                         value={tagSelectedOption}
@@ -662,7 +662,7 @@ export default function Index(props) {
                                                                     if (key == 'list') {
                                                                         return (
                                                                             <div className="py-2 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4">
-                                                                                <dt className="text-sm font-medium text-gray-500"> {field.label} </dt>
+                                                                                <dt className="text-sm font-medium text-white/60"> {field.label} </dt>
                                                                                 <dd className="flex">
                                                                                     <ReactSelect
                                                                                         value={ListSelectedOption}
@@ -688,15 +688,15 @@ export default function Index(props) {
                                     </div>
 
                                     {customHeader &&
-                                        <div className="bg-gray-50 ">
-                                            <dl className="text-gray-200">
+                                        <div className="bg-white/5 ">
+                                            <dl className="text-white/80">
                                                 {Object.entries(customHeader).map(([group, fields]) => (
                                                     <Disclosure as="div" key={group} className="" defaultOpen>
                                                         {({ open }) => (
                                                             <>
-                                                                <dt className="p-2 bg-gray-200 rounded-lg mt-3">
-                                                                    <Disclosure.Button className="flex w-full items-start justify-between text-left text-gray-500">
-                                                                        <span className="px-2 -mb-px font-semibold text-gray-800 rounded-t">{props.translator[group]}</span>
+                                                                <dt className="p-2 bg-white/10 rounded-lg mt-3">
+                                                                    <Disclosure.Button className="flex w-full items-start justify-between text-left text-white/60">
+                                                                        <span className="px-2 -mb-px font-semibold text-white rounded-t">{props.translator[group]}</span>
                                                                         <span className="ml-6 flex h-7 items-center">
                                                                             <ChevronDownIcon
                                                                                 className={classNames(open ? '-rotate-180' : 'rotate-0', 'h-4 w-4 transform')}
@@ -706,7 +706,7 @@ export default function Index(props) {
                                                                     </Disclosure.Button>
                                                                 </dt>
                                                                 <Disclosure.Panel as="dd" className="mt-2 pr-12">
-                                                                    <div className="divide-y divide-gray-200">
+                                                                    <div className="divide-y divide-white/10">
                                                                         {defaultHeader && Object.entries(defaultHeader).map(([key, field]) => {
                                                                             var field_name = key;
                                                                             var value = (record[key]) ? record[key] : (record.custom && record.custom[key]) ? record.custom[key] : '-';
@@ -744,8 +744,8 @@ export default function Index(props) {
 
                                                                             return (
                                                                                 <div className="py-2 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4">
-                                                                                    <dt className="text-sm font-medium text-gray-500"> {props.translator[field.label]} </dt>
-                                                                                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex">
+                                                                                    <dt className="text-sm font-medium text-white/60"> {props.translator[field.label]} </dt>
+                                                                                    <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2 flex">
                                                                                         <InlineEdit
                                                                                             module={props.module}
                                                                                             field={field}
@@ -792,9 +792,9 @@ export default function Index(props) {
                                 />
                             }
                             {activeTab == 'Users' &&
-                                <ul role="list" className="divide-y divide-gray-200">
+                                <ul role="list" className="divide-y divide-white/10 text-white/80">
                                     {Object.entries(props.users).map(([key, user]) => (
-                                        <li key={''} className="py-4 flex border-2 m-1 border-gray-100 p-4">
+                                        <li key={''} className="py-4 flex border border-white/10 m-1 p-4 rounded-md bg-white/5">
                                             <span><UserIcon /> </span>
                                             <span className="ml-3">{user.name}</span>
                                         </li>
@@ -905,6 +905,10 @@ export default function Index(props) {
         </>
     );
 }
+
+
+
+
 
 
 

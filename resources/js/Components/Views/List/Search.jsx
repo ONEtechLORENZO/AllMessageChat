@@ -51,7 +51,7 @@ function Search(props)
                     placeholder="Search"
                     value={search}
                     handleChange={(event) => setSearch(event.target.value)}
-                    className={`pl-9 appearance-none block w-full  py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`} 
+                    className={`pl-3 appearance-none block w-full py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm text-left placeholder:text-left`} 
                 />
             </div>
             {/* <div>

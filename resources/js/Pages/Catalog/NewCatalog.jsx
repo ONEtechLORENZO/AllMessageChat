@@ -70,7 +70,7 @@ export default function NewCatalog(props) {
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity" />
                 </Transition.Child>
 
                 <div className="fixed z-10 inset-0 overflow-y-auto">
@@ -84,11 +84,11 @@ export default function NewCatalog(props) {
                             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         >
-                            <Dialog.Panel className="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-xl sm:w-full p-1">
-                                <div className="bg-gray-50 px-4 pb-2 sm:p-3 sm:pb-2">
+                            <Dialog.Panel className="relative bg-[#120b1f]/95 border border-white/10 rounded-lg text-left overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.45)] transform transition-all sm:my-8 sm:max-w-xl sm:w-full p-1">
+                                <div className="border-b border-white/10 px-4 pb-2 sm:p-3 sm:pb-2">
                                     <div className="sm:flex sm:items-start">
                                         <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                                            <Dialog.Title as="h3" className="text-lg leading-6 font-semibold text-gray-900 flex">
+                                            <Dialog.Title as="h3" className="text-lg leading-6 font-semibold text-white flex">
                                             {props.translator['New Catalog']} 
                                             </Dialog.Title>
                                         </div>
@@ -99,7 +99,7 @@ export default function NewCatalog(props) {
 
                                     <div className='px-4 py-2 space-y-4'>
                                         <div className='form-group' >
-                                            <label className="block text-sm font-medium text-gray-700 py-2">
+                                            <label className="block text-sm font-medium text-white/70 py-2">
                                             {props.translator['Name']} <span className='text-red-600'> *</span>
                                             </label>
                                             <div className="mt-1">
@@ -110,6 +110,7 @@ export default function NewCatalog(props) {
                                                  handleChange={catalogHandler} 
                                                  value={catalogs['name'] ? catalogs['name'] : ''}
                                                  required={true} 
+                                                 className="bg-[#0F0B1A] text-white border-white/10 placeholder:text-[#878787] focus:ring-[#BF00FF]/60 focus:border-[#BF00FF]/60"
                                                 />
                                             </div>
                                         </div>
@@ -117,7 +118,7 @@ export default function NewCatalog(props) {
 
                                     <div className='px-4 py-2 space-y-4'>
                                         <div className='form-group' >
-                                            <label className="block text-sm font-medium text-gray-700 py-2">
+                                            <label className="block text-sm font-medium text-white/70 py-2">
                                             {props.translator['Catalog Menu']} <span className='text-red-600'> *</span>
                                             </label>
                                             <div className="mt-1">
@@ -134,17 +135,17 @@ export default function NewCatalog(props) {
                                     </div>
                                 </form>
 
-                                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                <div className="border-t border-white/10 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                                     <button
                                         type="button"
-                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#BF00FF] text-base font-medium text-white hover:bg-[#9c00d9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60 sm:ml-3 sm:w-auto sm:text-sm"
                                         onClick={() => saveCatalog()}
                                     >
                                         {catalogs && catalogs.id ? props.translator['Update Catalog'] : props.translator['Create Catalog']}
                                     </button>
                                     <button
                                         type="button"
-                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-white/15 shadow-sm px-4 py-2 bg-white/10 text-base font-medium text-white/80 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                                         onClick={() => props.setShowCatalog(false)}
                                         ref={cancelButtonRef}
                                     >

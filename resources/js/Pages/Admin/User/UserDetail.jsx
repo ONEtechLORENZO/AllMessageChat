@@ -152,12 +152,12 @@ export default function UserDetail(props) {
             errors={props.errors}
             header={<div className="flex justify-between">
                 <div>
-                    <h2 className="font-semibold text-xl text-gray-800 leading-tight">{props.translator['Users']}</h2>
+                    <h2 className="font-semibold text-xl text-white leading-tight">{props.translator['Users']}</h2>
                 </div>
                 <div className='flex gap-3'>
                     <Link
                         href={route('wallet')}
-                        className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        className="bg-white/10 py-2 px-4 border border-white/10 rounded-md shadow-sm text-sm font-medium text-white/90 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60"
                     >
                         <span className='flex gap-1'>
                             <BriefcaseIcon className='h-4 w-4' /> {props.translator['Wallet']}
@@ -166,7 +166,7 @@ export default function UserDetail(props) {
                     {isChangePassword &&
                         <button
                             onClick={() => setChangePasswordModalOpen(true)}
-                            className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="bg-white/10 py-2 px-4 border border-white/10 rounded-md shadow-sm text-sm font-medium text-white/90 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60"
                         >
                             {props.translator['Change Password']}
                         </button>
@@ -174,7 +174,7 @@ export default function UserDetail(props) {
                     {props.current_user.role == 'global_admin' &&
                         <button
                             onClick={() => setImpersonate()}
-                            className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="bg-white/10 py-2 px-4 border border-white/10 rounded-md shadow-sm text-sm font-medium text-white/90 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60"
                         >
                             Impersonate User
                         </button>
@@ -182,7 +182,7 @@ export default function UserDetail(props) {
                     {props.current_user.role == 'global_admin' &&
                         <Link
                             href={route('updateUserSubscription', [props.user.id])}
-                            className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="bg-white/10 py-2 px-4 border border-white/10 rounded-md shadow-sm text-sm font-medium text-white/90 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60"
                         >
                             Change Plan
                         </Link>
@@ -190,14 +190,14 @@ export default function UserDetail(props) {
                     {props.current_user.role == 'global_admin' &&
                         <button
                             onClick={() => setAddCash(true)}
-                            className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="bg-white/10 py-2 px-4 border border-white/10 rounded-md shadow-sm text-sm font-medium text-white/90 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60"
                         >
                             Add Credit
                         </button>
                     }
                     <Link
                         href={props.current_user.role == 'global_admin' ? route('edit_global_user', [props.user.id]) : route('editUser', [props.user.id])}
-                        className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                        className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#BF00FF] hover:bg-[#9c00d9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60'
                     >
                         {props.translator['Edit User']}
                     </Link>
@@ -210,17 +210,17 @@ export default function UserDetail(props) {
                 {Object.entries(fieldList).map(([title, fields]) => {
                     return (
                         <div key={title} className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4">
-                            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                            <div className="bg-[#120b1f]/80 border border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.35)] overflow-hidden sm:rounded-lg">
                                 <div className="px-4 py-5 sm:px-6">
-                                    <h3 className="text-lg leading-6 font-medium text-gray-900">{props.translator[title]}</h3>
+                                    <h3 className="text-lg leading-6 font-medium text-white">{props.translator[title]}</h3>
                                 </div>
-                                <div className="border-t border-gray-200">
+                                <div className="border-t border-white/10">
                                     <dl>
                                         {Object.entries(fields).map(([key, field], index) => {
                                             let showField = true;
-                                            let bg_color = 'bg-gray-50';
+                                            let bg_color = 'bg-white/5';
                                             if (index % 2 == 0) {
-                                                bg_color = 'bg-white';
+                                                bg_color = 'bg-white/[0.02]';
                                             }
 
                                             if (key == 'status' && props.current_user.role == 'regular') {
@@ -238,8 +238,8 @@ export default function UserDetail(props) {
                                             if (showField) {
                                                 return (
                                                     <div key={key} className={`${bg_color} px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
-                                                        <dt className="text-sm font-medium text-gray-500">{field.label}</dt>
-                                                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                        <dt className="text-sm font-medium text-white/60">{field.label}</dt>
+                                                        <dd className="mt-1 text-sm text-white/90 sm:mt-0 sm:col-span-2">
                                                             {field.value}
                                                         </dd>
                                                     </div>
@@ -254,19 +254,19 @@ export default function UserDetail(props) {
                     )
                 })}
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4">
-                    <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                    <div className="bg-[#120b1f]/80 border border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.35)] overflow-hidden sm:rounded-lg">
                         <div className="px-4 py-5 sm:px-6">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900">{props.translator['User Related Workspaces']}</h3>
+                            <h3 className="text-lg leading-6 font-medium text-white">{props.translator['User Related Workspaces']}</h3>
                         </div>
-                        <div className="border-t border-gray-200">
+                        <div className="border-t border-white/10">
                             <dl>
 
-                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                    <ul className="bg-white rounded-lg border border-gray-200 w-full text-gray-900">
+                                <dd className="mt-1 text-sm text-white/90 sm:mt-0 sm:col-span-2">
+                                    <ul className="bg-white/5 rounded-lg border border-white/10 w-full text-white/80">
                                         {relatedCompanies && Object.entries(relatedCompanies).map(([key, company]) => (
                                             <li
                                                 key={company.id ?? key}
-                                                className="cursor-pointer px-6 py-2 border-b border-gray-200 w-full rounded-t-lg"
+                                                className="cursor-pointer px-6 py-2 border-b border-white/10 w-full rounded-t-lg hover:bg-white/5"
                                             >
                                                 {company.name}
                                             </li>
@@ -293,7 +293,7 @@ export default function UserDetail(props) {
                             leaveFrom="opacity-100"
                             leaveTo="opacity-0"
                         >
-                            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity" />
                         </Transition.Child>
 
                         {/* This element is to trick the browser into centering the modal contents. */}
@@ -309,10 +309,10 @@ export default function UserDetail(props) {
                             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         >
-                            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                            <div className="inline-block align-bottom bg-[#120b1f]/95 border border-white/10 rounded-lg px-4 pt-5 pb-4 text-left shadow-[0_20px_40px_rgba(0,0,0,0.45)] transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
                                 <div>
                                     <div className="">
-                                        <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
+                                        <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-white">
                                             {props.translator['Change Password']}
                                         </Dialog.Title>
                                         <div className="mt-2">
@@ -321,11 +321,20 @@ export default function UserDetail(props) {
                                                 {(props.user.role == 'regualar') || (props.user.id == props.current_user.id) &&
                                                     <div className="grid gap-6">
                                                         <div className="form-group col-span-6 sm:col-span-4">
-                                                            <label htmlFor="current_password" className="block text-sm font-medium text-gray-700">
+                                                            <label htmlFor="current_password" className="block text-sm font-medium text-white/70">
                                                                 {props.translator['Current Password']}
                                                             </label>
                                                             <div className="mt-1 flex rounded-md shadow-sm">
-                                                                <Input type="password" minlength="8" name='current_password' required={true} id='current_password' placeholder={props.translator['Current Password']} handleChange={handleChange} />
+                                                                <Input
+                                                                    type="password"
+                                                                    minlength="8"
+                                                                    name='current_password'
+                                                                    required={true}
+                                                                    id='current_password'
+                                                                    placeholder={props.translator['Current Password']}
+                                                                    handleChange={handleChange}
+                                                                    className="bg-[#0F0B1A] text-white placeholder-[#878787] border-white/10 focus:ring-[#BF00FF]/60 focus:border-[#BF00FF]/60"
+                                                                />
                                                             </div>
                                                             <InputError message={errors.current_password} />
                                                         </div>
@@ -334,22 +343,40 @@ export default function UserDetail(props) {
 
                                                 <div className="grid gap-6 mt-3">
                                                     <div className="form-group col-span-6 sm:col-span-4">
-                                                        <label htmlFor="new_password" className="block text-sm font-medium text-gray-700">
+                                                        <label htmlFor="new_password" className="block text-sm font-medium text-white/70">
                                                             {props.translator['New Password']}
                                                         </label>
                                                         <div className="mt-1 flex rounded-md shadow-sm">
-                                                            <Input type="password" minlength="8" name='new_password' required={true} id='new_password' placeholder={props.translator['New Password']} handleChange={handleChange} />
+                                                            <Input
+                                                                type="password"
+                                                                minlength="8"
+                                                                name='new_password'
+                                                                required={true}
+                                                                id='new_password'
+                                                                placeholder={props.translator['New Password']}
+                                                                handleChange={handleChange}
+                                                                className="bg-[#0F0B1A] text-white placeholder-[#878787] border-white/10 focus:ring-[#BF00FF]/60 focus:border-[#BF00FF]/60"
+                                                            />
                                                         </div>
                                                         <InputError message={errors.new_password} />
                                                     </div>
                                                 </div>
                                                 <div className="grid gap-6 mt-3">
                                                     <div className="form-group col-span-6 sm:col-span-4">
-                                                        <label htmlFor="confirm_password" className="block text-sm font-medium text-gray-700">
+                                                        <label htmlFor="confirm_password" className="block text-sm font-medium text-white/70">
                                                             {props.translator['Confirm Password']}
                                                         </label>
                                                         <div className="mt-1 flex rounded-md shadow-sm">
-                                                            <Input type="password" minlength="8" name='confirm_password' required={true} id='confirm_password' placeholder={props.translator['Confirm Password']} handleChange={handleChange} />
+                                                            <Input
+                                                                type="password"
+                                                                minlength="8"
+                                                                name='confirm_password'
+                                                                required={true}
+                                                                id='confirm_password'
+                                                                placeholder={props.translator['Confirm Password']}
+                                                                handleChange={handleChange}
+                                                                className="bg-[#0F0B1A] text-white placeholder-[#878787] border-white/10 focus:ring-[#BF00FF]/60 focus:border-[#BF00FF]/60"
+                                                            />
                                                         </div>
                                                         <InputError message={errors.confirm_password} />
                                                     </div>
@@ -361,14 +388,14 @@ export default function UserDetail(props) {
                                 <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
                                     <button
                                         type="button"
-                                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
+                                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#BF00FF] text-base font-medium text-white hover:bg-[#9c00d9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60 sm:col-start-2 sm:text-sm"
                                         onClick={() => createNewPassword()}
                                     >
                                         {props.translator['Change']}
                                     </button>
                                     <button
                                         type="button"
-                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
+                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-white/15 shadow-sm px-4 py-2 bg-white/10 text-base font-medium text-white/80 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60 sm:mt-0 sm:col-start-1 sm:text-sm"
                                         onClick={() => setChangePasswordModalOpen(false)}
                                     >
                                         {props.translator['Close']}
@@ -392,7 +419,7 @@ export default function UserDetail(props) {
                             leaveFrom="opacity-100"
                             leaveTo="opacity-0"
                         >
-                            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity" />
                         </Transition.Child>
 
                         {/* This element is to trick the browser into centering the modal contents. */}
@@ -408,10 +435,10 @@ export default function UserDetail(props) {
                             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         >
-                            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                            <div className="inline-block align-bottom bg-[#120b1f]/95 border border-white/10 rounded-lg px-4 pt-5 pb-4 text-left shadow-[0_20px_40px_rgba(0,0,0,0.45)] transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
                                 <div>
                                     <div className="">
-                                        <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
+                                        <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-white">
                                             Add Cash
                                         </Dialog.Title>
                                         <div className="mt-2">
@@ -419,11 +446,21 @@ export default function UserDetail(props) {
 
                                                 <div className="grid gap-6 mt-3">
                                                     <div className="form-group col-span-6 sm:col-span-4">
-                                                        <label htmlFor="confirm_password" className="block text-sm font-medium text-gray-700">
+                                                        <label htmlFor="confirm_password" className="block text-sm font-medium text-white/70">
                                                             Wallet Amount
                                                         </label>
                                                         <div className="mt-1 flex rounded-md shadow-sm">
-                                                            <Input type="text" minlength="8" name='wallet_amount' required={true} id='wallet_amount' placeholder='$' handleChange={walletHandler} value={walletCash['wallet_amount']} />
+                                                            <Input
+                                                                type="text"
+                                                                minlength="8"
+                                                                name='wallet_amount'
+                                                                required={true}
+                                                                id='wallet_amount'
+                                                                placeholder='$'
+                                                                handleChange={walletHandler}
+                                                                value={walletCash['wallet_amount']}
+                                                                className="bg-[#0F0B1A] text-white placeholder-[#878787] border-white/10 focus:ring-[#BF00FF]/60 focus:border-[#BF00FF]/60"
+                                                            />
                                                         </div>
                                                         <InputError message={errors.confirm_password} />
                                                     </div>
@@ -435,14 +472,14 @@ export default function UserDetail(props) {
                                 <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
                                     <button
                                         type="button"
-                                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
+                                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#BF00FF] text-base font-medium text-white hover:bg-[#9c00d9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60 sm:col-start-2 sm:text-sm"
                                         onClick={() => addWalletAmount()}
                                     >
                                         Add
                                     </button>
                                     <button
                                         type="button"
-                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
+                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-white/15 shadow-sm px-4 py-2 bg-white/10 text-base font-medium text-white/80 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60 sm:mt-0 sm:col-start-1 sm:text-sm"
                                         onClick={() => closeWallet()}
                                     >
                                         {props.translator['Close']}

@@ -116,7 +116,7 @@ class ImportController extends Controller
             'Cancel' => __('Cancel'),
             'Next'=> __('Next'),
             'No records' =>__('No records'),
-            'Module' => _('Module'),
+            'Module' => __('Module'),
             ]]);
     }
 

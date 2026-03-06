@@ -40,7 +40,7 @@ export default function ImportCatalog(props) {
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-black bg-opacity-25" />
+                    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
                 </Transition.Child>
 
                 <div className="fixed inset-0 overflow-y-auto">
@@ -54,19 +54,19 @@ export default function ImportCatalog(props) {
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="w-full max-w-4xl max-h-[640px] transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
+                            <Dialog.Panel className="w-full max-w-4xl max-h-[640px] transform overflow-hidden rounded-2xl border border-white/10 bg-[#120b1f]/95 text-left align-middle shadow-[0_20px_40px_rgba(0,0,0,0.45)] transition-all">
                                 <div className="flex min-h-[300px]">
-                                    <div className="w-2/6 bg-[#3F3F3F] text-white flex flex-col gap-4 items-center p-6 overflow-y-auto max-h-[640px]">
+                                    <div className="w-2/6 bg-[#0F0B1A] text-white flex flex-col gap-4 items-center p-6 overflow-y-auto max-h-[640px] border-r border-white/10">
                                         {tab != 'loading' ? 
                                           <>
-                                            <div className="text-xl font-semibold">
+                                            <div className="text-xl font-semibold text-white">
                                                 Import Catalog
                                             </div>
                                             
                                             <ul className="divide-y w-full pl-0">
                                                 {Object.entries(categories).map( ([name, label]) => (
-                                                    <li className={classNames(tab == name ? 'text-[#AA94FF]' : 'text-white', "flex gap-2 items-center w-full !p-3")}>
-                                                        <div className="w-3 h-3 bg-white rounded-full"></div>
+                                                    <li className={classNames(tab == name ? 'text-[#BF00FF]' : 'text-white/70', "flex gap-2 items-center w-full !p-3")}>
+                                                        <div className={classNames(tab == name ? 'bg-[#BF00FF]' : 'bg-white/40', "w-3 h-3 rounded-full")}></div>
                                                         {label}
                                                     </li>
                                                 ))}
@@ -74,14 +74,14 @@ export default function ImportCatalog(props) {
                                           </>
                                         :
                                           <div className="align-middle">
-                                            <div className="text-xl font-semibold py-10">
+                                            <div className="text-xl font-semibold py-10 text-white">
                                                 Import Catalog...
                                             </div>
                                           </div>
                                         }
                                       
                                     </div>
-                                    <div className="w-4/6 !p-6 flex flex-col">
+                                    <div className="w-4/6 !p-6 flex flex-col text-white/90">
                                         {tab == 'meta_profile' ? 
                                           <Step1 
                                             translator={props.translator}

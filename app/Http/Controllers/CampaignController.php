@@ -309,7 +309,7 @@ class CampaignController extends Controller
             'last_name' =>  ['label' => __('Last Name'), 'type' => 'text'],
             'email' =>  ['label' => __('Email'), 'type' => 'text'],
             'phone_number' => ['label' => __('Phone number'), 'type' => 'phone_number'],
-            'instagram_username' => ['label' =>_('Instagram Username'), 'type' => 'text'],
+            'instagram_username' => ['label' => __('Instagram Username'), 'type' => 'text'],
         ];       
         
         $contacts = $this->getContactRecords($module, $fields, $searchData, '', '');

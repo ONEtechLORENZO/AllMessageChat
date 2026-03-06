@@ -106,31 +106,31 @@ export default function Subscription(props){
       errors={props.errors}
     >
         <div>
-         <div className="bg-white">
-          <div className="mx-auto max-w-7xl bg-white py-16 sm:py-8 sm:px-6 lg:px-8">
+         <div className="bg-[#0b0815]">
+          <div className="mx-auto max-w-7xl rounded-2xl border border-white/10 bg-[#120b1f]/80 py-16 shadow-[0_20px_60px_rgba(0,0,0,0.45)] sm:py-8 sm:px-6 lg:px-8">
             {props.auth.user.role == 'global_admin' &&
                 <div className="flex justify-end">
                     <Link
                         href={route('listPlan')}
-                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-200 hover:bg-gray-500 hover:text-white text-base font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+                        className="w-full inline-flex justify-center rounded-md border border-white/10 bg-white/10 px-4 py-2 text-base font-medium text-white/90 shadow-sm transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-[#BF00FF]/60 focus:ring-offset-2 focus:ring-offset-[#0b0815] sm:ml-3 sm:w-auto sm:text-sm"
                         >
                         Plan Configuration
                     </Link>
                 </div>  
             }
             <div className="hidden lg:block mt-10">
-            <table className="h-px w-full table-fixed">
+            <table className="h-px w-full table-fixed text-white">
                 <caption className="sr-only">Pricing plan comparison</caption>
                 <thead>
                 <tr>
-                    <th className="px-6 pb-4 text-left text-sm font-medium text-gray-900" scope="col">
+                    <th className="px-6 pb-4 text-left text-sm font-medium text-white/70" scope="col">
                     <span className="sr-only">Feature by</span>
                     <span className="sr-only">Plans</span>
                     </th>
                     {Object.entries(plans).map( ([key,plan]) => (
                         <th
                             key={plan.id}
-                            className="w-1/5 px-6 pb-4 text-left text-lg font-medium leading-6 text-gray-900"
+                            className="w-1/5 px-6 pb-4 text-left text-lg font-medium leading-6 text-white"
                             scope="col"
                         >
                             {key}
@@ -138,26 +138,26 @@ export default function Subscription(props){
                     ))}
                 </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 border-t border-gray-200">
+                <tbody className="divide-y divide-white/10 border-t border-white/10">
                 <tr>
-                    <th className="py-8 px-6 text-left align-top text-sm font-medium text-gray-900" scope="row">
+                    <th className="py-8 px-6 text-left align-top text-sm font-medium text-white" scope="row">
                     Pricing
                     </th>
                     {Object.entries(plans).map(([key, plan]) => (
                     <td key={key} className="h-full py-8 px-6 align-top">
                         <div className="relative table h-full">
                         <p>
-                            <span className="text-4xl font-bold tracking-tight text-gray-900">{plan.price}
+                            <span className="text-4xl font-bold tracking-tight text-white">{plan.price}
                             {/* {plan.price.toLowerCase() != 'custom' ? '€':'' } */}
                             </span>{' '}
-                            <span className="text-base font-small text-gray-500">{plan.currency} /{plan.period}</span>
+                            <span className="text-base font-small text-white/60">{plan.currency} /{plan.period}</span>
                         </p>
-                        <p className="mt-4 mb-16 text-sm text-gray-500">{''}</p>
+                        <p className="mt-4 mb-16 text-sm text-white/60">{''}</p>
                         <button
                             className={classNames(
                                 (props.current_plan == plan.plan || props.current_plan == plan.plan_id)
-                                ?"5 absolute bottom-0 block w-full flex-grow rounded-md border border-indigo-600 bg-indigo-600 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
-                                :"5 absolute bottom-0 block w-full flex-grow rounded-md border border-gray-800 bg-gray-800 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
+                                ?"5 absolute bottom-0 block w-full flex-grow rounded-md border border-[#BF00FF] bg-[#BF00FF] py-2 text-center text-sm font-semibold text-white transition hover:bg-[#9c00d9]"
+                                :"5 absolute bottom-0 block w-full flex-grow rounded-md border border-white/15 bg-white/10 py-2 text-center text-sm font-semibold text-white transition hover:bg-white/20"
                             )}
                             onClick={() => Subscribe(plan.plan_id)}
                         >
@@ -171,7 +171,7 @@ export default function Subscription(props){
                     <Fragment key={section.name}>
                     <tr>
                         <th
-                        className="bg-gray-50 py-3 pl-6 text-left text-sm font-medium text-gray-900"
+                        className="bg-white/5 py-3 pl-6 text-left text-sm font-medium text-white/80"
                         colSpan={4}
                         scope="colgroup"
                         >
@@ -180,7 +180,7 @@ export default function Subscription(props){
                     </tr>
                     {section.features.map((feature) => (
                         <tr key={feature.label}>
-                        <th className="py-5 px-6 text-left text-sm font-normal text-gray-500" scope="row">
+                        <th className="py-5 px-6 text-left text-sm font-normal text-white/70" scope="row">
                             {feature.label} 
                         </th>
                         {Object.entries(plans).map(([key, plan]) => (
@@ -188,21 +188,21 @@ export default function Subscription(props){
                             {feature.name && plan[feature.name] ? 
                              <>
                               {section.name != 'Altre Funzionalità'?
-                                <span className="block text-sm text-gray-700">{plan[feature.name]}
+                                <span className="block text-sm text-white/80">{plan[feature.name]}
                                 {plan[feature.name].toLowerCase() == 'custom'|| plan[feature.name].toLowerCase() == 'infinite'|| plan[feature.name] == '-' 
                                 ? ''
                                 : feature.add }
                                 </span>
                               : (section.name == 'Altre Funzionalità') && (plan[feature.name] != 'true' && plan[feature.name] != 'false') ?
-                                <span className="block text-sm text-gray-700">
+                                <span className="block text-sm text-white/80">
                                     {plan[feature.name]} 
                                 </span>
                               :
                               <>
                                 {plan[feature.name] == 'true' ? (
-                                    <CheckIcon className="h-5 w-5 text-green-500" aria-hidden="true" />
+                                    <CheckIcon className="h-5 w-5 text-emerald-400" aria-hidden="true" />
                                 ): (
-                                    <XMarkIcon className="h-5 w-5 text-red-900" aria-hidden="true" />
+                                    <XMarkIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
                                 )}
                               </>
                               }
@@ -211,14 +211,14 @@ export default function Subscription(props){
                              <>
                                {typeof feature.tiers[plan.plan] === 'string'? (
                                     <>
-                                      <span className="block text-sm text-gray-700">{feature.tiers[plan.plan]}</span>
+                                      <span className="block text-sm text-white/80">{feature.tiers[plan.plan]}</span>
                                     </>
                                 ) : (
                                     <>
                                         {feature.tiers[plan.plan] === true ? (
-                                            <CheckIcon className="h-5 w-5 text-green-500" aria-hidden="true" />
+                                            <CheckIcon className="h-5 w-5 text-emerald-400" aria-hidden="true" />
                                         ) : (
-                                            <XMarkIcon className="h-5 w-5 text-red-900" aria-hidden="true" />
+                                            <XMarkIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
                                         )}
                                     </>
                                 )}
@@ -232,7 +232,7 @@ export default function Subscription(props){
                 ))}
                 </tbody>
                 <tfoot>
-                <tr className="border-t border-gray-200">
+                <tr className="border-t border-white/10">
                     <th className="sr-only" scope="row">
                     Choose your plan
                     </th>
@@ -241,8 +241,8 @@ export default function Subscription(props){
                         <button
                             className={classNames(
                                 (props.current_plan == plan.plan || props.current_plan == plan.plan_id)
-                                ?"block w-full rounded-md border border-indigo-800 bg-indigo-600 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
-                                :"block w-full rounded-md border border-gray-800 bg-gray-800 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
+                                ?"block w-full rounded-md border border-[#BF00FF] bg-[#BF00FF] py-2 text-center text-sm font-semibold text-white transition hover:bg-[#9c00d9]"
+                                :"block w-full rounded-md border border-white/15 bg-white/10 py-2 text-center text-sm font-semibold text-white transition hover:bg-white/20"
                             )}
                             onClick={() => Subscribe(plan.plan_id)}
                         >
@@ -260,6 +260,7 @@ export default function Subscription(props){
     </Authenticated>
     );
 }
+
 
 
 

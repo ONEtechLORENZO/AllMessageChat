@@ -77,7 +77,7 @@ export default function Dashboard(props) {
             errors={props.errors}
             header={<div className="flex justify-between"> 
                 <div> 
-                    <h2 className="font-semibold text-xl text-gray-800 leading-tight">Message Log</h2>
+                    <h2 className="font-semibold text-xl text-white leading-tight">Message Log</h2>
                 </div> 
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 w-1/2">
                     <div className="">
@@ -102,11 +102,11 @@ export default function Dashboard(props) {
                             />
                     </div>
                     <div className="relative flex items-stretch flex-grow focus-within:z-10">
-                    <input type="text" name="messageContent" value={searchKey.messageContent} onChange={(e) => searchKeyChangeEvent(e)} className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" id="search-content" /> 
+                    <input type="text" name="messageContent" value={searchKey.messageContent} onChange={(e) => searchKeyChangeEvent(e)} className="shadow-sm bg-[#0F0B1A] text-white placeholder-[#878787] focus:ring-[#BF00FF]/60 focus:border-[#BF00FF]/60 block w-full sm:text-sm border-white/10 rounded-md" id="search-content" /> 
                     <button
                         onClick={applySearchValue}
                         type="button"
-                        className="relative inline-flex items-center ml-2 space-x-2 px-4 py-2 border border-blue-300 text-sm font-medium rounded-md text-gray-700 bg-blue-50 hover:bg-blue-400 hover:text-white-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="relative inline-flex items-center ml-2 space-x-2 px-4 py-2 border border-[#BF00FF]/50 text-sm font-medium rounded-md text-white bg-[#BF00FF] hover:bg-[#9c00d9] focus:outline-none focus:ring-1 focus:ring-[#BF00FF]/60 focus:border-[#BF00FF]/60"
                     >
                         <span>Search</span>
                     </button>
@@ -117,22 +117,22 @@ export default function Dashboard(props) {
         <Head title="Message Log" />
 
         <div className="">
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="bg-[#120b1f]/80 border border-white/10 overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.35)] rounded-lg">
       <div className="px-4 py-5 sm:p-6">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col">
               <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                  <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                    <table className="min-w-full divide-y divide-gray-200 table-auto">
-                      <thead className="bg-gray-50">
+                  <div className="shadow overflow-hidden border-b border-white/10 sm:rounded-lg">
+                    <table className="min-w-full divide-y divide-white/10 table-auto text-white">
+                      <thead className="bg-white/5">
                         <tr>
                           { listColumn && listColumn.map((column) => {
                             return(
                                 <>
                                   <th
                                     scope="col"
-                                    className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                    className="px-6 py-3 text-xs font-medium text-white/60 uppercase tracking-wider"
                                   >
                                     {column.label}
                                   </th>
@@ -141,31 +141,31 @@ export default function Dashboard(props) {
                           })}
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="bg-transparent divide-y divide-white/10">
                         {messages.data.map((message) => (
                           <tr key={message.name}>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
                                 <div className="ml-4">
-                                  <div className="text-sm font-medium text-gray-500">
+                                  <div className="text-sm font-medium text-white/80">
                                     <Link href={"/admin/user/" +message.id }> {Moment(message.created_at).format(' DD-MM-Y hh:mm:ss')} </Link>
                                   </div>
                                 </div>
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap ">
-                              <div className="text-sm text-gray-500">{message.display_name}</div>
+                              <div className="text-sm text-white/80">{message.display_name}</div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" title={message.content}> 
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-white/80" title={message.content}> 
                               {( (message.content.length ) > 20) ? 
                                 <>  {message.content.substring( 0, 20 ) + '...'} </>
                                 : <> {message.content} </>
                               }
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-gray-500 text-sm font-medium">
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-white/80 text-sm font-medium">
                               {message.direction}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-gray-500 text-sm font-medium">
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-white/80 text-sm font-medium">
                               {message.sender}
                             </td>
                             {/*
@@ -173,21 +173,21 @@ export default function Dashboard(props) {
                               {message.country}
                             </td>
                             */}
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-gray-500 text-sm font-medium">
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-white/80 text-sm font-medium">
                                {message.destinations}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 {message.status == 'Queued' && 
-                                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800"> {message.status} </span>
+                                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-500/20 text-yellow-200"> {message.status} </span>
                                   || message.status == 'Failed' &&
-                                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800"> {message.status} </span>
-                                  || <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800"> {message.status} </span>
+                                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-500/20 text-red-200"> {message.status} </span>
+                                  || <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-500/20 text-emerald-200"> {message.status} </span>
                                 } 
                             </td>
                             </tr>
                         ))}
                         {messages.data.length == 0 && 
-                            <tr> <td colspan="4" className="p-4"> <span className="px-6 py-4 whitespace-nowrap text-right text-gray-500 text-sm font-medium"> No conversation start yet. </span> </td></tr> 
+                            <tr> <td colspan="4" className="p-4"> <span className="px-6 py-4 whitespace-nowrap text-right text-white/70 text-sm font-medium"> No conversation start yet. </span> </td></tr> 
                         } 
                       </tbody>
                     </table>
@@ -200,7 +200,7 @@ export default function Dashboard(props) {
                                           "list?page=1" 
                                         : '#' 
                                     }    
-                                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-100"
+                                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-white/10 bg-white/10 text-sm font-medium text-white/70 hover:bg-white/20"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
@@ -211,7 +211,7 @@ export default function Dashboard(props) {
                                          "list?page=" + (parseInt(pageInfo.currentPage) - 1) 
                                         : '#'
                                     }    
-                                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-100"
+                                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-white/10 bg-white/10 text-sm font-medium text-white/70 hover:bg-white/20"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -219,7 +219,7 @@ export default function Dashboard(props) {
                                   </Link>
 
                                   <span
-                                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-100"
+                                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-white/10 bg-white/10 text-sm font-medium text-white/70 hover:bg-white/20"
                                 >
                                    {((pageInfo.currentPage - 1) * pageInfo.limit) +1 } - {pageInfo.currentPage * pageInfo.limit} of {pageInfo.totalMessages}
                                   </span>
@@ -230,7 +230,7 @@ export default function Dashboard(props) {
                                         :  '#' 
                                     }
 
-                                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-100"
+                                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-white/10 bg-white/10 text-sm font-medium text-white/70 hover:bg-white/20"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
@@ -241,7 +241,7 @@ export default function Dashboard(props) {
                                           "list?page=" + Math.ceil(pageInfo.totalMessages / pageInfo.limit)
                                         : '#' 
                                     }
-                                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-white/10 bg-white/10 text-sm font-medium text-white/70 hover:bg-white/20"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />

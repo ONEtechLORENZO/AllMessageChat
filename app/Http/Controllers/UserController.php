@@ -1295,6 +1295,9 @@ class UserController extends Controller
         }
 
         $templateContent = $this->fetchTemplateContent($template_id, $account_id);
+        if ($templateContent instanceof \Illuminate\Http\RedirectResponse) {
+            return $templateContent;
+        }
         
         return Inertia::render('Account/Template/CreateTemplate', [
             'template' => $templateContent['template'],
