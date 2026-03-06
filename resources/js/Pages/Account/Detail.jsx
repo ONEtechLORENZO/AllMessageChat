@@ -1,67 +1,30 @@
 import React, { Fragment, useRef, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react'
-import Select from 'react-select';
 import Authenticated from '@/Layouts/Authenticated';
 import { router as Inertia } from "@inertiajs/react";
-import { Head, useForm, Link } from '@inertiajs/react';
-import languages from '@/Pages/languages';
+import { Head, Link } from '@inertiajs/react';
 import PristineJS from 'pristinejs';
 import Input from '@/Components/Forms/Input';
-import Dropdown from '@/Components/Forms/Dropdown';
-import InputError from '@/Components/Forms/InputError';
 import  {defaultPristineConfig} from '@/Pages/Constants';
-import { PencilSquareIcon, ChevronLeftIcon, TrashIcon, PlusIcon, ChevronRightIcon  } from '@heroicons/react/24/solid';
-import { FolderPlusIcon } from '@heroicons/react/24/outline';
+import { PencilSquareIcon, ChevronLeftIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/solid';
 import Checkbox from '@/Components/Forms/Checkbox';
-import nProgress from 'nprogress';
 
 import { Button } from 'reactstrap';
-import axios from 'axios';
-import notie from 'notie';
 
 function Detail(props) 
 {
     const [webhookData, setWebhookData] = useState({});
-    const [accountModalOpen, setAccountModalOpen ] = useState(false);
     const [incomingUrlModalOpen , setIncomingUrlModalOpen ] = useState(false);
     const cancelButtonRef = useRef(null);
-    const [errors, setError] = useState({});
-    const { data, setData, post, processing, reset } = useForm({
-        template_name: '',
-        category: '',
-        languages: '',
-        incoming_url: '',
-    });
 
     const [ selectedTab , selectTab ] = useState('info');
     const tabs = [
         { name: 'Info', href: '#', current: true, page: 'info' },
-        { name: 'Templates', href: '#', current: false , page: 'templates' },
         { name: 'WebHooks', href: '#', current: false , page: 'webhooks' },
     ];
 
-    const categories = props.categories;
-    const [templates, setTemplates] = useState(props.templates);
-      
     function classNames(...classes) {
         return classes.filter(Boolean).join(' ')
-    }
-
-    /**
-     * Handle input change
-     */ 
-    function handleChange(event) {
-        const name = event.target.name;
-        const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-        let newState = Object.assign({}, data);
-        if(event.target.type == 'file' && event.target.files) {
-            newState[name] = event.target.files[0];
-        }
-        else {
-            newState[name] = value;
-        }
-
-        setData(newState);
     }
 
     function handleWebhookFormChange(event) {
@@ -76,38 +39,6 @@ function Detail(props)
         }
 
         setWebhookData(newState);
-    }
-
-    /**
-     * Handle select change
-     */ 
-    function handleSelectChange(selected_value, field_info) {
-        let values = [];
-        let newState = Object.assign({}, data);
-        selected_value.map((value) => {
-            values.push(value.code);
-        })
-        newState[field_info.name] = values;
-        setData(newState);
-    }
-
-    /**
-     * Create new template
-     */
-    function createNewTemplate() {
-        let validate = templateValidation(data);
-        if(!validate) {
-            return false;
-        }
-
-        Inertia.post(route('create_new_template', props.account.id), data, {
-            onSuccess : () => {
-                setAccountModalOpen(false);
-            },
-            onError: (errors) => {
-                setError(errors);
-            },
-        })
     }
 
     /**
@@ -151,18 +82,6 @@ function Detail(props)
         }
     }
 
-    // Delete Template
-    function deleteTemplate(id) {
-        var confirmation = window.confirm((props.translator['Are you sure you want to delete this Templete?']));
-        if(confirmation) {
-            axios.post(route('delete_template', id)).then( (response) => {
-                if(response) {
-                    setTemplates(response.data.template);
-                }
-            });
-        }
-    }
-
     /**
      * Edit webhook
      * 
@@ -187,36 +106,6 @@ function Detail(props)
     }
     else if(props['account'].status == 'Inactive') {
         status_class_names = 'bg-red-100 text-red-800';
-    }
-
-    function templateValidation(data) {
-        let check = true;
-        let field_name = ['template_name', 'category', 'languages'];
-        field_name.map( (field) => {
-            if(!data[field] && check) {
-                check = false;
-            }
-        })
-
-        if(!check) {
-            notie.alert({type: 'warning', text: 'All field are mandatory', time: 5});
-        }
-        return check;
-    }
-
-    /**
-     * Sync templates
-     */
-    function syncTemplates(){
-        nProgress.start(0.5);
-        nProgress.inc(0.2);
-        axios.get(route('sync_templates' , {'account': props.account.id})).then( (response) => {
-            if(response.data){
-                setTemplates(response.data.templates);
-            }
-            nProgress.done();
-            notie.alert({type: 'success', text: 'Template synced successfully', time: 5});
-        });
     }
 
     return (
@@ -330,75 +219,6 @@ function Detail(props)
                             </div>
                         </div>
                     }
-                    {selectedTab == 'templates' &&
-                            <>
-                                <div className="pt-2 flex justify-between">
-                                    <Button
-                                        onClick={() => setAccountModalOpen(true)}
-                                        className="!flex gap-1 items-center"
-                                    >
-                                        {props.translator['Add template']}
-                                        <PlusIcon className='h-4 w-4 text-white'/>
-                                    </Button>   
-
-                                    <button
-                                        onClick={() => syncTemplates()}
-                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-                                    >
-                                        {props.translator['Sync Templates']}
-                                    </button>                                     
-                                </div>
-                                <div className="overflow-hidden "> 
-                                    <div  className="space-y-4 my-4">
-                                        {templates.map((data) => {
-                                            let status_class_names = 'text-[#E68D08]';
-                                            if((data.status).toLowerCase() == 'approved') {
-                                                status_class_names = 'text-[#25B222]';
-                                            }
-                                            else if(data.status == 'rejected' || (data.status).indexOf('REJECTED') != -1 ) {
-                                                status_class_names = 'text-[#E68D08]';
-                                            }
-
-                                            return (
-                                                <div key={data.id} className="pt-3 bg-white drop-shadow rounded-md grid grid-cols-12 px-6 py-4">
-
-                                                    <div className='col-span-6 flex flex-col'>
-                                                        <Link className='text-[#393939] text-base font-semibold' href={route('template_detail_view', [data.account_id, data.id])}>{data.name}</Link>
-                                                        <span className='truncate'>{props.translator['Created by']} {(data.creater_name)&& <>{data.creater_name.name} </>} on {new Date(data.created_at).toLocaleDateString("en-US")}</span>
-                                                        <span className='truncate'> {data.language} </span>
-                                                    </div>
-                                                    
-                                                    <span className={`ml-3 text-sm inline-flex items-center px-2 col-span-5 py-0.5 rounded font-semibold ${status_class_names}`}>
-                                                      {/* {(data.status).toUpperCase()} */}
-                                                    </span>
-                                                    <div className='flex gap-1 justify-end items-center'>
-                                                        <TrashIcon className='h-6 w-6 cursor-pointer text-[#6C757D]' onClick={() => deleteTemplate(data.id)}/>
-                                                        <span>
-                                                            <Link className='text-[#393939] text-base font-semibold' href={route('template_detail_view', [data.account_id, data.id])}>
-                                                               <ChevronRightIcon className='text-primary h-6 w-6' />
-                                                            </Link>
-                                                        </span>
-                                                    </div>
-                                                    
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                    {!templates || templates.length == 0 ? 
-                                        <div className="text-center py-12">
-                                            <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400' />
-                                            <h3 className="mt-2 text-sm font-medium text-gray-900">{props.translator['No templates found']}</h3>
-                                            <p className="mt-1 text-sm text-gray-500">{props.translator['Get started by creating a new template.']}</p>
-                                            <div className="mt-6">
-                                                <a onClick={() => setAccountModalOpen(true)} className="cursor-pointer underline text-sm text-indigo-600 hover:text-indigo-900">
-                                                {props.translator['Click here to create new template']}
-                                                </a>
-                                            </div>
-                                        </div>
-                                    : ''}
-                                </div>
-                        </>
-                    }
                     {selectedTab == 'webhooks' &&
                         <>
                             <div>                                    
@@ -441,122 +261,6 @@ function Detail(props)
                     }
                 </div>
             </div>
-
-            <Transition.Root show={accountModalOpen} as={Fragment}>
-                <Dialog
-                    as="div"
-                    className="relative z-50"
-                    initialFocus={cancelButtonRef}
-                    onClose={setAccountModalOpen}
-                >
-                    <Transition.Child
-                        as={Fragment}
-                        enter="ease-out duration-300"
-                        enterFrom="opacity-0"
-                        enterTo="opacity-100"
-                        leave="ease-in duration-200"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
-                    >
-                        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-                    </Transition.Child>
-
-                    <div className="fixed inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-6">
-                            <Transition.Child
-                                as={Fragment}
-                                enter="ease-out duration-300"
-                                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                                enterTo="opacity-100 translate-y-0 sm:scale-100"
-                                leave="ease-in duration-200"
-                                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-                                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                            >
-                                <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:p-6">
-                                    <div>
-                                        <div className="">
-                                            <Dialog.Title as="h3" className="text-xl leading-6 font-medium text-gray-900">
-                                                {props.translator['Add template']}
-                                            </Dialog.Title>
-                                            <div className="mt-2">
-                                                <p className="text-sm text-gray-500 pt-2 pb-4">
-                                                    {props.translator['Create a new WhatsApp template. Each template must have a unique name consisting of lowercase alphanumeric characters.Spaces must be replaced with underscores (_). Only WhatsApp templates within the pre-defined categories can be accepted.']}
-                                                </p>
-
-                                                <form id="new_template">
-                                                    <div className="grid gap-6">
-                                                        <div className="form-group col-span-6 sm:col-span-4">
-                                                            <label htmlFor="template_name" className="block text-sm font-medium text-gray-700">
-                                                                {props.translator['Name']} <span className='text-red-600'> *</span>
-                                                            </label>
-                                                            <div className="mt-1 flex rounded-md shadow-sm">
-                                                                <Input name='template_name' required={true} id='template_name' placeholder={props.translator['Template name']} handleChange={handleChange} />
-                                                            </div>
-                                                            <InputError message={errors.template_name} />
-                                                        </div>
-
-                                                        <div className="form-group col-span-6 sm:col-span-4">
-                                                            <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-                                                                {props.translator['Category']} <span className='text-red-600'> *</span>
-                                                            </label>
-                                                            <div className="mt-1">
-                                                                <Dropdown
-                                                                    required={true}
-                                                                    id="category"
-                                                                    name="category"
-                                                                    handleChange={handleChange}
-                                                                    options={categories}
-                                                                    value={data.category}
-                                                                />
-                                                            </div>
-                                                            <InputError message={errors.category} />
-                                                        </div>
-
-                                                        <div className="form-group col-span-6 sm:col-span-4">
-                                                            <label htmlFor="languages" className="block text-sm font-medium text-gray-700">
-                                                                {props.translator['Languages']} <span className='text-red-600'> *</span>
-                                                            </label>
-                                                            <div className="mt-1">
-                                                                <Select
-                                                                    options={languages}
-                                                                    isMulti
-                                                                    getOptionLabel ={(option) => option.name}
-                                                                    getOptionValue ={(option )=> option.code}
-                                                                    required={true}
-                                                                    id="languages"
-                                                                    name="languages"
-                                                                    onChange={handleSelectChange}
-                                                                />
-                                                            </div>
-                                                            <InputError message={errors.languages} />
-                                                        </div>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                                        <button
-                                            type="button"
-                                            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
-                                            onClick={() => createNewTemplate()}
-                                        >
-                                            {props.translator['Create']}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
-                                            onClick={() => setAccountModalOpen(false)}
-                                        >
-                                            {props.translator['Close']}
-                                        </button>
-                                    </div>
-                                </Dialog.Panel>
-                            </Transition.Child>
-                        </div>
-                    </div>
-                </Dialog>
-            </Transition.Root>
 
 <Transition.Root show={incomingUrlModalOpen} as={Fragment}>
                 <Dialog

@@ -3,6 +3,7 @@ import Authenticated from "@/Layouts/Authenticated";
 import Input from "@/Components/Forms/Input";
 import PristineJS from "pristinejs";
 import { Head, useForm, Link } from "@inertiajs/react";
+import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import Dropdown from "@/Components/Forms/Dropdown";
 import InputError from "@/Components/Forms/InputError";
 import { defaultPristineConfig } from "@/Pages/Constants";
@@ -177,9 +178,19 @@ function Registration(props) {
             auth={props.auth}
             errors={props.errors}
             header={
-                <h2 className="font-semibold text-xl text-gray-800 leading-tight">
-                    {props.translator["Account Registration"]}
-                </h2>
+                <div className="flex items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={() => window.history.back()}
+                        className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/10 px-3 py-2 text-sm font-medium text-white/90 transition hover:bg-white/20"
+                    >
+                        <ArrowLeftIcon className="h-4 w-4" />
+                        Back
+                    </button>
+                    <h2 className="font-semibold text-xl text-white leading-tight">
+                        {props.translator["Account Registration"]}
+                    </h2>
+                </div>
             }
         >
             <Head title={props.translator["Account Registration"]} />

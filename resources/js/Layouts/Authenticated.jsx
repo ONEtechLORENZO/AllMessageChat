@@ -75,6 +75,10 @@ const navigation = [
                 href: route("chat_list"),
             },
             {
+                name: "Templates",
+                href: route("account_templates"),
+            },
+            {
                 name: "Campaigns",
                 href: route("listCampaign"),
             },
@@ -135,7 +139,7 @@ const bottomNavigation = [
         show: ["all"],
     },
     {
-        name: "Interactive Templates",
+        name: "Interactive Messages",
         href: route("listInteractiveMessage"),
         icon: CampaignsIcon,
         show: ["all"],
@@ -264,6 +268,10 @@ const menuBar = [
             {
                 name: "Social Profiles",
                 href: route("social_profile"),
+            },
+            {
+                name: "Templates",
+                href: route("account_templates"),
             },
             {
                 name: "Chats",
@@ -810,7 +818,7 @@ export default function Authenticated({
                 </Transition.Root>
 
                 {/* Main Layout Container */}
-                <div className="relative z-10 flex w-full">
+                <div className="relative z-10 flex h-screen w-full overflow-hidden">
                     {/* Sidebar */}
                     <aside
                         className={[
@@ -1092,7 +1100,7 @@ export default function Authenticated({
                     </aside>
 
                     {/* Content Area */}
-                    <main className="flex-1 min-w-0 flex flex-col min-h-screen">
+                    <main className="flex-1 min-w-0 flex h-screen flex-col overflow-y-auto">
                         {hideHeader !== true ? (
                             <header className="sticky top-0 z-20 border-b border-white/10 bg-black/40 backdrop-blur-2xl">
                                 <nav>
