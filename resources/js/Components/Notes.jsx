@@ -63,6 +63,63 @@ const defaultMentionStyle = {
   backgroundColor: "#cee4e5"
   
 };
+const darkStyle = {
+  control: {
+    backgroundColor: "#0F0B1A",
+    fontSize: 14,
+    fontWeight: "normal",
+    color: "#ffffff",
+    border: "1px solid rgba(255,255,255,0.15)",
+    borderRadius: 12,
+  },
+  "&multiLine": {
+    control: {
+      minHeight: 110,
+    },
+    highlighter: {
+      padding: 12,
+      border: "1px solid transparent",
+    },
+    input: {
+      padding: 12,
+      border: "1px solid transparent",
+      outline: "none",
+      color: "#ffffff",
+    },
+  },
+  "&singleLine": {
+    display: "inline-block",
+    width: 180,
+    highlighter: {
+      padding: 1,
+      border: "1px solid transparent",
+    },
+    input: {
+      padding: 1,
+      border: "1px solid transparent",
+    },
+  },
+  suggestions: {
+    list: {
+      backgroundColor: "#120815",
+      border: "1px solid rgba(255,255,255,0.1)",
+      fontSize: 14,
+      color: "#fff",
+    },
+    item: {
+      padding: "6px 12px",
+      borderBottom: "1px solid rgba(255,255,255,0.08)",
+      "&focused": {
+        backgroundColor: "rgba(191,0,255,0.2)",
+      },
+    },
+  },
+};
+
+const darkMentionStyle = {
+  backgroundColor: "rgba(191,0,255,0.25)",
+  color: "#fff",
+};
 
 
 function classNames(...classes) {
@@ -84,6 +141,8 @@ const [assignedTo, setAssignedTo] = useState();
 const [mentions,setMentions]=useState([]);
 const [status, setStatus] = useState(false);
 
+
+  const isDark = props.dark || props.theme === 'dark' || props.module === 'SupportRequest';
 
   useEffect(() => {    
     if(props.recordId) {
@@ -190,89 +249,74 @@ function addNote(){
 
 
 return( 
-  <div className="bg-white">
- 
- <div>
-      
-      <h2 className="sr-only">Notes</h2>  
-      <div className="my-1 pt-3">
-            
+  <div className={isDark ? "rounded-2xl border border-white/10 bg-[#0F0B1A]/80 p-6" : "bg-white"}>
+    <div className="flex items-center justify-between">
+      <h2 className={isDark ? "text-base font-semibold text-white" : "sr-only"}>Support Request</h2>
+      <p className={isDark ? "text-xs text-white/50" : "sr-only"}>Use @ to mention users</p>
+    </div>
+    <div className="my-1 pt-3">
       {notes.map((note, index) => {
         return (
-          <div key={index} className={`flex  ${(props.current_userid==note.user_id) ? "text-right" :""} text-sm text-gray-500 space-x-4 pb-4`}>
+          <div key={index} className={`flex ${(props.current_userid==note.user_id) ? "text-right" :""} text-sm ${isDark ? "text-white/60" : "text-gray-500"} space-x-4 pb-4`}>
            <span>{<br/>}</span>
-            <div className={classNames(index === 0 ? '' : 'border-t border-gray-200 pt-3', 'flex-1')}>
-              <h3 className="font-medium text-gray-900">{note.name}</h3>
+            <div className={classNames(index === 0 ? '' : (isDark ? 'border-t border-white/10 pt-3' : 'border-t border-gray-200 pt-3'), 'flex-1')}>
+              <h3 className={isDark ? "font-medium text-white" : "font-medium text-gray-900"}>{note.name}</h3>
               { (note.current_user == note.assigned_to && !(note.status)) ?
-              <div className="mt-1 text-sm  sm:mt-0 text-right content-right">
+              <div className="mt-1 text-sm sm:mt-0 text-right content-right">
               <input
                   className="rounded border-green-400 text-green-600 shadow-sm focus:border-green-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 w-full"
                   type="checkbox"
                   id={note.id}
                   name={note.id}
-                 // value = {(taskStatus) ?  true : ''}
                   onChange={ handleChange }
                   title = "Mark as completed"
-                 // value={note.id}
               /></div>:'' }
               <p>
-                <time >{note.date}</time>
+                <time className={isDark ? "text-white/50" : ""}>{note.date}</time>
               </p>   
-              <div className="mt-4 prose prose-sm max-w-none text-gray-500">
+              <div className={isDark ? "mt-4 prose prose-sm max-w-none text-white/70" : "mt-4 prose prose-sm max-w-none text-gray-500"}>
                   {note.note} 
                 </div> 
             </div>
           </div>);
         })} 
       </div>
-      </div>
-                <div></div>
-               
-                <div className="mt-1 rounded-md shadow-sm my-8">
-                      <MentionsInput                      
-                          value = {value}
-                          onChange = { (e) => setValue(e.target.value) } 
-                          placeholder={"Add your note here... \nTo mention the users use '@'"} 
-                          style={defaultStyle}   
-                          
-                      
-                        >
-                          <Mention  
-                          trigger="@"                          
-                          data={users} 
-                          onAdd = {onAdd}                           
-                          style={defaultMentionStyle} 
-                          markup="@__display__"
-                          />
-                        </MentionsInput>
-                         <div>   
-                          <div/>
+      <div className="mt-1 rounded-md shadow-sm my-8">
+            <MentionsInput                      
+                value = {value}
+                onChange = { (e) => setValue(e.target.value) } 
+                placeholder={"Add your note here... \nTo mention the users use '@'"} 
+                style={isDark ? darkStyle : defaultStyle}   
+              >
+                <Mention  
+                trigger="@"                          
+                data={users} 
+                onAdd = {onAdd}                           
+                style={isDark ? darkMentionStyle : defaultMentionStyle} 
+                markup="@__display__"
+                />
+              </MentionsInput>
+              <div>   
+                <div/>
 
-                          { mentions && mentions.length != 0 &&
-                          <>
-                              { (mentions).map(({id, display}) => (                                                      
-                                <div className="my-1 pt-1" onChange= { (e) => setAssignedTo(e.target.value)}>                                                     
-                                <input type="radio" value={id} name="assigned_to"/> <label className="text-s leading-3 font-medium text-gray-400">Assigned to </label> <label className="text-s leading-3 font-medium text-blue-600">{display}</label>
-                                </div>
-                                ))}</>
-                        }
-                        <button
-                            type="button"
-                            id="add_note"
-                            onClick={addNote}
-                            className="ml-2 my-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >{(props.module =="SupportRequest") ?<> Submit </> : <>{trans['Add a new note']}</>}</button>
-                        
-                        </div>
-                        
-
+                { mentions && mentions.length != 0 &&
+                <>
+                    { (mentions).map(({id, display}) => (                                                      
+                      <div className="my-1 pt-1" onChange= { (e) => setAssignedTo(e.target.value)}>                                                     
+                      <input type="radio" value={id} name="assigned_to"/> <label className={isDark ? "text-s leading-3 font-medium text-white/50" : "text-s leading-3 font-medium text-gray-400"}>Assigned to </label> <label className={isDark ? "text-s leading-3 font-medium text-[#BF00FF]" : "text-s leading-3 font-medium text-blue-600"}>{display}</label>
+                      </div>
+                      ))}</>
+              }
+              <button
+                  type="button"
+                  id="add_note"
+                  onClick={addNote}
+                  className={isDark ? "ml-2 my-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#BF00FF] hover:bg-[#a100df] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#BF00FF]/40" : "ml-2 my-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"}
+              >{(props.module =="SupportRequest") ?<> Submit </> : <>{trans['Add a new note']}</>}</button>
+              
+              </div>
       </div>     
-      </div> 
-                
-    
-   
-    
-  
+  </div> 
   )
 
  

@@ -154,12 +154,12 @@ export default function CreateUser(props) {
 
 	return(
 	
-		<Authenticated
+        <Authenticated
             auth={props.auth}
             errors={props.errors}
             header={<div className="flex justify-between"> 
                 <div> 
-                    <h2 className="font-Seminole text-xl text-gray-800 leading-tight"> {data.id ? (props.translator['Edit User']) : "Create User"} </h2>
+                    <h2 className="font-Seminole text-xl text-white leading-tight"> {data.id ? (props.translator['Edit User']) : "Create User"} </h2>
                 </div> 
                 <div>
 
@@ -174,14 +174,27 @@ export default function CreateUser(props) {
                 
                 <Link 
                     href={ props.currentUser.role != 'regular' ? route('list_global_user') : route('user_profile', props.user.id)}
-                        className="ml-3 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        className="ml-3 bg-white/5 py-2 px-4 border border-white/20 rounded-md shadow-sm text-sm font-medium text-white/70 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#BF00FF]/40"
 					>
                     {props.translator['Cancel']}
                 </Link>
+                <Link
+                    href={route('list_global_user')}
+                    className="ml-3 bg-white/5 py-2 px-4 border border-white/20 rounded-md shadow-sm text-sm font-medium text-white/70 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#BF00FF]/40"
+                >
+                    {props.translator['Back to users'] ?? 'Back to users'}
+                </Link>
+                <button
+                    type="button"
+                    onClick={() => window.history.back()}
+                    className="ml-3 bg-white/5 py-2 px-4 border border-white/20 rounded-md shadow-sm text-sm font-medium text-white/70 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#BF00FF]/40"
+                >
+                    {props.translator['Back'] ?? 'Back'}
+                </button>
                 <button
                     type="button"
                     onClick={validateAndSubmitForm}
-                    className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                    className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#BF00FF] hover:bg-[#a100df] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#BF00FF]/40'
                 	>
                     {props.translator['Save']}
                 </button>
@@ -190,34 +203,40 @@ export default function CreateUser(props) {
             </div>}
         >
 	<Head title={data.id ? "Edit User" : "Create User"} User />
-	<div className="bg-white overflow-hidden shadow rounded-lg">
+	<div className="create-user-page rounded-2xl border border-white/10 bg-[#140816]/70 shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
     	<div className="px-4 py-5 sm:p-6">
     		<form action="#" method="POST" className="container mx-auto px-4 sm:px-6 lg:px-8" id="create_user_form" >
             <input type='hidden' name='id' value={data.id} />
 
             {Object.entries(fieldList).map(([title, fields]) => {
                     return(
-                    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4">
-                        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-6">
+                        <div className="bg-[#0F0B1A]/80 border border-white/10 shadow overflow-hidden rounded-2xl">
                             <div className="px-4 py-5 sm:px-6">
-                                <h3 className="text-lg leading-6 font-medium text-gray-900">{title}</h3>
+                                <h3 className="text-lg leading-6 font-medium text-white">{title}</h3>
                             </div>
-                            <div className="border-t border-gray-200">
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-3 sm:px-6 flex items-center justify-end gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => window.history.back()}
+                                        className="bg-white/5 py-2 px-4 border border-white/20 rounded-md shadow-sm text-sm font-medium text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#BF00FF]/40"
+                                    >
+                                        {props.translator['Back'] ?? 'Back'}
+                                    </button>
+                                </div>
                                 <dl>
                                     {Object.entries(fields).map(([key, field], index) => {
                                         let showField = true;
                                         let error_class = errors[key] == true ? 'is-invalid' : '';
-                                        let bg_color = 'bg-gray-50';
-                                        if(index % 2 == 0) {
-                                            bg_color = 'bg-white';
-                                        }
+                                        let bg_color = 'bg-white/5';
                                         var element = '';
                                         switch(field.type){
                                             case 'textarea':
-                                                element = <TextArea value={data[key]} name={key} required={field.required} id={key} placeholder='' handleChange={handleChange} />
+                                                element = <TextArea value={data[key]} name={key} required={field.required} id={key} placeholder='' handleChange={handleChange} className="bg-[#0F0B1A] border-white/25 text-white placeholder-white/40 focus:border-[#BF00FF]/60 focus:ring-[#BF00FF]/40 px-3 py-2.5" />
                                                 break;
                                             case 'select':
-                                                element = <Dropdown name={key} id={key} value={data[key]} className={`custom-select ${error_class}`} handleChange={handleChange} options={field.options ? field.options: {}} /> ;
+                                                element = <Dropdown name={key} id={key} value={data[key]} className={`custom-select ${error_class} !border-white/25 !bg-[#0F0B1A] !text-white !rounded-xl !py-2.5 !px-3 !focus:border-[#BF00FF]/60 !focus:ring-[#BF00FF]/40`} handleChange={handleChange} options={field.options ? field.options: {}} /> ;
                                                 break;    
                                             case 'checkbox':
                                                 element = <Checkbox name={key} id={key} value={data[key]} className={`custom-select ${error_class}`} handleChange={handleChange} />
@@ -233,12 +252,16 @@ export default function CreateUser(props) {
                                                         value={data.id&&data[key]}                                                       
                                                         onChange={(value) => changePhoneNumber(value,key)}
                                                         required={true}
+                                                        className="phone-input-dark w-full rounded-xl border border-white/15 bg-[#0F0B1A] px-3 py-2 text-white"
+                                                        numberInputProps={{
+                                                            className: "phone-input-field bg-transparent text-white placeholder-white/40 focus:outline-none"
+                                                        }}
                                                     />
                                                 </div></>
 
                                                 break;    
                                             default :
-                                                element = <Input value={data[key]} type={field.type} name={key} required={field.required} id={key} placeholder='' handleChange={handleChange} />
+                                                element = <Input value={data[key]} type={field.type} name={key} required={field.required} id={key} placeholder='' handleChange={handleChange} className="bg-[#0F0B1A] border-white/25 text-white placeholder-white/40 focus:border-[#BF00FF]/60 focus:ring-[#BF00FF]/40 py-2.5 px-3" />
                                         }
                                         if(key == 'status' && props.currentUser.role != 'admin'){
                                             showField = false;
@@ -251,12 +274,12 @@ export default function CreateUser(props) {
                                         }
                                         if(showField){
                                             return (
-                                                <div key={key} className={`${bg_color} px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
+                                                <div key={key} className={`${bg_color} px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
                                                     <div className="form-group col-span-6 sm:col-span-4">
-                                                        <label htmlFor={key} className="block text-sm font-medium text-gray-700">
+                                                        <label htmlFor={key} className="block text-sm font-medium text-white/70">
                                                             {field.label}
                                                             {field.required &&
-                                                                <span className="text-sm text-red-700"> *</span>
+                                                                <span className="text-sm text-red-400"> *</span>
                                                             }
                                                         </label>
                                                         <div className="mt-1 flex rounded-md shadow-sm">

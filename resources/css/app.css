@@ -119,3 +119,37 @@ a:focus {
   }
 }
 
+/* Create user phone input tweaks */
+.phone-input-dark .PhoneInputCountryIcon {
+  width: 24px;
+  height: 24px;
+}
+
+.phone-input-dark .PhoneInputCountryIcon--border {
+  box-shadow: none;
+}
+
+.phone-input-dark .PhoneInputCountrySelectArrow {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.phone-input-field {
+  width: 100%;
+}
+
+.create-user-page .PhoneInputInput {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 0.95rem;
+  padding: 6px 4px;
+}
+
+.create-user-page .PhoneInputInput::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.create-user-page .PhoneInputCountry {
+  margin-right: 8px;
+}
+

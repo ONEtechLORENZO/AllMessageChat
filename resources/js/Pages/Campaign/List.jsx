@@ -37,7 +37,7 @@ function List(props) {
         {
             id: 3,
             name: "Winback Q1",
-            status: "Paused",
+            status: "Completed",
             service: "WhatsApp",
             audience: 2040,
             scheduled_at: "2026-01-28 08:00",
@@ -101,29 +101,19 @@ function List(props) {
         return { counts, total };
     }, [recordsToShow]);
 
-    const statusOrder = [
-        "Running",
-        "Scheduled",
-        "Draft",
-        "Paused",
-        "Completed",
-    ];
+    const statusOrder = ["Running", "Scheduled", "Completed"];
 
     const statusStyles = {
-        running: "bg-emerald-400/90",
-        scheduled: "bg-sky-400/90",
-        draft: "bg-amber-400/90",
-        paused: "bg-orange-400/90",
-        completed: "bg-purple-400/90",
+        running: "bg-[#05CD00]",
+        scheduled: "bg-[#F9DA00]",
+        completed: "bg-[#00D8E5]",
         unknown: "bg-white/30",
     };
 
     const badgeStyles = {
-        running: "text-emerald-200 bg-emerald-500/15 border-emerald-500/30",
-        scheduled: "text-sky-200 bg-sky-500/15 border-sky-500/30",
-        draft: "text-amber-200 bg-amber-500/15 border-amber-500/30",
-        paused: "text-orange-200 bg-orange-500/15 border-orange-500/30",
-        completed: "text-purple-200 bg-purple-500/15 border-purple-500/30",
+        running: "text-[#05CD00] bg-[#05CD00]/15 border-[#05CD00]/40",
+        scheduled: "text-[#F9DA00] bg-[#F9DA00]/15 border-[#F9DA00]/40",
+        completed: "text-[#00D8E5] bg-[#00D8E5]/15 border-[#00D8E5]/40",
         unknown: "text-white/70 bg-white/10 border-white/10",
     };
 

@@ -244,27 +244,42 @@ export default function PlanSubscription(props) {
   }
 
   return (
-    <div className="bg-[#F1F4F6]">
-      <div className="mx-auto max-w-7xl py-24 px-4 sm:px-6 lg:px-8">
+    <div className="relative min-h-screen overflow-hidden bg-[#0b0611] text-white">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(191,0,255,0.28),transparent_65%)]" />
+        <div className="absolute -bottom-52 right-0 h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.18),transparent_70%)]" />
+      </div>
+      <div className="relative mx-auto max-w-7xl py-24 px-4 sm:px-6 lg:px-8">
         <div className="sm:align-center sm:flex sm:flex-col">
           <div className="w-full p-2 flex justify-center items-center flex-col">
             <div className="w-1/2 flex justify-center items-center" onClick={() => redirectToHome()}>
-              <img src="/img/OneMessage.ChatLOGO.png" alt="One Message" />
+              <span className="text-4xl font-semibold tracking-tight">
+                <span className="text-[#BF00FF]">One</span>
+                <span className="text-white"> message</span>
+              </span>
             </div>
-            <h1 className="text-[32px] font-bold !mt-6">{props.translator['We have finally arrived']}</h1>
-            <p className="text-[#363740] text-base">{props.translator['let us drop anchor.']}</p>
+            <h1 className="text-[32px] font-bold !mt-6 text-white">{props.translator['We have finally arrived']}</h1>
+            <p className="text-white/60 text-base">{props.translator['let us drop anchor.']}</p>
 
-            <p className="text-base font-bold text-[#878787] !mt-8">{props.translator['Choose the right plan for you.']}</p>
+            <p className="text-base font-semibold text-white/70 !mt-8">{props.translator['Choose the right plan for you.']}</p>
           </div>
         </div>
 
         <div className="mt-12 space-y-4 sm:mt-16 sm:grid sm:grid-cols-2 sm:gap-6 sm:space-y-0 lg:mx-auto lg:max-w-4xl xl:mx-0 xl:max-w-none xl:grid-cols-5">
           {tiers.map((tier) => {
 
-            const headingColor = tier.isEnterprice ? 'text-white' : 'text-[#7653FF]';
-            const textColor = tier.isEnterprice ? 'text-white' : 'text-gray-500';
-
-            const btnColor = tier.isFree ? 'text-[#7653FF] !border-2 border-solid !border-[#7653FF]' : tier.isEnterprice ? 'bg-white text-[#363740]' : 'bg-[#7653FF] text-white';
+            const headingColor = tier.isEnterprice ? 'text-white' : 'text-white';
+            const textColor = tier.isEnterprice ? 'text-white/70' : 'text-white/60';
+            const cardClass = tier.isEnterprice
+              ? 'bg-[#1b0f24]/90 border border-[#BF00FF]/40'
+              : tier.isFree
+                ? 'bg-[#0F0B1A]/80 border border-white/15'
+                : 'bg-[#140816]/80 border border-white/10';
+            const btnColor = tier.isFree
+              ? 'border border-white/30 text-white/80 hover:border-[#BF00FF]/70 hover:text-white'
+              : tier.isEnterprice
+                ? 'bg-white text-[#0b0611] hover:bg-white/90'
+                : 'bg-[#BF00FF] text-white hover:bg-[#a100df]';
 
             var isShowable = false;
             plans.forEach(plan => {
@@ -278,22 +293,22 @@ export default function PlanSubscription(props) {
             const matchedPlan = plans.find((p) => p.plan === tier.plan);
 
             return (
-              <div key={tier.name} className={`${tier.isFree ? 'bg-white' : tier.isEnterprice ? "bg-[#363740]" : "bg-[#ECE8FA]"} shadow-sm flex flex-col justify-between items-start`} >
+              <div key={tier.name} className={`${cardClass} rounded-2xl shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-2xl flex flex-col justify-between items-start`} >
                 <div className="p-6">
                   <h2 className={`text-xl font-bold text-center ${headingColor}`}>{props.translator[tier.name]}</h2>
-                  <p className={`mt-4 text-sm text-gray-500 text-center ${textColor}`}>{props.translator[tier.description]}</p>
+                  <p className={`mt-4 text-sm text-center ${textColor}`}>{props.translator[tier.description]}</p>
                   <div className={`mt-8 ${textColor} ${(tier.isFree || tier.isEnterprice) ? 'hidden' : ''}`}>
                     <div className="flex items-center gap-1">
                       <span className="text-right">
-                        <span className="text-3xl font-semibold leading-8 -tracking-[2%] text-gray-900">{tier.priceMonthly}</span><br />
-                        <span className="text-base font-normal tracking-tight text-[#363740]">{props.translator['per month']}</span>
+                        <span className="text-3xl font-semibold leading-8 -tracking-[2%] text-white">{tier.priceMonthly}</span><br />
+                        <span className="text-base font-normal tracking-tight text-white/60">{props.translator['per month']}</span>
                       </span>
-                      <span className="text-[64px] font-extralight leading-5">/</span>
-                      <span className="text-base font-bold">{props.translator['user']}</span>
+                      <span className="text-[64px] font-extralight leading-5 text-white/30">/</span>
+                      <span className="text-base font-bold text-white/70">{props.translator['user']}</span>
                     </div>
                   </div>
 
-                  <p className={`py-4 text-2xl text-center leading-8 font-semibold ${tier.isFree ? 'text-[#363740]' : textColor} ${(tier.isFree || tier.isEnterprice) ? '' : 'hidden'}`}>
+                  <p className={`py-4 text-2xl text-center leading-8 font-semibold ${tier.isFree ? 'text-white' : textColor} ${(tier.isFree || tier.isEnterprice) ? '' : 'hidden'}`}>
                     {(tier.isFree) ? props.translator['Free'] : props.translator['Contact us']}
                   </p>
 
@@ -309,7 +324,7 @@ export default function PlanSubscription(props) {
                 <div className="p-6 w-full !mb-8">
                   {matchedPlan && (
                     <button
-                      className={`block w-full rounded-md py-2 text-center text-sm font-bold ${btnColor}`}
+                      className={`block w-full rounded-md py-2 text-center text-sm font-bold transition ${btnColor}`}
                       onClick={() => buySubscription(status, showForm, matchedPlan.plan_id)}
                     >
                       {props.translator[tier.btnText]}
@@ -327,31 +342,31 @@ export default function PlanSubscription(props) {
         </div>
 
         {showFeatures &&
-          <div className='w-full mt-10'>
-            <div className='grid grid-cols-7 font-semibold text-xl leading-8 border-b border-[#DEDEDE] !pb-2 '>
-              <div className='col-span-2 text-[#878787]'>
+          <div className='w-full mt-10 rounded-2xl border border-white/10 bg-[#120815]/70 p-6 shadow-[0_18px_40px_rgba(0,0,0,0.35)]'>
+            <div className='grid grid-cols-7 font-semibold text-xl leading-8 border-b border-white/10 !pb-4'>
+              <div className='col-span-2 text-white/60'>
                 {props.translator['Features']}
               </div>
-              <div className='text-center text-[#7653FF]'>{props.translator['Api only']}</div>
-              <div className='text-center text-[#7653FF]'>{props.translator['Starter']}</div>
-              <div className='text-center text-[#7653FF]'>{props.translator['Pro']}</div>
-              <div className='text-center text-[#7653FF]'>{props.translator['Business']}</div>
-              <div className='text-center text-[#363740]'>{props.translator['Enterprise']}</div>
+              <div className='text-center text-white/80'>{props.translator['Api only']}</div>
+              <div className='text-center text-white/80'>{props.translator['Starter']}</div>
+              <div className='text-center text-white/80'>{props.translator['Pro']}</div>
+              <div className='text-center text-white/80'>{props.translator['Business']}</div>
+              <div className='text-center text-white/80'>{props.translator['Enterprise']}</div>
             </div>
 
             {sections.map((section) => (
               <div key={section.header} className="space-y-3 !mt-6">
-                <Disclosure as="div" className="!py-3 !px-6 !pr-7 relative bg-white drop-shadow">
+                <Disclosure as="div" className="!py-3 !px-6 !pr-7 relative rounded-2xl border border-white/10 bg-[#0F0B1A]/80">
                   {({ open }) => (
                     <>
-                      <Disclosure.Button className="flex w-full items-start justify-between text-left text-gray-500">
-                        <span className="px-2 text-xl font-semibold text-[#363740] mb-2">
+                      <Disclosure.Button className="flex w-full items-start justify-between text-left text-white/70">
+                        <span className="px-2 text-xl font-semibold text-white mb-2">
                           {props.translator[section.header]}
                         </span>
                         <span className="ml-6 flex h-7 items-center">
                           <AiFillCaretDown
                             size="1.5rem"
-                            className={classNames(open ? "-rotate-180" : "rotate-0", "transform cursor-pointer text-[#7653FF]")}
+                            className={classNames(open ? "-rotate-180" : "rotate-0", "transform cursor-pointer text-[#BF00FF]")}
                           />
                         </span>
                       </Disclosure.Button>
@@ -359,11 +374,11 @@ export default function PlanSubscription(props) {
                       <Disclosure.Panel as="dd" className="mt-1">
                         {section.rows.map((row) => (
                           <div key={`${section.header}-${row.name}`} className="grid grid-cols-7 items-center">
-                            <div className="font-normal text-base items-center py-2 px-2">
+                            <div className="font-normal text-base items-center py-2 px-2 text-white/70">
                               {props.translator[row.label]}
                             </div>
 
-                            <div className="font-normal text-base flex justify-end">
+                            <div className="font-normal text-base flex justify-end text-white/50">
                               <AiOutlineInfoCircle className="cursor-pointer" />
                             </div>
 
@@ -449,7 +464,7 @@ const BuyPlan = (props) => {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          <div className="fixed inset-0 bg-black/70 transition-opacity" />
         </Transition.Child>
 
         <div className="fixed z-10 inset-0 overflow-y-auto">
@@ -463,12 +478,12 @@ const BuyPlan = (props) => {
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-xl sm:w-full">
+              <Dialog.Panel className="relative rounded-2xl border border-white/10 bg-[#120815] text-left overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.55)] transform transition-all sm:my-8 sm:max-w-xl sm:w-full">
                 <div>
-                  <div className="bg-gray-50 px-4 pt-2 pb-2 sm:p-4 sm:pb-4">
+                  <div className="bg-white/5 px-4 pt-2 pb-2 sm:p-4 sm:pb-4">
                     <div className="sm:flex sm:items-start">
                       <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                        <Dialog.Title as="h3" className="text-lg leading-6 font-bold text-gray-900">
+                        <Dialog.Title as="h3" className="text-lg leading-6 font-bold text-white">
                           {props.translator['Add your Card']}
                         </Dialog.Title>
                       </div>
@@ -492,10 +507,10 @@ const BuyPlan = (props) => {
                       : ''}
                   </div>
 
-                  <div className="bg-gray-50 px-4 py-3 sm:px-3 sm:flex sm:flex-row-reverse">
+                  <div className="bg-white/5 px-4 py-3 sm:px-3 sm:flex sm:flex-row-reverse">
                     <button
                       type="button"
-                      className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                      className="mt-3 w-full inline-flex justify-center rounded-md border border-white/20 shadow-sm px-4 py-2 bg-white/5 text-base font-medium text-white/70 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#BF00FF]/40 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                       onClick={() => props.setShowForm(false)}
                       ref={cancelButtonRef}
                     >
@@ -518,6 +533,21 @@ const Form = (props) => {
   const elements = useElements();
 
   const [loading, setLoading] = useState(false);
+  const cardElementOptions = {
+    style: {
+      base: {
+        color: "#ffffff",
+        fontSize: "16px",
+        fontFamily: "inherit",
+        "::placeholder": {
+          color: "rgba(255,255,255,0.5)"
+        }
+      },
+      invalid: {
+        color: "#fca5a5"
+      }
+    }
+  };
 
   const handleSubmit = async (event) => {
 
@@ -565,10 +595,12 @@ const Form = (props) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <CardElement />
+      <div className="rounded-lg border border-white/15 bg-[#0F0B1A] p-3">
+        <CardElement options={cardElementOptions} />
+      </div>
       <div className='pt-10'>
         <button
-          className="border border-transparent rounded-md w-full px-8 py-4 flex items-center justify-center text-lg leading-6 font-medium bg-primary text-white md:px-10"
+          className="w-full rounded-md px-8 py-4 flex items-center justify-center text-lg leading-6 font-semibold bg-[#BF00FF] text-white shadow-[0_12px_25px_rgba(191,0,255,0.35)] transition hover:bg-[#a100df] md:px-10"
           disabled={!stripe || loading}
         >
           {loading ? 'Loading...' : 'Subscribe'}

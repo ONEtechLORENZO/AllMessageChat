@@ -155,6 +155,12 @@ export default function UserDetail(props) {
                     <h2 className="font-semibold text-xl text-white leading-tight">{props.translator['Users']}</h2>
                 </div>
                 <div className='flex gap-3'>
+                    <button
+                        onClick={() => window.history.back()}
+                        className="bg-white/10 py-2 px-4 border border-white/10 rounded-md shadow-sm text-sm font-medium text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60"
+                    >
+                        {props.translator['Back'] ?? 'Back'}
+                    </button>
                     <Link
                         href={route('wallet')}
                         className="bg-white/10 py-2 px-4 border border-white/10 rounded-md shadow-sm text-sm font-medium text-white/90 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60"
@@ -211,8 +217,17 @@ export default function UserDetail(props) {
                     return (
                         <div key={title} className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4">
                             <div className="bg-[#120b1f]/80 border border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.35)] overflow-hidden sm:rounded-lg">
-                                <div className="px-4 py-5 sm:px-6">
+                                <div className="px-4 py-5 sm:px-6 flex items-center justify-between">
                                     <h3 className="text-lg leading-6 font-medium text-white">{props.translator[title]}</h3>
+                                    {title === 'Personal Information' &&
+                                        <button
+                                            type="button"
+                                            onClick={() => window.history.back()}
+                                            className="bg-white/10 py-2 px-4 border border-white/10 rounded-md shadow-sm text-sm font-medium text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60"
+                                        >
+                                            {props.translator['Back'] ?? 'Back'}
+                                        </button>
+                                    }
                                 </div>
                                 <div className="border-t border-white/10">
                                     <dl>

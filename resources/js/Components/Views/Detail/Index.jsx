@@ -422,6 +422,17 @@ export default function Index(props) {
                                 }
                             </h3>
                             <div className="d-flex align-items-center">
+                                {props.module == 'SupportRequest' &&
+                                    <div className="mt-1 text-sm text-white/70 whitespace-nowrap sm:mt-0 sm:ml-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => window.history.back()}
+                                            className="inline-flex items-center px-4 py-2 border border-white/10 shadow-sm text-sm font-medium rounded-md text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60"
+                                        >
+                                            Back
+                                        </button>
+                                    </div>
+                                }
                                 {(props.module == 'Lead') || (props.module == 'Opportunity') ?
                                     <div className="mt-1 text-sm text-white/70 whitespace-nowrap sm:mt-0 sm:ml-3">
                                         {(props.module == 'Lead') ? <div>
