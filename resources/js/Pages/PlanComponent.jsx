@@ -27,6 +27,7 @@ export default function PlanSubscription(props) {
   const [showForm, setShowForm] = useState(false);
   const [subscriptionId, setSubscriptionId] = useState();
   const [status, setStatus] = useState('new');
+  const hasPlans = Array.isArray(plans) && plans.length > 0;
 
   const tiers = [
     {
@@ -249,24 +250,31 @@ export default function PlanSubscription(props) {
         <div className="absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(191,0,255,0.28),transparent_65%)]" />
         <div className="absolute -bottom-52 right-0 h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.18),transparent_70%)]" />
       </div>
-      <div className="relative mx-auto max-w-7xl py-24 px-4 sm:px-6 lg:px-8">
+        <div className="relative mx-auto max-w-7xl py-24 px-4 sm:px-6 lg:px-8">
         <div className="sm:align-center sm:flex sm:flex-col">
-          <div className="w-full p-2 flex justify-center items-center flex-col">
-            <div className="w-1/2 flex justify-center items-center" onClick={() => redirectToHome()}>
-              <span className="text-4xl font-semibold tracking-tight">
-                <span className="text-[#BF00FF]">One</span>
+          <div className="w-full p-2 flex justify-center items-center flex-col text-center">
+            <div className="w-full flex justify-center items-center" onClick={() => redirectToHome()}>
+              <span className="text-5xl sm:text-6xl font-semibold tracking-tight">
+                <span className="one-tech-special">One</span>
                 <span className="text-white"> message</span>
               </span>
             </div>
-            <h1 className="text-[32px] font-bold !mt-6 text-white">{props.translator['We have finally arrived']}</h1>
-            <p className="text-white/60 text-base">{props.translator['let us drop anchor.']}</p>
+            <h1 className="text-[32px] sm:text-[38px] font-bold !mt-6 text-white">
+              {props.translator['We have finally arrived']}
+            </h1>
+            <p className="text-white/60 text-base sm:text-lg max-w-2xl">
+              {props.translator['let us drop anchor.']}
+            </p>
 
-            <p className="text-base font-semibold text-white/70 !mt-8">{props.translator['Choose the right plan for you.']}</p>
+            <p className="text-base font-semibold text-white/70 !mt-8">
+              {props.translator['Choose the right plan for you.']}
+            </p>
           </div>
         </div>
 
-        <div className="mt-12 space-y-4 sm:mt-16 sm:grid sm:grid-cols-2 sm:gap-6 sm:space-y-0 lg:mx-auto lg:max-w-4xl xl:mx-0 xl:max-w-none xl:grid-cols-5">
+        <div className="mt-12 space-y-4 sm:mt-16 sm:grid sm:grid-cols-2 sm:gap-6 sm:space-y-0 lg:grid-cols-3 lg:gap-8 xl:mx-0 xl:max-w-none xl:grid-cols-5">
           {tiers.map((tier) => {
+            const isFeatured = tier.plan === 'Pro';
 
             const headingColor = tier.isEnterprice ? 'text-white' : 'text-white';
             const textColor = tier.isEnterprice ? 'text-white/70' : 'text-white/60';
@@ -281,26 +289,52 @@ export default function PlanSubscription(props) {
                 ? 'bg-white text-[#0b0611] hover:bg-white/90'
                 : 'bg-[#BF00FF] text-white hover:bg-[#a100df]';
 
-            var isShowable = false;
-            plans.forEach(plan => {
-              if (plan.plan == tier.plan) {
-                isShowable = true;
+            if (hasPlans) {
+              let isShowable = false;
+              plans.forEach(plan => {
+                if (plan.plan == tier.plan) {
+                  isShowable = true;
+                }
+              })
+              if (!isShowable) {
+                return null;
               }
-            })
-            if (!isShowable) {
-              return null;
             }
-            const matchedPlan = plans.find((p) => p.plan === tier.plan);
+            const matchedPlan = hasPlans
+              ? plans.find((p) => p.plan === tier.plan)
+              : { plan_id: tier.plan };
 
             return (
-              <div key={tier.name} className={`${cardClass} rounded-2xl shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-2xl flex flex-col justify-between items-start`} >
-                <div className="p-6">
-                  <h2 className={`text-xl font-bold text-center ${headingColor}`}>{props.translator[tier.name]}</h2>
+              <div
+                key={tier.name}
+                className={[
+                  "relative rounded-2xl shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-2xl",
+                  "flex flex-col justify-between items-start transition-all duration-300",
+                  "hover:-translate-y-1 hover:shadow-[0_30px_60px_rgba(0,0,0,0.5)]",
+                  "group",
+                  cardClass,
+                  isFeatured ? "ring-1 ring-[#BF00FF]/40" : "",
+                ].join(" ")}
+              >
+                {isFeatured && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-widest bg-[#BF00FF] text-white shadow-[0_10px_25px_rgba(191,0,255,0.35)]">
+                    Most popular
+                  </div>
+                )}
+                <div className="p-6 w-full">
+                  <div className="flex items-center justify-center gap-2">
+                    <h2 className={`text-xl font-bold text-center ${headingColor}`}>{props.translator[tier.name]}</h2>
+                    {tier.isFree && (
+                      <span className="rounded-full border border-[#BF00FF]/40 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-[#BF00FF]">
+                        Free
+                      </span>
+                    )}
+                  </div>
                   <p className={`mt-4 text-sm text-center ${textColor}`}>{props.translator[tier.description]}</p>
                   <div className={`mt-8 ${textColor} ${(tier.isFree || tier.isEnterprice) ? 'hidden' : ''}`}>
                     <div className="flex items-center gap-1">
                       <span className="text-right">
-                        <span className="text-3xl font-semibold leading-8 -tracking-[2%] text-white">{tier.priceMonthly}</span><br />
+                        <span className="text-4xl font-semibold leading-8 -tracking-[2%] text-white">{tier.priceMonthly}</span><br />
                         <span className="text-base font-normal tracking-tight text-white/60">{props.translator['per month']}</span>
                       </span>
                       <span className="text-[64px] font-extralight leading-5 text-white/30">/</span>
@@ -321,7 +355,7 @@ export default function PlanSubscription(props) {
                   </ul>
 
                 </div>
-                <div className="p-6 w-full !mb-8">
+                <div className="p-6 w-full !mb-6">
                   {matchedPlan && (
                     <button
                       className={`block w-full rounded-md py-2 text-center text-sm font-bold transition ${btnColor}`}

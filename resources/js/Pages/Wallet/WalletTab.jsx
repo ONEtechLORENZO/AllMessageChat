@@ -278,12 +278,14 @@ export default function WalletTab(props) {
                                 </p>
                             </div>
                             <div className="p-4 sm:flex sm:flex-row-reverse self-center">
-                                <Link
+                                <a
                                     href={route("update_plan")}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="w-full inline-flex justify-center rounded-md px-4 py-2 text-base font-medium btn btn-secondary sm:ml-3 sm:w-auto sm:text-sm"
                                 >
                                     {props.translator["Update"]}
-                                </Link>
+                                </a>
                             </div>
                         </div>
                     </GlassCard>

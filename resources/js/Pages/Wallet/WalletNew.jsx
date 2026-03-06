@@ -23,19 +23,89 @@ export function GlassCard({ className = "", children }) {
     );
 }
 
-export default function WalletNew() {
+export default function WalletNew({ wallet }) {
+    const useMockData = true;
+    const mockWallet = {
+        account: {
+            name: "Instagram",
+            icon: "./img/instagram-icon.png",
+        },
+        topUp: {
+            min: 50,
+            auto: false,
+        },
+        addons: {
+            socialAccounts: {
+                label: "Social accounts",
+                value: "3/5",
+                action: "Add account",
+            },
+            users: {
+                label: "Users",
+                value: "8/10",
+                action: "Add user",
+            },
+            spending: {
+                label: "Spending",
+                value: "$842",
+                sublabel: "Total conversations",
+                subvalue: "4,820",
+            },
+        },
+        plans: [
+            {
+                name: "Starter",
+                price: "$49",
+                period: "per month",
+                per: "user",
+                description:
+                    "Best for getting started with core messaging tools and basic automation.",
+                cta: "Downgrade :(",
+                ctaVariant: "filled",
+            },
+            {
+                name: "Pro",
+                price: "$99",
+                period: "per month",
+                per: "user",
+                description:
+                    "Built for growing teams with analytics, templates, and expanded channels.",
+                cta: "Current plan",
+                ctaVariant: "outline",
+            },
+            {
+                name: "Business",
+                price: "$199",
+                period: "per month",
+                per: "user",
+                description:
+                    "Advanced routing, custom integrations, and priority support.",
+                cta: "Upgrade :)",
+                ctaVariant: "filled",
+            },
+        ],
+        enterprise: {
+            title: "Enterprise",
+            description:
+                "Short sentence to indicate what type of business is this plan aimed at.",
+            primary: "Contact sales",
+            secondary: "See features",
+        },
+    };
+    const data = useMockData ? mockWallet : wallet ?? mockWallet;
+
     return (
         <div>
             <Row>
                 <Col sm="2">
                     <GlassCard className="flex gap-[20px] flex-row p-[20px]">
                         <img
-                            src="./img/instagram-icon.png"
-                            alt="One message logo"
+                            src={data.account.icon}
+                            alt={`${data.account.name} logo`}
                             className="w-8"
                         />
                         <span className="font-semibold text-base text-white">
-                            Instagram
+                            {data.account.name}
                         </span>
                     </GlassCard>
                 </Col>
@@ -45,7 +115,7 @@ export default function WalletNew() {
                             <Button color="primary" className="w-[140px]">
                                 Top up
                             </Button>{" "}
-                            <span>Min €50</span>
+                            <span>{`Min EUR ${data.topUp.min}`}</span>
                         </div>
 
                         <div className="flex gap-1 items-center">
@@ -54,7 +124,9 @@ export default function WalletNew() {
                             </Button>
                             <span>
                                 Currently:{" "}
-                                <span className="font-bold">Off</span>
+                                <span className="font-bold">
+                                    {data.topUp.auto ? "On" : "Off"}
+                                </span>
                             </span>
                         </div>
                     </div>
@@ -91,16 +163,16 @@ export default function WalletNew() {
                             </svg>
 
                             <div className="text-sm text-white font-normal">
-                                Social accounts
+                                {data.addons.socialAccounts.label}
                             </div>
 
                             <div className="text-white text-xl font-normal">
-                                1/∞
+                                {data.addons.socialAccounts.value}
                             </div>
 
                             <div className="flex gap-1 items-center text-sm text-white">
                                 <CirclePlusIcons />
-                                Add account
+                                {data.addons.socialAccounts.action}
                             </div>
                         </div>
                     </GlassCard>
@@ -123,16 +195,16 @@ export default function WalletNew() {
                             </svg>
 
                             <div className="text-sm text-white font-normal">
-                                Users
+                                {data.addons.users.label}
                             </div>
 
                             <div className="text-white text-xl font-normal">
-                                2/1
+                                {data.addons.users.value}
                             </div>
 
                             <div className="flex gap-1 items-center text-sm text-white">
                                 <CirclePlusIcons />
-                                Add user
+                                {data.addons.users.action}
                             </div>
                         </div>
                     </GlassCard>
@@ -155,17 +227,19 @@ export default function WalletNew() {
                             </svg>
 
                             <div className="text-sm text-white font-normal text-center">
-                                Spending
+                                {data.addons.spending.label}
                             </div>
 
                             <div className="text-white text-xl font-normal">
-                                $0
+                                {data.addons.spending.value}
                             </div>
 
                             <div className="text-sm text-white">
-                                Total conversations
+                                {data.addons.spending.sublabel}
                             </div>
-                            <div className="text-white text-xl font-normal">0</div>
+                            <div className="text-white text-xl font-normal">
+                                {data.addons.spending.subvalue}
+                            </div>
                         </div>
                     </GlassCard>
                 </Col>
@@ -184,163 +258,75 @@ export default function WalletNew() {
             </Row>
 
             <Row>
-                <Col sm="3">
-                    <div className="card !shadow-card !p-4 h-full !bg-[#ECE8FA]">
-                        <div className="flex flex-col justify-center items-center !gap-4">
-                            <div className="text-[#7653FF] font-semibold text-xl">
-                                Starter
-                            </div>
+                {data.plans.map((plan) => (
+                    <Col sm="3" key={plan.name}>
+                        <div className="card !shadow-card !p-4 h-full !bg-[#ECE8FA]">
+                            <div className="flex flex-col justify-center items-center !gap-4">
+                                <div className="text-[#7653FF] font-semibold text-xl">
+                                    {plan.name}
+                                </div>
 
-                            <div className="flex items-center gap-1">
-                                <span className="text-right">
-                                    <span className="text-3xl font-semibold leading-8 -tracking-[2%] text-gray-900">
-                                        $1000
+                                <div className="flex items-center gap-1">
+                                    <span className="text-right">
+                                        <span className="text-3xl font-semibold leading-8 -tracking-[2%] text-gray-900">
+                                            {plan.price}
+                                        </span>
+                                        <br />
+                                        <span className="text-base font-normal tracking-tight text-[#363740]">
+                                            {plan.period}
+                                        </span>
                                     </span>
-                                    <br />
-                                    <span className="text-base font-normal tracking-tight text-[#363740]">
-                                        per month
+                                    <span className="text-[64px] font-extralight leading-5">
+                                        /
                                     </span>
-                                </span>
-                                <span className="text-[64px] font-extralight leading-5">
-                                    /
-                                </span>
-                                <span className="text-base font-bold">
-                                    user
-                                </span>
-                            </div>
+                                    <span className="text-base font-bold">
+                                        {plan.per}
+                                    </span>
+                                </div>
 
-                            <div>
-                                Start your conversational marketing journey with
-                                a basic plan, includes integration with popular
-                                messaging platforms.
-                            </div>
+                                <div>{plan.description}</div>
 
-                            <div className="space-y-1">
-                                <button
-                                    className={`block w-full rounded-md !shadow-card py-2 px-2 text-center text-sm font-bold bg-[#7653FF] text-white`}
-                                >{`Downgrade :(`}</button>
-                                <button
-                                    className={`block w-full rounded-md !shadow-card py-2 px-2 text-center text-sm font-bold bg-white text-[#363740]`}
-                                >
-                                    See features
-                                </button>
+                                <div className="space-y-1">
+                                    <button
+                                        className={[
+                                            "block w-full rounded-md !shadow-card py-2 px-2 text-center text-sm font-bold",
+                                            plan.ctaVariant === "filled"
+                                                ? "bg-[#7653FF] text-white"
+                                                : "text-[#7653FF]",
+                                        ].join(" ")}
+                                    >
+                                        {plan.cta}
+                                    </button>
+                                    <button className="block w-full rounded-md !shadow-card py-2 px-2 text-center text-sm font-bold bg-white text-[#363740]">
+                                        See features
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </Col>
-
-                <Col sm="3">
-                    <div className="card !shadow-card !p-4 h-full !bg-[#ECE8FA]">
-                        <div className="flex flex-col justify-center items-center !gap-4">
-                            <div className="text-[#7653FF] font-semibold text-xl">
-                                Pro
-                            </div>
-
-                            <div className="flex items-center gap-1">
-                                <span className="text-right">
-                                    <span className="text-3xl font-semibold leading-8 -tracking-[2%] text-gray-900">
-                                        $1000
-                                    </span>
-                                    <br />
-                                    <span className="text-base font-normal tracking-tight text-[#363740]">
-                                        per month
-                                    </span>
-                                </span>
-                                <span className="text-[64px] font-extralight leading-5">
-                                    /
-                                </span>
-                                <span className="text-base font-bold">
-                                    user
-                                </span>
-                            </div>
-
-                            <div>
-                                Start your conversational marketing journey with
-                                a basic plan, includes integration with popular
-                                messaging platforms.
-                            </div>
-
-                            <div className="space-y-1">
-                                <button
-                                    className={`block w-full rounded-md !shadow-card py-2 px-2 text-center text-sm font-bold text-[#7653FF] `}
-                                >
-                                    Current plan
-                                </button>
-                                <button
-                                    className={`block w-full rounded-md !shadow-card py-2 px-2 text-center text-sm font-bold bg-white text-[#363740]`}
-                                >
-                                    See features
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </Col>
-
-                <Col sm="3">
-                    <div className="card !shadow-card !p-4 h-full !bg-[#ECE8FA]">
-                        <div className="flex flex-col justify-center items-center !gap-4">
-                            <div className="text-[#7653FF] font-semibold text-xl">
-                                Business
-                            </div>
-
-                            <div className="flex items-center gap-1">
-                                <span className="text-right">
-                                    <span className="text-3xl font-semibold leading-8 -tracking-[2%] text-gray-900">
-                                        $1000
-                                    </span>
-                                    <br />
-                                    <span className="text-base font-normal tracking-tight text-[#363740]">
-                                        per month
-                                    </span>
-                                </span>
-                                <span className="text-[64px] font-extralight leading-5">
-                                    /
-                                </span>
-                                <span className="text-base font-bold">
-                                    user
-                                </span>
-                            </div>
-
-                            <div>
-                                Start your conversational marketing journey with
-                                a basic plan, includes integration with popular
-                                messaging platforms.
-                            </div>
-
-                            <div className="space-y-1">
-                                <button
-                                    className={`block w-full rounded-md !shadow-card py-2 px-2 text-center text-sm font-bold bg-[#7653FF] text-white`}
-                                >{`Upgrade :)`}</button>
-                                <button
-                                    className={`block w-full rounded-md !shadow-card py-2 px-2 text-center text-sm font-bold bg-white text-[#363740]`}
-                                >
-                                    See features
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </Col>
+                    </Col>
+                ))}
             </Row>
 
             <Row className="!mt-2">
                 <div className="w-auto">
                     <div className="bg-[#363740] !px-6 !py-4 flex gap-6 items-center text-white">
-                        <div className="text-xl font-semibold">Enterprise</div>
+                        <div className="text-xl font-semibold">
+                            {data.enterprise.title}
+                        </div>
                         <div className="leading-6">
-                            Short sentence to indicate what type of business is
-                            this plan aimed at.
+                            {data.enterprise.description}
                         </div>
                         <div>
                             <button
                                 className={`block w-full rounded-md !shadow-card py-2 px-2 text-center text-sm font-bold bg-white text-[#363740]`}
                             >
-                                Contact sales
+                                {data.enterprise.primary}
                             </button>
 
                             <button
                                 className={`block w-full rounded-md py-2 px-2 text-center text-sm font-normal text-white`}
                             >
-                                See features
+                                {data.enterprise.secondary}
                             </button>
                         </div>
                     </div>
