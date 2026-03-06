@@ -34,6 +34,7 @@ function ListTable(props) {
     const [fields, setFields] = useState([]);
     const [fieldOptions, setFieldOptions] = useState({});
     const pathname = window.location.pathname;
+    const isDark = props.theme === 'dark' || props.dark;
     useEffect(() => {
         fetchModuleFields();
     }, [props.headers]);
@@ -68,9 +69,9 @@ function ListTable(props) {
         <>
             <div className="">
 
-                <div className='card p-4 mt-[20px]'>
+                <div className={isDark ? "rounded-2xl border border-white/10 bg-[#120815]/70 p-4" : "card p-4 mt-[20px]"}>
 
-                    <Table className='gio-table'>
+                    <Table className={`gio-table ${isDark ? 'text-white' : ''}`}>
                         <thead>
                             <tr>
                                 {(props.actions.mass_edit === true || props.actions.merge === true) &&
@@ -101,11 +102,11 @@ function ListTable(props) {
                                         <th
                                             key={name}
                                             scope="col"
-                                            className="py-3.5 pl-4 pr-3 text-left text-sm  text-[#3D4459] sm:pl-4"
+                                            className={`py-3.5 pl-4 pr-3 text-left text-sm ${isDark ? 'text-white/70' : 'text-[#3D4459]'} sm:pl-4`}
                                         >
-                                            <Link href="#" className="group inline-flex text-gray-700" onClick={() => { sortable ? sortColumn(name, sort_order) : '' }}>
+                                            <Link href="#" className={`group inline-flex ${isDark ? 'text-white/70' : 'text-gray-700'}`} onClick={() => { sortable ? sortColumn(name, sort_order) : '' }}>
                                                 {props.translator[field.label]}
-                                                <span className={`ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible ` + visibility}>
+                                                <span className={`ml-2 flex-none rounded ${isDark ? 'text-white/40' : 'text-gray-400'} group-hover:visible group-focus:visible ` + visibility}>
                                                     {sortable &&
                                                         <>
                                                             {visibility == '' && props.sort_order == 'asc' ?
@@ -124,11 +125,11 @@ function ListTable(props) {
                                 <th></th>
                             </tr>
                         </thead>
-                        <tbody className=" bg-white">
+                        <tbody className={isDark ? "bg-transparent" : "bg-white"}>
                             {(props.records).length === 0 &&
                                 <tr>
                                     <td
-                                        className="px-6 py-4 border-t"
+                                        className={`px-6 py-4 border-t ${isDark ? 'border-white/10 text-white/60' : ''}`}
                                         colSpan="4"
                                     >
                                         {props.translator['No records found!']}
@@ -234,7 +235,7 @@ function ListTable(props) {
                                         }
 
                                         return (
-                                            <td key={name} title={title} className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]">
+                                            <td key={name} title={title} className={`whitespace-nowrap px-2 py-2 text-sm ${isDark ? 'text-white/70' : 'text-[#3D4459]'}`}>
                                                 {column_value}
                                             </td>
 
@@ -276,11 +277,11 @@ function ListTable(props) {
                                         {props.actions &&
                                             <Menu as="div" className="relative inline-block text-left">
                                                 <div>
-                                                    <Menu.Button className="inline-flex w-full justify-center rounded-md  px-4 py-2 text-sm font-medium text-[#363740] hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
+                                                    <Menu.Button className={`inline-flex w-full justify-center rounded-md px-4 py-2 text-sm font-medium ${isDark ? 'text-white/70' : 'text-[#363740]'} hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75`}>
                                                         <svg width={24} height={24} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                            <path d="M12 7.5C12.8284 7.5 13.5 6.82843 13.5 6C13.5 5.17157 12.8284 4.5 12 4.5C11.1716 4.5 10.5 5.17157 10.5 6C10.5 6.82843 11.1716 7.5 12 7.5Z" fill="black" />
-                                                            <path d="M12 13.5C12.8284 13.5 13.5 12.8284 13.5 12C13.5 11.1716 12.8284 10.5 12 10.5C11.1716 10.5 10.5 11.1716 10.5 12C10.5 12.8284 11.1716 13.5 12 13.5Z" fill="black" />
-                                                            <path d="M12 19.5C12.8284 19.5 13.5 18.8284 13.5 18C13.5 17.1716 12.8284 16.5 12 16.5C11.1716 16.5 10.5 17.1716 10.5 18C10.5 18.8284 11.1716 19.5 12 19.5Z" fill="black" />
+                                                            <path d="M12 7.5C12.8284 7.5 13.5 6.82843 13.5 6C13.5 5.17157 12.8284 4.5 12 4.5C11.1716 4.5 10.5 5.17157 10.5 6C10.5 6.82843 11.1716 7.5 12 7.5Z" fill="currentColor" />
+                                                            <path d="M12 13.5C12.8284 13.5 13.5 12.8284 13.5 12C13.5 11.1716 12.8284 10.5 12 10.5C11.1716 10.5 10.5 11.1716 10.5 12C10.5 12.8284 11.1716 13.5 12 13.5Z" fill="currentColor" />
+                                                            <path d="M12 19.5C12.8284 19.5 13.5 18.8284 13.5 18C13.5 17.1716 12.8284 16.5 12 16.5C11.1716 16.5 10.5 17.1716 10.5 18C10.5 18.8284 11.1716 19.5 12 19.5Z" fill="currentColor" />
                                                         </svg>
                                                     </Menu.Button>
                                                 </div>
@@ -293,7 +294,7 @@ function ListTable(props) {
                                                     leaveFrom="transform opacity-100 scale-100"
                                                     leaveTo="transform opacity-0 scale-95"
                                                 >
-                                                    <Menu.Items className="absolute z-20 right-0 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                                    <Menu.Items className={`absolute z-20 right-0 mt-2 w-56 origin-top-right divide-y ${isDark ? 'divide-white/10 bg-[#120815]' : 'divide-gray-100 bg-white'} rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none`}>
                                                         <div className="px-1 py-1 ">
                                                             {props.actions && props.actions.detail === true ?
                                                                 <Menu.Item>

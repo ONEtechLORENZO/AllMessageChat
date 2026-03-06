@@ -195,96 +195,89 @@ export default function Campaign(props) {
       errors={props.errors}
       current_page = {props.current_page}
     >
-     <div className="bg-white overflow-hidden shadow rounded-lg divide-y divide-gray-200">
-
-       <div className="w-full flex justify-center">
-           <Navigator
-            current_page={openTab}
-            status={props.status}
-          />
+     <div className="px-4 py-6 sm:px-6 lg:px-8">
+       <div className="rounded-[28px] border border-white/10 bg-[#120815]/70 shadow-[0_24px_60px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
+         <div className="border-b border-white/10 px-6 py-6">
+           <div className="flex w-full justify-center">
+             <Navigator
+               current_page={openTab}
+               status={props.status}
+             />
+           </div>
+         </div>
+         <div className="px-6 py-8">
+           <div className="tab-content tab-space">
+             <div
+               className={
+                 openTab == 1 ? "block" : "hidden"
+               }
+               id="link1"
+             >
+               <Information
+                 data={data}
+                 handleChange={handleChange}
+                 saveCampaign={saveCampaign}
+                 translator={props.translator}
+               />
+             </div>
+             <div
+               className={
+                 openTab == 2 ? "block" : "hidden"
+               }
+               id="link2"
+             >
+               <ContactFilter 
+                 campagins={props}
+                 data={data}
+                 handleChange={handleChange}
+                 saveCampaign={saveCampaign}
+                 previous={setOpenTab}
+                 setConditions={setConditions}
+                 setRecordCount={setRecordCount}
+                 recordCount={recordCount}
+                 translator={props.translator}
+               />
+             </div>
+             <div
+               className={
+                 openTab == 3 ? "block" : "hidden"
+               }
+               id="link2"
+             >
+               <Content 
+                 data={data}
+                 handleChange={handleChange}
+                 saveCampaign={saveCampaign}
+                 previous={setOpenTab}
+                 companyName={companyName}
+                 templates={templates}
+                 translator={props.translator}
+               />
+             </div>
+             <div
+               className={
+                 openTab == 4 ? "block" : "hidden"
+               }
+               id="link2"
+             >
+               <Schedule 
+                 data={data}
+                 previous={setOpenTab}
+                 handleChange={handleChange}
+                 saveCampaign={saveCampaign}
+                 status={status}
+                 records={recordCount}
+                 company={companyName}
+                 scheduleTime={scheduleTime}
+                 templates={templates}
+                 setScheduleTime={setScheduleTime}
+                 translator={props.translator}
+               />
+             </div>
+           </div>
+         </div>
        </div>
-
-      <div className="px-4 py-5 sm:p-6">
-      <div className="flex flex-wrap">
-        <div className="w-full">
-          <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 rounded">
-            <div className="px-4 py-5 flex-auto">
-            <div className="tab-content tab-space">
-              <div
-                  className={
-                      openTab == 1 ? "block" : "hidden"
-                  }
-                  id="link1"
-              >
-                   <Information
-                    data={data}
-                    handleChange={handleChange}
-                    saveCampaign={saveCampaign}
-                    translator={props.translator}
-                   />
-              </div>
-              <div
-                  className={
-                      openTab == 2 ? "block" : "hidden"
-                  }
-                  id="link2"
-              >
-                <ContactFilter 
-                  campagins={props}
-                  data={data}
-                  handleChange={handleChange}
-                  saveCampaign={saveCampaign}
-                  previous={setOpenTab}
-                  setConditions={setConditions}
-                  setRecordCount={setRecordCount}
-                  recordCount={recordCount}
-                  translator={props.translator}
-                />
-          
-              </div>
-              <div
-                  className={
-                      openTab == 3 ? "block" : "hidden"
-                  }
-                  id="link2"
-              >
-                 <Content 
-                   data={data}
-                   handleChange={handleChange}
-                   saveCampaign={saveCampaign}
-                   previous={setOpenTab}
-                   companyName={companyName}
-                   templates={templates}
-                   translator={props.translator}
-                 />
-              </div>
-              <div
-                  className={
-                      openTab == 4 ? "block" : "hidden"
-                  }
-                  id="link2"
-              >
-                <Schedule 
-                  data={data}
-                  previous={setOpenTab}
-                  handleChange={handleChange}
-                  saveCampaign={saveCampaign}
-                  status={status}
-                  records={recordCount}
-                  company={companyName}
-                  scheduleTime={scheduleTime}
-                  templates={templates}
-                  setScheduleTime={setScheduleTime}
-                  translator={props.translator}
-                />
-              </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-      </div>
-      </div>
-    </div>  
+     </div>
       </Authenticated>
   )
 }

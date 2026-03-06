@@ -92,6 +92,29 @@ function FilterGroups (props) {
     const [errors, setErrors] = useState({});
     const [filterName, setFilterName] = useState('');
     const [selectedFilter , setSelectedFilter] = useState(props.filter.selected_filter);
+
+    const isDark = props.variant === 'dark';
+    const selectClass = isDark
+        ? "mt-1 block w-full rounded-lg border border-white/15 bg-[#0F0B1A] px-3 py-2 text-sm text-white focus:border-[#BF00FF]/60 focus:ring-[#BF00FF]/40"
+        : "mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm";
+    const inputClass = isDark
+        ? "block w-full rounded-lg border border-white/15 bg-[#0F0B1A] px-3 py-2 text-sm text-white focus:border-[#BF00FF]/60 focus:ring-[#BF00FF]/40"
+        : "focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]";
+    const cardClass = isDark
+        ? "relative mt-3 rounded-xl border border-white/10 bg-[#120815]/70 px-4 py-5 shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
+        : "relative mt-3 border border-gray-200 rounded-sm px-3 py-4 shadow-sm focus-within:ring-1 focus-within:ring-indigo-200 focus-within:border-indigo-200";
+    const actionBtnClass = isDark
+        ? "inline-flex items-center mt-6 px-3 py-2 rounded-lg border border-white/15 bg-white/5 text-sm font-medium text-white/80 hover:border-[#BF00FF]/60 hover:text-white transition"
+        : "inline-flex items-center mt-6 px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-[#F6FFFD] hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300";
+    const groupActionBtnClass = isDark
+        ? "inline-flex items-center mt-6 px-3 py-2 rounded-lg border border-white/15 bg-white/5 text-sm font-medium text-white/80 hover:border-[#BF00FF]/60 hover:text-white transition"
+        : "inline-flex items-center mt-6 px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-[#F6FFFD] hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300";
+    const trashBtnClass = isDark
+        ? "inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white/70 hover:border-red-400/50 hover:text-red-200 transition"
+        : "inline-flex  items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300";
+    const footerBtnClass = isDark
+        ? "bg-[#BF00FF] text-white font-semibold text-sm px-6 py-3 rounded-lg shadow-[0_10px_25px_rgba(191,0,255,0.3)] hover:bg-[#a100df] transition"
+        : "bg-primary text-white active:bg-primary/80 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150";
     
     useEffect(() => {
         if(props.filterCondition){
@@ -339,7 +362,7 @@ function FilterGroups (props) {
                             {Object.entries(grpConditions).map(([grpCondition,conditions ],group_index ) => 
                                 <>  
                                 
-                                    <div className="relative mt-3 border border-gray-200 rounded-sm px-3 py-4 shadow-sm focus-within:ring-1 focus-within:ring-indigo-200 focus-within:border-indigo-200">
+                                    <div className={cardClass}>
                                         <fieldset>
                                                 <legend className="w-full">  
                                                     <div className="flex w-full justify-between">
@@ -350,7 +373,7 @@ function FilterGroups (props) {
                                                                 value={grpCondition}
                                                                 group_index={grpCondition_index} 
                                                                 onChange={ (e) => handleChange(e)}
-                                                                className='mt-1 inline-flex w-28 py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                className={`${selectClass} w-28`}
                                                             >
                                                                 {(logic_operators).map((value) => {
                                                                     return (
@@ -409,7 +432,7 @@ function FilterGroups (props) {
                                                                     id="condition_value"
                                                                     value={condition.condition_value}
                                                                     onChange={ (e) => handleChange(e)}
-                                                                    className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                    className={selectClass}
                                                                 >
                                                                     {Object.entries(field.options).map(([name, label]) => 
                                                                         <option defaultValue={condition.condition_value === name} value={name}> {label} </option>
@@ -424,7 +447,7 @@ function FilterGroups (props) {
                                                                     id="condition_value"
                                                                     value={condition.condition_value}
                                                                     onChange={ (e) => handleChange(e)}
-                                                                    className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                    className={selectClass}
                                                                 >
                                                                     {Object.entries(field.options).map(([name, label]) => 
                                                                         <option defaultValue={condition.condition_value === name} value={name}> {label} </option>
@@ -434,7 +457,7 @@ function FilterGroups (props) {
                                                             case 'text':
                                                                 valueField = <input
                                                                     type='text'
-                                                                    className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                    className={inputClass}
                                                                     name="condition_value"
                                                                     group_index={grpCondition_index} 
                                                                     condition_index={condition_index}
@@ -446,7 +469,7 @@ function FilterGroups (props) {
                                                             case 'checkbox':
                                                                     valueField = <input
                                                                         type='checkbox'
-                                                                        className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD]  block rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                        className={inputClass}
                                                                         name="condition_value"
                                                                         group_index={grpCondition_index} 
                                                                         condition_index={condition_index}
@@ -457,7 +480,7 @@ function FilterGroups (props) {
                                                                     break;
                                                             case 'textarea':
                                                                     valueField = <textarea
-                                                                        className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                        className={inputClass}
                                                                         name="condition_value"
                                                                         group_index={grpCondition_index} 
                                                                         condition_index={condition_index}
@@ -470,7 +493,7 @@ function FilterGroups (props) {
                                                             default :
                                                                 valueField = <input
                                                                     type='text'
-                                                                    className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                    className={inputClass}
                                                                     name="condition_value"
                                                                     group_index={grpCondition_index} 
                                                                     condition_index={condition_index}
@@ -495,7 +518,7 @@ function FilterGroups (props) {
                                                                         id="field_name"
                                                                         value={condition.field_name}
                                                                         onChange={ (e) => handleChange(e)}
-                                                                        className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                        className={selectClass}
                                                                     >
                                                                         <option value=""></option>
                                                                         {Object.entries(fields).map(([key, field]) => 
@@ -511,7 +534,7 @@ function FilterGroups (props) {
                                                                         id="record_condition"
                                                                         value={condition.record_condition}
                                                                         onChange={ (e) => handleChange(e)}
-                                                                        className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                        className={selectClass}
                                                                     >
                                                                         {Object.entries(condition_operators[condition.field_type]).map(([name, label]) => 
                                                                             <option defaultValue={condition.record_condition === name} value={name}> {label} </option>
@@ -531,7 +554,7 @@ function FilterGroups (props) {
                                                                                     onChange={(e) => handleTagInputChange(e, grpCondition_index, condition_index, condition.field_name)}
                                                                                     options={optionValues[condition.field_name]} 
                                                                                     name={condition.field_name}
-                                                                                    className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                                    className={selectClass}
                                                                                 
                                                                                 />
                                                                             }
@@ -546,7 +569,7 @@ function FilterGroups (props) {
                                                                         value={condition.condition_operator}
                                                                         condition_index={condition_index}
                                                                         onChange={ (e) => handleChange(e)}
-                                                                        className='mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                        className={selectClass}
                                                                     >
                                                                         {(logic_operators).map((value) => 
                                                                             <option defaultValue={condition.condition_operator === value} value={value}> {value} </option>
@@ -558,7 +581,7 @@ function FilterGroups (props) {
                                                                 <button
                                                                     type="button"
                                                                     onClick={(e) => deleteCondition(grpCondition_index, condition_index)}
-                                                                    className="inline-flex  items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+                                                                    className={trashBtnClass}
                                                                 >
                                                                     <TrashIcon 
                                                                         group_index={grpCondition_index} 
@@ -578,7 +601,7 @@ function FilterGroups (props) {
                                                     type="button"
                                                     grp_count={grpCondition_index}
                                                     onClick={(e) => addCondition(e)}
-                                                    className="inline-flex items-center mt-6 px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-[#F6FFFD] hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+                                                    className={actionBtnClass}
                                                 >
                                                     <AddIcon
                                                         type="button"
@@ -600,7 +623,7 @@ function FilterGroups (props) {
                             <button
                                 type="button"
                                 onClick={addConditionGroup}
-                                className="inline-flex items-center mt-6 px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-[#F6FFFD] hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+                                className={groupActionBtnClass}
                             >
                                 <AddIcon
                                     type="button"
@@ -614,19 +637,19 @@ function FilterGroups (props) {
                 </form>
             </div>
 
-            <div className="flex items-center justify-end p-6 border-t border-solid border-slate-200 rounded-b">
+            <div className={`flex items-center justify-end p-6 border-t ${isDark ? 'border-white/10' : 'border-slate-200'} rounded-b`}>
                 {errors.field_name &&
                     <div className="absolute left-0 mx-2" ><small className="text-red-500"> {props.translator['Please fill the condition']} </small> </div>
                 }
                 <button
-                    className="bg-primary text-white active:bg-primary/80 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                    className={footerBtnClass}
                     type="button"
                     onClick={() => searchFilterData()}
                 >
                   {props.is_flow ?
                         <> Save condition </>
                         :
-                        <> {props.translator['Search Filter']} </>
+                        <> {props.buttonLabel ? props.buttonLabel : props.translator['Search Filter']} </>
                     }  
                 </button>
             </div>

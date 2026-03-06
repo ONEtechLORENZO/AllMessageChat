@@ -4,41 +4,39 @@ import Input from "@/Components/Input";
 function Information(props){
 
     return(
-        <div className="overflow-hidden shadow rounded-lg divide-y divide-gray-200 w-full content-center">
-            <div className="px-4 py-5 sm:px-6 bg-green-200">
-                {props.translator['Information']}
+        <div className="w-full rounded-2xl border border-white/10 bg-[#140b1f]/70 shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
+            <div className="flex flex-col gap-1 border-b border-white/10 px-6 py-4">
+                <div className="text-lg font-semibold text-white">
+                    {props.translator['Information']}
+                </div>
+                <p className="text-sm text-white/60">Name your campaign.</p>
             </div>
-        <div className="px-4 py-5 sm:p-6">
-         <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            {props.translator['Title']}
-            </label>
-            <div className="mt-1">
-                <Input
-                  type="text"
-                  name="name"
-                  id="campaign_name"
-                  className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                  placeholder=""
-                  value={props.data.name}
-                  handleChange={props.handleChange}
-                />
+            <div className="px-6 py-6">
+                <label htmlFor="campaign_name" className="block text-sm font-semibold text-white/80">
+                    {props.translator['Title']}
+                </label>
+                <div className="mt-2">
+                    <Input
+                      type="text"
+                      name="name"
+                      id="campaign_name"
+                      className="w-full rounded-xl border border-white/15 bg-transparent px-4 py-2 text-sm text-white shadow-none placeholder-white/40 focus:border-[#BF00FF]/70 focus:ring focus:ring-[#BF00FF]/30"
+                      placeholder={props.translator['Title']}
+                      value={props.data.name}
+                      handleChange={props.handleChange}
+                    />
+                </div>
             </div>
-         </div>
-         <div>
-          <div className="pt-5">
-            <div className="flex justify-end">
+            <div className="flex flex-col gap-3 border-t border-white/10 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs text-white/50">Next: choose your audience with filters.</p>
                 <button
                     type='button'
-                    className="bg-indigo-600 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="inline-flex items-center justify-center rounded-lg bg-[#BF00FF] px-5 py-2 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(191,0,255,0.3)] transition hover:bg-[#a100df]"
                     onClick={props.saveCampaign}
-               >
+                >
                     {props.translator['Next']}
                 </button>
-             </div>
             </div>
-         </div>
-        </div>
         </div>
     );
 }

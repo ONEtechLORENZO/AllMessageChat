@@ -20,94 +20,82 @@ function ContactFilter(props){
     },[props]);
 
  return(
-    <div className="overflow-hidden shadow rounded-lg divide-y divide-gray-200 w-full content-center">
-        <div className="px-4 py-5 sm:px-6 bg-green-200">
-            {props.translator['Contact']}
+    <div className="w-full rounded-2xl border border-white/10 bg-[#140b1f]/70 shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
+        <div className="flex flex-col gap-1 border-b border-white/10 px-6 py-4">
+            <div className="text-lg font-semibold text-white">{props.translator['Contact']}</div>
+            <p className="text-sm text-white/60">
+                Select who will receive this campaign. Use filters to build your audience.
+            </p>
         </div>
-        <div className="px-4 py-5 sm:p-6">
-            <div>
-                <div className="bg-gray-50 px-4 py-4 sm:px-6">
-                {props.translator['Filter']}
-                    <div className="mt-2">
-                        <FilterGroups 
-                            translator={translator}
-                            filter={filter}
-                            module={'Contact'}
-                            setRecordCount={props.setRecordCount}
-                            setConditions={props.setConditions}
-                            filterCondition={filterCondition}
-                            setfilterCondition={setfilterCondition}
-                            setHeader={setHeader}
-                            setRecord={setRecord}
-                            setOpenlist={setOpenlist}
-                        />
-                    </div>
+        <div className="px-6 py-6 space-y-6">
+            <div className="rounded-2xl border border-white/10 bg-[#0F0B1A]/80 p-5">
+                <div className="text-xs uppercase tracking-[0.2em] text-white/50">
+                    {props.translator['Filter']}
+                </div>
+                <p className="mt-1 text-xs text-white/40">Tip: AND narrows the audience - OR expands it.</p>
+                <div className="mt-4 rounded-xl border border-white/10 bg-[#120815]/70">
+                    <FilterGroups 
+                        translator={translator}
+                        filter={filter}
+                        module={'Contact'}
+                        setRecordCount={props.setRecordCount}
+                        setConditions={props.setConditions}
+                        filterCondition={filterCondition}
+                        setfilterCondition={setfilterCondition}
+                        setHeader={setHeader}
+                        setRecord={setRecord}
+                        setOpenlist={setOpenlist}
+                        variant="dark"
+                        buttonLabel="Preview Audience"
+                    />
                 </div>
             </div>
 
-            <div className="border m-10 h-50 rounded-lg">
-               <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                 <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-                  <dl className="sm:divide-y sm:divide-gray-200">
-                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt className="text-lg font-medium text-gray-500">{props.translator['Total Records']}</dt>
-                        {props.recordCount || props.recordCount >= 0 ? 
-                        <>
-                         <dd className="mt-1 text-lg text-gray-900 sm:mt-0 sm:col-span-2">{props.recordCount}</dd>
-                        </>
-                        : 
-                        <>
-                         <dd className="mt-1 text-lg text-gray-900 sm:mt-0 sm:col-span-2">-</dd>
-                        </>
-                        }
-                    </div>
-                  </dl>
+            <div className="rounded-2xl border border-white/10 bg-[#0F0B1A]/80 px-6 py-5 flex items-center justify-between">
+                <div className="text-sm text-white/70">{props.translator['Total Records']}</div>
+                <div className="rounded-full bg-white/10 px-3 py-1 text-sm text-white">
+                    {props.recordCount || props.recordCount >= 0 ? props.recordCount : '-'}
                 </div>
-            </div>
             </div>
             
             {openList ? 
             <>
-             <div className="border m-10 h-50 rounded-lg">
-               <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                    <div className="inline-block w-full py-2 align-middle md:px-6 lg:px-8">
-                       {headers && records ? 
-                        <>
-                         <ListTable 
-                               module={'Contact'}
-                               headers={headers}
-                               records={records}
-                               actions={''}
-                               translator = {props.translator}
-                           />
-                           {Object.entries(records).length == 0 ? <Alert type='info' message= {props.translator['No record related yet.']} hideClose={true} /> : ''}
-                        </>
-                       : ''} 
-                    </div>
+             <div className="rounded-2xl border border-white/10 bg-[#0F0B1A]/80 px-4 py-2">
+                <div className="inline-block w-full py-2 align-middle">
+                   {headers && records ? 
+                    <>
+                     <ListTable 
+                           module={'Contact'}
+                           headers={headers}
+                           records={records}
+                           actions={''}
+                           translator = {props.translator}
+                           theme="dark"
+                       />
+                       {Object.entries(records).length == 0 ? <Alert type='info' message= {props.translator['No record related yet.']} hideClose={true} /> : ''}
+                    </>
+                   : ''} 
                 </div>
               </div>
             </>
             : ''}
 
-            <div className="pt-5">
-                <div className="m-10 flex justify-between">
-                        <button
-                            type='button'
-                            className="justify-start bg-indigo-600 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            onClick={(e) => props.previous(1)}
-                    >
-                            {props.translator['Previous']}
-                        </button>
-                        <button
-                            type='button'
-                            className="justify-end bg-indigo-600 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            onClick={props.saveCampaign} 
-                    >
-                            {props.translator['Next']}
-                        </button>
-                </div>
+            <div className="flex flex-col gap-3 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <button
+                    type='button'
+                    className="inline-flex items-center justify-center rounded-lg border border-white/15 bg-white/5 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white/30 hover:text-white"
+                    onClick={(e) => props.previous(1)}
+                >
+                    {props.translator['Previous']}
+                </button>
+                <button
+                    type='button'
+                    className="inline-flex items-center justify-center rounded-lg bg-[#BF00FF] px-5 py-2 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(191,0,255,0.3)] transition hover:bg-[#a100df]"
+                    onClick={props.saveCampaign} 
+                >
+                    {props.translator['Next']}
+                </button>
             </div>
-            
         </div>
     </div>
     );

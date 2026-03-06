@@ -7,186 +7,150 @@ function Schedule(props){
     const [openDatepick, setDatepick] = useState(false);
 
     return(
-        <div className="overflow-hidden shadow rounded-lg divide-gray-200 w-full float-center">
-        
-            <div className="px-4 py-5 sm:px-6 bg-green-200">
-                 Review & Schedule
+        <div className="w-full rounded-2xl border border-white/10 bg-[#140b1f]/70 shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
+            <div className="flex flex-col gap-1 border-b border-white/10 px-6 py-4">
+                <div className="text-lg font-semibold text-white">Review & Schedule</div>
+                <p className="text-sm text-white/60">Confirm the details before sending or scheduling.</p>
             </div>
-     
-         <div className="border m-10 h-50 rounded-lg">
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                <div className="px-4 py-5 sm:px-6">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">Information</h3>
-                </div>
-                <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-                 <dl className="sm:divide-y sm:divide-gray-200">
-                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt className="text-sm font-medium text-gray-500">Title</dt>
-                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{props.data.name}</dd>
-                    </div>
-                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt className="text-sm font-medium text-gray-500">Service</dt>
-                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{props.data.service}</dd>
-                    </div>
-                 </dl>
-                </div>
-            </div>
-        </div>
 
-        <div className="border m-10 h-50 rounded-lg">
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                <div className="px-4 py-5 sm:px-6">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">Contact</h3>
-                </div>
-                <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-                 <dl className="sm:divide-y sm:divide-gray-200">
-                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt className="text-sm font-medium text-gray-500">Total</dt>
-                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{props.records}</dd>
-                    </div>
-                 </dl>
-                </div>
-            </div>
-        </div>
-    
-        <div className="border m-10 h-50 rounded-lg">
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                <div className="px-4 py-5 sm:px-6">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">Account</h3>
-                </div>
-                <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-                 <dl className="sm:divide-y sm:divide-gray-200">
-                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt className="text-sm font-medium text-gray-500">Select Account</dt>
-                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                            {props.data.account_id && props.company?
-                             <> 
-                                {props.company[props.data.account_id]}
-                             </> 
-                             : ''}
-                        </dd>
-                    </div>
-                 </dl>
-                </div>
-            </div>
-        </div>
-
-        <div className="border m-10 h-50 rounded-lg">
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                <div className="px-4 py-5 sm:px-6">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">Template</h3>
-                </div>
-                <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-                 <dl className="sm:divide-y sm:divide-gray-200">
-                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt className="text-sm font-medium text-gray-500">{props.data.service}</dt>
-                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{props.templates[props.data.template_id]}</dd>
-                    </div>
-                 </dl>
-                </div>
-            </div>
-        </div>
-
-        <div className="border m-10 h-50 rounded-lg">
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                <div className="px-4 py-5 sm:px-6">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">Schedule Time</h3>
-                </div>
-                <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-                 <dl className="sm:divide-y sm:divide-gray-200">
-                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6 flex sm:col-span-2">  
-                    {props.data.status != 'draft' ? 
-                       <>
-                         <dt className="text-sm font-medium text-gray-500">Scheduling Time</dt>
-                         <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{props.data.scheduled_at}</dd>
-                       </>
-                      : 
-                       <>
-                        <dt className="text-sm font-medium text-gray-500">
-                        <div className="flex">
-                            <div className="flex content-center p-4">
-                            <input
-                                    id='scheduled_at'
-                                    name='scheduled_at'
-                                    type="radio"
-                                    className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
-                                    value='now'
-                                    onChange={props.handleChange}
-                                    onClick={() => setDatepick(false)}
-                                />
-                                <label className="ml-3 block text-sm font-bold text-gray-700">
-                                    BoardCast Now
-                                </label>
+            <div className="px-6 py-6 space-y-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                    <div className="rounded-2xl border border-white/10 bg-[#0F0B1A]/80 p-5">
+                        <div className="text-sm font-semibold text-white/80">Information</div>
+                        <dl className="mt-4 space-y-3 text-sm text-white/70">
+                            <div className="flex items-center justify-between">
+                                <dt className="text-white/50">Title</dt>
+                                <dd className="text-white">{props.data.name}</dd>
                             </div>
-                            <div className="flex  p-4">
-                            <input
-                                    id='scheduled_at'
-                                    name='scheduled_at'
-                                    type="radio" 
-                                    className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
-                                    value=''
-                                    onClick={() => setDatepick(true)}
-                            />
-                                <label className="ml-3 block text-sm font-bold text-gray-700">
-                                    Scheduling Time
-                                </label>
+                            <div className="flex items-center justify-between">
+                                <dt className="text-white/50">Service</dt>
+                                <dd className="text-white">{props.data.service}</dd>
                             </div>
-                        </div>
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                        {openDatepick ? 
-                        <>
-                            <div className="w-1/2">
-                                <DatePicker
-                                    selected={props.scheduleTime == 'now' ? new Date() : props.scheduleTime}
-                                    onChange={(date) => props.setScheduleTime(date)}
-                                    dateFormat="MM/dd/yyyy h:mm aa"
-                                    showTimeSelect
-                                    timeIntervals={15}
-                                    timeCaption="Time"
-                                />
-                            </div> 
-                        </> : ''}  
-                        </dd>
-                       </>
-                      }
+                        </dl>
                     </div>
-                 </dl>
-                </div>
-            </div>
-        </div>
 
-        {props.status != 'draft' ? 
-        <>
-         <div className="flex m-10 justify-end">
-            <a
-                href={route("listCampaign")}
-                className="justify-start bg-indigo-600 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                Back
-            </a>
-         </div>
-        </>
-        : 
-        <>
-         <div className="m-10  flex justify-between">
-            <button
-                type='button'
-                className="justify-start bg-indigo-600 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                onClick={(e) => props.previous(3)}
-           >
-                Previous
-            </button>
-            <button
-                type='button'
-                className="justify-end bg-indigo-600 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                onClick={props.saveCampaign}    
-            >
-                 {openDatepick ? 'Schedule' : 'Send Now' }    
-            </button>
-         </div>
-        </>
-        }
+                    <div className="rounded-2xl border border-white/10 bg-[#0F0B1A]/80 p-5">
+                        <div className="text-sm font-semibold text-white/80">Contact</div>
+                        <dl className="mt-4 space-y-3 text-sm text-white/70">
+                            <div className="flex items-center justify-between">
+                                <dt className="text-white/50">Total</dt>
+                                <dd className="text-white">{props.records}</dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/10 bg-[#0F0B1A]/80 p-5">
+                        <div className="text-sm font-semibold text-white/80">Account</div>
+                        <dl className="mt-4 space-y-3 text-sm text-white/70">
+                            <div className="flex items-center justify-between">
+                                <dt className="text-white/50">Selected account</dt>
+                                <dd className="text-white">
+                                    {props.data.account_id && props.company?
+                                     <> 
+                                        {props.company[props.data.account_id]}
+                                     </> 
+                                     : ''}
+                                </dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/10 bg-[#0F0B1A]/80 p-5">
+                        <div className="text-sm font-semibold text-white/80">Template</div>
+                        <dl className="mt-4 space-y-3 text-sm text-white/70">
+                            <div className="flex items-center justify-between">
+                                <dt className="text-white/50">{props.data.service}</dt>
+                                <dd className="text-white">{props.templates[props.data.template_id]}</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-[#0F0B1A]/80 p-5">
+                    <div className="text-sm font-semibold text-white/80">Schedule Time</div>
+                    <div className="mt-4 text-sm text-white/70">
+                        {props.data.status != 'draft' ? 
+                           <div className="flex items-center justify-between">
+                             <span className="text-white/50">Scheduling Time</span>
+                             <span className="text-white">{props.data.scheduled_at}</span>
+                           </div>
+                          : 
+                           <div className="space-y-4">
+                                <div className="flex flex-wrap gap-6">
+                                    <label className="flex items-center gap-2 text-white/80">
+                                        <input
+                                            id='scheduled_at'
+                                            name='scheduled_at'
+                                            type="radio"
+                                            className="h-4 w-4 border-white/30 bg-[#0F0B1A] text-[#BF00FF] focus:ring-[#BF00FF]/40"
+                                            value='now'
+                                            onChange={props.handleChange}
+                                            onClick={() => setDatepick(false)}
+                                        />
+                                        BoardCast Now
+                                    </label>
+                                    <label className="flex items-center gap-2 text-white/80">
+                                        <input
+                                            id='scheduled_at'
+                                            name='scheduled_at'
+                                            type="radio" 
+                                            className="h-4 w-4 border-white/30 bg-[#0F0B1A] text-[#BF00FF] focus:ring-[#BF00FF]/40"
+                                            value=''
+                                            onClick={() => setDatepick(true)}
+                                        />
+                                        Scheduling Time
+                                    </label>
+                                </div>
+                                {openDatepick ? 
+                                    <div className="max-w-sm">
+                                        <DatePicker
+                                            selected={props.scheduleTime == 'now' ? new Date() : props.scheduleTime}
+                                            onChange={(date) => props.setScheduleTime(date)}
+                                            dateFormat="MM/dd/yyyy h:mm aa"
+                                            showTimeSelect
+                                            timeIntervals={15}
+                                            timeCaption="Time"
+                                            className="w-full rounded-lg border border-white/20 bg-[#0F0B1A] px-3 py-2 text-sm text-white focus:border-[#BF00FF]/60 focus:ring-[#BF00FF]/40"
+                                        />
+                                    </div> 
+                                : ''}  
+                           </div>
+                          }
+                    </div>
+                </div>
+
+                {props.status != 'draft' ? 
+                <>
+                 <div className="flex justify-end border-t border-white/10 pt-4">
+                    <a
+                        href={route("listCampaign")}
+                        className="inline-flex items-center justify-center rounded-lg bg-[#BF00FF] px-5 py-2 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(191,0,255,0.3)] transition hover:bg-[#a100df]"
+                        >
+                        Back
+                    </a>
+                 </div>
+                </>
+                : 
+                <>
+                 <div className="flex flex-col gap-3 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                    <button
+                        type='button'
+                        className="inline-flex items-center justify-center rounded-lg border border-white/15 bg-white/5 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white/30 hover:text-white"
+                        onClick={(e) => props.previous(3)}
+                   >
+                        Previous
+                    </button>
+                    <button
+                        type='button'
+                        className="inline-flex items-center justify-center rounded-lg bg-[#BF00FF] px-5 py-2 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(191,0,255,0.3)] transition hover:bg-[#a100df]"
+                        onClick={props.saveCampaign}    
+                    >
+                         {openDatepick ? 'Schedule' : 'Send Now' }    
+                    </button>
+                 </div>
+                </>
+                }
+            </div>
         </div>
     );
 }
