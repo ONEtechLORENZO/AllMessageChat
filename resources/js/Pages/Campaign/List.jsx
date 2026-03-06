@@ -106,7 +106,7 @@ function List(props) {
     const statusStyles = {
         running: "bg-[#05CD00]",
         scheduled: "bg-[#F9DA00]",
-        completed: "bg-[#00D8E5]",
+        completed: "bg-[#bf00ff]",
         unknown: "bg-white/30",
     };
 
