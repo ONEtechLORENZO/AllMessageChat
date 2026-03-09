@@ -78,6 +78,10 @@ const navigation = [
                 href: route("account_templates"),
             },
             {
+                name: "Interactive Messages",
+                href: route("listInteractiveMessage"),
+            },
+            {
                 name: "Campaigns",
                 href: route("listCampaign"),
             },
@@ -129,12 +133,6 @@ const bottomNavigation = [
         name: "API Documentation",
         href: route("api_documentation"),
         icon: CodeBracketIcon,
-        show: ["all"],
-    },
-    {
-        name: "Interactive Messages",
-        href: route("listInteractiveMessage"),
-        icon: CampaignsIcon,
         show: ["all"],
     },
     {
@@ -265,6 +263,10 @@ const menuBar = [
             {
                 name: "Templates",
                 href: route("account_templates"),
+            },
+            {
+                name: "Interactive Messages",
+                href: route("listInteractiveMessage"),
             },
             {
                 name: "Chats",
@@ -591,6 +593,18 @@ export default function Authenticated({
                       )
                     : {};
                 resolvedNavigationMenuBar[item.name] = { show: true, submenu };
+            } else if (item.subMenu && resolvedNavigationMenuBar[item.name]) {
+                const existingSubmenu =
+                    resolvedNavigationMenuBar[item.name].submenu ?? {};
+                item.subMenu.forEach((sub) => {
+                    if (!Object.prototype.hasOwnProperty.call(existingSubmenu, sub.name)) {
+                        existingSubmenu[sub.name] = true;
+                    }
+                });
+                resolvedNavigationMenuBar[item.name] = {
+                    ...resolvedNavigationMenuBar[item.name],
+                    submenu: existingSubmenu,
+                };
             }
         });
     }

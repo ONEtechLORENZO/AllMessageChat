@@ -109,7 +109,7 @@ export default function Login({ status, canResetPassword, translator, locale }) 
                             aria-pressed={language === "IT"}
                             className={`px-2 py-0.5 text-[8px] font-semibold uppercase leading-none transition-colors duration-200 ${
                                 language === "IT"
-                                    ? "bg-[#38bdf8] text-white rounded-l-full"
+                                    ? "bg-[#BF00FF] text-white rounded-l-full"
                                     : "text-white/60 hover:text-white/90"
                             }`}
                         >
@@ -121,7 +121,7 @@ export default function Login({ status, canResetPassword, translator, locale }) 
                             aria-pressed={language === "EN"}
                             className={`px-2 py-0.5 text-[8px] font-semibold uppercase leading-none transition-colors duration-200 ${
                                 language === "EN"
-                                    ? "bg-[#38bdf8] text-white rounded-r-full"
+                                    ? "bg-[#BF00FF] text-white rounded-r-full"
                                     : "text-white/60 hover:text-white/90"
                             }`}
                         >
