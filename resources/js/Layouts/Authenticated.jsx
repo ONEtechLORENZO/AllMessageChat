@@ -261,16 +261,16 @@ const menuBar = [
                 href: route("social_profile"),
             },
             {
+                name: "Chats",
+                href: route("chat_list"),
+            },
+            {
                 name: "Templates",
                 href: route("account_templates"),
             },
             {
                 name: "Interactive Messages",
                 href: route("listInteractiveMessage"),
-            },
-            {
-                name: "Chats",
-                href: route("chat_list"),
             },
             {
                 name: "Campaigns",
