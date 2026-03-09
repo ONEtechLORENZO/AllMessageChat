@@ -5,7 +5,7 @@ import Layout from "./Layout";
 import {
     EllipsisVerticalIcon,
     BellIcon,
-    PlusSmIcon,
+    PlusIcon,
     MagnifyingGlassIcon,
     Bars3Icon
 } from "@heroicons/react/24/outline";
@@ -913,7 +913,7 @@ export default function New() {
                                         <WhatsAppIcon />
                                     </div>
                                     <div className="flex rounded-md bg-white h-7 w-7 justify-center items-center cursor-pointer">
-                                        <PlusSmIcon
+                                        <PlusIcon
                                             className="h-6 w-6"
                                             aria-hidden="true"
                                         />

@@ -6,8 +6,7 @@ import {
     ChartBarIcon,
     FolderIcon,
     HomeIcon,
-    InboXMarkIcon,
-    MenuAlt2Icon,
+    InboxIcon,
     UsersIcon,
     XMarkIcon,
     ChevronRightIcon,
@@ -21,7 +20,7 @@ const navigation = [
     { name: "Chats", href: "#", icon: UsersIcon, current: false },
     { name: "Contacts", href: "#", icon: FolderIcon, current: false },
     { name: "Opportunities", href: "#", icon: CalendarIcon, current: false },
-    { name: "Automations", href: "#", icon: InboXMarkIcon, current: false },
+    { name: "Automations", href: "#", icon: InboxIcon, current: false },
     { name: "Integrations", href: "#", icon: ChartBarIcon, current: false },
     { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
 ];
