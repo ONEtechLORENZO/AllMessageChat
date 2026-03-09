@@ -9,11 +9,11 @@ import {
     ResponsiveContainer,
 } from "recharts";
 // import { Card } from 'reactstrap'
-import { BsHeadset } from "react-icons/bs";
 import { FaPlusCircle, FaAngleDown } from "react-icons/fa";
 import Authenticated from "@/Layouts/Authenticated";
 import { Head, Link } from "@inertiajs/react";
 import { Dialog, Transition } from "@headlessui/react";
+import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import DateRangePicker from "react-bootstrap-daterangepicker";
 import "bootstrap-daterangepicker/daterangepicker.css";
 import ListView from "@/Components/Views/List/Index2";
@@ -21,30 +21,112 @@ import { router as Inertia } from "@inertiajs/react";
 import ReactEcharts from "echarts-for-react";
 
 export default function DashboardNew(props) {
+    const totalMessages = Number(props.message_details?.total_messages || 0);
+    const dailyAverageValue = Number((totalMessages / 30).toFixed(3));
+    const trendPointOne = totalMessages;
+    const trendPointThree = dailyAverageValue;
+    const trendPointTwo = Number(((trendPointOne + trendPointThree) / 2).toFixed(3));
+    const trendValues = [trendPointOne, trendPointTwo, trendPointThree];
+    const trendMin = Math.min(...trendValues);
+    const trendMax = Math.max(...trendValues);
+    const trendPad = trendMax === trendMin ? 1 : (trendMax - trendMin) * 0.25;
+    const yMin = Math.max(0, Math.floor(trendMin - trendPad));
+    const yMax = Math.ceil(trendMax + trendPad);
+    const trendLabels = ["Data 01", "Data 02", "Data 03"];
+
     const options = {
-        grid: { top: 20, right: 20, bottom: 20, left: 20 },
+        grid: { top: 24, right: 16, bottom: 28, left: 34 },
+        backgroundColor: "transparent",
         xAxis: {
             type: "category",
-            axisLine: { show: false },
-            data: [],
+            boundaryGap: false,
+            axisLine: { lineStyle: { color: "rgba(255,255,255,0.18)" } },
+            axisTick: { show: false },
+            axisLabel: { show: false },
+            data: trendLabels,
         },
         yAxis: [
             {
                 type: "value",
-                splitLine: { show: false },
-                axisLabel: { show: false },
+                inverse: true,
+                min: yMin,
+                max: yMax,
+                splitLine: { lineStyle: { color: "rgba(255,255,255,0.08)" } },
+                axisLabel: { color: "rgba(255,255,255,0.45)" },
             },
         ],
         series: [
             {
-                data: props.per_day_count ? props.per_day_count : "",
+                data: trendValues,
                 type: "line",
-                color: "orange",
-                smooth: true,
-                areaStyle: { color: "orange", opacity: 0.5 },
+                smooth: 0.4,
+                symbol: "circle",
+                symbolSize: 7,
+                itemStyle: {
+                    color: "#ff4fa3",
+                    borderColor: "#ffffff",
+                    borderWidth: 1,
+                },
+                lineStyle: {
+                    width: 2,
+                    color: {
+                        type: "linear",
+                        x: 0,
+                        y: 0,
+                        x2: 1,
+                        y2: 0,
+                        colorStops: [
+                            { offset: 0, color: "#ff4fa3" },
+                            { offset: 1, color: "#9b4dff" },
+                        ],
+                    },
+                },
+                areaStyle: {
+                    color: {
+                        type: "linear",
+                        x: 0,
+                        y: 0,
+                        x2: 0,
+                        y2: 1,
+                        colorStops: [
+                            { offset: 0, color: "rgba(196,123,255,0.35)" },
+                            { offset: 1, color: "rgba(31,9,53,0.68)" },
+                        ],
+                    },
+                },
+                markLine: {
+                    symbol: "none",
+                    silent: true,
+                    label: { show: false },
+                    lineStyle: {
+                        color: "rgba(207,211,255,0.45)",
+                        width: 1,
+                    },
+                    data: trendLabels.map((name) => ({ xAxis: name })),
+                },
+                markPoint: {
+                    symbol: "circle",
+                    symbolSize: 0,
+                    label: {
+                        show: true,
+                        color: "rgba(210,198,255,0.85)",
+                        fontSize: 10,
+                        formatter: ({ dataIndex }) => trendLabels[dataIndex],
+                        offset: [0, -14],
+                    },
+                    data: trendLabels.map((name, idx) => ({
+                        name,
+                        coord: [name, trendValues[idx]],
+                    })),
+                },
             },
         ],
-        tooltip: { trigger: "axis" },
+        tooltip: {
+            trigger: "axis",
+            backgroundColor: "rgba(14,4,28,0.95)",
+            borderColor: "rgba(191,0,255,0.35)",
+            textStyle: { color: "#fff" },
+        },
     };
 
     let [isOpen, setIsOpen] = useState(false);
@@ -62,6 +144,12 @@ export default function DashboardNew(props) {
                   Math.min(100, Math.round((remainingSessions / totalSessions) * 100)),
               )
             : 0;
+    const socialItems = [
+        { key: "instagram", src: "./img/instagram-icon.png", alt: "Instagram", widthClass: "w-8" },
+        { key: "whatsapp", src: "./img/WhatsApp-icon.png", alt: "WhatsApp", widthClass: "w-9" },
+        { key: "telegram", src: "./img/Telegram-icon.png", alt: "Telegram", widthClass: "w-8" },
+        { key: "facebook", src: "./img/facebook-icon.png", alt: "Facebook", widthClass: "w-8" },
+    ];
 
     useEffect(() => {
         setBalance(props.balance);
@@ -169,17 +257,17 @@ export default function DashboardNew(props) {
                                     <GlassCard className="flex-1">
                                         <div className="flex gap-3 items-center h-full">
                                             <div className="w-12 h-12 rounded bg-[#E3D2F9] flex justify-center items-center">
-                                                <BsHeadset
-                                                    className="text-[#731CE1]"
-                                                    size={"2rem"}
+                                                <ChatBubbleLeftRightIcon
+                                                    className="text-[#731CE1] w-8 h-8"
                                                 />
                                             </div>
                                             <div>
                                                 <div className="!text-white text-base font-medium">
                                                     {
                                                         props.translator[
-                                                            "Business initiated chats"
+                                                            "Active Chats"
                                                         ]
+                                                            ?? "Active Chats"
                                                     }
                                                 </div>
                                                 <div className="!text-white/50 font-semibold text-xl">
@@ -212,8 +300,9 @@ export default function DashboardNew(props) {
                                                 <div className="!text-white text-base font-medium">
                                                     {
                                                         props.translator[
-                                                            "User initiated chats"
+                                                            "Active Campaigns"
                                                         ]
+                                                            ?? "Active Campaigns"
                                                     }
                                                 </div>
                                                 <div className="!text-white/50 font-semibold text-xl">
@@ -229,57 +318,24 @@ export default function DashboardNew(props) {
 
                                 {/* Networks (NO card) */}
                                 <div className="flex justify-center gap-15 px-2 pt-8">
-                                    <div className="flex items-center flex-col justify-center gap-2">
-                                        <img
-                                            src="./img/instagram-icon.png"
-                                            alt="Instagram"
-                                            className="w-8"
-                                        />
-                                        <div className="text-sm text-white/60">
-                                            {props.services.instagram
-                                                ? props.services.instagram.count
-                                                : "-"}
+                                    {socialItems.map((item, index) => (
+                                        <div
+                                            key={item.key}
+                                            className="social-stagger-item flex items-center flex-col justify-center gap-2"
+                                            style={{ animationDelay: `${index * 140}ms` }}
+                                        >
+                                            <img
+                                                src={item.src}
+                                                alt={item.alt}
+                                                className={item.widthClass}
+                                            />
+                                            <div className="text-sm text-white/60">
+                                                {props.services[item.key]
+                                                    ? props.services[item.key].count
+                                                    : "-"}
+                                            </div>
                                         </div>
-                                    </div>
-
-                                    <div className="flex items-center flex-col justify-center gap-2">
-                                        <img
-                                            src="./img/WhatsApp-icon.png"
-                                            alt="WhatsApp"
-                                            className="w-9"
-                                        />
-                                        <div className="text-sm text-white/60">
-                                            {props.services.whatsapp
-                                                ? props.services.whatsapp.count
-                                                : "-"}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center flex-col justify-center gap-2">
-                                        <img
-                                            src="./img/Telegram-icon.png"
-                                            alt="Telegram"
-                                            className="w-8"
-                                        />
-                                        <div className="text-sm text-white/60">
-                                            {props.services.telegram
-                                                ? props.services.telegram.count
-                                                : "-"}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center flex-col justify-center gap-2">
-                                        <img
-                                            src="./img/facebook-icon.png"
-                                            alt="Facebook"
-                                            className="w-8"
-                                        />
-                                        <div className="text-sm text-white/60">
-                                            {props.services.facebook
-                                                ? props.services.facebook.count
-                                                : "-"}
-                                        </div>
-                                    </div>
+                                    ))}
                                 </div>
                             </div>
 
@@ -418,7 +474,7 @@ export default function DashboardNew(props) {
                                             </div>
 
                                             <div className="widget-chart-content">
-                                                <div className="text-2xl font-medium !mt-0 !text-white">
+                                                <div className="text-2xl font-medium !mt-0 !text-[#39d400]">
                                                     $
                                                     {messageDetails.total_amount
                                                         ? messageDetails.total_amount.toFixed(

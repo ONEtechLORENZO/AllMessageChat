@@ -66,28 +66,21 @@ export default function Accounts(props) {
         <>
         <div className="grid gap-4 grid-cols-2 border-white/10 border-b">
             
-            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+            <nav className="-mb-px flex space-x-3 pb-2" aria-label="Tabs">
                 {tabs.map((tab) => (
                 <a
                     key={tab.name}
                     href={tab.href}
                     className={classNames(
                     tab.page == page
-                        ? 'text-white'
-                        : 'text-white/70 hover:text-white',
-                    'group whitespace-nowrap py-3 px-1 border-b-2 border-transparent font-medium text-sm'
+                        ? 'bg-[#BF00FF] text-white'
+                        : 'bg-white/10 text-white/70 hover:text-white',
+                    'whitespace-nowrap rounded-full px-4 py-2 font-medium text-sm border-0 outline-none ring-0'
                     )}
                     aria-current={tab.current ? 'page' : undefined}
                     onClick={() => setPage(tab.page)}
                 >
-                    <span
-                        className={classNames(
-                            'px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide border transition',
-                            tab.page == page
-                                ? 'bg-[#A31EFF]/20 border-[#A31EFF] text-white shadow-[0_0_18px_rgba(163,30,255,0.9)] ring-1 ring-[#A31EFF]/50'
-                                : 'bg-white/5 border-white/10 text-white/70 group-hover:text-white group-hover:border-[#A31EFF]/40 group-hover:shadow-[0_0_10px_rgba(163,30,255,0.4)]'
-                        )}
-                    >
+                    <span className="text-[11px] font-semibold uppercase tracking-wide">
                         {tab.name}
                     </span>
                 </a>
@@ -212,7 +205,6 @@ export default function Accounts(props) {
         </>
     );
 }
-
 
 
 

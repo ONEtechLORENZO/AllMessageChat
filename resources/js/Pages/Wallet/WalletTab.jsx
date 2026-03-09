@@ -12,6 +12,7 @@ import { CirclePlusIcons } from "../icons";
 import { Link } from "@inertiajs/react";
 import { router as Inertia } from "@inertiajs/react";
 import { CheckIcon } from "@heroicons/react/24/outline";
+import { FolderIcon } from "@heroicons/react/24/solid";
 
 export function GlassCard({ className = "", children }) {
     return (
@@ -219,29 +220,18 @@ export default function WalletTab(props) {
 
             <div>
                 <div className="sm:grid grid grid-cols-2 gap-4 mb-6">
-                    <GlassCard>
-                        <div className="flex rounded-lg gap-4 items-center">
-                            <div className="pl-2 w-40 text-white">
-                                <svg
-                                    width={80}
-                                    height={83}
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="text-white"
-                                >
-                                    <path
-                                        d="M57.333 25.076V9.888c0-3.61 0-5.415-.759-6.524a4.333 4.333 0 0 0-2.847-1.825c-1.324-.225-2.96.531-6.232 2.044l-38.44 17.77c-2.918 1.348-4.377 2.023-5.446 3.07a8.682 8.682 0 0 0-2.108 3.3C1 29.133 1 30.743 1 33.963v21.495m58.5-2.17h.043M1 38.965v28.646c0 4.862 0 7.292.945 9.15a8.674 8.674 0 0 0 3.787 3.793c1.854.946 4.28.946 9.135.946h50.266c4.854 0 7.281 0 9.135-.946a8.674 8.674 0 0 0 3.787-3.794C79 74.903 79 72.473 79 67.611V38.965c0-4.861 0-7.292-.945-9.15a8.673 8.673 0 0 0-3.787-3.793c-1.854-.946-4.28-.946-9.135-.946H14.867c-4.854 0-7.281 0-9.135.946a8.674 8.674 0 0 0-3.787 3.794C1 31.673 1 34.104 1 38.966Zm60.667 14.323c0 1.199-.97 2.17-2.167 2.17a2.168 2.168 0 0 1-2.167-2.17c0-1.198.97-2.17 2.167-2.17 1.197 0 2.167.972 2.167 2.17Z"
-                                        stroke="currentColor"
-                                        strokeWidth={2}
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    />
-                                </svg>
+                    <div className="pt-3">
+                        <p className="font-bold text-white text-2xl mb-4">
+                            <span>{props.translator["This is your"] ?? "This is your"} </span>
+                            <span className="one-tech-special text-2xl sm:text-3xl font-black tracking-tight">
+                                {props.translator["Workspace"] ?? "Workspace"}
+                            </span>
+                        </p>
+                        <div className="flex rounded-lg gap-4 items-start">
+                            <div className="pl-2 w-40 text-white shrink-0">
+                                <FolderIcon className="w-20 h-20 text-[#BF00FF]" />
                             </div>
-                            <div className="w-full">
-                                <p className="font-bold text-white">
-                                    {props.translator["This is your Workspace"]}
-                                </p>
+                            <div className="w-full pt-4 -ml-12">
                                 <p className="text-[#878787] text-sm whitespace-initial pt-2">
                                     {props.translator[
                                         "Here you can change your company settings, add, edit or remove informations, as you number, your address, link your channel, etc."
@@ -249,7 +239,7 @@ export default function WalletTab(props) {
                                 </p>
                             </div>
                         </div>
-                    </GlassCard>
+                    </div>
                     <GlassCard>
                         <div className="text-white text-lg font-semibold">
                             {props.currentCompany &&

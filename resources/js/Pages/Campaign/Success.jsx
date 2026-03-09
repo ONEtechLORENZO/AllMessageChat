@@ -32,8 +32,9 @@ export default function CampaignSuccess(props) {
             current_page={props.current_page}
             navigationMenu={props.menuBar}
         >
-            <div className="px-6 py-10">
-                <div className="max-w-4xl mx-auto rounded-3xl bg-white/5 backdrop-blur-3xl border border-white/10 shadow-[0_30px_60px_-30px_rgba(0,0,0,0.6)] p-8 text-white">
+            <div className="dashboard-page px-6 py-10 relative">
+                <div className="purple-giant-arc" aria-hidden="true"></div>
+                <div className="relative z-10 max-w-4xl mx-auto rounded-3xl bg-[#170024]/80 backdrop-blur-3xl border-0 shadow-[0_30px_60px_-30px_rgba(0,0,0,0.6)] p-8 text-white">
                     <div className="flex flex-col gap-3">
                         <div className="inline-flex items-center gap-3">
                             <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[#38bdf8]/20 text-[#38bdf8]">
@@ -68,7 +69,7 @@ export default function CampaignSuccess(props) {
                     </div>
 
                     {lastCampaign && (
-                        <div className="mt-6 rounded-2xl border border-white/10 bg-black/30 p-5">
+                        <div className="mt-6 rounded-2xl border-0 bg-[#0F0B1A]/80 p-5">
                             <div className="text-sm font-semibold text-white/80">
                                 {translator["Summary"]}
                             </div>

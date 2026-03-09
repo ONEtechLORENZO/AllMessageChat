@@ -20,7 +20,7 @@ export default function MessageList(props) {
         <>
             <div
                 id="messages"
-                className="chat-pattern-bg flex-col flex-1 justify-end space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch bg-[#0b0b10] border border-white/10 rounded-2xl"
+                className="chat-pattern-bg flex-col flex-1 justify-end space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch bg-[#0b0b10] rounded-2xl"
             >
                 {Object.entries(props.messages).map(([key, message], j) => {
                     var content = message.content;
@@ -85,7 +85,7 @@ export default function MessageList(props) {
                                 <div className="chat-message">
                                     <div className="flex items-end">
                                         <div className="flex flex-col space-y-2 text-sm max-w-xs mx-2 order-2 items-start">
-                                        <div className="text-white/90 px-4 py-2 rounded-2xl rounded-bl-none bg-white/5 border border-white/10">
+                                        <div className="text-white/90 px-4 py-2 rounded-2xl rounded-bl-none bg-white/5">
                                                 <span className="inline-block text-sm">
                                                     {content}
                                                 </span>
@@ -116,7 +116,7 @@ export default function MessageList(props) {
                                 <div className="chat-message">
                                     <div className="flex items-end justify-end">
                                         <div className="flex flex-col space-y-2 text-sm max-w-xs mx-2 order-1 items-end">
-                                            <div className="text-white/90 px-4 py-2 rounded-2xl rounded-bl-none bg-[#A31EFF]/15 border border-[#A31EFF]/30">
+                                            <div className="text-white/90 px-4 py-2 rounded-2xl rounded-bl-none bg-[#A31EFF]/15">
                                                 <span className="inline-block text-sm">
                                                     {content}
                                                 </span>
@@ -185,7 +185,6 @@ export default function MessageList(props) {
         </>
     );
 }
-
 
 
 

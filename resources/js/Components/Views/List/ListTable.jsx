@@ -35,6 +35,7 @@ function ListTable(props) {
     const [fieldOptions, setFieldOptions] = useState({});
     const pathname = window.location.pathname;
     const isDark = props.theme === 'dark' || props.dark;
+    const emptyColSpan = Object.keys(props.headers || {}).length + ((props.actions?.mass_edit === true || props.actions?.merge === true) ? 1 : 0) + 1;
     useEffect(() => {
         fetchModuleFields();
     }, [props.headers]);
@@ -69,10 +70,10 @@ function ListTable(props) {
         <>
             <div className="">
 
-                <div className={isDark ? "rounded-2xl border border-white/10 bg-[#120815]/70 p-4" : "card p-4 mt-[20px]"}>
+                <div className={isDark ? "rounded-2xl border-0 bg-[#120815]/70 p-4" : "card p-4 mt-[20px]"}>
 
-                    <Table className={`gio-table ${isDark ? 'text-white' : ''}`}>
-                        <thead>
+                    <Table className={`gio-table ${isDark ? 'gio-table-dark mb-0 text-white' : ''}`}>
+                        <thead className={isDark ? "bg-[#202020]" : ""}>
                             <tr>
                                 {(props.actions.mass_edit === true || props.actions.merge === true) &&
                                     <th>
@@ -102,7 +103,7 @@ function ListTable(props) {
                                         <th
                                             key={name}
                                             scope="col"
-                                            className={`py-3.5 pl-4 pr-3 text-left text-sm ${isDark ? 'text-white/70' : 'text-[#3D4459]'} sm:pl-4`}
+                                            className={`py-3.5 pl-4 pr-3 text-left text-sm ${isDark ? 'bg-[#202020] text-white/80 border-0' : 'text-[#3D4459]'} sm:pl-4`}
                                         >
                                             <Link href="#" className={`group inline-flex ${isDark ? 'text-white/70' : 'text-gray-700'}`} onClick={() => { sortable ? sortColumn(name, sort_order) : '' }}>
                                                 {props.translator[field.label]}
@@ -122,22 +123,22 @@ function ListTable(props) {
                                         </th>
                                     );
                                 })}
-                                <th></th>
+                                <th className={isDark ? "bg-[#202020] border-0" : ""}></th>
                             </tr>
                         </thead>
                         <tbody className={isDark ? "bg-transparent" : "bg-white"}>
                             {(props.records).length === 0 &&
                                 <tr>
                                     <td
-                                        className={`px-6 py-4 border-t ${isDark ? 'border-white/10 text-white/60' : ''}`}
-                                        colSpan="4"
+                                        className={`px-6 py-4 border-t ${isDark ? 'border-white/10 bg-[#120815] text-white/60' : ''}`}
+                                        colSpan={emptyColSpan}
                                     >
                                         {props.translator['No records found!']}
                                     </td>
                                 </tr>}
 
                             {Object.entries(props.records).map(([key, record]) => (
-                                <tr>
+                                <tr className={isDark ? "border-t border-white/10" : ""}>
                                     {(props.actions.mass_edit === true || props.actions.merge === true) &&
                                         <td className='px-2 py-2'>
                                             <Checkbox
@@ -235,7 +236,7 @@ function ListTable(props) {
                                         }
 
                                         return (
-                                            <td key={name} title={title} className={`whitespace-nowrap px-2 py-2 text-sm ${isDark ? 'text-white/70' : 'text-[#3D4459]'}`}>
+                                            <td key={name} title={title} className={`whitespace-nowrap px-2 py-2 text-sm ${isDark ? 'bg-[#120815] text-white/70' : 'text-[#3D4459]'}`}>
                                                 {column_value}
                                             </td>
 
@@ -273,7 +274,7 @@ function ListTable(props) {
                                         }
                                     </div>
                                 </td> */}
-                                    <td>
+                                    <td className={isDark ? "bg-[#120815]" : ""}>
                                         {props.actions &&
                                             <Menu as="div" className="relative inline-block text-left">
                                                 <div>

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Link } from '@inertiajs/react';
 import { Transition } from '@headlessui/react';
 
@@ -6,14 +6,38 @@ const DropDownContext = React.createContext();
 
 const Dropdown = ({ children }) => {
     const [open, setOpen] = useState(false);
+    const rootRef = useRef(null);
 
     const toggleOpen = () => {
         setOpen((previousState) => !previousState);
     };
 
+    useEffect(() => {
+        const handleOutsideClick = (event) => {
+            if (!open) return;
+            if (rootRef.current && !rootRef.current.contains(event.target)) {
+                setOpen(false);
+            }
+        };
+
+        const handleEscape = (event) => {
+            if (event.key === 'Escape') {
+                setOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleOutsideClick);
+        document.addEventListener('keydown', handleEscape);
+
+        return () => {
+            document.removeEventListener('mousedown', handleOutsideClick);
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, [open]);
+
     return (
         <DropDownContext.Provider value={{ open, setOpen, toggleOpen }}>
-            <div className="relative">{children}</div>
+            <div ref={rootRef} className="relative">{children}</div>
         </DropDownContext.Provider>
     );
 };
@@ -25,12 +49,12 @@ const Trigger = ({ children }) => {
         <>
             <div onClick={toggleOpen}>{children}</div>
 
-            {open && <div className="fixed inset-0" onClick={() => setOpen(false)}></div>}
+            {open && <div className="fixed inset-0 z-40" onClick={() => setOpen(false)}></div>}
         </>
     );
 };
 
-const Content = ({ align = 'right', width = '48', contentClasses = 'py-1 bg-white', children }) => {
+const Content = ({ align = 'right', width = '48', contentClasses = 'py-1 bg-white', ring = true, children }) => {
     const { open, setOpen } = useContext(DropDownContext);
 
     let alignmentClasses = 'origin-top';
@@ -59,7 +83,7 @@ const Content = ({ align = 'right', width = '48', contentClasses = 'py-1 bg-whit
                 className={`absolute z-50 mt-2 rounded-md shadow-lg ${alignmentClasses} ${widthClasses}`}
                 onClick={() => setOpen(false)}
             >
-                <div className={`rounded-md ring-1 ring-black ring-opacity-5 ${contentClasses}`}>
+                <div className={`rounded-md ${ring ? 'ring-1 ring-black ring-opacity-5' : ''} ${contentClasses}`}>
                     {children}
                 </div>
             </div>
@@ -125,9 +149,6 @@ Dropdown.Link = DropdownLink;
 Dropdown.Notification = Notification;
 
 export default Dropdown;
-
-
-
 
 
 

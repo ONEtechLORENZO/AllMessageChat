@@ -95,22 +95,22 @@ function FilterGroups (props) {
 
     const isDark = props.variant === 'dark';
     const selectClass = isDark
-        ? "mt-1 block w-full rounded-lg border border-white/15 bg-[#0F0B1A] px-3 py-2 text-sm text-white focus:border-[#BF00FF]/60 focus:ring-[#BF00FF]/40"
+        ? "mt-1 block w-full rounded-lg border-0 bg-[#202020] px-3 py-2 text-sm text-white focus:border-0 focus:ring-[#BF00FF]/40"
         : "mt-1 block w-full py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm";
     const inputClass = isDark
-        ? "block w-full rounded-lg border border-white/15 bg-[#0F0B1A] px-3 py-2 text-sm text-white focus:border-[#BF00FF]/60 focus:ring-[#BF00FF]/40"
+        ? "block w-full rounded-lg border-0 bg-[#202020] px-3 py-2 text-sm text-white focus:border-0 focus:ring-[#BF00FF]/40"
         : "focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]";
     const cardClass = isDark
-        ? "relative mt-3 rounded-xl border border-white/10 bg-[#120815]/70 px-4 py-5 shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
+        ? "relative mt-3 rounded-xl border-0 bg-[#120815]/70 px-4 py-5 shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
         : "relative mt-3 border border-gray-200 rounded-sm px-3 py-4 shadow-sm focus-within:ring-1 focus-within:ring-indigo-200 focus-within:border-indigo-200";
     const actionBtnClass = isDark
-        ? "inline-flex items-center mt-6 px-3 py-2 rounded-lg border border-white/15 bg-white/5 text-sm font-medium text-white/80 hover:border-[#BF00FF]/60 hover:text-white transition"
+        ? "inline-flex items-center mt-6 px-3 py-2 rounded-lg border-0 bg-[#202020] text-sm font-medium text-white/80 hover:bg-[#2a2a2a] hover:text-white transition"
         : "inline-flex items-center mt-6 px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-[#F6FFFD] hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300";
     const groupActionBtnClass = isDark
-        ? "inline-flex items-center mt-6 px-3 py-2 rounded-lg border border-white/15 bg-white/5 text-sm font-medium text-white/80 hover:border-[#BF00FF]/60 hover:text-white transition"
+        ? "inline-flex items-center mt-6 px-3 py-2 rounded-lg border-0 bg-[#202020] text-sm font-medium text-white/80 hover:bg-[#2a2a2a] hover:text-white transition"
         : "inline-flex items-center mt-6 px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-[#F6FFFD] hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300";
     const trashBtnClass = isDark
-        ? "inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white/70 hover:border-red-400/50 hover:text-red-200 transition"
+        ? "inline-flex items-center rounded-lg border-0 bg-[#202020] px-3 py-2 text-white/70 hover:bg-[#2a2a2a] hover:text-red-200 transition"
         : "inline-flex  items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-sm text-black bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300";
     const footerBtnClass = isDark
         ? "bg-[#BF00FF] text-white font-semibold text-sm px-6 py-3 rounded-lg shadow-[0_10px_25px_rgba(191,0,255,0.3)] hover:bg-[#a100df] transition"
@@ -389,7 +389,7 @@ function FilterGroups (props) {
                                                             group_index={grpCondition_index} 
                                                             type="button"
                                                             onClick={(e) => deleteGroup(grpCondition_index)}
-                                                            className=" right-0 p-2 mx-2 cursor-pointer text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded">
+                                                            className="right-0 p-2 mx-2 cursor-pointer text-white/50 hover:text-white hover:bg-[#202020] rounded-lg transition">
                                                                 <TrashIcon 
                                                                     className='h-4 w-4 text-red-600 cursor-pointer' 
                                                                 />
@@ -637,7 +637,7 @@ function FilterGroups (props) {
                 </form>
             </div>
 
-            <div className={`flex items-center justify-end p-6 border-t ${isDark ? 'border-white/10' : 'border-slate-200'} rounded-b`}>
+            <div className={`flex items-center justify-end p-6 ${isDark ? '' : 'border-t border-slate-200'} rounded-b`}>
                 {errors.field_name &&
                     <div className="absolute left-0 mx-2" ><small className="text-red-500"> {props.translator['Please fill the condition']} </small> </div>
                 }

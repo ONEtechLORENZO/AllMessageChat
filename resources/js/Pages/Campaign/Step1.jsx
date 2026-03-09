@@ -4,8 +4,8 @@ import Input from "@/Components/Input";
 function Information(props){
 
     return(
-        <div className="w-full rounded-2xl border border-white/10 bg-[#140b1f]/70 shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
-            <div className="flex flex-col gap-1 border-b border-white/10 px-6 py-4">
+        <div className="w-full rounded-2xl border-0 bg-[#170024]/80 shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
+            <div className="flex flex-col gap-1 px-6 py-4">
                 <div className="text-lg font-semibold text-white">
                     {props.translator['Information']}
                 </div>
@@ -20,14 +20,14 @@ function Information(props){
                       type="text"
                       name="name"
                       id="campaign_name"
-                      className="w-full rounded-xl border border-white/15 bg-transparent px-4 py-2 text-sm text-white shadow-none placeholder-white/40 focus:border-[#BF00FF]/70 focus:ring focus:ring-[#BF00FF]/30"
+                      className="w-full rounded-xl border-0 bg-[#202020] px-4 py-2 text-sm text-white shadow-none placeholder-white/40 focus:outline-none focus:ring-[#BF00FF]/40"
                       placeholder={props.translator['Title']}
                       value={props.data.name}
                       handleChange={props.handleChange}
                     />
                 </div>
             </div>
-            <div className="flex flex-col gap-3 border-t border-white/10 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-xs text-white/50">Next: choose your audience with filters.</p>
                 <button
                     type='button'

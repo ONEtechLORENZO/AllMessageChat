@@ -9,15 +9,15 @@ const options = {
 function Content(props){
 
     return(
-        <div className="w-full rounded-2xl border border-white/10 bg-[#140b1f]/70 shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
-            <div className="flex flex-col gap-1 border-b border-white/10 px-6 py-4">
+        <div className="w-full rounded-2xl border-0 bg-[#170024]/80 shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
+            <div className="flex flex-col gap-1 px-6 py-4">
                 <div className="text-lg font-semibold text-white">Content</div>
                 <p className="text-sm text-white/60">Choose the channel, account, and template for this campaign.</p>
             </div>
 
             <div className="px-6 py-6 space-y-6">
                 <div className="grid gap-6 md:grid-cols-3">
-                    <div className="rounded-2xl border border-white/10 bg-[#0F0B1A]/80 p-5">
+                    <div className="rounded-2xl border-0 bg-[#0F0B1A]/80 p-5">
                         <label htmlFor="service" className="block text-sm font-semibold text-white/80">
                             Service
                         </label>
@@ -28,11 +28,12 @@ function Content(props){
                                 options={options}
                                 handleChange={props.handleChange}
                                 value={props.data.service}
+                                className="border-0 bg-[#202020] focus:border-0 focus:ring-[#BF00FF]/40"
                             />
                         </div>
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-[#0F0B1A]/80 p-5">
+                    <div className="rounded-2xl border-0 bg-[#0F0B1A]/80 p-5">
                         <label htmlFor="account_id" className="block text-sm font-semibold text-white/80">
                             Account
                         </label>
@@ -43,11 +44,12 @@ function Content(props){
                                 options={props.companyName}
                                 handleChange={props.handleChange}
                                 value={props.data.account_id == null ? '' : props.data.account_id}
+                                className="border-0 bg-[#202020] focus:border-0 focus:ring-[#BF00FF]/40"
                             />
                         </div>
                     </div>
     
-                    <div className="rounded-2xl border border-white/10 bg-[#0F0B1A]/80 p-5">
+                    <div className="rounded-2xl border-0 bg-[#0F0B1A]/80 p-5">
                         <label htmlFor="template_id" className="block text-sm font-semibold text-white/80">
                             Template
                         </label>
@@ -58,15 +60,16 @@ function Content(props){
                                 options={props.templates}
                                 handleChange={props.handleChange}
                                 value={props.data.template_id == null ? '' : props.data.template_id}
+                                className="border-0 bg-[#202020] focus:border-0 focus:ring-[#BF00FF]/40"
                             />
                         </div>
                     </div>
                 </div>
                 
-                <div className="flex flex-col gap-3 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
                     <button
                         type='button'
-                        className="inline-flex items-center justify-center rounded-lg border border-white/15 bg-white/5 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white/30 hover:text-white"
+                        className="inline-flex items-center justify-center rounded-lg border-0 bg-[#202020] px-5 py-2 text-sm font-semibold text-white/80 transition hover:bg-[#2a2a2a] hover:text-white"
                         onClick={(e) => props.previous(2)}
                     >
                         Previous

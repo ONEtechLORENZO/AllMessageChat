@@ -7,15 +7,15 @@ function Schedule(props){
     const [openDatepick, setDatepick] = useState(false);
 
     return(
-        <div className="w-full rounded-2xl border border-white/10 bg-[#140b1f]/70 shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
-            <div className="flex flex-col gap-1 border-b border-white/10 px-6 py-4">
+        <div className="w-full rounded-2xl border-0 bg-[#170024]/80 shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
+            <div className="flex flex-col gap-1 px-6 py-4">
                 <div className="text-lg font-semibold text-white">Review & Schedule</div>
                 <p className="text-sm text-white/60">Confirm the details before sending or scheduling.</p>
             </div>
 
             <div className="px-6 py-6 space-y-6">
                 <div className="grid gap-6 md:grid-cols-2">
-                    <div className="rounded-2xl border border-white/10 bg-[#0F0B1A]/80 p-5">
+                    <div className="rounded-2xl border-0 bg-[#0F0B1A]/80 p-5">
                         <div className="text-sm font-semibold text-white/80">Information</div>
                         <dl className="mt-4 space-y-3 text-sm text-white/70">
                             <div className="flex items-center justify-between">
@@ -29,7 +29,7 @@ function Schedule(props){
                         </dl>
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-[#0F0B1A]/80 p-5">
+                    <div className="rounded-2xl border-0 bg-[#0F0B1A]/80 p-5">
                         <div className="text-sm font-semibold text-white/80">Contact</div>
                         <dl className="mt-4 space-y-3 text-sm text-white/70">
                             <div className="flex items-center justify-between">
@@ -39,7 +39,7 @@ function Schedule(props){
                         </dl>
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-[#0F0B1A]/80 p-5">
+                    <div className="rounded-2xl border-0 bg-[#0F0B1A]/80 p-5">
                         <div className="text-sm font-semibold text-white/80">Account</div>
                         <dl className="mt-4 space-y-3 text-sm text-white/70">
                             <div className="flex items-center justify-between">
@@ -55,7 +55,7 @@ function Schedule(props){
                         </dl>
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-[#0F0B1A]/80 p-5">
+                    <div className="rounded-2xl border-0 bg-[#0F0B1A]/80 p-5">
                         <div className="text-sm font-semibold text-white/80">Template</div>
                         <dl className="mt-4 space-y-3 text-sm text-white/70">
                             <div className="flex items-center justify-between">
@@ -66,7 +66,7 @@ function Schedule(props){
                     </div>
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-[#0F0B1A]/80 p-5">
+                <div className="rounded-2xl border-0 bg-[#0F0B1A]/80 p-5">
                     <div className="text-sm font-semibold text-white/80">Schedule Time</div>
                     <div className="mt-4 text-sm text-white/70">
                         {props.data.status != 'draft' ? 
@@ -110,7 +110,7 @@ function Schedule(props){
                                             showTimeSelect
                                             timeIntervals={15}
                                             timeCaption="Time"
-                                            className="w-full rounded-lg border border-white/20 bg-[#0F0B1A] px-3 py-2 text-sm text-white focus:border-[#BF00FF]/60 focus:ring-[#BF00FF]/40"
+                                            className="w-full rounded-lg border-0 bg-[#202020] px-3 py-2 text-sm text-white focus:border-0 focus:ring-[#BF00FF]/40"
                                         />
                                     </div> 
                                 : ''}  
@@ -121,7 +121,7 @@ function Schedule(props){
 
                 {props.status != 'draft' ? 
                 <>
-                 <div className="flex justify-end border-t border-white/10 pt-4">
+                 <div className="flex justify-end pt-4">
                     <a
                         href={route("listCampaign")}
                         className="inline-flex items-center justify-center rounded-lg bg-[#BF00FF] px-5 py-2 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(191,0,255,0.3)] transition hover:bg-[#a100df]"
@@ -132,10 +132,10 @@ function Schedule(props){
                 </>
                 : 
                 <>
-                 <div className="flex flex-col gap-3 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                 <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
                     <button
                         type='button'
-                        className="inline-flex items-center justify-center rounded-lg border border-white/15 bg-white/5 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white/30 hover:text-white"
+                        className="inline-flex items-center justify-center rounded-lg border-0 bg-[#202020] px-5 py-2 text-sm font-semibold text-white/80 transition hover:bg-[#2a2a2a] hover:text-white"
                         onClick={(e) => props.previous(3)}
                    >
                         Previous

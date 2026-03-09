@@ -119,6 +119,23 @@ a:focus {
   }
 }
 
+.social-stagger-item {
+  opacity: 0;
+  transform: translateX(-14px);
+  animation: socialStaggerIn 420ms ease-out forwards;
+}
+
+@keyframes socialStaggerIn {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 /* Create user phone input tweaks */
 .phone-input-dark .PhoneInputCountryIcon {
   width: 24px;
@@ -152,4 +169,25 @@ a:focus {
 .create-user-page .PhoneInputCountry {
   margin-right: 8px;
 }
+
+/* Dark variant for shared list tables used in dashboard-like pages */
+.gio-table-dark {
+  --bs-table-bg: transparent;
+  --bs-table-color: #d4ccdf;
+  --bs-table-border-color: rgba(255, 255, 255, 0.08);
+  margin-bottom: 0;
+}
+
+.gio-table-dark > :not(caption) > * > * {
+  background-color: #120815 !important;
+  color: #d4ccdf !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.gio-table-dark > thead > tr > th {
+  background-color: #202020 !important;
+  color: #f4f0fb !important;
+  font-weight: 600;
+}
+
 

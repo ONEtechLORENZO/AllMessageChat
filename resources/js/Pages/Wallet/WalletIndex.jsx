@@ -63,7 +63,7 @@ function WalletIndex(props) {
                 {/*<PricesInvoices/>*/}
                 <div className="border-b border-gray-200">
                     <nav
-                        className="-mb-px flex space-x-8 border-b border-[#B9B9B9]"
+                        className="-mb-px flex space-x-3 border-b border-[#B9B9B9] pb-2"
                         aria-label="Tabs"
                     >
                         {tabs.map((tab) => (
@@ -72,9 +72,9 @@ function WalletIndex(props) {
                                 href={tab.href}
                                 className={classNames(
                                     tab.page == currentTab
-                                        ? `${tab.hasModal ? "" : "border-indigo-500 text-indigo-600"}`
-                                        : `border-transparent text-gray-500 ${tab.hasModal ? "" : "hover:text-gray-700 hover:border-gray-300"}`,
-                                    `whitespace-nowrap  px-1 border-b-2 font-medium text-sm ${tab.hasModal ? "bg-white/10 rounded-full shadow-card py-1 self-center" : "py-3"}`,
+                                        ? "bg-[#BF00FF] text-white"
+                                        : "bg-white/10 text-white/70 hover:text-white",
+                                    "whitespace-nowrap rounded-full px-4 py-2 font-medium text-sm border-0 outline-none ring-0",
                                 )}
                                 onClick={() => setCurrentTab(tab.page)}
                             >

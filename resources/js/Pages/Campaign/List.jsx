@@ -169,7 +169,9 @@ function List(props) {
             current_page={props.current_page}
             navigationMenu={props.menuBar}
         >
-            <div className="px-4 sm:px-6 lg:px-8">
+            <div className="dashboard-page px-4 sm:px-6 lg:px-8 relative">
+                <div className="purple-giant-arc" aria-hidden="true"></div>
+                <div className="relative z-10">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div className="text-2xl font-semibold text-white">
                         {props.plural}
@@ -183,7 +185,7 @@ function List(props) {
                 </div>
 
                 <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-                    <div className="rounded-2xl bg-[#140816]/70 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5 p-6">
+                    <div className="rounded-2xl bg-[#170024]/80 backdrop-blur-sm p-6">
                         <div className="grid gap-4 md:grid-cols-3">
                             <div>
                                 <div className="text-xs font-semibold uppercase text-white/60">
@@ -197,7 +199,7 @@ function List(props) {
                                             status: event.target.value,
                                         }))
                                     }
-                                    className="mt-2 w-full rounded-xl border border-white/10 bg-[#0F0B1A] px-3 py-2 text-sm text-white focus:border-[#BF00FF]/60 focus:outline-none focus:ring-[#BF00FF]/60"
+                                    className="mt-2 w-full rounded-xl border-0 bg-[#202020] px-3 py-2 text-sm text-white focus:outline-none focus:ring-[#BF00FF]/40"
                                 >
                                     <option>All</option>
                                     {statusOrder.map((status) => (
@@ -217,7 +219,7 @@ function List(props) {
                                             range: event.target.value,
                                         }))
                                     }
-                                    className="mt-2 w-full rounded-xl border border-white/10 bg-[#0F0B1A] px-3 py-2 text-sm text-white focus:border-[#BF00FF]/60 focus:outline-none focus:ring-[#BF00FF]/60"
+                                    className="mt-2 w-full rounded-xl border-0 bg-[#202020] px-3 py-2 text-sm text-white focus:outline-none focus:ring-[#BF00FF]/40"
                                 >
                                     <option>All</option>
                                     <option>Last 7 days</option>
@@ -237,7 +239,7 @@ function List(props) {
                                             audience: event.target.value,
                                         }))
                                     }
-                                    className="mt-2 w-full rounded-xl border border-white/10 bg-[#0F0B1A] px-3 py-2 text-sm text-white focus:border-[#BF00FF]/60 focus:outline-none focus:ring-[#BF00FF]/60"
+                                    className="mt-2 w-full rounded-xl border-0 bg-[#202020] px-3 py-2 text-sm text-white focus:outline-none focus:ring-[#BF00FF]/40"
                                 >
                                     <option>All sizes</option>
                                     <option>0-500 contacts</option>
@@ -262,12 +264,12 @@ function List(props) {
                                     if (event.key === "Enter") handleSearch();
                                 }}
                                 placeholder="Search"
-                                className="w-full rounded-2xl border border-white/10 bg-[#0F0B1A] py-3 pl-12 pr-4 text-sm text-white placeholder-white/50 focus:border-[#BF00FF]/60 focus:outline-none focus:ring-[#BF00FF]/60"
+                                className="w-full rounded-2xl border-0 bg-[#202020] py-3 pl-12 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:ring-[#BF00FF]/40"
                             />
                         </div>
                     </div>
 
-                    <div className="rounded-2xl bg-[#140816]/70 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5 p-6">
+                    <div className="rounded-2xl bg-[#170024]/80 backdrop-blur-sm p-6">
                         <div className="text-white font-semibold mb-4">
                             Campaign status breakdown
                             {isDemo ? " (demo data)" : ""}
@@ -310,14 +312,14 @@ function List(props) {
                     </div>
                 </div>
 
-                <div className="mt-8 rounded-2xl bg-[#140816]/70 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5 p-4">
+                <div className="mt-8 rounded-2xl bg-[#170024]/80 backdrop-blur-sm p-4">
                     <div className="flex items-center justify-between mb-4">
                         <div className="text-sm text-white/70 font-semibold">
                             Campaigns
                         </div>
                         <button
                             type="button"
-                            className="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white/80 hover:bg-white/10"
+                            className="inline-flex items-center justify-center rounded-lg border-0 bg-white/5 px-3 py-2 text-white/80 hover:bg-white/10"
                         >
                             <AdjustmentsHorizontalIcon className="h-4 w-4" />
                         </button>
@@ -338,14 +340,14 @@ function List(props) {
                                     ].map((label) => (
                                         <th
                                             key={label}
-                                            className="pb-3 border-b border-white/10 font-semibold"
+                                            className="pb-3 border-b border-white/5 font-semibold"
                                         >
                                             {label}
                                         </th>
                                     ))}
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-white/5">
+                            <tbody>
                                 {displayRecords.length === 0 ? (
                                     <tr>
                                         <td
@@ -358,12 +360,20 @@ function List(props) {
                                         </td>
                                     </tr>
                                 ) : (
-                                    displayRecords.map((record) => {
+                                    displayRecords.map((record, index) => {
                                         const statusKey = String(
                                             record.status || "unknown",
                                         ).toLowerCase();
                                         return (
-                                            <tr key={record.id}>
+                                            <tr
+                                                key={record.id}
+                                                className={classNames(
+                                                    "border-b border-white/15",
+                                                    index % 2 === 0
+                                                        ? "bg-transparent"
+                                                        : "bg-white/[0.01]",
+                                                )}
+                                            >
                                                 <td className="py-4 font-medium text-white">
                                                     <Link
                                                         href={route(
@@ -438,6 +448,7 @@ function List(props) {
                         />
                     </div>
                 ) : null}
+                </div>
             </div>
         </Authenticated>
     );

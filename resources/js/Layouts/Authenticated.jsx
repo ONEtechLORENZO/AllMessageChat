@@ -51,7 +51,6 @@ import {
     DashboardIcon,
     ChatNewIcon,
     CampaignsIcon,
-    BillingIcon,
     Setting2Icon,
     NetworkIcon,
     GraphIcon,
@@ -130,12 +129,6 @@ const bottomNavigation = [
         name: "API Documentation",
         href: route("api_documentation"),
         icon: CodeBracketIcon,
-        show: ["all"],
-    },
-    {
-        name: "Billing",
-        href: route("wallet"),
-        icon: BillingIcon,
         show: ["all"],
     },
     {
@@ -320,7 +313,7 @@ function NavItem({
                 active
                     ? compact
                         ? "bg-transparent"
-                        : "bg-white/[0.06] border border-white/10"
+                        : "bg-[linear-gradient(90deg,rgba(191,0,255,0.18),rgba(88,28,135,0.14))] border-0 ring-0"
                     : "bg-transparent hover:bg-white/[0.03]",
             ].join(" ")}
         >
@@ -328,17 +321,16 @@ function NavItem({
                 className={[
                     "h-10 w-10 shrink-0 rounded-2xl flex items-center justify-center",
                     "transition-transform duration-200",
-                    "bg-white/[0.03] border-0",
+                    active
+                        ? "bg-[linear-gradient(135deg,rgba(191,0,255,0.42),rgba(88,28,135,0.55))]"
+                        : "bg-[linear-gradient(135deg,rgba(191,0,255,0.18),rgba(88,28,135,0.24))] group-hover:bg-[linear-gradient(135deg,rgba(191,0,255,0.28),rgba(88,28,135,0.34))]",
                     "group-hover:scale-110",
-                    active ? "shadow-[0_0_24px_rgba(56,189,248,0.18)]" : "",
                 ].join(" ")}
             >
                 <Icon
                     className={[
                         "h-5 w-5 transition-colors duration-200",
-                        active
-                            ? "text-[#38bdf8]"
-                            : "text-white/60 group-hover:text-white",
+                        active ? "text-white" : "text-white/70 group-hover:text-white",
                     ].join(" ")}
                 />
             </div>
@@ -1261,6 +1253,8 @@ export default function Authenticated({
 
                                                         <Dropdown.Content
                                                             width={96}
+                                                            ring={false}
+                                                            contentClasses="p-0 bg-transparent"
                                                         >
                                                             {/*                                                      
                                                     <Dropdown.Link href={route('profile')} method="get" as="button">
@@ -1293,7 +1287,7 @@ export default function Authenticated({
                                                     <Dropdown.Link href={route('logout')} method="post" as="button">
                                                         Log Out
                                                     </Dropdown.Link> */}
-                                                            <Container className="rounded-xl border border-white/10 bg-[rgba(0,0,0,0.92)] text-white shadow-2xl">
+                                                            <Container className="rounded-xl border-0 bg-[#170024]/95 text-white shadow-2xl backdrop-blur-sm">
                                                                 <div className="w-full flex justify-center">
                                                                     <div className="flex gap-2 mx-auto py-4 items-center">
                                                                         <div className="w-10 h-10 flex justify-center items-center bg-[rgba(56,189,248,0.2)] ring-1 ring-white/10 rounded-full">

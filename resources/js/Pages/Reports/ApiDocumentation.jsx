@@ -146,7 +146,7 @@ export default function ApiDocumentation(props) {
 
                 <div className="space-y-4">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                            <GlassCard>
+                            <GlassCard className="bg-[#170024]/80">
                                 <div className="flex items-center gap-3 text-white text-lg font-semibold">
                                     <ShieldCheckIcon className="h-5 w-5" />
                                     <span className="text-[#03cada]">
@@ -158,7 +158,7 @@ export default function ApiDocumentation(props) {
                                         <span className="text-[#878787]">
                                             Base URL
                                         </span>
-                                        <span className="font-mono text-xs bg-[#0F0B1A] px-3 py-1 rounded-md">
+                                        <span className="font-mono text-xs bg-[#12001d]/90 px-3 py-1 rounded-md">
                                             {apiData.baseUrl}
                                         </span>
                                     </div>
@@ -181,7 +181,7 @@ export default function ApiDocumentation(props) {
                                 </div>
                             </GlassCard>
 
-                            <GlassCard>
+                            <GlassCard className="bg-[#170024]/80">
                                 <div className="flex items-center gap-3 text-white text-lg font-semibold">
                                     <KeyIcon className="h-5 w-5" />
                                     <span className="text-[#ecdc00]">
@@ -199,13 +199,13 @@ export default function ApiDocumentation(props) {
                                     <div className="text-white text-sm font-semibold">
                                         HTTP Header
                                     </div>
-                                    <pre className="mt-2 text-xs text-white bg-[#0F0B1A] rounded-lg p-3 overflow-x-auto">
+                                    <pre className="mt-2 text-xs text-white bg-[#12001d]/90 rounded-lg p-3 overflow-x-auto">
                                         {apiData.authHeader}
                                     </pre>
                                 </div>
                             </GlassCard>
 
-                            <GlassCard>
+                            <GlassCard className="bg-[#170024]/80">
                                 <div className="flex items-center gap-3 text-white text-lg font-semibold">
                                     <ClockIcon className="h-5 w-5" />
                                     <span className="text-[#ed0820]">
@@ -217,7 +217,7 @@ export default function ApiDocumentation(props) {
                                     {apiData.rateLimits.map((limit) => (
                                         <div
                                             key={limit.plan}
-                                            className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-3"
+                                            className="flex items-center justify-between bg-[#12001d]/90 rounded-xl px-4 py-3"
                                         >
                                             <div className="text-white text-sm font-semibold">
                                                 {limit.plan}
@@ -238,7 +238,7 @@ export default function ApiDocumentation(props) {
                             </GlassCard>
                         </div>
 
-                    <GlassCard>
+                    <GlassCard className="bg-[#170024]/80">
                         <div className="flex items-center gap-3 text-white text-lg font-semibold">
                             <CodeBracketIcon className="h-5 w-5" />
                             <span className="text-[#08e1ed]">
@@ -246,14 +246,19 @@ export default function ApiDocumentation(props) {
                             </span>
                         </div>
                         <div className="mt-4 space-y-3">
-                            {apiData.endpoints.map((endpoint) => {
+                            {apiData.endpoints.map((endpoint, index) => {
                                 const key = `${endpoint.method} ${endpoint.path}`;
                                 const isOpen = openEndpoint === key;
 
                                 return (
                                     <div
                                         key={key}
-                                        className="rounded-2xl overflow-hidden bg-[#0F0B1A]/60"
+                                        className={classNames(
+                                            "rounded-2xl overflow-hidden bg-[#12001d]/90",
+                                            index !== apiData.endpoints.length - 1
+                                                ? "border-b border-white/10"
+                                                : "",
+                                        )}
                                     >
                                         <button
                                             type="button"
@@ -303,7 +308,7 @@ export default function ApiDocumentation(props) {
                                                 </p>
 
                                                 <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                                    <div className="bg-black/40 rounded-xl p-3">
+                                                    <div className="bg-[#12001d]/90 rounded-xl p-3">
                                                         <div className="text-xs uppercase tracking-wide text-[#878787]">
                                                             Parameters
                                                         </div>
@@ -350,7 +355,7 @@ export default function ApiDocumentation(props) {
                                                         </div>
                                                     </div>
 
-                                                    <div className="bg-black/40 rounded-xl p-3">
+                                                    <div className="bg-[#12001d]/90 rounded-xl p-3">
                                                         <div className="text-xs uppercase tracking-wide text-[#878787]">
                                                             Headers
                                                         </div>
@@ -385,7 +390,7 @@ export default function ApiDocumentation(props) {
                                                         <div className="text-xs uppercase tracking-wide text-[#878787]">
                                                             Example Request
                                                         </div>
-                                                        <pre className="mt-2 text-xs text-white bg-[#0F0B1A] rounded-lg p-3 overflow-x-auto">
+                                                        <pre className="mt-2 text-xs text-white bg-[#12001d]/90 rounded-lg p-3 overflow-x-auto">
                                                             {
                                                                 endpoint.requestExample
                                                             }
@@ -395,7 +400,7 @@ export default function ApiDocumentation(props) {
                                                         <div className="text-xs uppercase tracking-wide text-[#878787]">
                                                             Example Response
                                                         </div>
-                                                        <pre className="mt-2 text-xs text-white bg-[#0F0B1A] rounded-lg p-3 overflow-x-auto">
+                                                        <pre className="mt-2 text-xs text-white bg-[#12001d]/90 rounded-lg p-3 overflow-x-auto">
                                                             {
                                                                 endpoint.responseExample
                                                             }

@@ -68,15 +68,15 @@ function ChatBox(props)
        <>
        <div className="flex items-start space-x-4">
             <div className="flex-shrink-0">
-                <span className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-[#A31EFF]/25 border border-[#A31EFF]/40">
+                <span className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-[#A31EFF]/25">
                     <span className="text-2xl font-medium leading-none text-white">
                         {props.logo}
                     </span>
                 </span>
             </div>
-            <div className="min-w-0 flex-1 bg-white/5 border border-white/10 rounded-2xl p-4">
+            <div className="min-w-0 flex-1 bg-white/5 rounded-2xl p-4">
                 <form action="#">
-                <div className="border-b border-white/10 focus-within:border-[#A31EFF]/70">
+                <div className="focus-within:border-[#A31EFF]/70">
                     <label htmlFor="comment" className="sr-only">
                         Add your comment
                     </label>
@@ -238,7 +238,6 @@ function ChatBox(props)
 }
 export default ChatBox;
  
-
 
 
 
