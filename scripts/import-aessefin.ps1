@@ -31,14 +31,14 @@ function Get-EnvValue {
 
 function New-MySqlArgs {
     param(
-        [string]$Host,
+        [string]$DbHost,
         [string]$Port,
         [string]$Username,
         [string]$Password,
         [string[]]$ExtraArgs = @()
     )
 
-    $args = @("--protocol=TCP", "-h", $Host, "-P", $Port, "-u", $Username)
+    $args = @("--protocol=TCP", "-h", $DbHost, "-P", $Port, "-u", $Username)
     if ($Password) {
         $args += "-p$Password"
     }
@@ -84,7 +84,7 @@ if (-not $dbName -or -not $dbUser) {
     throw "Missing DB_DATABASE or DB_USERNAME in '$resolvedEnvPath'."
 }
 
-$adminArgs = New-MySqlArgs -Host $dbHost -Port $dbPort -Username $dbUser -Password $dbPassword -ExtraArgs @(
+$adminArgs = New-MySqlArgs -DbHost $dbHost -Port $dbPort -Username $dbUser -Password $dbPassword -ExtraArgs @(
     "-e",
     "DROP DATABASE IF EXISTS ``$dbName``; CREATE DATABASE ``$dbName`` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 )
@@ -95,7 +95,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "Failed to recreate database '$dbName'."
 }
 
-$importArgs = New-MySqlArgs -Host $dbHost -Port $dbPort -Username $dbUser -Password $dbPassword -ExtraArgs @($dbName)
+$importArgs = New-MySqlArgs -DbHost $dbHost -Port $dbPort -Username $dbUser -Password $dbPassword -ExtraArgs @($dbName)
 $argString = ($importArgs | ForEach-Object {
     if ($_ -match '[\s"]') {
         '"' + ($_ -replace '"', '\"') + '"'

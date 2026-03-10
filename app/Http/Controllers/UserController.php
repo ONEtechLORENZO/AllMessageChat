@@ -270,8 +270,8 @@ class UserController extends Controller
             $msgTransactionList = $this->getTransactionList($request,'Expenses', 'Dashboard');
             
             // Get Session count
-            $sessions = Session::whereMonth('created_at', Carbon::now()->month)->count();
-            $totalSessionLimit = Company::first()->amount_limit;
+            $sessions = $this->getDashboardSessionCount();
+            $totalSessionLimit = $this->getDashboardSessionLimit();
             
             return Inertia::render('new_ui/DashboardNew', [
                 'users' => $request->user(),
@@ -2476,8 +2476,8 @@ class UserController extends Controller
 	    }
 
 	    // Get Session count
-	    $sessions = Session::whereMonth('created_at', Carbon::now()->month)->count();
-	    $totalSessionLimit = Company::first()->amount_limit;
+	    $sessions = $this->getDashboardSessionCount();
+	    $totalSessionLimit = $this->getDashboardSessionLimit();
 
 	    $information = [
 		    'users' => $request->user(),
@@ -2489,5 +2489,27 @@ class UserController extends Controller
 		    'per_day_count' =>  $chart_input,
 	    ];
 	    return response()->json(['status' => true, 'message' => 'Dashboard details fetched successfully.', 'information' => $information]);
+    }
+
+    private function getDashboardSessionCount(): int
+    {
+        $sessionQuery = Session::query();
+        $now = Carbon::now();
+
+        foreach (['created_at', 'updated_at'] as $column) {
+            if (Schema::hasColumn('sessions', $column)) {
+                return (clone $sessionQuery)
+                    ->whereMonth($column, $now->month)
+                    ->whereYear($column, $now->year)
+                    ->count();
+            }
+        }
+
+        return $sessionQuery->count();
+    }
+
+    private function getDashboardSessionLimit(): int
+    {
+        return (int) (Company::query()->value('amount_limit') ?? 0);
     }
 }
