@@ -1,9 +1,9 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useElements, useStripe, PaymentElement } from '@stripe/react-stripe-js';
+import { Elements, CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
+import ValidationErrors from '@/Components/ValidationErrors';
 import notie from 'notie';
-import Axios from 'axios';
 import nProgress from 'nprogress';
 import axios from 'axios';
 
@@ -15,24 +15,51 @@ function PaymentMethodForm(props)
 
     const [formErrors, setErrors] = useState({});
 
-    const [stripePromise, setStripePromise] = useState('');
+    const [stripePromise, setStripePromise] = useState(null);
 
-    const [intent, setIntent] = useState({});
+    const [intent, setIntent] = useState(null);
+    const [intentError, setIntentError] = useState('');
+    const [loadingIntent, setLoadingIntent] = useState(true);
 
     useEffect(() => {
-        setStripePromise(loadStripe(props.stripe_public_key));
+        if (props.stripe_public_key) {
+            setStripePromise(loadStripe(props.stripe_public_key));
+        } else {
+            setIntentError('Stripe is not configured for this workspace.');
+            setLoadingIntent(false);
+            return;
+        }
         createStripeSetupIntent();
     }, []);
 
     function createStripeSetupIntent() {
+        setLoadingIntent(true);
+        setIntentError('');
         axios({
             method: 'get',
             url: route('createStripeSetupIntent'),
         })
         .then((response) => {
             if(response.status == 200) {
-                setIntent(response.data.intent);
+                const setupIntent = response.data?.intent ?? null;
+                setIntent(setupIntent);
+                if (!setupIntent?.client_secret) {
+                    setIntentError(
+                        response.data?.message ||
+                        props.translator['Payment methods are unavailable right now.']
+                    );
+                }
             }
+        })
+        .catch((error) => {
+            setIntent(null);
+            setIntentError(
+                error.response?.data?.message ||
+                props.translator['Payment methods are unavailable right now.']
+            );
+        })
+        .finally(() => {
+            setLoadingIntent(false);
         });
     }
 
@@ -83,14 +110,26 @@ function PaymentMethodForm(props)
                                     </div>
                                 </div>
 
-                                {Object.keys(formErrors) > 0 ?
+                                {Object.keys(formErrors).length > 0 ?
                                     <div className="px-6 pb-2">
                                         <ValidationErrors errors={formErrors} />
                                     </div>
                                 : ''}
 
                                 <div className="px-6 pb-6 space-y-4">
-                                    {stripePromise && intent.client_secret ?
+                                    {loadingIntent ? (
+                                        <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-5 text-sm text-white/70">
+                                            {props.translator['Loading']}...
+                                        </div>
+                                    ) : null}
+
+                                    {!loadingIntent && intentError ? (
+                                        <div className="rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-4 text-sm text-amber-100">
+                                            {intentError}
+                                        </div>
+                                    ) : null}
+
+                                    {stripePromise && intent?.client_secret ?
                                         <Elements
                                             stripe={stripePromise}
                                             options={{ clientSecret: intent.client_secret }}
@@ -100,7 +139,7 @@ function PaymentMethodForm(props)
                                                 cancelButtonRef={cancelButtonRef}
                                             />
                                         </Elements>
-                                    : ''}
+                                    : null}
                                 </div>
                             </Dialog.Panel>
                         </Transition.Child>
@@ -157,7 +196,9 @@ const Form = (props) => {
                 if(response.data.status == true) {
                     props.setPaymentMethodForm(false);
                     props.refreshPaymentMethods();
-                    props.setPlanPage();
+                    if (typeof props.setPlanPage === 'function') {
+                        props.setPlanPage();
+                    }
                 }
             });
         }

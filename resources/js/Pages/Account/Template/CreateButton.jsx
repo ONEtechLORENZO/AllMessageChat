@@ -5,18 +5,33 @@ import InputError from '@/Components/Forms/InputError';
 import { DeleteIcon } from '@/Pages/icons';
 
 export default function CreateButton(props) {
+    const buttonData = {
+        id: props.data?.id ?? '',
+        button_type: props.data?.button_type ?? '',
+        button_text: props.data?.button_text ?? '',
+        action: props.data?.action ?? '',
+        phone_number: props.data?.phone_number ?? '',
+        url: props.data?.url ?? '',
+        url_type: props.data?.url_type ?? '',
+    };
+    const inputClass =
+        "mt-1 block w-full rounded-2xl border border-white/10 bg-[#12041f] px-4 py-3 text-sm text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] placeholder:text-white/30 focus:border-fuchsia-500/60 focus:outline-none";
 
     return (
-        <>
-            <input type="hidden" name="id" value={props.data.id} />
+        <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+            <input type="hidden" name="id" value={buttonData.id} />
             <div className="form-group col-span-6 sm:col-span-4">
                 <div className='grid grid-cols-2'>
-                    <label htmlFor="button_type" className="block text-sm text-[#878787] font-bold'">
+                    <label htmlFor="button_type" className="block text-sm font-semibold text-white/70">
                         {props.translator['Button No']} {props.index  + 1}
                     </label>
-                    <div className='flex justify-end' onClick={() => {props.deleteButton(props.index)}}>
-                       <DeleteIcon className="cursor-pointer" /> 
-                    </div>
+                    <button
+                        type="button"
+                        className='flex justify-end text-white/50 transition hover:text-red-300'
+                        onClick={() => {props.deleteButton(props.index)}}
+                    >
+                        <DeleteIcon className="cursor-pointer" /> 
+                    </button>
                 </div>
                 
                 <div className="mt-1 flex rounded-md shadow-sm">
@@ -25,26 +40,26 @@ export default function CreateButton(props) {
                         name="button_type"
                         handleChange={props.handleChange}
                         options={button_types}
-                        value={props.data.button_type}
+                        value={buttonData.button_type}
                     />
                 </div>
                 <InputError message={props.errors.button_type} />
             </div>
 
-            {props.data.button_type == 'Quick Reply' ?                                         
+            {buttonData.button_type == 'Quick Reply' ?                                         
                 <div className="form-group col-span-6 sm:col-span-4">
                     <div className="mt-1">
-                        <input name='button_text' id='button_text' type={'text'} className="form-control" maxLength={'20'} onChange={(e) => props.handleChange(e)} value={props.data.button_text} required={true}/>
+                        <input name='button_text' id='button_text' type={'text'} className={inputClass} maxLength={'20'} onChange={(e) => props.handleChange(e)} value={buttonData.button_text} required={true}/>
                     </div>
-                    <small className="form-text text-muted"> {props.quick_reply_max_length - props.data.button_text.length} / {props.quick_reply_max_length} </small>
+                    <small className="form-text text-white/45"> {props.quick_reply_max_length - buttonData.button_text.length} / {props.quick_reply_max_length} </small>
                     <InputError message={props.errors.button_text} />
                 </div> 
             : ''}
 
-            {props.data.button_type == 'Call to Action' ?      
+            {buttonData.button_type == 'Call to Action' ?      
                 <>                                   
                     <div className="form-group col-span-6 sm:col-span-4">
-                        <label htmlFor="action" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="action" className="block text-sm font-medium text-white/70">
                             Type of action
                         </label>
                         <div className="mt-1">
@@ -54,49 +69,49 @@ export default function CreateButton(props) {
                                 name="action"
                                 handleChange={props.handleChange}
                                 options={call_to_action_lists}
-                                value={props.data.action}
+                                value={buttonData.action}
                             />
                         </div>
                         <InputError message={props.errors.action} />
                     </div> 
 
-                    {props.data.action == 'call_phone_number' ?
+                    {buttonData.action == 'call_phone_number' ?
                         <>
                             <div className="form-group col-span-6 sm:col-span-4">
-                                <label htmlFor="button_text" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="button_text" className="block text-sm font-medium text-white/70">
                                     Button text
                                 </label>
                                 <div className="mt-1">
-                                   <input name='button_text' id='button_text' type={'text'} className="form-control" maxLength={'60'} onChange={(e) => props.handleChange(e)} value={props.data.button_text} required={true}/>
+                                   <input name='button_text' id='button_text' type={'text'} className={inputClass} maxLength={'60'} onChange={(e) => props.handleChange(e)} value={buttonData.button_text} required={true}/>
                                 </div>
-                                <small className="form-text text-muted"> {props.quick_reply_max_length - props.data.button_text.length} / {props.quick_reply_max_length} </small>
+                                <small className="form-text text-white/45"> {props.quick_reply_max_length - buttonData.button_text.length} / {props.quick_reply_max_length} </small>
                                 <InputError message={props.errors.button_text} />
                             </div> 
                             <div className="form-group col-span-6 sm:col-span-4">
-                                <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="phone_number" className="block text-sm font-medium text-white/70">
                                     Phone number (format: +XXXXXXXXXX)
                                 </label>
                                 <div className="mt-1">
-                                   <input name='phone_number' id='phone_number' type={'text'} className="form-control" maxLength={'60'} onChange={(e) => props.handleChange(e)} value={props.data.phone_number} required={true}/>
+                                   <input name='phone_number' id='phone_number' type={'text'} className={inputClass} maxLength={'60'} onChange={(e) => props.handleChange(e)} value={buttonData.phone_number} required={true}/>
                                 </div>
-                                <small className="form-text text-muted">Max {props.quick_reply_max_length - props.data.phone_number.length} characters </small>
+                                <small className="form-text text-white/45">Max {props.quick_reply_max_length - buttonData.phone_number.length} characters </small>
                                 <InputError message={props.errors.phone_number} />
                             </div> 
                         </>
                     : ''}
 
-                    {props.data.action == 'visit_website' ? 
+                    {buttonData.action == 'visit_website' ? 
                         <>
                             <div className="form-group col-span-6 sm:col-span-4">
                                 <div className="mt-1">
-                                    <input name='button_text' id='button_text' type={'text'} className="form-control" maxLength={'20'} onChange={(e) => props.handleChange(e)} value={props.data.button_text} required={true}/>
+                                    <input name='button_text' id='button_text' type={'text'} className={inputClass} maxLength={'20'} onChange={(e) => props.handleChange(e)} value={buttonData.button_text} required={true}/>
                                 </div>
-                                <small className="form-text text-muted"> {props.quick_reply_max_length - props.data.button_text.length} / {props.quick_reply_max_length} </small>
+                                <small className="form-text text-white/45"> {props.quick_reply_max_length - buttonData.button_text.length} / {props.quick_reply_max_length} </small>
                                 <InputError message={props.errors.button_text} />
                             </div> 
 
                             <div className="form-group col-span-6 sm:col-span-4">
-                                <label htmlFor="url_type" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="url_type" className="block text-sm font-medium text-white/70">
                                     URL Type
                                 </label>
                                 <div className="mt-1">
@@ -106,30 +121,26 @@ export default function CreateButton(props) {
                                         name="url_type"
                                         handleChange={props.handleChange}
                                         options={url_types}
-                                        value={props.data.url_type}
+                                        value={buttonData.url_type}
                                     />
                                 </div>
                                 <InputError message={props.errors.url_type} />
                             </div> 
                             <div className="form-group col-span-6 sm:col-span-4">
-                                <label htmlFor="url" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="url" className="block text-sm font-medium text-white/70">
                                     URL
                                 </label>
                                 <div className="mt-1">
-                                   <input name='url' id='url' type={'text'} maxlength="2000" className="form-control" onChange={(e) => props.handleChange(e)} value={props.data.url} required={true}/>
+                                   <input name='url' id='url' type={'text'} maxlength="2000" className={inputClass} onChange={(e) => props.handleChange(e)} value={buttonData.url} required={true}/>
                                 </div>
-                                <small className="form-text text-muted"> {props.url_max_length - props.data.url.length} / {props.url_max_length} </small>
+                                <small className="form-text text-white/45"> {props.url_max_length - buttonData.url.length} / {props.url_max_length} </small>
                                 <InputError message={props.errors.url} />
                             </div> 
                         </>
                     : ''}
                 </>
             : ''}
-            
-            <div className='col-span-6 sm:col-span-4'>
-                <hr className="my-2" />
-            </div>
-        </>
+        </div>
     );
 }
 

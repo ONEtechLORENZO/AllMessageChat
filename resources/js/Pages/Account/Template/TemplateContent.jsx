@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { Card } from 'reactstrap'
 import TemplateBody from './TemplateBody';
 import Dropdown from '@/Components/Forms/Dropdown';
 import { useForm, Link, router as Inertia } from '@inertiajs/react';
@@ -27,40 +26,56 @@ export default function TemplateContent(props) {
 
     const url_max_length = 2000;
 
+    const message = props.message ?? {};
+    const incomingButtons = Array.isArray(props.buttons) ? props.buttons : [];
+    const initialSamples = props.samples ?? {};
+    const inputClass =
+        'mt-1 block w-full rounded-2xl border border-white/10 bg-[#12041f] px-4 py-3 text-sm text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] placeholder:text-white/30 focus:border-fuchsia-500/60 focus:outline-none';
+
     const { data, setData, post, processing, reset } = useForm({
-        language: props.message.language ? props.message.language : props.language,
-        header_type: props.message.header_type ? props.message.header_type : '',
-        header_text: props.message.header_content ? props.message.header_content : '',
-        body: props.message.body ? props.message.body : '',
-        status: props.message.status ? props.message.status : 'draft',
-        example: props.message.example ? props.message.example : '',
-        body_footer: props.message.footer_content ? props.message.footer_content : '',
-        buttons: props.buttons,
+        language: message.language ? message.language : props.language,
+        header_type: message.header_type ? message.header_type : '',
+        header_text: message.header_content ? message.header_content : '',
+        body: message.body ? message.body : '',
+        status: message.status ? message.status : 'draft',
+        example: message.example ? message.example : '',
+        body_footer: message.footer_content ? message.footer_content : '',
+        buttons: incomingButtons,
         template_name: props.template.template_name ? props.template.template_name : '',
         template_name_space: props.template.template_name_space ? props.template.template_name_space : '',
         attach_file: props.template.attach_file ? props.template.attach_file : '',
     });
+    const footerLength = (data?.body_footer || '').length;
+    const headerTextLength = (data?.header_text || '').length;
+    const bodyLength = (data?.body || '').length;
+    const normalizedStatus = (data?.status || 'draft').toLowerCase();
+    const statusClass = normalizedStatus == 'approved'
+        ? 'border-emerald-400/20 bg-emerald-400/10 text-emerald-200'
+        : (normalizedStatus == 'rejected' || normalizedStatus.indexOf('rejected') != -1)
+            ? 'border-rose-400/20 bg-rose-400/10 text-rose-200'
+            : 'border-amber-400/20 bg-amber-400/10 text-amber-200';
 
     const [buttons, setButtons] = useState([]);
     const [errors, setError] = useState({});
-    const [sampleValues, setSampleValue] = useState(props.samples);
+    const [sampleValues, setSampleValue] = useState(initialSamples);
     const [templateMapping, setTemplateMapping] = useState(false);
 
     useEffect(() => {
-        let tmpButtons = Object.assign([], buttons);
-        props.buttons.map((button) => {
+        const tmpButtons = [];
+
+        incomingButtons.forEach((button) => {
             tmpButtons.push({
-                id: button.id,
-                button_type: button.button_type,
-                button_text: button.body,
-                action: button.action,
-                phone_number: button.phone_number,
-                url: button.url,
-                url_type: button.url_type,
+                id: button?.id ?? '',
+                button_type: button?.button_type ?? '',
+                button_text: button?.body ?? button?.button_text ?? '',
+                action: button?.action ?? '',
+                phone_number: button?.phone_number ?? '',
+                url: button?.url ?? '',
+                url_type: button?.url_type ?? '',
             });
         });
 
-        if (props.buttons.length == 0) {
+        if (tmpButtons.length === 0) {
             tmpButtons.push({
                 id: '',
                 button_type: '',
@@ -73,7 +88,7 @@ export default function TemplateContent(props) {
         }
 
         setButtons(tmpButtons);
-    }, []);
+    }, [incomingButtons]);
 
     function handleChange(event) {
         const name = event.target.name;
@@ -137,7 +152,7 @@ export default function TemplateContent(props) {
         };
         var sampleValueIndex = getFromBetween.get(content, "{{", "}}");
 
-        let newSample = Object.assign({}, sampleValues);
+        let newSample = Object.assign({}, sampleValues || {});
         for (var i = 0; i < sampleValueIndex.length; i++) {
             if (sampleValueIndex[i]) {
                 var index = sampleValueIndex[i];
@@ -145,7 +160,7 @@ export default function TemplateContent(props) {
             }
         }
 
-        Object.entries(newSample).map(([key, value]) => {
+        Object.entries(newSample).forEach(([key]) => {
             if (!sampleValueIndex.includes(key)) {
                 delete newSample[key];
             }
@@ -234,43 +249,45 @@ export default function TemplateContent(props) {
     }
 
     return (
-        <div className="sm:grid grid-cols-12 w-full p-6 bg-[#F1F4F6]">
-            <div className="col-span-6">
+        <div className="grid w-full gap-6 py-6 lg:grid-cols-[minmax(0,1.15fr)_380px]">
+            <div className="space-y-5">
+                <div className="rounded-[28px] border border-white/10 bg-[#140816]/75 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.35)] ring-1 ring-white/5 backdrop-blur-3xl">
+                    <div className="flex flex-col gap-4 border-b border-white/10 pb-5 md:flex-row md:items-start md:justify-between">
+                        <div className="space-y-2">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-fuchsia-200">
+                                {props.translator['Template editor'] ?? 'Template editor'}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3">
+                                <h1 className="text-3xl font-semibold tracking-tight text-white">
+                                    {data.status == 'draft'
+                                        ? (props.translator['Create new message template'] ?? 'Create new message template')
+                                        : props.template.name}
+                                </h1>
+                                <span
+                                    className={classNames(
+                                        statusClass,
+                                        'inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]'
+                                    )}
+                                >
+                                    {(data.status || 'draft').toUpperCase()}
+                                </span>
+                            </div>
+                            <p className='max-w-3xl text-sm leading-6 text-white/60'>
+                                {props.translator['Through this page you can modify your template following the Whatsapp guidelines. Check out']}{' '}
+                                <a className='text-fuchsia-200 underline decoration-white/20 underline-offset-4'>
+                                    {props.translator['whatsapp suggestions.']}
+                                </a>
+                            </p>
+                        </div>
 
-                <h1 className="text-[#545CD8] text-2xl font-semibold">
-                    {data.status == 'draft' ?
-                        <> {props.translator['Create new message template']} </>
-                        :
-                        <>
-                            {props.template.name}
-                            <span
-                                className={classNames(
-                                    (data.status).toLowerCase() == 'approved' ?
-                                        'text-[#3c763d] bg-[#dff0d8]'
-                                        :
-                                        (data.status == 'rejected' || (data.status).indexOf('REJECTED') != -1) ?
-                                            'text-[#c7254e] bg-[#f9f2f4]'
-                                            :
-                                            'text-[#E68D08] bg-[#fcf8e3]'
-                                    ,
-                                    'ml-3 text-sm inline-flex items-center px-2 col-span-5 py-0.5 rounded font-semibold'
-                                )}
-                            >
-                                {(data.status).toUpperCase()}
-                            </span>
-                        </>
-                    }
-                </h1>
-
-                <Card className='!mt-4 p-6'>
-                    <div className='font-semibold text-xl leading-8 text-[#424242]' >
-                        {props.translator['Customize template']}
+                        <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/60">
+                            {props.translator['Good Work!']}
+                        </div>
                     </div>
-                    <p className='text-[#878787]'>{props.translator['Through this page you can modify your template following the Whatsapp guidelines. Check out']} <a className='text-[#4175DC]'>{props.translator['whatsapp suggestions.']}</a></p>
-                    <p>{props.translator['Good Work!']}</p>
-                    <div className='space-y-3'>
+
+                    <div className='mt-6 space-y-6'>
                         <div className='form-group'>
-                            <label className='text-[#424242] text-base font-medium'>{props.translator['Header type']}</label>
+                            <label className='text-base font-medium text-white'>{props.translator['Header type']}</label>
                             <Dropdown
                                 required={true}
                                 id="header_type"
@@ -285,13 +302,13 @@ export default function TemplateContent(props) {
 
                         {(data.header_type == 'text' && (data.header_text || data.status == 'draft')) ?
                             <div className="form-group col-span-6 sm:col-span-4">
-                                <label htmlFor="header_text" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="header_text" className="block text-sm font-medium text-white/75">
                                     {props.translator['Header Text']}
                                 </label>
                                 <div className="mt-1">
-                                    <input name='header_text' id='header_text' type={'text'} className="form-control" maxLength={'60'} onChange={(e) => handleChange(e)} value={data.header_text} required={data.header_type == 'text' ? true : false} />
+                                    <input name='header_text' id='header_text' type={'text'} className={inputClass} maxLength={'60'} onChange={(e) => handleChange(e)} value={data.header_text} required={data.header_type == 'text' ? true : false} />
                                 </div>
-                                <small className="form-text text-muted">{props.translator['Max']} {header_text_max_length - data.header_text.length} {props.translator['characters']} </small>
+                                <small className="form-text text-white/45">{props.translator['Max']} {header_text_max_length - headerTextLength} {props.translator['characters']} </small>
                                 <InputError message={errors.header_text} />
                             </div>
                             : ''}
@@ -300,11 +317,11 @@ export default function TemplateContent(props) {
                             <>
                                 {data.status == 'draft' &&
                                     <div className="form-group col-span-6 sm:col-span-4">
-                                        <label htmlFor="attach_file" className="block text-sm font-medium text-gray-700">
+                                        <label htmlFor="attach_file" className="block text-sm font-medium text-white/75">
                                             {props.translator['Attach file']}
                                         </label>
                                         <div className="mt-1">
-                                            <input name='attach_file' id='attach_file' type={'file'} className="form-control" maxLength={'60'} onChange={(e) => handleChange(e)} required={true} />
+                                            <input name='attach_file' id='attach_file' type={'file'} className={`${inputClass} file:mr-4 file:rounded-full file:border-0 file:bg-fuchsia-500/15 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-fuchsia-100`} maxLength={'60'} onChange={(e) => handleChange(e)} required={true} />
                                         </div>
                                         <InputError message={errors.attach_file} />
                                     </div>
@@ -313,16 +330,16 @@ export default function TemplateContent(props) {
                             : ''}
 
                         <div className='form-group'>
-                            <div className='grid grid-cols-2 '>
-                                <label className='text-[#424242] text-base font-medium'>{props.translator['Body']}</label>
-                                <div className='text-blue-500 font-medium flex justify-end' onClick={() => setTemplateMapping(true)}>{props.translator['Template mapping']}</div>
+                            <div className='grid grid-cols-2 items-center'>
+                                <label className='text-base font-medium text-white'>{props.translator['Body']}</label>
+                                <button type="button" className='flex justify-end font-medium text-fuchsia-200 transition hover:text-white' onClick={() => setTemplateMapping(true)}>{props.translator['Template mapping']}</button>
                             </div>
                             <div className="mt-1">
-                                <TextArea id="body" readOnly={data.status == 'draft' ? false : true} name="body" required={true} handleChange={handleChange} value={data.body} maxLength={'1024'} />
+                                <TextArea id="body" readOnly={data.status == 'draft' ? false : true} name="body" required={true} handleChange={handleChange} value={data.body} maxLength={'1024'} className="border-white/10 bg-[#12041f] px-4 py-3 text-white placeholder:text-white/30 focus:border-fuchsia-500/60 focus:ring-fuchsia-500/20" />
                             </div>
                             <div className='grid grid-cols-2'>
-                                <small className="form-text text-muted justify-start" >{props.translator['Max']} {body_max_length - data.body.length} {props.translator['characters']} </small>
-                                <small className="form-text text-muted justify-end flex" >
+                                <small className="form-text justify-start text-white/45" >{props.translator['Max']} {body_max_length - bodyLength} {props.translator['characters']} </small>
+                                <small className="form-text flex justify-end text-white/45" >
                                     <a href="https://developers.facebook.com/docs/whatsapp/message-templates/guidelines/#common-rejection-reasons" target={"_blank"}> {props.translator['Please follow the']} <span className='text-blue-500'> {props.translator['criteria']} </span> </a>
                                 </small>
                             </div>
@@ -344,26 +361,27 @@ export default function TemplateContent(props) {
                         }
 
                         <div className='form-group'>
-                            <label className='text-[#424242] text-base font-medium'>{props.translator['Footer']}</label>
-                            <input name='body_footer' id='body_footer' readOnly={data.status == 'draft' ? false : true} type={'text'} className="form-control" maxLength={'60'} onChange={(e) => handleChange(e)} value={data.body_footer} />
-                            <small className="form-text text-muted">{props.translator['Max']} {footer_text_max_length - data.body_footer.length} {props.translator['characters']} </small>
+                            <label className='text-base font-medium text-white'>{props.translator['Footer']}</label>
+                            <input name='body_footer' id='body_footer' readOnly={data.status == 'draft' ? false : true} type={'text'} className={inputClass} maxLength={'60'} onChange={(e) => handleChange(e)} value={data.body_footer} />
+                            <small className="form-text text-white/45">{props.translator['Max']} {footer_text_max_length - footerLength} {props.translator['characters']} </small>
                             <InputError message={errors.body_footer} />
                         </div>
                     </div>
-                    <hr />
+                    <hr className="my-6 border-white/10" />
 
-                    <div className='text-base font-medium grid grid-cols-2'>
-                        <div className='flex justify-start'>{props.translator['Buttons (Optional)']}</div>
+                    <div className='grid grid-cols-2 text-base font-medium'>
+                        <div className='flex justify-start text-white'>{props.translator['Buttons (Optional)']}</div>
                         <div className='flex justify-end'>
-                            <button className="mb-2 mr-2 btn btn-primary" onClick={addNewButton}>{props.translator['Add Button']}</button>
+                            <button type="button" className="inline-flex items-center rounded-full bg-fuchsia-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-fuchsia-500" onClick={addNewButton}>{props.translator['Add Button']}</button>
                         </div>
                     </div>
-                    <p className='text-[#878787]'>{props.translator['Create up to 3 buttons that let customers respond to your message or take action.']}</p>
+                    <p className='mt-2 text-white/55'>{props.translator['Create up to 3 buttons that let customers respond to your message or take action.']}</p>
 
                     <div className='button-container mt-6 space-y-3'>
                         {buttons.map((button, index) => {
                             return (
                                 <CreateButton
+                                    key={button.id || `button-${index}`}
                                     index={index}
                                     data={button}
                                     quick_reply_max_length={quick_reply_max_length}
@@ -377,36 +395,39 @@ export default function TemplateContent(props) {
                         })}
                     </div>
 
-                    <p className='text-center !mt-6'>{props.translator['Look, whatsapp takes up to 24 hours to review this template.']}</p>
+                    <p className='mt-6 text-center text-white/55'>{props.translator['Look, whatsapp takes up to 24 hours to review this template.']}</p>
 
-                    <div className='flex justify-between !mt-6 w-full'>
+                    <div className='mt-6 flex w-full justify-between'>
                         <Link
                             href={route('account_view', props.template.account_id)}
-                            className="mb-2 mr-2 btn btn-light"
+                            className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-white/80 transition hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
                         >
                             {props.translator['Back']}
                         </Link>
                         {data.status == 'draft' &&
-                            <button className="mb-2 mr-2 btn btn-primary" onClick={() => validateAndSubmitForm()}>{props.translator['Send for review']}</button>
+                            <button type="button" className="inline-flex items-center rounded-full bg-fuchsia-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-fuchsia-500" onClick={() => validateAndSubmitForm()}>{props.translator['Send for review']}</button>
                         }
                     </div>
-                </Card>
-
+                </div>
             </div>
 
-            <div className=" col-span-6 flex  items-center flex-col gap-6 ">
-                <div className='text-center text-2xl leading-6 font-semibold text-[#878787] !mt-12'>{props.translator['Preview']}</div>
-                <div className='w-[300px] h-[600px] relative'>
-                    <img src='/img/mockup-trans.png' width={'300'} className="absolute inset-0" />
-                    <div className='w-full h-full'>
-                        <div className='!px-3 pt-[14px] !pb-[10px] flex flex-col h-full '>
-                            <img src='/img/WhatsApp-header.png' className='rounded-t-xl' width={'300'} />
-                            <TemplateBody
-                                template={data}
-                                buttons={buttons}
-                            />
-                            <div className='bg-[#EEE3DE] rounded-b-xl w-full' >
-                                <img src='/img/whatapp-chat.png' className='rounded-b-xl' width={'300'} />
+            <div className="lg:sticky lg:top-6">
+                <div className="rounded-[28px] border border-white/10 bg-[#100517]/85 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.35)] ring-1 ring-white/5 backdrop-blur-xl">
+                    <div className='mb-6 text-center text-2xl font-semibold leading-6 text-white'>{props.translator['Preview']}</div>
+                    <div className='mx-auto w-[300px] rounded-[32px] border border-white/10 bg-black/25 p-4'>
+                        <div className='relative h-[600px] w-[300px]'>
+                            <img src='/img/mockup-trans.png' width={'300'} className="absolute inset-0" />
+                            <div className='h-full w-full'>
+                                <div className='flex h-full flex-col !px-3 pt-[14px] !pb-[10px]'>
+                                    <img src='/img/WhatsApp-header.png' className='rounded-t-xl' width={'300'} />
+                                    <TemplateBody
+                                        template={data}
+                                        buttons={buttons}
+                                    />
+                                    <div className='w-full rounded-b-xl bg-[#EEE3DE]' >
+                                        <img src='/img/whatapp-chat.png' className='rounded-b-xl' width={'300'} />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

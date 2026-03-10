@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Authenticated from "@/Layouts/Authenticated";
 import { Head, Link, router as Inertia } from "@inertiajs/react";
-import { TrashIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
+import {
+    ArrowPathIcon,
+    ChevronRightIcon,
+    TrashIcon,
+} from "@heroicons/react/24/solid";
 import { FolderPlusIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
 import notie from "notie";
@@ -92,6 +96,30 @@ function Templates(props) {
 
     const hasAccount = !!resolvedAccount;
 
+    function getStatusClasses(status) {
+        const normalizedStatus = (status || "").toLowerCase();
+
+        if (normalizedStatus === "approved") {
+            return "border-emerald-400/20 bg-emerald-400/10 text-emerald-200";
+        }
+
+        if (
+            normalizedStatus === "rejected" ||
+            normalizedStatus.includes("rejected")
+        ) {
+            return "border-amber-400/20 bg-amber-400/10 text-amber-200";
+        }
+
+        if (
+            normalizedStatus === "submitted" ||
+            normalizedStatus === "pending"
+        ) {
+            return "border-sky-400/20 bg-sky-400/10 text-sky-200";
+        }
+
+        return "border-white/10 bg-white/[0.04] text-white/70";
+    }
+
     return (
         <Authenticated
             auth={props.auth}
@@ -101,10 +129,10 @@ function Templates(props) {
         >
             <Head title={props.translator["Templates"] ?? "Templates"} />
 
-            <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div className="space-y-1">
-                        <h3 className="text-2xl font-semibold text-white">
+            <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+                <div className="flex flex-wrap items-start justify-between gap-6">
+                    <div className="space-y-2">
+                        <h3 className="text-3xl font-semibold tracking-tight text-white">
                             {props.translator["Templates"] ?? "Templates"}
                         </h3>
                         {hasAccount ? (
@@ -122,10 +150,10 @@ function Templates(props) {
                         )}
                     </div>
 
-                    <div className="min-w-[260px]">
+                    <div className="min-w-[280px]">
                         <label
                             htmlFor="account_id"
-                            className="block text-sm font-medium text-white/80"
+                            className="block text-sm font-medium uppercase tracking-[0.18em] text-white/55"
                         >
                             {props.translator["Account"] ?? "Account"}
                         </label>
@@ -134,7 +162,7 @@ function Templates(props) {
                             name="account_id"
                             value={selectedAccountId}
                             onChange={handleAccountChange}
-                            className="mt-2 w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white focus:border-white/30 focus:outline-none"
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-[#100517]/80 px-4 py-3 text-sm text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] focus:border-fuchsia-500/60 focus:outline-none"
                         >
                             <option value="">
                                 {props.translator["Select account"] ??
@@ -149,33 +177,38 @@ function Templates(props) {
                     </div>
                 </div>
 
-                <div className="bg-[#140816]/70 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5 shadow overflow-hidden sm:rounded-2xl p-6">
-                    <div className="flex items-center justify-between">
-                        <div className="text-sm text-white/60">
-                            {hasAccount
-                                ? (props.translator[
-                                      "Templates for this account"
-                                  ] ?? "Templates for this account")
-                                : (props.translator[
-                                      "Choose an account to see templates"
-                                  ] ?? "Choose an account to see templates")}
+                <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[#140816]/70 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.35)] ring-1 ring-white/5 backdrop-blur-3xl">
+                    <div className="flex flex-col gap-4 border-b border-white/10 pb-5 md:flex-row md:items-start md:justify-between">
+                        <div className="space-y-2">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-fuchsia-200">
+                                {props.translator["Templates"] ?? "Templates"}
+                            </div>
+                            <div className="text-sm text-white/60">
+                                {hasAccount
+                                    ? (props.translator[
+                                          "Templates for this account"
+                                      ] ?? "Templates for this account")
+                                    : (props.translator[
+                                          "Choose an account to see templates"
+                                      ] ?? "Choose an account to see templates")}
+                            </div>
                         </div>
+
                         <button
                             onClick={() => syncTemplates()}
                             disabled={!hasAccount || isLoading}
-                            style={{
-                                backgroundColor: "#BF00FF",
-                                borderColor: "#BF00FF",
-                            }}
-                            className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:w-auto sm:text-sm hover:opacity-90 disabled:opacity-60"
+                            className="inline-flex items-center justify-center gap-2 rounded-full bg-fuchsia-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-60"
                         >
+                            <ArrowPathIcon
+                                className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+                            />
                             {props.translator["Sync Templates"]}
                         </button>
                     </div>
 
-                    <div className="overflow-hidden mt-4">
+                    <div className="mt-5 overflow-hidden">
                         {!hasAccount ? (
-                            <div className="text-center py-10">
+                            <div className="py-12 text-center">
                                 <FolderPlusIcon className="mx-auto h-12 w-12 text-white/40" />
                                 <h3 className="mt-3 text-sm font-medium text-white">
                                     {props.translator[
@@ -190,78 +223,79 @@ function Templates(props) {
                                 </p>
                             </div>
                         ) : isLoading ? (
-                            <div className="text-center py-10 text-white/70 text-sm">
+                            <div className="py-12 text-center text-sm text-white/70">
                                 {props.translator["Loading templates..."] ??
                                     "Loading templates..."}
                             </div>
                         ) : (
                             <div className="space-y-4">
                                 {templates.map((data) => {
-                                    let status_class_names = "text-[#E68D08]";
-                                    if (
-                                        (data.status || "").toLowerCase() ==
-                                        "approved"
-                                    ) {
-                                        status_class_names = "text-[#25B222]";
-                                    } else if (
-                                        data.status == "rejected" ||
-                                        (data.status || "").indexOf(
-                                            "REJECTED",
-                                        ) != -1
-                                    ) {
-                                        status_class_names = "text-[#E68D08]";
-                                    }
-
                                     return (
                                         <div
                                             key={data.id}
-                                            className="pt-3 bg-white drop-shadow rounded-md grid grid-cols-12 px-6 py-4"
+                                            className="group overflow-hidden rounded-3xl border border-white/10 bg-[#100517]/85 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)] transition hover:border-fuchsia-400/20 hover:bg-[#14081d]/90"
                                         >
-                                            <div className="col-span-6 flex flex-col">
-                                                <Link
-                                                    className="text-[#393939] text-base font-semibold"
-                                                    href={route(
-                                                        "template_detail_view",
-                                                        [
-                                                            data.account_id,
-                                                            data.id,
-                                                        ],
-                                                    )}
-                                                >
-                                                    {data.name}
-                                                </Link>
-                                                <span className="truncate">
-                                                    {
-                                                        props.translator[
-                                                            "Created by"
-                                                        ]
-                                                    }{" "}
-                                                    {data.creater_name?.name ??
-                                                        ""}{" "}
-                                                    {data.created_at
-                                                        ? `on ${new Date(data.created_at).toLocaleDateString("en-US")}`
-                                                        : ""}
-                                                </span>
-                                                <span className="truncate">
-                                                    {data.language}
-                                                </span>
-                                            </div>
+                                            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                                                <div className="min-w-0 flex-1 space-y-3">
+                                                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                                        <div className="min-w-0 space-y-1">
+                                                            <Link
+                                                                className="block truncate text-xl font-semibold text-white transition group-hover:text-fuchsia-100"
+                                                                href={route(
+                                                                    "template_detail_view",
+                                                                    [
+                                                                        data.account_id,
+                                                                        data.id,
+                                                                    ],
+                                                                )}
+                                                            >
+                                                                {data.name}
+                                                            </Link>
+                                                            <p className="truncate text-sm text-white/55">
+                                                                {
+                                                                    props.translator[
+                                                                        "Created by"
+                                                                    ]
+                                                                }{" "}
+                                                                {data.creater_name?.name ??
+                                                                    ""}{" "}
+                                                                {data.created_at
+                                                                    ? `on ${new Date(data.created_at).toLocaleDateString("en-US")}`
+                                                                    : ""}
+                                                            </p>
+                                                        </div>
 
-                                            <span
-                                                className={`ml-3 text-sm inline-flex items-center px-2 col-span-5 py-0.5 rounded font-semibold ${status_class_names}`}
-                                            >
-                                                {/* {(data.status).toUpperCase()} */}
-                                            </span>
-                                            <div className="flex gap-1 justify-end items-center">
-                                                <TrashIcon
-                                                    className="h-6 w-6 cursor-pointer text-[#6C757D]"
-                                                    onClick={() =>
-                                                        deleteTemplate(data.id)
-                                                    }
-                                                />
-                                                <span>
+                                                        <span
+                                                            className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${getStatusClasses(data.status)}`}
+                                                        >
+                                                            {data.status ?? "Unknown"}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex flex-wrap gap-2">
+                                                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-white/70">
+                                                            {data.language}
+                                                        </span>
+                                                        {data.template_uid ? (
+                                                            <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 font-mono text-xs text-white/55">
+                                                                {data.template_uid}
+                                                            </span>
+                                                        ) : null}
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center justify-end gap-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            deleteTemplate(data.id)
+                                                        }
+                                                        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/55 transition hover:border-red-400/20 hover:bg-red-500/10 hover:text-red-200"
+                                                    >
+                                                        <TrashIcon className="h-5 w-5" />
+                                                    </button>
                                                     <Link
-                                                        className="text-[#393939] text-base font-semibold"
+                                                        className="inline-flex items-center gap-2 rounded-full border border-fuchsia-400/20 bg-fuchsia-500/10 px-4 py-2 text-sm font-semibold text-fuchsia-100 transition hover:bg-fuchsia-500/20"
                                                         href={route(
                                                             "template_detail_view",
                                                             [
@@ -270,9 +304,11 @@ function Templates(props) {
                                                             ],
                                                         )}
                                                     >
-                                                        <ChevronRightIcon className="text-primary h-6 w-6" />
+                                                        {props.translator["Open"] ??
+                                                            "Open"}
+                                                        <ChevronRightIcon className="h-4 w-4" />
                                                     </Link>
-                                                </span>
+                                                </div>
                                             </div>
                                         </div>
                                     );
@@ -280,13 +316,15 @@ function Templates(props) {
                             </div>
                         )}
 
-                        {hasAccount && (!templates || templates.length == 0) ? (
-                            <div className="text-center py-12">
-                                <FolderPlusIcon className="mx-auto h-12 w-12 text-gray-400" />
-                                <h3 className="mt-2 text-sm font-medium text-gray-900">
+                        {hasAccount &&
+                        !isLoading &&
+                        (!templates || templates.length == 0) ? (
+                            <div className="py-12 text-center">
+                                <FolderPlusIcon className="mx-auto h-12 w-12 text-white/35" />
+                                <h3 className="mt-2 text-sm font-medium text-white">
                                     {props.translator["No templates found"]}
                                 </h3>
-                                <p className="mt-1 text-sm text-gray-500">
+                                <p className="mt-1 text-sm text-white/55">
                                     {props.translator[
                                         "Sync templates or choose another account to continue."
                                     ] ??

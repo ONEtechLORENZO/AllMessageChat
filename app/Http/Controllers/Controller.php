@@ -171,22 +171,9 @@ class Controller extends BaseController
 
         // Expenses
         if ($moduleName == 'Msg') {
-            $account_id = $account_name = [];
-            $accounts = Account::get();
-
-            foreach ($accounts as $account) {
-                $account_id[] = $account->id;
-                $account_name[$account->id] = $account->company_name;
-            }
-
-            $query->where('status', '!=', 'FAILED')->where('amount', '!=', 'NULL');
-            $transactions = $query->paginate($pageLimit)->withQueryString();
-            $transactionList = [];
-            foreach ($transactions as $transaction) {
-                $transaction->account_id = $account_name[$transaction->account_id];
-                $transaction->amount = ($transaction->amount && $transaction->amount != 0) ? $transaction->amount : '-';
-                $transactionList[] = $transaction;
-            }
+            $account_name = Account::pluck('company_name', 'id')->all();
+            $query->where('status', '!=', 'FAILED')
+                ->whereNotNull('amount');
         }
 
         // Leave a global admin in list view
@@ -195,7 +182,9 @@ class Controller extends BaseController
         }
 
         // To skip the duplicates
-        $query->groupBy("{$baseTable}.id");
+        if ($moduleName != 'Msg') {
+            $query->groupBy("{$baseTable}.id");
+        }
 
         if ($from == 'campaignfilter') {
             $module = new Contact();
@@ -213,6 +202,14 @@ class Controller extends BaseController
 
         // Fetch the data 
         $records = $query->paginate($pageLimit)->withQueryString();
+
+        if ($moduleName == 'Msg') {
+            $records->getCollection()->transform(function ($transaction) use ($account_name) {
+                $transaction->account_id = $account_name[$transaction->account_id] ?? $transaction->account_id;
+                $transaction->amount = ($transaction->amount && $transaction->amount != 0) ? $transaction->amount : '-';
+                return $transaction;
+            });
+        }
 
         if ($moduleName == 'Transaction') {
             $url = route(('wallet'), ['current_page' => 'Invoice']);
@@ -232,7 +229,7 @@ class Controller extends BaseController
 
 
         $return = [
-            'records' => ($moduleName == 'Msg') ? $transactionList : $records->items(),
+            'records' => $records->items(),
             'search' => $search,
             'filter' => $filterData,
             'filter_condition' => $filter,

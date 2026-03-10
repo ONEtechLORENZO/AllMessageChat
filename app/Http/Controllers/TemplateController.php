@@ -793,9 +793,6 @@ class TemplateController extends Controller
 
                                 if (!$template) {
                                     $template = new Template();
-                                    $message = new Message();
-                                } else {
-                                    $message = Message::where('template_id', $template->id)->first();
                                 }
 
                                 $meta = isset($templateData['meta']) ? json_decode($templateData['meta']) : [];
@@ -812,6 +809,11 @@ class TemplateController extends Controller
                                 $template->created_by = $request->user()->id;
                                 $template->save();
 
+                                $message = Message::firstOrNew([
+                                    'template_id' => $template->id,
+                                    'template_uid' => $templateData['id'],
+                                    'language' => $templateData['languageCode'],
+                                ]);
                                 $message->template_id = $template->id;
                                 $message->body = $templateData['data'];
                                 $message->template_uid = $templateData['id'];
@@ -1021,7 +1023,7 @@ class TemplateController extends Controller
             }
             $templates = Template::where('account_id', $account->id)->get();
             $response = ['status' => true, 'message' => 'Template synced successfully', 'templates' => $templates];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $response = ['status' => false, 'message' => $e->getMessage()];
         }
 

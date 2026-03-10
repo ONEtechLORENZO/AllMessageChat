@@ -11,59 +11,68 @@ export default function CreateTemplate(props) {
         return classes.filter(Boolean).join(' ')
     }
 
+    const availableLanguages = Array.isArray(props.languages) ? props.languages : [];
+
     return (
         <Authenticated
             auth={props.auth}
             errors={props.errors}
             navigationMenu={props.menuBar}
         >
-            <div>
-                <div className="hidden sm:block p-2 ml-2">
-                    <div className="border-b border-gray-200">
+            <div className="mx-auto max-w-7xl px-4 pb-8 pt-2 sm:px-6 lg:px-8">
+                <div className="hidden sm:block">
+                    <div className="border-b border-white/10">
                     <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-                        {(props.languages).map((tmp_language, key) => (
-                        <div
-                            className={classNames(
-                            tmpOpen == key
-                                ? 'border-indigo-500 text-indigo-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                            'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
-                            )}
-                            onClick={() => setTmpOpen(key)}
-                        >
-                            {(languages).map( (language) => {
-                                if(language['code'] == tmp_language) {
-                                    let name = language['name'];
-                                    let native = language['nativeName'];
-                                    return (
-                                        <div className="">
-                                            {name} <span className='text-gray-500 text-sm font-medium px-2'> ({ native })</span>
-                                        </div>
-                                    ) 
-                                }
-                            })}
-                        </div>
-                        ))}
+                        {availableLanguages.map((tmp_language, key) => {
+                            const languageMeta = languages.find(
+                                (language) => language.code == tmp_language
+                            );
+
+                            return (
+                                <div
+                                    key={`language-tab-${tmp_language}-${key}`}
+                                    className={classNames(
+                                        tmpOpen == key
+                                            ? 'border-fuchsia-500 text-fuchsia-200'
+                                            : 'border-transparent text-white/45 hover:text-white/75 hover:border-white/15',
+                                        'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
+                                    )}
+                                    onClick={() => setTmpOpen(key)}
+                                >
+                                    <div>
+                                        {languageMeta?.name ?? tmp_language}
+                                        {languageMeta?.nativeName ? (
+                                            <span className='px-2 text-sm font-medium text-white/45'>
+                                                ({languageMeta.nativeName})
+                                            </span>
+                                        ) : null}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </nav>
                     </div>
                 </div>
 
-                {(props.languages).map((language,key) => {
-                        
-                        if(tmpOpen == key) {
+                {availableLanguages.map((language, key) => {
+                    if (tmpOpen != key) {
+                        return null;
+                    }
 
-                            return(
-                                <TemplateContent 
-                                    language={language}
-                                    fields={props.fields}
-                                    template={props.template}
-                                    message={props.temp_contents[language]['message']}
-                                    samples={props.temp_contents[language]['sampleData']}
-                                    buttons={props.temp_contents[language]['message_buttons']}
-                                    {...props}
-                                /> 
-                            )
-                        }
+                    const templateContent = props.temp_contents?.[language] ?? {};
+
+                    return (
+                        <TemplateContent
+                            key={`template-content-${language}-${key}`}
+                            language={language}
+                            fields={props.fields}
+                            template={props.template}
+                            message={templateContent.message ?? {}}
+                            samples={templateContent.sampleData ?? {}}
+                            buttons={templateContent.message_buttons ?? []}
+                            {...props}
+                        />
+                    );
                 })}
             </div>
         </Authenticated>

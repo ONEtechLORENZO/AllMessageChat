@@ -47,7 +47,7 @@ export default function TemplateBody(props) {
             }
             if(button.button_text) {
               return(
-                <div className={buttonClass} >{button.button_text}</div> 
+                <div key={button.id || `preview-button-${index}`} className={buttonClass} >{button.button_text}</div> 
               )
             }
           })}

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, Fragment } from "react";
+import React, { useEffect, useMemo, useRef, useState, Fragment } from "react";
 import {
     Dialog,
     DialogBackdrop,
@@ -12,6 +12,7 @@ import nProgress from "nprogress";
 import Axios from "axios";
 import { router } from "@inertiajs/react";
 import NewForm from "./Forms/NewForm";
+import { PlusIcon, UserPlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 export default function ContactSelection(props) {
     const cancelButtonRef = useRef(null);
@@ -22,6 +23,104 @@ export default function ContactSelection(props) {
     const [contactList, setContactList] = useState([]);     // must be array
     const [selectedContact, setSelectedContact] = useState([]); // must be array for isMulti
     const [errors, setErrors] = useState({});               // you used setErrors but never defined it
+
+    const selectStyles = useMemo(() => ({
+        control: (base, state) => ({
+            ...base,
+            minHeight: 56,
+            backgroundColor: "rgba(255,255,255,0.04)",
+            borderColor: state.isFocused ? "rgba(217, 70, 239, 0.75)" : "rgba(255,255,255,0.10)",
+            boxShadow: state.isFocused ? "0 0 0 1px rgba(217, 70, 239, 0.65)" : "none",
+            borderRadius: 18,
+            color: "#fff",
+            paddingLeft: 6,
+            transition: "all 150ms ease",
+            "&:hover": {
+                borderColor: "rgba(217, 70, 239, 0.55)",
+            },
+        }),
+        menu: (base) => ({
+            ...base,
+            backgroundColor: "#12041f",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: 18,
+            overflow: "hidden",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.35)",
+        }),
+        menuList: (base) => ({
+            ...base,
+            padding: 8,
+        }),
+        option: (base, state) => ({
+            ...base,
+            backgroundColor: state.isFocused
+                ? "rgba(217,70,239,0.14)"
+                : state.isSelected
+                    ? "rgba(217,70,239,0.22)"
+                    : "transparent",
+            color: "#fff",
+            borderRadius: 12,
+            cursor: "pointer",
+        }),
+        input: (base) => ({
+            ...base,
+            color: "#fff",
+        }),
+        placeholder: (base) => ({
+            ...base,
+            color: "rgba(255,255,255,0.35)",
+        }),
+        singleValue: (base) => ({
+            ...base,
+            color: "#fff",
+        }),
+        multiValue: (base) => ({
+            ...base,
+            backgroundColor: "rgba(217,70,239,0.18)",
+            borderRadius: 9999,
+            padding: "2px 4px",
+        }),
+        multiValueLabel: (base) => ({
+            ...base,
+            color: "#f5d0fe",
+            fontWeight: 600,
+        }),
+        multiValueRemove: (base) => ({
+            ...base,
+            color: "#f5d0fe",
+            borderRadius: 9999,
+            ":hover": {
+                backgroundColor: "rgba(255,255,255,0.12)",
+                color: "#fff",
+            },
+        }),
+        indicatorSeparator: (base) => ({
+            ...base,
+            backgroundColor: "rgba(255,255,255,0.10)",
+        }),
+        dropdownIndicator: (base) => ({
+            ...base,
+            color: "rgba(255,255,255,0.60)",
+            ":hover": {
+                color: "#fff",
+            },
+        }),
+        clearIndicator: (base) => ({
+            ...base,
+            color: "rgba(255,255,255,0.60)",
+            ":hover": {
+                color: "#fff",
+            },
+        }),
+        noOptionsMessage: (base) => ({
+            ...base,
+            color: "rgba(255,255,255,0.55)",
+        }),
+        loadingMessage: (base) => ({
+            ...base,
+            color: "rgba(255,255,255,0.55)",
+        }),
+    }), []);
 
     useEffect(() => {
         getUserContacts("");
@@ -120,11 +219,11 @@ export default function ContactSelection(props) {
                         leaveFrom="opacity-100"
                         leaveTo="opacity-0"
                     >
-                        <DialogBackdrop className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                        <DialogBackdrop className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity" />
                     </TransitionChild>
 
                     <div className="fixed inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-6">
                             {/* Panel */}
                             <TransitionChild
                                 as={Fragment}
@@ -135,50 +234,99 @@ export default function ContactSelection(props) {
                                 leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                                 leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                             >
-                                <DialogPanel className="relative w-full max-w-lg transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:p-6">
-                                    <div>
-                                        <DialogTitle className="text-xl font-medium leading-6 text-gray-900">
-                                            {props.translator["Select Contact"]}
-                                            <span className="float-right">
+                                <DialogPanel className="relative w-full max-w-2xl transform overflow-hidden rounded-[28px] border border-white/10 bg-[#12041f]/95 p-6 text-left shadow-[0_30px_120px_rgba(0,0,0,0.45)] transition-all backdrop-blur-xl sm:my-8 sm:p-8">
+                                    <button
+                                        type="button"
+                                        ref={cancelButtonRef}
+                                        onClick={closeModal}
+                                        className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70 transition hover:bg-white/[0.08] hover:text-white"
+                                    >
+                                        <XMarkIcon className="h-5 w-5" />
+                                    </button>
+
+                                    <div className="space-y-6">
+                                        <div className="space-y-3">
+                                            <div className="inline-flex items-center gap-2 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-fuchsia-200">
+                                                <UserPlusIcon className="h-3.5 w-3.5" />
+                                                {props.translator["Select Contact"]}
+                                            </div>
+
+                                            <div className="flex flex-col gap-4 border-b border-white/10 pb-5 md:flex-row md:items-start md:justify-between">
+                                                <div className="space-y-2">
+                                                    <DialogTitle className="text-3xl font-semibold tracking-tight text-white">
+                                                        {props.translator["Select Contact"]}
+                                                    </DialogTitle>
+                                                    <p className="max-w-xl text-sm leading-6 text-white/60">
+                                                        Add one or more existing contacts to this conversation, or create a new one without leaving the chat flow.
+                                                    </p>
+                                                </div>
+
                                                 <button
                                                     type="button"
                                                     onClick={() => setCreateForm(true)}
-                                                    className="text-sm text-indigo-900"
+                                                    className="inline-flex items-center justify-center gap-2 rounded-full border border-fuchsia-400/20 bg-fuchsia-500/10 px-4 py-2.5 text-sm font-semibold text-fuchsia-100 transition hover:bg-fuchsia-500/20"
                                                 >
+                                                    <PlusIcon className="h-4 w-4" />
                                                     {props.translator["Add a contact"]}
                                                 </button>
-                                            </span>
-                                        </DialogTitle>
-
-                                        <div className="mt-2">
-                                            <CreatableSelect
-                                                isMulti
-                                                value={selectedContact}
-                                                options={contactList}
-                                                onInputChange={handleInputChange}
-                                                onChange={(v) => setSelectedContact(v ?? [])}
-                                            />
-                                            {/* If you want to show errors somewhere, `errors` is now available */}
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                                        <button
-                                            type="button"
-                                            className="w-full self-end inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
-                                            onClick={addContacts}
-                                        >
-                                            {props.translator["Add"]}
-                                        </button>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <label className="text-sm font-semibold uppercase tracking-[0.2em] text-white/45">
+                                                    Contacts
+                                                </label>
+                                                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-white/65">
+                                                    {selectedContact.length} selected
+                                                </span>
+                                            </div>
 
-                                        <button
-                                            ref={cancelButtonRef}
-                                            type="button"
-                                            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
-                                            onClick={closeModal}
-                                        >
-                                            {props.translator["Cancel"]}
-                                        </button>
+                                            <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                                                <CreatableSelect
+                                                    isMulti
+                                                    value={selectedContact}
+                                                    options={contactList}
+                                                    onInputChange={handleInputChange}
+                                                    onChange={(v) => setSelectedContact(v ?? [])}
+                                                    placeholder="Search or select contacts..."
+                                                    styles={selectStyles}
+                                                    theme={(theme) => ({
+                                                        ...theme,
+                                                        borderRadius: 18,
+                                                        colors: {
+                                                            ...theme.colors,
+                                                            primary: "#d946ef",
+                                                            primary25: "rgba(217,70,239,0.14)",
+                                                            neutral0: "transparent",
+                                                            neutral80: "#ffffff",
+                                                        },
+                                                    })}
+                                                />
+                                            </div>
+
+                                            {errors.contacts && (
+                                                <p className="text-sm text-red-300">{errors.contacts}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="flex flex-col-reverse gap-3 border-t border-white/10 pt-6 sm:flex-row sm:justify-end">
+                                            <button
+                                                type="button"
+                                                className="inline-flex w-full justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-white/80 transition hover:border-white/20 hover:bg-white/[0.08] hover:text-white sm:w-auto"
+                                                onClick={closeModal}
+                                            >
+                                                {props.translator["Cancel"]}
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="inline-flex w-full justify-center rounded-full bg-fuchsia-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-fuchsia-500 sm:w-auto"
+                                                onClick={addContacts}
+                                            >
+                                                {props.translator["Add"]}
+                                            </button>
+                                        </div>
                                     </div>
                                 </DialogPanel>
                             </TransitionChild>

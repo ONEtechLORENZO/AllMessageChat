@@ -1595,7 +1595,18 @@ class UserController extends Controller
         $accountDeduction = $this->getDeductionDetail($request);
 
         $paymentMethods = $this->getPaymentMethods($request , 'direct');
-        $defaultPaymentMethod = ($user->defaultPaymentMethod()) ? $user->defaultPaymentMethod()->id : '';
+        try {
+            $defaultPaymentMethodObject = $user->defaultPaymentMethod();
+            $defaultPaymentMethod = $defaultPaymentMethodObject ? $defaultPaymentMethodObject->id : '';
+        }
+        catch (\Throwable $e) {
+            Log::warning('Unable to load default Stripe payment method.', [
+                'user_id' => $user?->id,
+                'message' => $e->getMessage(),
+            ]);
+
+            $defaultPaymentMethod = '';
+        }
         
         $stripe_public_key = config('stripe.stripe_key');
 
@@ -2099,9 +2110,23 @@ class UserController extends Controller
     public function createStripeSetupIntent(Request $request) 
     {
         $user = $request->user();
-        $intent = $user->createSetupIntent();
+        try {
+            $intent = $user->createSetupIntent();
+        }
+        catch (\Throwable $e) {
+            Log::warning('Stripe setup intent unavailable.', [
+                'user_id' => $user?->id,
+                'message' => $e->getMessage(),
+            ]);
 
-        return response()->json(['intent' => $intent]);
+            return response()->json([
+                'status' => false,
+                'intent' => null,
+                'message' => 'Stripe setup is unavailable for this account.',
+            ]);
+        }
+
+        return response()->json(['status' => true, 'intent' => $intent]);
     }
 
     /**
@@ -2110,13 +2135,20 @@ class UserController extends Controller
     public function getPaymentMethods(Request $request , $mode = '') 
     {
         $user = $request->user();
-        $paymentMethods = '';
-        try{
+        $paymentMethods = [];
+
+        try {
             $paymentMethods = $user->paymentMethods();
         }
-        catch(error $e){
-            log::info(['Payment method issue ' => $e->getMessage()]);
+        catch (\Throwable $e) {
+            Log::warning('Unable to load Stripe payment methods.', [
+                'user_id' => $user?->id,
+                'message' => $e->getMessage(),
+            ]);
+
+            $paymentMethods = [];
         }
+
         if($mode){
             return $paymentMethods; 
         } else {
@@ -2130,8 +2162,22 @@ class UserController extends Controller
     public function relatePaymentMethod(Request $request)
     {
         $user = $request->user();
-        $user->addPaymentMethod($request->get('id'));
-        return response()->json(['message' => 'Payment Method Related Successfully', 'status' => true]);
+        try {
+            $user->addPaymentMethod($request->get('id'));
+
+            return response()->json(['message' => 'Payment Method Related Successfully', 'status' => true]);
+        }
+        catch (\Throwable $e) {
+            Log::warning('Unable to relate Stripe payment method.', [
+                'user_id' => $user?->id,
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Unable to relate payment method for this account.',
+                'status' => false,
+            ], 422);
+        }
     }
 
     public function sendMigrateRequest(Request $request) {
