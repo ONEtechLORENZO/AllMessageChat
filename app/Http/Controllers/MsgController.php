@@ -35,7 +35,6 @@ use Illuminate\Support\Facades\File;
 use Brick\PhoneNumber\PhoneNumber;
 use Brick\PhoneNumber\PhoneNumberParseException;
 use App\Models\InteractiveMessage;
-use App\Support\MockChatData;
 
 class MsgController extends Controller
 {
@@ -406,21 +405,6 @@ class MsgController extends Controller
         $products = $this->getProducts();
         $interactiveMessages = $this->getInteractiveMessages();
 
-        $useMockChat = isset($recordData['__mock_chat']) && $recordData['__mock_chat'] === true;
-        unset($recordData['__mock_chat']);
-        if ($useMockChat) {
-            $mockData = MockChatData::chatListProps();
-            $accoutList = $mockData['account_list'];
-            $sessions = $mockData['sessions'];
-            $templates = $mockData['templates'];
-            $products = $mockData['products'];
-            $interactiveMessages = $mockData['interactiveMessages'];
-            $recordData['contact_list'] = $mockData['contact_list'];
-            $recordData['counts'] = $mockData['counts'];
-            $recordData['search'] = $mockData['search'];
-            $recordData['filter_id'] = $mockData['filter_id'];
-        }
-
         $data = [
             'contact_list' => $contactList,
             'account_list' => $accoutList,
@@ -438,35 +422,6 @@ class MsgController extends Controller
         ];
         $data = array_merge($data, $recordData);
         return Inertia::render('Messages/ChatList', $data);
-    }
-
-    private function shouldUseMockChat(Request $request, array $contactList, array $recordCounts = []): bool
-    {
-        if (!MockChatData::isEnabled()) {
-            return false;
-        }
-
-        if (!empty($contactList)) {
-            return false;
-        }
-
-        if (isset($recordCounts['all']) && $recordCounts['all'] > 0) {
-            return false;
-        }
-
-        if ($request->has('search') && $request->get('search')) {
-            return false;
-        }
-
-        if ($request->has('filter') && $request->get('filter')) {
-            return false;
-        }
-
-        if ($request->has('filter_id') && $request->get('filter_id')) {
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -561,13 +516,6 @@ class MsgController extends Controller
             }
         }
 
-        $useMockChat = $this->shouldUseMockChat($request, $contactList, $recordCounts);
-        if ($useMockChat) {
-            $mockData = MockChatData::chatListProps();
-            $contactList = $mockData['contact_list'];
-            $recordCounts = $mockData['counts'];
-        }
-
         $data = [
             'contact_list' => $contactList,
             'filter_id' => $filterId,
@@ -575,9 +523,6 @@ class MsgController extends Controller
             'mode' => $mode,
             'counts' => $recordCounts,
         ];
-        if ($useMockChat) {
-            $data['__mock_chat'] = true;
-        }
 
         if($request->ajax() && $request->fetchContact) {
             $data['status'] = true;
@@ -613,9 +558,6 @@ class MsgController extends Controller
         $account = Account::where('user_id', $user->id)->first();
         $contact = Contact::where('id', $contactId)->first();
         if(!$contact){
-            if (MockChatData::isEnabled() && MockChatData::hasContact((int) $contactId)) {
-                return MockChatData::messageListForContact((int) $contactId);
-            }
             return $messages;
         }
         foreach($contact->messages->whereIn('service', $category) as $message){

@@ -51,6 +51,7 @@ import {
     DashboardIcon,
     ChatNewIcon,
     CampaignsIcon,
+    BillingIcon,
     Setting2Icon,
     NetworkIcon,
     GraphIcon,
@@ -129,6 +130,12 @@ const navigation = [
 // ];
 
 const bottomNavigation = [
+    {
+        name: "Billing",
+        href: route("wallet"),
+        icon: BillingIcon,
+        show: ["all"],
+    },
     {
         name: "API Documentation",
         href: route("api_documentation"),

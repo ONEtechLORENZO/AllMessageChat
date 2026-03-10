@@ -8,6 +8,8 @@
 /vendor
 .env
 .env.backup
+/aessefin.sql
+/scripts/import-aessefin.ps1
 .phpunit.result.cache
 docker-compose.override.yml
 Homestead.json
