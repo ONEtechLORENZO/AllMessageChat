@@ -2,6 +2,7 @@ import React, { useState, useCallback, useRef, Fragment, useEffect } from "react
 import { Dialog, Transition } from '@headlessui/react';
 import TextArea from "@/Components/Forms/TextArea";
 import notie from 'notie';
+import ListViewTable from "@/Components/Views/List/ListViewTable";
 
 function WebHook(props){
 
@@ -49,6 +50,19 @@ function WebHook(props){
             }
         });
     }
+
+    const sampleHeaders = {
+        key: { label: "Key", type: "text" },
+        value: { label: "Value", type: "text" },
+    };
+
+    const sampleRecords = Object.entries(sampleData || {}).map(
+        ([name, value], index) => ({
+            id: index,
+            key: name,
+            value,
+        }),
+    );
 
     return(
         <Transition.Root show={open} as={Fragment}>
@@ -132,24 +146,16 @@ function WebHook(props){
                                                             <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="url">
                                                                 Data found
                                                             </label>
-                                                            <table className="w-2/3 divide-y divide-gray-300">
-                                                                <thead className="bg-gray-50">
-                                                                    <tr>
-                                                                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"> Key </th>
-                                                                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"> Value </th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {Object.entries(sampleData).map(([name, value]) => {
-                                                                        return(
-                                                                            <tr>
-                                                                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500" > {name} </td>
-                                                                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500" > {value} </td>
-                                                                            </tr>
-                                                                        )
-                                                                    })}
-                                                                </tbody>
-                                                            </table>
+                                                            <div className="w-2/3">
+                                                                <ListViewTable
+                                                                    records={sampleRecords}
+                                                                    customHeader={sampleHeaders}
+                                                                    fetchFields={false}
+                                                                    hideToolMenu={true}
+                                                                    disableSorting={true}
+                                                                    theme="light"
+                                                                />
+                                                            </div>
                                                         </div>
 
                                                         <div className="">

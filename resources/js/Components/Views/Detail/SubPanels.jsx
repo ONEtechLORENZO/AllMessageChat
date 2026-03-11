@@ -1,5 +1,5 @@
 import React, {useState,useEffect} from "react";
-import ListTable from "../List/ListTable";
+import ListViewTable from "../List/ListViewTable";
 import Alert from '@/Components/Alert';
 import Pagination from '@/Components/Pagination';
 import Button from '@/Components/Forms/Button';
@@ -104,13 +104,15 @@ function SubPanels(props){
             <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
                     
-                    <ListTable 
+                    <ListViewTable 
                         module={props.module}
                         headers={headers}
                         records={recordDetails}
                         actions={actions}
                         paginator={paginateDetail}
                         deleteRecord={deleteRecord}
+                        hideToolMenu
+                        noCardBorder
                         {...props}
                     />
                     {Object.entries(recordDetails).length !== 0 &&                    

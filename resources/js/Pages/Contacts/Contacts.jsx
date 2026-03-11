@@ -9,7 +9,7 @@ import categories, {defaultPristineConfig} from '@/Pages/Constants';
 
 import PristineJS from 'pristinejs';
 import { router as Inertia } from "@inertiajs/react";
-import ListView from "@/Components/Views/List/Index";
+import ListView from "@/Components/Views/List/Index2";
 
 export default function Contacts(props) {
     const [contactFields, setContactFields] = useState({
@@ -169,7 +169,7 @@ export default function Contacts(props) {
             <ListView
                 headers = {contactFields}
                 records = {contacts}
-                module = 'Contacts'
+                module = 'Contact'
                 paginator = {props.paginator}
                 filter = {props.filter}
                 filterList = {props.filterList}
@@ -177,6 +177,7 @@ export default function Contacts(props) {
                 updateRecord = {updateCotnact}
                 openCreateModal = {openCreateModal} 
                 search = {search}
+                translator = {props.translator ?? {}}
                 tag ={props.data}
             />
 {/* 

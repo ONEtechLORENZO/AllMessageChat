@@ -150,6 +150,10 @@ export default function DashboardNew(props) {
         { key: "telegram", src: "./img/Telegram-icon.png", alt: "Telegram", widthClass: "w-8" },
         { key: "facebook", src: "./img/facebook-icon.png", alt: "Facebook", widthClass: "w-8" },
     ];
+    const whatsappCount =
+        props.services?.whatsapp?.count ??
+        props.services?.total_messages ??
+        "-";
 
     useEffect(() => {
         setBalance(props.balance);
@@ -330,9 +334,10 @@ export default function DashboardNew(props) {
                                                 className={item.widthClass}
                                             />
                                             <div className="text-sm text-white/60">
-                                                {props.services[item.key]
-                                                    ? props.services[item.key].count
-                                                    : "-"}
+                                                {item.key === "whatsapp"
+                                                    ? whatsappCount
+                                                    : props.services?.[item.key]
+                                                          ?.count ?? "-"}
                                             </div>
                                         </div>
                                     ))}

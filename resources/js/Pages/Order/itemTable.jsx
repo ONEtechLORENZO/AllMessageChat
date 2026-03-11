@@ -1,88 +1,73 @@
 import React from "react";
 import { PlusCircleIcon, TrashIcon } from '@heroicons/react/24/solid';
 import CreatableSelect from 'react-select';
+import ListViewTable from "@/Components/Views/List/ListViewTable";
 
 export default function ItemTable(props){
+    const itemHeaders = {
+        name: { label: props.translator['ITEM DETAILS'], type: 'text' },
+        quantity: { label: props.translator['QUANTITY'], type: 'text' },
+        price: { label: props.translator['RATE'], type: 'text' },
+        amount: { label: props.translator['AMOUNT'], type: 'text' },
+    };
 
     return(
         <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg p-8"> 
         <div className="border-solid border ">
-            <table className="min-w-full divide-y divide-gray-300 ">
-                <thead className="bg-gray-50 ">
-                <tr>
-                    <th scope="col" className="py-3 pl-4 pr-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 sm:pl-6 w-1/2">
-                    {props.translator['ITEM DETAILS']}
-                    </th>
-                    <th scope="col" className="py-3 pl-4 pr-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 sm:pl-6 w-64">
-                    {props.translator['QUANTITY']}
-                    </th>
-                    <th scope="col" className="py-3 pl-4 pr-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 sm:pl-6 w-64">
-                    {props.translator['RATE']}
-                    </th>
-                    <th scope="col" className="py-3 pl-4 pr-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 sm:pl-6 w-64">
-                    {props.translator['AMOUNT']}
-                    </th>
-                </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
-                {props.lineItems.map((items,index) => {  
-                    return(
-                    <tr key={index}>
-                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                        {props.view == 'Form' ? 
-                         <CreatableSelect
-                         value={items.name}
-                         options={props.productList}
-                         onChange={(value)=> props.getProductName(value,index)}
-                         />
-                        :
-                        <input 
-                        className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md border-gray-300 mt-1 appearance-none  px-3 py-2 border shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm"
-                        value={items.name}
-                        />
-                        }
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {props.view == 'Form' ? 
-                         <input 
-                         className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md border-gray-300 mt-1 appearance-none  px-3 py-2 border shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm"
-                         value={items.quantity}
-                         onChange={(e) => props.addQuantity(e,items.price,index)}
-                         />
-                         :
-                         <input 
-                         className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md border-gray-300 mt-1 appearance-none  px-3 py-2 border shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm"
-                         value={items.quantity}
-                         />
-                         }
-                       
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <input 
-                        className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md border-gray-300 mt-1 appearance-none  px-3 py-2 border shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm"
-                        value={items.price}
-                        readOnly
-                        />
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <input 
-                        className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md border-gray-300 mt-1 appearance-none  px-3 py-2 border shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm"
-                        value={items.amount}
-                        readOnly
-                        />
-                    </td>
-                    {props.lineItems && props.lineItems.length > 1 && props.view == 'Form'? 
-                    <>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500" onClick={() => props.deleteItem(index)}>
-                        <TrashIcon className='h-4 w-4 text-red-600 cursor-pointer' />
-                    </td>
-                    </>
-                    : ''}
-                    </tr>
-                    )
-                })}
-                </tbody>
-            </table>
+            <ListViewTable
+                records={props.lineItems}
+                customHeader={itemHeaders}
+                fetchFields={false}
+                hideToolMenu={true}
+                disableSorting={true}
+                theme="light"
+                forceActionColumn={props.lineItems && props.lineItems.length > 1 && props.view == 'Form'}
+                renderCell={({ name, record, rowIndex }) => {
+                    if (name === 'name') {
+                        return props.view == 'Form' ? (
+                            <CreatableSelect
+                                value={record.name}
+                                options={props.productList}
+                                onChange={(value) => props.getProductName(value, rowIndex)}
+                            />
+                        ) : (
+                            <input
+                                className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md border-gray-300 mt-1 appearance-none px-3 py-2 border shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm"
+                                value={record.name}
+                                readOnly
+                            />
+                        );
+                    }
+
+                    if (name === 'quantity') {
+                        return (
+                            <input
+                                className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md border-gray-300 mt-1 appearance-none px-3 py-2 border shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm"
+                                value={record.quantity}
+                                onChange={props.view == 'Form' ? (e) => props.addQuantity(e, record.price, rowIndex) : undefined}
+                                readOnly={props.view != 'Form'}
+                            />
+                        );
+                    }
+
+                    if (name === 'price' || name === 'amount') {
+                        return (
+                            <input
+                                className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md border-gray-300 mt-1 appearance-none px-3 py-2 border shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm"
+                                value={record[name]}
+                                readOnly
+                            />
+                        );
+                    }
+                }}
+                renderActionCell={({ rowIndex }) =>
+                    props.lineItems && props.lineItems.length > 1 && props.view == 'Form' ? (
+                        <div className="whitespace-nowrap px-3 py-4 text-sm text-gray-500" onClick={() => props.deleteItem(rowIndex)}>
+                            <TrashIcon className='h-4 w-4 text-red-600 cursor-pointer' />
+                        </div>
+                    ) : null
+                }
+            />
         </div>
 
            <div className="pt-8 grid grid-cols-2">

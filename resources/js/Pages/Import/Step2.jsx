@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "@inertiajs/react";
+import ListViewTable from "@/Components/Views/List/ListViewTable";
 
 const lineItems = [
     {name : 'product' , label : 'Product'},
@@ -7,6 +8,29 @@ const lineItems = [
 ];
 
 function Step2(props){
+    const mappingHeaders = {
+        field_label: { label: "OneMessage Fields", type: "text" },
+        csv_header: { label: "CSV Headers", type: "text" },
+    };
+
+    const mappingRecords = props.Onestep
+        ? [
+              ...Object.entries(props.Onestep).map(([key, record], index) => ({
+                  id: record.field_name ?? index,
+                  field_label: record.field_label,
+                  csv_header: record.field_name,
+                  field_name: record.field_name,
+              })),
+              ...(props.module == "Order"
+                  ? lineItems.map((item) => ({
+                        id: item.name,
+                        field_label: item.label,
+                        csv_header: item.name,
+                        field_name: item.name,
+                    }))
+                  : []),
+          ]
+        : [];
 
     return(
      <>
@@ -41,105 +65,50 @@ function Step2(props){
                     </div>
             </div>
             <div className="-mx-4 mt-8 overflow-hidden shadow ring-1 ring-white/10 sm:-mx-6 md:mx-0 md:rounded-lg">
-                <table className="min-w-full divide-y divide-white/10">
-                    <thead className="bg-white/5">
-                        <tr>
-                            <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6" >
-                                OneMessage Fields
-                            </th>
-                            <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6" >
-                                CSV Headers
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/10 bg-transparent">
-                        { props.Onestep ? (
-                            <>
-                                {Object.entries(props.Onestep).map(([key,record]) => (
-                                        <tr key={record.field_name} >
-                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-6">
-                                                {record.field_label}
-                                            </td>
-                                            <td className="hidden whitespace-nowrap px-3 py-4 text-sm text-white/70 sm:table-cell">
-                                                {props.View ? (
-                                                    <div>
-                                                        {props.CsvHeader.map((option) => (
-                                                                <>
-                                                                    {record.field_name == option.value ? (
-                                                                        <p>{option.label}</p>
-                                                                    ) : 
-                                                                    ""
-                                                                    }
-                                                                </>
-                                                            ))}
-                                                    </div>
-                                                ) : (
-                                                    <div>
-                                                        <select
-                                                            id={record.field_name}
-                                                            name={record.field_name}
-                                                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-white/10 bg-[#0F0B1A] text-white focus:outline-none focus:ring-[#BF00FF]/60 focus:border-[#BF00FF]/60 sm:text-sm rounded-md"
-                                                            onChange={(e) => props.handleChange(e) }
-                                                        >
-                                                            <option value=""> select </option>
-                                                            {props.CsvHeader.map((option) =>(
-                                                                    <option value={option}>        
-                                                                        {option}
-                                                                    </option>
-                                                                )
-                                                            )}
-                                                        </select>
-                                                    </div>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    )
-                                )}
-                                {props.module == 'Order' && lineItems.map( (item) => (
-                                    <tr key={item.name} >
-                                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-6">
-                                          {item.label}
-                                      </td>
-                                      <td className="hidden whitespace-nowrap px-3 py-4 text-sm text-white/70 sm:table-cell">
-                                          {props.View ? (
-                                              <div>
-                                                  {props.CsvHeader.map((option) => (
-                                                          <>
-                                                              {item.name == option.value ? (
-                                                                  <p>{option.label}</p>
-                                                              ) : 
-                                                              ""
-                                                              }
-                                                          </>
-                                                      ))}
-                                              </div>
-                                          ) : (
-                                              <div>
-                                                  <select
-                                                      id={item.name}
-                                                      name={item.name}
-                                                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-white/10 bg-[#0F0B1A] text-white focus:outline-none focus:ring-[#BF00FF]/60 focus:border-[#BF00FF]/60 sm:text-sm rounded-md"
-                                                      onChange={(e) => props.handleChange(e) }
-                                                  >
-                                                      <option value=""> select </option>
-                                                      {props.CsvHeader.map((option) =>(
-                                                              <option value={option}>        
-                                                                  {option}
-                                                              </option>
-                                                          )
-                                                      )}
-                                                  </select>
-                                              </div>
-                                          )}
-                                      </td>
-                                  </tr>    
+                <ListViewTable
+                    records={mappingRecords}
+                    customHeader={mappingHeaders}
+                    fetchFields={false}
+                    hideToolMenu={true}
+                    disableSorting={true}
+                    emptyStateText=""
+                    renderCell={({ name, record }) => {
+                        if (name !== "csv_header") return undefined;
+
+                        if (props.View) {
+                            return (
+                                <div>
+                                    {props.CsvHeader.map((option, index) =>
+                                        record.field_name == option.value ? (
+                                            <p key={option.value ?? option.label ?? index}>
+                                                {option.label}
+                                            </p>
+                                        ) : null,
+                                    )}
+                                </div>
+                            );
+                        }
+
+                        return (
+                            <select
+                                id={record.field_name}
+                                name={record.field_name}
+                                className="mt-1 block w-full rounded-md border-white/10 bg-[#0F0B1A] py-2 pl-3 pr-10 text-base text-white focus:border-[#BF00FF]/60 focus:outline-none focus:ring-[#BF00FF]/60 sm:text-sm"
+                                onChange={(e) => props.handleChange(e)}
+                            >
+                                <option value=""> select </option>
+                                {props.CsvHeader.map((option, index) => (
+                                    <option
+                                        key={option.value ?? option.label ?? index}
+                                        value={option}
+                                    >
+                                        {option}
+                                    </option>
                                 ))}
-                            </>
-                        ) : (
-                            ""
-                        )}
-                    </tbody>
-                </table>
+                            </select>
+                        );
+                    }}
+                />
             </div>
         </div>
      </>

@@ -1,6 +1,6 @@
 import React, { useEffect,useState } from "react";
 import FilterGroups from "./FilterGroups";
-import ListTable from "@/Components/Views/List/ListTable";
+import ListViewTable from "@/Components/Views/List/ListViewTable";
 import Alert from "@/Components/Alert";
 
 function ContactFilter(props){
@@ -64,13 +64,14 @@ function ContactFilter(props){
                 <div className="inline-block w-full py-2 align-middle">
                    {headers && records ? 
                     <>
-                     <ListTable 
+                     <ListViewTable 
                            module={'Contact'}
                            headers={headers}
                            records={records}
-                           actions={''}
+                           actions={{}}
                            translator = {props.translator}
-                           theme="dark"
+                           hideToolMenu
+                           noCardBorder
                        />
                        {Object.entries(records).length == 0 ? <Alert type='info' message= {props.translator['No record related yet.']} hideClose={true} theme="dark" /> : ''}
                     </>

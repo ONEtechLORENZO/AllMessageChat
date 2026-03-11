@@ -7,6 +7,7 @@ import axios from 'axios';
 import notie from 'notie';
 
 import { Input } from "reactstrap";
+import ListViewTable from "@/Components/Views/List/ListViewTable";
 
 const Subscriptions = [
     {'msg' : '1,000', 'amount' : '€ 89'},
@@ -49,6 +50,16 @@ export default function Step4 (props) {
         });
     }
 
+    const subscriptionHeaders = {
+        msg: { label: "Messages", type: "text" },
+        amount: { label: "Amount", type: "text" },
+    };
+
+    const subscriptionRecords = Subscriptions.map((subscription, index) => ({
+        ...subscription,
+        id: index,
+    }));
+
     return (
         <div className="h-screen w-full bg-blue-50 flex justify-center items-center">
             <div className="max-w-7xl flex mx-auto items-center px-10 h-screen">
@@ -64,19 +75,19 @@ export default function Step4 (props) {
                         </div>
 
                         <div>
-                            <table className="min-w-full mt-3">
-                                <div className="flex justify-center font-semibold text-lg text-primary text-xl italic">
-                                    Monthly Subscription for Conversation Bundles					 
-                                </div>
-                                <tbody className="divide-y divide-gray-200 bg-white">
-                                    {Subscriptions.map( (subscription) => (
-                                     <tr key={''}>
-                                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 flex justify-center">{subscription.msg}</td>
-                                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{subscription.amount}</td>
-                                     </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                            <div className="flex justify-center font-semibold text-lg text-primary text-xl italic">
+                                Monthly Subscription for Conversation Bundles
+                            </div>
+                            <div className="mt-3">
+                                <ListViewTable
+                                    records={subscriptionRecords}
+                                    customHeader={subscriptionHeaders}
+                                    fetchFields={false}
+                                    hideToolMenu={true}
+                                    disableSorting={true}
+                                    theme="light"
+                                />
+                            </div>
                         </div>
 
                         <div>

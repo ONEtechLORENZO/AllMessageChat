@@ -7,6 +7,7 @@ import { router as Inertia } from "@inertiajs/react";
 import { countries } from '@/Pages/Constants';
 import TextArea from "@/Components/Forms/TextArea";
 import ProfilePicture from "./profilePicture";
+import ListViewTable from "@/Components/Views/List/ListViewTable";
 
 export function GlassCard({ className = "", children }) {
   return (
@@ -35,6 +36,11 @@ export default function CompanyDetail(props) {
   useEffect(() => {
     fetchModuleFields();
   }, []);
+
+  const companyHeaders = {
+    field_label: { label: props.translator['General'], type: 'text' },
+    field_value: { label: 'Value', type: 'text' },
+  };
 
   function fetchModuleFields() {
     let endpoint_url = route('fetchModuleFields', { 'module': 'Company' });
@@ -113,96 +119,65 @@ export default function CompanyDetail(props) {
         <div className="text-white text-lg font-semibold">{props.translator['General']}</div>
 
         <div className="overflow-hidden">
-          <table className="min-w-full divide-y divide-white/10">
+          <ListViewTable
+            records={
+              fields
+                ? fields.map((field, index) => ({
+                    ...field,
+                    id: field.id ?? field.field_name ?? index,
+                    field_label: props.translator[field.field_label],
+                    field_value: field.field_name,
+                  }))
+                : []
+            }
+            customHeader={companyHeaders}
+            fetchFields={false}
+            hideToolMenu={true}
+            disableSorting={true}
+            renderCell={({ name, record }) => {
+              if (name === 'field_label') {
+                return <span className="font-bold text-white">{record.field_label}</span>;
+              }
 
-            <tbody>
-              {fields
-                ? fields.map((field, index) => {
-                  let field_value = '';
-                  let field_name = field.field_name;
+              const field_name = record.field_name;
+              let field_value = currentCompany ? currentCompany[field_name] : '';
+              if (!field_value) field_value = '-';
+              if (temp.hasOwnProperty(field_name)) field_value = temp[field_name];
 
-                  if (currentCompany) {
-                    field_value = currentCompany[field_name];
-                  }
-                  if (!field_value) field_value = '-';
-                  if (temp.hasOwnProperty(field_name)) field_value = temp[field_name];
+              if (temp && temp.hasOwnProperty(field_name)) {
+                return (
+                  <div className="flex w-full items-center">
+                    {record.field_type == 'text' ? (
+                      <Input type="text" className="mt-1 appearance-none block w-2/5 px-3 py-2 border border-white/10 bg-[#0F0B1A] text-white placeholder-[#878787] rounded-md shadow-sm focus:outline-none focus:ring-[#1C9AE1] focus:border-[#1C9AE1] sm:text-sm" id={field_name} name={field_name} value={field_value} handleChange={saveTemp} />
+                    ) : record.field_type == 'textarea' ? (
+                      <TextArea id={field_name} name={field_name} rows="2" className="mt-1 max-w-lg shadow-sm block w-full bg-[#0F0B1A] text-white placeholder-[#878787] focus:ring-[#1C9AE1] focus:border-[#1C9AE1] sm:text-sm border border-white/10 rounded-md" value={field_value} handleChange={saveTemp} />
+                    ) : record.field_type == 'email' ? (
+                      <Input type="email" className="mt-1 appearance-none block w-2/5 px-3 py-2 border border-white/10 bg-[#0F0B1A] text-white placeholder-[#878787] rounded-md shadow-sm focus:outline-none focus:ring-[#1C9AE1] focus:border-[#1C9AE1] sm:text-sm" id={field_name} name={field_name} value={field_value} handleChange={saveTemp} />
+                    ) : (
+                      <Dropdown id={field_name} name={field_name} options={countries} handleChange={saveTemp} emptyOption="Select" value={field_value} />
+                    )}
+                    <div className="p-2 text-white" onClick={saveCompany}>
+                      <CheckIcon className="h-6 w-6 text-green-400" />
+                    </div>
+                    <div className="p-2 text-white" onClick={editCancel}>
+                      <XMarkIcon className="h-6 w-6 text-red-400" />
+                    </div>
+                  </div>
+                );
+              }
 
-                  return (
-                    <tr key={field.id ?? field.field_name ?? index}>
-                      <td className="whitespace-nowrap px-3 py-4 w-1/4 text-sm font-bold text-white">
-                        {props.translator[field.field_label]}
-                      </td>
-
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-white flex w-2/5">
-                        {temp && temp.hasOwnProperty(field_name) ? (
-                          <>
-                            {field.field_type == 'text' ? (
-                              <Input
-                                type="text"
-                                className="mt-1 appearance-none block w-2/5 px-3 py-2 border border-white/10 bg-[#0F0B1A] text-white placeholder-[#878787] rounded-md shadow-sm focus:outline-none focus:ring-[#1C9AE1] focus:border-[#1C9AE1] sm:text-sm"
-                                id={field_name}
-                                name={field_name}
-                                value={field_value}
-                                handleChange={saveTemp}
-                              />
-                            ) : field.field_type == 'textarea' ? (
-                              <TextArea
-                                id={field_name}
-                                name={field_name}
-                                rows="2"
-                                className="mt-1 max-w-lg shadow-sm block w-full bg-[#0F0B1A] text-white placeholder-[#878787] focus:ring-[#1C9AE1] focus:border-[#1C9AE1] sm:text-sm border border-white/10 rounded-md"
-                                value={field_value}
-                                handleChange={saveTemp}
-                              />
-                            ) : field.field_type == 'email' ? (
-                              <Input
-                                type="email"
-                                className="mt-1 appearance-none block w-2/5 px-3 py-2 border border-white/10 bg-[#0F0B1A] text-white placeholder-[#878787] rounded-md shadow-sm focus:outline-none focus:ring-[#1C9AE1] focus:border-[#1C9AE1] sm:text-sm"
-                                id={field_name}
-                                name={field_name}
-                                value={field_value}
-                                handleChange={saveTemp}
-                              />
-                            ) : (
-                              <Dropdown
-                                id={field_name}
-                                name={field_name}
-                                options={countries}
-                                handleChange={saveTemp}
-                                emptyOption="Select"
-                                value={field_value}
-                              />
-                            )}
-
-                            <div className="p-2 text-white" onClick={saveCompany}>
-                              <CheckIcon className="h-6 w-6 text-green-400" />
-                            </div>
-                            <div className="p-2 text-white" onClick={editCancel}>
-                              <XMarkIcon className="h-6 w-6 text-red-400" />
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            {field_value}
-                            {field_name !== 'currency' &&
-                              field_name !== 'time_zone' &&
-                              field_name !== 'name' ? (
-                              <span
-                                className="ml-4 bg-white/10 border border-white/10 w-6 h-6 flex justify-center items-center"
-                                onClick={() => editCompany(field_name)}
-                              >
-                                <PencilIcon className="h-4 w-4 text-white" />
-                              </span>
-                            ) : null}
-                          </>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
-                : null}
-            </tbody>
-          </table>
+              return (
+                <>
+                  {field_value}
+                  {field_name !== 'currency' && field_name !== 'time_zone' && field_name !== 'name' ? (
+                    <span className="ml-4 bg-white/10 border border-white/10 w-6 h-6 flex justify-center items-center" onClick={() => editCompany(field_name)}>
+                      <PencilIcon className="h-4 w-4 text-white" />
+                    </span>
+                  ) : null}
+                </>
+              );
+            }}
+          />
         </div>
 
 

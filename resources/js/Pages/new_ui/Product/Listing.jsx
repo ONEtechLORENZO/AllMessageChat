@@ -5,6 +5,7 @@ import { Menu, Transition } from '@headlessui/react'
 import { HiOutlineChevronRight } from "react-icons/hi";
 
 import { BsChevronBarLeft,BsChevronBarRight,BsChevronLeft,BsChevronRight } from "react-icons/bs";
+import ListViewTable from '@/Components/Views/List/ListViewTable';
 
 
 export default function Listing() {
@@ -32,6 +33,22 @@ export default function Listing() {
         },
         
     ];
+
+    const productHeaders = {
+        title: { label: 'Title', type: 'text' },
+        stock: { label: 'In stock', type: 'text' },
+        variants: { label: 'Variants', type: 'text' },
+        price: { label: 'Price', type: 'text' },
+    };
+
+    const productRecords = Array.from({ length: 5 }, (_, index) => ({
+        id: index,
+        title: 'Product Title',
+        subtitle: 'Product Title',
+        stock: 45,
+        variants: '4 sizes',
+        price: 'â‚¬180.00',
+    }));
     return (
         <div className="p-4">
             <nav
@@ -94,6 +111,30 @@ export default function Listing() {
                     </div>
 
                     <div className='card !shadow-card !p-4'>
+                        <ListViewTable
+                            records={productRecords}
+                            customHeader={productHeaders}
+                            fetchFields={false}
+                            hideToolMenu={true}
+                            disableSorting={true}
+                            theme="light"
+                            forceActionColumn={true}
+                            renderCell={({ name, record }) => {
+                                if (name === 'title') {
+                                    return (
+                                        <div className='flex items-center !gap-2'>
+                                            <img src='./img/square-img.png' className='w-8 h-8' />
+                                            <div className='flex flex-col'>
+                                                <span className='text-sm font-semibold '>{record.title}</span>
+                                                <span className='text-[12px] text-[#878787]'>{record.subtitle}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                            }}
+                            renderActionCell={() => <HiOutlineChevronRight className='text-[#545CD8]'/>}
+                        />
+{/*
                         <table>
                             <thead>
                                 <tr className='font-semibold text-[#3D4459]'>
@@ -186,6 +227,7 @@ export default function Listing() {
                                 </tr>
                             </tbody>
                         </table>
+*/}
                     </div>
                     <div className='card !shadow-card !p-4 justify-between flex-row'>
 

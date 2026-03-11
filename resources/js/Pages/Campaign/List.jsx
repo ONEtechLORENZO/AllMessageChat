@@ -3,6 +3,7 @@ import { Link, router as Inertia } from "@inertiajs/react";
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from "@heroicons/react/24/solid";
 import { useMemo, useState } from "react";
 import Pagination from "@/Components/Pagination";
+import ListViewTable from "@/Components/Views/List/ListViewTable";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
@@ -123,6 +124,17 @@ function List(props) {
         audience: "All sizes",
         search: "",
     });
+
+    const campaignHeaders = {
+        name: { label: "Campaign", type: "text" },
+        service: { label: "Channel", type: "text" },
+        audience: { label: "Audience", type: "text" },
+        status: { label: "Status", type: "text" },
+        scheduled_at: { label: "Scheduled", type: "text" },
+        sent: { label: "Sent", type: "text" },
+        delivered: { label: "Delivered", type: "text" },
+        created_at: { label: "Created", type: "text" },
+    };
 
     const displayRecords = isDemo
         ? recordsToShow.filter((record) => {
@@ -325,117 +337,69 @@ function List(props) {
                         </button>
                     </div>
                     <div className="overflow-x-auto">
-                        <table className="min-w-full text-left text-sm text-white/80">
-                            <thead className="text-xs uppercase text-white/40">
-                                <tr>
-                                    {[
-                                        "Campaign",
-                                        "Channel",
-                                        "Audience",
-                                        "Status",
-                                        "Scheduled",
-                                        "Sent",
-                                        "Delivered",
-                                        "Created",
-                                    ].map((label) => (
-                                        <th
-                                            key={label}
-                                            className="pb-3 border-b border-white/5 font-semibold"
+                        <ListViewTable
+                            records={displayRecords}
+                            customHeader={campaignHeaders}
+                            fetchFields={false}
+                            hideToolMenu={true}
+                            disableSorting={true}
+                            emptyStateText={translatorToShow["No records found!"] ?? "No records found!"}
+                            renderCell={({ name, record }) => {
+                                if (name === "name") {
+                                    return (
+                                        <Link
+                                            href={route("detailCampaign", {
+                                                id: record.id,
+                                            })}
+                                            className="hover:text-[#BF00FF] text-white font-medium"
                                         >
-                                            {label}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {displayRecords.length === 0 ? (
-                                    <tr>
-                                        <td
-                                            colSpan={8}
-                                            className="py-6 text-center text-white/50"
+                                            {record.name ?? "-"}
+                                        </Link>
+                                    );
+                                }
+
+                                if (name === "audience") {
+                                    return formatAudience(
+                                        record.audience ??
+                                            record.audience_size ??
+                                            record.total_contacts,
+                                        record.conditions
+                                            ? "Filtered"
+                                            : "All contacts",
+                                    );
+                                }
+
+                                if (name === "status") {
+                                    const statusKey = String(
+                                        record.status || "unknown",
+                                    ).toLowerCase();
+
+                                    return (
+                                        <span
+                                            className={classNames(
+                                                "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold",
+                                                badgeStyles[statusKey] ??
+                                                    badgeStyles.unknown,
+                                            )}
                                         >
-                                            {translatorToShow[
-                                                "No records found!"
-                                            ] ?? "No records found!"}
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    displayRecords.map((record, index) => {
-                                        const statusKey = String(
-                                            record.status || "unknown",
-                                        ).toLowerCase();
-                                        return (
-                                            <tr
-                                                key={record.id}
-                                                className={classNames(
-                                                    "border-b border-white/15",
-                                                    index % 2 === 0
-                                                        ? "bg-transparent"
-                                                        : "bg-white/[0.01]",
-                                                )}
-                                            >
-                                                <td className="py-4 font-medium text-white">
-                                                    <Link
-                                                        href={route(
-                                                            "detailCampaign",
-                                                            { id: record.id },
-                                                        )}
-                                                        className="hover:text-[#BF00FF]"
-                                                    >
-                                                        {record.name ?? "-"}
-                                                    </Link>
-                                                </td>
-                                                <td className="py-4 text-white/70">
-                                                    {record.service ?? "-"}
-                                                </td>
-                                                <td className="py-4 text-white/70">
-                                                    {formatAudience(
-                                                        record.audience ??
-                                                            record.audience_size ??
-                                                            record.total_contacts,
-                                                        record.conditions
-                                                            ? "Filtered"
-                                                            : "All contacts",
-                                                    )}
-                                                </td>
-                                                <td className="py-4">
-                                                    <span
-                                                        className={classNames(
-                                                            "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold",
-                                                            badgeStyles[
-                                                                statusKey
-                                                            ] ??
-                                                                badgeStyles.unknown,
-                                                        )}
-                                                    >
-                                                        {record.status ??
-                                                            "Unknown"}
-                                                    </span>
-                                                </td>
-                                                <td className="py-4 text-white/70">
-                                                    {record.scheduled_at ??
-                                                        "-"}
-                                                </td>
-                                                <td className="py-4 text-white/70">
-                                                    {record.sent ??
-                                                        record.sent_count ??
-                                                        "-"}
-                                                </td>
-                                                <td className="py-4 text-white/70">
-                                                    {record.delivered ??
-                                                        record.delivered_count ??
-                                                        "-"}
-                                                </td>
-                                                <td className="py-4 text-white/70">
-                                                    {record.created_at ??
-                                                        "-"}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                )}
-                            </tbody>
-                        </table>
+                                            {record.status ?? "Unknown"}
+                                        </span>
+                                    );
+                                }
+
+                                if (name === "sent") {
+                                    return record.sent ?? record.sent_count ?? "-";
+                                }
+
+                                if (name === "delivered") {
+                                    return (
+                                        record.delivered ??
+                                        record.delivered_count ??
+                                        "-"
+                                    );
+                                }
+                            }}
+                        />
                     </div>
                 </div>
 

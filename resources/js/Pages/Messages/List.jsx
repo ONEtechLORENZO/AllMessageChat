@@ -4,6 +4,7 @@ import { Head, Link } from '@inertiajs/react';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid'
 import Pagination from "react-js-pagination";
 import Dropdown from '@/Components/Forms/Dropdown';
+import ListViewTable from '@/Components/Views/List/ListViewTable';
 
 import Moment from 'moment';
 import { ToastContainer, toast } from 'react-toastify';
@@ -45,6 +46,16 @@ export default function Dashboard(props) {
         totalMessages: props.totalMessages,
         limit: props.limit,
     });
+
+    const messageHeaders = {
+        created_at: { label: 'Time', type: 'text' },
+        display_name: { label: 'Account', type: 'text' },
+        content: { label: 'Message Content', type: 'text' },
+        direction: { label: 'Direction', type: 'text' },
+        sender: { label: 'Sender', type: 'text' },
+        destinations: { label: 'Recipient', type: 'text' },
+        status: { label: 'Status', type: 'text' },
+    };
 
     // List messages based on Key
     function searchKeyChangeEvent(event){
@@ -124,73 +135,59 @@ export default function Dashboard(props) {
               <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
                   <div className="shadow overflow-hidden border-b border-white/10 sm:rounded-lg">
-                    <table className="min-w-full divide-y divide-white/10 table-auto text-white">
-                      <thead className="bg-white/5">
-                        <tr>
-                          { listColumn && listColumn.map((column) => {
-                            return(
-                                <>
-                                  <th
-                                    scope="col"
-                                    className="px-6 py-3 text-xs font-medium text-white/60 uppercase tracking-wider"
-                                  >
-                                    {column.label}
-                                  </th>
-                                </>
-                              )
-                          })}
-                        </tr>
-                      </thead>
-                      <tbody className="bg-transparent divide-y divide-white/10">
-                        {messages.data.map((message) => (
-                          <tr key={message.name}>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <div className="ml-4">
-                                  <div className="text-sm font-medium text-white/80">
-                                    <Link href={"/admin/user/" +message.id }> {Moment(message.created_at).format(' DD-MM-Y hh:mm:ss')} </Link>
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap ">
-                              <div className="text-sm text-white/80">{message.display_name}</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-white/80" title={message.content}> 
-                              {( (message.content.length ) > 20) ? 
-                                <>  {message.content.substring( 0, 20 ) + '...'} </>
-                                : <> {message.content} </>
-                              }
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-white/80 text-sm font-medium">
-                              {message.direction}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-white/80 text-sm font-medium">
-                              {message.sender}
-                            </td>
-                            {/*
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-gray-500 text-sm font-medium">
-                              {message.country}
-                            </td>
-                            */}
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-white/80 text-sm font-medium">
-                               {message.destinations}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                {message.status == 'Queued' && 
-                                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-500/20 text-yellow-200"> {message.status} </span>
-                                  || message.status == 'Failed' &&
-                                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-500/20 text-red-200"> {message.status} </span>
-                                  || <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-500/20 text-emerald-200"> {message.status} </span>
-                                } 
-                            </td>
-                            </tr>
-                        ))}
-                        {messages.data.length == 0 && 
-                            <tr> <td colspan="4" className="p-4"> <span className="px-6 py-4 whitespace-nowrap text-right text-white/70 text-sm font-medium"> No conversation start yet. </span> </td></tr> 
-                        } 
-                      </tbody>
-                    </table>
+                    <ListViewTable
+                        records={messages.data}
+                        customHeader={messageHeaders}
+                        fetchFields={false}
+                        hideToolMenu={true}
+                        disableSorting={true}
+                        emptyStateText="No conversation start yet."
+                        renderCell={({ name, record }) => {
+                            if (name === 'created_at') {
+                                return (
+                                    <div className="flex items-center">
+                                        <div className="ml-4">
+                                            <div className="text-sm font-medium text-white/80">
+                                                <Link href={'/admin/user/' + record.id}>
+                                                    {Moment(record.created_at).format(' DD-MM-Y hh:mm:ss')}
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            if (name === 'content') {
+                                return record.content.length > 20
+                                    ? `${record.content.substring(0, 20)}...`
+                                    : record.content;
+                            }
+
+                            if (name === 'status') {
+                                if (record.status == 'Queued') {
+                                    return (
+                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-500/20 text-yellow-200">
+                                            {record.status}
+                                        </span>
+                                    );
+                                }
+
+                                if (record.status == 'Failed') {
+                                    return (
+                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-500/20 text-red-200">
+                                            {record.status}
+                                        </span>
+                                    );
+                                }
+
+                                return (
+                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-500/20 text-emerald-200">
+                                        {record.status}
+                                    </span>
+                                );
+                            }
+                        }}
+                    />
                   </div>
 
                             <div className="p-5 text-center" >

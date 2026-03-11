@@ -16,6 +16,7 @@ import {
     Table,
     ListGroupItem,
   } from 'reactstrap';
+import ListViewTable from "@/Components/Views/List/ListViewTable";
 import {
     WhatsAppIcon,
     InstaIcon,
@@ -280,32 +281,37 @@ function Wallet(props)
                                                 </AccordionHeader>
                                             
                                                 <AccordionBody accordionId={account.number}>
-                                                    <Table >
-                                                        {Object.entries(deductionTypes).map(([key, label]) => {
-                                                            return (
-                                                            <tr>
-                                                                <td> {label} </td>
-                                                                <td> 
+                                                    <ListViewTable
+                                                        records={Object.entries(deductionTypes).map(([key, label], index) => ({
+                                                            id: `${account.number}-${key}-${index}`,
+                                                            label,
+                                                            count: account.amount_data[key] ? account.amount_data[key].count : 0,
+                                                            amount: account.amount_data[key] ? account.amount_data[key].amount : 0,
+                                                        }))}
+                                                        customHeader={{
+                                                            label: { label: 'Type', type: 'text' },
+                                                            count: { label: 'Count', type: 'text' },
+                                                            amount: { label: 'Amount', type: 'text' },
+                                                        }}
+                                                        fetchFields={false}
+                                                        hideToolMenu={true}
+                                                        disableSorting={true}
+                                                        theme="light"
+                                                        renderCell={({ name, record }) => {
+                                                            if (name === 'count') {
+                                                                return (
                                                                     <div className="flex">
-                                                                        <ChatBubbleLeftRightIcon
-                                                                            className="h-6 w-6" 
-                                                                        /> 
-                                                                        {(account.amount_data[key]) ? 
-                                                                            <>{account.amount_data[key].count} </>
-                                                                        : 
-                                                                            <> 0 </> }
+                                                                        <ChatBubbleLeftRightIcon className="h-6 w-6" />
+                                                                        {record.count}
                                                                     </div>
-                                                                </td>
-                                                                <td> 
-                                                                    $
-                                                                    {(account.amount_data[key]) ? 
-                                                                        <> {account.amount_data[key].amount} </> 
-                                                                    : <> 0 </> }
-                                                                </td>
-                                                            </tr>
-                                                            )
-                                                        })}
-                                                    </Table>
+                                                                );
+                                                            }
+
+                                                            if (name === 'amount') {
+                                                                return <>${record.amount}</>;
+                                                            }
+                                                        }}
+                                                    />
                                                 </AccordionBody>
                                             </AccordionItem>
                                         </Accordion>

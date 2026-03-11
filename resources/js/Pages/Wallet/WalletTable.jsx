@@ -11,6 +11,7 @@ import {HiOutlineAdjustmentsVertical } from "react-icons/hi2";
 import Filter from  '@/Components/Views/List/Filter2';
 import { BiImport } from "react-icons/bi";
 import { AiOutlineVerticalLeft,AiOutlineVerticalRight,AiOutlineRight,AiOutlineLeft } from "react-icons/ai";
+import ListViewTable from "@/Components/Views/List/ListViewTable";
 
 import {
   Row,
@@ -94,53 +95,14 @@ function WalletTable(props){
                     </div>
                 </div>
                 <div className='card p-4 mt-[20px]'>
-                <Table
-                className='gio-table'
-                    >
-                    <thead>
-                        <tr>
-                            <th>
-                                <input type={'checkbox'} />
-                            </th>
-                            {Object.entries(props.headers).map(([name, field]) => {
-                                return(
-                            <th key={name}>
-                           {field.label}
-                            </th>);
-                            })}
-                        </tr>
-                    </thead>
-                 
-                    <tbody>
-                       
-                    {Object.entries(records).map(([key, record]) => ( 
-                        <tr key={key}>
-                             <td>
-                                <input type={'checkbox'} />
-                            </td>                            
-                            {Object.entries(props.headers).map(([name, field],index) => {                                     
-                                    let column_value = record[name];
-                             return (
-                                        <td key={name} title={column_value} className="whitespace-nowrap px-2 py-2 text-sm text-[#3D4459]">
-                                            {column_value}
-                                        </td>
-                                    );
-                                })}                          
-                        </tr>
-                        ))}
-                        {(props.records).length === 0 && (
-                                        <tr>
-                                            <td
-                                                className="px-6 py-4 border-t"
-                                                colSpan="4"
-                                            >
-                                            No records found!
-                                            </td>
-                                        </tr>
-                                    )}
-                    </tbody>
-                    </Table>
-
+                    <ListViewTable
+                        records={records}
+                        customHeader={props.headers}
+                        fetchFields={false}
+                        hideToolMenu={true}
+                        disableSorting={true}
+                        theme="light"
+                    />
                 </div>
                 {(props.records).length !== 0 &&
                         <>

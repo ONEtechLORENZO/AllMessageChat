@@ -26,15 +26,46 @@ export default function ListViewTable(props) {
     const [headers, setHeaders] = useState({});
     const [showAll, setShowAll] = useState(true);
     const pathname = window.location.pathname;
+    const records = Array.isArray(props.records)
+        ? props.records
+        : Object.values(props.records ?? {});
+    const actions =
+        props.actions &&
+        typeof props.actions === "object" &&
+        !Array.isArray(props.actions)
+            ? props.actions
+            : {};
+    const hasBulkActions =
+        actions.mass_edit === true || actions.merge === true;
+    const hasRowActions =
+        actions.detail === true ||
+        actions.edit === true ||
+        actions.delete === true ||
+        actions.unlink === true ||
+        actions.download === true;
+    const showToolMenu = props.hideToolMenu !== true;
+    const showActionColumn =
+        props.forceActionColumn === true ||
+        showToolMenu ||
+        hasRowActions ||
+        typeof props.renderActionCell === "function";
     const tableColSpan =
         Object.keys(headers).length +
-        (props.actions.mass_edit === true || props.actions.merge === true
-            ? 1
-            : 0) +
-        1;
+        (hasBulkActions ? 1 : 0) +
+        (showActionColumn ? 1 : 0);
+    const emptyStateText =
+        props.emptyStateText ??
+        props.translator?.["No records found!"] ??
+        "No records found!";
+    const fetchFieldsEnabled = props.fetchFields !== false && !!props.module;
 
     useEffect(() => {
-        fetchModuleFields();
+        if (fetchFieldsEnabled) {
+            fetchModuleFields();
+        } else {
+            setFields([]);
+            setFieldOptions({});
+        }
 
         // SET the Header Section
         if (props.customHeader && props.customHeader.length != 0) {
@@ -42,13 +73,15 @@ export default function ListViewTable(props) {
         } else {
             setHeaders(props.headers);
         }
-    }, [props.headers]);
+    }, [props.headers, props.customHeader, fetchFieldsEnabled, props.module]);
 
     useEffect(() => {
         setShowAll(props.showAll);
     }, [props.showAll]);
 
     function fetchModuleFields() {
+        if (!props.module) return;
+
         let endpoint_url = route("fetchModuleFields", { module: props.module });
         Axios.get(endpoint_url).then((response) => {
             if (response.data.status !== false) {
@@ -102,12 +135,21 @@ export default function ListViewTable(props) {
     }
 
     const isDashboard = (props.module || "").toLowerCase() === "dashboard";
+    const isLight = props.theme === "light";
     const tableCardClassName = [
         "overflow-hidden md:rounded-lg backdrop-blur-xl",
-        isDashboard
+        isLight
+            ? "bg-white ring-1 ring-black/5 shadow"
+            : isDashboard
             ? "bg-[#12041f]/65 ring-1 ring-[#6b2a91]/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
             : "bg-[#140816]/70 backdrop-blur-3xl",
-        props.noCardBorder ? "" : isDashboard ? "" : "border border-white/10 ring-1 ring-white/5",
+        props.noCardBorder
+            ? ""
+            : isLight
+              ? "border border-gray-200"
+              : isDashboard
+                ? ""
+                : "border border-white/10 ring-1 ring-white/5",
     ]
         .filter(Boolean)
         .join(" ");
@@ -115,11 +157,24 @@ export default function ListViewTable(props) {
     return (
         <div className="">
             <div className={tableCardClassName}>
-                <table className={isDashboard ? "min-w-full divide-y divide-[#6b2a91]/20" : "min-w-full divide-y divide-white/10"}>
+                <table
+                    className={
+                        isLight
+                            ? "min-w-full divide-y divide-gray-200"
+                            : isDashboard
+                              ? "min-w-full divide-y divide-[#6b2a91]/20"
+                              : "min-w-full divide-y divide-white/10"
+                    }
+                >
                     <thead>
-                        <tr className="text-white text-sm">
-                            {(props.actions.mass_edit === true ||
-                                props.actions.merge === true) && (
+                        <tr
+                            className={
+                                isLight
+                                    ? "text-gray-900 text-sm"
+                                    : "text-white text-sm"
+                            }
+                        >
+                            {hasBulkActions && (
                                 <th>
                                     <Checkbox
                                         id={"checkall"}
@@ -133,7 +188,7 @@ export default function ListViewTable(props) {
                             )}
                             {Object.entries(headers).map(([name, field]) => {
                                 let sort_order = "desc";
-                                let sortable = true;
+                                let sortable = props.disableSorting !== true;
                                 if (
                                     (props.sort_by && props.sort_by == name) ||
                                     (props.sort_by == "last_name" &&
@@ -159,7 +214,13 @@ export default function ListViewTable(props) {
                                         className="py-3.5 pl-4 pr-3 text-left text-sm font-medium text-white sm:pl-4"
                                     >
                                         <span
-                                            className={isDashboard ? "pb-[6px] border-b border-[#6b2a91]/25 block text-white" : "pb-[6px] border-b border-white/20 block text-white"}
+                                            className={
+                                                isLight
+                                                    ? "pb-[6px] border-b border-gray-200 block text-gray-900"
+                                                    : isDashboard
+                                                      ? "pb-[6px] border-b border-[#6b2a91]/25 block text-white"
+                                                      : "pb-[6px] border-b border-white/20 block text-white"
+                                            }
                                             onClick={() => {
                                                 sortable
                                                     ? sortColumn(
@@ -169,39 +230,71 @@ export default function ListViewTable(props) {
                                                     : "";
                                             }}
                                         >
-                                            {props.translator?.[field.label] ??
-                                                field.label}
+                                            {typeof field.label === "string"
+                                                ? props.translator?.[
+                                                      field.label
+                                                  ] ?? field.label
+                                                : field.label}
                                         </span>
                                     </th>
                                 );
                             })}
-                            <th className="text-right px-3 py-3.5" width="50px">
-                                <ToolMenu
-                                    module={props.module}
-                                    headers={props.headers}
-                                    customHeaders={props.customHeader}
-                                    translator={props.translator}
-                                    {...props}
-                                />
-                            </th>
+                            {showActionColumn && (
+                                <th
+                                    className="text-right px-3 py-3.5"
+                                    width="50px"
+                                >
+                                    {showToolMenu && (
+                                        <ToolMenu
+                                            module={props.module}
+                                            headers={props.headers}
+                                            customHeaders={props.customHeader}
+                                            translator={props.translator}
+                                            {...props}
+                                        />
+                                    )}
+                                </th>
+                            )}
                         </tr>
                     </thead>
-                    <tbody className={isDashboard ? "divide-y divide-[#6b2a91]/18" : "divide-y divide-white/10"}>
-                        {props.records.length === 0 && (
+                    <tbody
+                        className={
+                            isLight
+                                ? "divide-y divide-gray-200"
+                                : isDashboard
+                                  ? "divide-y divide-[#6b2a91]/18"
+                                  : "divide-y divide-white/10"
+                        }
+                    >
+                        {records.length === 0 && (
                             <tr>
-                                <td className={isDashboard ? "px-6 py-4 text-[#878787]" : "px-6 py-4 border-t border-white/10 text-[#878787]"} colSpan="8">
-                                    {" "}
-                                    {props.translator["No records found!"]}{" "}
+                                <td
+                                    className={
+                                        isLight
+                                            ? "px-6 py-4 text-gray-500"
+                                            : isDashboard
+                                              ? "px-6 py-4 text-[#878787]"
+                                              : "px-6 py-4 border-t border-white/10 text-[#878787]"
+                                    }
+                                    colSpan={tableColSpan}
+                                >
+                                    {emptyStateText}
                                 </td>
                             </tr>
                         )}
-                        {Object.entries(props.records).map(([key, record]) => {
+                        {records.map((record, key) => {
                             if (showAll === false && key > 4) return false;
 
                             return (
-                                <tr key={record.id ?? key} className="bg-transparent">
-                                    {(props.actions.mass_edit === true ||
-                                        props.actions.merge === true) && (
+                                <tr
+                                    key={
+                                        props.getRowKey
+                                            ? props.getRowKey(record, key)
+                                            : record.id ?? key
+                                    }
+                                    className="bg-transparent"
+                                >
+                                    {hasBulkActions && (
                                         <td className="px-2 py-2">
                                             <Checkbox
                                                 id={record.id}
@@ -225,6 +318,34 @@ export default function ListViewTable(props) {
 
                                     {Object.entries(headers).map(
                                         ([name, field], index) => {
+                                            if (typeof props.renderCell === "function") {
+                                                const customCell = props.renderCell({
+                                                    name,
+                                                    field,
+                                                    record,
+                                                    index,
+                                                    rowIndex: key,
+                                                    fields,
+                                                    fieldOptions,
+                                                    headers,
+                                                });
+
+                                                if (customCell !== undefined) {
+                                                    return (
+                                                        <td
+                                                            key={name}
+                                                            className={
+                                                                isLight
+                                                                    ? "whitespace-nowrap px-2 py-2 text-sm text-gray-500"
+                                                                    : "whitespace-nowrap px-2 py-2 text-sm text-[#878787]"
+                                                            }
+                                                        >
+                                                            {customCell}
+                                                        </td>
+                                                    );
+                                                }
+                                            }
+
                                             let title = "";
                                             let widget = false;
                                             let tmpWidgets = [];
@@ -480,7 +601,7 @@ export default function ListViewTable(props) {
                                             }
 
                                             if (
-                                                props.actions.detail === true &&
+                                                actions.detail === true &&
                                                 index === 0
                                             ) {
                                                 var url =
@@ -489,7 +610,7 @@ export default function ListViewTable(props) {
                                                             "Company" ||
                                                         props.module ===
                                                             "SupportRequest") &&
-                                                    props.current_user.role ===
+                                                    props.current_user?.role ===
                                                         "global_admin" &&
                                                     pathname.includes("admin/")
                                                         ? "detail_global_" +
@@ -615,7 +736,11 @@ export default function ListViewTable(props) {
                                                 <td
                                                     key={name}
                                                     title={title}
-                                                    className="whitespace-nowrap px-2 py-2 text-sm text-[#878787]"
+                                                    className={
+                                                        isLight
+                                                            ? "whitespace-nowrap px-2 py-2 text-sm text-gray-500"
+                                                            : "whitespace-nowrap px-2 py-2 text-sm text-[#878787]"
+                                                    }
                                                 >
                                                     {widget === true
                                                         ? tmpWidgets.map(
@@ -639,22 +764,32 @@ export default function ListViewTable(props) {
                                             <BiImport size={"1rem"} />{" "}
                                         </td>
                                     )}
-                                    <td>
-                                        {props.actions &&
-                                        props.module != "Message" ? (
-                                            <ActionMenu
-                                                record={record}
-                                                fields={fields}
-                                                {...props}
-                                            />
-                                        ) : (
-                                            ""
-                                        )}
-                                    </td>
+                                    {showActionColumn && (
+                                        <td>
+                                            {typeof props.renderActionCell ===
+                                            "function" ? (
+                                                props.renderActionCell({
+                                                    record,
+                                                    rowIndex: key,
+                                                    fields,
+                                                })
+                                            ) : hasRowActions &&
+                                              props.module != "Message" ? (
+                                                <ActionMenu
+                                                    record={record}
+                                                    fields={fields}
+                                                    actions={actions}
+                                                    {...props}
+                                                />
+                                            ) : (
+                                                ""
+                                            )}
+                                        </td>
+                                    )}
                                 </tr>
                             );
                         })}
-                        {props.records.length > 0 && (
+                        {records.length > 0 && (
                             <tr>
                                 <td colSpan={tableColSpan} className="pt-3"></td>
                             </tr>

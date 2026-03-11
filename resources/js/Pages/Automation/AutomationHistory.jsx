@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import ListViewTable from "@/Components/Views/List/ListViewTable";
 
 function AutomationHistory(props){
 
@@ -24,49 +25,42 @@ function AutomationHistory(props){
         });
     }
 
+    const historyHeaders = {
+        name: { label: props.translator["Name"], type: "text" },
+        status: { label: props.translator["Status"], type: "text" },
+        created_at: { label: props.translator["Run at"], type: "text" },
+    };
+
     return (
         <> 
             <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg my-4">
-                <table className="min-w-full divide-y divide-[#D9D9D9]">
-                    <thead>
-                        <tr>
-                            <th
-                                className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-[#3D4459] sm:pl-6"
-                            > {props.translator['Name']} </th>
-                            <th
-                                className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-[#3D4459] sm:pl-6"
-                            > {props.translator['Status']} </th>
-                            <th
-                                className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-[#3D4459] sm:pl-6"
-                            > {props.translator['Run at']} </th>
-                        </tr>
-                    </thead>
-                    <tbody className=" bg-white">
-                        {Object.entries(records).map(([key, record]) => {
-                            return(
-                                <tr>
-                                   
-                                    <td className='px-2 py-2'>
-                                        <a href={route('automation_result', record.id)} className="group inline-flex">
-                                            {record.name}
-                                        </a>
-                                    </td>
-                                    <td className='px-2 py-2'>{record.status ? <>{props.translator['Success']}</> : <>{props.translator['Failed']}</>}</td>
-                                    <td className='px-2 py-2'>{record.created_at}</td>
-                                </tr>
-                            )
-                        })}
-                        {Object.entries(records).length == 0 &&
-                            <tr>
-                                <td className = "" colSpan="3">
-                                    <div className=" px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
-                                        {props.translator['Automation not run yet.']}
-                                    </div>
-                                </td>
-                            </tr>
+                <ListViewTable
+                    records={records}
+                    customHeader={historyHeaders}
+                    fetchFields={false}
+                    hideToolMenu={true}
+                    disableSorting={true}
+                    theme="light"
+                    emptyStateText={props.translator["Automation not run yet."]}
+                    renderCell={({ name, record }) => {
+                        if (name === "name") {
+                            return (
+                                <a
+                                    href={route("automation_result", record.id)}
+                                    className="group inline-flex"
+                                >
+                                    {record.name}
+                                </a>
+                            );
                         }
-                    </tbody>
-                </table>
+
+                        if (name === "status") {
+                            return record.status
+                                ? props.translator["Success"]
+                                : props.translator["Failed"];
+                        }
+                    }}
+                />
             </div>
         </>
     )
