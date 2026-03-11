@@ -1,15 +1,23 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { Fragment, useEffect, useMemo, useState } from "react";
 import Authenticated from "@/Layouts/Authenticated";
-import { Head, Link, router as Inertia } from "@inertiajs/react";
+import { Head, Link, router as Inertia, useForm } from "@inertiajs/react";
+import { Dialog, Transition } from "@headlessui/react";
+import Select from "react-select";
 import {
     ArrowPathIcon,
     ChevronRightIcon,
+    PlusIcon,
     TrashIcon,
 } from "@heroicons/react/24/solid";
 import { FolderPlusIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
 import notie from "notie";
 import nProgress from "nprogress";
+import languages from "@/Pages/languages";
+import PristineJS from "pristinejs";
+import Input from "@/Components/Forms/Input";
+import InputError from "@/Components/Forms/InputError";
+import { defaultPristineConfig } from "@/Pages/Constants";
 
 function Templates(props) {
     const [templates, setTemplates] = useState(props.templates ?? []);
@@ -17,6 +25,13 @@ function Templates(props) {
         props.account?.id ? String(props.account.id) : "",
     );
     const [isLoading, setIsLoading] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const { data, setData, post, processing, reset, errors, clearErrors } =
+        useForm({
+            template_name: "",
+            category: "",
+            languages: ["en"],
+        });
 
     useEffect(() => {
         setTemplates(props.templates ?? []);
@@ -95,6 +110,77 @@ function Templates(props) {
     }
 
     const hasAccount = !!resolvedAccount;
+    const templateCategories = [
+        "AUTHENTICATION",
+        "MARKETING",
+        "UTILITY",
+    ];
+
+    function openCreateTemplateModal() {
+        if (!hasAccount) return;
+        clearErrors();
+        reset();
+        setData({
+            template_name: "",
+            category: "",
+            languages: [],
+        });
+        setIsCreateModalOpen(true);
+    }
+
+    function closeCreateTemplateModal() {
+        setIsCreateModalOpen(false);
+        clearErrors();
+    }
+
+    function handleCreateTemplateChange(event) {
+        const { name, value, options, multiple } = event.target;
+
+        if (multiple) {
+            setData(
+                name,
+                Array.from(options)
+                    .filter((option) => option.selected)
+                    .map((option) => option.value),
+            );
+            return;
+        }
+
+        setData(name, value);
+    }
+
+    function handleCreateTemplateLanguageChange(selectedValues) {
+        const values = (selectedValues ?? []).map((language) => language.code);
+        setData("languages", values);
+    }
+
+    function createTemplate(event) {
+        if (event) {
+            event.preventDefault();
+        }
+        if (!selectedAccountId) return;
+
+        const pristine = new PristineJS(
+            document.getElementById("new_template"),
+            defaultPristineConfig,
+        );
+        const isValidated = pristine.validate(
+            document.querySelectorAll(
+                "#new_template input[data-pristine-required], #new_template select[data-pristine-required]",
+            ),
+        );
+
+        if (!isValidated || !data.languages?.length) {
+            return false;
+        }
+
+        post(route("create_new_template", { id: selectedAccountId }), {
+            preserveScroll: true,
+            onSuccess: () => {
+                closeCreateTemplateModal();
+            },
+        });
+    }
 
     function getStatusClasses(status) {
         const normalizedStatus = (status || "").toLowerCase();
@@ -194,16 +280,28 @@ function Templates(props) {
                             </div>
                         </div>
 
-                        <button
-                            onClick={() => syncTemplates()}
-                            disabled={!hasAccount || isLoading}
-                            className="inline-flex items-center justify-center gap-2 rounded-full bg-fuchsia-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            <ArrowPathIcon
-                                className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-                            />
-                            {props.translator["Sync Templates"]}
-                        </button>
+                        <div className="flex flex-wrap items-center justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={openCreateTemplateModal}
+                                disabled={!hasAccount}
+                                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-white transition hover:border-white/25 hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                <PlusIcon className="h-4 w-4" />
+                                {props.translator["Add template"] ?? "Add template"}
+                            </button>
+
+                            <button
+                                onClick={() => syncTemplates()}
+                                disabled={!hasAccount || isLoading}
+                                className="inline-flex items-center justify-center gap-2 rounded-full bg-fuchsia-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                <ArrowPathIcon
+                                    className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+                                />
+                                {props.translator["Sync Templates"]}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="mt-5 overflow-hidden">
@@ -335,6 +433,164 @@ function Templates(props) {
                     </div>
                 </div>
             </div>
+
+            <Transition.Root show={isCreateModalOpen} as={Fragment}>
+                <Dialog
+                    as="div"
+                    className="relative z-50"
+                    onClose={closeCreateTemplateModal}
+                >
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity" />
+                    </Transition.Child>
+
+                    <div className="fixed inset-0 overflow-y-auto">
+                        <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
+                            <Transition.Child
+                                as={Fragment}
+                                enter="ease-out duration-300"
+                                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                                enterTo="opacity-100 translate-y-0 sm:scale-100"
+                                leave="ease-in duration-200"
+                                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                            >
+                                <Dialog.Panel className="inline-block w-full max-w-lg transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:p-6">
+                                    <div>
+                                        <Dialog.Title
+                                            as="h3"
+                                            className="text-xl leading-6 font-medium text-gray-900"
+                                        >
+                                            {props.translator["Add template"] ?? "Add template"}
+                                        </Dialog.Title>
+                                        <div className="mt-2">
+                                            <p className="pb-4 pt-2 text-sm text-gray-500">
+                                                {props.translator[
+                                                    "Create a new WhatsApp template. Each template must have a unique name consisting of lowercase alphanumeric characters.Spaces must be replaced with underscores (_). Only WhatsApp templates within the pre-defined categories can be accepted."
+                                                ]}
+                                            </p>
+
+                                            <form id="new_template">
+                                                <div className="grid gap-6">
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <label
+                                                            htmlFor="template_name"
+                                                            className="block text-sm font-medium text-gray-700"
+                                                        >
+                                                            {props.translator["Name"] ?? "Name"}{" "}
+                                                            <span className="text-red-500">*</span>
+                                                        </label>
+                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                            <Input
+                                                                name="template_name"
+                                                                required={true}
+                                                                id="template_name"
+                                                                value={data.template_name}
+                                                                placeholder={
+                                                                    props.translator["Template name"] ??
+                                                                    "Template name"
+                                                                }
+                                                                handleChange={handleCreateTemplateChange}
+                                                            />
+                                                        </div>
+                                                        <InputError message={errors.template_name} />
+                                                    </div>
+
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <label
+                                                            htmlFor="category"
+                                                            className="block text-sm font-medium text-gray-700"
+                                                        >
+                                                            {props.translator["Category"] ?? "Category"}{" "}
+                                                            <span className="text-red-500">*</span>
+                                                        </label>
+                                                        <div className="mt-1">
+                                                            <select
+                                                                id="category"
+                                                                name="category"
+                                                                value={data.category}
+                                                                data-pristine-required
+                                                                onChange={handleCreateTemplateChange}
+                                                                className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                                                            >
+                                                                <option value="">
+                                                                    Select
+                                                                </option>
+                                                                {templateCategories.map((category) => (
+                                                                    <option
+                                                                        key={category}
+                                                                        value={category}
+                                                                    >
+                                                                        {category}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                        <InputError message={errors.category} />
+                                                    </div>
+
+                                                    <div className="form-group col-span-6 sm:col-span-4">
+                                                        <label
+                                                            htmlFor="languages"
+                                                            className="block text-sm font-medium text-gray-700"
+                                                        >
+                                                            {props.translator["Languages"] ?? "Languages"}{" "}
+                                                            <span className="text-red-500">*</span>
+                                                        </label>
+                                                        <div className="mt-1">
+                                                            <Select
+                                                                options={languages}
+                                                                isMulti
+                                                                getOptionLabel={(option) => option.name}
+                                                                getOptionValue={(option) => option.code}
+                                                                id="languages"
+                                                                name="languages"
+                                                                value={languages.filter((language) =>
+                                                                    data.languages?.includes(language.code),
+                                                                )}
+                                                                onChange={handleCreateTemplateLanguageChange}
+                                                                placeholder="Select..."
+                                                                className="text-sm"
+                                                                classNamePrefix="react-select"
+                                                            />
+                                                        </div>
+                                                        <InputError message={errors.languages} />
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+                                        <button
+                                            type="button"
+                                            disabled={processing}
+                                            className="inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-60 sm:col-start-2 sm:text-sm"
+                                            onClick={createTemplate}
+                                        >
+                                            {props.translator["Create"] ?? "Create"}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
+                                            onClick={closeCreateTemplateModal}
+                                        >
+                                            {props.translator["Close"] ?? "Close"}
+                                        </button>
+                                    </div>
+                                </Dialog.Panel>
+                            </Transition.Child>
+                        </div>
+                    </div>
+                </Dialog>
+            </Transition.Root>
         </Authenticated>
     );
 }

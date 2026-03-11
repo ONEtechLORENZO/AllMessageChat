@@ -889,6 +889,7 @@ class UserController extends Controller
             'accounts' => $accounts,
             'account' => $account,
             'templates' => $template_details,
+            'categories' => $this->categories,
             'current_page' => 'Templates',
             'translator' => Controller::getTranslations(),
         ]);
