@@ -92,22 +92,28 @@ function List(props) {
     const recordsToShow = isDemo ? demoRecords : props.records || [];
     const translatorToShow = isDemo ? demoTranslator : props.translator;
 
+    const statusOrder = [
+        { label: "Running", key: "running" },
+        { label: "Scheduled", key: "scheduled" },
+        { label: "Completed", key: "completed" },
+        { label: "DRAFT", key: "draft" },
+    ];
+
     const summary = useMemo(() => {
         const counts = {};
         (recordsToShow || []).forEach((r) => {
-            const key = r.status || "Unknown";
+            const key = String(r.status || "unknown").toLowerCase();
             counts[key] = (counts[key] || 0) + 1;
         });
         const total = Object.values(counts).reduce((a, b) => a + b, 0);
         return { counts, total };
     }, [recordsToShow]);
 
-    const statusOrder = ["Running", "Scheduled", "Completed"];
-
     const statusStyles = {
         running: "bg-[#05CD00]",
         scheduled: "bg-[#F9DA00]",
         completed: "bg-[#bf00ff]",
+        draft: "bg-white/60",
         unknown: "bg-white/30",
     };
 
@@ -115,6 +121,7 @@ function List(props) {
         running: "text-[#05CD00] bg-[#05CD00]/15 border-[#05CD00]/40",
         scheduled: "text-[#F9DA00] bg-[#F9DA00]/15 border-[#F9DA00]/40",
         completed: "text-[#00D8E5] bg-[#00D8E5]/15 border-[#00D8E5]/40",
+        draft: "text-white/80 bg-white/10 border-white/30",
         unknown: "text-white/70 bg-white/10 border-white/10",
     };
 
@@ -215,7 +222,9 @@ function List(props) {
                                 >
                                     <option>All</option>
                                     {statusOrder.map((status) => (
-                                        <option key={status}>{status}</option>
+                                        <option key={status.key}>
+                                            {status.label}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
@@ -288,18 +297,17 @@ function List(props) {
                         </div>
                         <div className="space-y-5">
                             {statusOrder.map((status) => {
-                                const count = summary.counts[status] || 0;
+                                const count = summary.counts[status.key] || 0;
                                 const pct =
                                     summary.total > 0
                                         ? Math.round(
                                               (count / summary.total) * 100,
                                           )
                                         : 0;
-                                const key = status.toLowerCase();
                                 return (
-                                    <div key={status}>
+                                    <div key={status.key}>
                                         <div className="flex justify-between text-xs text-white/70 mb-2">
-                                            <span>{status}</span>
+                                            <span>{status.label}</span>
                                             <span>
                                                 {count} / {summary.total} (
                                                 {pct}%)
@@ -309,7 +317,7 @@ function List(props) {
                                             <div
                                                 className={classNames(
                                                     "h-2 rounded-full",
-                                                    statusStyles[key] ??
+                                                    statusStyles[status.key] ??
                                                         statusStyles.unknown,
                                                 )}
                                                 style={{

@@ -5,7 +5,9 @@ import { Dialog, Transition } from "@headlessui/react";
 import Select from "react-select";
 import {
     ArrowPathIcon,
+    ChevronLeftIcon,
     ChevronRightIcon,
+    MagnifyingGlassIcon,
     PlusIcon,
     TrashIcon,
 } from "@heroicons/react/24/solid";
@@ -19,6 +21,19 @@ import Input from "@/Components/Forms/Input";
 import InputError from "@/Components/Forms/InputError";
 import { defaultPristineConfig } from "@/Pages/Constants";
 
+function getLocalDateKey(value) {
+    if (!value) return "";
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
 function Templates(props) {
     const [templates, setTemplates] = useState(props.templates ?? []);
     const [selectedAccountId, setSelectedAccountId] = useState(
@@ -26,6 +41,9 @@ function Templates(props) {
     );
     const [isLoading, setIsLoading] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [templateNameSearch, setTemplateNameSearch] = useState("");
+    const [templateStatusFilter, setTemplateStatusFilter] = useState("");
+    const [templateCreatedOnFilter, setTemplateCreatedOnFilter] = useState("");
     const { data, setData, post, processing, reset, errors, clearErrors } =
         useForm({
             template_name: "",
@@ -39,6 +57,12 @@ function Templates(props) {
         setIsLoading(false);
     }, [props.templates, props.account?.id]);
 
+    useEffect(() => {
+        setTemplateNameSearch("");
+        setTemplateStatusFilter("");
+        setTemplateCreatedOnFilter("");
+    }, [props.account?.id]);
+
     const resolvedAccount = useMemo(() => {
         if (props.account?.id) return props.account;
         if (!selectedAccountId) return null;
@@ -49,18 +73,31 @@ function Templates(props) {
         );
     }, [props.account, props.accounts, selectedAccountId]);
 
-    function handleAccountChange(event) {
-        const nextId = event.target.value;
-        setSelectedAccountId(nextId);
+    function openAccount(accountId) {
+        setSelectedAccountId(String(accountId));
         setTemplates([]);
-        setIsLoading(!!nextId);
+        setIsLoading(true);
         Inertia.get(
-            route("account_templates", { account_id: nextId }),
+            route("account_templates", { account_id: accountId }),
             {},
             {
                 preserveScroll: true,
-                preserveState: true,
-                replace: true,
+                preserveState: false,
+                onFinish: () => setIsLoading(false),
+            },
+        );
+    }
+
+    function clearSelectedAccount() {
+        setSelectedAccountId("");
+        setTemplates([]);
+        setIsLoading(true);
+        Inertia.get(
+            route("account_templates"),
+            {},
+            {
+                preserveScroll: true,
+                preserveState: false,
                 onFinish: () => setIsLoading(false),
             },
         );
@@ -115,6 +152,124 @@ function Templates(props) {
         "MARKETING",
         "UTILITY",
     ];
+    const templateStatusOptions = useMemo(() => {
+        return Array.from(
+            new Set(
+                (templates ?? [])
+                    .map((template) => template.status)
+                    .filter(Boolean),
+            ),
+        );
+    }, [templates]);
+
+    const filteredTemplates = useMemo(() => {
+        const normalizedNameSearch = templateNameSearch.trim().toLowerCase();
+
+        return (templates ?? []).filter((template) => {
+            const matchesName =
+                !normalizedNameSearch ||
+                (template.name ?? "")
+                    .toLowerCase()
+                    .includes(normalizedNameSearch);
+            const matchesStatus =
+                !templateStatusFilter ||
+                String(template.status ?? "").toLowerCase() ===
+                    templateStatusFilter.toLowerCase();
+            const matchesCreatedOn =
+                !templateCreatedOnFilter ||
+                getLocalDateKey(template.created_at) ===
+                    templateCreatedOnFilter;
+
+            return matchesName && matchesStatus && matchesCreatedOn;
+        });
+    }, [
+        templates,
+        templateNameSearch,
+        templateStatusFilter,
+        templateCreatedOnFilter,
+    ]);
+
+    const createTemplateLanguageSelectStyles = useMemo(
+        () => ({
+            control: (base, state) => ({
+                ...base,
+                minHeight: 48,
+                borderRadius: 12,
+                backgroundColor: "#171717",
+                borderColor: state.isFocused
+                    ? "rgba(217, 70, 239, 0.6)"
+                    : "rgba(255, 255, 255, 0.1)",
+                boxShadow: "none",
+                color: "#ffffff",
+                "&:hover": {
+                    borderColor: state.isFocused
+                        ? "rgba(217, 70, 239, 0.6)"
+                        : "rgba(255, 255, 255, 0.18)",
+                },
+            }),
+            menu: (base) => ({
+                ...base,
+                backgroundColor: "#12041f",
+                border: "1px solid rgba(255,255,255,0.1)",
+                overflow: "hidden",
+            }),
+            menuList: (base) => ({
+                ...base,
+                paddingTop: 4,
+                paddingBottom: 4,
+            }),
+            option: (base, state) => ({
+                ...base,
+                backgroundColor: state.isFocused
+                    ? "rgba(217, 70, 239, 0.16)"
+                    : "transparent",
+                color: "#ffffff",
+                cursor: "pointer",
+            }),
+            singleValue: (base) => ({
+                ...base,
+                color: "#ffffff",
+            }),
+            multiValue: (base) => ({
+                ...base,
+                backgroundColor: "rgba(255,255,255,0.08)",
+                borderRadius: 9999,
+            }),
+            multiValueLabel: (base) => ({
+                ...base,
+                color: "#ffffff",
+            }),
+            multiValueRemove: (base) => ({
+                ...base,
+                color: "rgba(255,255,255,0.7)",
+                borderRadius: 9999,
+                ":hover": {
+                    backgroundColor: "rgba(248, 113, 113, 0.15)",
+                    color: "#fca5a5",
+                },
+            }),
+            input: (base) => ({
+                ...base,
+                color: "#ffffff",
+            }),
+            placeholder: (base) => ({
+                ...base,
+                color: "rgba(255,255,255,0.35)",
+            }),
+            indicatorSeparator: (base) => ({
+                ...base,
+                backgroundColor: "rgba(255,255,255,0.1)",
+            }),
+            dropdownIndicator: (base) => ({
+                ...base,
+                color: "rgba(255,255,255,0.45)",
+                ":hover": {
+                    color: "rgba(255,255,255,0.75)",
+                },
+            }),
+        }),
+        [],
+    );
 
     function openCreateTemplateModal() {
         if (!hasAccount) return;
@@ -185,6 +340,24 @@ function Templates(props) {
     function getStatusClasses(status) {
         const normalizedStatus = (status || "").toLowerCase();
 
+        if (
+            normalizedStatus === "active" ||
+            normalizedStatus === "live"
+        ) {
+            return "border-emerald-400/20 bg-emerald-400/10 text-emerald-200";
+        }
+
+        if (
+            normalizedStatus === "inactive" ||
+            normalizedStatus === "disabled"
+        ) {
+            return "border-rose-400/20 bg-rose-400/10 text-rose-200";
+        }
+
+        if (normalizedStatus === "sandbox") {
+            return "border-amber-400/20 bg-amber-400/10 text-amber-200";
+        }
+
         if (normalizedStatus === "approved") {
             return "border-emerald-400/20 bg-emerald-400/10 text-emerald-200";
         }
@@ -215,110 +388,140 @@ function Templates(props) {
         >
             <Head title={props.translator["Templates"] ?? "Templates"} />
 
-            <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-                <div className="flex flex-wrap items-start justify-between gap-6">
-                    <div className="space-y-2">
-                        <h3 className="text-3xl font-semibold tracking-tight text-white">
-                            {props.translator["Templates"] ?? "Templates"}
-                        </h3>
-                        {hasAccount ? (
-                            <p className="text-sm text-white/60">
-                                {resolvedAccount.company_name} -{" "}
-                                {props.translator[resolvedAccount.category] ??
-                                    resolvedAccount.category}
-                            </p>
-                        ) : (
-                            <p className="text-sm text-white/60">
-                                {props.translator[
-                                    "Select an account to view templates."
-                                ] ?? "Select an account to view templates."}
-                            </p>
-                        )}
-                    </div>
-
-                    <div className="min-w-[280px]">
-                        <label
-                            htmlFor="account_id"
-                            className="block text-sm font-medium uppercase tracking-[0.18em] text-white/55"
-                        >
-                            {props.translator["Account"] ?? "Account"}
-                        </label>
-                        <select
-                            id="account_id"
-                            name="account_id"
-                            value={selectedAccountId}
-                            onChange={handleAccountChange}
-                            className="mt-2 w-full rounded-2xl border border-white/10 bg-[#100517]/80 px-4 py-3 text-sm text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] focus:border-fuchsia-500/60 focus:outline-none"
-                        >
-                            <option value="">
-                                {props.translator["Select account"] ??
-                                    "Select account"}
-                            </option>
-                            {props.accounts?.map((account) => (
-                                <option key={account.id} value={account.id}>
-                                    {account.company_name} ({account.service})
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[#140816]/70 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.35)] ring-1 ring-white/5 backdrop-blur-3xl">
-                    <div className="flex flex-col gap-4 border-b border-white/10 pb-5 md:flex-row md:items-start md:justify-between">
-                        <div className="space-y-2">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-fuchsia-200">
-                                {props.translator["Templates"] ?? "Templates"}
-                            </div>
-                            <div className="text-sm text-white/60">
-                                {hasAccount
-                                    ? (props.translator[
-                                          "Templates for this account"
-                                      ] ?? "Templates for this account")
-                                    : (props.translator[
-                                          "Choose an account to see templates"
-                                      ] ?? "Choose an account to see templates")}
-                            </div>
+            <div className="dashboard-page relative pt-4 pb-8">
+                <div className="purple-giant-arc" aria-hidden="true"></div>
+                <div className="relative z-10 space-y-8 px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-wrap items-start justify-between gap-6">
+                        <div className="space-y-3">
+                            <h2 className="flex flex-wrap items-baseline gap-x-3 leading-none">
+                                <span className="one-tech-special text-4xl font-black tracking-tight sm:text-5xl">
+                                    {props.translator["Templates"] ?? "Templates"}
+                                </span>
+                            </h2>
+                            {hasAccount ? (
+                                <p className="text-sm text-white/60">
+                                    {resolvedAccount.company_name} -{" "}
+                                    {props.translator[resolvedAccount.category] ??
+                                        resolvedAccount.category}
+                                </p>
+                            ) : (
+                                <p className="text-sm text-white/60">
+                                    {props.translator[
+                                        "Select an account to view templates."
+                                    ] ?? "Select an account to view templates."}
+                                </p>
+                            )}
                         </div>
 
-                        <div className="flex flex-wrap items-center justify-end gap-3">
+                        {hasAccount ? (
                             <button
                                 type="button"
-                                onClick={openCreateTemplateModal}
-                                disabled={!hasAccount}
-                                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-white transition hover:border-white/25 hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
+                                onClick={clearSelectedAccount}
+                                className="inline-flex items-center gap-2 border border-white/70 bg-transparent px-7 py-4 text-sm font-semibold text-white transition hover:border-white hover:bg-white/[0.04]"
                             >
-                                <PlusIcon className="h-4 w-4" />
-                                {props.translator["Add template"] ?? "Add template"}
+                                <ChevronLeftIcon className="h-4 w-4" />
+                                {props.translator["Accounts"] ?? "Accounts"}
                             </button>
-
-                            <button
-                                onClick={() => syncTemplates()}
-                                disabled={!hasAccount || isLoading}
-                                className="inline-flex items-center justify-center gap-2 rounded-full bg-fuchsia-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                                <ArrowPathIcon
-                                    className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-                                />
-                                {props.translator["Sync Templates"]}
-                            </button>
-                        </div>
+                        ) : null}
                     </div>
 
-                    <div className="mt-5 overflow-hidden">
+                    <GlassCard className="overflow-hidden shadow-[0_24px_90px_rgba(0,0,0,0.35)]">
+                    {hasAccount ? (
+                        <div className="flex flex-col gap-4 border-b border-white/10 pb-5 md:flex-row md:items-start md:justify-between">
+                            <div className="space-y-2">
+                                <div className="inline-flex items-center gap-2 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-fuchsia-200">
+                                    {resolvedAccount.company_name}
+                                </div>
+                                <div className="text-sm text-white/60">
+                                    {props.translator[
+                                        "Templates for this account"
+                                    ] ?? "Templates for this account"}
+                                </div>
+                            </div>
+
+                            <div className="flex flex-wrap items-center justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={openCreateTemplateModal}
+                                    disabled={!hasAccount}
+                                    style={{
+                                        backgroundColor: "#BF00FF",
+                                        borderColor: "#BF00FF",
+                                        borderRadius: "16px",
+                                    }}
+                                    className="inline-flex min-h-[52px] min-w-[170px] items-center justify-center gap-2 px-5 py-3 text-base font-semibold leading-none whitespace-nowrap text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    <PlusIcon className="h-4 w-4 shrink-0" />
+                                    {props.translator["Add template"] ?? "Add template"}
+                                </button>
+
+                                <button
+                                    onClick={() => syncTemplates()}
+                                    disabled={!hasAccount || isLoading}
+                                    style={{
+                                        backgroundColor: "#BF00FF",
+                                        borderColor: "#BF00FF",
+                                        borderRadius: "16px",
+                                    }}
+                                    className="inline-flex min-h-[52px] min-w-[170px] items-center justify-center gap-2 px-5 py-3 text-base font-semibold leading-none whitespace-nowrap text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    <ArrowPathIcon
+                                        className={`h-4 w-4 shrink-0 ${isLoading ? "animate-spin" : ""}`}
+                                    />
+                                    {props.translator["Sync Templates"]}
+                                </button>
+                            </div>
+                        </div>
+                    ) : null}
+
+                    <div className={`${hasAccount ? "mt-5" : ""} overflow-hidden`}>
                         {!hasAccount ? (
-                            <div className="py-12 text-center">
-                                <FolderPlusIcon className="mx-auto h-12 w-12 text-white/40" />
-                                <h3 className="mt-3 text-sm font-medium text-white">
-                                    {props.translator[
-                                        "Select an account to continue"
-                                    ] ?? "Select an account to continue"}
-                                </h3>
-                                <p className="mt-1 text-sm text-white/50">
-                                    {props.translator[
-                                        "You can only view templates after choosing an account."
-                                    ] ??
-                                        "You can only view templates after choosing an account."}
-                                </p>
+                            <div className="space-y-4">
+                                {(props.accounts ?? []).length > 0 ? (
+                                    <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#100517]/40">
+                                        {(props.accounts ?? []).map((account) => (
+                                            <button
+                                                key={account.id}
+                                                type="button"
+                                                onClick={() => openAccount(account.id)}
+                                                className="w-full border-b border-white/10 px-5 py-4 text-left transition last:border-b-0 hover:bg-white/[0.03]"
+                                            >
+                                                <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1.8fr)_auto_auto] lg:items-center lg:gap-5">
+                                                    <div className="min-w-0 space-y-1">
+                                                        <div className="text-lg font-semibold text-white">
+                                                            {account.company_name} ({account.service})
+                                                        </div>
+                                                        <div className="text-sm text-white/60">
+                                                            Account Id : {account.id}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center lg:justify-center">
+                                                        <span
+                                                            className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${getStatusClasses(account.status)}`}
+                                                        >
+                                                            {account.status ?? "Unknown"}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-center justify-start lg:justify-end">
+                                                        <span className="inline-flex items-center gap-2 rounded-full border border-fuchsia-400/20 bg-fuchsia-500/10 px-4 py-1.5 text-sm font-semibold text-fuchsia-100 transition hover:bg-fuchsia-500/20">
+                                                            Open
+                                                            <ChevronRightIcon className="h-3.5 w-3.5" />
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="py-12 text-center">
+                                        <FolderPlusIcon className="mx-auto h-12 w-12 text-white/40" />
+                                        <h3 className="mt-3 text-sm font-medium text-white">
+                                            No accounts found
+                                        </h3>
+                                    </div>
+                                )}
                             </div>
                         ) : isLoading ? (
                             <div className="py-12 text-center text-sm text-white/70">
@@ -327,47 +530,109 @@ function Templates(props) {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {templates.map((data) => {
+                                <div className="grid gap-4 border-b border-white/10 px-5 pb-5 lg:grid-cols-[minmax(0,1.4fr)_180px_140px_184px] lg:items-end lg:gap-6">
+                                    <label className="block">
+                                        <span className="mb-2 block text-sm font-medium text-white/70">
+                                            {props.translator["Name"] ?? "Name"}
+                                        </span>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={templateNameSearch}
+                                                onChange={(event) =>
+                                                    setTemplateNameSearch(
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                placeholder={
+                                                    props.translator[
+                                                        "Search by name"
+                                                    ] ?? "Search by name"
+                                                }
+                                                className="w-full rounded-xl border-0 bg-[#171717] py-2.5 pl-4 pr-10 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-0 focus:border-transparent"
+                                            />
+                                            <MagnifyingGlassIcon className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+                                        </div>
+                                    </label>
+
+                                    <label className="block">
+                                        <span className="mb-2 block text-sm font-medium text-white/70">
+                                            {props.translator["Created On"] ??
+                                                "Created On"}
+                                        </span>
+                                        <input
+                                            type="date"
+                                            value={templateCreatedOnFilter}
+                                            onChange={(event) =>
+                                                setTemplateCreatedOnFilter(
+                                                    event.target.value,
+                                                )
+                                            }
+                                            className="w-full rounded-xl border-0 bg-[#171717] px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-0 focus:border-transparent"
+                                        />
+                                    </label>
+
+                                    <label className="block">
+                                        <span className="mb-2 block text-sm font-medium text-white/70">
+                                            {props.translator["Status"] ?? "Status"}
+                                        </span>
+                                        <select
+                                            value={templateStatusFilter}
+                                            onChange={(event) =>
+                                                setTemplateStatusFilter(
+                                                    event.target.value,
+                                                )
+                                            }
+                                            className="w-full rounded-xl border-0 bg-[#171717] px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-0 focus:border-transparent"
+                                        >
+                                            <option value="">
+                                                {props.translator["All"] ?? "All"}
+                                            </option>
+                                            {templateStatusOptions.map((status) => (
+                                                <option key={status} value={status}>
+                                                    {status}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+
+                                    <div className="hidden lg:block" />
+                                </div>
+
+                                <div className="hidden border-b border-white/10 px-5 pb-3 lg:grid lg:grid-cols-[minmax(0,1.4fr)_180px_140px_184px] lg:items-center lg:gap-6">
+                                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
+                                        {props.translator["Name"] ?? "Name"}
+                                    </div>
+                                    <div className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
+                                        {props.translator["Created On"] ?? "Created On"}
+                                    </div>
+                                    <div className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
+                                        {props.translator["Status"] ?? "Status"}
+                                    </div>
+                                    <div />
+                                </div>
+
+                                {filteredTemplates.map((data) => {
                                     return (
                                         <div
                                             key={data.id}
                                             className="group overflow-hidden rounded-3xl border border-white/10 bg-[#100517]/85 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)] transition hover:border-fuchsia-400/20 hover:bg-[#14081d]/90"
                                         >
-                                            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                                            <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1.4fr)_180px_140px_184px] lg:items-center lg:gap-6">
                                                 <div className="min-w-0 flex-1 space-y-3">
-                                                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                                                        <div className="min-w-0 space-y-1">
-                                                            <Link
-                                                                className="block truncate text-xl font-semibold text-white transition group-hover:text-fuchsia-100"
-                                                                href={route(
-                                                                    "template_detail_view",
-                                                                    [
-                                                                        data.account_id,
-                                                                        data.id,
-                                                                    ],
-                                                                )}
-                                                            >
-                                                                {data.name}
-                                                            </Link>
-                                                            <p className="truncate text-sm text-white/55">
-                                                                {
-                                                                    props.translator[
-                                                                        "Created by"
-                                                                    ]
-                                                                }{" "}
-                                                                {data.creater_name?.name ??
-                                                                    ""}{" "}
-                                                                {data.created_at
-                                                                    ? `on ${new Date(data.created_at).toLocaleDateString("en-US")}`
-                                                                    : ""}
-                                                            </p>
-                                                        </div>
-
-                                                        <span
-                                                            className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${getStatusClasses(data.status)}`}
+                                                    <div className="min-w-0 space-y-1">
+                                                        <Link
+                                                            className="block truncate text-xl font-semibold text-white transition group-hover:text-fuchsia-100"
+                                                            href={route(
+                                                                "template_detail_view",
+                                                                [
+                                                                    data.account_id,
+                                                                data.id,
+                                                            ],
+                                                        )}
                                                         >
-                                                            {data.status ?? "Unknown"}
-                                                        </span>
+                                                            {data.name}
+                                                        </Link>
                                                     </div>
 
                                                     <div className="flex flex-wrap gap-2">
@@ -382,13 +647,31 @@ function Templates(props) {
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center justify-end gap-3">
+                                                <div className="text-center text-sm text-white/60">
+                                                    {data.created_at
+                                                        ? new Date(
+                                                              data.created_at,
+                                                          ).toLocaleDateString(
+                                                              "en-US",
+                                                          )
+                                                        : "-"}
+                                                </div>
+
+                                                <div className="flex items-center justify-center">
+                                                    <span
+                                                        className={`inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${getStatusClasses(data.status)}`}
+                                                    >
+                                                        {data.status ?? "Unknown"}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-center justify-start gap-4 self-center lg:justify-end">
                                                     <button
                                                         type="button"
                                                         onClick={() =>
                                                             deleteTemplate(data.id)
                                                         }
-                                                        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/55 transition hover:border-red-400/20 hover:bg-red-500/10 hover:text-red-200"
+                                                        className="inline-flex h-10 w-10 items-center justify-center text-red-400 transition hover:text-red-300"
                                                     >
                                                         <TrashIcon className="h-5 w-5" />
                                                     </button>
@@ -416,21 +699,28 @@ function Templates(props) {
 
                         {hasAccount &&
                         !isLoading &&
-                        (!templates || templates.length == 0) ? (
+                        (!filteredTemplates || filteredTemplates.length == 0) ? (
                             <div className="py-12 text-center">
                                 <FolderPlusIcon className="mx-auto h-12 w-12 text-white/35" />
                                 <h3 className="mt-2 text-sm font-medium text-white">
-                                    {props.translator["No templates found"]}
+                                    {props.translator["No templates found"] ??
+                                        "No templates found"}
                                 </h3>
                                 <p className="mt-1 text-sm text-white/55">
-                                    {props.translator[
-                                        "Sync templates or choose another account to continue."
-                                    ] ??
-                                        "Sync templates or choose another account to continue."}
+                                    {templates?.length
+                                        ? props.translator[
+                                              "No templates match the current filters."
+                                          ] ??
+                                          "No templates match the current filters."
+                                        : props.translator[
+                                              "Sync templates or choose another account to continue."
+                                          ] ??
+                                          "Sync templates or choose another account to continue."}
                                 </p>
                             </div>
                         ) : null}
                     </div>
+                    </GlassCard>
                 </div>
             </div>
 
@@ -463,16 +753,16 @@ function Templates(props) {
                                 leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                                 leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                             >
-                                <Dialog.Panel className="inline-block w-full max-w-lg transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:p-6">
+                                <Dialog.Panel className="inline-block w-full max-w-lg transform overflow-hidden rounded-3xl border border-white/10 bg-[#12041f] px-4 pt-5 pb-4 text-left shadow-[0_24px_80px_rgba(0,0,0,0.45)] transition-all sm:p-6">
                                     <div>
                                         <Dialog.Title
                                             as="h3"
-                                            className="text-xl leading-6 font-medium text-gray-900"
+                                            className="text-3xl font-semibold leading-6 text-white"
                                         >
                                             {props.translator["Add template"] ?? "Add template"}
                                         </Dialog.Title>
                                         <div className="mt-2">
-                                            <p className="pb-4 pt-2 text-sm text-gray-500">
+                                            <p className="pb-4 pt-3 text-sm leading-7 text-white/60">
                                                 {props.translator[
                                                     "Create a new WhatsApp template. Each template must have a unique name consisting of lowercase alphanumeric characters.Spaces must be replaced with underscores (_). Only WhatsApp templates within the pre-defined categories can be accepted."
                                                 ]}
@@ -483,7 +773,7 @@ function Templates(props) {
                                                     <div className="form-group col-span-6 sm:col-span-4">
                                                         <label
                                                             htmlFor="template_name"
-                                                            className="block text-sm font-medium text-gray-700"
+                                                            className="block text-sm font-medium text-white/80"
                                                         >
                                                             {props.translator["Name"] ?? "Name"}{" "}
                                                             <span className="text-red-500">*</span>
@@ -499,6 +789,7 @@ function Templates(props) {
                                                                     "Template name"
                                                                 }
                                                                 handleChange={handleCreateTemplateChange}
+                                                                className="border-0 bg-[#171717] px-4 py-3 text-white placeholder:text-white/35 focus:border-fuchsia-500/60 focus:ring-fuchsia-500/20"
                                                             />
                                                         </div>
                                                         <InputError message={errors.template_name} />
@@ -507,7 +798,7 @@ function Templates(props) {
                                                     <div className="form-group col-span-6 sm:col-span-4">
                                                         <label
                                                             htmlFor="category"
-                                                            className="block text-sm font-medium text-gray-700"
+                                                            className="block text-sm font-medium text-white/80"
                                                         >
                                                             {props.translator["Category"] ?? "Category"}{" "}
                                                             <span className="text-red-500">*</span>
@@ -519,7 +810,7 @@ function Templates(props) {
                                                                 value={data.category}
                                                                 data-pristine-required
                                                                 onChange={handleCreateTemplateChange}
-                                                                className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                                                                className="block w-full rounded-xl border border-white/10 bg-[#171717] px-4 py-3 text-sm text-white focus:border-fuchsia-500/60 focus:outline-none focus:ring-fuchsia-500/20"
                                                             >
                                                                 <option value="">
                                                                     Select
@@ -540,7 +831,7 @@ function Templates(props) {
                                                     <div className="form-group col-span-6 sm:col-span-4">
                                                         <label
                                                             htmlFor="languages"
-                                                            className="block text-sm font-medium text-gray-700"
+                                                            className="block text-sm font-medium text-white/80"
                                                         >
                                                             {props.translator["Languages"] ?? "Languages"}{" "}
                                                             <span className="text-red-500">*</span>
@@ -560,6 +851,7 @@ function Templates(props) {
                                                                 placeholder="Select..."
                                                                 className="text-sm"
                                                                 classNamePrefix="react-select"
+                                                                styles={createTemplateLanguageSelectStyles}
                                                             />
                                                         </div>
                                                         <InputError message={errors.languages} />
@@ -572,14 +864,14 @@ function Templates(props) {
                                         <button
                                             type="button"
                                             disabled={processing}
-                                            className="inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-60 sm:col-start-2 sm:text-sm"
+                                            className="inline-flex w-full justify-center rounded-xl border border-transparent bg-fuchsia-600 px-4 py-3 text-base font-medium text-white shadow-sm transition hover:bg-fuchsia-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/40 focus:ring-offset-0 disabled:opacity-60 sm:col-start-2 sm:text-sm"
                                             onClick={createTemplate}
                                         >
                                             {props.translator["Create"] ?? "Create"}
                                         </button>
                                         <button
                                             type="button"
-                                            className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
+                                            className="mt-3 inline-flex w-full justify-center rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-base font-medium text-white/85 shadow-sm transition hover:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-fuchsia-500/40 focus:ring-offset-0 sm:col-start-1 sm:mt-0 sm:text-sm"
                                             onClick={closeCreateTemplateModal}
                                         >
                                             {props.translator["Close"] ?? "Close"}
@@ -592,6 +884,19 @@ function Templates(props) {
                 </Dialog>
             </Transition.Root>
         </Authenticated>
+    );
+}
+
+function GlassCard({ className = "", children }) {
+    return (
+        <div
+            className={[
+                "relative rounded-3xl bg-[#170024]/80 backdrop-blur-sm group",
+                className,
+            ].join(" ")}
+        >
+            <div className="relative z-10 flex h-full flex-col p-6">{children}</div>
+        </div>
     );
 }
 

@@ -834,12 +834,30 @@ class UserController extends Controller
      */
     public function accountTemplates(Request $request)
     {
-        $accounts = Account::select('company_name', 'service', 'accounts.id', 'accounts.status', 'fb_page_name', 'category')->get();
+        $userId = $request->user()->id;
+        $accounts = Account::where('user_id', $userId)
+            ->select(
+                'accounts.id',
+                'company_name',
+                'service',
+                'accounts.status',
+                'fb_page_name',
+                'category',
+                'phone_number',
+                'src_name',
+                'fb_phone_number_id',
+                'fb_whatsapp_account_id',
+                'created_at'
+            )
+            ->orderBy('company_name')
+            ->get();
         $selectedAccountId = $request->get('account_id');
         $account = null;
 
         if ($selectedAccountId) {
-            $account = Account::where('id', $selectedAccountId)->first();
+            $account = Account::where('user_id', $userId)
+                ->where('id', $selectedAccountId)
+                ->first();
         }
 
         $template_details = [];
