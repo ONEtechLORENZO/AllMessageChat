@@ -394,6 +394,8 @@ export default function Authenticated({
     children,
     hideHeader,
     current_page,
+    hidePageTitle,
+    pageTitle,
     message,
     navigationMenu,
 }) {
@@ -424,6 +426,16 @@ export default function Authenticated({
     const [adminMenuText, setadminMenuText] = useState("Global Admin page");
     const [navigateField, setNavigateField] = useState();
     const pathname = window.location.pathname;
+    const resolvedPageTitle =
+        pageTitle ??
+        current_page ??
+        pageProps?.current_page ??
+        pageProps?.plural ??
+        null;
+    const translatedPageTitle = resolvedPageTitle
+        ? translator[resolvedPageTitle] ?? resolvedPageTitle
+        : null;
+    const showPageTitle = hidePageTitle !== true && !!translatedPageTitle;
 
     const [showWorkspaceForm, setShowWorkspaceForm] = useState(false);
     const [navigationMenuBar, setNavigationMenuBar] = useState(navigationMenu);
@@ -1649,7 +1661,32 @@ export default function Authenticated({
                             </header>
                         ) : null}
 
-                        <div className="flex-1 p-3 md:p-8">{children}</div>
+                        <div
+                            className={[
+                                "flex-1",
+                                showPageTitle
+                                    ? "px-3 pb-3 pt-0 md:px-8 md:pb-8 md:pt-0"
+                                    : "p-3 md:p-8",
+                            ].join(" ")}
+                        >
+                            {showPageTitle ? (
+                                <div className="px-1 pt-4 md:px-0 md:pt-6">
+                                    <h1 className="platform-page-title one-tech-special">
+                                        {translatedPageTitle}
+                                    </h1>
+                                </div>
+                            ) : null}
+
+                            <div
+                                className={
+                                    showPageTitle
+                                        ? "pt-4 md:pt-5"
+                                        : undefined
+                                }
+                            >
+                                {children}
+                            </div>
+                        </div>
                     </main>
                 </div>
             </div>

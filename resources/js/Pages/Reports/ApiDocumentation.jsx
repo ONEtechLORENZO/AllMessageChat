@@ -127,6 +127,7 @@ export default function ApiDocumentation(props) {
             errors={props.errors}
             navigationMenu={props.menuBar}
             current_page={props.current_page ?? "API Documentation"}
+            hidePageTitle
         >
             <Head title={pageTitle} />
 

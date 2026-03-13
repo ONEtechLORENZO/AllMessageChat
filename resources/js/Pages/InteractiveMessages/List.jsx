@@ -16,6 +16,7 @@ function List(props) {
             errors={props.errors}
             current_page={props.current_page}
             navigationMenu={props.menuBar}
+            hidePageTitle
         >
             <Head title={props.plural} />
 

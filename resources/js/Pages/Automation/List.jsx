@@ -10,10 +10,6 @@ function List(props) {
             current_page={props.current_page}
             navigationMenu={props.menuBar}
         >
-            <div className="font-semibold text-2xl text-white !px-4 ml-3">
-                {props.plural}
-            </div>
-
             <ListView headers={props.list_view_columns} {...props} />
         </Authenticated>
     );

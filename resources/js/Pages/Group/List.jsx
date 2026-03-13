@@ -20,10 +20,6 @@ export default function Group(props) {
             current_page={props.current_page}
             navigationMenu={props.menuBar}
         >
-            <div className="font-semibold text-2xl text-white !px-4 !mb-6 ml-3">
-                {props.plural}
-            </div>
-
             <ListView
                 headers={props.list_view_columns}
                 user_list={props.user_list}

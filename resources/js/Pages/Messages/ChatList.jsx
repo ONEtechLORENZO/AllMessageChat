@@ -417,6 +417,7 @@ function ChatList(props) {
             auth={props.auth}
             errors={props.errors}
             current_page={"Chats"}
+            hidePageTitle
             navigationMenu={props.menuBar}
         >
             <Head title="Chat" />

@@ -34,10 +34,6 @@ function List(props) {
             current_page={props.current_page}
             navigationMenu={props.menuBar}
         >
-            <div className="font-semibold text-2xl text-white !px-4 ml-3">
-                {props.plural}
-            </div>
-
             <div className="mt-6 sm:mt-2 2xl:mt-5 !mb-6">
                 <div className="border-b border-gray-200">
                     <div className="mx-auto px-4 sm:px-6 lg:px-8">

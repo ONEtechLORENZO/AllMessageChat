@@ -37,10 +37,6 @@ export default function MessageLogs(props) {
         >
             <Head title={props.translator["Message Logs"] ?? "Message Logs"} />
 
-            <div className="font-semibold text-2xl text-white !px-4 !mb-6 ml-3">
-                {props.translator["Message Logs"] ?? "Message Logs"}
-            </div>
-
             <ListView
                 module="Msg"
                 headers={props.list_view_columns}

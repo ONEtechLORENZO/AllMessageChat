@@ -190,10 +190,7 @@ function List(props) {
         >
             <div className="dashboard-page px-4 sm:px-6 lg:px-8 relative">
                 <div className="relative z-10">
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div className="text-2xl font-semibold text-white">
-                        {props.plural}
-                    </div>
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-end">
                     <Link
                         href={route("createCampaign")}
                         className="inline-flex items-center justify-center rounded-lg bg-[#BF00FF] px-5 py-2 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(191,0,255,0.25)] transition hover:bg-[#9c00d9]"

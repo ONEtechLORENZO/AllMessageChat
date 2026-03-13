@@ -208,6 +208,7 @@ export default function DashboardNew(props) {
                 auth={props.auth}
                 errors={props.errors}
                 current_page="Dashboard"
+                hidePageTitle
                 message={props.message}
                 navigationMenu={props.menuBar}
             >
