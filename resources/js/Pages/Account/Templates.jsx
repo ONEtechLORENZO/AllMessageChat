@@ -63,6 +63,24 @@ function Templates(props) {
         setTemplateCreatedOnFilter("");
     }, [props.account?.id]);
 
+    useEffect(() => {
+        if (typeof window === "undefined") {
+            return;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const assistantSearch = params.get("assistant_search");
+        const assistantMode = params.get("assistant");
+
+        if (assistantSearch) {
+            setTemplateNameSearch(assistantSearch);
+        }
+
+        if (assistantMode === "create" && props.account?.id) {
+            setIsCreateModalOpen(true);
+        }
+    }, [props.account?.id]);
+
     const resolvedAccount = useMemo(() => {
         if (props.account?.id) return props.account;
         if (!selectedAccountId) return null;

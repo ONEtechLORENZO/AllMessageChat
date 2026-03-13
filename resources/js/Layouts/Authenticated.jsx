@@ -44,6 +44,7 @@ import { createTranslator, getLocale, setLocale } from "@/i18n/translator";
 import { CurrencyDollarIcon } from "@heroicons/react/24/solid";
 import axios from "axios";
 import Notification from "./Notification";
+import CommandAssistant from "@/Components/Assistant/CommandAssistant";
 import notie from "notie";
 import { BsCaretDownFill, BsCaretUpFill } from "react-icons/bs";
 
@@ -1690,6 +1691,8 @@ export default function Authenticated({
                     </main>
                 </div>
             </div>
+
+            <CommandAssistant />
 
             {showModal && companyList?.[0]?.name ? (
                 <UserRegistration

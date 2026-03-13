@@ -39,6 +39,7 @@ use App\Http\Controllers\ApiController;
 use App\Http\Controllers\WhatsAppUsersController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\DashboardAssistantController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsGlobalAdmin;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -96,6 +97,7 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/social-profile', [UserController::class, 'socialProfile'])->name('social_profile');
         Route::get('/templates', [UserController::class, 'accountTemplates'])->name('account_templates');
         Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
+        Route::post('/assistant/command', [DashboardAssistantController::class, 'handle'])->name('assistant.command');
         Route::get('/user/timezone', [UserController::class, 'getUserTimeZone'])->name('get_time_zone');
         Route::post('/show_register_step', [RegisteredUserController::class, 'create'])->name('show_register_step');
         Route::get('/user/checkInformation', [UserController::class, 'checkInformation'])->name('check_information');
