@@ -2327,12 +2327,14 @@ class UserController extends Controller
         if ($routeName) {
             $data['actions']['mass_edit'] = false;
             $data['records'] = collect($data['records'] ?? [])->map(function ($record) {
-                if (isset($record->created_at) && $record->created_at) {
-                    $record->created_at = Carbon::parse($record->created_at)
+                $item = is_array($record) ? $record : $record->toArray();
+
+                if (!empty($item['created_at'])) {
+                    $item['created_at'] = Carbon::parse($item['created_at'])
                         ->format('d-m-Y H:i:s');
                 }
 
-                return $record;
+                return $item;
             })->all();
             $data['paginator'] = $this->buildMessageLogPaginator($request, $routeName, $data['paginator'] ?? []);
             $data['routeName'] = $routeName;
