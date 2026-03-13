@@ -6,6 +6,7 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/solid';
 function Search(props)
 {
     const [search, setSearch] = useState('');
+    const listRouteParams = props.listRouteParams ?? {};
 
     useEffect(() => {
         setSearch(props.search);
@@ -17,6 +18,25 @@ function Search(props)
      */
     function triggerSearch()
     {
+        if (props.routeName) {
+            const query = {
+                ...listRouteParams,
+                page: props.currentPage,
+                search,
+            };
+
+            if (props.sort_by) {
+                query.sort_by = props.sort_by;
+            }
+
+            if (props.sort_order) {
+                query.sort_order = props.sort_order;
+            }
+
+            Inertia.get(route(props.routeName, query));
+            return;
+        }
+
         if(props.module=="Transaction")
         {
             Inertia.get(route('wallet') +'?current_page=Invoice&search_tab=Transaction&page='+ props.currentPage +'&search=' + search + '&sort_by=' + props.sort_by + '&sort_order=' + props.sort_order); 

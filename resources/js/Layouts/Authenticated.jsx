@@ -95,10 +95,20 @@ const navigation = [
         show: ["all"],
     },
     {
-        name: "Reports",
-        href: route("listMessage"),
+        name: "Messaging",
+        href: "#",
         icon: GraphIcon,
         show: ["all"],
+        subMenu: [
+            {
+                name: "Messages",
+                href: route("listMessage"),
+            },
+            {
+                name: "Message Logs",
+                href: route("listMessageLogs"),
+            },
+        ],
     },
 ];
 
@@ -291,9 +301,19 @@ const menuBar = [
         icon: NetworkIcon,
     },
     {
-        name: "Reports",
-        href: route("listMessage"),
+        name: "Messaging",
+        href: "#",
         icon: ChartBarIcon,
+        subMenu: [
+            {
+                name: "Messages",
+                href: route("listMessage"),
+            },
+            {
+                name: "Message Logs",
+                href: route("listMessageLogs"),
+            },
+        ],
     },
 ];
 
@@ -998,7 +1018,13 @@ export default function Authenticated({
                                             navigator?.submenu &&
                                             hasSubMenu;
                                         const isActive =
-                                            item.name === current_page;
+                                            item.name === current_page ||
+                                            (hasSubMenu &&
+                                                item.subMenu.some(
+                                                    (subItem) =>
+                                                        subItem.name ===
+                                                        current_page,
+                                                ));
 
                                         return (
                                             <li key={header}>

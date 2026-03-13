@@ -5,6 +5,7 @@ import { router as Inertia } from "@inertiajs/react";
 export default function CalenderMenu(props) {
 
     const [calender, setCalender] = useState(props.sort_time);
+    const listRouteParams = props.listRouteParams ?? {};
 
     const options = {
         'today' : 'Today', 'yesterday' : 'Yesterday', 'week' : 'This Week', 'month' : 'This Month'
@@ -13,6 +14,15 @@ export default function CalenderMenu(props) {
     function calenderHandler(event) {
         let value = event.target.value;
         setCalender(value);
+
+        if (props.routeName) {
+            Inertia.get(route(props.routeName, {
+                ...listRouteParams,
+                module: props.module,
+                sort_time: value,
+            }));
+            return;
+        }
 
         if(props.module == 'Conversation' && props.from == 'conversation') {
             Inertia.get(route('wallet', {'module' : props.module, 'current_page' : 'Expenses', 'sort_time' : value, 'is_conversation' : true}));

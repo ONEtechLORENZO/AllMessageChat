@@ -25,7 +25,9 @@ export default function DashboardNew(props) {
     const dailyAverageValue = Number((totalMessages / 30).toFixed(3));
     const trendPointOne = totalMessages;
     const trendPointThree = dailyAverageValue;
-    const trendPointTwo = Number(((trendPointOne + trendPointThree) / 2).toFixed(3));
+    const trendPointTwo = Number(
+        ((trendPointOne + trendPointThree) / 2).toFixed(3),
+    );
     const trendValues = [trendPointOne, trendPointTwo, trendPointThree];
     const trendMin = Math.min(...trendValues);
     const trendMax = Math.max(...trendValues);
@@ -141,14 +143,37 @@ export default function DashboardNew(props) {
         totalSessions > 0
             ? Math.max(
                   0,
-                  Math.min(100, Math.round((remainingSessions / totalSessions) * 100)),
+                  Math.min(
+                      100,
+                      Math.round((remainingSessions / totalSessions) * 100),
+                  ),
               )
             : 0;
     const socialItems = [
-        { key: "instagram", src: "./img/instagram-icon.png", alt: "Instagram", widthClass: "w-8" },
-        { key: "whatsapp", src: "./img/WhatsApp-icon.png", alt: "WhatsApp", widthClass: "w-9" },
-        { key: "telegram", src: "./img/Telegram-icon.png", alt: "Telegram", widthClass: "w-8" },
-        { key: "facebook", src: "./img/facebook-icon.png", alt: "Facebook", widthClass: "w-8" },
+        {
+            key: "instagram",
+            src: "./img/instagram-icon.png",
+            alt: "Instagram",
+            widthClass: "w-8",
+        },
+        {
+            key: "whatsapp",
+            src: "./img/WhatsApp-icon.png",
+            alt: "WhatsApp",
+            widthClass: "w-9",
+        },
+        {
+            key: "telegram",
+            src: "./img/Telegram-icon.png",
+            alt: "Telegram",
+            widthClass: "w-8",
+        },
+        {
+            key: "facebook",
+            src: "./img/facebook-icon.png",
+            alt: "Facebook",
+            widthClass: "w-8",
+        },
     ];
     const whatsappCount =
         props.services?.whatsapp?.count ??
@@ -179,8 +204,7 @@ export default function DashboardNew(props) {
 
     return (
         <>
-                        
-<Authenticated
+            <Authenticated
                 auth={props.auth}
                 errors={props.errors}
                 current_page="Dashboard"
@@ -190,9 +214,9 @@ export default function DashboardNew(props) {
                 <Head title={props.translator["Dashboard"]} />
 
                 <div className="dashboard-page pt-4 pb-8 relative">
-<div className="purple-giant-arc" aria-hidden="true"></div>
-<div className="px-4 sm:px-6 lg:px-8 relative z-10">
-                        <div className="pb-4">
+                    <div className="purple-giant-arc" aria-hidden="true"></div>
+                    <div className="px-4 sm:px-6 lg:px-8 relative z-10">
+                        <div className="pb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <h2 className="mb-6 flex flex-wrap items-baseline gap-x-3 leading-none">
                                 <span className="one-tech-special text-4xl sm:text-5xl font-black tracking-tight">
                                     {props.translator["Dashboard"]}
@@ -261,18 +285,13 @@ export default function DashboardNew(props) {
                                     <GlassCard className="flex-1">
                                         <div className="flex gap-3 items-center h-full">
                                             <div className="w-12 h-12 rounded bg-[#E3D2F9] flex justify-center items-center">
-                                                <ChatBubbleLeftRightIcon
-                                                    className="text-[#731CE1] w-8 h-8"
-                                                />
+                                                <ChatBubbleLeftRightIcon className="text-[#731CE1] w-8 h-8" />
                                             </div>
                                             <div>
                                                 <div className="!text-white text-base font-medium">
-                                                    {
-                                                        props.translator[
-                                                            "Active Chats"
-                                                        ]
-                                                            ?? "Active Chats"
-                                                    }
+                                                    {props.translator[
+                                                        "Active Chats"
+                                                    ] ?? "Active Chats"}
                                                 </div>
                                                 <div className="!text-white/50 font-semibold text-xl">
                                                     {messageDetails.BIC
@@ -302,12 +321,9 @@ export default function DashboardNew(props) {
                                             </div>
                                             <div>
                                                 <div className="!text-white text-base font-medium">
-                                                    {
-                                                        props.translator[
-                                                            "Active Campaigns"
-                                                        ]
-                                                            ?? "Active Campaigns"
-                                                    }
+                                                    {props.translator[
+                                                        "Active Campaigns"
+                                                    ] ?? "Active Campaigns"}
                                                 </div>
                                                 <div className="!text-white/50 font-semibold text-xl">
                                                     {messageDetails.UIC
@@ -326,7 +342,9 @@ export default function DashboardNew(props) {
                                         <div
                                             key={item.key}
                                             className="social-stagger-item flex items-center flex-col justify-center gap-2"
-                                            style={{ animationDelay: `${index * 140}ms` }}
+                                            style={{
+                                                animationDelay: `${index * 140}ms`,
+                                            }}
                                         >
                                             <img
                                                 src={item.src}
@@ -336,8 +354,9 @@ export default function DashboardNew(props) {
                                             <div className="text-sm text-white/60">
                                                 {item.key === "whatsapp"
                                                     ? whatsappCount
-                                                    : props.services?.[item.key]
-                                                          ?.count ?? "-"}
+                                                    : (props.services?.[
+                                                          item.key
+                                                      ]?.count ?? "-")}
                                             </div>
                                         </div>
                                     ))}
@@ -395,21 +414,27 @@ export default function DashboardNew(props) {
                                                 <div className="text-2xl font-medium !mt-0 !text-white ">
                                                     <span className="">
                                                         {remainingSessions}{" "}
-                                                        {props.translator[
-                                                            "sessions"
-                                                        ]}
+                                                        {
+                                                            props.translator[
+                                                                "sessions"
+                                                            ]
+                                                        }
                                                     </span>
                                                 </div>
                                                 <div className="!text-white/50 text-base font-normal">
-                                                    {props.translator[
-                                                        "You spent"
-                                                    ]}{" "}
+                                                    {
+                                                        props.translator[
+                                                            "You spent"
+                                                        ]
+                                                    }{" "}
                                                     {usedSessions}{" "}
                                                     {props.translator["of"]}{" "}
                                                     {totalSessions}{" "}
-                                                    {props.translator[
-                                                        "sessions"
-                                                    ]}
+                                                    {
+                                                        props.translator[
+                                                            "sessions"
+                                                        ]
+                                                    }
                                                 </div>
                                             </div>
                                         </div>
@@ -422,8 +447,9 @@ export default function DashboardNew(props) {
                                             <div className="absolute left-1/2 top-[-2px] h-5 w-3 -translate-x-1/2 rounded-b bg-[#170024]" />
                                             <div className="absolute inset-[9px] rounded-full bg-[#12001d] ring-1 ring-white/10 flex flex-col items-center justify-center">
                                                 <span className="text-[11px] text-white/55 leading-none">
-                                                    {props.translator["Available"] ??
-                                                        "Available"}
+                                                    {props.translator[
+                                                        "Available"
+                                                    ] ?? "Available"}
                                                 </span>
                                                 <span className="mt-1 text-2xl font-semibold text-white leading-none">
                                                     {sessionPercent}%
@@ -502,68 +528,73 @@ export default function DashboardNew(props) {
                         </div>
 
                         {/* ✅ Message log: full width under everything */}
-                        <GlassCard className="mt-8">
-                            <div className="text-base font-semibold !text-white">
-                                {props.translator["Message log"]}
-                            </div>
-                            <div className="flex gap-2 items-center mt-2 !text-white/50">
-                                <svg
-                                    width={24}
-                                    height={24}
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        d="M4.40375 2.40381C3.29918 2.40381 2.40375 3.29924 2.40375 4.40381V19.5963C2.40375 20.7009 3.29918 21.5963 4.40375 21.5963H19.5962C20.7008 21.5963 21.5962 20.7009 21.5962 19.5963V4.40381C21.5962 3.29924 20.7008 2.40381 19.5962 2.40381H4.40375ZM19.7968 3.20331C20.349 3.20331 20.7967 3.65102 20.7967 4.20331V6.80181H3.204V4.20331C3.204 3.65102 3.65171 3.20331 4.204 3.20331H19.7968ZM4.20325 20.7968C3.65096 20.7968 3.20325 20.3491 3.20325 19.7968V7.60206H20.796V19.7968C20.796 20.3491 20.3483 20.7968 19.796 20.7968H4.20325Z"
-                                        fill="#363740"
-                                    />
-                                    <path
-                                        d="M8.40076 4.40332H9.60076V5.60257H8.40076V4.40332Z"
-                                        fill="#363740"
-                                    />
-                                    <path
-                                        d="M14.3992 4.40332H15.5985V5.60257H14.3992V4.40332Z"
-                                        fill="#363740"
-                                    />
-                                    <path
-                                        d="M9.261 10.4469C9.11775 11.4196 8.655 11.4369 7.7235 11.4706L7.57875 11.4759V12.1539H9.15675V16.5894H9.99375V10.3186H9.279L9.26025 10.4469H9.261Z"
-                                        fill="#363740"
-                                    />
-                                    <path
-                                        d="M13.9815 12.3315C13.6095 12.3315 13.2277 12.453 12.9255 12.6563L13.2105 11.19H15.8467V10.395H12.5865L11.9505 13.791H12.6742L12.7185 13.722C12.9712 13.3283 13.4325 13.083 13.923 13.083C14.721 13.083 15.3 13.6733 15.3 14.4855C15.3 15.2205 14.8387 15.9645 13.9575 15.9645C13.2045 15.9645 12.663 15.456 12.6405 14.7278L12.636 14.5823H11.7997L11.8035 14.736C11.8305 15.921 12.6787 16.7168 13.9155 16.7168C15.162 16.7168 16.1377 15.7628 16.1377 14.5455C16.1377 13.221 15.2722 12.3308 13.9837 12.3308L13.9815 12.3315Z"
-                                        fill="#363740"
-                                    />
-                                </svg>
+                        {false && (
+                            <GlassCard className="mt-8">
+                                <div className="text-base font-semibold !text-white">
+                                    {props.translator["Message log"]}
+                                </div>
+                                <div className="flex gap-2 items-center mt-2 !text-white/50">
+                                    <svg
+                                        width={24}
+                                        height={24}
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            d="M4.40375 2.40381C3.29918 2.40381 2.40375 3.29924 2.40375 4.40381V19.5963C2.40375 20.7009 3.29918 21.5963 4.40375 21.5963H19.5962C20.7008 21.5963 21.5962 20.7009 21.5962 19.5963V4.40381C21.5962 3.29924 20.7008 2.40381 19.5962 2.40381H4.40375ZM19.7968 3.20331C20.349 3.20331 20.7967 3.65102 20.7967 4.20331V6.80181H3.204V4.20331C3.204 3.65102 3.65171 3.20331 4.204 3.20331H19.7968ZM4.20325 20.7968C3.65096 20.7968 3.20325 20.3491 3.20325 19.7968V7.60206H20.796V19.7968C20.796 20.3491 20.3483 20.7968 19.796 20.7968H4.20325Z"
+                                            fill="#363740"
+                                        />
+                                        <path
+                                            d="M8.40076 4.40332H9.60076V5.60257H8.40076V4.40332Z"
+                                            fill="#363740"
+                                        />
+                                        <path
+                                            d="M14.3992 4.40332H15.5985V5.60257H14.3992V4.40332Z"
+                                            fill="#363740"
+                                        />
+                                        <path
+                                            d="M9.261 10.4469C9.11775 11.4196 8.655 11.4369 7.7235 11.4706L7.57875 11.4759V12.1539H9.15675V16.5894H9.99375V10.3186H9.279L9.26025 10.4469H9.261Z"
+                                            fill="#363740"
+                                        />
+                                        <path
+                                            d="M13.9815 12.3315C13.6095 12.3315 13.2277 12.453 12.9255 12.6563L13.2105 11.19H15.8467V10.395H12.5865L11.9505 13.791H12.6742L12.7185 13.722C12.9712 13.3283 13.4325 13.083 13.923 13.083C14.721 13.083 15.3 13.6733 15.3 14.4855C15.3 15.2205 14.8387 15.9645 13.9575 15.9645C13.2045 15.9645 12.663 15.456 12.6405 14.7278L12.636 14.5823H11.7997L11.8035 14.736C11.8305 15.921 12.6787 16.7168 13.9155 16.7168C15.162 16.7168 16.1377 15.7628 16.1377 14.5455C16.1377 13.221 15.2722 12.3308 13.9837 12.3308L13.9815 12.3315Z"
+                                            fill="#363740"
+                                        />
+                                    </svg>
 
-                                {props.translator["This month"]}
-                                <DateRangePicker
-                                    onApply={handleEvent}
-                                    initialSettings={{
-                                        startDate: startDate,
-                                        endDate: "19/11/23",
-                                    }}
-                                >
-                                    <button>
-                                        <FaAngleDown />
-                                    </button>
-                                </DateRangePicker>
-                            </div>
+                                    {props.translator["This month"]}
+                                    <DateRangePicker
+                                        onApply={handleEvent}
+                                        initialSettings={{
+                                            startDate: startDate,
+                                            endDate: "19/11/23",
+                                        }}
+                                    >
+                                        <button>
+                                            <FaAngleDown />
+                                        </button>
+                                    </DateRangePicker>
+                                </div>
 
-                            <ListView
-                                module="dashboard"
-                                headers={
-                                    props.msgTransactionList.list_view_columns
-                                }
-                                records={props.msgTransactionList.records}
-                                paginator={props.msgTransactionList.paginator}
-                                actions={props.msgTransactionList.actions}
-                                filter={props.msgTransactionList.filter}
-                                translator={props.translator}
-                                {...props.msgTransactionList}
-                                {...props}
-                            />
-                        </GlassCard>
+                                <ListView
+                                    module="dashboard"
+                                    headers={
+                                        props.msgTransactionList
+                                            .list_view_columns
+                                    }
+                                    records={props.msgTransactionList.records}
+                                    paginator={
+                                        props.msgTransactionList.paginator
+                                    }
+                                    actions={props.msgTransactionList.actions}
+                                    filter={props.msgTransactionList.filter}
+                                    translator={props.translator}
+                                    {...props.msgTransactionList}
+                                    {...props}
+                                />
+                            </GlassCard>
+                        )}
 
                         {/* MODAL (unchanged placement/logic) */}
                         <Transition appear show={isOpen} as={Fragment}>

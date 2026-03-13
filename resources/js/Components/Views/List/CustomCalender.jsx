@@ -8,8 +8,18 @@ export default function CustomCalender(props) {
 
     var date = new Date().toLocaleString();
     const [startDate , setStartDate] = useState({ date });
+    const listRouteParams = props.listRouteParams ?? {};
 
     function handleEvent(event, picker){   
+        if (props.routeName) {
+            Inertia.get(route(props.routeName, {
+                ...listRouteParams,
+                module: props.module,
+                start_date: picker.startDate.format('YYYY/MM/DD'),
+                end_date: picker.endDate.format('YYYY/MM/DD'),
+            }));
+            return;
+        }
 
         if(props.module == 'Conversation' && props.from == 'conversation') {
             Inertia.get(route('wallet', {'module' : props.module, 'current_page' : 'Expenses', 'is_conversation' : true, 'start_date': picker.startDate.format('YYYY/MM/DD'), 'end_date': picker.endDate.format('YYYY/MM/DD')}));

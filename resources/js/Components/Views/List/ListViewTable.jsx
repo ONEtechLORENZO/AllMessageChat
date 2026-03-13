@@ -58,6 +58,7 @@ export default function ListViewTable(props) {
         props.translator?.["No records found!"] ??
         "No records found!";
     const fetchFieldsEnabled = props.fetchFields !== false && !!props.module;
+    const listRouteParams = props.listRouteParams ?? {};
 
     useEffect(() => {
         if (fetchFieldsEnabled) {
@@ -114,6 +115,17 @@ export default function ListViewTable(props) {
 
         const url = props.sortRoute
             ? route(props.sortRoute)
+            : props.routeName
+              ? route(props.routeName, {
+                    ...listRouteParams,
+                    page:
+                        props.module === "Transaction" || props.module === "Msg"
+                            ? props.currentPage
+                            : (props.paginator?.currentPage ?? 1),
+                    search: props.search,
+                    sort_by: field_name,
+                    sort_order,
+                })
             : props.module === "Transaction" || props.module === "Msg"
               ? route("wallet")
               : props.module === "Dashboard"
@@ -124,6 +136,11 @@ export default function ListViewTable(props) {
             props.module === "Transaction" || props.module === "Msg"
                 ? props.currentPage
                 : (props.paginator?.currentPage ?? 1);
+
+        if (props.routeName) {
+            Inertia.get(url);
+            return;
+        }
 
         Inertia.get(
             url +

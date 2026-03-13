@@ -315,6 +315,7 @@ class UserController extends Controller
                     'Message log' => __('Message log'),
                     'Good Work!' => __('Good Work!'),
                     'This month' => __('This month'),
+                    'View message logs' => __('View message logs'),
                     'No records found!' => __('No records found!'),
                 ],      
                 'actions' => [
@@ -2273,7 +2274,27 @@ class UserController extends Controller
         return $data;        
       
     }
-    public function getTransactionList($request, $page, $from = '') {       
+
+    public function messageLogs(Request $request)
+    {
+        $menuBar = $this->fetchMenuBar();
+        $messageLogList = $this->getTransactionList($request, 'Expenses', '', 'listMessageLogs');
+
+        return Inertia::render('Reports/MessageLogs', array_merge($messageLogList, [
+            'plural' => __('Message Logs'),
+            'menuBar' => $menuBar,
+            'current_page' => 'Message Logs',
+            'translator' => array_merge(
+                $this->getTranslations(),
+                [
+                    'Message Logs' => __('Message Logs'),
+                    'Messaging' => __('Messaging'),
+                    'Messages' => __('Messages'),
+                ],
+            ),
+        ]));
+    }
+    public function getTransactionList($request, $page, $from = '', $routeName = null) {       
        
         $module = new Msg();
          // List view columns to show
@@ -2301,8 +2322,49 @@ class UserController extends Controller
         ];
         //$records =  $this->listViewRecord($request, $listViewData, 'Msg');   
 
-        $data = array_merge($moduleData, $listViewData);     
+        $data = array_merge($moduleData, $listViewData);
+
+        if ($routeName) {
+            $data['actions']['mass_edit'] = false;
+            $data['records'] = collect($data['records'] ?? [])->map(function ($record) {
+                if (isset($record->created_at) && $record->created_at) {
+                    $record->created_at = Carbon::parse($record->created_at)
+                        ->format('d-m-Y H:i:s');
+                }
+
+                return $record;
+            })->all();
+            $data['paginator'] = $this->buildMessageLogPaginator($request, $routeName, $data['paginator'] ?? []);
+            $data['routeName'] = $routeName;
+            $data['listRouteParams'] = array_filter([
+                'module' => 'Msg',
+                'sort_time' => $request->get('sort_time'),
+                'start_date' => $request->get('start_date'),
+                'end_date' => $request->get('end_date'),
+            ], fn ($value) => $value !== null && $value !== '');
+        }
+
         return $data;
+    }
+
+    private function buildMessageLogPaginator(Request $request, string $routeName, array $paginator): array
+    {
+        $query = $request->query();
+        $query['module'] = $query['module'] ?? 'Msg';
+
+        $currentPage = max((int) ($paginator['currentPage'] ?? 1), 1);
+        $lastPage = max((int) ($paginator['lastPage'] ?? 1), 1);
+
+        $paginator['firstPageUrl'] = route($routeName, array_merge($query, ['page' => 1]));
+        $paginator['previousPageUrl'] = $currentPage > 1
+            ? route($routeName, array_merge($query, ['page' => $currentPage - 1]))
+            : null;
+        $paginator['nextPageUrl'] = $currentPage < $lastPage
+            ? route($routeName, array_merge($query, ['page' => $currentPage + 1]))
+            : null;
+        $paginator['lastPageUrl'] = route($routeName, array_merge($query, ['page' => $lastPage]));
+
+        return $paginator;
     }
 
     public function checkInformation(Request $request) {

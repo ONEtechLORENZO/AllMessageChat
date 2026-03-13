@@ -143,6 +143,7 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/messages/list', [MessageLogController::class, 'list'])->name('messages');
         Route::post('/messages/search_content', [MessageLogController::class, 'searchContent'])->name('searchContent');
         Route::get('/messages', [MsgController::class, 'messageList'])->name('listMessage');
+        Route::get('/reports/message-logs', [UserController::class, 'messageLogs'])->name('listMessageLogs');
         Route::get('/reports/api-documentation', [MsgController::class, 'apiDocumentation'])->name('api_documentation');
 
         // Accounts

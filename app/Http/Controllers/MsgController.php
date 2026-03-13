@@ -253,8 +253,8 @@ class MsgController extends Controller
         $translator = array_merge($translator , $messageTranslate);
 
         $data = [
-            'singular' => __('Report'),
-            'plural' => __('Reports'),
+            'singular' => __('Message'),
+            'plural' => __('Messages'),
             'module' => 'Message',
             'current_page' => 'Messages', 
             'records' => $messageList,

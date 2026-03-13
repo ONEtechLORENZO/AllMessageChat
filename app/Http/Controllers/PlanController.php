@@ -490,8 +490,8 @@ class PlanController extends Controller
                 'access' => 'workflows',
                 'show' => false
             ],
-            'Reports' => [
-                'name' => 'Reports',
+            'Messaging' => [
+                'name' => 'Messaging',
                 'show' => true
             ]
 

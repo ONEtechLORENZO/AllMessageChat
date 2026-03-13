@@ -22,7 +22,7 @@ const navigation = [
     { name: "Opportunities", href: "#", icon: CalendarIcon, current: false },
     { name: "Automations", href: "#", icon: InboxIcon, current: false },
     { name: "Integrations", href: "#", icon: ChartBarIcon, current: false },
-    { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
+    { name: "Messaging", href: "#", icon: ChartBarIcon, current: false },
 ];
 const userNavigation = [
     { name: "Your Profile", href: "#" },

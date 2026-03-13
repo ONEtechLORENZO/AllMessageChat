@@ -9,6 +9,7 @@ import { router as Inertia } from "@inertiajs/react";
 import CreatableSelect from 'react-select';
 
 function Filter(props) {
+    const listRouteParams = props.listRouteParams ?? {};
     const newCondition = {
         'field_name': '',
         'field_type': 'text',
@@ -120,6 +121,11 @@ function Filter(props) {
     function applyFilter(filter) {
         if (props.is_chat) {
             var url = route('chat_list') + '?filter_id=' + filter;
+        } else if (props.routeName) {
+            var url = route(props.routeName, {
+                ...listRouteParams,
+                filter_id: filter,
+            });
         } else {
             if (props.module == "Transaction") {
                 var url = route('wallet') + '?current_page=Invoice&search_tab=Transaction' + '&filter_id=' + filter;

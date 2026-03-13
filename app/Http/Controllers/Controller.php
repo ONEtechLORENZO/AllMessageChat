@@ -950,6 +950,8 @@ class Controller extends BaseController
             'User Initiated Chat' => __('User Initiated Chat'),
             'Free Entry Point Chats' => __('Free Entry Point Chats'),
             'Messages' => __('Messages'),
+            'Messaging' => __('Messaging'),
+            'Message Logs' => __('Message Logs'),
             'Your Payment Method' => __('Your Payment Method'),
             'Add a Payment Method' => __('Add a Payment Method'),
             'See Transactions History' => __('See Transactions History'),
@@ -1488,8 +1490,8 @@ class Controller extends BaseController
                 'access' => 'workflows',
                 'show' => false
             ],
-            'Reports' => [
-                'name' => 'Reports',
+            'Messaging' => [
+                'name' => 'Messaging',
                 'show' => true
             ]
         ];
