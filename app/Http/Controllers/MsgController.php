@@ -271,9 +271,9 @@ class MsgController extends Controller
 
         $data = [
             'singular' => __('Message'),
-            'plural' => __('Messages'),
+            'plural' => __('Reports'),
             'module' => 'Message',
-            'current_page' => 'Messages', 
+            'current_page' => 'Reports', 
             'records' => $messageList,
             'compact_type' => 'condense',
             'list_view_columns' => $list_view_columns,

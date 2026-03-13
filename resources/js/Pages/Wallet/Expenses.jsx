@@ -2,24 +2,15 @@ import React, { useEffect, useState } from "react";
 import {
     Row,
     Col,
-    Button,
     Modal,
     ModalHeader,
     ModalBody,
-    ModalFooter,
 } from "reactstrap";
-import WalletTable from "./WalletTable";
-import { HiChevronDown, HiChevronUp, HiChevronRight } from "react-icons/hi";
-import { WhatsAppIcon, InstagramIcon, TelegramIcon } from "../icons";
-import StripeForm from "./StripeForm";
-import Axios from "axios";
-import notie from "notie";
-import nProgress from "nprogress";
+import { WhatsAppIcon, InstagramIcon } from "../icons";
 import ListView from "@/Components/Views/List/Index2";
-import { Head, router as Inertia } from "@inertiajs/react";
-import { CalenderIcon } from "@/Pages/icons";
+import ListViewTable from "@/Components/Views/List/ListViewTable";
+import { Head } from "@inertiajs/react";
 
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { BsFacebook } from "react-icons/bs";
 import CalenderMenu from "@/Components/Views/List/CalenderMenu";
 import CustomCalender from "@/Components/Views/List/CustomCalender";
@@ -53,18 +44,17 @@ export function GlassCard({ className = "", children }) {
 
 export default function WalletUsage(props) {
     const [modal, setModal] = useState(false);
-
     const toggle = () => setModal(!modal);
-
-    const [balance, setBalance] = useState(0);
-    const [isPaymentForm, setPaymentForm] = useState(false);
-    const [showStripeForm, setShowStripeForm] = useState(false);
-    const [messageDeduction, setMessageDeduction] = useState({});
+    const [messageDeduction, setMessageDeduction] = useState(
+        props.message_deduction ?? {},
+    );
     const [selectedAccount, setSelectedAccount] = useState("");
-    const [paymentMethods, setPaymentMethods] = useState([]);
     const [showAccount, setShowAccount] = useState(false);
-    const [showTransactions, setShowTransactions] = useState(false);
     const [showInvoices, setShowInvoices] = useState(false);
+    const transactionPreviewRecords = (
+        props.msgTransactionList?.records ?? []
+    ).slice(0, 5);
+    const accountDetails = props.message_account_detail ?? [];
 
     const deductionTypes = {
         BIC: "Business-initiated conversation",
@@ -72,65 +62,9 @@ export default function WalletUsage(props) {
         FEP: "Free entry point",
     };
 
-    /**
-     * Show charge form
-     */
-    function setShowChargeForm() {
-        setPaymentForm(false);
-        setShowStripeForm(true);
-    }
-
     useEffect(() => {
-        setBalance(props.balance);
-        setPaymentMethods(props.paymentMethods);
-        setMessageDeduction(props.message_deduction);
-    }, [props.balance]);
-
-    /**
-     * Fetch balance
-     */
-    function fetchWalletBalance() {
-        nProgress.start(0.5);
-        nProgress.inc(0.2);
-
-        let endpoint_url = route("userBalance");
-        Axios.get(endpoint_url)
-            .then((response) => {
-                nProgress.done(true);
-                if (response.data.status !== false) {
-                    setBalance(response.data.balance);
-                } else {
-                    notie.alert({
-                        type: "error",
-                        text: response.data.message,
-                        time: 5,
-                    });
-                }
-            })
-            .catch((error) => {
-                nProgress.done(true);
-                let error_message = "Something went wrong";
-                if (error.response) {
-                    error_message = error.response.data.message;
-                    if (error_message == undefined) {
-                        error_message = error.response.statusText;
-                    }
-                } else {
-                    error_message = error.message;
-                }
-
-                notie.alert({ type: "error", text: error_message, time: 5 });
-            });
-    }
-
-    /**
-     * Fetch payment methods
-     */
-    function fetchPaymentMethods() {
-        Axios.get(route("getPaymentMethods")).then((response) => {
-            setPaymentMethods(response.data.paymentMethods);
-        });
-    }
+        setMessageDeduction(props.message_deduction ?? {});
+    }, [props.message_deduction]);
 
     /**
      * Show account amount
@@ -175,12 +109,6 @@ export default function WalletUsage(props) {
             5
         </div>,
     ];
-
-    function showAllTransactions() {
-        if (showTransactions === undefined || showTransactions === false)
-            setShowTransactions(true);
-        if (showTransactions === true) setShowTransactions(false);
-    }
 
     function showAllInvoices() {
         if (showInvoices === undefined || showInvoices === false)
@@ -286,7 +214,7 @@ export default function WalletUsage(props) {
 
                 {/* <Slider {...settings}> */}
                 <div className="grid grid-cols-3 !gap-4 !mt-2">
-                    {props.message_account_detail.map((account, index) => {
+                    {accountDetails.map((account, index) => {
                         if (!showAccount && index > 5) return false;
 
                         return (
@@ -365,43 +293,43 @@ export default function WalletUsage(props) {
 
             <Row className="!mt-5 justify-center !mb-2">
                 <Col sm="12">
-                    <div className="flex gap-3 items-center">
-                        <h3 className="text-base font-semibold mb-0">
-                            {props.translator["Transactions History"]}{" "}
-                        </h3>
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="flex gap-3 items-center">
+                            <h3 className="text-base font-semibold mb-0">
+                                {props.translator["Transactions History"]}{" "}
+                            </h3>
+                        </div>
                     </div>
                 </Col>
             </Row>
 
             <GlassCard className="!p-4">
-                <ListView
-                    module={"Msg"}
-                    currentPage="Expenses"
+                <ListViewTable
+                    module="Msg"
                     headers={props.msgTransactionList.list_view_columns}
-                    records={props.msgTransactionList.records}
-                    paginator={props.msgTransactionList.paginator}
-                    actions={props.msgTransactionList.actions}
-                    filter={props.msgTransactionList.filter}
+                    records={transactionPreviewRecords}
                     translator={props.translator}
-                    showAll={showTransactions}
-                    {...props.msgTransactionList}
+                    actions={{}}
+                    hideToolMenu
+                    fetchFields={false}
+                    disableSorting
                     noCardBorder
                 />
-            </GlassCard>
 
-            <div className="grid grid-cols-3 !gap-4 !mt-2">
-                <div
-                    className="card shadow-card"
-                    onClick={() => showAllTransactions()}
-                >
-                    <div className="flex text-[#3D4459] !p-2 !gap-4 items-center justify-center cursor-pointer">
-                        {showTransactions
-                            ? props.translator["Show Less"]
-                            : props.translator["See all transactions"]}
-                        <MdOpenInNew />
-                    </div>
+                <div className="mt-4 flex justify-center">
+                    <a
+                        href={route("listMessageLogs")}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="card shadow-card no-underline hover:no-underline"
+                    >
+                        <div className="flex text-[#3D4459] !p-2 !gap-4 items-center justify-center cursor-pointer">
+                            {props.translator["See all transactions"]}
+                            <MdOpenInNew />
+                        </div>
+                    </a>
                 </div>
-            </div>
+            </GlassCard>
 
             <hr />
 
@@ -702,19 +630,6 @@ export default function WalletUsage(props) {
                 </Modal>
             )}
 
-            {showStripeForm ? (
-                <StripeForm
-                    setShowStripeForm={setShowStripeForm}
-                    stripe_public_key={props.stripe_public_key}
-                    fetchWalletBalance={fetchWalletBalance}
-                    translator={props.translator}
-                    isPaymentForm={isPaymentForm}
-                    fetchPaymentMethods={fetchPaymentMethods}
-                    {...props}
-                />
-            ) : (
-                ""
-            )}
         </>
     );
 }

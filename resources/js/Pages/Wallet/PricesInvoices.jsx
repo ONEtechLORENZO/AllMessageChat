@@ -1,8 +1,6 @@
 
 
 import React, { useState } from "react";
-import WalletTable from "./WalletTable";
-import ListView from "@/Components/Views/List/Index2";
 import { Row, Col, Button, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 import { CiCircleInfo } from "react-icons/ci";
 import { PopoverHeader, PopoverBody, UncontrolledPopover } from "reactstrap";

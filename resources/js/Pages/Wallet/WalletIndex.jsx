@@ -1,20 +1,11 @@
-import React, { useState } from "react";
-import WalletTab from "./WalletTab";
-import WalletUsage from "./Expenses";
+import React, { Suspense, lazy, useEffect, useState } from "react";
 import Authenticated from "@/Layouts/Authenticated";
-import { Head } from "@inertiajs/react";
-import MessageTransaction from "./MsgTransaction";
-import ListView from "@/Components/Views/List/Index2";
-
-import Expenses from "./Expenses";
-import Wallet from "./Index";
-
+import { Head, router as Inertia } from "@inertiajs/react";
 import { Dialog, Transition } from "@headlessui/react";
-import { FiChevronRight } from "react-icons/fi";
+import { FiChevronRight, FiInfo } from "react-icons/fi";
 
-import { FiInfo } from "react-icons/fi";
-
-import PricesInvoices from "./PricesInvoices";
+const WalletTab = lazy(() => import("./WalletTab"));
+const WalletUsage = lazy(() => import("./Expenses"));
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
@@ -24,29 +15,47 @@ const tabs = [
     {
         label: "Wallet & Usages",
         name: "Wallet",
-        href: "#",
-        current: false,
         page: "Wallet",
     },
     {
         label: "Expenses",
         name: "Expenses",
-        href: "#",
-        current: true,
         page: "Expenses",
     },
     {
         label: "See prices",
         name: "See prices",
-        href: "#",
-        current: false,
         hasModal: true,
         page: "price",
     },
 ];
 
 function WalletIndex(props) {
-    const [currentTab, setCurrentTab] = useState(props.current_page);
+    const activeTab = props.current_page === "Expenses" ? "Expenses" : "Wallet";
+    const [showPriceModal, setShowPriceModal] = useState(false);
+
+    useEffect(() => {
+        setShowPriceModal(false);
+    }, [activeTab]);
+
+    function handleTabClick(tab) {
+        if (tab.hasModal) {
+            setShowPriceModal(true);
+            return;
+        }
+
+        if (tab.page === activeTab) {
+            return;
+        }
+
+        Inertia.get(
+            route("wallet", { current_page: tab.page }),
+            {},
+            {
+                preserveScroll: true,
+            },
+        );
+    }
 
     return (
         <Authenticated
@@ -58,61 +67,60 @@ function WalletIndex(props) {
             <Head title={props.translator["Billing"]} />
 
             <div className="hidden sm:block p-4">
-                {/* <Expenses/> */}
-                {/* <WalletTab/> */}
-                {/*<PricesInvoices/>*/}
-                <div className="border-b border-gray-200">
+                <div className="space-y-4">
                     <nav
-                        className="-mb-px flex space-x-3 border-b border-[#B9B9B9] pb-2"
+                        className="-mb-px flex flex-wrap space-x-3 pb-2"
                         aria-label="Tabs"
                     >
                         {tabs.map((tab) => (
-                            <a
+                            <button
                                 key={tab.page}
-                                href={tab.href}
+                                type="button"
                                 className={classNames(
-                                    tab.page == currentTab
+                                    (tab.hasModal
+                                        ? showPriceModal
+                                        : tab.page === activeTab)
                                         ? "bg-[#BF00FF] text-white"
-                                        : "bg-white/10 text-white/70 hover:text-white",
-                                    "whitespace-nowrap rounded-full px-4 py-2 font-medium text-sm border-0 outline-none ring-0",
+                                        : "bg-white/[0.12] text-white/80 hover:bg-white/[0.18] hover:text-white",
+                                    "whitespace-nowrap rounded-full px-4 py-2 font-medium text-sm border-0 outline-none ring-0 transition-all duration-200",
                                 )}
-                                onClick={() => setCurrentTab(tab.page)}
+                                onClick={() => handleTabClick(tab)}
                             >
-                                {props.translator[tab.name]}
-                            </a>
+                                <span className="text-[11px] font-semibold uppercase tracking-wide">
+                                    {props.translator[tab.name]}
+                                </span>
+                            </button>
                         ))}
                     </nav>
 
+                    <div className="border-b border-white/20" />
+
                     <div className="py-4">
-                        {currentTab && currentTab == "Wallet" ? (
-                            <WalletTab {...props} />
-                        ) : (
-                            ""
-                        )}
-
-                        {currentTab && currentTab == "Expenses" ? (
-                            <WalletUsage {...props} />
-                        ) : (
-                            ""
-                        )}
-
-                        {currentTab && currentTab == "Invoice" ? (
-                            <PricesInvoices translator={props.translator} />
-                        ) : (
-                            ""
-                        )}
+                        <Suspense
+                            fallback={
+                                <div className="py-12 text-sm text-white/60">
+                                    {props.translator["Loading"] ?? "Loading..."}
+                                </div>
+                            }
+                        >
+                            {activeTab === "Wallet" ? (
+                                <WalletTab {...props} />
+                            ) : (
+                                <WalletUsage {...props} />
+                            )}
+                        </Suspense>
                     </div>
 
                     <Transition
                         appear
-                        show={currentTab == "price"}
+                        show={showPriceModal}
                         as={React.Fragment}
                     >
                         <Dialog
                             as="div"
                             className="relative z-10"
                             onClose={() => {
-                                setCurrentTab("Wallet");
+                                setShowPriceModal(false);
                             }}
                         >
                             <Transition.Child
@@ -184,7 +192,7 @@ function WalletIndex(props) {
                                                         </svg>
                                                     </div>
                                                     <span className="text-[13px] flex items-center gap-2 text-white">
-                                                        €0,05{" "}
+                                                        &euro;0,05{" "}
                                                         <FiChevronRight
                                                             className="cursor-pointer text-white/60"
                                                             size={"1.5rem"}
@@ -208,7 +216,7 @@ function WalletIndex(props) {
                                                         </svg>
                                                     </div>
                                                     <p className="text-[13px] flex items-center gap-2 text-white">
-                                                        €0,10 +{" "}
+                                                        &euro;0,10 +{" "}
                                                         <span className="text-[#BF00FF]">
                                                             Meta costs
                                                         </span>
@@ -218,10 +226,12 @@ function WalletIndex(props) {
                                             <div className="flex items-center justify-end gap-3 border-t border-white/10 px-6 py-4">
                                                 <button
                                                     type="button"
-                                                    onClick={() => setCurrentTab("Wallet")}
-                                                    className="rounded-md border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+                                                    onClick={() =>
+                                                        setShowPriceModal(false)
+                                                    }
+                                                    className="rounded-lg bg-[#BF00FF] px-4 py-2 text-sm font-semibold text-white"
                                                 >
-                                                    Cancel
+                                                    Close
                                                 </button>
                                             </div>
                                         </Dialog.Panel>
@@ -237,4 +247,3 @@ function WalletIndex(props) {
 }
 
 export default WalletIndex;
-

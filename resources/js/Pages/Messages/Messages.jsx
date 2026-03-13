@@ -7,7 +7,7 @@ function MessageListing(props) {
         <Authenticated
             auth={props.auth}
             errors={props.errors}
-            current_page={"Messages"}
+            current_page={"Reports"}
             navigationMenu={props.menuBar}
         >
             <ListView

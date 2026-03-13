@@ -43,15 +43,15 @@ class UserController extends Controller
     public $per_page = 15;
 
     public $webhook_events = [
-        'received' => ['label' => 'Received', 'help_text' => 'Return sent messasge received response to callback url'], 
-        'enqueued' => ['label' => 'Enqueued', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
-        'failed' => ['label' => 'Failed', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
-        'read' => ['label' => 'Read', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
-        'sent' => ['label' => 'Sent', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
-        'delivered' => ['label' => 'Delivered', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
-    //    'delete' => ['label' => 'Delete', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
-        'template_events' => ['label' => 'Template events', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
-    //    'account_related_events' => ['label' => 'Account related events', 'help_text' => 'Return sent messasge enqueue response to callback url'],
+        'received' => ['label' => 'Received', 'help_text' => 'Return sent messasge received response to callback url'],
+        'enqueued' => ['label' => 'Enqueued', 'help_text' => 'Return sent messasge enqueue response to callback url'],
+        'failed' => ['label' => 'Failed', 'help_text' => 'Return sent messasge enqueue response to callback url'],
+        'read' => ['label' => 'Read', 'help_text' => 'Return sent messasge enqueue response to callback url'],
+        'sent' => ['label' => 'Sent', 'help_text' => 'Return sent messasge enqueue response to callback url'],
+        'delivered' => ['label' => 'Delivered', 'help_text' => 'Return sent messasge enqueue response to callback url'],
+        //    'delete' => ['label' => 'Delete', 'help_text' => 'Return sent messasge enqueue response to callback url'], 
+        'template_events' => ['label' => 'Template events', 'help_text' => 'Return sent messasge enqueue response to callback url'],
+        //    'account_related_events' => ['label' => 'Account related events', 'help_text' => 'Return sent messasge enqueue response to callback url'],
     ];
 
     public $userRoles = [
@@ -180,27 +180,27 @@ class UserController extends Controller
         'Pacific/Auckland'     => "(GMT+12:00) Auckland",
         'Pacific/Fiji'         => "(GMT+12:00) Fiji",
     );
-    
+
     /**
      * Show home page 
      */
     public function home(Request $request)
     {
         $message = session()->get('message');
-        if($message) {
+        if ($message) {
             session(['message' => '']);
         }
         $menuBar = $this->fetchMenuBar();
 
-        return Inertia::render('Home',[
-           'message' => $message,
-           'menuBar' => $menuBar,
-           'translator' => [
-            'Hi'=>__('Hi'),
-            'It is a beautiful day to sell through your chats.' =>__('It is a beautiful day to sell through your chats.'),
-            'Use OneMessage to learn more about your customers, capture leads, create automations, send messages and geek out on analytics.' => __('Use OneMessage to learn more about your customers, capture leads, create automations, send messages and geek out on analytics.'),
-            'All the best!' => __('All the best!')
-        ],
+        return Inertia::render('Home', [
+            'message' => $message,
+            'menuBar' => $menuBar,
+            'translator' => [
+                'Hi' => __('Hi'),
+                'It is a beautiful day to sell through your chats.' => __('It is a beautiful day to sell through your chats.'),
+                'Use OneMessage to learn more about your customers, capture leads, create automations, send messages and geek out on analytics.' => __('Use OneMessage to learn more about your customers, capture leads, create automations, send messages and geek out on analytics.'),
+                'All the best!' => __('All the best!')
+            ],
         ]);
     }
 
@@ -212,7 +212,7 @@ class UserController extends Controller
 
         $accounts = Account::select('company_name', 'service', 'accounts.id', 'accounts.status', 'fb_page_name')->get();
         $menuBar = $this->fetchMenuBar();
-        
+
         return Inertia::render('Dashboard', [
             'accounts' => $accounts,
             'users' => $request->user(),
@@ -221,118 +221,114 @@ class UserController extends Controller
         ]);
     }
 
-      /**
+    /**
      * dashboard
      */
     public function dashboard(Request $request)
-        {
-            $user = $request->user(); 
-            $amountDeduction = $this->getMsgAmountDeduction($request,$user->id);
-            $menuBar = $this->fetchMenuBar();
-            
-            //wallet balance
-            $balance= Wallet::where('user_id', $user->id)
+    {
+        $user = $request->user();
+        $amountDeduction = $this->getMsgAmountDeduction($request, $user->id);
+        $menuBar = $this->fetchMenuBar();
+
+        //wallet balance
+        $balance = Wallet::where('user_id', $user->id)
             ->pluck('balance_amount')
             ->first();
 
-            // service data
-            $service['total_messages'] = 0;
-            $messages = Msg::selectRaw(' count(id) as messages , sum(amount) as total , policy ,service')->whereMonth('created_at', date('m'))
+        // service data
+        $service['total_messages'] = 0;
+        $messages = Msg::selectRaw(' count(id) as messages , sum(amount) as total , policy ,service')->whereMonth('created_at', date('m'))
             ->whereYear('created_at', date('Y'))
             ->groupBy('service')->get();
-            
-            //daily_messages chart
-            $daily_messages = Msg::selectRaw(' count(id) as messages , created_at as date,sum(amount) as total')->whereMonth('created_at', date('m'))
+
+        //daily_messages chart
+        $daily_messages = Msg::selectRaw(' count(id) as messages , created_at as date,sum(amount) as total')->whereMonth('created_at', date('m'))
             ->whereYear('created_at', date('Y'))
             ->groupBy(DB::raw('DATE(created_at)'))->get();
-            
-            $per_day = [];
-            foreach( $daily_messages as $val){
-                $per_day[$val->date] =  $val->messages;
-              }
-            $chart_input=implode($per_day);
-            foreach($messages as $message){ 
-                if($message->service == 'whatsapp' || $message->service == 'facebook' || $message->service == 'instagram')
-                {
-                    $service['total_messages'] = $message->messages + number_format($service['total_messages']);
-                }
-                if($message->service == 'whatsapp'){
-                    $service[$message->service] = ['amount' => number_format($message->total , 3, '.', ''), 'count' => $message->messages];
-                }
-                 else if($message->service == 'instagram') {
-                    $service[$message->service] = ['amount' => number_format($message->total , 3, '.', '') , 'count' => $message->messages];
-                } 
-                else if($message->service == 'facebook'){
-                    $service[$message->service] = ['amount' => number_format($message->total , 3, '.', '') , 'count' => $message->messages];
-                }
-            }
 
-            $msgTransactionList = $this->getTransactionList($request,'Expenses', 'Dashboard');
-            
-            // Get Session count
-            $sessions = $this->getDashboardSessionCount();
-            $totalSessionLimit = $this->getDashboardSessionLimit();
-            
-            return Inertia::render('new_ui/DashboardNew', [
-                'users' => $request->user(),
-                'message_details' => $amountDeduction,
-                'balance' => $balance,
-                'services' => $service,
-                'total_session_limit' => $totalSessionLimit,
-                'current_session_count' => $sessions,
-                'per_day_count' =>  $chart_input,
-                'msgTransactionList' => $msgTransactionList,
-                'translator' => [     
-                    'Dashboard' => __('Dashboard'),               
-                    'Confirm to Delete' =>  __('Confirm to Delete'),
-                    'Are you sure to do this?' => __('Are you sure to do this?'),
-                    'Yes' =>__('Yes'),
-                    'No' =>__('No'),  
-                    'Conversations of this month' => __("Conversations of this month"),
-                    'Total' => __('Total'),
-                    'Daily average' => __('Daily average'),
-                    'Trend' => __('Trend'),
-                    'Business initiated chats' => __('Business initiated chats'),
-                    'User initiated chats' => __('User initiated chats'),
-                    'Your balance' => __('Your balance'),
-                    'Manual recharge' => __('Manual recharge'),
-                    'Spent this month' => __('Spent this month'),
-                    'Message log' => __('Message log'),
-                    'look closely' => __('look closely'),
-                    'Recharge your balance' => __('Recharge your balance'),
-                    'Recharge manually' => __('Recharge manually'),
-                    'Enter the amount:' => __('Enter the amount:'),
-                    'min' => __('min'),
-                    'Charge' => __('Charge'),
-                    'Set monthly auto-recharge' => __('Set monthly auto-recharge'),
-                    'Set threshold auto-recharge' => __('Set threshold auto-recharge'),
-                    'Set the minimum threshold from which to automatically reload' => __('Set the minimum threshold from which to automatically reload'),
-                    'Set threshold' => __('Set threshold'),
-                    'Set monthly limit to charge' => __('Set monthly limit to charge'),
-                    'Set auto-recharge' => __('Set auto-recharge'),
-                    'Disable' => __('Disable'),
-                    'Active' => __('Active'),
-                    'Message log' => __('Message log'),
-                    'Good Work!' => __('Good Work!'),
-                    'This month' => __('This month'),
-                    'View message logs' => __('View message logs'),
-                    'No records found!' => __('No records found!'),
-                ],      
-                'actions' => [
-                    'create' => false,
-                    'detail' => false,
-                    'edit' => false,
-                    'delete' => false,
-                    'export' => false,
-                    'import' => false,
-                    'search' => false,
-                    'filter' => false,
-                    'select_field' =>false,
-                    'mass_edit' => false,
-                    'merge' => false
-                ],
-                'menuBar' => $menuBar
-            ]);
+        $per_day = [];
+        foreach ($daily_messages as $val) {
+            $per_day[$val->date] =  $val->messages;
+        }
+        $chart_input = implode($per_day);
+        foreach ($messages as $message) {
+            if ($message->service == 'whatsapp' || $message->service == 'facebook' || $message->service == 'instagram') {
+                $service['total_messages'] = $message->messages + number_format($service['total_messages']);
+            }
+            if ($message->service == 'whatsapp') {
+                $service[$message->service] = ['amount' => number_format($message->total, 3, '.', ''), 'count' => $message->messages];
+            } else if ($message->service == 'instagram') {
+                $service[$message->service] = ['amount' => number_format($message->total, 3, '.', ''), 'count' => $message->messages];
+            } else if ($message->service == 'facebook') {
+                $service[$message->service] = ['amount' => number_format($message->total, 3, '.', ''), 'count' => $message->messages];
+            }
+        }
+
+        $msgTransactionList = $this->getTransactionList($request, 'Expenses', 'Dashboard');
+
+        // Get Session count
+        $sessions = $this->getDashboardSessionCount();
+        $totalSessionLimit = $this->getDashboardSessionLimit();
+
+        return Inertia::render('new_ui/DashboardNew', [
+            'users' => $request->user(),
+            'message_details' => $amountDeduction,
+            'balance' => $balance,
+            'services' => $service,
+            'total_session_limit' => $totalSessionLimit,
+            'current_session_count' => $sessions,
+            'per_day_count' =>  $chart_input,
+            'msgTransactionList' => $msgTransactionList,
+            'translator' => [
+                'Dashboard' => __('Dashboard'),
+                'Confirm to Delete' =>  __('Confirm to Delete'),
+                'Are you sure to do this?' => __('Are you sure to do this?'),
+                'Yes' => __('Yes'),
+                'No' => __('No'),
+                'Conversations of this month' => __("Conversations of this month"),
+                'Total' => __('Total'),
+                'Daily average' => __('Daily average'),
+                'Trend' => __('Trend'),
+                'Business initiated chats' => __('Business initiated chats'),
+                'User initiated chats' => __('User initiated chats'),
+                'Your balance' => __('Your balance'),
+                'Manual recharge' => __('Manual recharge'),
+                'Spent this month' => __('Spent this month'),
+                'Message log' => __('Message log'),
+                'look closely' => __('look closely'),
+                'Recharge your balance' => __('Recharge your balance'),
+                'Recharge manually' => __('Recharge manually'),
+                'Enter the amount:' => __('Enter the amount:'),
+                'min' => __('min'),
+                'Charge' => __('Charge'),
+                'Set monthly auto-recharge' => __('Set monthly auto-recharge'),
+                'Set threshold auto-recharge' => __('Set threshold auto-recharge'),
+                'Set the minimum threshold from which to automatically reload' => __('Set the minimum threshold from which to automatically reload'),
+                'Set threshold' => __('Set threshold'),
+                'Set monthly limit to charge' => __('Set monthly limit to charge'),
+                'Set auto-recharge' => __('Set auto-recharge'),
+                'Disable' => __('Disable'),
+                'Active' => __('Active'),
+                'Message log' => __('Message log'),
+                'Good Work!' => __('Good Work!'),
+                'This month' => __('This month'),
+                'No records found!' => __('No records found!'),
+            ],
+            'actions' => [
+                'create' => false,
+                'detail' => false,
+                'edit' => false,
+                'delete' => false,
+                'export' => false,
+                'import' => false,
+                'search' => false,
+                'filter' => false,
+                'select_field' => false,
+                'mass_edit' => false,
+                'merge' => false
+            ],
+            'menuBar' => $menuBar
+        ]);
     }
 
     /**
@@ -341,22 +337,22 @@ class UserController extends Controller
     public function usersListing(Request $request)
     {
         $list_view_columns = [
-            'name' => [ 'label' => ' Name' , 'type' => 'text'],
-            'email' =>  [ 'label' => 'Email' , 'type' => 'text'],
-            'role' => [ 'label' => 'Role' , 'type' => 'text'],
-            'status' =>  [ 'label' => 'Status' , 'type' => 'checkbox'],
-            'created_at' =>  [ 'label' => 'Created at' , 'type' => 'datetime'],
+            'name' => ['label' => ' Name', 'type' => 'text'],
+            'email' =>  ['label' => 'Email', 'type' => 'text'],
+            'role' => ['label' => 'Role', 'type' => 'text'],
+            'status' =>  ['label' => 'Status', 'type' => 'checkbox'],
+            'created_at' =>  ['label' => 'Created at', 'type' => 'datetime'],
         ];
 
         $module = new User();
 
-        $listViewData = $this->listView($request, $module, $list_view_columns);        
+        $listViewData = $this->listView($request, $module, $list_view_columns);
 
         $moduleData = [
             'singular' => 'User',
             'plural' => 'Users',
             'module' => 'User',
-            'add_link' => ( $request->is('admin/*') ) ?  route('create_global_user') : route('create_user'),
+            'add_link' => ($request->is('admin/*')) ?  route('create_global_user') : route('create_user'),
             'edit_link' => 'editUser',
             'add_button_text' => 'Add User',
             'current_page' => 'Users',
@@ -373,15 +369,15 @@ class UserController extends Controller
                 'search' => true,
                 'filter' => false,
                 'invite_user' => true,
-                'select_field'=>true
+                'select_field' => true
 
             ],
             'translator' => [
-                'No records' =>__('No records'),
-                'Search' =>__('Search'),
+                'No records' => __('No records'),
+                'Search' => __('Search'),
                 'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?')
             ],
-        ];        
+        ];
 
         $data = array_merge($moduleData, $listViewData);
         return Inertia::render('Admin/User/UserList2', $data);
@@ -394,33 +390,33 @@ class UserController extends Controller
         $user = new User();
         $currentUser = $request->user();
         $user_roles = $this->getRoles($currentUser);
-        
-        if($currentUser->role != 'regular') {
+
+        if ($currentUser->role != 'regular') {
             return Inertia::render('Admin/User/CreateUser', [
-                    'user' => $user, 
-                    'currentUser' => $currentUser,
-                    'time_zone' => $this->timezones,
-                    'roles' => $user_roles,
-                    'translator' => [
-                        'Name' => __('Name'),
-                        'Company name' => __('Company name'),
-                        'Email' => __('Email'),
-                        'Phone number' => __('Phone number'),
-                        'Language' => __('Language'),
-                        'Currency' => __('Currency'),
-                        'Active Status' => __('Active Status'),
-                        'Company Address' => __('Company Address'),
-                        'Company Country' => __('Company Country'),
-                        'Company VAT ID' => __('Company VAT ID'),
-                        'Admin email for invoices' => __('Admin email for invoices'),
-                        'Users'  => __('Users'),
-                        'Personal Information' => __('Personal Information'),
-                        'Time Zone' => __('Time Zone'),
-                        'Edit User' => __('Edit User'),
-                        'Save'  => __('Save'),
-                        'Cancel' => __('Cancel')
-                    ]
-                ]);
+                'user' => $user,
+                'currentUser' => $currentUser,
+                'time_zone' => $this->timezones,
+                'roles' => $user_roles,
+                'translator' => [
+                    'Name' => __('Name'),
+                    'Company name' => __('Company name'),
+                    'Email' => __('Email'),
+                    'Phone number' => __('Phone number'),
+                    'Language' => __('Language'),
+                    'Currency' => __('Currency'),
+                    'Active Status' => __('Active Status'),
+                    'Company Address' => __('Company Address'),
+                    'Company Country' => __('Company Country'),
+                    'Company VAT ID' => __('Company VAT ID'),
+                    'Admin email for invoices' => __('Admin email for invoices'),
+                    'Users'  => __('Users'),
+                    'Personal Information' => __('Personal Information'),
+                    'Time Zone' => __('Time Zone'),
+                    'Edit User' => __('Edit User'),
+                    'Save'  => __('Save'),
+                    'Cancel' => __('Cancel')
+                ]
+            ]);
         } else {
             return Redirect(route('dashboard'));
         }
@@ -433,37 +429,37 @@ class UserController extends Controller
     {
         $currentUser = $request->user();
         $flag = $this->checkPermission($currentUser, $id);
-        if($flag === false) {
+        if ($flag === false) {
             abort(401);
         }
 
         $user = User::find($id);
         $password = $user->password;
         $user_roles = $this->getRoles($currentUser);
-        
+
         // Check global admin access
-        if($user->role == 'global_admin' && $currentUser->role != 'global_admin') {
+        if ($user->role == 'global_admin' && $currentUser->role != 'global_admin') {
             return Redirect::route('home');
         }
- 
+
         // Permission roles
         $roleList = [];
         $roles = Role::all();
-        foreach($roles as $role){
+        foreach ($roles as $role) {
             $roleList[$role->id] = $role->name;
         }
 
-        if($currentUser->role != 'regular' || $user->id == $currentUser->id) {
+        if ($currentUser->role != 'regular' || $user->id == $currentUser->id) {
             return Inertia::render('Admin/User/CreateUser', [
-                    'user' => $user, 
-                    'password' => $password, 
-                    'currentUser' => $currentUser,
-                    'time_zone' => $this->timezones,
-                    'roles' => $user_roles,
-                    'role_permission' => $roleList,
-                    'translator' => Controller::getTranslations(),
-                    
-                ]);
+                'user' => $user,
+                'password' => $password,
+                'currentUser' => $currentUser,
+                'time_zone' => $this->timezones,
+                'roles' => $user_roles,
+                'role_permission' => $roleList,
+                'translator' => Controller::getTranslations(),
+
+            ]);
         } else {
             return Redirect(route('dashboard'));
         }
@@ -476,10 +472,10 @@ class UserController extends Controller
     {
         // Check whether user has permission to view the record.
         $currentUser = $request->user();
-       
+
         $flag = $this->checkPermission($currentUser, $id);
-        
-        if($flag === false) {
+
+        if ($flag === false) {
             abort(401);
         }
 
@@ -487,16 +483,16 @@ class UserController extends Controller
         $companies = $user->company;
 
         // Check global admin access
-        if($user->role == 'global_admin' && $currentUser->role != 'global_admin') {
+        if ($user->role == 'global_admin' && $currentUser->role != 'global_admin') {
             return Redirect::route('home');
         }
 
         $related_Company = $this->UserRelatedCompany($id);
-        
-        $token = $user->api_token;        
-        if($currentUser->role != 'regular' || $user->id == $currentUser->id) {
+
+        $token = $user->api_token;
+        if ($currentUser->role != 'regular' || $user->id == $currentUser->id) {
             return Inertia::render('Admin/User/UserDetail', [
-                'user' => $user, 
+                'user' => $user,
                 'token' => $token,
                 'companies' => $companies,
                 'current_user' => $request->user(),
@@ -517,17 +513,17 @@ class UserController extends Controller
         // Check whether user has permission to view the record.
         $currentUser = $request->user();
         $flag = $this->checkPermission($currentUser, $currentUser->id);
-        
-        if($flag === false) {
+
+        if ($flag === false) {
             abort(401);
         }
 
         $user = User::find($currentUser->id);
 
         $token = $user->api_token;
-        if($user->id == $currentUser->id) {
+        if ($user->id == $currentUser->id) {
             return Inertia::render('Admin/User/UserDetail', [
-                'user' => $user, 
+                'user' => $user,
                 'token' => $token,
                 'current_user' => $request->user(),
                 'time_zone' => $this->timezones,
@@ -545,7 +541,7 @@ class UserController extends Controller
     {
         $currentUser = $request->user();
         // Check whether user has permission to create/update the user
-        if(($request->get('id') == $currentUser->id) || $request->user()->role != 'regular') {
+        if (($request->get('id') == $currentUser->id) || $request->user()->role != 'regular') {
             if (!$request->get('id')) {
                 $request->validate([
                     'last_name' => 'required|max:255',
@@ -557,26 +553,26 @@ class UserController extends Controller
                 $user->password = bcrypt($password);
             } else {
                 $flag = $this->checkPermission($currentUser, $request->get('id'));
-                if($flag === false) {
+                if ($flag === false) {
                     abort(401);
                 }
-        
+
                 $user = User::find($request->get('id'));
             }
 
             $user->first_name = $request->get('first_name');
             $user->last_name = $request->get('last_name');
-            $user->name =  $request->get('first_name') . ' ' .$request->get('last_name');
+            $user->name =  $request->get('first_name') . ' ' . $request->get('last_name');
             $user->email = $request->get('email');
             $user->phone_number = $request->get('phone_number');
             $user->language = $request->get('language');
 
             // Only admin and global admin can able to set the user role
-            if($currentUser->role == 'admin' || $currentUser->role == 'global_admin') {
+            if ($currentUser->role == 'admin' || $currentUser->role == 'global_admin') {
                 $tmpRole = $request->get('role');
                 // Admin user can't set user as global_admin
-                if($currentUser->role == 'admin') {
-                    if($tmpRole == 'global_admin') {
+                if ($currentUser->role == 'admin') {
+                    if ($tmpRole == 'global_admin') {
                         $tmpRole = 'admin';
                     }
                 }
@@ -584,9 +580,9 @@ class UserController extends Controller
                 $user->role = $tmpRole ? $tmpRole : 'regular';
                 $user->status = $request->get('status');
             }
-            
+
             // Set user permissions based on role  
-            if($request->role_permission) {
+            if ($request->role_permission) {
                 $role = Role::find($request->role_permission);
                 $user->role_permission = $request->role_permission;
                 $user->syncRoles($role);
@@ -594,17 +590,15 @@ class UserController extends Controller
 
             $user->save();
 
-            if($currentUser->role == 'global_admin') {
+            if ($currentUser->role == 'global_admin') {
                 return Redirect::route('detail_global_User', $request->id);
-            }
-            else if($currentUser->role == 'admin') {
+            } else if ($currentUser->role == 'admin') {
                 return Redirect::route('detailUser', $request->id);
-            }
-            else {
+            } else {
                 return Redirect::route('profile');
             }
         }
-         
+
         return Redirect::route('dashboard');
     }
 
@@ -615,12 +609,12 @@ class UserController extends Controller
     {
         $currentUser = $request->user();
         $flag = $this->checkPermission($currentUser, $id);
-        if($flag === false) {
+        if ($flag === false) {
             abort(401);
         }
 
         $user = User::find($id);
-        if($currentUser->id == $user->id) { // User updating his/her own password. So we need to match the old password.
+        if ($currentUser->id == $user->id) { // User updating his/her own password. So we need to match the old password.
             $request->validate([
                 'current_password' => ['required', new MatchOldPassword],
                 'new_password' => 'required|min:8',
@@ -634,13 +628,11 @@ class UserController extends Controller
         }
 
         $user->update(['password' => Hash::make($request->new_password)]);
-        if($currentUser->role == 'global_admin') {
+        if ($currentUser->role == 'global_admin') {
             return Redirect::route('detail_global_user', $id);
-        }
-        else if($currentUser->role == 'admin') {
+        } else if ($currentUser->role == 'admin') {
             return Redirect::route('detailUser', $id);
-        }
-        else {
+        } else {
             return Redirect::route('profile');
         }
     }
@@ -661,7 +653,7 @@ class UserController extends Controller
      */
     public function createAccessToken($user_id)
     {
-	    $user = User::findOrFail($user_id);
+        $user = User::findOrFail($user_id);
         $token = $user->createToken('API_TOKEN');
         $user->api_token = $token->plainTextToken;
         $user->save();
@@ -675,24 +667,22 @@ class UserController extends Controller
     {
         $id = $request->get('id');
         $user = User::find($id);
-        $companyId = Cache::get('selected_company_'. $user->id);
-        if($request->is_soft){
+        $companyId = Cache::get('selected_company_' . $user->id);
+        if ($request->is_soft) {
             $condition = [
                 'user_id' => $id,
                 'company_id' => $companyId
             ];
-           
-            DB::table('company_user')->where($condition)->delete();
 
+            DB::table('company_user')->where($condition)->delete();
         } else {
             Schema::disableForeignKeyConstraints();
             if ($user->delete()) {
                 Log::info('User deleted.');
                 Schema::enableForeignKeyConstraints();
             }
-            
         }
-        
+
         return Redirect::route('show_Users');
     }
 
@@ -701,8 +691,8 @@ class UserController extends Controller
      */
     public function listAccounts(Request $request)
     {
-      
-        $module = new Account();       
+
+        $module = new Account();
         $list_view_columns = [
             'company_name' => ['label' => 'Name', 'type' => 'text'],
             'service' =>  ['label' => 'Service', 'type' => 'dropdown'],
@@ -710,14 +700,14 @@ class UserController extends Controller
             'phone_number' =>  ['label' => 'Phone number', 'type' => 'text'],
             'status' => ['label' => 'Status', 'type' => 'text'],
         ];
-        
+
         $listViewData = $this->listView($request, $module, $list_view_columns);
 
         $moduleData = [
             'singular' => 'Social Profile',
             'plural' => 'Social Profiles',
             'module' => 'Account',
-            'current_page' => 'Account', 
+            'current_page' => 'Account',
             // Actions
             'actions' => [
                 'create' => true,
@@ -728,7 +718,7 @@ class UserController extends Controller
                 'import' => false,
                 'search' => true,
                 'filter' => false,
-                'select_field'=>false,
+                'select_field' => false,
                 'mass_edit' => false,
                 'merge' => false
             ],
@@ -737,7 +727,6 @@ class UserController extends Controller
         $records =  $this->listViewRecord($request, $listViewData, 'Account');
         $data = array_merge($moduleData, $records);
         return Inertia::render('Account/List', $data);
-
     }
 
     /**
@@ -752,32 +741,32 @@ class UserController extends Controller
         if (!$account) {
             abort(401, __('You are not authorised to see this record.'));
         }
-        $template_details=[];
+        $template_details = [];
         $templates = Template::where('account_id', $id)->get();
         $messages = Message::select('messages.template_id', 'messages.template_uid', 'messages.language')
-            ->join( 'templates', 'messages.template_id', 'templates.id')
+            ->join('templates', 'messages.template_id', 'templates.id')
             ->where('account_id', $id)
             ->get();
-          
+
         $templateIds = [];
         foreach ($messages as $message) {
-            if($message->template_uid)
+            if ($message->template_uid)
                 $templateIds[$message->template_id][] = ['language' => $message->language, 'id' => $message->template_uid];
         }
 
-        $webhookEvents = WebhookEvent::where('account_id', $id)->get();      
-        
-        if(count($templates)) {
-            foreach($templates as $template) {               
-                $creater_name=[];
-                $creater_name = User::where('id',$template->created_by)->select('name')->first();   
-               
+        $webhookEvents = WebhookEvent::where('account_id', $id)->get();
+
+        if (count($templates)) {
+            foreach ($templates as $template) {
+                $creater_name = [];
+                $creater_name = User::where('id', $template->created_by)->select('name')->first();
+
                 $templateLanguageId = '';
-                if(isset($templateIds[$template->id])) {
-                    foreach($templateIds[$template->id] as $templateLan) {
+                if (isset($templateIds[$template->id])) {
+                    foreach ($templateIds[$template->id] as $templateLan) {
                         $templateLanguageId .= " {$templateLan['language']} - {$templateLan['id']},";
                     }
-                    $templateLanguageId = trim( $templateLanguageId, ',');
+                    $templateLanguageId = trim($templateLanguageId, ',');
                 }
 
                 $template_details[] = [
@@ -785,17 +774,18 @@ class UserController extends Controller
                     'creater_name' => $creater_name,
                     'account_id' => $template->account_id,
                     'name' => $template->name,
-                    'status' =>$template->status,
+                    'status' => $template->status,
                     'language' => $templateLanguageId,
-                    'created_at' => $template->created_at];           
-            }          
+                    'created_at' => $template->created_at
+                ];
+            }
         }
 
-        if(count($webhookEvents)) {
-            foreach($webhookEvents as $webhook) {
-                $creater_id = $webhook->created_by;                
+        if (count($webhookEvents)) {
+            foreach ($webhookEvents as $webhook) {
+                $creater_id = $webhook->created_by;
                 $creater = User::find($creater_id);
-                if($creater){
+                if ($creater) {
                     $webhook->created_by = $creater->name;
                 }
             }
@@ -805,11 +795,11 @@ class UserController extends Controller
             'company_name' => ['label' => __('Name')],
             'phone_number' => ['label' => __('Phone number'), 'show' => ['whatsapp']],
             'service' => ['label' => __('Service')],
-            'service_engine' => ['label' => 'Service Engine', 'user_show' => [ 'global_admin']],
+            'service_engine' => ['label' => 'Service Engine', 'user_show' => ['global_admin']],
 
-            'fb_phone_number_id' => ['label' => 'Instagram Page Name' , 'fb_show' => [ 'facebook'] , 'show' => ['instagram']],
+            'fb_phone_number_id' => ['label' => 'Instagram Page Name', 'fb_show' => ['facebook'], 'show' => ['instagram']],
             'src_name' => ['label' => __('Source name'), 'show' => ['whatsapp']],
-            'fb_waba_name' => ['label' => __('FaceBook whatsapp account name'), 'fb_show' => [ 'facebook' , 'gupshup'], 'show' => ['whatsapp']],
+            'fb_waba_name' => ['label' => __('FaceBook whatsapp account name'), 'fb_show' => ['facebook', 'gupshup'], 'show' => ['whatsapp']],
 
             'fb_business_name' => ['label' => __('Business manager names'), 'show' => ['whatsapp']],
             'Profile' => __('Profile'),
@@ -822,7 +812,7 @@ class UserController extends Controller
             'account' => $account,
             'company' => $company,
             'field_info' => $field_info,
-            'templates' => $template_details,           
+            'templates' => $template_details,
             'webhook_events' => $this->webhook_events,
             'categories' => $this->categories,
             'events' => $webhookEvents ? $webhookEvents : [],
@@ -922,19 +912,19 @@ class UserController extends Controller
         $company = Company::first();
         $account = Account::findOrFail($id);
         $pages = [];
-       
+
         $instaAccounts = [];
-        if( $account->service == 'instagram' || $account->service == 'facebook'){
-            $pagesList = unserialize( base64_decode($account->fb_meta_data) );
+        if ($account->service == 'instagram' || $account->service == 'facebook') {
+            $pagesList = unserialize(base64_decode($account->fb_meta_data));
             $pageId = $account->fb_phone_number_id;
             $pages = [];
-            foreach($pagesList as $id => $page){
-                $pages[$id] = isset($page['name']) ? $page['name'] : $page ;
-                if($account->service == 'instagram'){
+            foreach ($pagesList as $id => $page) {
+                $pages[$id] = isset($page['name']) ? $page['name'] : $page;
+                if ($account->service == 'instagram') {
                     $account->page_token = $page['token'];
                     $getLinkedAccounts = (new WhatsAppUsers())->getLinkedAccounts($id, $account);
                     $account->fb_token = '';
-                    if($getLinkedAccounts['status']){
+                    if ($getLinkedAccounts['status']) {
                         $instaAccounts[$id] = $getLinkedAccounts['data'];
                     }
                 }
@@ -942,14 +932,14 @@ class UserController extends Controller
             $account->fb_phone_number_id = $pageId;
         }
         $whatsappAccountList = [];
-        if( $company->service_engine == 'Facebook' && $account->service_engine  == 'facebook') {
-            $whatsappAccountList = unserialize( base64_decode($account->fb_meta_data) );
+        if ($company->service_engine == 'Facebook' && $account->service_engine  == 'facebook') {
+            $whatsappAccountList = unserialize(base64_decode($account->fb_meta_data));
         }
 
         $webhook = WebhookEvent::where('account_id', $account->id)->first();
         return Inertia::render('Account/Registration', [
-            'account' => $account, 
-            'webhook_events' => $this->webhook_events, 
+            'account' => $account,
+            'webhook_events' => $this->webhook_events,
             'events' => $webhook,
             'pages' => $pages,
             'company' => $company,
@@ -983,10 +973,15 @@ class UserController extends Controller
                 'Profile description' =>  __('Profile description'),
                 'Official business account' =>  __('Official business account'),
                 'Request for Whatsapp official business account (OBA).' =>  __('Request for Whatsapp official business account (OBA).'),
-                'Cancel' =>  __('Cancel'),'Save' =>  __('Save'),
+                'Cancel' =>  __('Cancel'),
+                'Save' =>  __('Save'),
                 'Sole Proprietorship' =>  __('Sole Proprietorship'),
-                'Partnership' =>  __('Partnership'),'Limited Liability Company (LLC)' =>  __('Limited Liability Company (LLC)'),
-                'Corporation' =>  __('Corporation'),'Website' =>  __('Website'),'Support' =>  __('Support')]
+                'Partnership' =>  __('Partnership'),
+                'Limited Liability Company (LLC)' =>  __('Limited Liability Company (LLC)'),
+                'Corporation' =>  __('Corporation'),
+                'Website' =>  __('Website'),
+                'Support' =>  __('Support')
+            ]
 
 
         ]);
@@ -998,7 +993,7 @@ class UserController extends Controller
     public function accountRegistration(Request $request)
     {
         $service = $error = '';
-        if(isset($_GET['error'])){
+        if (isset($_GET['error'])) {
             $service = session('service');
             $error = $_GET['error'];
         }
@@ -1019,8 +1014,8 @@ class UserController extends Controller
         $id = '';
         $displayName = '';
         $user_id = $request->user()->id;
-      
-        if($request->profile_list){
+
+        if ($request->profile_list) {
             $parentAccount = Account::find($request->profile_list);
 
             $account = new Account();
@@ -1032,24 +1027,24 @@ class UserController extends Controller
             $account->service_engine = 'facebook';
 
             $account->save();
-            return Redirect::route('edit_account' , $account->id );
+            return Redirect::route('edit_account', $account->id);
         }
         //check for edit or create new account
         if ($request->has('id') && $request->get('id') > 0) {
             $id = $request->get('id');
         }
-       
-        if($request->has('legal_entity') && $request->get('legal_entity')){
-            $displayName = $request->get('legal_entity'); 
+
+        if ($request->has('legal_entity') && $request->get('legal_entity')) {
+            $displayName = $request->get('legal_entity');
         }
 
         //check if the user select the company name as display name
-        if($displayName != 'yes' && $request->service != 'instagram' && $request->service != 'facebook' && $request->service_engine != 'facebook'){
-           $request->validate([
-            'display_name' => 'required|max:255',
-           ]);
+        if ($displayName != 'yes' && $request->service != 'instagram' && $request->service != 'facebook' && $request->service_engine != 'facebook') {
+            $request->validate([
+                'display_name' => 'required|max:255',
+            ]);
         }
-       
+
         $request->validate([
             'service' => 'required',
             'company_name' => 'required'
@@ -1057,10 +1052,10 @@ class UserController extends Controller
 
         $service = $request->get('service');
 
-        if($service == 'whatsapp' && $request->service_engine != 'facebook'){
+        if ($service == 'whatsapp' && $request->service_engine != 'facebook') {
 
             //validate the phone number is unique
-            if($request->get('id')) {
+            if ($request->get('id')) {
                 $request->validate([
                     'phone_number' => 'required|numeric|unique:accounts,phone_number,' . $request->get('id')
                 ]);
@@ -1071,78 +1066,76 @@ class UserController extends Controller
             }
         }
 
-        if($id){
+        if ($id) {
             $account = Account::findOrFail($id);
-        }else{
+        } else {
             $account = new Account();
             $account->user_id = $user_id;
             $account->status = 'New';
-            
+
             // Set default service engine
             $company = Company::first();
-            $serviceEngine = ($company->service_engine) ? $company->service_engine : $request->service_engine ;
+            $serviceEngine = ($company->service_engine) ? $company->service_engine : $request->service_engine;
             $account->service_engine = ($serviceEngine) ? $serviceEngine : 'gupshup';
-
         }
-        if($request->service == 'instagram' || $request->service == 'facebook'){
+        if ($request->service == 'instagram' || $request->service == 'facebook') {
             $request->status = '';
             $request->service_engine = 'facebook';
-            if( $request->fb_phone_number_id ){
+            if ($request->fb_phone_number_id) {
                 $account->status = 'Active';
             }
         }
 
-        if($request->service == 'whatsapp' && $account->service_engine == 'facebook' && $request->fb_whatsapp_account_id) {
+        if ($request->service == 'whatsapp' && $account->service_engine == 'facebook' && $request->fb_whatsapp_account_id) {
             $account->status = 'Active';
             $account->fb_phone_number_id = $request->fb_phone_number_id;
         }
-        
-        if($account->fb_phone_number_id != $request->fb_phone_number_id && $request->service != 'whatsapp'  ){
+
+        if ($account->fb_phone_number_id != $request->fb_phone_number_id && $request->service != 'whatsapp') {
             $account->fb_phone_number_id = $request->fb_phone_number_id;
-            
-            if(!$account->page_token){
-                $pagesList = unserialize( base64_decode($account->fb_meta_data) );
+
+            if (!$account->page_token) {
+                $pagesList = unserialize(base64_decode($account->fb_meta_data));
                 $pageId = $account->fb_phone_number_id;
                 $account->page_token = $pagesList[$pageId]['token'];
             }
-            
-            
+
+
             // Add subscripe page for start trigger webhooks
-            if($request->fb_phone_number_id)
-                (new WhatsAppUsers())->subscripe($account);
+            if ($request->fb_phone_number_id) (new WhatsAppUsers())->subscripe($account);
         }
-        
+
 
         $account->company_name = $request->company_name;
 
 
-        if($displayName == 'yes'){
-           $account->display_name = $request->company_name;
-        }else{
-           $account->display_name = $request->display_name;
+        if ($displayName == 'yes') {
+            $account->display_name = $request->company_name;
+        } else {
+            $account->display_name = $request->display_name;
         }
-        
-        $accountFields = ['company_name','category','description','email', 'service', 'service_token', 'fb_whatsapp_account_id', 'phone_number', 'src_name', 'business_manager_id', 'fb_insta_app_id', 'fb_page_name', 'insta_user_name', 'fb_business_name', 'fb_waba_name', 'api_partner_name', 'api_partner'];
-       
-        foreach($accountFields as $field){
-            if($request->has($field)){
+
+        $accountFields = ['company_name', 'category', 'description', 'email', 'service', 'service_token', 'fb_whatsapp_account_id', 'phone_number', 'src_name', 'business_manager_id', 'fb_insta_app_id', 'fb_page_name', 'insta_user_name', 'fb_business_name', 'fb_waba_name', 'api_partner_name', 'api_partner'];
+
+        foreach ($accountFields as $field) {
+            if ($request->has($field)) {
                 $account->$field = $request->$field;
             }
         }
 
         $account->save();
-        
-        if($id){
-            return Redirect::route('account_view' , $account->id );
+
+        if ($id) {
+            return Redirect::route('account_view', $account->id);
             //return Redirect::route('listAccount');
-        }else{
+        } else {
             $supportRequest = new SupportRequest();
-            $supportRequest->subject= 'New Social Profile is created';
-            $supportRequest->description = 'New Social Profile is created.[ '.$account->display_name.','. $account->id.']';
+            $supportRequest->subject = 'New Social Profile is created';
+            $supportRequest->description = 'New Social Profile is created.[ ' . $account->display_name . ',' . $account->id . ']';
             $supportRequest->type = "Channel";
             $supportRequest->assigned_to = $request->user()->id;
             $supportRequest->status = "New";
-            $supportRequest->created_by=  $account->user_id;          
+            $supportRequest->created_by =  $account->user_id;
             $supportRequest->save();
             return response()->json(['status' => true, 'account_id' => $account->id]);
         }
@@ -1159,10 +1152,10 @@ class UserController extends Controller
 
         // Pre-delete the related record from this accounts 
         $templates = Template::where('account_id', $account_id)->get();
-        foreach($templates as $template) {
+        foreach ($templates as $template) {
             $messages = Message::where('template_id', $template->id)->get();
-            foreach($messages as $message) {
-                if($message) {
+            foreach ($messages as $message) {
+                if ($message) {
                     MessageButton::where('message_id', $message->id)->delete();
                     $message->delete();
                 }
@@ -1205,7 +1198,7 @@ class UserController extends Controller
         $template->category = $request->get('category');
         $template->languages = $request->get('languages');
         $template->status = 'draft';
-        $template->company_id = Cache::get('selected_company_' . $request->user()->id) ;
+        $template->company_id = Cache::get('selected_company_' . $request->user()->id);
         $template->account_id = $account_id;
         $template->created_by = $request->user()->id;
         $template->save();
@@ -1243,12 +1236,12 @@ class UserController extends Controller
 
         $webhook = new WebhookEvent();
         $webhook->account_id = $account_id;
-        foreach($this->webhook_events as $webhook_event => $event_info) {
+        foreach ($this->webhook_events as $webhook_event => $event_info) {
             $webhook->$webhook_event = $request->has($webhook_event) && ($request->get($webhook_event) === true || $request->get($webhook_event) == 1)  ? true : false;
         }
         $webhook->callback_url = $request->get('callback_url');
-        $webhook->name_url = $request->name_url; 
-        $webhook->created_by = $request->user()->id; 
+        $webhook->name_url = $request->name_url;
+        $webhook->created_by = $request->user()->id;
         $webhook->save();
 
         return Redirect::route('account_view', $account_id);
@@ -1265,11 +1258,11 @@ class UserController extends Controller
         ]);
 
         $webhook = WebhookEvent::find($webhook_id);
-        foreach($this->webhook_events as $webhook_event => $event_info) {
+        foreach ($this->webhook_events as $webhook_event => $event_info) {
             $webhook->$webhook_event = $request->has($webhook_event) && ($request->get($webhook_event) === true || $request->get($webhook_event) == 1)  ? true : false;
         }
         $webhook->callback_url = $request->get('callback_url');
-        $webhook->name_url = $request->name_url;  
+        $webhook->name_url = $request->name_url;
         $webhook->save();
 
         return Redirect::route('account_view', $account_id);
@@ -1286,15 +1279,15 @@ class UserController extends Controller
         $accounts = Account::where('user_id', $user_id)->get();
         $webhook = WebhookEvent::find($webhook_id);
         $account_id = $webhook->account_id;
-        foreach($accounts as $account) {
-            if($account->id == $webhook->account_id) {
+        foreach ($accounts as $account) {
+            if ($account->id == $webhook->account_id) {
                 $webhook->delete();
                 $flag = true;
                 break;
             }
         }
-        
-        if(!$flag) {
+
+        if (!$flag) {
             abort(401, 'You are not authorised to delete this event');
         }
 
@@ -1318,7 +1311,7 @@ class UserController extends Controller
         if ($templateContent instanceof \Illuminate\Http\RedirectResponse) {
             return $templateContent;
         }
-        
+
         return Inertia::render('Account/Template/CreateTemplate', [
             'template' => $templateContent['template'],
             'languages' => $templateContent['languages'],
@@ -1335,29 +1328,29 @@ class UserController extends Controller
     public function fetchTemplateContent($templateId, $accountId)
     {
         $template = Template::where('account_id', $accountId)
-        ->where('id', $templateId)
-        ->first();
+            ->where('id', $templateId)
+            ->first();
 
-        if(! $template){
+        if (! $template) {
             return Redirect::route('dashboard');
         }
         // Setting language
         $languages = array_values(array_unique($template->languages));
 
         $temp_contents = [];
-        foreach($languages as $key => $language) {
+        foreach ($languages as $key => $language) {
             $message = Message::where('template_id', $templateId)
                 ->where('language', $language)
                 ->first();
-            
+
             if (!$message) {
                 $message = new Message();
             }
 
             $sampleData = '';
-            if($message->example){
-            
-                if ( base64_encode(base64_decode($message->example, true)) === $message->example){
+            if ($message->example) {
+
+                if (base64_encode(base64_decode($message->example, true)) === $message->example) {
                     $sampleData = unserialize(base64_decode($message->example));
                 }
             }
@@ -1366,7 +1359,7 @@ class UserController extends Controller
             if ($message->id) {
                 $message_buttons = MessageButton::where('message_id', $message->id)->get();
             }
-            
+
             $temp_contents[$language]['message'] = $message;
             $temp_contents[$language]['sampleData'] = $sampleData;
             $temp_contents[$language]['message_buttons'] = $message_buttons;
@@ -1375,15 +1368,15 @@ class UserController extends Controller
         // Get module fields
         $fields = [];
         $getFields = Field::where('module_name', 'Contact')
-                ->where('field_type' , '!=' , 'relate' )
-                ->groupBy('field_name')
-                ->orderBy('id')
-                ->get();
-        
-        foreach($getFields as $field){
+            ->where('field_type', '!=', 'relate')
+            ->groupBy('field_name')
+            ->orderBy('id')
+            ->get();
+
+        foreach ($getFields as $field) {
             $fields[$field->field_name] = $field->field_label;
         }
-        
+
         return [
             'template' => $template,
             'temp_contents' => $temp_contents,
@@ -1403,7 +1396,7 @@ class UserController extends Controller
         if (!$account) {
             abort(401, 'You are not authorised to view this');
         }
-        
+
         $validation_array = [
             'header_type' => 'required',
             'body' => 'required|max:1024',
@@ -1412,20 +1405,20 @@ class UserController extends Controller
         if ($request->get('header_type') == 'text') {
             $validation_array['header_text'] = 'required|max:60';
         }
-        if($request->get('header_type') != 'text' ){
+        if ($request->get('header_type') != 'text') {
             $validation_array['attach_file'] = 'required';
         }
 
-       $request->validate($validation_array);
-        
+        $request->validate($validation_array);
+
         // Store Template Attachment
         $attachFilePath = '';
-        if($request->file('attach_file')) {
-            $file = $request->file('attach_file') ;
-            $fileName = $file->getClientOriginalName() ;
-            $destinationPath = public_path().'/attach_files' ;
-            $file->move($destinationPath,$fileName);
-            $attachFilePath = ['url' => asset('attach_files/'.$fileName), 'path' => $destinationPath.'/'.$fileName];
+        if ($request->file('attach_file')) {
+            $file = $request->file('attach_file');
+            $fileName = $file->getClientOriginalName();
+            $destinationPath = public_path() . '/attach_files';
+            $file->move($destinationPath, $fileName);
+            $attachFilePath = ['url' => asset('attach_files/' . $fileName), 'path' => $destinationPath . '/' . $fileName];
         }
 
         // Storing Message
@@ -1443,15 +1436,15 @@ class UserController extends Controller
         } else {
             $message->header_content = '';
         }
-    
+
         $message->body = $request->get('body');
         $message->footer_content = $request->get('body_footer');
         $message->template_id = $template_id;
         $message->language = $request->get('language');
-        $message->attach_file = isset($attachFilePath['url'])? $attachFilePath['url'] : '';
+        $message->attach_file = isset($attachFilePath['url']) ? $attachFilePath['url'] : '';
         $message->example = base64_encode(serialize($request->get('sample_value')));
         $message->save();
-        
+
         $message_id = $message->id;
 
         // Storing Buttons if available
@@ -1472,7 +1465,7 @@ class UserController extends Controller
                             $buttonObj->body = $button['button_text'];
                             $buttonObj->phone_number = $button['phone_number'];
                         } else {
-                           // $buttonObj->body = '';
+                            // $buttonObj->body = '';
                             $buttonObj->phone_number = '';
                         }
 
@@ -1499,8 +1492,8 @@ class UserController extends Controller
             ->where('id', $template_id)
             ->first();
 
-        if(base64_decode($request->example, true)) {
-            $request->example = ($request->example) ? unserialize( base64_decode( $request->example) ) : '';
+        if (base64_decode($request->example, true)) {
+            $request->example = ($request->example) ? unserialize(base64_decode($request->example)) : '';
         }
 
         // Submit template to GupShup
@@ -1511,7 +1504,7 @@ class UserController extends Controller
 
         // // Setting language
         // $languages = $template->languages;
-        
+
         // $message_buttons = MessageButton::where('message_id', $message_id)->get();
 
         $templateContent = $this->fetchTemplateContent($template_id, $account_id);
@@ -1561,8 +1554,8 @@ class UserController extends Controller
             }
             Mail::setSwiftMailer($backup);  // Set Mailer Original credential
         }*/
-        
-       // return response()->json($result);
+
+        // return response()->json($result);
 
         return Inertia::render('Account/Template/CreateTemplate', [
             'template' => $templateContent['template'],
@@ -1573,11 +1566,11 @@ class UserController extends Controller
             'translator' => Controller::getTranslations(),
         ]);
     }
-    public function setPageLimit(Request $request,$module)
+    public function setPageLimit(Request $request, $module)
     {
-        $pageLimit = $request->per_pagelimit;            
-        Cache::put($module.'page_limit'. $request->user()->id , $pageLimit);   
-        return Redirect::to(url()->previous());                           
+        $pageLimit = $request->per_pagelimit;
+        Cache::put($module . 'page_limit' . $request->user()->id, $pageLimit);
+        return Redirect::to(url()->previous());
     }
 
     /**
@@ -1585,94 +1578,76 @@ class UserController extends Controller
      */
     public function wallet(Request $request)
     {
-        $user = $request->user();       
-        $current_page = isset($_GET['current_page']) ? $_GET['current_page'] : 'Wallet'; 
-        $page = isset($_GET['page']) ? $_GET['page']: '1';
+        $user = $request->user();
+        $current_page = $request->query('current_page', 'Wallet');
+        $current_page = in_array($current_page, ['Wallet', 'Expenses'], true)
+            ? $current_page
+            : 'Wallet';
+        $page = max((int) $request->query('page', 1), 1);
 
         $menuBar = $this->fetchMenuBar();
-        $account_id = $account_name = [];
-        $accounts = Account::get();
-        
-        foreach($accounts as $account) {
-            $account_id[] = $account->id;
-            $account_name[$account->id] = $account->company_name;
-        } 
-        
-        if($current_page != 'Expenses' && isset($_GET['page'])) {
-            $page = 1;
-        }
-        $msgTransactionList = $this->getTransactionList($request,$page);
-        $currentCompany =  Company::first(); // GET current user Company Details
-
-        $wallet = Wallet::where('user_id', $user->id)->first();
-        $balance = 0.00;
-        if($wallet) {
-            $balance = $wallet->balance_amount;
-        }
-
-        // Get message amount deduction
-        $messageDeduction = $this->getMsgAmountDeduction($request,$user->id);
-        $accountDeduction = $this->getDeductionDetail($request);
-
-        $paymentMethods = $this->getPaymentMethods($request , 'direct');
-        try {
-            $defaultPaymentMethodObject = $user->defaultPaymentMethod();
-            $defaultPaymentMethod = $defaultPaymentMethodObject ? $defaultPaymentMethodObject->id : '';
-        }
-        catch (\Throwable $e) {
-            Log::warning('Unable to load default Stripe payment method.', [
-                'user_id' => $user?->id,
-                'message' => $e->getMessage(),
-            ]);
-
-            $defaultPaymentMethod = '';
-        }
-        
-        $stripe_public_key = config('stripe.stripe_key');
-
-        if($current_page != 'Invoice' && isset($_GET['page'])) {
-            $page = 1;
-        }
-        $request->filter = '';
-        $transactionHistory = $this->getTransactionHistory($request, $page);
-        $add_on = $this->getAddOnSelection();
-        $plans = Plan::all();
 
         $data = [
-            'add_on' => $add_on,
             'menuBar' => $menuBar,
-            'plans' => $plans,
             'transaction_actions' => [],
             'invoice_actions' => ['download' => true],
             'name' => $user->name,
-            'balance' => $balance,
-            'message_deduction' => $messageDeduction,
-            'message_account_detail' => $accountDeduction,
-            'paymentMethods' => $paymentMethods,
-            'defaultPaymentMethod' => $defaultPaymentMethod,
-            'stripe_public_key' => $stripe_public_key,
-            'currentCompany' => $currentCompany,
             'current_page' => $current_page,
-            'msgTransactionList' => $msgTransactionList,
-            'transactionHistory'=> $transactionHistory,
             'translator' => Controller::getTranslations(),
         ];
+
+        if ($current_page === 'Wallet') {
+            $paymentMethods = $this->getPaymentMethods($request, 'direct');
+
+            try {
+                $defaultPaymentMethodObject = $user->defaultPaymentMethod();
+                $defaultPaymentMethod = $defaultPaymentMethodObject ? $defaultPaymentMethodObject->id : '';
+            } catch (\Throwable $e) {
+                Log::warning('Unable to load default Stripe payment method.', [
+                    'user_id' => $user?->id,
+                    'message' => $e->getMessage(),
+                ]);
+
+                $defaultPaymentMethod = '';
+            }
+
+            $data = array_merge($data, [
+                'add_on' => $this->getAddOnSelection(),
+                'paymentMethods' => $paymentMethods,
+                'defaultPaymentMethod' => $defaultPaymentMethod,
+                'stripe_public_key' => config('stripe.stripe_key'),
+                'currentCompany' => Company::first(),
+            ]);
+        }
+
+        if ($current_page === 'Expenses') {
+            $msgTransactionList = $this->getTransactionList($request, $page);
+            $request->merge(['filter' => '']);
+
+            $data = array_merge($data, [
+                'message_deduction' => $this->getMsgAmountDeduction($request, $user->id),
+                'message_account_detail' => $this->getDeductionDetail($request),
+                'msgTransactionList' => $msgTransactionList,
+                'transactionHistory' => $this->getTransactionHistory($request, $page),
+            ]);
+        }
 
         return Inertia::render('Wallet/WalletIndex', $data);
     }
 
-    public function getAddOnSelection() {
+    public function getAddOnSelection()
+    {
         $company = Company::first();
         $plans = Plan::all();
         $plan = Plan::where('plan_id', $company->plan)->first();
         $return = [];
 
         $current_plan_index = '';
-        foreach($plans as $index => $planlist) {
-            if($planlist->plan_id == $company->plan) $current_plan_index = $index;
+        foreach ($plans as $index => $planlist) {
+            if ($planlist->plan_id == $company->plan) $current_plan_index = $index;
         }
 
-        if($plan) {
+        if ($plan) {
             $max_users = $plan->users;
             $max_account = $plan->accounts;
             $max_workflow = $plan->workflows;
@@ -1682,8 +1657,12 @@ class UserController extends Controller
             $total_workflow = Automation::count();
 
             $return = [
-                'max_users' => $max_users, 'max_account' => $max_account, 'max_workflow' => $max_workflow,
-                'total_users' => $total_users, 'total_account' => $total_account, 'total_workflow' => $total_workflow,
+                'max_users' => $max_users,
+                'max_account' => $max_account,
+                'max_workflow' => $max_workflow,
+                'total_users' => $total_users,
+                'total_account' => $total_account,
+                'total_workflow' => $total_workflow,
                 'current_plan_index' => $current_plan_index
             ];
         }
@@ -1699,11 +1678,11 @@ class UserController extends Controller
         $user = $request->user();
         $user_id = $user->id;
         $amount = $request->get('amount') * 100;
-        $companyId = Cache::get('selected_company_'. $user_id);
+        $companyId = Cache::get('selected_company_' . $user_id);
 
         // Get company
         $company = Company::first();
-        
+
         try {
             $params = [
                 'description' => 'OneMessage recharge',
@@ -1711,17 +1690,18 @@ class UserController extends Controller
             ];
 
             $stripeCharge = $user->charge(
-                $amount, $request->get('id'), $params
+                $amount,
+                $request->get('id'),
+                $params
             );
 
-            if($stripeCharge->id) {
+            if ($stripeCharge->id) {
                 $wallet = Wallet::where('user_id', $user_id)->first();
-                if(!$wallet) {
+                if (!$wallet) {
                     $wallet = new Wallet();
                     $wallet->user_id = $user_id;
                     $wallet->balance_amount = $amount / 100;
-                }
-                else {
+                } else {
                     $wallet->balance_amount = $wallet->balance_amount + ($amount / 100);
                 }
                 $wallet->save();
@@ -1735,8 +1715,7 @@ class UserController extends Controller
                 $transaction->user_id = $user_id;
                 $transaction->save();
             }
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             $transaction = new Transaction();
             $transaction->service = 'Stripe';
             $transaction->transaction_id = '-';
@@ -1748,7 +1727,7 @@ class UserController extends Controller
 
             return response()->json(['status' => false, 'message' => $e->getMessage()]);
 
-        //    throw ValidationException::withMessages(['amount' => $e->getMessage()]);
+            //    throw ValidationException::withMessages(['amount' => $e->getMessage()]);
         }
 
         return response()->json(['status' => true, 'message' => 'Payment successful']);
@@ -1761,9 +1740,9 @@ class UserController extends Controller
     {
         $user_id = $request->user()->id;
         $balance = Wallet::where('user_id', $user_id)
-                    ->pluck('balance_amount')
-                    ->first();
-        
+            ->pluck('balance_amount')
+            ->first();
+
         return response()->json(['status' => true, 'balance' => $balance]);
     }
 
@@ -1774,36 +1753,35 @@ class UserController extends Controller
     {
         // List view columns to show
         $list_view_columns = [
-            'service' => [ 'label' => __('Service') , 'type' => 'text'],
-            'transaction_id' => [ 'label' => __('Transaction Id') , 'type' => 'text'],
-            'amount' => [ 'label' => __('Amount') , 'type' => 'text'],
-            'status' => [ 'label' => __('Status') , 'type' => 'text'],
-            'error_message' => [ 'label' => __('Message') , 'type' => 'text'],
-            'created_at' => [ 'label' => __('Created At') , 'type' => 'text'],
-          //  'actions'   => [ 'label' =>'Action' , 'type' => 'url'],
+            'service' => ['label' => __('Service'), 'type' => 'text'],
+            'transaction_id' => ['label' => __('Transaction Id'), 'type' => 'text'],
+            'amount' => ['label' => __('Amount'), 'type' => 'text'],
+            'status' => ['label' => __('Status'), 'type' => 'text'],
+            'error_message' => ['label' => __('Message'), 'type' => 'text'],
+            'created_at' => ['label' => __('Created At'), 'type' => 'text'],
+            //  'actions'   => [ 'label' =>'Action' , 'type' => 'url'],
         ];
 
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
         $sort_by = $request->has('sort_by') && $request->get('sort_by') ? $request->get('sort_by') : 'created_at';
         $sort_order = $request->has('sort_order') && $request->get('sort_order') ? $request->get('sort_order') : 'desc';
-        $page_limit=Cache::get('page_limit'. $request->user()->id);
+        $page_limit = Cache::get('page_limit' . $request->user()->id);
         $user_id = $request->user()->id;
-        if($search) {
+        if ($search) {
             $records = Transaction::orderBy($sort_by, $sort_order)
-                        ->where('user_id', $user_id)
-                        ->where(function ($query) use ($search, $list_view_columns) {    
-                            foreach($list_view_columns as $field_name => $field_info) {
-                                $query->orWhere($field_name, 'like', '%' . $search . '%');
-                            }
-                        })
-                        ->paginate($page_limit);
-        }
-        else {
+                ->where('user_id', $user_id)
+                ->where(function ($query) use ($search, $list_view_columns) {
+                    foreach ($list_view_columns as $field_name => $field_info) {
+                        $query->orWhere($field_name, 'like', '%' . $search . '%');
+                    }
+                })
+                ->paginate($page_limit);
+        } else {
             $records = Transaction::orderBy($sort_by, $sort_order)
-                        ->where('user_id', $user_id)
-                        ->paginate($page_limit);
+                ->where('user_id', $user_id)
+                ->paginate($page_limit);
         }
-        
+
         return Inertia::render('Wallet/Transactions', [
             'records' => $records->items(),
             'singular' => __('Transaction'),
@@ -1824,8 +1802,8 @@ class UserController extends Controller
             'compact_type' => 'condense',
             'list_view_columns' => $list_view_columns,
             'translator' => [
-                'No records' =>__('No records'),
-                'Search' =>__('Search'),
+                'No records' => __('No records'),
+                'Search' => __('Search'),
                 'Are you sure you want to delete the record?' => __('Are you sure you want to delete the record?')
 
             ],
@@ -1834,7 +1812,7 @@ class UserController extends Controller
                 'firstPageUrl' => $records->url(1),
                 'previousPageUrl' => $records->previousPageUrl(),
                 'nextPageUrl' => $records->nextPageUrl(),
-                'lastPageUrl' => $records->url($records->lastPage()),  
+                'lastPageUrl' => $records->url($records->lastPage()),
                 'currentPage' => $records->currentPage(),
                 'total' => $records->total(),
                 'count' => $records->count(),
@@ -1850,19 +1828,19 @@ class UserController extends Controller
     public function invoices(Request $request)
     {
         $invoice = Transaction::find($request->id);
-        if(!$invoice || ($invoice->user_id != $request->user()->id)) {
+        if (!$invoice || ($invoice->user_id != $request->user()->id)) {
             abort(401);
         }
         $company = Company::first();
 
         $user = User::find($request->user()->id);
-            view()->share('invoice',$invoice);
-            view()->share('user',$user);
-            view()->share('company', $company);
-           
-            $pdf = PDF::loadView('invoice');
-          //$pdf->save(storage_path() . '/invoice');
-            return $pdf->download('invoice.pdf');
+        view()->share('invoice', $invoice);
+        view()->share('user', $user);
+        view()->share('company', $company);
+
+        $pdf = PDF::loadView('invoice');
+        //$pdf->save(storage_path() . '/invoice');
+        return $pdf->download('invoice.pdf');
     }
 
     /**
@@ -1870,22 +1848,21 @@ class UserController extends Controller
      * 
      * @param INTEGER $user_id
      */
-    public function getMsgAmountDeduction($request,$user_id)
+    public function getMsgAmountDeduction($request, $user_id)
     {
         $sort_time = 'All';
 
-        if ($request->has('is_conversation') && ($request->is_conversation == 1 || $request->is_conversation == true)) 
-        {
+        if ($request->has('is_conversation') && ($request->is_conversation == 1 || $request->is_conversation == true)) {
             $query = Msg::selectRaw(' count(id) as messages , sum(amount) as total , policy');
-            $start_date = ($request->start_date)? $request->start_date : '';
+            $start_date = ($request->start_date) ? $request->start_date : '';
             $end_date = ($request->end_date) ? $request->end_date : '';
             $currentModule = ($request->module) ? $request->module : '';
             $sort_time = $request->has('sort_time') && $request->get('sort_time') ? $request->get('sort_time') : 'All';
             $sort_time = ($currentModule == 'Conversation') ? $sort_time : 'All';
 
-            if($currentModule == 'Conversation') {
-                if($start_date != null && $end_date != null) { 
-                    $query->wherebetween('created_at', [$start_date,$end_date]);
+            if ($currentModule == 'Conversation') {
+                if ($start_date != null && $end_date != null) {
+                    $query->wherebetween('created_at', [$start_date, $end_date]);
                 } else if ($sort_time == 'today') {
                     $query->whereDate('created_at', Carbon::today());
                 } else if ($sort_time == 'yesterday') {
@@ -1898,15 +1875,13 @@ class UserController extends Controller
             }
             $query->groupBy('amount', 'policy');
             $messages = $query->get();
-        } 
-        else 
-        {           
+        } else {
             $messages = Msg::selectRaw(' count(id) as messages , sum(amount) as total , policy')
-            ->groupBy('amount', 'policy')
-            ->get();
+                ->groupBy('amount', 'policy')
+                ->get();
         }
 
-        $data = $this->getAmountDetailsBasedOnMsg($messages );
+        $data = $this->getAmountDetailsBasedOnMsg($messages);
         $data['sort_time'] = $sort_time;
 
         return $data;
@@ -1919,24 +1894,24 @@ class UserController extends Controller
     {
         $return['total_messages'] = 0;
         $return['total_amount'] = 0;
-      
-        foreach($records as $message){    
-            if($message->policy == 'BIC' || $message->policy == 'UIC'){
+
+        foreach ($records as $message) {
+            if ($message->policy == 'BIC' || $message->policy == 'UIC') {
                 $return['total_messages'] = $message->messages + ($return['total_messages']);
             }
             $amount = ($message->total) ? $message->total : 0;
             $return['total_amount'] =  (float)($amount) +  (float)($return['total_amount']);
 
-            if($message->policy == 'BIC'){
-                $return[$message->policy] = ['amount' => number_format($message->total , 3, '.', ''), 'count' => $message->messages];
-            } else if($message->policy == 'UIC') {
-                $return[$message->policy] = ['amount' => number_format($message->total , 3, '.', '') , 'count' => $message->messages];
-            } else if($message->policy == 'FEP'){
-                $return[$message->policy] = ['amount' => number_format($message->total , 3, '.', '') , 'count' => $message->messages];
+            if ($message->policy == 'BIC') {
+                $return[$message->policy] = ['amount' => number_format($message->total, 3, '.', ''), 'count' => $message->messages];
+            } else if ($message->policy == 'UIC') {
+                $return[$message->policy] = ['amount' => number_format($message->total, 3, '.', ''), 'count' => $message->messages];
+            } else if ($message->policy == 'FEP') {
+                $return[$message->policy] = ['amount' => number_format($message->total, 3, '.', ''), 'count' => $message->messages];
             }
         }
-        
-        return $return; 
+
+        return $return;
     }
 
     /**
@@ -1944,26 +1919,28 @@ class UserController extends Controller
      */
     public function getDeductionDetail($request)
     {
-        $accounts = Account::get();
-        $userId=$request->user()->id;
-       
-        $accooutAmountDetail = [];
-        foreach($accounts as $account){
-            $messages = Msg::selectRaw(' count(id) as messages , sum(amount) as total , policy')
-                ->where('account_id', $account->id)
-                ->groupBy('amount', 'policy')
-                ->get();
-            
-            $data = $this->getAmountDetailsBasedOnMsg($messages);
-            $accooutAmountDetail[] = [
+        $accounts = Account::select('id', 'company_name', 'service', 'phone_number')->get();
+
+        if ($accounts->isEmpty()) {
+            return [];
+        }
+
+        $messageGroups = Msg::selectRaw('account_id, count(id) as messages, sum(amount) as total, policy')
+            ->whereIn('account_id', $accounts->pluck('id'))
+            ->groupBy('account_id', 'amount', 'policy')
+            ->get()
+            ->groupBy('account_id');
+
+        return $accounts->map(function ($account) use ($messageGroups) {
+            $messages = $messageGroups->get($account->id, collect());
+
+            return [
                 'name' => $account->company_name,
                 'service' => $account->service,
                 'number' => $account->phone_number,
-                'amount_data' => $data,
+                'amount_data' => $this->getAmountDetailsBasedOnMsg($messages),
             ];
-        } 
-      
-        return $accooutAmountDetail;
+        })->all();
     }
 
     /**
@@ -1972,10 +1949,10 @@ class UserController extends Controller
     public function getRoles($user)
     {
         $user_roles = $this->userRoles;
-        if($user->role != 'global_admin') {
+        if ($user->role != 'global_admin') {
             unset($user_roles['global_admin']);
         }
-       
+
         return $user_roles;
     }
 
@@ -1985,12 +1962,12 @@ class UserController extends Controller
     public function checkPermission($currentUser, $user_id)
     {
         $flag = false;
-        if(!$user_id) {
+        if (!$user_id) {
             return false;
         }
-       
+
         // If user is trying to access his own record, allow
-        if(($currentUser->id == $user_id) || ($currentUser->role == 'admin') || ($currentUser->role = 'global_admin')) {
+        if (($currentUser->id == $user_id) || ($currentUser->role == 'admin') || ($currentUser->role = 'global_admin')) {
             $flag = true;
         }
         return $flag;
@@ -2004,14 +1981,14 @@ class UserController extends Controller
         // $userId = $request->user_id;
         // $currentUser = $request->user()->id;
         // $user = User::find($userId);
-        
+
         // // clear cache
         // Cache::forget('selected_company_'. $request->user()->id);
         // Cache::flush();
 
         // // Start the session
         // Session::put('global_user', $currentUser);
-        
+
         // Auth::login($user);
 
         // return Redirect::route('dashboard');
@@ -2034,14 +2011,14 @@ class UserController extends Controller
      * get User Timezone
      */
     public function getUserTimeZone(Request $request)
-    {   
+    {
         $zones = $this->timezones;
         $timezones = [];
-        foreach($zones as $country => $time) {
+        foreach ($zones as $country => $time) {
             $timezones[] = ['value' => $country, 'label' => $time];
         }
-        
-        echo json_encode(['time_zone' => $timezones ]);
+
+        echo json_encode(['time_zone' => $timezones]);
     }
 
     /**
@@ -2064,7 +2041,7 @@ class UserController extends Controller
 
         //     // Login Global Admin
         //     Auth::login($user);
-            
+
         // }
 
         // return Redirect::route('dashboard');
@@ -2077,7 +2054,7 @@ class UserController extends Controller
     {
         $user = $request->user();
         // Get company
-        $companyId = Cache::get('selected_company_'. $user->id);
+        $companyId = Cache::get('selected_company_' . $user->id);
         $company = Company::find($companyId);
 
         $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
@@ -2087,16 +2064,17 @@ class UserController extends Controller
             $request->id,
             ['customer' => $company->stripe_id]
         );
-        
-        echo json_encode(['status' => true ]);
+
+        echo json_encode(['status' => true]);
     }
 
-    public function UserRelatedCompany($user_id){
+    public function UserRelatedCompany($user_id)
+    {
         $related_company = [];
-        if($user_id){
+        if ($user_id) {
             //related company details
-            $userCompany = DB::table('company_user')->where('user_id', $user_id)->get('company_id');            
-            foreach($userCompany as $company){
+            $userCompany = DB::table('company_user')->where('user_id', $user_id)->get('company_id');
+            foreach ($userCompany as $company) {
                 $company =  Company::first();
                 $related_company[$company['id']] = $company['name'];
             }
@@ -2105,35 +2083,34 @@ class UserController extends Controller
         }
     }
 
-    public function addWalletAmount(Request $request){
-        
+    public function addWalletAmount(Request $request)
+    {
+
         $company_id = $request->selected_company;
         $walletAmount = $request->wallet_amount;
 
-        $wallet = Wallet::where('company_id',$company_id)->first();
+        $wallet = Wallet::where('company_id', $company_id)->first();
 
-        if($wallet){
+        if ($wallet) {
             $balanceAmount = $wallet->balance_amount;
             $addCash = $balanceAmount + $walletAmount;
-            
+
             $wallet->balance_amount = $addCash;
             $wallet->save();
         }
 
         return Redirect::route('list_global_user');
-
     }
 
     /**
      * Create Stripe Setup Intent
      */
-    public function createStripeSetupIntent(Request $request) 
+    public function createStripeSetupIntent(Request $request)
     {
         $user = $request->user();
         try {
             $intent = $user->createSetupIntent();
-        }
-        catch (\Throwable $e) {
+        } catch (\Throwable $e) {
             Log::warning('Stripe setup intent unavailable.', [
                 'user_id' => $user?->id,
                 'message' => $e->getMessage(),
@@ -2152,15 +2129,14 @@ class UserController extends Controller
     /**
      * Get Payment Methods
      */
-    public function getPaymentMethods(Request $request , $mode = '') 
+    public function getPaymentMethods(Request $request, $mode = '')
     {
         $user = $request->user();
         $paymentMethods = [];
 
         try {
             $paymentMethods = $user->paymentMethods();
-        }
-        catch (\Throwable $e) {
+        } catch (\Throwable $e) {
             Log::warning('Unable to load Stripe payment methods.', [
                 'user_id' => $user?->id,
                 'message' => $e->getMessage(),
@@ -2169,8 +2145,8 @@ class UserController extends Controller
             $paymentMethods = [];
         }
 
-        if($mode){
-            return $paymentMethods; 
+        if ($mode) {
+            return $paymentMethods;
         } else {
             return response()->json(['paymentMethods' => $paymentMethods]);
         }
@@ -2186,8 +2162,7 @@ class UserController extends Controller
             $user->addPaymentMethod($request->get('id'));
 
             return response()->json(['message' => 'Payment Method Related Successfully', 'status' => true]);
-        }
-        catch (\Throwable $e) {
+        } catch (\Throwable $e) {
             Log::warning('Unable to relate Stripe payment method.', [
                 'user_id' => $user?->id,
                 'message' => $e->getMessage(),
@@ -2200,7 +2175,8 @@ class UserController extends Controller
         }
     }
 
-    public function sendMigrateRequest(Request $request) {
+    public function sendMigrateRequest(Request $request)
+    {
 
         $emailAddress = config('app.admin_email');
         $emailAddress = filter_var($emailAddress, FILTER_SANITIZE_EMAIL);
@@ -2210,13 +2186,12 @@ class UserController extends Controller
             'url' => $request->header('origin')
         ];
 
-        if($emailAddress){
-            Mail::send('account',$data, function($message) use ($emailAddress){
-                $message->to($emailAddress)->subject
-                ('Welcome');
+        if ($emailAddress) {
+            Mail::send('account', $data, function ($message) use ($emailAddress) {
+                $message->to($emailAddress)->subject('Welcome');
             });
         }
-    
+
         return response()->json(['status' => true]);
     }
 
@@ -2225,54 +2200,54 @@ class UserController extends Controller
      */
     public function connectFaceBook(Request $request, $accountId)
     {
-	    session_start();
+        session_start();
 
         $fb = new Facebook([
             'app_id' => config('app.fb.app_id'),
             'app_secret' => config('app.fb.app_secret'),
             'default_graph_version' => config('app.fb.app_graph_version'),
-     	]);
-          
+        ]);
+
         $helper = $fb->getRedirectLoginHelper();
         $permissions = ['email', 'whatsapp_business_management', 'whatsapp_business_messaging', 'public_profile'];
-        $loginUrl = $helper->getLoginUrl( config('app.fb.call_back_url'), $permissions);
+        $loginUrl = $helper->getLoginUrl(config('app.fb.call_back_url'), $permissions);
 
         return redirect()->away($loginUrl);
     }
-    
-    public function getTransactionHistory($request, $page) {
+
+    public function getTransactionHistory($request, $page)
+    {
 
         $module = new Transaction();
-         // List view columns to show
-         $list_view_columns = [
-            'service' => [ 'label' => __('Service') , 'type' => 'text'],
-            'transaction_id' => [ 'label' => __('Transaction Id') , 'type' => 'text'],
-            'amount' => [ 'label' => __('Amount') , 'type' => 'text'],
-            'status' => [ 'label' => __('Status') , 'type' => 'text'],
-            'error_message' => [ 'label' => __('Message') , 'type' => 'text'],
-            'created_at' => [ 'label' => __('Created At') , 'type' => 'text'],
-          //  'actions'   => [ 'label' =>'Action' , 'type' => 'url'],
+        // List view columns to show
+        $list_view_columns = [
+            'service' => ['label' => __('Service'), 'type' => 'text'],
+            'transaction_id' => ['label' => __('Transaction Id'), 'type' => 'text'],
+            'amount' => ['label' => __('Amount'), 'type' => 'text'],
+            'status' => ['label' => __('Status'), 'type' => 'text'],
+            'error_message' => ['label' => __('Message'), 'type' => 'text'],
+            'created_at' => ['label' => __('Created At'), 'type' => 'text'],
+            //  'actions'   => [ 'label' =>'Action' , 'type' => 'url'],
         ];
         $listViewData = $this->listView($request, $module, $list_view_columns);
         $moduleData = [
             'singular' => '',
             'plural' => '',
             'module' => 'Transaction',
-            'current_page' => 'Invoice', 
+            'current_page' => 'Invoice',
             // Actions
-            'actions' => [              
-                'export' => true,                
+            'actions' => [
+                'export' => true,
                 'search' => true,
-                'filter' => true,   
-                'mass_edit' => true,             
+                'filter' => true,
+                'mass_edit' => true,
             ],
         ];
         $records =  $this->listViewRecord($request, $listViewData, 'Transaction');
         //$url = route(('wallet'), ['current_page' => 'Invoice']);
-       // $records->withPath($url);  
-        $data = array_merge($moduleData, $records);     
-        return $data;        
-      
+        // $records->withPath($url);  
+        $data = array_merge($moduleData, $records);
+        return $data;
     }
 
     public function messageLogs(Request $request)
@@ -2294,48 +2269,50 @@ class UserController extends Controller
             ),
         ]));
     }
-    public function getTransactionList($request, $page, $from = '', $routeName = null) {       
-       
+    public function getTransactionList($request, $page, $from = '', $routeName = null)
+    {
+
         $module = new Msg();
-         // List view columns to show
-         $list_view_columns = [           
-            'created_at' => [ 'label' => __('Date') , 'type' => 'text'],
-            'service' => [ 'label' => __('Channel') , 'type' => 'text'],
-            'account_id' => [ 'label' => __('Account') , 'type' => 'text'],
-            'msg_type' => [ 'label' => __('Type') , 'type' => 'text'],
-            'amount' => [ 'label' => __('Amount') , 'type' => 'text'],            
+        // List view columns to show
+        $list_view_columns = [
+            'created_at' => ['label' => __('Date'), 'type' => 'text'],
+            'service' => ['label' => __('Channel'), 'type' => 'text'],
+            'account_id' => ['label' => __('Account'), 'type' => 'text'],
+            'msg_type' => ['label' => __('Type'), 'type' => 'text'],
+            'amount' => ['label' => __('Amount'), 'type' => 'text'],
         ];
 
         $listViewData = $this->listView($request, $module, $list_view_columns);
         $moduleData = [
             'singular' => '',
             'plural' => '',
-            'module' => ( $from == 'Dashboard' ) ? 'Dashboard' :'Msg',
-            'current_page' => 'Expenses', 
+            'module' => ($from == 'Dashboard') ? 'Dashboard' : 'Msg',
+            'current_page' => 'Expenses',
             // Actions
-            'actions' => [              
-                'export' => true,                
+            'actions' => [
+                'export' => true,
                 'search' => true,
-                'filter' => true,   
-                'mass_edit' => true,             
+                'filter' => true,
+                'mass_edit' => true,
             ],
         ];
         //$records =  $this->listViewRecord($request, $listViewData, 'Msg');   
 
         $data = array_merge($moduleData, $listViewData);
 
+        $data['records'] = collect($data['records'] ?? [])->map(function ($record) {
+            $item = is_array($record) ? $record : $record->toArray();
+
+            if (!empty($item['created_at'])) {
+                $item['created_at'] = Carbon::parse($item['created_at'])
+                    ->format('d-m-Y H:i:s');
+            }
+
+            return $item;
+        })->all();
+
         if ($routeName) {
             $data['actions']['mass_edit'] = false;
-            $data['records'] = collect($data['records'] ?? [])->map(function ($record) {
-                $item = is_array($record) ? $record : $record->toArray();
-
-                if (!empty($item['created_at'])) {
-                    $item['created_at'] = Carbon::parse($item['created_at'])
-                        ->format('d-m-Y H:i:s');
-                }
-
-                return $item;
-            })->all();
             $data['paginator'] = $this->buildMessageLogPaginator($request, $routeName, $data['paginator'] ?? []);
             $data['routeName'] = $routeName;
             $data['listRouteParams'] = array_filter([
@@ -2343,7 +2320,7 @@ class UserController extends Controller
                 'sort_time' => $request->get('sort_time'),
                 'start_date' => $request->get('start_date'),
                 'end_date' => $request->get('end_date'),
-            ], fn ($value) => $value !== null && $value !== '');
+            ], fn($value) => $value !== null && $value !== '');
         }
 
         return $data;
@@ -2369,28 +2346,30 @@ class UserController extends Controller
         return $paginator;
     }
 
-    public function checkInformation(Request $request) {
+    public function checkInformation(Request $request)
+    {
 
         $user = $request->user();
         $role = $user->role;
         $information = $user->information;
 
-        if($role == 'admin' && !$information) {
+        if ($role == 'admin' && !$information) {
             return response()->json(['status' => 200, 'information' => false]);
         }
-        
+
         return response()->json(['status' => 200, 'information' => true]);
     }
 
-    public function onBoardingInformation(Request $request) {
-        
+    public function onBoardingInformation(Request $request)
+    {
+
         $user = $request->user();
         $company = Company::first();
         $stripe_public_key = config('stripe.stripe_key');
         $plans = DB::table('plans')->where('default_plan', 'true')->get();
 
-        foreach($plans as $plan) {
-            $plan->period= 'monthly';
+        foreach ($plans as $plan) {
+            $plan->period = 'monthly';
         }
 
         return Inertia::render('Auth/Registration/RegisterForm', [
@@ -2403,8 +2382,9 @@ class UserController extends Controller
         ]);
     }
 
-    public function informationComplete(Request $request) {
-        
+    public function informationComplete(Request $request)
+    {
+
         $user = $request->user();
 
         $user->information  = true;
@@ -2420,12 +2400,12 @@ class UserController extends Controller
     {
         $token = $_GET['access_code'];
         $checkToken = DB::table('company_access_token')
-           ->where('token', $token)
-           ->first();
+            ->where('token', $token)
+            ->first();
 
-        if($checkToken){
+        if ($checkToken) {
             $user = User::where('role', 'admin')->first();
-            if($user){
+            if ($user) {
                 DB::table('company_access_token')->where('token', $token)->delete();
                 Auth::login($user);
                 return Redirect::route('dashboard');
@@ -2435,17 +2415,17 @@ class UserController extends Controller
         } else {
             abort(401);
         }
-    
     }
 
-    public function deleteTemplate(Request $request, $id) {
+    public function deleteTemplate(Request $request, $id)
+    {
 
         $template = Template::findOrFail($id);
         $account_id = $template->account_id;
 
         $messages = Message::where('template_id', $id)->get();
-        foreach($messages as $message) {
-            if($message) {
+        foreach ($messages as $message) {
+            if ($message) {
                 MessageButton::where('message_id', $message->id)->delete();
                 $message->delete();
             }
@@ -2453,35 +2433,36 @@ class UserController extends Controller
         $template->delete();
 
         $templates = Template::where('account_id', $account_id)->get();
-        
+
         return response()->json(['status' => 200, 'template' => $templates]);
     }
 
-    public function updateApiAccount(Request $request) {
-       
+    public function updateApiAccount(Request $request)
+    {
+
         $response = $request->account;
         $phone_number = isset($response['phone_number']) ? $response['phone_number'] : '';
-        if(! $phone_number){
-            return response()->json([ 'status' => false, 'message' => 'Invalid data'], 403);
+        if (! $phone_number) {
+            return response()->json(['status' => false, 'message' => 'Invalid data'], 403);
         }
 
         $account = Account::where('phone_number', $phone_number)->first();
-        if($account){
+        if ($account) {
             $fields = ['status', 'src_name', 'fb_whatsapp_account_id'];
-            foreach($fields as $field) {
-                if(isset($response[$field])) {
+            foreach ($fields as $field) {
+                if (isset($response[$field])) {
                     $account->$field = $response[$field];
                 }
             }
             $account->save();
-            return response()->json([ 'status' => true , 'message' => 'Update your social profile successfully']);
-
+            return response()->json(['status' => true, 'message' => 'Update your social profile successfully']);
         } else {
-            return response()->json([ 'status' => false, 'message' => 'Invalid params'], 403);
+            return response()->json(['status' => false, 'message' => 'Invalid params'], 403);
         }
     }
 
-    public function changeProfilePicture(Request $request) {
+    public function changeProfilePicture(Request $request)
+    {
 
         $request->validate([
             'profile_picture' => 'required|mimes:jpeg,png,jpg,gif,svg',
@@ -2490,11 +2471,11 @@ class UserController extends Controller
         $file = $request->file('profile_picture');
         $fileName = $file->getClientOriginalName();
         $destinationPath = public_path() . '/images';
-        $file->move($destinationPath,$fileName);
+        $file->move($destinationPath, $fileName);
 
         $attachFilePath = ['url' => asset('import_file/' . $fileName), 'path' => $destinationPath . '/' . $fileName];
         $filePath = '/images/' . $fileName;
-        
+
         $company = Company::first();
         $company->file_path = $filePath;
         $company->save();
@@ -2509,31 +2490,32 @@ class UserController extends Controller
     {
         $profileList = [];
         $service = $_GET['service'];
-        $accountsList = Account::where('service' , $service)->where( 'service_engine', 'facebook')->get();
+        $accountsList = Account::where('service', $service)->where('service_engine', 'facebook')->get();
 
-        foreach($accountsList as $account){
-            $pages = unserialize( base64_decode($account->fb_meta_data));
-            $profileList[$account->id] = ['name' => $account->company_name, 'pages' => $pages];   
+        foreach ($accountsList as $account) {
+            $pages = unserialize(base64_decode($account->fb_meta_data));
+            $profileList[$account->id] = ['name' => $account->company_name, 'pages' => $pages];
         }
-       
+
         return response()->json(['status' => true, 'social_profiles' => $profileList]);
     }
 
-    public function tmpBodyfieldMapping(Request $request, $template_id) {
+    public function tmpBodyfieldMapping(Request $request, $template_id)
+    {
 
         $template = Template::whereId($template_id)->first();
 
-        if(!$template) {
+        if (!$template) {
             return response()->json(['status' => false, 'message' => 'Your Template has been not founded.']);
         }
 
         $message = Message::where('template_id', $template_id)
-                ->where('language', $request->language)
-                ->first();
-        
-        if(!$message) {
+            ->where('language', $request->language)
+            ->first();
+
+        if (!$message) {
             $message = new Message();
-        }        
+        }
 
         $message->template_id = $template_id;
         $message->language = $request->language;
@@ -2541,83 +2523,83 @@ class UserController extends Controller
         $message->save();
 
         return response()->json(['status' => true, 'message' => 'Template mapping save succesfully.']);
-    } 
-
-    public function fetchMessageLog(Request $request) {
-	    $user = $request->user();
-
-	    $module = new Msg();
-	    $listViewData = $this->listView($request, $module, array());
-
-	    $paginator = array(
-		    'currentPage' => $listViewData['paginator']['currentPage'],
-		    'totalPages' => $listViewData['paginator']['lastPage'],
-	    );
-
-	    $records =  array();
-	    foreach($listViewData['records'] as $record) {
-		    // Convert time to UTC
-		    $record['received_timestamp'] = Carbon::parse($record->created_at)->setTimezone('UTC')->format('Y-m-d H:i:s');
-		    $records[] = $record;
-	    }
-
-	    return response()->json(['status' => true, 'message' => 'Message log fetched successfully.', 'records' => $records, 'paginator' => $paginator]);
     }
 
-    public function shopifyDashboard(Request $request) {
-	    $user = $request->user();
-	    $amountDeduction = $this->getMsgAmountDeduction($request,$user->id);
+    public function fetchMessageLog(Request $request)
+    {
+        $user = $request->user();
 
-	    //wallet balance
-	    $balance= Wallet::where('user_id', $user->id)
-		    ->pluck('balance_amount')
-		    ->first();
+        $module = new Msg();
+        $listViewData = $this->listView($request, $module, array());
 
-	    // service data
-	    $messages = Msg::selectRaw(' count(id) as messages , sum(amount) as total , policy ,service')->whereMonth('created_at', date('m'))
-		  ->whereYear('created_at', date('Y'))
-		  ->groupBy('service')->get();
+        $paginator = array(
+            'currentPage' => $listViewData['paginator']['currentPage'],
+            'totalPages' => $listViewData['paginator']['lastPage'],
+        );
 
-	    //daily_messages chart
-	    $daily_messages = Msg::selectRaw(' count(id) as messages , created_at as date,sum(amount) as total')->whereMonth('created_at', date('m'))									      ->whereYear('created_at', date('Y'))
-	 	  ->groupBy(DB::raw('DATE(created_at)'))->get();
+        $records =  array();
+        foreach ($listViewData['records'] as $record) {
+            // Convert time to UTC
+            $record['received_timestamp'] = Carbon::parse($record->created_at)->setTimezone('UTC')->format('Y-m-d H:i:s');
+            $records[] = $record;
+        }
 
-	    $per_day = [];
-	    foreach( $daily_messages as $val){
-		    $per_day[$val->date] =  $val->messages;
-	    }
-	    $chart_input = implode($per_day);
+        return response()->json(['status' => true, 'message' => 'Message log fetched successfully.', 'records' => $records, 'paginator' => $paginator]);
+    }
 
-	    $service['total_messages'] = 0;
-	    foreach($messages as $message){
-		    if($message->service == 'whatsapp' || $message->service == 'facebook' || $message->service == 'instagram') {
-			    $service['total_messages'] = $message->messages + number_format($service['total_messages']);
-		    }
-		    if($message->service == 'whatsapp') {
-			    $service[$message->service] = ['amount' => number_format($message->total , 3, '.', ''), 'count' => $message->messages];
-		    }
-		    else if($message->service == 'instagram') {
-			    $service[$message->service] = ['amount' => number_format($message->total , 3, '.', '') , 'count' => $message->messages];
-		    }
-		    else if($message->service == 'facebook'){
-			    $service[$message->service] = ['amount' => number_format($message->total , 3, '.', '') , 'count' => $message->messages];
-		    }
-	    }
+    public function shopifyDashboard(Request $request)
+    {
+        $user = $request->user();
+        $amountDeduction = $this->getMsgAmountDeduction($request, $user->id);
 
-	    // Get Session count
-	    $sessions = $this->getDashboardSessionCount();
-	    $totalSessionLimit = $this->getDashboardSessionLimit();
+        //wallet balance
+        $balance = Wallet::where('user_id', $user->id)
+            ->pluck('balance_amount')
+            ->first();
 
-	    $information = [
-		    'users' => $request->user(),
-		    'message_details' => $amountDeduction,
-		    'balance' => $balance,
-		    'services' => $service,
-		    'total_session_limit' => $totalSessionLimit,
-		    'current_session_count' => $sessions,
-		    'per_day_count' =>  $chart_input,
-	    ];
-	    return response()->json(['status' => true, 'message' => 'Dashboard details fetched successfully.', 'information' => $information]);
+        // service data
+        $messages = Msg::selectRaw(' count(id) as messages , sum(amount) as total , policy ,service')->whereMonth('created_at', date('m'))
+            ->whereYear('created_at', date('Y'))
+            ->groupBy('service')->get();
+
+        //daily_messages chart
+        $daily_messages = Msg::selectRaw(' count(id) as messages , created_at as date,sum(amount) as total')->whereMonth('created_at', date('m'))->whereYear('created_at', date('Y'))
+            ->groupBy(DB::raw('DATE(created_at)'))->get();
+
+        $per_day = [];
+        foreach ($daily_messages as $val) {
+            $per_day[$val->date] =  $val->messages;
+        }
+        $chart_input = implode($per_day);
+
+        $service['total_messages'] = 0;
+        foreach ($messages as $message) {
+            if ($message->service == 'whatsapp' || $message->service == 'facebook' || $message->service == 'instagram') {
+                $service['total_messages'] = $message->messages + number_format($service['total_messages']);
+            }
+            if ($message->service == 'whatsapp') {
+                $service[$message->service] = ['amount' => number_format($message->total, 3, '.', ''), 'count' => $message->messages];
+            } else if ($message->service == 'instagram') {
+                $service[$message->service] = ['amount' => number_format($message->total, 3, '.', ''), 'count' => $message->messages];
+            } else if ($message->service == 'facebook') {
+                $service[$message->service] = ['amount' => number_format($message->total, 3, '.', ''), 'count' => $message->messages];
+            }
+        }
+
+        // Get Session count
+        $sessions = $this->getDashboardSessionCount();
+        $totalSessionLimit = $this->getDashboardSessionLimit();
+
+        $information = [
+            'users' => $request->user(),
+            'message_details' => $amountDeduction,
+            'balance' => $balance,
+            'services' => $service,
+            'total_session_limit' => $totalSessionLimit,
+            'current_session_count' => $sessions,
+            'per_day_count' =>  $chart_input,
+        ];
+        return response()->json(['status' => true, 'message' => 'Dashboard details fetched successfully.', 'information' => $information]);
     }
 
     private function getDashboardSessionCount(): int
