@@ -853,7 +853,10 @@ class UserController extends Controller
 
         $template_details = [];
         if ($account) {
-            $templates = Template::where('account_id', $account->id)->get();
+            $templates = Template::where('account_id', $account->id)
+                ->orderByDesc('created_at')
+                ->orderByDesc('id')
+                ->get();
             $messages = Message::select('messages.template_id', 'messages.template_uid', 'messages.language')
                 ->join('templates', 'messages.template_id', 'templates.id')
                 ->where('account_id', $account->id)

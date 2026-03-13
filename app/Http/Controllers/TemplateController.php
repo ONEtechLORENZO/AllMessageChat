@@ -788,7 +788,8 @@ class TemplateController extends Controller
                     $templates = $template->fetchGupshupTemplates($appId, $appToken);
                     if (isset($templates['status']) && $templates['status'] == 'success') {
                         foreach ($templates['templates'] as $templateData) {
-                            if ($templateData['status'] == 'APPROVED') {
+                            $templateStatus = strtoupper($templateData['status'] ?? '');
+                            if (in_array($templateStatus, ['APPROVED', 'PENDING'])) {
                                 $template = Template::where('template_uid', $templateData['id'])->where('account_id', $account->id)->first();
 
                                 if (!$template) {
@@ -803,7 +804,7 @@ class TemplateController extends Controller
                                 $template->template_name_space = $templateData['namespace'];
                                 $template->category = $templateData['category'];
                                 $template->languages = [$templateData['languageCode']];
-                                $template->status = 'APPROVED';
+                                $template->status = $templateStatus;
                                 $template->template_uid = $templateData['id'];
                                 $template->type = strtolower($templateData['templateType']);
                                 $template->created_by = $request->user()->id;
@@ -817,7 +818,7 @@ class TemplateController extends Controller
                                 $message->template_id = $template->id;
                                 $message->body = $templateData['data'];
                                 $message->template_uid = $templateData['id'];
-                                $message->status = 'APPROVED';
+                                $message->status = $templateStatus;
                                 $message->header_type = strtolower($templateData['templateType']);
                                 $message->language = $templateData['languageCode'];
                                 $message->media_id = isset($meta->mediaId) ? $meta->mediaId : '';

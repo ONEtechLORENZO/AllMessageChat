@@ -171,12 +171,13 @@ function Templates(props) {
         "UTILITY",
     ];
     const templateStatusOptions = useMemo(() => {
+        const preferredStatuses = ["APPROVED", "PENDING", "DRAFT"];
+        const existingStatuses = (templates ?? [])
+            .map((template) => String(template.status ?? "").toUpperCase())
+            .filter(Boolean);
+
         return Array.from(
-            new Set(
-                (templates ?? [])
-                    .map((template) => template.status)
-                    .filter(Boolean),
-            ),
+            new Set([...preferredStatuses, ...existingStatuses]),
         );
     }, [templates]);
 
@@ -634,13 +635,13 @@ function Templates(props) {
                                     return (
                                         <div
                                             key={data.id}
-                                            className="group overflow-hidden rounded-3xl border border-white/10 bg-[#100517]/85 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)] transition hover:border-fuchsia-400/20 hover:bg-[#14081d]/90"
+                                            className="group overflow-hidden rounded-2xl bg-[#100517]/85 px-5 py-4 shadow-[0_16px_40px_rgba(0,0,0,0.24)] transition hover:bg-[#14081d]/90"
                                         >
-                                            <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1.4fr)_180px_140px_184px] lg:items-center lg:gap-6">
-                                                <div className="min-w-0 flex-1 space-y-3">
+                                            <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1.4fr)_180px_140px_184px] lg:items-center lg:gap-5">
+                                                <div className="min-w-0 flex-1 space-y-2">
                                                     <div className="min-w-0 space-y-1">
                                                         <Link
-                                                            className="block truncate text-xl font-semibold text-white transition group-hover:text-fuchsia-100"
+                                                            className="block truncate text-lg font-semibold text-white transition group-hover:text-fuchsia-100"
                                                             href={route(
                                                                 "template_detail_view",
                                                                 [
@@ -689,12 +690,12 @@ function Templates(props) {
                                                         onClick={() =>
                                                             deleteTemplate(data.id)
                                                         }
-                                                        className="inline-flex h-10 w-10 items-center justify-center text-red-400 transition hover:text-red-300"
+                                                        className="inline-flex h-9 w-9 items-center justify-center text-red-400 transition hover:text-red-300"
                                                     >
                                                         <TrashIcon className="h-5 w-5" />
                                                     </button>
                                                     <Link
-                                                        className="inline-flex items-center gap-2 rounded-full border border-fuchsia-400/20 bg-fuchsia-500/10 px-4 py-2 text-sm font-semibold text-fuchsia-100 transition hover:bg-fuchsia-500/20"
+                                                        className="inline-flex items-center gap-2 rounded-full border border-fuchsia-400/20 bg-fuchsia-500/10 px-4 py-1.5 text-sm font-semibold text-fuchsia-100 transition hover:bg-fuchsia-500/20"
                                                         href={route(
                                                             "template_detail_view",
                                                             [
