@@ -730,7 +730,7 @@ export default function Authenticated({
                 </div>
             </div>
 
-            <div className="min-h-screen bg-black text-white relative overflow-x-hidden flex font-sans selection:bg-[#38bdf8]/30">
+            <div className="authenticated-shell min-h-screen bg-black text-white relative overflow-x-hidden flex font-sans selection:bg-[#38bdf8]/30">
                 {/* Tech grid background with spotlight effect */}
                 <div
                     className="fixed inset-0 opacity-40 transition-opacity duration-1000 pointer-events-none"
@@ -767,6 +767,7 @@ export default function Authenticated({
                     />
                     <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[420px] w-[900px] rounded-full bg-white/5 blur-[120px] opacity-40" />
                 </div>
+                <div className="purple-giant-arc platform-purple-arc" aria-hidden="true" />
                 <Transition.Root show={sidebarOpen} as={Fragment}>
                     <Dialog
                         as="div"

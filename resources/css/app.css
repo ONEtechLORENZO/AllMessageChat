@@ -38,6 +38,15 @@ a:focus {
   z-index: 0;
 }
 
+.authenticated-shell .platform-purple-arc {
+  z-index: 1;
+  top: -50%;
+  right: -18%;
+  width: clamp(500px, 74vw, 1100px);
+  height: clamp(500px, 74vw, 1100px);
+  opacity: 0.5;
+}
+
 @media (max-width: 768px) {
   .purple-giant-arc {
     top: -45%;
@@ -45,6 +54,14 @@ a:focus {
     width: clamp(320px, 85vw, 720px);
     height: clamp(320px, 85vw, 720px);
     opacity: 0.8;
+  }
+
+  .authenticated-shell .platform-purple-arc {
+    top: -42%;
+    right: -30%;
+    width: clamp(320px, 85vw, 760px);
+    height: clamp(320px, 85vw, 760px);
+    opacity: 0.42;
   }
 }
 

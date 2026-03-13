@@ -214,7 +214,6 @@ export default function DashboardNew(props) {
                 <Head title={props.translator["Dashboard"]} />
 
                 <div className="dashboard-page pt-4 pb-8 relative">
-                    <div className="purple-giant-arc" aria-hidden="true"></div>
                     <div className="px-4 sm:px-6 lg:px-8 relative z-10">
                         <div className="pb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <h2 className="mb-6 flex flex-wrap items-baseline gap-x-3 leading-none">

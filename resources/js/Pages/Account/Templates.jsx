@@ -389,7 +389,6 @@ function Templates(props) {
             <Head title={props.translator["Templates"] ?? "Templates"} />
 
             <div className="dashboard-page relative pt-4 pb-8">
-                <div className="purple-giant-arc" aria-hidden="true"></div>
                 <div className="relative z-10 space-y-8 px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-wrap items-start justify-between gap-6">
                         <div className="space-y-3">

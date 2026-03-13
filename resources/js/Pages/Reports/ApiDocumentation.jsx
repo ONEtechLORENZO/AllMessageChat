@@ -131,7 +131,6 @@ export default function ApiDocumentation(props) {
             <Head title={pageTitle} />
 
             <div className="dashboard-page relative pt-4 pb-8">
-                <div className="purple-giant-arc" aria-hidden="true"></div>
                 <div className="relative z-10 space-y-8 px-4 sm:px-6 lg:px-8">
                     <div className="pb-4">
                         <h2 className="mb-2 flex flex-wrap items-baseline gap-x-3 leading-none">

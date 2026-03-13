@@ -189,7 +189,6 @@ function List(props) {
             navigationMenu={props.menuBar}
         >
             <div className="dashboard-page px-4 sm:px-6 lg:px-8 relative">
-                <div className="purple-giant-arc" aria-hidden="true"></div>
                 <div className="relative z-10">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div className="text-2xl font-semibold text-white">

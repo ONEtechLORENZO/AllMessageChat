@@ -196,7 +196,6 @@ export default function Campaign(props) {
       current_page = {props.current_page}
     >
      <div className="dashboard-page px-4 py-6 sm:px-6 lg:px-8 relative">
-       <div className="purple-giant-arc" aria-hidden="true"></div>
        <div className="relative z-10 rounded-[28px] border-0 bg-[#170024]/80 shadow-[0_24px_60px_rgba(0,0,0,0.45)] backdrop-blur-sm">
          <div className="px-6 py-6">
            <div className="flex w-full justify-center">

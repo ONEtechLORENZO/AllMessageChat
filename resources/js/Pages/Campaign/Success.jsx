@@ -33,7 +33,6 @@ export default function CampaignSuccess(props) {
             navigationMenu={props.menuBar}
         >
             <div className="dashboard-page px-6 py-10 relative">
-                <div className="purple-giant-arc" aria-hidden="true"></div>
                 <div className="relative z-10 max-w-4xl mx-auto rounded-3xl bg-[#170024]/80 backdrop-blur-3xl border-0 shadow-[0_30px_60px_-30px_rgba(0,0,0,0.6)] p-8 text-white">
                     <div className="flex flex-col gap-3">
                         <div className="inline-flex items-center gap-3">
