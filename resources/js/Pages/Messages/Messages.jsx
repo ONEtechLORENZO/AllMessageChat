@@ -14,6 +14,7 @@ function MessageListing(props) {
                 headers={props.list_view_columns}
                 {...props}
                 translator={props.translator}
+                fetchFields={false}
                 noCardBorder
             />
         </Authenticated>

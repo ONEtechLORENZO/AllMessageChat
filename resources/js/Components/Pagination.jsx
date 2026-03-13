@@ -5,7 +5,13 @@ import { AiOutlineVerticalLeft, AiOutlineVerticalRight, AiOutlineRight, AiOutlin
 
 
 function Pagination(props) {
-    const [pageLimit, setpageLimit] = useState(props.paginator.pageLimit);
+    const [pageLimit, setpageLimit] = useState(
+        props.paginator.pageLimit ?? props.paginator.perPage ?? 10
+    );
+
+    const firstItem = props.paginator.firstItem ?? 0;
+    const lastItem = props.paginator.lastItem ?? 0;
+    const total = props.paginator.total ?? 0;
 
     function selecthandleChange(event) {
         setpageLimit(event.target.value)
@@ -23,12 +29,12 @@ function Pagination(props) {
                     onChange={selecthandleChange}
                 >
                     {
-                        [...Array(10, 25, 50, 100)]
+                        [10, 25, 50, 100]
                             .map(i => <option key={i} value={i}>{i}</option>)
                     }
                 </select>
             </div>
-            <div>  <span>{props.paginator.firstItem}-{props.paginator.lastItem} of {props.paginator.total} </span>
+            <div>  <span>{firstItem}-{lastItem} of {total} </span>
             </div>
             <div className='flex gap-6'>
                 <Link

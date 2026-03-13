@@ -27,6 +27,7 @@ use App\Models\Product;
 use App\Models\WhatsAppUsers;
 use Carbon\Carbon;
 use Cache;
+use Illuminate\Pagination\LengthAwarePaginator;
 use URL;
 use Storage;
 use App\Models\ChatListContact;
@@ -126,7 +127,7 @@ class MsgController extends Controller
     public function messageList(Request $request)
     {
         $messageList = [];
-        $limit = $this->limit;
+        $limit = Cache::get('Message' . 'page_limit' . $request->user()->id, 10);
         $user = $request->user();
         $user_id = $user->id;
         $menuBar = $this->fetchMenuBar();
@@ -135,6 +136,7 @@ class MsgController extends Controller
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
         $filterId = $request->has('filter_id') && $request->get('filter_id') ? $request->get('filter_id') : '';
         $filter = $request->has('filter') && $request->get('filter') ? $request->get('filter') : '';
+        $useOptimizedListing = !$search && !$filterId && !$filter;
 
         // List view columns to show
         $list_view_columns = [
@@ -149,12 +151,6 @@ class MsgController extends Controller
             'created_at' => ['label' => __('Date'), 'type' => 'text'],
         ]; 
         
-        $query_columns = ['msgs.id', 'msgs.service', 'msgs.status', 'error_response', 'msgs.created_at', 'message', 'accounts.company_name', 'accounts.phone_number as account_phone_number', 'accounts.company_name', 'contacts.phone_number', 'contacts.facebook_username', 'contacts.instagram_username', 'msg_mode'];
-        $query = Msg::select($query_columns)
-            ->join('accounts', 'account_id', 'accounts.id')
-            ->join('contacts', 'contacts.id', 'msgable_id');
-
-
         $searchData = '';
         if($filter) {
             $searchData = json_decode($filter);
@@ -168,27 +164,50 @@ class MsgController extends Controller
             }
         }
 
-        if($search) {
-            $query->where(function ($query) use ($search, $list_view_columns) {  
-                foreach($list_view_columns as $field_name => $field_info) {
+        $accounts = collect();
+        $contacts = collect();
 
-                    if($field_name == 'company_name'){
-                        $query->orWhere('accounts.company_name', 'like', '%' . $search . '%');
-                    } elseif($field_name  == 'sender') {
-                        $query->orWhere('contacts.phone_number', 'like', '%' . $search . '%');
-                        $query->orWhere('accounts.phone_number', 'like', '%' . $search . '%');
-                    } elseif($field_name  == 'destination') {
-                    } else {
-                        $field_name = "msgs.{$field_name}";
-                        $query->orWhere($field_name, 'like', '%' . $search . '%');
-                    }
-                }    
-            });
-        } 
-        $query = ($searchData) ? $this->prepareQuery($searchData, $query, 'msgs') : $query;
+        if ($useOptimizedListing) {
+            $messages = $this->getFastMessagePaginator($request, $limit);
+            $accountIds = $messages->getCollection()->pluck('account_id')->filter()->unique()->values();
+            $contactIds = $messages->getCollection()->pluck('msgable_id')->filter()->unique()->values();
 
-        $messages = $query->orderBy('msgs.id', 'desc')
-            ->paginate($limit);
+            $accounts = Account::whereIn('id', $accountIds)
+                ->get(['id', 'company_name', 'phone_number'])
+                ->keyBy('id');
+
+            $contacts = Contact::whereIn('id', $contactIds)
+                ->get(['id', 'phone_number', 'facebook_username', 'instagram_username'])
+                ->keyBy('id');
+        } else {
+            $query_columns = ['msgs.id', 'msgs.service', 'msgs.status', 'error_response', 'msgs.created_at', 'message', 'accounts.company_name', 'accounts.phone_number as account_phone_number', 'contacts.phone_number', 'contacts.facebook_username', 'contacts.instagram_username', 'msg_mode'];
+            $query = Msg::select($query_columns)
+                ->join('accounts', 'account_id', 'accounts.id')
+                ->join('contacts', 'contacts.id', 'msgable_id');
+
+            if($search) {
+                $query->where(function ($query) use ($search, $list_view_columns) {  
+                    foreach($list_view_columns as $field_name => $field_info) {
+
+                        if($field_name == 'company_name'){
+                            $query->orWhere('accounts.company_name', 'like', '%' . $search . '%');
+                        } elseif($field_name  == 'sender') {
+                            $query->orWhere('contacts.phone_number', 'like', '%' . $search . '%');
+                            $query->orWhere('accounts.phone_number', 'like', '%' . $search . '%');
+                        } elseif($field_name  == 'destination') {
+                        } else {
+                            $field_name = "msgs.{$field_name}";
+                            $query->orWhere($field_name, 'like', '%' . $search . '%');
+                        }
+                    }    
+                });
+            } 
+            $query = ($searchData) ? $this->prepareQuery($searchData, $query, 'msgs') : $query;
+
+            $messages = $query->orderBy('msgs.id', 'desc')
+                ->paginate($limit)
+                ->withQueryString();
+        }
 
         if($search || $filterId) {
             if($search) {
@@ -200,38 +219,36 @@ class MsgController extends Controller
         }    
 
         foreach($messages as $message) {
-            if($message->service == 'whatsapp') {
-                if($message->msg_mode == 'incoming') {
-                    $sender = $message->phone_number;
-                    $destination = $message->account_phone_number;
-                } else {
-                    $sender = $message->account_phone_number;
-                    $destination = $message->phone_number;
-                }
+            if ($useOptimizedListing) {
+                $account = $accounts->get($message->account_id);
+                $contact = $contacts->get($message->msgable_id);
+
+                $companyName = $account?->company_name ?? '';
+                $accountPhoneNumber = $account?->phone_number ?? '';
+                $phoneNumber = $contact?->phone_number ?? '';
+                $facebookUsername = $contact?->facebook_username ?? '';
+                $instagramUsername = $contact?->instagram_username ?? '';
+            } else {
+                $companyName = $message->company_name;
+                $accountPhoneNumber = $message->account_phone_number;
+                $phoneNumber = $message->phone_number;
+                $facebookUsername = $message->facebook_username;
+                $instagramUsername = $message->instagram_username;
             }
-            else if($message->service == 'instagram') {
-                if($message->msg_mode == 'incoming') {
-                    $sender = $message->instagram_username;
-                    $destination = $message->company_name;
-                } else {
-                  
-                    $sender = $message->company_name;
-                    $destination = $message->instagram_username;
-                }
-            }
-            else if($message->service == 'facebook') {
-                if($message->msg_mode == 'incoming') {
-                    $sender = $message->facebook_username;
-                    $destination = $message->company_name;
-                } else {
-                    $sender = $message->company_name;
-                    $destination = $message->facebook_username;
-                }
-            }
+
+            [$sender, $destination] = $this->resolveMessageParties(
+                $message->service,
+                $message->msg_mode,
+                $companyName,
+                $accountPhoneNumber,
+                $phoneNumber,
+                $facebookUsername,
+                $instagramUsername
+            );
 
             $messageList[] = [
                 'id' => $message->id,
-                'company_name' => $message->company_name,
+                'company_name' => $companyName,
                 'message' => $message->message,
                 'error_response' => $message->error_response,
                 'status' => ucfirst($message->status),
@@ -287,8 +304,11 @@ class MsgController extends Controller
                 'currentPage' => $messages->currentPage(),
                 'total' => $messages->total(),
                 'count' => $messages->count(),
+                'firstItem' => $messages->firstItem(),
+                'lastItem' => $messages->lastItem(),
                 'lastPage' => $messages->lastPage(),
                 'perPage' => $messages->perPage(),
+                'pageLimit' => $limit,
             ],
             
             'translator' => $this->getTranslations(),
@@ -296,6 +316,68 @@ class MsgController extends Controller
         ];
 
         return Inertia::render('Messages/Messages', $data);
+    }
+
+    protected function getFastMessagePaginator(Request $request, int $limit): LengthAwarePaginator
+    {
+        $page = max((int) $request->get('page', 1), 1);
+        $baseQuery = Msg::query();
+        $total = Cache::remember('messages_total_count', now()->addMinutes(2), function () use ($baseQuery) {
+            return (clone $baseQuery)->count();
+        });
+
+        $records = (clone $baseQuery)
+            ->select(['id', 'service', 'status', 'error_response', 'created_at', 'message', 'account_id', 'msgable_id', 'msg_mode'])
+            ->orderBy('id', 'desc')
+            ->forPage($page, $limit)
+            ->get();
+
+        return new LengthAwarePaginator(
+            $records,
+            $total,
+            $limit,
+            $page,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]
+        );
+    }
+
+    protected function resolveMessageParties($service, $msgMode, $companyName, $accountPhoneNumber, $phoneNumber, $facebookUsername, $instagramUsername): array
+    {
+        $sender = '';
+        $destination = '';
+
+        if($service == 'whatsapp') {
+            if($msgMode == 'incoming') {
+                $sender = $phoneNumber;
+                $destination = $accountPhoneNumber;
+            } else {
+                $sender = $accountPhoneNumber;
+                $destination = $phoneNumber;
+            }
+        }
+        else if($service == 'instagram') {
+            if($msgMode == 'incoming') {
+                $sender = $instagramUsername;
+                $destination = $companyName;
+            } else {
+                $sender = $companyName;
+                $destination = $instagramUsername;
+            }
+        }
+        else if($service == 'facebook') {
+            if($msgMode == 'incoming') {
+                $sender = $facebookUsername;
+                $destination = $companyName;
+            } else {
+                $sender = $companyName;
+                $destination = $facebookUsername;
+            }
+        }
+
+        return [$sender, $destination];
     }
 
     /**
