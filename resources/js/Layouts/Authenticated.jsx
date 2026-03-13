@@ -90,26 +90,10 @@ const navigation = [
         ],
     },
     {
-        name: "Automations",
-        href: route("listAutomation"),
-        icon: NetworkIcon,
-        show: ["all"],
-    },
-    {
-        name: "Messaging",
-        href: "#",
+        name: "Reports",
+        href: route("listMessage"),
         icon: GraphIcon,
         show: ["all"],
-        subMenu: [
-            {
-                name: "Messages",
-                href: route("listMessage"),
-            },
-            {
-                name: "Message Logs",
-                href: route("listMessageLogs"),
-            },
-        ],
     },
 ];
 
@@ -297,29 +281,22 @@ const menuBar = [
         ],
     },
     {
-        name: "Automations",
-        href: route("listAutomation"),
-        icon: NetworkIcon,
-    },
-    {
-        name: "Messaging",
-        href: "#",
+        name: "Reports",
+        href: route("listMessage"),
         icon: ChartBarIcon,
-        subMenu: [
-            {
-                name: "Messages",
-                href: route("listMessage"),
-            },
-            {
-                name: "Message Logs",
-                href: route("listMessageLogs"),
-            },
-        ],
     },
 ];
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
+}
+
+function isMenuItemActive(itemName, currentPage) {
+    if (itemName === "Reports" && currentPage === "Message Logs") {
+        return true;
+    }
+
+    return itemName === currentPage;
 }
 
 function NavItem({
@@ -626,13 +603,21 @@ export default function Authenticated({
 
     if (resolvedNavigationMenuBar) {
         menuBar.forEach((item) => {
+            const legacyMenuState =
+                item.name === "Reports" && resolvedNavigationMenuBar.Messages
+                    ? resolvedNavigationMenuBar.Messages
+                    : null;
+
             if (!resolvedNavigationMenuBar[item.name]) {
                 const submenu = item.subMenu
                     ? Object.fromEntries(
                           item.subMenu.map((sub) => [sub.name, true]),
                       )
                     : {};
-                resolvedNavigationMenuBar[item.name] = { show: true, submenu };
+                resolvedNavigationMenuBar[item.name] = legacyMenuState ?? {
+                    show: true,
+                    submenu,
+                };
             } else if (item.subMenu && resolvedNavigationMenuBar[item.name]) {
                 const existingSubmenu =
                     resolvedNavigationMenuBar[item.name].submenu ?? {};
@@ -1032,7 +1017,10 @@ export default function Authenticated({
                                             navigator?.submenu &&
                                             hasSubMenu;
                                         const isActive =
-                                            item.name === current_page ||
+                                            isMenuItemActive(
+                                                item.name,
+                                                current_page,
+                                            ) ||
                                             (hasSubMenu &&
                                                 item.subMenu.some(
                                                     (subItem) =>
@@ -1130,7 +1118,10 @@ export default function Authenticated({
                                         return null;
                                     }
 
-                                    const isActive = item.name === current_page;
+                                    const isActive = isMenuItemActive(
+                                        item.name,
+                                        current_page,
+                                    );
 
                                     return (
                                         <li key={item.name}>

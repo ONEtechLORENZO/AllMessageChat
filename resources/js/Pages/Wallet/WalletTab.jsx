@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
-import PaymentMethodForm from "./PaymentMethodForm";
+import React, { Suspense, lazy, useEffect, useState } from "react";
 import notie from "notie";
 import nProgress from "nprogress";
 import axios from "axios";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
-import { Row, Col, Button } from "reactstrap";
+import { Row, Col } from "reactstrap";
 import { HiOutlineTrash } from "react-icons/hi";
 import { BsPlusCircle } from "react-icons/bs";
 import { CirclePlusIcons } from "../icons";
@@ -13,6 +12,8 @@ import { Link } from "@inertiajs/react";
 import { router as Inertia } from "@inertiajs/react";
 import { CheckIcon } from "@heroicons/react/24/outline";
 import { FolderIcon } from "@heroicons/react/24/solid";
+
+const PaymentMethodForm = lazy(() => import("./PaymentMethodForm"));
 
 export function GlassCard({ className = "", children }) {
     return (
@@ -38,15 +39,12 @@ export default function WalletTab(props) {
     const [defaultPaymentMethod, setDefaultPaymentMethod] = useState(
         props.defaultPaymentMethod,
     );
-    const [balance, setBalance] = useState(props.balance);
-    const [addOn, setAddOn] = useState(props.add_on);
-    const [plans, setPlans] = useState(props.plans);
+    const addOn = props.add_on ?? {};
 
     useEffect(() => {
-        setPaymentMethods(props.paymentMethods);
-    }, [props.balance]);
-
-    useEffect(() => {}, [paymentMethods]);
+        setPaymentMethods(props.paymentMethods ?? []);
+        setDefaultPaymentMethod(props.defaultPaymentMethod);
+    }, [props.paymentMethods, props.defaultPaymentMethod]);
 
     /**
      * Refresh Payment Methods
@@ -619,12 +617,14 @@ export default function WalletTab(props) {
             </div> */}
 
             {paymentMethodForm ? (
-                <PaymentMethodForm
-                    refreshPaymentMethods={refreshPaymentMethods}
-                    setPaymentMethodForm={setPaymentMethodForm}
-                    stripe_public_key={props.stripe_public_key}
-                    translator={props.translator}
-                />
+                <Suspense fallback={null}>
+                    <PaymentMethodForm
+                        refreshPaymentMethods={refreshPaymentMethods}
+                        setPaymentMethodForm={setPaymentMethodForm}
+                        stripe_public_key={props.stripe_public_key}
+                        translator={props.translator}
+                    />
+                </Suspense>
             ) : (
                 ""
             )}

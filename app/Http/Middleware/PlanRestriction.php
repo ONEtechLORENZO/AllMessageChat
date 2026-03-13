@@ -92,6 +92,10 @@ class PlanRestriction
                 }
             }
 
+            if ($request->is('automations')) {
+                $access = true;
+            }
+
             if ($request->is('field*')) {
                 $access = true;
 

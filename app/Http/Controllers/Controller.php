@@ -1488,7 +1488,7 @@ class Controller extends BaseController
             'Automations' => [
                 'name' => 'Automations',
                 'access' => 'workflows',
-                'show' => false
+                'show' => true
             ],
             'Messaging' => [
                 'name' => 'Messaging',

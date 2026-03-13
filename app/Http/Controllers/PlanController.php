@@ -488,7 +488,7 @@ class PlanController extends Controller
             'Automations' => [
                 'name' => 'Automations',
                 'access' => 'workflows',
-                'show' => false
+                'show' => true
             ],
             'Messaging' => [
                 'name' => 'Messaging',
