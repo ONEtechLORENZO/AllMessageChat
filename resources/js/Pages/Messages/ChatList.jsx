@@ -177,9 +177,8 @@ function ChatList(props) {
     function setCurrentTab(tab) {
         setCurrentTabId(tab);
         setSelectedContact("");
-        setChatList({});
-        fetchContactList();
         setPage(1);
+        fetchContactList(tab, 1); // pass tab and page explicitly — state updates are async
     }
 
     function selectContactCategory(name) {
@@ -203,25 +202,33 @@ function ChatList(props) {
      */
     useEffect(() => {
         if (page > 1) {
-            fetchContactList();
+            fetchContactList(current_tab, page); // state is settled by the time this effect fires
         }
     }, [page]);
 
-    function fetchContactList() {
+    function fetchContactList(tabOverride, pageOverride) {
+        const activeTab  = tabOverride  !== undefined ? tabOverride  : current_tab;
+        const activePage = pageOverride !== undefined ? pageOverride : page;
+
         setPageLoad(true);
         var url = route("chat_list", { category: containerCategory });
         if (props.filter_id) {
             url = url + "&filter_id=" + props.filter_id;
         }
-        if (current_tab) {
-            url += "&mode=" + current_tab;
+        if (activeTab) {
+            url += "&mode=" + activeTab;
         }
-        url += "&fetchContact=true&page=" + page;
+        url += "&fetchContact=true&page=" + activePage;
 
         Axios.get(url).then((response) => {
             if (response.data.status) {
-                var mergedList = { ...chatList, ...response.data.contact_list };
-                setChatList(mergedList);
+                if (activePage === 1) {
+                    // Tab switch or initial load — replace the list entirely
+                    setChatList(response.data.contact_list);
+                } else {
+                    // Scroll pagination — merge using functional updater to avoid stale closure
+                    setChatList((prev) => ({ ...prev, ...response.data.contact_list }));
+                }
                 setPageLoad(false);
             }
         });
@@ -423,6 +430,7 @@ function ChatList(props) {
             errors={props.errors}
             current_page={"Chats"}
             hidePageTitle
+            fullHeight
             navigationMenu={props.menuBar}
         >
             <Head title="Chat" />

@@ -557,30 +557,24 @@ class MsgController extends Controller
         }
 
         // get count of categories
-        $unreadCountQuery = clone $query;
-        
-        $unreadCount = $unreadCountQuery->where('unread' , true )->count();
-        $archiveQuery = clone $query;
-        $archiveCount = $archiveQuery->where('is_archive' , true )->count();
-        $totalQuery = clone $query;
-        $totalCount = $totalQuery->count();
-        $otherCount = ($archiveCount - $unreadCount);
-      
-        $totalCount = $totalCount - abs($otherCount);
-        $recordCounts = [ 'all' => $totalCount, 'unread' => $unreadCount , 'archived' => $archiveCount];
+        $notArchivedScope = function ($q) {
+            $q->whereNull('is_archive')->orWhere('is_archive', 0);
+        };
+
+        $archiveCount = (clone $query)->where('is_archive', true)->count();
+        $allCount     = (clone $query)->where($notArchivedScope)->count();
+        $unreadCount  = (clone $query)->where($notArchivedScope)->where('unread', true)->count();
+
+        $recordCounts = ['all' => $allCount, 'unread' => $unreadCount, 'archived' => $archiveCount];
 
         $mode = (isset($_GET['mode'])) ? ($_GET['mode']) : 'unread';
-        if($mode && $mode == 'archived'){
-            $query->where('is_archive' , true);
-        } else if($mode && $mode == 'unread'){
-            $query->where('unread' , true);
+        if ($mode == 'archived') {
+            $query->where('is_archive', true);
+        } elseif ($mode == 'unread') {
+            $query->where($notArchivedScope)->where('unread', true);
         } else {
-            $query->where(function ($query)  {  
-                $query->whereNull('is_archive')->orWhere('is_archive' , 0);
-            });
-            $query->where(function ($query)  {  
-                $query->whereNull('unread')->orWhere('unread' , 0);
-            });
+            // All Chats: every non-archived conversation, read or unread
+            $query->where($notArchivedScope);
         }
         $query->orderBy('chat_list_contacts.updated_at', 'desc');
       
@@ -1984,7 +1978,7 @@ class MsgController extends Controller
             $chatList = new ChatListContact();
             $chatList->contact_id = $messagableId;
             $chatList->channel = $request->service;
-            $chatList->user_id = 1;
+            $chatList->user_id = $account->user_id;
         }
         $chatList->unread = true;
         $chatList->save();

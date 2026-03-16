@@ -91,14 +91,14 @@ function ChatBox(props)
                         Add your comment
                     </label>
                     <textarea
-                        rows={3}
+                        rows={1}
                         id="content"
                         onChange={(e) => props.handleChange(e)}
                         onKeyUp={(e) => props.handleKeyUp(e)}
                         name="content"
                         disabled={(props.data.template_id || props.data.catalog_id)? true : false }
                         value={props.data.content}
-                        className="block w-full resize-none border-0 border-b border-transparent p-0 pb-2 focus:border-[#A31EFF]/70 focus:ring-0 sm:text-sm bg-transparent text-white placeholder-white/40"
+                        className="block w-full resize-none border-0 border-b border-transparent p-0 pb-2 focus:border-[#A31EFF]/70 focus:ring-0 sm:text-sm bg-transparent text-white placeholder-white/40 min-h-8 max-h-32 overflow-y-auto"
                         placeholder="Add your comment..."
                         defaultValue={''}
                     />

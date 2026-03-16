@@ -376,6 +376,7 @@ export default function Authenticated({
     pageTitle,
     message,
     navigationMenu,
+    fullHeight = false,
 }) {
     const { props: pageProps } = usePage();
     const [locale, setLocaleState] = useState(
@@ -1653,32 +1654,42 @@ export default function Authenticated({
                             </header>
                         ) : null}
 
-                        <div
-                            className={[
-                                "flex-1",
-                                showPageTitle
-                                    ? "px-3 pb-3 pt-0 md:px-8 md:pb-8 md:pt-0"
-                                    : "p-3 md:p-8",
-                            ].join(" ")}
-                        >
-                            {showPageTitle ? (
-                                <div className="px-1 pt-4 md:px-0 md:pt-6">
-                                    <h1 className="platform-page-title one-tech-special">
-                                        {translatedPageTitle}
-                                    </h1>
-                                </div>
-                            ) : null}
-
-                            <div
-                                className={
-                                    showPageTitle
-                                        ? "pt-4 md:pt-5"
-                                        : undefined
-                                }
-                            >
+                        {fullHeight ? (
+                            /* Full-height mode (e.g. /chat): no padding, no inner wrapper.
+                               overflow-hidden + min-h-0 give flex children a definite
+                               height so their own overflow-y-auto regions scroll
+                               independently instead of growing the page. */
+                            <div className="flex-1 flex flex-col overflow-hidden min-h-0">
                                 {children}
                             </div>
-                        </div>
+                        ) : (
+                            <div
+                                className={[
+                                    "flex-1",
+                                    showPageTitle
+                                        ? "px-3 pb-3 pt-0 md:px-8 md:pb-8 md:pt-0"
+                                        : "p-3 md:p-8",
+                                ].join(" ")}
+                            >
+                                {showPageTitle ? (
+                                    <div className="px-1 pt-4 md:px-0 md:pt-6">
+                                        <h1 className="platform-page-title one-tech-special">
+                                            {translatedPageTitle}
+                                        </h1>
+                                    </div>
+                                ) : null}
+
+                                <div
+                                    className={
+                                        showPageTitle
+                                            ? "pt-4 md:pt-5"
+                                            : undefined
+                                    }
+                                >
+                                    {children}
+                                </div>
+                            </div>
+                        )}
                     </main>
                 </div>
             </div>
