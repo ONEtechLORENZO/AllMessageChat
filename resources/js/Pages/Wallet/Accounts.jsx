@@ -18,6 +18,7 @@ export default function Accounts(props) {
         { name: 'Whatsapp', href: '#', current: true, page: 'whatsapp' },
         { name: 'Instagram', href: '#', current: false , page: 'instagram' },
         { name: 'Facebook', href: '#', current: false , page: 'facebook' },
+        { name: 'Email', href: '#', current: false , page: 'email' },
       ];
     
     function classNames(...classes) {

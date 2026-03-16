@@ -8,6 +8,7 @@ const serivceOption = {
     whatsapp: "Whatsapp",
     instagram: "Instagram",
     facebook: "Facebook",
+    email: "Email",
 };
 
 export default function Step1(props) {
@@ -82,6 +83,7 @@ export default function Step1(props) {
                         props.data["service"] == "facebook" ||
                         (props.data["service"] == "whatsapp" &&
                             props.company.service_engine == "Facebook")) &&
+                    props.data["service"] !== "email" &&
                     props.socialProfiles ? (
                         <>
                             <div className="mx-auto w-1/2 flex flex-col justify-center mt-3">

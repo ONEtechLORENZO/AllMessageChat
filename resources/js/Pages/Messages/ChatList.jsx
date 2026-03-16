@@ -28,6 +28,7 @@ import {
     NotifiIcon,
     InstaIcon,
     fbIcon,
+    EmailIcon,
     SettingIcon,
 } from "../icons";
 
@@ -55,6 +56,7 @@ function ChatList(props) {
         whatsapp: { label: "WhatsApp", icon: WhatsAppIcon },
         instagram: { label: "Instagram", icon: InstaIcon },
         facebook: { label: "Facebook", icon: fbIcon },
+        email: { label: "Email", icon: EmailIcon },
     };
     const [current_tab, setCurrentTabId] = useState("unread");
     const tabs = [
@@ -298,6 +300,8 @@ function ChatList(props) {
             destination = chatList["contact_id_" + selectedContact].insta_id;
         } else if (containerCategory == "facebook") {
             destination = chatList["contact_id_" + selectedContact].fb_id;
+        } else if (containerCategory == "email") {
+            destination = chatList["contact_id_" + selectedContact].email;
         }
 
         // Append form data
@@ -311,6 +315,7 @@ function ChatList(props) {
         formData.append("product_retailer_id", data.product_retailer_id);
         formData.append("template_options", data.template_options);
         formData.append("template_type", data.template_type);
+        formData.append("email_subject", data.email_subject || "");
 
         if (!destination) {
             notie.alert({

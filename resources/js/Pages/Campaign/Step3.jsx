@@ -3,7 +3,8 @@ import Dropdown from "@/Components/Forms/Dropdown";
 
 const options = {
     'whatsapp': 'Whatsapp',
-    'instagram': 'Instagram'
+    'instagram': 'Instagram',
+    'email': 'Email',
 }
 
 function Content(props){

@@ -8,6 +8,7 @@ import Step4 from "./Step4";
 import Step5 from "./Step5";
 import Step6 from "./Step6";
 import Step7 from "./Step7";
+import StepEmail from "./StepEmail";
 import axios from "axios";
 import notie from "notie";
 import nProgress from "nprogress";
@@ -68,6 +69,8 @@ export default function AccountRegistration(props) {
 
         if (service == "whatsapp") {
             setCurrentPage(6);
+        } else if (service == "email") {
+            setCurrentPage(8);
         }
         return false;
     }
@@ -326,8 +329,8 @@ export default function AccountRegistration(props) {
                                             <GlassCard>
                                                 <Step4
                                                     accountId={accountId}
-                                                    saveAccount={saveAccount}
                                                     {...props}
+                                                    data={data}
                                                 />
                                             </GlassCard>
                                         </div>
@@ -373,6 +376,24 @@ export default function AccountRegistration(props) {
                                                     setCurrentPage={
                                                         setCurrentPage
                                                     }
+                                                    {...props}
+                                                />
+                                            </GlassCard>
+                                        </div>
+
+                                        <div
+                                            className={
+                                                curretpage == 8
+                                                    ? "block"
+                                                    : "hidden"
+                                            }
+                                        >
+                                            <GlassCard>
+                                                <StepEmail
+                                                    data={data}
+                                                    formHandler={formHandler}
+                                                    setCurrentPage={setCurrentPage}
+                                                    setAccountid={setAccountid}
                                                     {...props}
                                                 />
                                             </GlassCard>

@@ -177,7 +177,7 @@ class MsgController extends Controller
                 ->keyBy('id');
 
             $contacts = Contact::whereIn('id', $contactIds)
-                ->get(['id', 'phone_number', 'facebook_username', 'instagram_username'])
+                ->get(['id', 'phone_number', 'facebook_username', 'instagram_username', 'email'])
                 ->keyBy('id');
         } else {
             $query_columns = ['msgs.id', 'msgs.service', 'msgs.status', 'error_response', 'msgs.created_at', 'message', 'accounts.company_name', 'accounts.phone_number as account_phone_number', 'contacts.phone_number', 'contacts.facebook_username', 'contacts.instagram_username', 'msg_mode'];
@@ -344,7 +344,7 @@ class MsgController extends Controller
         );
     }
 
-    protected function resolveMessageParties($service, $msgMode, $companyName, $accountPhoneNumber, $phoneNumber, $facebookUsername, $instagramUsername): array
+    protected function resolveMessageParties($service, $msgMode, $companyName, $accountPhoneNumber, $phoneNumber, $facebookUsername, $instagramUsername, $emailAddress = ''): array
     {
         $sender = '';
         $destination = '';
@@ -374,6 +374,15 @@ class MsgController extends Controller
             } else {
                 $sender = $companyName;
                 $destination = $facebookUsername;
+            }
+        }
+        else if($service == 'email') {
+            if($msgMode == 'incoming') {
+                $sender = $emailAddress;
+                $destination = $companyName;
+            } else {
+                $sender = $companyName;
+                $destination = $emailAddress;
             }
         }
 
@@ -456,7 +465,13 @@ class MsgController extends Controller
             ->get();
         
         foreach($accounts as $account){
-            $accoutList[$account->id] = ($account->service != 'whatsapp') ?  $account->company_name."- {$account->fb_page_name}" : $account->company_name ;
+            if($account->service == 'email') {
+                $accoutList[$account->id] = $account->company_name . ' (' . $account->email . ')';
+            } elseif($account->service != 'whatsapp') {
+                $accoutList[$account->id] = $account->company_name . "- {$account->fb_page_name}";
+            } else {
+                $accoutList[$account->id] = $account->company_name;
+            }
         }
 
         $filterData = $this->getFiltersInfo( $user->id, 'Contact', true);
@@ -579,10 +594,12 @@ class MsgController extends Controller
                 if($name == ' '){
                     if($contact->phone_number){
                         $name = $contact->phone_number;
-                    } else if($contact->instagram_username){
+                    } elseif($contact->instagram_username){
                         $name = $contact->instagram_username;
-                    } else if($contact->facebook_username){
+                    } elseif($contact->facebook_username){
                         $name = $contact->facebook_username;
+                    } elseif($contact->email){
+                        $name = $contact->email;
                     }
                 } 
                 $name = trim($name , ' '); 
@@ -634,7 +651,7 @@ class MsgController extends Controller
         $contactId = $request->contact_id;
         // Update Channel
         $this->updateChatChannel($user->id , $contactId, $request->category); 
-        $category = ($request->category == 'all') ?['instagram', 'whatsapp', 'facebook'] : [$request->category] ;
+        $category = ($request->category == 'all') ? ['instagram', 'whatsapp', 'facebook', 'email'] : [$request->category];
         
         $messages = [];
         $account = Account::where('user_id', $user->id)->first();
@@ -925,7 +942,18 @@ class MsgController extends Controller
         }
        
         $parent = $this->getInfoUsingContactUniqueId($request->destination, $request->channel, $user->id);
-        
+
+        // Send Message via Email
+        if($request->channel == 'email') {
+            $subject = $request->email_subject ?: '(no subject)';
+            $result = $this->sendEmailMessage($request->content, $request->destination, $account, $subject);
+
+            if(isset($result['messageId']))
+                $this->handleMessageResult($request, $account->id, $result);
+
+            return response()->json($result);
+        }
+
         // Send Message to Facebook or Instagram
         if($request->channel == 'instagram' || $request->channel == 'facebook') {
             
@@ -1129,6 +1157,54 @@ class MsgController extends Controller
     }
 
     /**
+     * Send an outgoing email through the account's SMTP configuration.
+     * Uses Laravel's dynamic mailer transport so each Email account can
+     * have its own SMTP credentials without touching config/mail.php.
+     */
+    public function sendEmailMessage(string $content, string $destination, $account, string $subject = ''): array
+    {
+        $messageId = 'email_' . uniqid('', true);
+
+        try {
+            $mailerKey = 'email_account_' . $account->id;
+
+            // Build a per-account mailer config at runtime
+            config([
+                "mail.mailers.{$mailerKey}" => [
+                    'transport'  => 'smtp',
+                    'host'       => $account->smtp_host ?: config('mail.mailers.smtp.host', 'localhost'),
+                    'port'       => (int) ($account->smtp_port ?: 587),
+                    'encryption' => $account->smtp_encryption ?: 'tls',
+                    'username'   => $account->email,
+                    'password'   => $account->service_token,
+                    'timeout'    => null,
+                ],
+            ]);
+
+            $fromAddress = $account->email;
+            $fromName    = $account->display_name ?: $account->company_name;
+
+            \Mail::mailer($mailerKey)
+                ->to($destination)
+                ->send(new \App\Mail\EmailChannelMessage($subject, $content, $fromAddress, $fromName));
+
+            return [
+                'result'    => ['status' => 'submitted', 'messageId' => $messageId, 'msg_type' => 'Text'],
+                'messageId' => $messageId,
+                'status'    => 'Queued',
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Email channel send failed: ' . $e->getMessage());
+            return [
+                'result' => ['status' => 'error', 'message' => $e->getMessage()],
+                'status' => 'Failed',
+                'error'  => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
      * Return record id using instagram ID
      */
     public function getInfoUsingContactUniqueId($uniqueId, $type, $user_id , $name = '') 
@@ -1137,14 +1213,15 @@ class MsgController extends Controller
         $field = '';
         if($type == 'whatsapp'){
             $field = 'phone_number';
-        } else if($type == 'instagram'){
+        } elseif($type == 'instagram'){
             $field = 'instagram_username';
-        } else if($type == 'facebook'){
+        } elseif($type == 'facebook'){
             $field = 'facebook_username';
+        } elseif($type == 'email'){
+            $field = 'email';
         } else {
             $field = 'phone_number';
         }
-       // $field = ($type == 'whatsapp') ? 'phone_number' : 'instagram_username';
 
         if(strpos($uniqueId, '+') === false){
             $uniqueId = ($type == 'whatsapp') ? '+'.$uniqueId : $uniqueId;

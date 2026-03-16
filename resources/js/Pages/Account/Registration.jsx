@@ -29,6 +29,9 @@ function Registration(props) {
             api_partner: false,
             terms_condition: false,
             oba: false,
+            smtp_host: "",
+            smtp_port: "",
+            smtp_encryption: "",
             api_token: "",
             callback_url: "",
             enqueued: false,
@@ -58,6 +61,7 @@ function Registration(props) {
         whatsapp: "WhatsApp",
         instagram: "Instagram",
         facebook: "Facebook",
+        email: "Email",
     };
 
     const service_engine = {
@@ -704,6 +708,122 @@ function Registration(props) {
                                                     </div>
                                                 </div>
                                             */}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : data.service == "email" ? (
+                            <div className="bg-[#140816]/70 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5 shadow px-4 py-5 sm:rounded-2xl sm:p-6">
+                                <div className="md:grid md:grid-cols-3 md:gap-6">
+                                    <div className="md:col-span-1">
+                                        <h3 className="text-lg font-semibold leading-6 text-white">
+                                            Email Configuration
+                                        </h3>
+                                        <p className="mt-1 text-sm text-[#878787]">
+                                            Configure your outbound email (SMTP) settings.
+                                        </p>
+                                    </div>
+                                    <div className="mt-5 md:mt-0 md:col-span-2">
+                                        <div className="grid grid-cols-6 gap-6">
+                                            <div className="form-group col-span-6 sm:col-span-4">
+                                                <label htmlFor="display_name" className="block text-sm font-medium text-[#878787]">
+                                                    Sender Name
+                                                </label>
+                                                <div className="mt-1 flex rounded-md shadow-sm">
+                                                    <Input
+                                                        name="display_name"
+                                                        value={data.display_name}
+                                                        id="display_name"
+                                                        placeholder="e.g. Acme Support"
+                                                        handleChange={handleChange}
+                                                        className="bg-[#0F0B1A] text-white border-white/10 placeholder:text-[#6c6c6c] focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
+                                                    />
+                                                </div>
+                                                <InputError message={errors.display_name} />
+                                            </div>
+                                            <div className="form-group col-span-6 sm:col-span-4">
+                                                <label htmlFor="email" className="block text-sm font-medium text-[#878787]">
+                                                    Sender Email
+                                                    <span className="text-sm text-red-700 mx-1"> * </span>
+                                                </label>
+                                                <div className="mt-1 flex rounded-md shadow-sm">
+                                                    <Input
+                                                        required={true}
+                                                        type="email"
+                                                        name="email"
+                                                        value={data.email}
+                                                        id="email"
+                                                        placeholder="you@example.com"
+                                                        handleChange={handleChange}
+                                                        className="bg-[#0F0B1A] text-white border-white/10 placeholder:text-[#6c6c6c] focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
+                                                    />
+                                                </div>
+                                                <InputError message={errors.email} />
+                                            </div>
+                                            <div className="form-group col-span-6 sm:col-span-4">
+                                                <label htmlFor="smtp_host" className="block text-sm font-medium text-[#878787]">
+                                                    SMTP Host
+                                                </label>
+                                                <div className="mt-1 flex rounded-md shadow-sm">
+                                                    <Input
+                                                        name="smtp_host"
+                                                        value={data.smtp_host}
+                                                        id="smtp_host"
+                                                        placeholder="smtp.example.com"
+                                                        handleChange={handleChange}
+                                                        className="bg-[#0F0B1A] text-white border-white/10 placeholder:text-[#6c6c6c] focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
+                                                    />
+                                                </div>
+                                                <InputError message={errors.smtp_host} />
+                                            </div>
+                                            <div className="form-group col-span-3 sm:col-span-2">
+                                                <label htmlFor="smtp_port" className="block text-sm font-medium text-[#878787]">
+                                                    SMTP Port
+                                                </label>
+                                                <div className="mt-1 flex rounded-md shadow-sm">
+                                                    <Input
+                                                        name="smtp_port"
+                                                        value={data.smtp_port}
+                                                        id="smtp_port"
+                                                        placeholder="587"
+                                                        handleChange={handleChange}
+                                                        className="bg-[#0F0B1A] text-white border-white/10 placeholder:text-[#6c6c6c] focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
+                                                    />
+                                                </div>
+                                                <InputError message={errors.smtp_port} />
+                                            </div>
+                                            <div className="form-group col-span-3 sm:col-span-2">
+                                                <label htmlFor="smtp_encryption" className="block text-sm font-medium text-[#878787]">
+                                                    Encryption
+                                                </label>
+                                                <div className="mt-1">
+                                                    <Dropdown
+                                                        id="smtp_encryption"
+                                                        name="smtp_encryption"
+                                                        handleChange={handleChange}
+                                                        options={{ tls: "TLS (recommended)", ssl: "SSL", none: "None" }}
+                                                        value={data.smtp_encryption || "tls"}
+                                                    />
+                                                </div>
+                                                <InputError message={errors.smtp_encryption} />
+                                            </div>
+                                            <div className="form-group col-span-6 sm:col-span-4">
+                                                <label htmlFor="service_token" className="block text-sm font-medium text-[#878787]">
+                                                    SMTP Password / API Key
+                                                </label>
+                                                <div className="mt-1 flex rounded-md shadow-sm">
+                                                    <Input
+                                                        type="password"
+                                                        name="service_token"
+                                                        value={data.service_token}
+                                                        id="service_token"
+                                                        placeholder="••••••••"
+                                                        handleChange={handleChange}
+                                                        className="bg-[#0F0B1A] text-white border-white/10 placeholder:text-[#6c6c6c] focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
+                                                    />
+                                                </div>
+                                                <InputError message={errors.service_token} />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

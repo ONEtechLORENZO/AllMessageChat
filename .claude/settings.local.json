@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan:*)",
+      "Bash(where php:*)",
+      "Read(//c/xampp/php/**)",
+      "Read(//c/php/**)",
+      "Bash(find /c /d -name php.exe -maxdepth 5)",
+      "Bash(\"C:\\\\Users\\\\AESSEFIN PRESTITI\\\\xc3\\\\xb9\\\\.config\\\\herd\\\\bin\\\\php.bat\" artisan migrate --path=database/migrations/2025_03_16_000001_add_smtp_fields_to_accounts.php)",
+      "Read(//c/Users/**)",
+      "Read(//c/Users//**)",
+      "Bash(\"/c/Users/AESSEFIN PRESTITIù/.config/herd/bin/php.bat\" artisan migrate --path=database/migrations/2025_03_16_000001_add_smtp_fields_to_accounts.php)",
+      "Bash(\"/c/Users/AESSEFIN PRESTITIù/.config/herd/bin/php.bat\" artisan migrate --path=database/migrations/2025_03_16_000002_add_email_subject_to_msgs_and_templates.php)"
+    ]
+  }
+}

@@ -3,6 +3,7 @@ import ReactAudioPlayer from 'react-audio-player';
 import {
     WhatsAppIcon,
     InstaIcon,
+    EmailIcon,
     ErrorIcon,
     QueueIcon,
     SentIcon,
@@ -100,6 +101,10 @@ export default function MessageList(props) {
                                                                 {message.category == 'instagram' &&
                                                                     <InstaIcon width={`20`} height={`20`} />
                                                                 }
+
+                                                                {message.category == 'email' &&
+                                                                    <EmailIcon width={`20`} height={`20`} />
+                                                                }
                                                             </>
 
                                                         }
@@ -133,6 +138,9 @@ export default function MessageList(props) {
                                                                 }
                                                                 {message.category == 'facebook' &&
                                                                     <BsFacebook className="w-5 h-4 fill-current text-indigo-500" />
+                                                                }
+                                                                {message.category == 'email' &&
+                                                                    <EmailIcon width={`20`} height={`20`} />
                                                                 }
                                                             </>
                                                         }

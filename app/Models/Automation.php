@@ -292,14 +292,28 @@ class Automation extends Model
     }   
 
     /**
-     * Send message
+     * Send message via the appropriate channel based on the selected account's service.
      */
     public function sendMessage($data)
     {
-        $msg = new Msg();
         $recordModal = $this->recordModal;
-        $account = Account::find($data->select_account);
-        $result = $msg->sendWhatsAppMessage('' , $recordModal->phone_number, $account , $data->select_template);
+        $account     = Account::find($data->select_account);
+
+        if (!$account) {
+            return false;
+        }
+
+        if ($account->service === 'email') {
+            $msgController = new \App\Http\Controllers\MsgController();
+            $destination   = $recordModal->email ?? '';
+            $subject       = isset($data->email_subject) ? $data->email_subject : '';
+            $content       = isset($data->message_content) ? $data->message_content : '';
+            $msgController->sendEmailMessage($content, $destination, $account, $subject);
+        } else {
+            $msg = new Msg();
+            $msg->sendWhatsAppMessage('', $recordModal->phone_number, $account, $data->select_template);
+        }
+
         return true;
     }
 

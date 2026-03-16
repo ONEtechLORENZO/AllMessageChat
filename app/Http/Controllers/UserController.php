@@ -793,15 +793,25 @@ class UserController extends Controller
 
         $field_info = [
             'company_name' => ['label' => __('Name')],
-            'phone_number' => ['label' => __('Phone number'), 'show' => ['whatsapp']],
             'service' => ['label' => __('Service')],
             'service_engine' => ['label' => 'Service Engine', 'user_show' => ['global_admin']],
 
-            'fb_phone_number_id' => ['label' => 'Instagram Page Name', 'fb_show' => ['facebook'], 'show' => ['instagram']],
+            // WhatsApp-specific
+            'phone_number' => ['label' => __('Phone number'), 'show' => ['whatsapp']],
             'src_name' => ['label' => __('Source name'), 'show' => ['whatsapp']],
             'fb_waba_name' => ['label' => __('FaceBook whatsapp account name'), 'fb_show' => ['facebook', 'gupshup'], 'show' => ['whatsapp']],
-
             'fb_business_name' => ['label' => __('Business manager names'), 'show' => ['whatsapp']],
+
+            // Instagram / Facebook-specific
+            'fb_phone_number_id' => ['label' => 'Instagram Page Name', 'fb_show' => ['facebook'], 'show' => ['instagram']],
+
+            // Email-specific
+            'email' => ['label' => __('Sender Email'), 'show' => ['email']],
+            'display_name' => ['label' => __('Sender Name'), 'show' => ['email']],
+            'smtp_host' => ['label' => __('SMTP Host'), 'show' => ['email']],
+            'smtp_port' => ['label' => __('SMTP Port'), 'show' => ['email']],
+            'smtp_encryption' => ['label' => __('Encryption'), 'show' => ['email']],
+
             'Profile' => __('Profile'),
             'Callback URL' => __('Callback URL'),
             'Name of URL' => __('Name of URL'),
@@ -1042,7 +1052,7 @@ class UserController extends Controller
         }
 
         //check if the user select the company name as display name
-        if ($displayName != 'yes' && $request->service != 'instagram' && $request->service != 'facebook' && $request->service_engine != 'facebook') {
+        if ($displayName != 'yes' && $request->service != 'instagram' && $request->service != 'facebook' && $request->service != 'email' && $request->service_engine != 'facebook') {
             $request->validate([
                 'display_name' => 'required|max:255',
             ]);
@@ -1069,6 +1079,12 @@ class UserController extends Controller
             }
         }
 
+        if ($service == 'email') {
+            $request->validate([
+                'email' => 'required|email',
+            ]);
+        }
+
         if ($id) {
             $account = Account::findOrFail($id);
         } else {
@@ -1087,6 +1103,11 @@ class UserController extends Controller
             if ($request->fb_phone_number_id) {
                 $account->status = 'Active';
             }
+        }
+
+        if ($request->service == 'email') {
+            $account->service_engine = 'smtp';
+            $account->status = 'Active';
         }
 
         if ($request->service == 'whatsapp' && $account->service_engine == 'facebook' && $request->fb_whatsapp_account_id) {
@@ -1118,7 +1139,7 @@ class UserController extends Controller
             $account->display_name = $request->display_name;
         }
 
-        $accountFields = ['company_name', 'category', 'description', 'email', 'service', 'service_token', 'fb_whatsapp_account_id', 'phone_number', 'src_name', 'business_manager_id', 'fb_insta_app_id', 'fb_page_name', 'insta_user_name', 'fb_business_name', 'fb_waba_name', 'api_partner_name', 'api_partner'];
+        $accountFields = ['company_name', 'category', 'description', 'email', 'service', 'service_token', 'fb_whatsapp_account_id', 'phone_number', 'src_name', 'business_manager_id', 'fb_insta_app_id', 'fb_page_name', 'insta_user_name', 'fb_business_name', 'fb_waba_name', 'api_partner_name', 'api_partner', 'smtp_host', 'smtp_port', 'smtp_encryption'];
 
         foreach ($accountFields as $field) {
             if ($request->has($field)) {

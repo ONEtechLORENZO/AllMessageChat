@@ -77,6 +77,16 @@ function ChatBox(props)
             <div className="min-w-0 flex-1 bg-white/5 rounded-2xl p-4">
                 <form action="#">
                 <div className="focus-within:border-[#A31EFF]/70">
+                    {props.containerCategory == 'email' &&
+                        <input
+                            type="text"
+                            name="email_subject"
+                            value={props.data.email_subject || ''}
+                            onChange={(e) => props.handleChange(e)}
+                            placeholder="Subject"
+                            className="block w-full border-0 border-b border-white/10 pb-2 mb-2 focus:border-[#A31EFF]/70 focus:ring-0 sm:text-sm bg-transparent text-white placeholder-white/40"
+                        />
+                    }
                     <label htmlFor="comment" className="sr-only">
                         Add your comment
                     </label>
@@ -186,9 +196,9 @@ function ChatBox(props)
                         </div>
                          */}
 
-                        {props.containerCategory == 'whatsapp' &&
+                        {(props.containerCategory == 'whatsapp' || props.containerCategory == 'email') &&
                             <div className="flow-root">
-                                <SearchTemplate 
+                                <SearchTemplate
                                    templates={templates}
                                    products={products}
                                    interactiveMessages={interactiveMessages}
@@ -196,7 +206,7 @@ function ChatBox(props)
                                    searchProduct={searchProduct}
                                    searchTemplates={searchTemplates}
                                    searchInteractiveMessages={searchInteractiveMessages}
-                                   
+
                                    setInteractiveMessage={props.setInteractiveMessage}
                                    setProductInfo={props.setProductInfo}
                                    setTemplateInfo={props.setTemplateInfo}
