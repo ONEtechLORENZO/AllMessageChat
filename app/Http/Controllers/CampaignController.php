@@ -17,6 +17,16 @@ use App\Models\Template;
 
 class CampaignController extends Controller
 {
+    protected function getCampaignAccountsForUser(int $userId, ?string $service = null)
+    {
+        return Account::where('user_id', $userId)
+            ->when($service, function ($query) use ($service) {
+                $query->where('service', $service);
+            })
+            ->orderBy('company_name')
+            ->get();
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -233,9 +243,10 @@ class CampaignController extends Controller
         };
       
         if($campaign->service){
-            $accounts = Account::where('company_id',$company_id)
-                        ->where('service',$campaign->service)          
-                        ->get();
+            $accounts = $this->getCampaignAccountsForUser(
+                (int) $request->user()->id,
+                $campaign->service
+            );
 
             foreach($accounts as $account){
                   $companyName[$account->id] = $account->company_name;
@@ -318,21 +329,20 @@ class CampaignController extends Controller
     }
 
     public function getCompanyName(Request $request, $service){
-        
-        if($service){
-            $user_id = $request->user()->id;
-            $company_id = Cache::get('selected_company_'.$user_id);
+        $companyName = [];
 
-            $accounts = Account::where('company_id',$company_id)
-                        ->where('service',$service)          
-                        ->get();
+        if($service){
+            $accounts = $this->getCampaignAccountsForUser(
+                (int) $request->user()->id,
+                $service
+            );
 
             foreach($accounts as $account){
                   $companyName[$account->id] = $account->company_name;
             }
         }
 
-        echo json_encode($companyName); die;
+        return response()->json($companyName);
     }
 
     /**
@@ -341,9 +351,11 @@ class CampaignController extends Controller
     public function getTemplateList(Request $request, $account)
     {
         $templateList = [];
-        $templates = Template::where('account_id', $account)->get();
+        $templates = Template::where('account_id', $account)
+            ->orderBy('name')
+            ->get();
         foreach($templates as $template){
-            $templateList[$template->template_uid] = $template->name;
+            $templateList[$template->id] = $template->name;
         }
         return response()->json(['templates' => $templateList]);
     }

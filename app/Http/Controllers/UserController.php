@@ -28,6 +28,7 @@ use App\Models\Automation;
 use App\Models\Session;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
 use Facebook\Facebook;
@@ -899,8 +900,10 @@ class UserController extends Controller
                         'creater_name' => $creater_name,
                         'account_id' => $template->account_id,
                         'name' => $template->name,
+                        'service' => $template->service ?: $account->service,
+                        'subject' => $template->email_subject,
                         'status' => $template->status,
-                        'language' => $templateLanguageId,
+                        'language' => $template->service === 'email' ? 'Email' : $templateLanguageId,
                         'created_at' => $template->created_at,
                     ];
                 }
@@ -1205,12 +1208,72 @@ class UserController extends Controller
         return Inertia::render('Account/Template/New', ['account_id' => $account_id]);
     }
 
+    protected function isEmailTemplateFlow(?Account $account = null, ?Template $template = null): bool
+    {
+        $templateService = strtolower((string) ($template?->service ?? ''));
+        if ($templateService !== '') {
+            return $templateService === 'email';
+        }
+
+        return strtolower((string) ($account?->service ?? '')) === 'email';
+    }
+
+    protected function emailTemplateNameRule(int $accountId, ?int $ignoreTemplateId = null): array
+    {
+        $uniqueRule = Rule::unique('templates', 'name')
+            ->where(function ($query) use ($accountId) {
+                return $query->where('account_id', $accountId);
+            });
+
+        if ($ignoreTemplateId) {
+            $uniqueRule = $uniqueRule->ignore($ignoreTemplateId);
+        }
+
+        return [
+            'required',
+            'max:255',
+            'regex:/^[a-zA-Z0-9_\s-]*$/',
+            $uniqueRule,
+        ];
+    }
+
     /**
      * Create new template
      */
     public function createNewTemplate(Request $request, $account_id)
     {
         Log::info('Save template process start');
+        $account = Account::where('id', $account_id)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (! $account) {
+            abort(401, 'You are not authorised to create templates for this account');
+        }
+
+        if ($this->isEmailTemplateFlow($account)) {
+            $request->validate([
+                'template_name' => $this->emailTemplateNameRule((int) $account_id),
+                'subject' => 'required|max:255',
+            ]);
+
+            $template = new Template();
+            $template->name = $request->get('template_name');
+            $template->service = 'email';
+            $template->category = 'EMAIL';
+            $template->languages = [];
+            $template->status = 'draft';
+            $template->email_subject = $request->get('subject');
+            $template->company_id = Cache::get('selected_company_' . $request->user()->id);
+            $template->account_id = $account_id;
+            $template->created_by = $request->user()->id;
+            $template->save();
+
+            Log::info('Email template saved successfully');
+
+            return Redirect::route('template_detail_view', [$account_id, $template->id]);
+        }
+
         $request->validate([
             'template_name' => 'required|max:255|regex:/^[a-zA-Z0-9_\s]*$/',
             'category' => 'required',
@@ -1219,6 +1282,7 @@ class UserController extends Controller
 
         $template = new Template();
         $template->name = $request->get('template_name');
+        $template->service = $account->service ?: 'whatsapp';
         $template->category = $request->get('category');
         $template->languages = $request->get('languages');
         $template->status = 'draft';
@@ -1331,6 +1395,22 @@ class UserController extends Controller
             abort(401, 'You are not authorised to view this template');
         }
 
+        $template = Template::where('account_id', $account_id)
+            ->where('id', $template_id)
+            ->first();
+
+        if (! $template) {
+            abort(404, 'Template not found');
+        }
+
+        if ($this->isEmailTemplateFlow($account, $template)) {
+            return Inertia::render('Account/Template/EmailTemplateEditor', [
+                'template' => $template,
+                'menuBar' => $menuBar,
+                'translator' => Controller::getTranslations(),
+            ]);
+        }
+
         $templateContent = $this->fetchTemplateContent($template_id, $account_id);
         if ($templateContent instanceof \Illuminate\Http\RedirectResponse) {
             return $templateContent;
@@ -1416,9 +1496,46 @@ class UserController extends Controller
     {
         $user = $request->user();
         $account = Account::where('id', $account_id)->first();
+        $template = Template::where('account_id', $account_id)
+            ->where('id', $template_id)
+            ->first();
 
-        if (!$account) {
+        if (!$account || !$template) {
             abort(401, 'You are not authorised to view this');
+        }
+
+        if ($this->isEmailTemplateFlow($account, $template)) {
+            $request->validate([
+                'template_name' => $this->emailTemplateNameRule((int) $account_id, (int) $template_id),
+                'subject' => 'required|max:255',
+                'html_body' => 'required|string',
+                'text_body' => 'nullable|string',
+                'sample_data' => 'nullable|string',
+            ]);
+
+            $sampleData = null;
+            if ($request->filled('sample_data')) {
+                $sampleData = json_decode($request->get('sample_data'), true);
+
+                if (json_last_error() !== JSON_ERROR_NONE || ! is_array($sampleData)) {
+                    throw ValidationException::withMessages([
+                        'sample_data' => 'Sample data must be valid JSON.',
+                    ]);
+                }
+            }
+
+            $template->name = $request->get('template_name');
+            $template->service = 'email';
+            $template->category = 'EMAIL';
+            $template->languages = [];
+            $template->status = 'APPROVED';
+            $template->email_subject = $request->get('subject');
+            $template->html_body = $request->get('html_body');
+            $template->text_body = $request->get('text_body');
+            $template->sample_data = $sampleData;
+            $template->save();
+
+            return Redirect::route('account_templates', ['account_id' => $account_id]);
         }
 
         $validation_array = [
@@ -1511,10 +1628,6 @@ class UserController extends Controller
                 }
             }
         }
-
-        $template = Template::where('account_id', $account_id)
-            ->where('id', $template_id)
-            ->first();
 
         if (base64_decode($request->example, true)) {
             $request->example = ($request->example) ? unserialize(base64_decode($request->example)) : '';

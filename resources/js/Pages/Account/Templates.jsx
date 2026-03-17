@@ -47,8 +47,10 @@ function Templates(props) {
     const { data, setData, post, processing, reset, errors, clearErrors } =
         useForm({
             template_name: "",
+            subject: "",
             category: "",
             languages: ["en"],
+            service: "",
         });
 
     useEffect(() => {
@@ -90,6 +92,8 @@ function Templates(props) {
             ) ?? null
         );
     }, [props.account, props.accounts, selectedAccountId]);
+    const isEmailAccount =
+        String(resolvedAccount?.service ?? "").toLowerCase() === "email";
 
     function openAccount(accountId) {
         setSelectedAccountId(String(accountId));
@@ -296,8 +300,10 @@ function Templates(props) {
         reset();
         setData({
             template_name: "",
-            category: "",
-            languages: [],
+            subject: "",
+            category: isEmailAccount ? "EMAIL" : "",
+            languages: isEmailAccount ? [] : [],
+            service: isEmailAccount ? "email" : String(resolvedAccount?.service ?? ""),
         });
         setIsCreateModalOpen(true);
     }
@@ -344,7 +350,11 @@ function Templates(props) {
             ),
         );
 
-        if (!isValidated || !data.languages?.length) {
+        if (!isValidated) {
+            return false;
+        }
+
+        if (!isEmailAccount && !data.languages?.length) {
             return false;
         }
 
@@ -355,6 +365,19 @@ function Templates(props) {
             },
         });
     }
+
+    const createTemplateTitle = isEmailAccount
+        ? "Add Email Template"
+        : props.translator["Add template"] ?? "Add template";
+    const createTemplateDescription = isEmailAccount
+        ? "Create a minimal email template with an internal name and a default subject. You will complete the HTML body and preview in the editor after creation."
+        : props.translator[
+              "Create a new WhatsApp template. Each template must have a unique name consisting of lowercase alphanumeric characters.Spaces must be replaced with underscores (_). Only WhatsApp templates within the pre-defined categories can be accepted."
+          ] ??
+          "Create a new WhatsApp template. Each template must have a unique name consisting of lowercase alphanumeric characters. Spaces must be replaced with underscores (_). Only WhatsApp templates within the pre-defined categories can be accepted.";
+    const createTemplateButtonLabel = isEmailAccount
+        ? "Add Email Template"
+        : props.translator["Add template"] ?? "Add template";
 
     function getStatusClasses(status) {
         const normalizedStatus = (status || "").toLowerCase();
@@ -471,24 +494,26 @@ function Templates(props) {
                                     className="inline-flex min-h-[52px] min-w-[170px] items-center justify-center gap-2 px-5 py-3 text-base font-semibold leading-none whitespace-nowrap text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     <PlusIcon className="h-4 w-4 shrink-0" />
-                                    {props.translator["Add template"] ?? "Add template"}
+                                    {createTemplateButtonLabel}
                                 </button>
 
-                                <button
-                                    onClick={() => syncTemplates()}
-                                    disabled={!hasAccount || isLoading}
-                                    style={{
-                                        backgroundColor: "#BF00FF",
-                                        borderColor: "#BF00FF",
-                                        borderRadius: "16px",
-                                    }}
-                                    className="inline-flex min-h-[52px] min-w-[170px] items-center justify-center gap-2 px-5 py-3 text-base font-semibold leading-none whitespace-nowrap text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                                >
-                                    <ArrowPathIcon
-                                        className={`h-4 w-4 shrink-0 ${isLoading ? "animate-spin" : ""}`}
-                                    />
-                                    {props.translator["Sync Templates"]}
-                                </button>
+                                {!isEmailAccount ? (
+                                    <button
+                                        onClick={() => syncTemplates()}
+                                        disabled={!hasAccount || isLoading}
+                                        style={{
+                                            backgroundColor: "#BF00FF",
+                                            borderColor: "#BF00FF",
+                                            borderRadius: "16px",
+                                        }}
+                                        className="inline-flex min-h-[52px] min-w-[170px] items-center justify-center gap-2 px-5 py-3 text-base font-semibold leading-none whitespace-nowrap text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        <ArrowPathIcon
+                                            className={`h-4 w-4 shrink-0 ${isLoading ? "animate-spin" : ""}`}
+                                        />
+                                        {props.translator["Sync Templates"]}
+                                    </button>
+                                ) : null}
                             </div>
                         </div>
                     ) : null}
@@ -652,11 +677,18 @@ function Templates(props) {
                                                         >
                                                             {data.name}
                                                         </Link>
+                                                        {data.subject ? (
+                                                            <div className="truncate text-sm text-white/50">
+                                                                Subject: {data.subject}
+                                                            </div>
+                                                        ) : null}
                                                     </div>
 
                                                     <div className="flex flex-wrap gap-2">
                                                         <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-white/70">
-                                                            {data.language}
+                                                            {data.service === "email"
+                                                                ? "Email"
+                                                                : data.language}
                                                         </span>
                                                         {data.template_uid ? (
                                                             <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 font-mono text-xs text-white/55">
@@ -731,10 +763,12 @@ function Templates(props) {
                                               "No templates match the current filters."
                                           ] ??
                                           "No templates match the current filters."
-                                        : props.translator[
-                                              "Sync templates or choose another account to continue."
-                                          ] ??
-                                          "Sync templates or choose another account to continue."}
+                                        : isEmailAccount
+                                          ? "Create an email template to get started."
+                                          : props.translator[
+                                                "Sync templates or choose another account to continue."
+                                            ] ??
+                                            "Sync templates or choose another account to continue."}
                                 </p>
                             </div>
                         ) : null}
@@ -778,13 +812,11 @@ function Templates(props) {
                                             as="h3"
                                             className="text-3xl font-semibold leading-6 text-white"
                                         >
-                                            {props.translator["Add template"] ?? "Add template"}
+                                            {createTemplateTitle}
                                         </Dialog.Title>
                                         <div className="mt-2">
                                             <p className="pb-4 pt-3 text-sm leading-7 text-white/60">
-                                                {props.translator[
-                                                    "Create a new WhatsApp template. Each template must have a unique name consisting of lowercase alphanumeric characters.Spaces must be replaced with underscores (_). Only WhatsApp templates within the pre-defined categories can be accepted."
-                                                ]}
+                                                {createTemplateDescription}
                                             </p>
 
                                             <form id="new_template">
@@ -814,67 +846,93 @@ function Templates(props) {
                                                         <InputError message={errors.template_name} />
                                                     </div>
 
-                                                    <div className="form-group col-span-6 sm:col-span-4">
-                                                        <label
-                                                            htmlFor="category"
-                                                            className="block text-sm font-medium text-white/80"
-                                                        >
-                                                            {props.translator["Category"] ?? "Category"}{" "}
-                                                            <span className="text-red-500">*</span>
-                                                        </label>
-                                                        <div className="mt-1">
-                                                            <select
-                                                                id="category"
-                                                                name="category"
-                                                                value={data.category}
-                                                                data-pristine-required
-                                                                onChange={handleCreateTemplateChange}
-                                                                className="block w-full rounded-xl border border-white/10 bg-[#171717] px-4 py-3 text-sm text-white focus:border-fuchsia-500/60 focus:outline-none focus:ring-fuchsia-500/20"
+                                                    {isEmailAccount ? (
+                                                        <div className="form-group col-span-6 sm:col-span-4">
+                                                            <label
+                                                                htmlFor="subject"
+                                                                className="block text-sm font-medium text-white/80"
                                                             >
-                                                                <option value="">
-                                                                    Select
-                                                                </option>
-                                                                {templateCategories.map((category) => (
-                                                                    <option
-                                                                        key={category}
-                                                                        value={category}
+                                                                Subject{" "}
+                                                                <span className="text-red-500">*</span>
+                                                            </label>
+                                                            <div className="mt-1 flex rounded-md shadow-sm">
+                                                                <Input
+                                                                    name="subject"
+                                                                    required={true}
+                                                                    id="subject"
+                                                                    value={data.subject}
+                                                                    placeholder="Email subject"
+                                                                    handleChange={handleCreateTemplateChange}
+                                                                    className="border-0 bg-[#171717] px-4 py-3 text-white placeholder:text-white/35 focus:border-fuchsia-500/60 focus:ring-fuchsia-500/20"
+                                                                />
+                                                            </div>
+                                                            <InputError message={errors.subject} />
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <div className="form-group col-span-6 sm:col-span-4">
+                                                                <label
+                                                                    htmlFor="category"
+                                                                    className="block text-sm font-medium text-white/80"
+                                                                >
+                                                                    {props.translator["Category"] ?? "Category"}{" "}
+                                                                    <span className="text-red-500">*</span>
+                                                                </label>
+                                                                <div className="mt-1">
+                                                                    <select
+                                                                        id="category"
+                                                                        name="category"
+                                                                        value={data.category}
+                                                                        data-pristine-required
+                                                                        onChange={handleCreateTemplateChange}
+                                                                        className="block w-full rounded-xl border border-white/10 bg-[#171717] px-4 py-3 text-sm text-white focus:border-fuchsia-500/60 focus:outline-none focus:ring-fuchsia-500/20"
                                                                     >
-                                                                        {category}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                        <InputError message={errors.category} />
-                                                    </div>
+                                                                        <option value="">
+                                                                            Select
+                                                                        </option>
+                                                                        {templateCategories.map((category) => (
+                                                                            <option
+                                                                                key={category}
+                                                                                value={category}
+                                                                            >
+                                                                                {category}
+                                                                            </option>
+                                                                        ))}
+                                                                    </select>
+                                                                </div>
+                                                                <InputError message={errors.category} />
+                                                            </div>
 
-                                                    <div className="form-group col-span-6 sm:col-span-4">
-                                                        <label
-                                                            htmlFor="languages"
-                                                            className="block text-sm font-medium text-white/80"
-                                                        >
-                                                            {props.translator["Languages"] ?? "Languages"}{" "}
-                                                            <span className="text-red-500">*</span>
-                                                        </label>
-                                                        <div className="mt-1">
-                                                            <Select
-                                                                options={languages}
-                                                                isMulti
-                                                                getOptionLabel={(option) => option.name}
-                                                                getOptionValue={(option) => option.code}
-                                                                id="languages"
-                                                                name="languages"
-                                                                value={languages.filter((language) =>
-                                                                    data.languages?.includes(language.code),
-                                                                )}
-                                                                onChange={handleCreateTemplateLanguageChange}
-                                                                placeholder="Select..."
-                                                                className="text-sm"
-                                                                classNamePrefix="react-select"
-                                                                styles={createTemplateLanguageSelectStyles}
-                                                            />
-                                                        </div>
-                                                        <InputError message={errors.languages} />
-                                                    </div>
+                                                            <div className="form-group col-span-6 sm:col-span-4">
+                                                                <label
+                                                                    htmlFor="languages"
+                                                                    className="block text-sm font-medium text-white/80"
+                                                                >
+                                                                    {props.translator["Languages"] ?? "Languages"}{" "}
+                                                                    <span className="text-red-500">*</span>
+                                                                </label>
+                                                                <div className="mt-1">
+                                                                    <Select
+                                                                        options={languages}
+                                                                        isMulti
+                                                                        getOptionLabel={(option) => option.name}
+                                                                        getOptionValue={(option) => option.code}
+                                                                        id="languages"
+                                                                        name="languages"
+                                                                        value={languages.filter((language) =>
+                                                                            data.languages?.includes(language.code),
+                                                                        )}
+                                                                        onChange={handleCreateTemplateLanguageChange}
+                                                                        placeholder="Select..."
+                                                                        className="text-sm"
+                                                                        classNamePrefix="react-select"
+                                                                        styles={createTemplateLanguageSelectStyles}
+                                                                    />
+                                                                </div>
+                                                                <InputError message={errors.languages} />
+                                                            </div>
+                                                        </>
+                                                    )}
                                                 </div>
                                             </form>
                                         </div>

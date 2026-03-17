@@ -1155,7 +1155,14 @@ class MsgController extends Controller
      * Uses Laravel's dynamic mailer transport so each Email account can
      * have its own SMTP credentials without touching config/mail.php.
      */
-    public function sendEmailMessage(string $content, string $destination, $account, string $subject = ''): array
+    public function sendEmailMessage(
+        string $content,
+        string $destination,
+        $account,
+        string $subject = '',
+        ?string $textBody = null,
+        bool $isHtml = false
+    ): array
     {
         $messageId = 'email_' . uniqid('', true);
 
@@ -1180,7 +1187,14 @@ class MsgController extends Controller
 
             \Mail::mailer($mailerKey)
                 ->to($destination)
-                ->send(new \App\Mail\EmailChannelMessage($subject, $content, $fromAddress, $fromName));
+                ->send(new \App\Mail\EmailChannelMessage(
+                    $subject,
+                    $content,
+                    $fromAddress,
+                    $fromName,
+                    $textBody,
+                    $isHtml,
+                ));
 
             return [
                 'result'    => ['status' => 'submitted', 'messageId' => $messageId, 'msg_type' => 'Text'],

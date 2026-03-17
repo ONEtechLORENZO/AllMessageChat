@@ -13,6 +13,7 @@ class Template extends Model
 
     protected $casts = [
         'languages' => 'array',
+        'sample_data' => 'array',
     ];
 
     /**
