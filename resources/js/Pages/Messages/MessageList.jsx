@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import ReactAudioPlayer from 'react-audio-player';
 import {
     WhatsAppIcon,
@@ -16,14 +16,69 @@ import { BsFacebook } from "react-icons/bs";
 import { PopoverHeader, PopoverBody, UncontrolledPopover } from "reactstrap";
 
 export default function MessageList(props) {
+    const messageContainerRef = useRef(null);
+    const shouldStickToBottomRef = useRef(true);
+    const pendingInitialScrollRef = useRef(true);
+    const messageEntries = Object.entries(props.messages ?? {});
+    const lastMessageKey = messageEntries.length
+        ? messageEntries[messageEntries.length - 1][0]
+        : null;
+
+    const scrollToBottom = () => {
+        if (!messageContainerRef.current) {
+            return;
+        }
+
+        messageContainerRef.current.scrollTop =
+            messageContainerRef.current.scrollHeight;
+    };
+
+    useEffect(() => {
+        pendingInitialScrollRef.current = true;
+        shouldStickToBottomRef.current = true;
+    }, [props.selectedContact]);
+
+    useEffect(() => {
+        if (!messageEntries.length) {
+            return undefined;
+        }
+
+        if (
+            !pendingInitialScrollRef.current &&
+            !shouldStickToBottomRef.current
+        ) {
+            return undefined;
+        }
+
+        const frame = window.requestAnimationFrame(() => {
+            scrollToBottom();
+            pendingInitialScrollRef.current = false;
+        });
+
+        return () => window.cancelAnimationFrame(frame);
+    }, [lastMessageKey, messageEntries.length, props.selectedContact]);
+
+    function handleScroll() {
+        if (!messageContainerRef.current) {
+            return;
+        }
+
+        const { scrollTop, clientHeight, scrollHeight } =
+            messageContainerRef.current;
+
+        shouldStickToBottomRef.current =
+            scrollTop + clientHeight >= scrollHeight - 24;
+    }
 
     return (
         <>
             <div
                 id="messages"
+                ref={messageContainerRef}
+                onScroll={handleScroll}
                 className="chat-pattern-bg flex-col flex-1 justify-end space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch bg-[#0b0b10] rounded-2xl"
             >
-                {Object.entries(props.messages).map(([key, message], j) => {
+                {messageEntries.map(([key, message], j) => {
                     var content = message.content;
                     var mediaClass = "object-contain h-48 w-96";
                     switch (message.type) {

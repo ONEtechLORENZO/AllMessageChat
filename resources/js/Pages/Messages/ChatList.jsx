@@ -952,6 +952,7 @@ function ChatList(props) {
                                     </div>
                                     <MessageList
                                         messages={messages}
+                                        selectedContact={selectedContact}
                                         containerCategory={containerCategory}
                                         loadedStory={loadedStory}
                                         setLoadedStory={setLoadedStory}
