@@ -1051,10 +1051,14 @@ class UserController extends Controller
             $error = $_GET['error'];
         }
         $company = Company::first();
+        $accounts = Account::select('company_name', 'service', 'accounts.id', 'accounts.status', 'fb_page_name')->get();
+        $menuBar = $this->fetchMenuBar();
         return Inertia::render('Account/Registration/Form', [
             'service' => $service,
             'error' => $error,
             'company' => $company,
+            'accounts' => $accounts,
+            'menuBar' => $menuBar,
             'translator' => Controller::getTranslations(),
         ]);
     }
@@ -1864,6 +1868,8 @@ class UserController extends Controller
             $paymentMethods = $this->getPaymentMethods($request, 'direct');
 
             try {
+                $this->ensureStripeCustomerForUser($user);
+                $user->refresh();
                 $defaultPaymentMethodObject = $user->defaultPaymentMethod();
                 $defaultPaymentMethod = $defaultPaymentMethodObject ? $defaultPaymentMethodObject->id : '';
             } catch (\Throwable $e) {
@@ -2317,9 +2323,7 @@ class UserController extends Controller
     public function storePaymentMethod(Request $request)
     {
         $user = $request->user();
-        // Get company
-        $companyId = Cache::get('selected_company_' . $user->id);
-        $company = Company::find($companyId);
+        $company = $this->ensureStripeCustomerForUser($user);
 
         $stripe = new \Stripe\StripeClient(config('stripe.stripe_secret'));
 
@@ -2330,6 +2334,88 @@ class UserController extends Controller
         );
 
         echo json_encode(['status' => true]);
+    }
+
+    protected function getBillingCompanyForUser(User $user): ?Company
+    {
+        $companyId = Cache::get('selected_company_' . $user->id);
+        if ($companyId) {
+            $company = Company::find($companyId);
+            if ($company) {
+                return $company;
+            }
+        }
+
+        $company = $user->company()->first();
+        if ($company) {
+            return $company;
+        }
+
+        return Company::first();
+    }
+
+    protected function ensureStripeCustomerForUser(User $user): Company
+    {
+        $company = $this->getBillingCompanyForUser($user);
+
+        if (!$company) {
+            throw new \RuntimeException('No billing company is available for this account.');
+        }
+
+        $secret = config('stripe.stripe_secret');
+        if (!$secret) {
+            throw new \RuntimeException('Stripe secret key is not configured.');
+        }
+
+        $stripe = new \Stripe\StripeClient($secret);
+        $customerId = $company->stripe_id ?: $user->stripe_id;
+        $customer = null;
+
+        if ($customerId) {
+            try {
+                $customer = $stripe->customers->retrieve($customerId, []);
+                if (!empty($customer->deleted)) {
+                    $customer = null;
+                }
+            } catch (\Throwable $e) {
+                if (!str_contains($e->getMessage(), 'No such customer')) {
+                    throw $e;
+                }
+            }
+        }
+
+        if (!$customer) {
+            $payload = [
+                'metadata' => [
+                    'domain' => url('/'),
+                    'company_id' => (string) $company->id,
+                    'user_id' => (string) $user->id,
+                ],
+            ];
+
+            if ($company->name ?: $user->name) {
+                $payload['name'] = $company->name ?: $user->name;
+                $payload['description'] = $company->name ?: $user->name;
+            }
+
+            if ($company->email ?: $user->email) {
+                $payload['email'] = $company->email ?: $user->email;
+            }
+
+            $customer = $stripe->customers->create($payload);
+        }
+
+        if ($company->stripe_id !== $customer->id) {
+            $company->stripe_id = $customer->id;
+            $company->save();
+        }
+
+        if ($user->stripe_id !== $customer->id) {
+            $user->stripe_id = $customer->id;
+            $user->save();
+        }
+
+        return $company->fresh();
     }
 
     public function UserRelatedCompany($user_id)
@@ -2373,6 +2459,8 @@ class UserController extends Controller
     {
         $user = $request->user();
         try {
+            $this->ensureStripeCustomerForUser($user);
+            $user->refresh();
             $intent = $user->createSetupIntent();
         } catch (\Throwable $e) {
             Log::warning('Stripe setup intent unavailable.', [
@@ -2399,6 +2487,8 @@ class UserController extends Controller
         $paymentMethods = [];
 
         try {
+            $this->ensureStripeCustomerForUser($user);
+            $user->refresh();
             $paymentMethods = $user->paymentMethods();
         } catch (\Throwable $e) {
             Log::warning('Unable to load Stripe payment methods.', [
