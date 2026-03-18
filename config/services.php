@@ -30,4 +30,14 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+        'assistant_id' => env('OPENAI_ASSISTANT_ID'),
+        'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
+        'analysis_model' => env('OPENAI_ANALYSIS_MODEL', env('OPENAI_MODEL', 'gpt-4o-mini')),
+        'analysis_timeout' => env('OPENAI_ANALYSIS_TIMEOUT', env('OPENAI_TIMEOUT', 30)),
+        'timeout' => env('OPENAI_TIMEOUT', 30),
+        'ca_bundle' => env('OPENAI_CA_BUNDLE'),
+    ],
+
 ];

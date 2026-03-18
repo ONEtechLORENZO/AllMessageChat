@@ -5,6 +5,11 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
+if (PHP_SAPI === 'cli-server' || PHP_SAPI === 'cli') {
+    ini_set('memory_limit', getenv('PHP_MEMORY_LIMIT') ?: '512M');
+    ini_set('max_execution_time', getenv('PHP_MAX_EXECUTION_TIME') ?: '120');
+}
+
 /*
 |--------------------------------------------------------------------------
 | Check If The Application Is Under Maintenance
