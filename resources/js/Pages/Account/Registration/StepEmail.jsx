@@ -1,21 +1,29 @@
-import { useState } from "react";
-import { Link } from "@inertiajs/react";
+import { useMemo, useState } from "react";
 import axios from "axios";
 import nProgress from "nprogress";
 import notie from "notie";
-
-const encryptionOptions = {
-    tls: "TLS (recommended)",
-    ssl: "SSL",
-    none: "None",
-};
+import {
+    CUSTOM_SMTP_PROVIDER,
+    SMTP_ENCRYPTION_OPTIONS,
+    SMTP_PROVIDER_OPTIONS,
+    getInitialEmailProvider,
+} from "./emailProviderPresets";
 
 export default function StepEmail({ data, formHandler, setCurrentPage, setAccountid, translator }) {
     const [saving, setSaving] = useState(false);
+    const selectedProvider = useMemo(
+        () => getInitialEmailProvider(data),
+        [data],
+    );
+    const isCustomSmtp = selectedProvider === CUSTOM_SMTP_PROVIDER;
 
     function validate() {
         if (!data.company_name) {
             notie.alert({ type: "warning", text: "Account name is required", time: 4 });
+            return false;
+        }
+        if (!selectedProvider) {
+            notie.alert({ type: "warning", text: "Provider is required", time: 4 });
             return false;
         }
         if (!data.email) {
@@ -25,6 +33,14 @@ export default function StepEmail({ data, formHandler, setCurrentPage, setAccoun
         // Basic e-mail format check
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
             notie.alert({ type: "warning", text: "Please enter a valid email address", time: 4 });
+            return false;
+        }
+        if (!data.service_token) {
+            notie.alert({ type: "warning", text: "SMTP password or API key is required", time: 4 });
+            return false;
+        }
+        if (isCustomSmtp && (!data.smtp_host || !data.smtp_port || !data.smtp_encryption)) {
+            notie.alert({ type: "warning", text: "Custom SMTP requires host, port, and encryption", time: 4 });
             return false;
         }
         return true;
@@ -42,6 +58,7 @@ export default function StepEmail({ data, formHandler, setCurrentPage, setAccoun
             company_name:     data.company_name  || "",
             display_name:     data.display_name  || "",
             email:            data.email         || "",
+            smtp_provider:    selectedProvider   || "",
             smtp_host:        data.smtp_host      || "",
             smtp_port:        data.smtp_port      || "587",
             smtp_encryption:  data.smtp_encryption || "tls",
@@ -115,8 +132,29 @@ export default function StepEmail({ data, formHandler, setCurrentPage, setAccoun
                 SMTP Configuration
             </p>
 
+            <Field label="Provider" required>
+                <select
+                    name="smtp_provider"
+                    value={selectedProvider}
+                    onChange={formHandler}
+                    className={inputCls}
+                >
+                    <option value="" className="bg-[#0F0B1A]">
+                        Select provider
+                    </option>
+                    {Object.entries(SMTP_PROVIDER_OPTIONS).map(([value, label]) => (
+                        <option key={value} value={value} className="bg-[#0F0B1A]">
+                            {label}
+                        </option>
+                    ))}
+                </select>
+                <p className="mt-2 text-xs text-[#878787]">
+                    Preset providers auto-fill SMTP host, port, and encryption. Choose Custom SMTP for manual setup.
+                </p>
+            </Field>
+
             {/* SMTP Host */}
-            <Field label="SMTP Host">
+            <Field label="SMTP Host" required={isCustomSmtp}>
                 <input
                     name="smtp_host"
                     value={data.smtp_host || ""}
@@ -128,7 +166,7 @@ export default function StepEmail({ data, formHandler, setCurrentPage, setAccoun
 
             {/* SMTP Port + Encryption (inline) */}
             <div className="grid grid-cols-2 gap-4">
-                <Field label="SMTP Port">
+                <Field label="SMTP Port" required={isCustomSmtp}>
                     <input
                         name="smtp_port"
                         value={data.smtp_port || "587"}
@@ -137,14 +175,14 @@ export default function StepEmail({ data, formHandler, setCurrentPage, setAccoun
                         className={inputCls}
                     />
                 </Field>
-                <Field label="Encryption">
+                <Field label="Encryption" required={isCustomSmtp}>
                     <select
                         name="smtp_encryption"
                         value={data.smtp_encryption || "tls"}
                         onChange={formHandler}
                         className={inputCls}
                     >
-                        {Object.entries(encryptionOptions).map(([val, label]) => (
+                        {Object.entries(SMTP_ENCRYPTION_OPTIONS).map(([val, label]) => (
                             <option key={val} value={val} className="bg-[#0F0B1A]">
                                 {label}
                             </option>
@@ -154,7 +192,7 @@ export default function StepEmail({ data, formHandler, setCurrentPage, setAccoun
             </div>
 
             {/* SMTP Password / API Key */}
-            <Field label="SMTP Password / API Key">
+            <Field label="SMTP Password / API Key" required>
                 <input
                     type="password"
                     name="service_token"

@@ -43,6 +43,34 @@ class UserController extends Controller
 {
     public $per_page = 15;
 
+    private const EMAIL_PROVIDER_PRESETS = [
+        'gmail' => [
+            'host' => 'smtp.gmail.com',
+            'port' => '587',
+            'encryption' => 'tls',
+        ],
+        'google_workspace' => [
+            'host' => 'smtp.gmail.com',
+            'port' => '587',
+            'encryption' => 'tls',
+        ],
+        'microsoft_365_outlook' => [
+            'host' => 'smtp.office365.com',
+            'port' => '587',
+            'encryption' => 'tls',
+        ],
+        'sendgrid' => [
+            'host' => 'smtp.sendgrid.net',
+            'port' => '587',
+            'encryption' => 'tls',
+        ],
+        'mailgun' => [
+            'host' => 'smtp.mailgun.org',
+            'port' => '587',
+            'encryption' => 'tls',
+        ],
+    ];
+
     public $webhook_events = [
         'received' => ['label' => 'Received', 'help_text' => 'Return sent messasge received response to callback url'],
         'enqueued' => ['label' => 'Enqueued', 'help_text' => 'Return sent messasge enqueue response to callback url'],
@@ -927,6 +955,15 @@ class UserController extends Controller
     {
         $company = Company::first();
         $account = Account::findOrFail($id);
+        $accountData = $account->toArray();
+
+        if ($account->service === 'email') {
+            $accountData['smtp_provider'] = $this->inferEmailProvider(
+                $account->smtp_host,
+                $account->smtp_port,
+                $account->smtp_encryption,
+            );
+        }
         $pages = [];
 
         $instaAccounts = [];
@@ -954,7 +991,7 @@ class UserController extends Controller
 
         $webhook = WebhookEvent::where('account_id', $account->id)->first();
         return Inertia::render('Account/Registration', [
-            'account' => $account,
+            'account' => $accountData,
             'webhook_events' => $this->webhook_events,
             'events' => $webhook,
             'pages' => $pages,
@@ -1083,8 +1120,34 @@ class UserController extends Controller
         }
 
         if ($service == 'email') {
+            $request->merge([
+                'smtp_provider' => $this->normalizeEmailProvider(
+                    $request->input('smtp_provider')
+                ),
+            ]);
+
+            $preset = $this->resolveEmailProviderPreset($request->input('smtp_provider'));
+            if ($preset) {
+                $request->merge([
+                    'smtp_host' => $request->filled('smtp_host')
+                        ? $request->input('smtp_host')
+                        : $preset['host'],
+                    'smtp_port' => $request->filled('smtp_port')
+                        ? $request->input('smtp_port')
+                        : $preset['port'],
+                    'smtp_encryption' => $request->filled('smtp_encryption')
+                        ? $request->input('smtp_encryption')
+                        : $preset['encryption'],
+                ]);
+            }
+
             $request->validate([
                 'email' => 'required|email',
+                'service_token' => 'required',
+                'smtp_provider' => ['required', Rule::in(array_merge(array_keys(self::EMAIL_PROVIDER_PRESETS), ['custom']))],
+                'smtp_host' => 'required|string|max:255',
+                'smtp_port' => 'required|string|max:10',
+                'smtp_encryption' => ['required', Rule::in(['tls', 'ssl', 'none'])],
             ]);
         }
 
@@ -1166,6 +1229,70 @@ class UserController extends Controller
             $supportRequest->save();
             return response()->json(['status' => true, 'account_id' => $account->id]);
         }
+    }
+
+    private function normalizeEmailProvider(?string $provider): ?string
+    {
+        if (! $provider) {
+            return null;
+        }
+
+        $provider = strtolower(trim($provider));
+
+        return match ($provider) {
+            'gmail',
+            'google_workspace',
+            'microsoft_365_outlook',
+            'sendgrid',
+            'mailgun',
+            'custom' => $provider,
+            default => null,
+        };
+    }
+
+    private function normalizeEmailEncryption(?string $encryption): ?string
+    {
+        if (! $encryption) {
+            return null;
+        }
+
+        $encryption = strtolower(trim($encryption));
+
+        return in_array($encryption, ['tls', 'ssl', 'none'], true)
+            ? $encryption
+            : null;
+    }
+
+    private function resolveEmailProviderPreset(?string $provider): ?array
+    {
+        $provider = $this->normalizeEmailProvider($provider);
+
+        return $provider && isset(self::EMAIL_PROVIDER_PRESETS[$provider])
+            ? self::EMAIL_PROVIDER_PRESETS[$provider]
+            : null;
+    }
+
+    private function inferEmailProvider($host, $port, $encryption): ?string
+    {
+        $host = strtolower(trim((string) $host));
+        $port = trim((string) $port);
+        $encryption = $this->normalizeEmailEncryption($encryption);
+
+        if (! $host && ! $port && ! $encryption) {
+            return null;
+        }
+
+        foreach (self::EMAIL_PROVIDER_PRESETS as $provider => $preset) {
+            if (
+                $host === strtolower($preset['host']) &&
+                $port === (string) $preset['port'] &&
+                $encryption === $preset['encryption']
+            ) {
+                return $provider;
+            }
+        }
+
+        return 'custom';
     }
 
     /**

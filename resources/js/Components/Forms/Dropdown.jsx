@@ -31,6 +31,7 @@ export default function Dropdown({
             value={value}
             className={`${base} ${className}`}
             required={required}
+            data-pristine-required={required}
             ref={input}
             onChange={handleChange}
             disabled={readOnly}

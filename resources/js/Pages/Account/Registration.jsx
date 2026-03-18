@@ -7,6 +7,13 @@ import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import Dropdown from "@/Components/Forms/Dropdown";
 import InputError from "@/Components/Forms/InputError";
 import { defaultPristineConfig } from "@/Pages/Constants";
+import {
+    CUSTOM_SMTP_PROVIDER,
+    SMTP_ENCRYPTION_OPTIONS,
+    SMTP_PROVIDER_OPTIONS,
+    getInitialEmailProvider,
+    withEmailProviderDefaults,
+} from "./Registration/emailProviderPresets";
 
 function Registration(props) {
     const { data, setData, post, processing, errors, register, reset } =
@@ -29,9 +36,11 @@ function Registration(props) {
             api_partner: false,
             terms_condition: false,
             oba: false,
+            smtp_provider: "",
             smtp_host: "",
             smtp_port: "",
             smtp_encryption: "",
+            service_token: "",
             api_token: "",
             callback_url: "",
             enqueued: false,
@@ -82,6 +91,14 @@ function Registration(props) {
         let newData = Object.assign({}, data);
         if (typeof props.account !== "undefined") {
             newData = Object.assign({}, props.account);
+        }
+
+        if (newData.service === "email") {
+            newData = withEmailProviderDefaults(
+                newData,
+                getInitialEmailProvider(newData),
+                { preserveExisting: true },
+            );
         }
 
         if (props.events) {
@@ -142,6 +159,9 @@ function Registration(props) {
             newState[name] = event.target.files[0];
         } else {
             newState[name] = value;
+        }
+        if (name === "smtp_provider") {
+            newState = withEmailProviderDefaults(newState, value);
         }
         if (name == "fb_phone_number_id") {
             newState["fb_page_name"] = props.pages[value];
@@ -724,7 +744,36 @@ function Registration(props) {
                                         </p>
                                     </div>
                                     <div className="mt-5 md:mt-0 md:col-span-2">
+                                        {(() => {
+                                            const selectedEmailProvider =
+                                                getInitialEmailProvider(data);
+                                            const isCustomSmtp =
+                                                selectedEmailProvider ===
+                                                CUSTOM_SMTP_PROVIDER;
+
+                                            return (
                                         <div className="grid grid-cols-6 gap-6">
+                                            <div className="form-group col-span-6">
+                                                <label htmlFor="smtp_provider" className="block text-sm font-medium text-[#878787]">
+                                                    Provider
+                                                    <span className="text-sm text-red-700 mx-1"> * </span>
+                                                </label>
+                                                <div className="mt-1">
+                                                    <Dropdown
+                                                        required={true}
+                                                        id="smtp_provider"
+                                                        name="smtp_provider"
+                                                        handleChange={handleChange}
+                                                        options={SMTP_PROVIDER_OPTIONS}
+                                                        value={selectedEmailProvider}
+                                                        emptyOption="Select provider"
+                                                    />
+                                                </div>
+                                                <p className="mt-2 text-xs text-[#878787]">
+                                                    Preset providers auto-fill SMTP host, port, and encryption. Choose Custom SMTP for manual setup.
+                                                </p>
+                                                <InputError message={errors.smtp_provider} />
+                                            </div>
                                             <div className="form-group col-span-6 sm:col-span-4">
                                                 <label htmlFor="display_name" className="block text-sm font-medium text-[#878787]">
                                                     Sender Name
@@ -763,9 +812,11 @@ function Registration(props) {
                                             <div className="form-group col-span-6 sm:col-span-4">
                                                 <label htmlFor="smtp_host" className="block text-sm font-medium text-[#878787]">
                                                     SMTP Host
+                                                    {isCustomSmtp ? <span className="text-sm text-red-700 mx-1"> * </span> : null}
                                                 </label>
                                                 <div className="mt-1 flex rounded-md shadow-sm">
                                                     <Input
+                                                        required={isCustomSmtp}
                                                         name="smtp_host"
                                                         value={data.smtp_host}
                                                         id="smtp_host"
@@ -779,9 +830,11 @@ function Registration(props) {
                                             <div className="form-group col-span-3 sm:col-span-2">
                                                 <label htmlFor="smtp_port" className="block text-sm font-medium text-[#878787]">
                                                     SMTP Port
+                                                    {isCustomSmtp ? <span className="text-sm text-red-700 mx-1"> * </span> : null}
                                                 </label>
                                                 <div className="mt-1 flex rounded-md shadow-sm">
                                                     <Input
+                                                        required={isCustomSmtp}
                                                         name="smtp_port"
                                                         value={data.smtp_port}
                                                         id="smtp_port"
@@ -795,13 +848,15 @@ function Registration(props) {
                                             <div className="form-group col-span-3 sm:col-span-2">
                                                 <label htmlFor="smtp_encryption" className="block text-sm font-medium text-[#878787]">
                                                     Encryption
+                                                    {isCustomSmtp ? <span className="text-sm text-red-700 mx-1"> * </span> : null}
                                                 </label>
                                                 <div className="mt-1">
                                                     <Dropdown
+                                                        required={isCustomSmtp}
                                                         id="smtp_encryption"
                                                         name="smtp_encryption"
                                                         handleChange={handleChange}
-                                                        options={{ tls: "TLS (recommended)", ssl: "SSL", none: "None" }}
+                                                        options={SMTP_ENCRYPTION_OPTIONS}
                                                         value={data.smtp_encryption || "tls"}
                                                     />
                                                 </div>
@@ -810,9 +865,11 @@ function Registration(props) {
                                             <div className="form-group col-span-6 sm:col-span-4">
                                                 <label htmlFor="service_token" className="block text-sm font-medium text-[#878787]">
                                                     SMTP Password / API Key
+                                                    <span className="text-sm text-red-700 mx-1"> * </span>
                                                 </label>
                                                 <div className="mt-1 flex rounded-md shadow-sm">
                                                     <Input
+                                                        required={true}
                                                         type="password"
                                                         name="service_token"
                                                         value={data.service_token}
@@ -825,6 +882,8 @@ function Registration(props) {
                                                 <InputError message={errors.service_token} />
                                             </div>
                                         </div>
+                                            );
+                                        })()}
                                     </div>
                                 </div>
                             </div>
