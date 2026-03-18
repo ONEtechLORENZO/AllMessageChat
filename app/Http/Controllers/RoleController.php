@@ -63,8 +63,9 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
+        $roleId = $request->id;
         $request->validate([
-            'name' => 'required|max:255',                
+            'name' => 'required|max:255|unique:roles,name,' . $roleId,
         ]);
         $current_user = $request->user();      
         if ($request->id) {
@@ -79,26 +80,23 @@ class RoleController extends Controller
         $role->description = $request->description;
         $role->save();
 
-        if($request->role_permission){
-            // Apply perission on role 
-            foreach($request->role_permission as $module => $actions){
-                foreach($actions as $action){
-                    $permissionName = "{$action} {$module}";                    
-                    $permissions[] = "{$action} {$module}";           
-                    // $role->givePermissionTo($permissionName);
-
-                    // $permission = Permission::create(['name' => $permissionName]);
-                    // $role->syncPermissions($permission);
-                    // $permission->assignRole($role);
+        $permissions = [];
+        if ($request->role_permission) {
+            // Apply permission on role.
+            foreach ($request->role_permission as $module => $actions) {
+                foreach ((array) $actions as $action) {
+                    $permissionName = "{$action} {$module}";
+                    Permission::firstOrCreate([
+                        'name' => $permissionName,
+                        'guard_name' => 'web',
+                    ]);
+                    $permissions[] = $permissionName;
                 }
             }
-            $role->syncPermissions($permissions);
-
-            // Update user role permission
-          //$current_user->assignRole($role);
-
         }
-        //dd($request->modulePermissions);
+
+        $role->syncPermissions($permissions);
+
         return Redirect::route('detailRole', $role->id);
     }
 

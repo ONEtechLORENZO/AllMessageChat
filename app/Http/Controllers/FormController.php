@@ -453,6 +453,31 @@ class FormController extends Controller
         //GET module fields
         $fields = Field::where('module_name', $module)->orderBy('sequence', 'asc')->groupBy('field_name')->get();
 
+        // Role creation/editing must remain usable even when dynamic field
+        // metadata has not been seeded into the fields table.
+        if ($module == 'Role' && $fields->isEmpty()) {
+            $fields = collect([
+                new Field([
+                    'field_name' => 'name',
+                    'field_label' => 'Role name',
+                    'field_type' => 'text',
+                    'field_group' => 0,
+                    'is_custom' => 0,
+                    'is_mandatory' => 1,
+                    'readonly_on_edit' => 'false',
+                ]),
+                new Field([
+                    'field_name' => 'description',
+                    'field_label' => 'Description',
+                    'field_type' => 'textarea',
+                    'field_group' => 0,
+                    'is_custom' => 0,
+                    'is_mandatory' => 0,
+                    'readonly_on_edit' => 'false',
+                ]),
+            ]);
+        }
+
         //only Global admin can change the status of a Support Request
         if($module == 'SupportRequest' && ($user->role != 'global_admin'))
         {

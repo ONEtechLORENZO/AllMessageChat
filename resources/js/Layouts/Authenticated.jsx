@@ -87,6 +87,10 @@ const navigation = [
                 name: "Campaigns",
                 href: route("listCampaign"),
             },
+            {
+                name: "Contacts",
+                href: route("listContact"),
+            },
         ],
     },
     {
@@ -337,7 +341,9 @@ function NavItem({
                 <Icon
                     className={[
                         "h-5 w-5 transition-colors duration-200",
-                        active ? "text-white" : "text-white/70 group-hover:text-white",
+                        active
+                            ? "text-white"
+                            : "text-white/70 group-hover:text-white",
                     ].join(" ")}
                 />
             </div>
@@ -379,9 +385,7 @@ export default function Authenticated({
     fullHeight = false,
 }) {
     const { props: pageProps } = usePage();
-    const [locale, setLocaleState] = useState(
-        pageProps?.locale ?? getLocale(),
-    );
+    const [locale, setLocaleState] = useState(pageProps?.locale ?? getLocale());
     const translator = useMemo(
         () => createTranslator(pageProps?.translator ?? {}, locale),
         [pageProps?.translator, locale],
@@ -412,7 +416,7 @@ export default function Authenticated({
         pageProps?.plural ??
         null;
     const translatedPageTitle = resolvedPageTitle
-        ? translator[resolvedPageTitle] ?? resolvedPageTitle
+        ? (translator[resolvedPageTitle] ?? resolvedPageTitle)
         : null;
     const showPageTitle = hidePageTitle !== true && !!translatedPageTitle;
 
@@ -623,7 +627,12 @@ export default function Authenticated({
                 const existingSubmenu =
                     resolvedNavigationMenuBar[item.name].submenu ?? {};
                 item.subMenu.forEach((sub) => {
-                    if (!Object.prototype.hasOwnProperty.call(existingSubmenu, sub.name)) {
+                    if (
+                        !Object.prototype.hasOwnProperty.call(
+                            existingSubmenu,
+                            sub.name,
+                        )
+                    ) {
                         existingSubmenu[sub.name] = true;
                     }
                 });
@@ -766,7 +775,10 @@ export default function Authenticated({
                     />
                     <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[420px] w-[900px] rounded-full bg-white/5 blur-[120px] opacity-40" />
                 </div>
-                <div className="purple-giant-arc platform-purple-arc" aria-hidden="true" />
+                <div
+                    className="purple-giant-arc platform-purple-arc"
+                    aria-hidden="true"
+                />
                 <Transition.Root show={sidebarOpen} as={Fragment}>
                     <Dialog
                         as="div"
