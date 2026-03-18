@@ -32,6 +32,7 @@ use App\Models\Wallet;
 use App\Services\InputAnalysisService;
 use App\Services\OpenAiAssistantService;
 use App\Support\Assistant\AssistantActionAuthorizer;
+use App\Support\Assistant\AssistantDataQueryService;
 use App\Support\Assistant\AssistantPersistenceMapper;
 use App\Support\Assistant\AssistantRecordResolver;
 use App\Support\Assistant\TemplateAccountResolver;
@@ -69,13 +70,13 @@ class DashboardAssistantController extends Controller
         ]);
         $effectiveCommand = $this->buildCommandFromAnalysis($command, $analysis);
         $normalized = $this->normalizeNaturalCommand($effectiveCommand);
-        $isDataQuestion = $this->isDataQuestionCommand($normalized);
+        $isInformationQuestion = $this->isInformationQuestionCommand($normalized, $page);
 
         if ($response = $this->handlePageActionCommandIntent($effectiveCommand, $normalized, $page)) {
             return $this->jsonAssistantResponse($response, $page);
         }
 
-        if ($isDataQuestion) {
+        if ($isInformationQuestion) {
             if ($response = $this->handleDashboardQuestionIntent($request, $normalized, $page)) {
                 return $this->jsonAssistantResponse($response, $page);
             }
@@ -121,7 +122,7 @@ class DashboardAssistantController extends Controller
             return $this->jsonAssistantResponse($response, $page);
         }
 
-        if (!$isDataQuestion && ($response = $this->handleDashboardQuestionIntent($request, $normalized, $page))) {
+        if (!$isInformationQuestion && ($response = $this->handleDashboardQuestionIntent($request, $normalized, $page))) {
             return $this->jsonAssistantResponse($response, $page);
         }
 
@@ -145,7 +146,7 @@ class DashboardAssistantController extends Controller
             }
         }
 
-        if ($isDataQuestion) {
+        if ($isInformationQuestion) {
             return $this->jsonAssistantResponse([
                 'message' => $this->fallbackDataQuestionMessage($normalized, $page),
                 'suggestions' => [
@@ -226,6 +227,39 @@ class DashboardAssistantController extends Controller
         }
 
         return false;
+    }
+
+    private function isInformationQuestionCommand(string $normalized, array $page): bool
+    {
+        if ($this->isDataQuestionCommand($normalized)) {
+            return true;
+        }
+
+        if (preg_match('/^(what|which|who|when|where|why|is|are|does|do|can|could|would)\b/', $normalized) === 1) {
+            return true;
+        }
+
+        if ($this->containsIntent($normalized, [
+            'this page',
+            'current page',
+            'this template',
+            'this campaign',
+            'this contact',
+            'this lead',
+            'this product',
+            'this order',
+            'this automation',
+            'this role',
+            'this api',
+            'this account',
+            'this billing',
+        ])) {
+            return true;
+        }
+
+        $currentModule = $this->inferModuleFromPage($page);
+
+        return $currentModule !== null && preg_match('/\b(this|current)\b/', $normalized) === 1;
     }
 
     private function buildAnalyzedTemplateCommand(array $analysis, string $fallback): string
@@ -926,6 +960,10 @@ class DashboardAssistantController extends Controller
 
     private function handleWorkflowGuidanceIntent(string $normalized, array $page): ?array
     {
+        if ($this->containsIntent($normalized, ['open', 'go to', 'take me to', 'show me', 'visit'])) {
+            return null;
+        }
+
         $asksHowTo = $this->containsIntent($normalized, [
             'how to',
             'how do i',
@@ -937,7 +975,7 @@ class DashboardAssistantController extends Controller
             'how does this work',
         ]);
 
-        if (!$asksHowTo && !$this->containsIntent($normalized, ['create template', 'create campaign', 'dashboard', 'page'])) {
+        if (!$asksHowTo && !$this->containsIntent($normalized, ['create template', 'create campaign', 'dashboard'])) {
             return null;
         }
 
@@ -1418,6 +1456,10 @@ class DashboardAssistantController extends Controller
 
     private function handleDashboardQuestionIntent(Request $request, string $normalized, array $page): ?array
     {
+        if ($response = $this->dataQueryService()->answer($normalized, $page, $request->user())) {
+            return $response;
+        }
+
         $user = $request->user();
         $companyId = Cache::get('selected_company_' . $user->id) ?: Company::query()->value('id');
         $pageProps = is_array($page['props'] ?? null) ? $page['props'] : [];
@@ -5087,6 +5129,11 @@ class DashboardAssistantController extends Controller
         return app(AssistantRecordResolver::class);
     }
 
+    private function dataQueryService(): AssistantDataQueryService
+    {
+        return app(AssistantDataQueryService::class);
+    }
+
     private function finalizeAssistantResponse(array $response, array $page): array
     {
         $response['assistant_state'] = $this->normalizeAssistantState(
@@ -5701,6 +5748,13 @@ class DashboardAssistantController extends Controller
 
     private function handlePageActionCommandIntent(string $command, string $normalized, array $page): ?array
     {
+        if (
+            $this->isInformationQuestionCommand($normalized, $page) &&
+            preg_match('/\b(open|go to|take me|edit|update|create|new|list|detail|details)\b/', $normalized) !== 1
+        ) {
+            return null;
+        }
+
         if (preg_match('/\bhow many\b|\bcount\b|\btotal\b|\bnumber of\b|\bwhat data\b|\bwhat information\b|\btell me\b/', $normalized) === 1) {
             return null;
         }
