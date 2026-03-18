@@ -39,10 +39,35 @@ class CampaignController extends Controller
             'status' =>  ['label' => __('Status'), 'type' => 'text'],
             'service' =>  ['label' => __('Service'), 'type' => 'text'],
             'scheduled_at' => ['label' => __('Scheduled'), 'type' => 'text'],
+            'created_at' => ['label' => __('Created'), 'type' => 'text'],
+            'conditions' => ['label' => __('Audience'), 'type' => 'text'],
         ];
 
         $module = new Campaign();
         $listViewData = $this->listView($request, $module, $list_view_columns);
+        $totalContacts = Contact::count();
+
+        $listViewData['records'] = collect($listViewData['records'] ?? [])
+            ->map(function ($record) use ($totalContacts) {
+                $record->audience_size = $totalContacts;
+                $record->audience_label = 'All contacts';
+
+                if (! empty($record->conditions)) {
+                    $searchData = json_decode($record->conditions);
+
+                    if ($searchData) {
+                        $record->audience_size = count($this->getTotalContact($searchData));
+                        $record->audience_label = $record->audience_size === 1
+                            ? '1 contact'
+                            : $record->audience_size . ' contacts';
+                    }
+                }
+
+                return $record;
+            })
+            ->values()
+            ->all();
+
         $menuBar = $this->fetchMenuBar();
 
         $moduleData = [

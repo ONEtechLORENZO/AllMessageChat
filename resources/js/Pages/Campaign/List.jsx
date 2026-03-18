@@ -18,10 +18,8 @@ function List(props) {
             name: "Spring Re-Engagement",
             status: "Running",
             service: "WhatsApp",
-            audience: 1240,
+            audience_size: 1240,
             scheduled_at: "2026-02-10 09:00",
-            sent: 820,
-            delivered: 794,
             created_at: "2026-02-01",
         },
         {
@@ -29,10 +27,8 @@ function List(props) {
             name: "VIP Upsell",
             status: "Scheduled",
             service: "WhatsApp",
-            audience: 320,
+            audience_size: 320,
             scheduled_at: "2026-02-18 14:30",
-            sent: 0,
-            delivered: 0,
             created_at: "2026-02-05",
         },
         {
@@ -40,10 +36,8 @@ function List(props) {
             name: "Winback Q1",
             status: "Completed",
             service: "WhatsApp",
-            audience: 2040,
+            audience_size: 2040,
             scheduled_at: "2026-01-28 08:00",
-            sent: 1120,
-            delivered: 1097,
             created_at: "2026-01-15",
         },
         {
@@ -51,10 +45,8 @@ function List(props) {
             name: "New Product Launch",
             status: "Completed",
             service: "WhatsApp",
-            audience: 860,
+            audience_size: 860,
             scheduled_at: "2026-01-10 10:15",
-            sent: 860,
-            delivered: 844,
             created_at: "2025-12-28",
         },
         {
@@ -62,10 +54,8 @@ function List(props) {
             name: "Weekend Promo",
             status: "Scheduled",
             service: "Instagram",
-            audience: 420,
+            audience_size: 420,
             scheduled_at: "2026-02-22 12:00",
-            sent: 0,
-            delivered: 0,
             created_at: "2026-02-08",
         },
         {
@@ -73,10 +63,8 @@ function List(props) {
             name: "Renewals",
             status: "Running",
             service: "Facebook",
-            audience: 540,
+            audience_size: 540,
             scheduled_at: "2026-02-12 07:30",
-            sent: 410,
-            delivered: 398,
             created_at: "2026-02-02",
         },
     ];
@@ -138,8 +126,6 @@ function List(props) {
         audience: { label: "Audience", type: "text" },
         status: { label: "Status", type: "text" },
         scheduled_at: { label: "Scheduled", type: "text" },
-        sent: { label: "Sent", type: "text" },
-        delivered: { label: "Delivered", type: "text" },
         created_at: { label: "Created", type: "text" },
     };
 
@@ -167,10 +153,11 @@ function List(props) {
             return fallback || "-";
         }
         if (typeof value === "number") {
-            return `${value.toLocaleString()} contacts`;
+            return `${value.toLocaleString()} ${value === 1 ? "contact" : "contacts"}`;
         }
         if (!Number.isNaN(Number(value))) {
-            return `${Number(value).toLocaleString()} contacts`;
+            const count = Number(value);
+            return `${count.toLocaleString()} ${count === 1 ? "contact" : "contacts"}`;
         }
         return value;
     }
@@ -367,9 +354,7 @@ function List(props) {
                                         record.audience ??
                                             record.audience_size ??
                                             record.total_contacts,
-                                        record.conditions
-                                            ? "Filtered"
-                                            : "All contacts",
+                                        record.audience_label ?? "-",
                                     );
                                 }
 
@@ -391,17 +376,6 @@ function List(props) {
                                     );
                                 }
 
-                                if (name === "sent") {
-                                    return record.sent ?? record.sent_count ?? "-";
-                                }
-
-                                if (name === "delivered") {
-                                    return (
-                                        record.delivered ??
-                                        record.delivered_count ??
-                                        "-"
-                                    );
-                                }
                             }}
                         />
                     </div>

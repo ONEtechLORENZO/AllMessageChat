@@ -15,6 +15,7 @@ use App\Models\MessageButton;
 use App\Models\Session;
 use App\Models\Company;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Schema;
 
 class Msg extends Model
 {
@@ -453,7 +454,11 @@ class Msg extends Model
      */
     public function checkBalanceAmount($phoneNumber, $accountNumber)
     {
-    
+        if (! Schema::hasColumns('sessions', ['account_id', 'contact_id', 'created_at'])) {
+            Log::warning('Skipping session balance lookup because the sessions table does not have messaging session columns.');
+            return true;
+        }
+
         $number = PhoneNumber::parse('+'.$phoneNumber);
         $countryCode = $number->getCountryCode();
         $company = Company::first();
