@@ -294,13 +294,13 @@ export default function WalletTab(props) {
                         paymentMethods.map((paymentMethod) => {
                             return (
                                 <Col sm="6" className="my-3 px-2">
-                                    <div className="card p-4">
+                                    <div className="max-w-[620px] rounded-[14px] border border-white/15 bg-[#24112F] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.22)]">
                                         <div className="flex justify-between">
                                             <div>
                                                 <div className="flex items-center gap-3">
                                                     <img src="./img/visa-card.png" />
 
-                                                    <div className="text-[#3D4459] text-sm flex flex-col">
+                                                    <div className="text-sm flex flex-col text-white/85">
                                                         <span className="font-bold">
                                                             {
                                                                 paymentMethod
@@ -322,7 +322,7 @@ export default function WalletTab(props) {
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <label className="!mt-5">
+                                                <label className="!mt-5 text-white/85">
                                                     <input
                                                         type="radio"
                                                         name="payment"
@@ -361,7 +361,7 @@ export default function WalletTab(props) {
                                                 >
                                                     <HiOutlineTrash
                                                         size="1.5rem"
-                                                        className="text-[#6C6D7D] "
+                                                        className="text-white/60"
                                                     />
                                                 </button>
                                             </div>

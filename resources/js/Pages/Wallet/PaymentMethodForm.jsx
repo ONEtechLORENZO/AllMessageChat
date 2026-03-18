@@ -7,6 +7,26 @@ import notie from 'notie';
 import nProgress from 'nprogress';
 import axios from 'axios';
 
+const cardElementOptions = {
+    hidePostalCode: true,
+    style: {
+        base: {
+            color: '#FFFFFF',
+            fontSize: '16px',
+            fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+            fontSmoothing: 'antialiased',
+            iconColor: 'rgba(255,255,255,0.8)',
+            '::placeholder': {
+                color: 'rgba(255,255,255,0.62)',
+            },
+        },
+        invalid: {
+            color: '#FCA5A5',
+            iconColor: '#FCA5A5',
+        },
+    },
+};
+
 function PaymentMethodForm(props)
 {
     const [open, setOpen] = useState(true)
@@ -94,18 +114,19 @@ function PaymentMethodForm(props)
                             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         >
-                            <Dialog.Panel className="relative overflow-hidden rounded-3xl bg-[#140816]/80 text-left text-white shadow-[0_25px_60px_-25px_rgba(56,189,248,0.35)] backdrop-blur-3xl sm:my-8 sm:max-w-xl sm:w-full">
-                                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#38bdf8]/50 to-transparent opacity-70" />
-                                <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-40" />
+                            <Dialog.Panel className="relative overflow-hidden rounded-3xl border border-white/12 bg-[#170C1E] text-left text-white shadow-[0_30px_80px_rgba(0,0,0,0.45)] sm:my-8 sm:max-w-xl sm:w-full">
                                 <div className="px-6 pt-6 pb-2">
                                     <div className="sm:flex sm:items-start">
                                         <div className="text-center sm:mt-0 sm:text-left">
                                             <Dialog.Title
                                                 as="h3"
-                                                className="text-lg leading-6 mb-0 font-semibold text-white"
+                                                className="mb-0 text-2xl font-semibold leading-6 text-white"
                                             >
                                                 {props.translator["Add your Card"]}
                                             </Dialog.Title>
+                                            <p className="mt-2 text-sm text-white/72">
+                                                Save a payment card for future charges.
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -118,13 +139,13 @@ function PaymentMethodForm(props)
 
                                 <div className="px-6 pb-6 space-y-4">
                                     {loadingIntent ? (
-                                        <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-5 text-sm text-white/70">
-                                            {props.translator['Loading']}...
+                                        <div className="rounded-2xl border border-white/12 bg-white/[0.03] px-4 py-4 text-sm text-white">
+                                            Preparing the secure card form...
                                         </div>
                                     ) : null}
 
                                     {!loadingIntent && intentError ? (
-                                        <div className="rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-4 text-sm text-amber-100">
+                                        <div className="rounded-2xl border border-amber-300/30 bg-amber-400/10 px-4 py-4 text-sm text-amber-50">
                                             {intentError}
                                         </div>
                                     ) : null}
@@ -206,19 +227,31 @@ const Form = (props) => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="rounded-md border border-white/20 bg-[#0F0B1A] px-4 py-3 text-white shadow-sm">
-                <CardElement />
+            <div className="space-y-2">
+                <label htmlFor="card-element" className="block text-sm font-medium text-white">
+                    Card details
+                </label>
+                <div
+                    id="card-element"
+                    className="rounded-2xl border border-white/20 bg-[#24112C] px-4 py-4 text-white shadow-sm"
+                >
+                    <CardElement options={cardElementOptions} />
+                </div>
+                <p className="text-sm text-white/68">
+                    Enter card number, expiry date, and CVC.
+                </p>
             </div>
-            <div className="pt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+
+            <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
                 <button
-                    className="border border-transparent rounded-md w-full sm:w-44 px-8 py-3 flex items-center justify-center text-lg leading-6 font-medium bg-primary text-white hover:brightness-110 md:px-10"
+                    className="inline-flex w-full items-center justify-center rounded-xl bg-white px-6 py-3 text-base font-semibold text-[#170C1E] transition hover:bg-white/90 disabled:cursor-not-allowed disabled:bg-white/70 sm:w-44"
                     disabled={!stripe || loading}
                 >
-                    {loading ? 'Loading...' : 'Add'}
+                    {loading ? 'Saving card...' : 'Add card'}
                 </button>
                 <button
                     type="button"
-                    className="w-full sm:w-44 inline-flex justify-center rounded-md border border-white/20 shadow-sm px-4 py-3 bg-white/10 text-base font-medium text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-[#38bdf8]/50"
+                    className="inline-flex w-full justify-center rounded-xl border border-white/25 bg-transparent px-4 py-3 text-base font-medium text-white hover:bg-white/6 focus:outline-none focus:ring-2 focus:ring-white/20 sm:w-44"
                     onClick={() => props.setPaymentMethodForm(false)}
                     ref={props.cancelButtonRef}
                 >

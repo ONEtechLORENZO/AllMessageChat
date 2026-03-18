@@ -2407,12 +2407,12 @@ class UserController extends Controller
 
         if ($company->stripe_id !== $customer->id) {
             $company->stripe_id = $customer->id;
-            $company->save();
+            $company->saveQuietly();
         }
 
         if ($user->stripe_id !== $customer->id) {
             $user->stripe_id = $customer->id;
-            $user->save();
+            $user->saveQuietly();
         }
 
         return $company->fresh();
