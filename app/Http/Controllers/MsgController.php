@@ -434,29 +434,28 @@ class MsgController extends Controller
 
             // Check the contact in category
             $isRecordContainCategory = array_key_exists("contact_id_{$request->contact_id}", $recordData['contact_list']);
-            if(!$isRecordContainCategory){
-                return Redirect::route('chat_list');
-            }
+            if($isRecordContainCategory){
+                $selectedContact = $request->contact_id;
+                $contactChaneel = ChatListContact::where('user_id', $user->id)->where('contact_id' , $selectedContact )->first();
+                $category = ($request->category) ? $request->category : ($contactChaneel ? $contactChaneel->channel : 'whatsapp');
+                $messages = $this->getMessageList($request);
 
-            $selectedContact = $request->contact_id;
-            $contactChaneel = ChatListContact::where('user_id', $user->id)->where('contact_id' , $selectedContact )->first();
-            $category = ($request->category) ? $request->category : ($contactChaneel ? $contactChaneel->channel : 'whatsapp');
-            $messages = $this->getMessageList($request);
+                // Check session 
+                $condition = [
+                    'contact_id' => $request->contact_id,
+                ];
+                $getSessions = Session::where($condition)
+                    ->where('created_at', '>=', Carbon::now()->subDay())
+                    ->get();
 
-            // Check session 
-            $condition = [
-                'contact_id' => $request->contact_id,
-            ];
-            $getSessions = Session::where($condition)
-                ->where('created_at', '>=', Carbon::now()->subDay())
-                ->get();
-
-            foreach($getSessions as $session){
-                $sessions[$session->contact_id][$session->account_id] = true; 
+                foreach($getSessions as $session){
+                    $sessions[$session->contact_id][$session->account_id] = true; 
+                }
             }
         }
         
-        $accounts = Account::where(function($query) use ($category) {
+        $accounts = Account::where('user_id', $user->id)
+            ->where(function($query) use ($category) {
                 if($category != 'all' && $category != ''){
                     $query->where('service' , $category);
                 }
@@ -495,6 +494,12 @@ class MsgController extends Controller
             'Add a contact' => __('Add a contact'),
             'Add' => __('Add'),
             'Cancel' => __('Cancel'),
+            'No conversations found for this channel.' => __('No conversations found for this channel.'),
+            'No account connected for this channel.' => __('No account connected for this channel.'),
+            'No WhatsApp account connected. Connect one WhatsApp account to use this channel.' => __('No WhatsApp account connected. Connect one WhatsApp account to use this channel.'),
+            'No Instagram account connected. This workspace supports one Instagram account per social profile.' => __('No Instagram account connected. This workspace supports one Instagram account per social profile.'),
+            'No Facebook account connected. This workspace supports one Facebook account per social profile.' => __('No Facebook account connected. This workspace supports one Facebook account per social profile.'),
+            'No Email account connected. Connect one Email account to use this channel.' => __('No Email account connected. Connect one Email account to use this channel.'),
         ];
         $translator = array_merge( $translator, $this->getTranslations());
 
@@ -516,6 +521,7 @@ class MsgController extends Controller
             'sessions' => $sessions,
             'products' => $products,
             'interactiveMessages' => $interactiveMessages,
+            'has_channel_account' => $category === 'all' ? count($accoutList) > 0 : count($accoutList) > 0,
         ];
         $data = array_merge($data, $recordData);
         return Inertia::render('Messages/ChatList', $data);
@@ -530,9 +536,49 @@ class MsgController extends Controller
         $search = $request->has('search') && $request->get('search') ? $request->get('search') : '';
         $filter = $request->has('filter') && $request->get('filter') ? $request->get('filter') : '';
         $filterId = $request->has('filter_id') && $request->get('filter_id') ? $request->get('filter_id') : '';
+        $selectedCategory = $request->has('category') && $request->get('category') ? $request->get('category') : 'whatsapp';
+        $page = max((int) $request->get('page', 1), 1);
+        $mode = $request->get('mode', 'unread');
+
+        if(
+            $selectedCategory !== 'all'
+            && !Account::where('user_id', $user->id)
+                ->where('service', $selectedCategory)
+                ->where('status', 'Active')
+                ->exists()
+        ) {
+            $emptyData = [
+                'contact_list' => [],
+                'filter_id' => $filterId,
+                'search' => $search,
+                'mode' => $mode,
+                'has_more' => false,
+                'page' => $page,
+                'counts' => ['all' => 0, 'unread' => 0, 'archived' => 0],
+            ];
+
+            if($request->ajax() && $request->fetchContact) {
+                $emptyData['status'] = true;
+                echo json_encode($emptyData); die;
+            }
+
+            return $emptyData;
+        }
+
         $searchData = ($filter)? json_decode($filter) : '';
         $query = ChatListContact::where('chat_list_contacts.user_id', $user->id );
         $query->join('contacts', 'contact_id', 'contacts.id');
+
+        if($selectedCategory !== 'all') {
+            $query->whereExists(function ($subQuery) use ($selectedCategory) {
+                $subQuery->select(DB::raw(1))
+                    ->from('msgs')
+                    ->whereColumn('msgs.msgable_id', 'contacts.id')
+                    ->where('msgs.msgable_type', Contact::class)
+                    ->where('msgs.service', $selectedCategory);
+            });
+        }
+
         if($filterId && $filterId != 'All'){
             $filter = Filter::find($filterId);
             if($filter){
@@ -567,7 +613,6 @@ class MsgController extends Controller
 
         $recordCounts = ['all' => $allCount, 'unread' => $unreadCount, 'archived' => $archiveCount];
 
-        $mode = (isset($_GET['mode'])) ? ($_GET['mode']) : 'unread';
         if ($mode == 'archived') {
             $query->where('is_archive', true);
         } elseif ($mode == 'unread') {
@@ -578,7 +623,7 @@ class MsgController extends Controller
         }
         $query->orderBy('chat_list_contacts.updated_at', 'desc');
       
-        $chatListContact = $query->paginate(15);
+        $chatListContact = $query->paginate(15, ['*'], 'page', $page);
         
         $contactList = [];
         foreach($chatListContact as $contactId){
@@ -592,8 +637,8 @@ class MsgController extends Controller
                         $name = $contact->instagram_username;
                     } elseif($contact->facebook_username){
                         $name = $contact->facebook_username;
-                    } elseif($contact->email){
-                        $name = $contact->email;
+                    } elseif($this->getPrimaryContactEmail($contact)){
+                        $name = $this->getPrimaryContactEmail($contact);
                     }
                 } 
                 $name = trim($name , ' '); 
@@ -605,6 +650,7 @@ class MsgController extends Controller
                     'insta_id' => $contact->instagram_username,
                     'channel' => $contactId->channel, 
                     'fb_id' => $contact->facebook_username,
+                    'email' => $this->getPrimaryContactEmail($contact),
                 ];
             }
         }
@@ -614,6 +660,8 @@ class MsgController extends Controller
             'filter_id' => $filterId,
             'search' => $search,
             'mode' => $mode,
+            'has_more' => $chatListContact->hasMorePages(),
+            'page' => $page,
             'counts' => $recordCounts,
         ];
 
@@ -622,6 +670,18 @@ class MsgController extends Controller
             echo json_encode($data); die;
         }
         return $data;
+    }
+
+    protected function getPrimaryContactEmail(Contact $contact): string
+    {
+        if (!empty($contact->email)) {
+            return (string) $contact->email;
+        }
+
+        return (string) collect($contact->emails ?? [])
+            ->pluck('emails')
+            ->filter()
+            ->first();
     }
 
     /**
