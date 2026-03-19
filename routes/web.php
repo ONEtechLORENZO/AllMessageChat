@@ -107,6 +107,7 @@ Route::middleware('planrestriction')->group(function () {
 
         // FaceBook
         Route::get('/connect/fb/{accountId}', [WhatsAppUsersController::class, 'connectFaceBook'])->name('connect_face_book');
+        Route::get('/integrations/meta/callback', [WhatsAppUsersController::class, 'handleMetaCallback'])->name('meta_connection_callback');
         Route::get('/store-access-token/{app_name}/{token}', [WhatsAppUsersController::class, 'storeUserToken'])->name('store_user_code');
 
         // Wallet

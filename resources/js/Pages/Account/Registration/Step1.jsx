@@ -22,9 +22,7 @@ export default function Step1(props) {
 
     const showLinkedProfileSelector =
         (selectedService == "instagram" ||
-            selectedService == "facebook" ||
-            (selectedService == "whatsapp" &&
-                props.company.service_engine == "Facebook")) &&
+            selectedService == "facebook") &&
         selectedService !== "email" &&
         props.socialProfiles;
 

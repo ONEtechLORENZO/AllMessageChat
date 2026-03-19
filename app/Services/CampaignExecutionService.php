@@ -10,6 +10,7 @@ use App\Models\Contact;
 use App\Models\Message;
 use App\Models\Msg;
 use App\Models\Template;
+use App\Models\WhatsAppUsers;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
@@ -242,6 +243,41 @@ class CampaignExecutionService
         return (string) ($primaryEmail->emails ?? '');
     }
 
+    protected function resolveSocialTemplateBody($templateReference): string
+    {
+        if (! $templateReference) {
+            return '';
+        }
+
+        $message = Message::where('template_id', $templateReference)
+            ->orderBy('id')
+            ->first();
+
+        if ($message?->body) {
+            return (string) $message->body;
+        }
+
+        $template = Template::find($templateReference);
+        if ($template?->text_body) {
+            return (string) $template->text_body;
+        }
+
+        if ($template?->html_body) {
+            return strip_tags((string) $template->html_body);
+        }
+
+        return (string) ($template?->name ?? '');
+    }
+
+    protected function resolveSocialDestination(Contact $contact, string $channel): string
+    {
+        return match ($channel) {
+            'facebook' => (string) ($contact->facebook_username ?? ''),
+            'instagram' => (string) ($contact->instagram_username ?? ''),
+            default => '',
+        };
+    }
+
     protected function getNextDueCampaign(array $excludedCampaignIds = []): ?Campaign
     {
         return Campaign::whereIn('status', ['Inprogress', 'new'])
@@ -289,7 +325,9 @@ class CampaignExecutionService
             return false;
         }
 
-        return isset($response['messageId']) || isset($response['result']['messageId']);
+        return isset($response['messageId'])
+            || isset($response['message_id'])
+            || isset($response['result']['messageId']);
     }
 
     protected function processCampaign(Campaign $campaign): int
@@ -370,12 +408,30 @@ class CampaignExecutionService
                         true,
                     );
                 }
-            } else {
-                $instagramId = $contact->instagram_id;
+            } elseif (in_array($channel, ['instagram', 'facebook'], true)) {
+                $destination = $this->resolveSocialDestination($contact, $channel);
 
-                if ($instagramId) {
+                if ($destination) {
                     $sendAttempted = true;
-                    $response = $msg->sendInstagramMessage('', $instagramId, $account->src_name, $template);
+                    $messageBody = $this->resolveSocialTemplateBody($template);
+
+                    if ($account->service_engine === 'facebook') {
+                        $pageToken = (new WhatsAppUsers())->getFbPageAccessToken($account);
+
+                        if (! $pageToken) {
+                            $this->markCampaignFailed($campaign, 'Unable to retrieve the Meta page access token.');
+                            return 0;
+                        }
+
+                        $response = $msg->sendInstaMessage(
+                            $messageBody,
+                            $destination,
+                            $account->fb_phone_number_id,
+                            $pageToken
+                        );
+                    } else {
+                        $response = $msg->sendInstagramMessage($messageBody, $destination, $account->src_name);
+                    }
                 }
             }
 

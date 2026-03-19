@@ -13,9 +13,12 @@ use App\Models\Setting;
 use App\Models\FaceBookAppToken;
 use Carbon\Carbon;
 use App\Http\Controllers\TemplateController;
+use Illuminate\Support\Str;
 
 class WhatsAppUsersController extends Controller
 { 
+    private const META_OAUTH_SESSION_KEY = 'meta_oauth_context';
+
     /**
      * Make a User Opt-In
      */
@@ -46,10 +49,97 @@ class WhatsAppUsersController extends Controller
      */
     public function connectFaceBook(Request $request, $service)
     {
-      session(['service' => $service]);
-   
-      return redirect()->away("https://admin.onemessage.chat/connect-facebook?service={$service}&domain=".$request->getHttpHost());
+        $supportedServices = ['facebook', 'instagram', 'whatsapp', 'product', 'fb_token'];
+        if (! in_array($service, $supportedServices, true)) {
+            abort(404);
+        }
 
+        if (! config('app.fb.app_id') || ! config('app.fb.app_secret')) {
+            return redirect()->route('account_registration', [
+                'error' => 'Meta connection is not configured yet.',
+            ]);
+        }
+
+        $state = Str::random(40);
+        session([
+            self::META_OAUTH_SESSION_KEY => [
+                'state' => $state,
+                'service' => $service,
+                'user_id' => $request->user()->id,
+            ],
+            'service' => $service,
+        ]);
+
+        $version = config('app.fb.app_graph_version');
+        $query = http_build_query([
+            'client_id' => config('app.fb.app_id'),
+            'redirect_uri' => route('meta_connection_callback'),
+            'state' => $state,
+            'response_type' => 'code',
+            'scope' => implode(',', $this->getMetaPermissions($service)),
+        ]);
+
+        return redirect()->away("https://www.facebook.com/{$version}/dialog/oauth?{$query}");
+    }
+
+    /**
+     * Handle Meta OAuth callback and persist the selected connection profile.
+     */
+    public function handleMetaCallback(Request $request)
+    {
+        $oauthContext = session(self::META_OAUTH_SESSION_KEY, []);
+        session()->forget(self::META_OAUTH_SESSION_KEY);
+
+        if (
+            ! $oauthContext
+            || (int) ($oauthContext['user_id'] ?? 0) !== (int) $request->user()->id
+        ) {
+            return redirect()->route('account_registration', [
+                'error' => 'Meta connection session expired. Please try again.',
+            ]);
+        }
+
+        if ($request->filled('error') || $request->filled('error_message')) {
+            return redirect()->route('account_registration', [
+                'error' => $request->input('error_message', 'Meta connection was cancelled.'),
+            ]);
+        }
+
+        if (! hash_equals((string) ($oauthContext['state'] ?? ''), (string) $request->input('state'))) {
+            return redirect()->route('account_registration', [
+                'error' => 'Invalid Meta connection state.',
+            ]);
+        }
+
+        if (! $request->filled('code')) {
+            return redirect()->route('account_registration', [
+                'error' => 'Meta did not return an authorization code.',
+            ]);
+        }
+
+        $token = $this->exchangeMetaCodeForAccessToken((string) $request->input('code'));
+        if (! $token) {
+            return redirect()->route('account_registration', [
+                'error' => 'Unable to retrieve Meta access token.',
+            ]);
+        }
+
+        $token = $this->exchangeMetaLongLivedToken($token) ?: $token;
+        $profile = $this->getMetaUserProfile($token);
+
+        if (! isset($profile['id'])) {
+            return redirect()->route('account_registration', [
+                'error' => 'Unable to read the Meta profile details.',
+            ]);
+        }
+
+        return $this->storeResolvedMetaConnection(
+            $request,
+            (string) ($oauthContext['service'] ?? ''),
+            (string) ($profile['name'] ?? 'Meta Profile'),
+            $token,
+            (string) $profile['id'],
+        );
     }
     
     /**
@@ -57,8 +147,30 @@ class WhatsAppUsersController extends Controller
      */
     public function storeUserToken(Request $request , $app_name, $token)
     {
-        $userId = $this->getFBUserId($token);
         $service = session('service');
+        $userId = $this->getFBUserId($token);
+
+        return $this->storeResolvedMetaConnection(
+            $request,
+            (string) $service,
+            $app_name,
+            $token,
+            (string) $userId,
+        );
+    }
+
+    private function storeResolvedMetaConnection(
+        Request $request,
+        string $service,
+        string $app_name,
+        string $token,
+        string $userId
+    ) {
+        if (! $service || ! $userId) {
+            return redirect()->route('account_registration', [
+                'error' => 'Invalid Meta connection response.',
+            ]);
+        }
 
         if($service == 'product'){
             $businessList = $this->getBusinessId($userId , $token);
@@ -113,7 +225,74 @@ class WhatsAppUsersController extends Controller
         $account->save();
 
         return redirect()->route('edit_account', $account->id);
+    }
 
+    private function getMetaPermissions(string $service): array
+    {
+        $basePermissions = ['email', 'public_profile'];
+
+        return match ($service) {
+            'instagram' => array_merge($basePermissions, [
+                'pages_show_list',
+                'pages_manage_metadata',
+                'pages_read_engagement',
+                'instagram_basic',
+                'instagram_manage_messages',
+            ]),
+            'facebook' => array_merge($basePermissions, [
+                'pages_show_list',
+                'pages_manage_metadata',
+                'pages_read_engagement',
+                'pages_messaging',
+            ]),
+            'whatsapp' => array_merge($basePermissions, [
+                'business_management',
+                'whatsapp_business_management',
+                'whatsapp_business_messaging',
+            ]),
+            'product', 'fb_token' => array_merge($basePermissions, [
+                'business_management',
+                'pages_show_list',
+                'pages_manage_metadata',
+            ]),
+            default => $basePermissions,
+        };
+    }
+
+    private function exchangeMetaCodeForAccessToken(string $code): ?string
+    {
+        $version = config('app.fb.app_graph_version');
+        $response = Http::get("https://graph.facebook.com/{$version}/oauth/access_token", [
+            'client_id' => config('app.fb.app_id'),
+            'client_secret' => config('app.fb.app_secret'),
+            'redirect_uri' => route('meta_connection_callback'),
+            'code' => $code,
+        ])->json();
+
+        return isset($response['access_token']) ? (string) $response['access_token'] : null;
+    }
+
+    private function exchangeMetaLongLivedToken(string $token): ?string
+    {
+        $response = Http::get('https://graph.facebook.com/oauth/access_token', [
+            'grant_type' => 'fb_exchange_token',
+            'client_id' => config('app.fb.app_id'),
+            'client_secret' => config('app.fb.app_secret'),
+            'fb_exchange_token' => $token,
+        ])->json();
+
+        return isset($response['access_token']) ? (string) $response['access_token'] : null;
+    }
+
+    private function getMetaUserProfile(string $token): array
+    {
+        $version = config('app.fb.app_graph_version');
+        $response = Http::get("https://graph.facebook.com/{$version}/me", [
+            'fields' => 'id,name',
+            'access_token' => $token,
+        ])->json();
+
+        return is_array($response) ? $response : [];
     }
 
     /**
@@ -126,8 +305,7 @@ class WhatsAppUsersController extends Controller
         $response = Http::get($url);
         $response_body = json_decode($response->body(), true);
 
-        $userId = $response_body['id'];
-        return $userId;
+        return isset($response_body['id']) ? $response_body['id'] : '';
     }
 
     /**
@@ -158,7 +336,7 @@ class WhatsAppUsersController extends Controller
         $url = "https://graph.facebook.com/{$version}/{$userId}/accounts?access_token={$token}";
         $response = Http::get($url);
         $response_body = json_decode($response->body(), true);
-        $dataArr = $response_body['data'];
+        $dataArr = isset($response_body['data']) ? $response_body['data'] : [];
         foreach($dataArr as $page) {
             $pages[$page['id']] = [ 'name' => $page['name'], 'token' => $page['access_token']];
         }

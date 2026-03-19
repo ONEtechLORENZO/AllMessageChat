@@ -691,11 +691,20 @@ class MsgController extends Controller
      */
     public function incomingFBInsta()
     {
-        //log::info(['data' => $_REQUEST]);
+        $verification_token = config('app.fb.verification_code');
+        if (
+            isset($_GET['hub_mode'])
+            && $_GET['hub_mode'] == 'subscribe'
+            && $_GET['hub_verify_token'] == $verification_token
+        ) {
+            return $_GET['hub_challenge'];
+        }
 
         $post_data = file_get_contents("php://input");
         $response = json_decode($post_data, true);
-        //Log::info(['Incoming Insta message (or) response ' => $response ]);
+        Log::info(['Incoming Meta messenger payload' => $response]);
+
+        return response()->json(['status' => true]);
 
     }
 

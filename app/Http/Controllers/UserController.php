@@ -1073,15 +1073,18 @@ class UserController extends Controller
         $user_id = $request->user()->id;
 
         if ($request->profile_list) {
-            $parentAccount = Account::find($request->profile_list);
+            $parentAccount = Account::where('user_id', $user_id)
+                ->findOrFail($request->profile_list);
 
             $account = new Account();
-            $account->fb_meta_data = $parentAccount->fb_meta_data;
             $account->company_name = $parentAccount->company_name;
-            $account->service = $parentAccount->service;
+            $account->service = $request->get('service', $parentAccount->service);
             $account->status = 'New';
             $account->user_id = $user_id;
             $account->service_engine = 'facebook';
+            $account->fb_token = $parentAccount->fb_token;
+            $account->fb_user_id = $parentAccount->fb_user_id;
+            $account->fb_meta_data = $parentAccount->fb_meta_data;
 
             $account->save();
             return Redirect::route('edit_account', $account->id);
@@ -1164,7 +1167,9 @@ class UserController extends Controller
 
             // Set default service engine
             $company = Company::first();
-            $serviceEngine = ($company->service_engine) ? $company->service_engine : $request->service_engine;
+            $serviceEngine = $request->service === 'whatsapp'
+                ? ($request->service_engine ?: 'gupshup')
+                : (($company->service_engine) ? $company->service_engine : $request->service_engine);
             $account->service_engine = ($serviceEngine) ? $serviceEngine : 'gupshup';
         }
         if ($request->service == 'instagram' || $request->service == 'facebook') {
@@ -2844,10 +2849,20 @@ class UserController extends Controller
     {
         $profileList = [];
         $service = $_GET['service'];
-        $accountsList = Account::where('service', $service)->where('service_engine', 'facebook')->get();
+        $accountsList = Account::where('service_engine', 'facebook')
+            ->when(
+                in_array($service, ['facebook', 'instagram'], true),
+                fn($query) => $query->whereIn('service', ['facebook', 'instagram']),
+                fn($query) => $query->where('service', $service)
+            )
+            ->get()
+            ->unique(fn($account) => $account->fb_user_id ?: $account->id);
 
         foreach ($accountsList as $account) {
-            $pages = unserialize(base64_decode($account->fb_meta_data));
+            $pages = [];
+            if ($account->fb_meta_data) {
+                $pages = unserialize(base64_decode($account->fb_meta_data));
+            }
             $profileList[$account->id] = ['name' => $account->company_name, 'pages' => $pages];
         }
 
