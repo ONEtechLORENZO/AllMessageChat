@@ -22,6 +22,7 @@ use App\Models\Email;
 use App\Models\Note;
 use App\Models\Order;
 use App\Models\Opportunity;
+use App\Services\ContactCsvImportService;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -201,6 +202,68 @@ class ContactController extends Controller
             }
             
         }
+    }
+
+    public function importCsv(Request $request, ContactCsvImportService $importService)
+    {
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|file',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'imported_count' => 0,
+                'updated_count' => 0,
+                'skipped_count' => 0,
+                'errors' => [
+                    [
+                        'row' => 0,
+                        'message' => $validator->errors()->first('file'),
+                    ],
+                ],
+            ], 422);
+        }
+
+        $file = $request->file('file');
+        $extension = strtolower((string) $file->getClientOriginalExtension());
+
+        if ($extension !== 'csv') {
+            return response()->json([
+                'success' => false,
+                'imported_count' => 0,
+                'updated_count' => 0,
+                'skipped_count' => 0,
+                'errors' => [
+                    [
+                        'row' => 0,
+                        'message' => 'Only CSV files are allowed',
+                    ],
+                ],
+            ], 422);
+        }
+
+        $tags = $request->input('tags', []);
+        $categorys = $request->input('categorys', []);
+
+        if (is_string($tags)) {
+            $decodedTags = json_decode($tags, true);
+            $tags = is_array($decodedTags) ? $decodedTags : [];
+        }
+
+        if (is_string($categorys)) {
+            $decodedCategorys = json_decode($categorys, true);
+            $categorys = is_array($decodedCategorys) ? $decodedCategorys : [];
+        }
+
+        $result = $importService->import(
+            $file,
+            $request->user(),
+            is_array($tags) ? $tags : [],
+            is_array($categorys) ? $categorys : [],
+        );
+
+        return response()->json($result);
     }
 
 
@@ -610,6 +673,71 @@ class ContactController extends Controller
         }
         return $ListSelectedRecords;
     }
+
+    protected function normalizeSelectionLabels($records): array
+    {
+        $labels = [];
+
+        foreach ((array) $records as $record) {
+            $label = null;
+
+            if (is_array($record)) {
+                $label = $record['label'] ?? $record['value'] ?? null;
+            } elseif (is_object($record)) {
+                $label = $record->label ?? $record->value ?? null;
+            } elseif (is_string($record)) {
+                $label = $record;
+            }
+
+            if (is_string($label)) {
+                $label = trim($label);
+                if ($label !== '') {
+                    $labels[] = $label;
+                }
+            }
+        }
+
+        return array_values(array_unique($labels));
+    }
+
+    protected function syncSelectableRelations(Request $request, Contact $contact): void
+    {
+        if ($request->is('api/*')) {
+            return;
+        }
+
+        if ($request->exists('tags')) {
+            $tagLabels = $this->normalizeSelectionLabels($request->tags);
+            $tagIds = [];
+
+            foreach ($tagLabels as $label) {
+                $tag = Tag::firstOrCreate([
+                    'name' => $label,
+                    'user_id' => $request->user()->id,
+                ]);
+
+                $tagIds[] = $tag->id;
+            }
+
+            $contact->tags()->sync($tagIds);
+        }
+
+        if ($request->exists('categorys')) {
+            $categoryLabels = $this->normalizeSelectionLabels($request->categorys);
+            $categoryIds = [];
+
+            foreach ($categoryLabels as $label) {
+                $category = Category::firstOrCreate([
+                    'name' => $label,
+                    'user_id' => $request->user()->id,
+                ]);
+
+                $categoryIds[] = $category->id;
+            }
+
+            $contact->categorys()->sync($categoryIds);
+        }
+    }
    
     public function saveContact($request){        
            
@@ -742,6 +870,8 @@ class ContactController extends Controller
             if($emails) {
                 $sync = $this->syncEmails($request,$contact, $emails); 
             }
+
+            $this->syncSelectableRelations($request, $contact);
             
             if($request->parent_id){
                 // $parent = array($request->parent_id);

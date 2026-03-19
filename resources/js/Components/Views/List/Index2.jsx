@@ -8,7 +8,6 @@ import { ChevronDownIcon, ChevronUpIcon, UserPlusIcon, PencilSquareIcon, TrashIc
 import notie from 'notie';
 import Search from './Search';
 import { Head, Link, router as Inertia } from '@inertiajs/react';
-import Filter from "./Filter2";
 import axios from "axios";
 import { Menu, Transition } from '@headlessui/react'
 import MassEdit from './MassEdit';
@@ -218,7 +217,7 @@ function ListView(props) {
 
     const isDashboard = (props.module || "").toLowerCase() === "dashboard";
     const headerCardClassName = [
-        "mb-3 rounded-2xl backdrop-blur-xl p-3",
+        "relative z-30 mb-3 overflow-visible rounded-2xl backdrop-blur-xl p-3",
         isDashboard ? "bg-[#12041f]/70 ring-1 ring-[#6b2a91]/20" : "bg-[#140816]/70",
         props.noCardBorder ? "" : isDashboard ? "" : "border border-white/10 ring-1 ring-white/5",
     ]
@@ -230,9 +229,9 @@ function ListView(props) {
             <div className="px-4 sm:px-6 lg:px-8 ">
                 {(props.show_header && props.show_header === true) || (props.show_header == undefined) ?
                     <div className={headerCardClassName}>
-                        <div className="flex min-w-0 justify-between">
+                        <div className="relative z-30 flex min-w-0 justify-between">
                         <Head title={props.translator[props.module]} />
-                        <div className='flex gap-3'>
+                        <div className='relative z-30 flex gap-3'>
                             {(props.module === 'Transaction') || (props.module === 'Msg') ?
                                 <div className='flex items-center gap-3'>
                                     <CustomCalender {...props} />
@@ -252,18 +251,9 @@ function ListView(props) {
                                 />
                                 : ''}
 
-                            {props.actions && props.actions.filter === true &&
-                                <Filter
-                                    module={props.module}
-                                    filter={props.filter}
-                                    currentPage={props.paginator.currentPage}
-                                    sort_by={props.sort_by}
-                                    sort_order={props.sort_order}
-                                    translator={props.translator}
-                                />
-                            }
                         </div>
-                        <div className='flex gap-3 align-self-center'>
+                        <div className='relative z-30 flex gap-3 align-self-center'>
+                            {props.headerActions ? props.headerActions : null}
                             {props.actions && props.actions.invite_user === true ?
                                 <>
                                     <Button
@@ -449,9 +439,10 @@ function ListView(props) {
 }
 
 function DropDown(props) {
+    const contactsExportOnly = props.module === "Contact";
 
     return (
-        <Menu as="div" className="relative inline-block text-left">
+        <Menu as="div" className="relative z-40 inline-block text-left">
             <div>
                 <Menu.Button className="inline-flex w-full justify-center rounded-md bg-white px-2 py-2 text-sm font-medium text-[#363740] hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
                     <Bars3Icon className='h-5 w-5' />
@@ -466,7 +457,7 @@ function DropDown(props) {
                 leaveFrom="transform opacity-100 scale-100"
                 leaveTo="transform opacity-0 scale-95"
             >
-                <Menu.Items className="absolute z-20 right-0 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                <Menu.Items className="absolute right-0 z-[120] mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                     <div className="px-1 py-1 ">
 
                         {props.actions && props.actions.export === true &&
@@ -483,7 +474,7 @@ function DropDown(props) {
                                 )}
                             </Menu.Item>
                         }
-                        {props.actions && props.actions.import === true &&
+                        {!contactsExportOnly && props.actions && props.actions.import === true &&
                             <Menu.Item>
                                 {({ active }) => (
                                     <Link
@@ -495,7 +486,7 @@ function DropDown(props) {
                                 )}
                             </Menu.Item>
                         }
-                        {(props.module !== 'Transaction' && props.module !== 'Msg' && props.actions && props.actions.mass_edit === true) &&
+                        {!contactsExportOnly && (props.module !== 'Transaction' && props.module !== 'Msg' && props.actions && props.actions.mass_edit === true) &&
                             <Menu.Item>
                                 {({ active }) => (
                                     <button
@@ -507,7 +498,7 @@ function DropDown(props) {
                                 )}
                             </Menu.Item>
                         }
-                        {(props.actions && props.actions.merge === true) &&
+                        {!contactsExportOnly && (props.actions && props.actions.merge === true) &&
                             <Menu.Item>
                                 {({ active }) => (
                                     <button className='d-flex gap-1 items-center px-4 py-2 font-semibold text-sm text-gray-700 hover:text-indigo-700' onClick={() => props.recordMerger()}>
@@ -519,7 +510,7 @@ function DropDown(props) {
                                 )}
                             </Menu.Item>
                         }
-                        {(props.module !== 'Transaction' && props.module !== 'Msg' && props.actions && props.actions.mass_edit === true) &&
+                        {!contactsExportOnly && (props.module !== 'Transaction' && props.module !== 'Msg' && props.actions && props.actions.mass_edit === true) &&
                             <Menu.Item>
                                 {({ active }) => (
                                     <button

@@ -473,7 +473,7 @@ function Filter(props) {
 
     return (
         <>
-            <div className="overscroll-auto z-10 mt-1">
+            <div className="relative z-40 overscroll-auto mt-1">
                 <Dropdown >
                     <Dropdown.Trigger>
                         <span className="inline-flex rounded-md">

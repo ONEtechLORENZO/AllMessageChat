@@ -1,6 +1,6 @@
 import Authenticated from "../../Layouts/Authenticated";
 import { Link, router as Inertia } from "@inertiajs/react";
-import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from "@heroicons/react/24/solid";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import { useMemo, useState } from "react";
 import Pagination from "@/Components/Pagination";
 import ListViewTable from "@/Components/Views/List/ListViewTable";
@@ -316,17 +316,6 @@ function List(props) {
                 </div>
 
                 <div className="mt-8 rounded-2xl bg-[#170024]/80 backdrop-blur-sm p-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="text-sm text-white/70 font-semibold">
-                            Campaigns
-                        </div>
-                        <button
-                            type="button"
-                            className="inline-flex items-center justify-center rounded-lg border-0 bg-white/5 px-3 py-2 text-white/80 hover:bg-white/10"
-                        >
-                            <AdjustmentsHorizontalIcon className="h-4 w-4" />
-                        </button>
-                    </div>
                     <div className="overflow-x-auto">
                         <ListViewTable
                             records={displayRecords}

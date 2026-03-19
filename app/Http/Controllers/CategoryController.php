@@ -132,20 +132,32 @@ class CategoryController extends Controller
         if($view == 'Detail'){
             $id = $request->id;
             $data = $request->name;
-            $record = [];
+            $record = $this->normalizeSelectionLabels($data);
 
             if($data){
-                foreach($data as $records){
-                    $category = new Category;
-                    foreach($records as $key => $value){
-                        if($key == "__isNew__"){
-                            $category->name = $records['label'];
-                            $category->user_id = $user_id;
-                            
-                            $category->save();
-                        } 
+                foreach((array) $data as $records){
+                    $isNew = false;
+                    $label = null;
+
+                    if (is_array($records)) {
+                        $isNew = !empty($records['__isNew__']);
+                        $label = $records['label'] ?? $records['value'] ?? null;
+                    } elseif (is_object($records)) {
+                        $isNew = !empty($records->__isNew__);
+                        $label = $records->label ?? $records->value ?? null;
                     }
-                    $record[] = $records['label'];
+
+                    if($isNew && is_string($label) && trim($label) !== ''){
+                        $label = trim($label);
+                        $category = Category::firstOrNew([
+                            'name' => $label,
+                            'user_id' => $user_id,
+                        ]);
+
+                        if (! $category->exists) {
+                            $category->save();
+                        }
+                    }
                 }
             }
         
@@ -302,21 +314,18 @@ class CategoryController extends Controller
     public function syncHandling($data, $id) {
        
         $contact = Contact::find($id);
-        $category_id = [];
-        foreach($data as $value){
-            $where = ['name' => $value];  
-            $categorys = Category::where($where)->get('id');
-            foreach($categorys as $key => $category){
-                $category_id[] = $category['id']; 
-            }
+        if (! $contact) {
+            return false;
         }
 
+        $data = $this->normalizeSelectionLabels($data);
+
+        $category_id = count($data)
+            ? Category::whereIn('name', $data)->pluck('id')->all()
+            : [];
+
         // Compare exist and current categories
-        $existCategories = $contact->categorys;
-        $existCategoryIds = [];
-        foreach($existCategories as $category){
-            $existCategoryIds[] = $category->id;
-        }
+        $existCategoryIds = $contact->categorys()->pluck('categories.id')->all();
         $newCategories = array_diff($category_id , $existCategoryIds);
         $contact->categorys()->sync($category_id);
       
@@ -338,5 +347,28 @@ class CategoryController extends Controller
         }
         return true;
          
+    }
+
+    protected function normalizeSelectionLabels($data)
+    {
+        $labels = [];
+
+        foreach ((array) $data as $record) {
+            $label = null;
+
+            if (is_array($record)) {
+                $label = $record['label'] ?? $record['value'] ?? null;
+            } elseif (is_object($record)) {
+                $label = $record->label ?? $record->value ?? null;
+            } elseif (is_string($record)) {
+                $label = $record;
+            }
+
+            if (is_string($label) && trim($label) !== '') {
+                $labels[] = trim($label);
+            }
+        }
+
+        return array_values(array_unique($labels));
     }
 }

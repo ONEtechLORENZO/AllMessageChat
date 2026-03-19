@@ -1,15 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import Authenticated from "../../Layouts/Authenticated";
 import ListView from "@/Components/Views/List/Index2";
 import CategoryList from "../../Pages/Category/List";
 import TagList from "../../Pages/Tag/List";
 //import { Link } from 'heroicons-react';
-import { Link } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
+import { ArrowUpTrayIcon } from "@heroicons/react/24/solid";
+import ImportContactsModal from "./ImportContactsModal";
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
 
 function List(props) {
+    const [showImportModal, setShowImportModal] = useState(false);
+    const contactActions = {
+        ...(props.actions ?? {}),
+        create: true,
+    };
+
     const tabs = [
         { label: "All", name: "Contacts", href: "#", current: true },
         {
@@ -19,12 +27,6 @@ function List(props) {
             current: false,
         },
         { label: "Tags", name: "Tags", href: route("listTag"), current: false },
-        {
-            label: "Fields",
-            name: "Fields",
-            href: route("listField", { mod: props.module }),
-            current: false,
-        },
     ];
 
     return (
@@ -92,11 +94,38 @@ function List(props) {
                             filter_condition={props.filter_condition}
                             filter_id={props.filter_id}
                             {...props}
+                            actions={contactActions}
+                            headerActions={
+                                <button
+                                    type="button"
+                                    onClick={() => setShowImportModal(true)}
+                                    className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-white/10"
+                                >
+                                    <ArrowUpTrayIcon className="h-4 w-4" />
+                                    Import Contacts
+                                </button>
+                            }
+                            add_button_text={
+                                props.translator?.["Add Contact"] ??
+                                `${props.translator?.Add ?? "Add"} ${props.singular ?? "Contact"}`
+                            }
                             translator={props.translator}
                         />
                     )}
                 </>
             ))}
+            {showImportModal ? (
+                <ImportContactsModal
+                    translator={props.translator}
+                    onClose={() => setShowImportModal(false)}
+                    onImported={() =>
+                        router.reload({
+                            preserveScroll: true,
+                            preserveState: true,
+                        })
+                    }
+                />
+            ) : null}
         </Authenticated>
     );
 }

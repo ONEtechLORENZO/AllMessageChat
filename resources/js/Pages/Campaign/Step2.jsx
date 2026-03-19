@@ -38,6 +38,7 @@ function ContactFilter(props){
                         translator={translator}
                         filter={filter}
                         module={'Contact'}
+                        restrictToRelationFields={true}
                         setRecordCount={props.setRecordCount}
                         setConditions={props.setConditions}
                         filterCondition={filterCondition}

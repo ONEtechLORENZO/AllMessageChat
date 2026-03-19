@@ -285,6 +285,11 @@ const menuBar = [
         ],
     },
     {
+        name: "Contacts",
+        href: route("listContact"),
+        icon: UsersIcon,
+    },
+    {
         name: "Reports",
         href: route("listMessage"),
         icon: ChartBarIcon,

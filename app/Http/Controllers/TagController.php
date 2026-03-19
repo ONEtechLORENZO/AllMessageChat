@@ -136,20 +136,32 @@ class TagController extends Controller
         if($view == 'Detail'){
             $id = $request->id;
             $data = $request->name;
-            $record = [];
+            $record = $this->normalizeSelectionLabels($data);
 
             if($data){
-                foreach($data as $records){
-                    $tag = new Tag;
-                    foreach($records as $key => $value){
-                        if($key == "__isNew__"){
-                            $tag->name = $records['label'];
-                            $tag->user_id = $user_id;
+                foreach((array) $data as $records){
+                    $isNew = false;
+                    $label = null;
 
-                            $tag->save();
-                        } 
+                    if (is_array($records)) {
+                        $isNew = !empty($records['__isNew__']);
+                        $label = $records['label'] ?? $records['value'] ?? null;
+                    } elseif (is_object($records)) {
+                        $isNew = !empty($records->__isNew__);
+                        $label = $records->label ?? $records->value ?? null;
                     }
-                    $record[] = $records['label'];
+
+                    if($isNew && is_string($label) && trim($label) !== ''){
+                        $label = trim($label);
+                        $tag = Tag::firstOrNew([
+                            'name' => $label,
+                            'user_id' => $user_id,
+                        ]);
+
+                        if (! $tag->exists) {
+                            $tag->save();
+                        }
+                    }
                 }
             }
            
@@ -304,22 +316,18 @@ class TagController extends Controller
     public function syncHandling($data, $id) {
         
         $contact = Contact::find($id);
-      
-        $tag_id = [];
-        foreach($data as $value){
-            $where = ['name' => $value];  
-            $tags = Tag::where($where)->get('id');
-            foreach($tags as $key => $tag){
-                $tag_id[] = $tag['id']; 
-            }
+        if (! $contact) {
+            return false;
         }
 
+        $data = $this->normalizeSelectionLabels($data);
+      
+        $tag_id = count($data)
+            ? Tag::whereIn('name', $data)->pluck('id')->all()
+            : [];
+
         // Compare exist and current tags
-        $existTags = ($contact->tags) ? $contact->tags : [];
-        $existTagIds = [];
-        foreach($existTags as $tag){
-            $existTagIds[] = $tag->id;
-        }
+        $existTagIds = $contact->tags()->pluck('tags.id')->all();
 
         $newTags = array_diff($tag_id , $existTagIds);  // For automation new tag relate event
         $contact->tags()->sync($tag_id);
@@ -341,6 +349,29 @@ class TagController extends Controller
             }
         }
         return true;
+    }
+
+    protected function normalizeSelectionLabels($data)
+    {
+        $labels = [];
+
+        foreach ((array) $data as $record) {
+            $label = null;
+
+            if (is_array($record)) {
+                $label = $record['label'] ?? $record['value'] ?? null;
+            } elseif (is_object($record)) {
+                $label = $record->label ?? $record->value ?? null;
+            } elseif (is_string($record)) {
+                $label = $record;
+            }
+
+            if (is_string($label) && trim($label) !== '') {
+                $labels[] = trim($label);
+            }
+        }
+
+        return array_values(array_unique($labels));
     }
 
     /**

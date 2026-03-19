@@ -17,13 +17,59 @@ function SubPanels(props) {
     const [paginateDetail, setpaginateDetail] = useState([]);
     const [parentName, setparentName] = useState([]);
     const [recordId, setRecordId] = useState("");
+    const [isLoading, setIsLoading] = useState(true);
+    const showCreateButton =
+        actions &&
+        actions.create === true &&
+        !(
+            props.module === "Contact" &&
+            (props.parent_module === "Tag" || props.parent_module === "Category")
+        );
 
     useEffect(() => {
         getData();
-    }, [props]);
+    }, [props.parent_module, props.parent_id, props.module]);
+
+    function getContactCustomHeaders(baseHeaders) {
+        const widgetHeaders = {
+            widget_name: { label: "Name", type: "text" },
+            widget_contacts: { label: "Contacts", type: "text" },
+            widget_socials: { label: "Socials", type: "text" },
+            widget_tag: { label: "Tag", type: "text" },
+            widget_list: { label: "List", type: "text" },
+        };
+
+        const hiddenColumns = new Set([
+            "first_name",
+            "last_name",
+            "email",
+            "tag",
+            "list",
+            "phone_number",
+            "updated_at",
+            "whatsapp_number",
+            "telegram_number",
+            "facebook_username",
+            "instagram_username",
+            "tiktok_username",
+            "linkedin_username",
+        ]);
+
+        const remainingHeaders = Object.fromEntries(
+            Object.entries(baseHeaders ?? {}).filter(
+                ([key]) => !hiddenColumns.has(key),
+            ),
+        );
+
+        return {
+            ...widgetHeaders,
+            ...remainingHeaders,
+        };
+    }
 
     // Get subpanel records
     function getData() {
+        setIsLoading(true);
         let endpoint_url = route("subpanel_list", {
             module: props.parent_module,
             id: props.parent_id,
@@ -38,6 +84,14 @@ function SubPanels(props) {
             setpaginateDetail(response.data.sub_panel_pagination);
             setActions(response.data.sub_panbel_actions);
             setparentName(response.data.parent_name);
+            setIsLoading(false);
+        }).catch(() => {
+            setrecordDetails([]);
+            setHeaders([]);
+            setpaginateDetail([]);
+            setActions([]);
+            setparentName([]);
+            setIsLoading(false);
         });
     }
 
@@ -107,7 +161,7 @@ function SubPanels(props) {
             <div className="flex min-w-0 justify-between">
                 <div className="flex gap-4"></div>
                 <div className="flex gap-4">
-                    {actions && actions.create === true && (
+                    {showCreateButton && (
                         <Button type="button" onClick={() => setShowForm(true)}>
                             {actions.add_button_text
                                 ? actions.add_button_text
@@ -121,16 +175,30 @@ function SubPanels(props) {
                     <ListViewTable
                         module={props.module}
                         headers={headers}
+                        customHeader={
+                            props.module === "Contact"
+                                ? getContactCustomHeaders(headers)
+                                : undefined
+                        }
                         records={recordDetails}
                         actions={actions}
                         paginator={paginateDetail}
                         deleteRecord={deleteRecord}
                         hideToolMenu
                         noCardBorder
+                        emptyStateText={
+                            isLoading
+                                ? (props.translator?.Loading ?? "Loading...")
+                                : (props.translator?.["No records found!"] ?? "No records found!")
+                        }
                         {...props}
                     />
-                    {Object.entries(recordDetails).length !== 0 && (
-                        <Pagination paginator={paginateDetail} />
+                    {!isLoading && Object.entries(recordDetails).length !== 0 && (
+                        <Pagination
+                            paginator={paginateDetail}
+                            translator={props.translator}
+                            module={props.module}
+                        />
                     )}
                 </div>
             </div>

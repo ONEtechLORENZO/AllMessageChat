@@ -5,6 +5,7 @@ import { AiOutlineVerticalLeft, AiOutlineVerticalRight, AiOutlineRight, AiOutlin
 
 
 function Pagination(props) {
+    const translator = props.translator ?? {};
     const [pageLimit, setpageLimit] = useState(
         props.paginator.pageLimit ?? props.paginator.perPage ?? 10
     );
@@ -22,7 +23,7 @@ function Pagination(props) {
     }
     return (
         <div className='flex justify-end gap-10 !mt-5 items-center'>
-            <div className='flex items-center'>{props.translator['Rows per page']}:
+            <div className='flex items-center'>{translator['Rows per page'] ?? 'Rows per page'}:
                 <select
                     className="block border-0 focus:outline-none !bg-transparent !pr-[2rem] sm:text-sm appearance-none"
                     value={pageLimit}

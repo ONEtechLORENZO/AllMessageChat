@@ -189,6 +189,7 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/contact', [ContactController::class, 'show'])->name('detailContact');
         Route::post('/contact/update/{id}', [ContactController::class, 'update'])->name('updateContact');
         Route::post('/contact/store', [ContactController::class, 'store'])->name('storeContact');
+        Route::post('/contact/import-csv', [ContactController::class, 'importCsv'])->name('importContactCsv');
         Route::get('/contact/getContactDetail', [ContactController::class, 'edit'])->name('editContact');
         Route::get('/contact/getFilterContacts', [ContactController::class, 'getFilterContactList'])->name('get_filter_contact');
         Route::post('/contact/groupDelete', [ContactController::class, 'groupDeleteRecord'])->name('group_delete');

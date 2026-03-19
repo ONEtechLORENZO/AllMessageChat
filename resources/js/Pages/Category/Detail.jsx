@@ -52,6 +52,8 @@ function Detail(props){
                     heading={props.heading}
                     hideForm={hideForm}
                     recordId={props.record.id}
+                    translator={props.translator}
+                    {...props}
                 />
             : ''}
 

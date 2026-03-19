@@ -234,6 +234,11 @@ function FilterGroups (props) {
      * Fetch module fields
      */
       function fetchModuleFields() {
+        if (props.restrictToRelationFields) {
+            setFields(relationFields);
+            return;
+        }
+
         nProgress.start(0.5);
         nProgress.inc(0.2);
         let endpoint_url = route('fetchModuleFields', {'module': props.module});

@@ -29,6 +29,7 @@ export default function ListViewTable(props) {
     const records = Array.isArray(props.records)
         ? props.records
         : Object.values(props.records ?? {});
+    const displayedRecords = records;
     const actions =
         props.actions &&
         typeof props.actions === "object" &&
@@ -43,7 +44,7 @@ export default function ListViewTable(props) {
         actions.delete === true ||
         actions.unlink === true ||
         actions.download === true;
-    const showToolMenu = props.hideToolMenu !== true;
+    const showToolMenu = false;
     const showActionColumn =
         props.forceActionColumn === true ||
         showToolMenu ||
@@ -283,7 +284,7 @@ export default function ListViewTable(props) {
                                   : "divide-y divide-white/10"
                         }
                     >
-                        {records.length === 0 && (
+                        {displayedRecords.length === 0 && (
                             <tr>
                                 <td
                                     className={
@@ -299,7 +300,7 @@ export default function ListViewTable(props) {
                                 </td>
                             </tr>
                         )}
-                        {records.map((record, key) => {
+                        {displayedRecords.map((record, key) => {
                             if (showAll === false && key > 4) return false;
 
                             return (
@@ -406,9 +407,32 @@ export default function ListViewTable(props) {
                                             }
 
                                             if (name == "widget_contacts") {
-                                                if (record.phones) {
-                                                    let phoneNumbers =
-                                                        record["phones"];
+                                                const phoneNumbers = Array.isArray(
+                                                    record["phones"],
+                                                )
+                                                    ? record["phones"].filter(
+                                                          (phone) =>
+                                                              phone?.phones,
+                                                      )
+                                                    : [];
+                                                const emailAddresses =
+                                                    Array.isArray(
+                                                        record["emails"],
+                                                    )
+                                                        ? record[
+                                                              "emails"
+                                                          ].filter(
+                                                              (email) =>
+                                                                  email?.emails,
+                                                          )
+                                                        : [];
+                                                const fallbackPhone =
+                                                    record["phone_number"] ||
+                                                    record["whatsapp_number"];
+                                                const fallbackEmail =
+                                                    record["email"];
+
+                                                if (phoneNumbers.length) {
                                                     {
                                                         phoneNumbers &&
                                                             phoneNumbers.map(
@@ -449,14 +473,23 @@ export default function ListViewTable(props) {
                                                                 },
                                                             );
                                                     }
+                                                } else if (fallbackPhone) {
+                                                    widget = true;
+                                                    tmpWidgets.push(
+                                                        <div
+                                                            key="phone-fallback"
+                                                            className="text-[#878787] flex items-center gap-2"
+                                                        >
+                                                            <SlScreenSmartphone />{" "}
+                                                            {fallbackPhone}
+                                                        </div>,
+                                                    );
                                                 }
 
-                                                if (record.emails) {
-                                                    let EmailAddress =
-                                                        record["emails"];
+                                                if (emailAddresses.length) {
                                                     {
-                                                        EmailAddress &&
-                                                            EmailAddress.map(
+                                                        emailAddresses &&
+                                                            emailAddresses.map(
                                                                 (
                                                                     email,
                                                                     index,
@@ -477,12 +510,12 @@ export default function ListViewTable(props) {
                                                                                         "emails"
                                                                                     ]
                                                                                 }
-                                                                                {EmailAddress.length >
+                                                                                {emailAddresses.length >
                                                                                 1 ? (
                                                                                     <div className="flex items-center text-[#878787]">
                                                                                         {" "}
                                                                                         +{" "}
-                                                                                        {EmailAddress.length -
+                                                                                        {emailAddresses.length -
                                                                                             1}{" "}
                                                                                     </div>
                                                                                 ) : (
@@ -494,6 +527,17 @@ export default function ListViewTable(props) {
                                                                 },
                                                             );
                                                     }
+                                                } else if (fallbackEmail) {
+                                                    widget = true;
+                                                    tmpWidgets.push(
+                                                        <div
+                                                            key="email-fallback"
+                                                            className="text-[#878787] flex items-center gap-2"
+                                                        >
+                                                            <GoMail />
+                                                            {fallbackEmail}
+                                                        </div>,
+                                                    );
                                                 }
                                             }
 
@@ -806,7 +850,7 @@ export default function ListViewTable(props) {
                                 </tr>
                             );
                         })}
-                        {records.length > 0 && (
+                        {displayedRecords.length > 0 && (
                             <tr>
                                 <td colSpan={tableColSpan} className="pt-3"></td>
                             </tr>

@@ -49,7 +49,7 @@ const Trigger = ({ children }) => {
         <>
             <div onClick={toggleOpen}>{children}</div>
 
-            {open && <div className="fixed inset-0 z-40" onClick={() => setOpen(false)}></div>}
+            {open && <div className="fixed inset-0 z-[110]" onClick={() => setOpen(false)}></div>}
         </>
     );
 };
@@ -80,7 +80,7 @@ const Content = ({ align = 'right', width = '48', contentClasses = 'py-1 bg-whit
             leaveTo="transform opacity-0 scale-95"
         >
             <div
-                className={`absolute z-50 mt-2 rounded-md shadow-lg ${alignmentClasses} ${widthClasses}`}
+                className={`absolute z-[120] mt-2 rounded-md shadow-lg ${alignmentClasses} ${widthClasses}`}
                 onClick={() => setOpen(false)}
             >
                 <div className={`rounded-md ${ring ? 'ring-1 ring-black ring-opacity-5' : ''} ${contentClasses}`}>
@@ -120,7 +120,7 @@ const Notification = ({ align = 'right', width = '48', contentClasses = 'py-1 bg
             leaveTo="transform opacity-0 scale-95"
         >
             <div
-                className={`absolute z-50 mt-2 w-96 overflow-scroll h-auto max-h-96 md:max-h-auto rounded-md shadow-lg ${alignmentClasses} ${widthClasses}`}
+                className={`absolute z-[120] mt-2 w-96 overflow-scroll h-auto max-h-96 md:max-h-auto rounded-md shadow-lg ${alignmentClasses} ${widthClasses}`}
             >
                 <div className={`rounded-md ring-1 ring-black ring-opacity-5 ${contentClasses}`}>
                     {children}

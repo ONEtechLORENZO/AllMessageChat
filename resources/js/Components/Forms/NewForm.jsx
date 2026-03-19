@@ -50,6 +50,13 @@ const optionField = {
     'is_custom': 1
 }
 
+const hiddenContactModalFields = new Set([
+    "telegram_number",
+    "tiktok_username",
+    "linkedin_username",
+    "personal_website",
+]);
+
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
@@ -67,6 +74,17 @@ export default function NewForm(props) {
     const [totalPrice, setTotalPrice] = useState('0.00');
     const [productList, setProductList] = useState(props.productList);
     const [tmpRecord, setTmpRecord] = useState();
+    const [tagOptions, setTagOptions] = useState(props.tagOptions ?? []);
+    const [categoryOptions, setCategoryOptions] = useState(props.listOptions ?? []);
+    const [setupOptionsLoaded, setSetupOptionsLoaded] = useState(
+        (Array.isArray(props.tagOptions) && props.tagOptions.length > 0) ||
+            (Array.isArray(props.listOptions) && props.listOptions.length > 0),
+    );
+    const [setupOptionsRequested, setSetupOptionsRequested] = useState(
+        (Array.isArray(props.tagOptions) && props.tagOptions.length > 0) ||
+            (Array.isArray(props.listOptions) && props.listOptions.length > 0),
+    );
+    const [setupOptionsLoading, setSetupOptionsLoading] = useState(false);
 
     // Role module permission
     const [modulePermissions, setPermissonField] = useState();
@@ -99,6 +117,175 @@ export default function NewForm(props) {
         }
     }, [props]);
 
+    useEffect(() => {
+        if (props.module !== "Contact") {
+            return;
+        }
+
+        if (Array.isArray(props.tagOptions) && props.tagOptions.length) {
+            setTagOptions(props.tagOptions);
+            setSetupOptionsLoaded(true);
+            setSetupOptionsRequested(true);
+        }
+
+        if (Array.isArray(props.listOptions) && props.listOptions.length) {
+            setCategoryOptions(props.listOptions);
+            setSetupOptionsLoaded(true);
+            setSetupOptionsRequested(true);
+        }
+    }, [props.module, props.tagOptions, props.listOptions]);
+
+    useEffect(() => {
+        if (
+            props.module === "Contact" &&
+            group === "Setup" &&
+            !setupOptionsRequested &&
+            !setupOptionsLoading
+        ) {
+            fetchTagListOptions();
+        }
+    }, [props.module, group, setupOptionsRequested, setupOptionsLoading]);
+
+    function normalizeSelectionOptions(records) {
+        if (!Array.isArray(records)) {
+            return [];
+        }
+
+        return records
+            .map((record) => {
+                if (!record) {
+                    return null;
+                }
+
+                if (typeof record === "string") {
+                    const label = record.trim();
+                    return label ? { value: label, label } : null;
+                }
+
+                if (typeof record === "object") {
+                    const label = record.label ?? record.value ?? record.name ?? "";
+                    const trimmedLabel =
+                        typeof label === "string" ? label.trim() : "";
+
+                    return trimmedLabel
+                        ? {
+                              value: trimmedLabel,
+                              label: trimmedLabel,
+                              ...(record.__isNew__ ? { __isNew__: true } : {}),
+                          }
+                        : null;
+                }
+
+                return null;
+            })
+            .filter(Boolean);
+    }
+
+    function isContactModalFieldHidden(fieldName) {
+        return props.module === "Contact" && hiddenContactModalFields.has(fieldName);
+    }
+
+    function isFieldMandatory(field) {
+        if (field?.is_mandatory === 1) {
+            return true;
+        }
+
+        return props.module === "Contact" && field?.field_name === "first_name";
+    }
+
+    function handleSetupSelection(fieldName, value) {
+        let newState = Object.assign({}, data);
+        newState[fieldName] = value ?? [];
+        setData(newState);
+    }
+
+    function fetchTagListOptions() {
+        setSetupOptionsRequested(true);
+        setSetupOptionsLoading(true);
+
+        Axios.get(route("tag_list_options"))
+            .then((response) => {
+                if (response.data.status === true) {
+                    setTagOptions(response.data.tagOptions ?? []);
+                    setCategoryOptions(response.data.categoryOptions ?? []);
+                    setSetupOptionsLoaded(true);
+                }
+            })
+            .finally(() => {
+                setSetupOptionsLoading(false);
+            });
+    }
+
+    const relationSelectStyles = {
+        control: (base, state) => ({
+            ...base,
+            minHeight: 44,
+            backgroundColor: "#0F0B1A",
+            borderColor: state.isFocused ? "#1C9AE1" : "rgba(255,255,255,0.2)",
+            boxShadow: state.isFocused ? "0 0 0 2px rgba(28,154,225,0.18)" : "none",
+            "&:hover": {
+                borderColor: "#1C9AE1",
+            },
+        }),
+        menu: (base) => ({
+            ...base,
+            backgroundColor: "#12041f",
+            color: "#fff",
+            zIndex: 30,
+        }),
+        menuPortal: (base) => ({
+            ...base,
+            zIndex: 40,
+        }),
+        option: (base, state) => ({
+            ...base,
+            backgroundColor: state.isFocused ? "rgba(191,0,255,0.2)" : "#12041f",
+            color: "#fff",
+        }),
+        singleValue: (base) => ({
+            ...base,
+            color: "#fff",
+        }),
+        input: (base) => ({
+            ...base,
+            color: "#fff",
+        }),
+        placeholder: (base) => ({
+            ...base,
+            color: "rgba(255,255,255,0.45)",
+        }),
+        multiValue: (base) => ({
+            ...base,
+            backgroundColor: "rgba(191,0,255,0.18)",
+        }),
+        multiValueLabel: (base) => ({
+            ...base,
+            color: "#fff",
+        }),
+        multiValueRemove: (base) => ({
+            ...base,
+            color: "#fff",
+            ":hover": {
+                backgroundColor: "rgba(191,0,255,0.32)",
+                color: "#fff",
+            },
+        }),
+        indicatorSeparator: (base) => ({
+            ...base,
+            backgroundColor: "rgba(255,255,255,0.15)",
+        }),
+        dropdownIndicator: (base) => ({
+            ...base,
+            color: "rgba(255,255,255,0.65)",
+        }),
+        clearIndicator: (base) => ({
+            ...base,
+            color: "rgba(255,255,255,0.65)",
+        }),
+    };
+    const menuPortalTarget =
+        typeof document !== "undefined" ? document.body : null;
+
     function fetchModuleGroupfields() {
         nProgress.start(0.5);
         nProgress.inc(0.2);
@@ -108,9 +295,23 @@ export default function NewForm(props) {
             nProgress.done(true);
             if (response.data.status === true) {
                 var fieldGroup = (typeof (response.data.fieldGroupLists) === 'object') ? Object.assign({}, response.data.fieldGroupLists) : response.data.fieldGroupLists;
+                const groupedFields = { ...(response.data.groupFieldList ?? {}) };
+
+                if (props.module === "Contact") {
+                    if (Array.isArray(fieldGroup)) {
+                        if (!fieldGroup.includes("Setup")) {
+                            fieldGroup.push("Setup");
+                        }
+                    } else if (!Object.values(fieldGroup).includes("Setup")) {
+                        fieldGroup.setup = "Setup";
+                    }
+
+                    groupedFields.Setup = groupedFields.Setup ?? [];
+                }
+
                 setFields(response.data.fields);
                 setfieldGroupList(fieldGroup);
-                setGroupfieldList(response.data.groupFieldList);
+                setGroupfieldList(groupedFields);
 
                 // Role permission
                 setPermissonField((response.data.modulePermissions) ? response.data.modulePermissions : modulePermissions);
@@ -145,14 +346,20 @@ export default function NewForm(props) {
             Axios.get(endpoint_url).then((response) => {
                 nProgress.done(true);
                 if (response.data.status !== false) {
-                    setData(response.data.record);
-                    setTmpRecord(response.data.record);
+                    const record = {
+                        ...response.data.record,
+                        tags: normalizeSelectionOptions(response.data.record.tags),
+                        categorys: normalizeSelectionOptions(response.data.record.categorys),
+                    };
+
+                    setData(record);
+                    setTmpRecord(record);
                     setLineItems((response.data.lineItems) ? response.data.lineItems : props.lineItems);
                     setProductList((response.data.productList) ? response.data.productList : productList);
 
                     // Role Permissions                
                     setPermissonField((response.data.module_permissions) ? response.data.module_permissions : modulePermissions);
-                    var data = response.data.record;
+                    var data = record;
                     data['role_permission'] = response.data.role_permissions;
 
                     // Check Quick Reply
@@ -408,7 +615,7 @@ export default function NewForm(props) {
                 </Transition.Child>
 
                 <div className="fixed inset-0 overflow-y-auto">
-                    <div className="flex min-h-full items-center justify-center p-4 text-center">
+                    <div className="flex min-h-full items-start justify-center p-4 text-center sm:items-center">
                         <Transition.Child
                             as={Fragment}
                             enter="ease-out duration-300"
@@ -418,9 +625,9 @@ export default function NewForm(props) {
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="w-full max-w-4xl max-h-[640px] transform overflow-hidden rounded-2xl bg-transparent text-left align-middle shadow-xl transition-all border border-white/10">
-                                <div className="flex min-h-[300px]">
-                                    <div className="w-2/6 bg-black text-white flex flex-col gap-4 items-center p-6 overflow-y-auto max-h-[640px] border-r border-white/10">
+                            <Dialog.Panel className="flex h-[calc(100vh-2rem)] w-full max-w-4xl max-h-[720px] transform flex-col overflow-hidden rounded-2xl border border-white/10 bg-transparent text-left align-middle shadow-xl transition-all">
+                                <div className="flex min-h-0 flex-1">
+                                    <div className="w-2/6 min-h-0 overflow-y-auto border-r border-white/10 bg-black p-6 text-white flex flex-col gap-4 items-center">
                                         <div className="text-xl font-semibold text-white">
                                             {props.translator['Add']} {props.module}
                                         </div>
@@ -469,7 +676,7 @@ export default function NewForm(props) {
                                                             'w-3 h-3 rounded-full'
                                                         )}
                                                     ></div>
-                                                    {props.translator[grouplist]}
+                                                    {props.translator[grouplist] ?? grouplist}
                                                 </li>
                                             ))}
                                         </ul>
@@ -480,17 +687,22 @@ export default function NewForm(props) {
                                             <ValidationErrors errors={formErrors} />
                                         </div>
                                         : ''}
-                                    <div className="w-4/6 bg-[#140816]/70 text-white backdrop-blur-xl">
-                                        <div className=" !p-6 flex flex-col overflow-y-auto !pb-8 h-[576px]">
-                                            <div className="flex-1 ">
+                                    <div className="flex w-4/6 min-h-0 flex-col bg-[#140816]/70 text-white backdrop-blur-xl">
+                                        <div className="p-6 flex-1 overflow-y-auto min-h-0">
+                                            <div className="flex-1">
                                                 <form id='form'>
                                                     <div className="space-y-2">
                                                         {groupFieldList && Object.entries(groupFieldList).map(([groupName, groupfields]) => (
                                                             <>
                                                                 {group == groupName &&
                                                                     (groupfields).map((field) => {
+                                                                        if (isContactModalFieldHidden(field.field_name)) {
+                                                                            return null;
+                                                                        }
+
                                                                         let element = '';
                                                                         let readOnly = true;
+                                                                        const mandatory = isFieldMandatory(field);
                                                                         if (data && data.is_custom == '1' && data.module_name == 'Contact' || data.module_name == 'Opportunity' && data.field_type == 'dropdown') {
                                                                             addSelectableField(groupName, groupfields);
                                                                         }
@@ -524,7 +736,7 @@ export default function NewForm(props) {
                                                                                     name={field.field_name}
                                                                                     value={field_value}
                                                                                     handleChange={handleChange}
-                                                                                    required={field.is_mandatory === 1 ? true : false}
+                                                                                    required={mandatory}
                                                                                     readOnly={(readOnly) ? '' : 'disabled'}
                                                                                 />;
                                                                                 break;
@@ -537,7 +749,7 @@ export default function NewForm(props) {
                                                                                     name={field.field_name}
                                                                                     value={field_value}
                                                                                     handleChange={handleChange}
-                                                                                    required={field.is_mandatory === 1 ? true : false}
+                                                                                    required={mandatory}
                                                                                     readOnly={(readOnly) ? '' : 'disabled'}
                                                                                 />;
                                                                                 break;
@@ -546,7 +758,7 @@ export default function NewForm(props) {
                                                                                 element = <PhoneInput2
                                                                                     inputProps={{
                                                                                         name: 'field.field_name',
-                                                                                        required: field.is_mandatory === 1 ? true : false,
+                                                                                        required: mandatory,
                                                                                         autoFocus: true
                                                                                     }}
                                                                                     containerStyle={{ marginTop: "15px" }}
@@ -557,7 +769,7 @@ export default function NewForm(props) {
                                                                                     placeholder={props.translator["Enter phone number"]}
                                                                                     value={field_value}
                                                                                     onChange={(value) => changePhoneNumber(value, field.field_name)}
-                                                                                    required={field.is_mandatory === 1 ? true : false}
+                                                                                    required={mandatory}
                                                                                 />
 
                                                                                 break;
@@ -573,7 +785,7 @@ export default function NewForm(props) {
                                                                                         id={field.field_name}
                                                                                         name={field.field_name}
                                                                                         value={field_value}
-                                                                                        required={field.is_mandatory === 1 ? true : false}
+                                                                                        required={mandatory}
                                                                                         handleChange={(event) => changeNumber(field.field_name, event)}
                                                                                     />
                                                                                 </div>
@@ -582,7 +794,7 @@ export default function NewForm(props) {
                                                                                 element = <TextArea
                                                                                     id={field.field_name}
                                                                                     name={field.field_name}
-                                                                                    required={field.is_mandatory === 1 ? true : false}
+                                                                                    required={mandatory}
                                                                                     rows="2"
                                                                                     className={`mt-1 max-w-lg shadow-sm block w-full focus:ring-skin-primary focus:border-skin-primary sm:text-sm border border-gray-300 rounded-md`}
                                                                                     value={field_value}
@@ -597,7 +809,7 @@ export default function NewForm(props) {
                                                                                     handleChange={handleChange}
                                                                                     emptyOption={field.field_name == 'field_group' ? props.translator['General'] : props.translator['Select']}
                                                                                     value={field_value}
-                                                                                    required={field.is_mandatory === 1 ? true : false}
+                                                                                    required={mandatory}
                                                                                     readOnly={(readOnly) ? '' : 'disabled'}
                                                                                 />
                                                                                 break;
@@ -659,7 +871,7 @@ export default function NewForm(props) {
                                                                                     handleChange={handleMultiSelectChange}
                                                                                     emptyOption={field.field_name == 'field_group' ? 'General' : 'Select'}
                                                                                     value={field_value}
-                                                                                    required={field.is_mandatory === 1 ? true : false}
+                                                                                    required={mandatory}
                                                                                     readOnly={(readOnly) ? '' : 'disabled'}
                                                                                 />
                                                                                 break;
@@ -670,7 +882,7 @@ export default function NewForm(props) {
                                                                                     module={field.options.module}
                                                                                     handleChange={handleRelateChange}
                                                                                     value={field_value}
-                                                                                    required={field.is_mandatory === 1 ? true : false}
+                                                                                    required={mandatory}
                                                                                     readOnly={(readOnly) ? '' : 'disabled'}
                                                                                 />
                                                                                 break;
@@ -682,7 +894,7 @@ export default function NewForm(props) {
                                                                                     name={field.field_name}
                                                                                     value={field_value}
                                                                                     handleChange={handleChange}
-                                                                                    required={field.is_mandatory === 1 ? true : false}
+                                                                                    required={mandatory}
                                                                                     readOnly={(readOnly) ? '' : 'disabled'}
                                                                                 />;
                                                                                 break;
@@ -716,7 +928,7 @@ export default function NewForm(props) {
                                                                                     id={field.field_name}
                                                                                     name={field.field_name}
                                                                                     handleChange={fileHandler}
-                                                                                    required={field.is_mandatory === 1 ? true : false}
+                                                                                    required={mandatory}
                                                                                 />;
                                                                                 break;
                                                                             default:
@@ -727,16 +939,16 @@ export default function NewForm(props) {
                                                                                     name={field.field_name}
                                                                                     value={field_value}
                                                                                     handleChange={handleChange}
-                                                                                    required={field.is_mandatory === 1 ? true : false}
+                                                                                    required={mandatory}
                                                                                     readOnly={(readOnly) ? '' : 'disabled'}
                                                                                 />;
                                                                                 break;
                                                                         }
 
                                                                         return (
-                                                                            <div className="sm:grid sm:grid-cols-12 sm:gap-4">
+                                                                            <div className="sm:grid sm:grid-cols-12 sm:gap-4" key={field.field_name}>
                                                                                 <label htmlFor={field.field_name} className="block col-span-4 text-sm font-medium text-white sm:mt-px sm:pt-2">
-                                                                                    {props.translator[field.field_label]}  {field.is_mandatory === 1 ? <span className='text-red-600'> *</span> : ''}
+                                                                                    {props.translator[field.field_label]}  {mandatory ? <span className='text-red-600'> *</span> : ''}
                                                                                 </label>
                                                                                 <div className="mt-1 col-span-8 !sm:mt-0">
                                                                                     {element}
@@ -748,6 +960,60 @@ export default function NewForm(props) {
                                                                 }
                                                             </>
                                                         ))}
+                                                        {props.module == 'Contact' && group == 'Setup' ? (
+                                                            <>
+                                                                {setupOptionsLoading ? (
+                                                                    <div className="sm:grid sm:grid-cols-12 sm:gap-4">
+                                                                        <div className="col-span-4"></div>
+                                                                        <div className="mt-1 col-span-8 text-sm text-white/60 !sm:mt-0">
+                                                                            {props.translator["Loading..."] ?? "Loading..."}
+                                                                        </div>
+                                                                    </div>
+                                                                ) : null}
+                                                                <div className="sm:grid sm:grid-cols-12 sm:gap-4">
+                                                                    <label className="block col-span-4 text-sm font-medium text-white sm:mt-px sm:pt-2">
+                                                                        {props.translator["Tag"] ?? "Tag"}
+                                                                    </label>
+                                                                    <div className="mt-1 col-span-8 !sm:mt-0">
+                                                                        <Creatable
+                                                                            isMulti
+                                                                            isDisabled={setupOptionsLoading}
+                                                                            value={data.tags ?? []}
+                                                                            onChange={(value) => handleSetupSelection("tags", value)}
+                                                                            options={tagOptions}
+                                                                            styles={relationSelectStyles}
+                                                                            menuPortalTarget={menuPortalTarget}
+                                                                            placeholder={
+                                                                                setupOptionsLoading
+                                                                                    ? props.translator["Loading..."] ?? "Loading..."
+                                                                                    : props.translator["Select"] ?? "Select"
+                                                                            }
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                                <div className="sm:grid sm:grid-cols-12 sm:gap-4">
+                                                                    <label className="block col-span-4 text-sm font-medium text-white sm:mt-px sm:pt-2">
+                                                                        {props.translator["List"] ?? "List"}
+                                                                    </label>
+                                                                    <div className="mt-1 col-span-8 !sm:mt-0">
+                                                                        <Creatable
+                                                                            isMulti
+                                                                            isDisabled={setupOptionsLoading}
+                                                                            value={data.categorys ?? []}
+                                                                            onChange={(value) => handleSetupSelection("categorys", value)}
+                                                                            options={categoryOptions}
+                                                                            styles={relationSelectStyles}
+                                                                            menuPortalTarget={menuPortalTarget}
+                                                                            placeholder={
+                                                                                setupOptionsLoading
+                                                                                    ? props.translator["Loading..."] ?? "Loading..."
+                                                                                    : props.translator["Select"] ?? "Select"
+                                                                            }
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        ) : null}
                                                         {group == 'Line Items' && props.module == 'Order' ?
                                                             <LineItem
                                                                 productList={productList}
@@ -782,10 +1048,10 @@ export default function NewForm(props) {
                                                 </form>
                                             </div>
                                         </div>
-                                        <div className="h-16 flex items-center justify-between mt-3 absolute w-4/6 bottom-0 px-3">
+                                        <div className="flex items-center justify-between gap-3 border-t border-white/10 bg-[#140816] px-6 py-4">
                                             <button
                                                 type="button"
-                                                className="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                                                className="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-6 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm"
                                                 onClick={() => props.hideForm()}
                                                 ref={cancelButtonRef}
                                             >
@@ -793,7 +1059,7 @@ export default function NewForm(props) {
                                             </button>
                                             <button
                                                 type="button"
-                                                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+                                                className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-6 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:w-auto sm:text-sm"
                                                 onClick={() => saveForm()}
                                             >
                                                 {props.recordId ? <>{props.translator['Update']} {props.translator[props.module]}</> : <>{props.translator['Create']} {props.translator[props.module]}</>}

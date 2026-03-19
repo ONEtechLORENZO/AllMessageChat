@@ -541,9 +541,14 @@ class FormController extends Controller
     }
 
     public function fetchTagListOption(Request $request) {
-        
-        $tags = Tag::all(['name']);
-        $categorys = Category::all(['name']);
+        $userId = $request->user()->id;
+
+        $tags = Tag::where('user_id', $userId)
+            ->orderBy('name')
+            ->get(['name']);
+        $categorys = Category::where('user_id', $userId)
+            ->orderBy('name')
+            ->get(['name']);
         $tagOptions= [];
         $categoryOptions = [];
 

@@ -141,6 +141,13 @@ class Controller extends BaseController
 
         $query = ($searchData) ? $this->prepareQuery($searchData, $query, $baseTable) : $query;
 
+        if ($moduleName === 'Contact') {
+            $query->where(function ($query) use ($baseTable) {
+                $query->whereRaw("TRIM(COALESCE({$baseTable}.first_name, '')) <> ''")
+                    ->orWhereRaw("TRIM(COALESCE({$baseTable}.last_name, '')) <> ''");
+            });
+        }
+
         // Show only module records
         if ($moduleName == 'Field') {
             $mod = $request->has('mod') ? $request->get('mod') : 'Contact';
@@ -187,14 +194,19 @@ class Controller extends BaseController
         }
 
         if ($from == 'campaignfilter') {
-            $module = new Contact();
-            $headers = $module->getListViewFields();
-            $records = $query->paginate($this->limit);
+            $headers = $list_view_columns;
+
+            if ($moduleName === 'Contact') {
+                $customViewHeader = Cache::get($moduleName . '_custom_column_list_' . $request->user()->id);
+                $headers = $this->listHeaderColumns($list_view_columns, $customViewHeader);
+            }
+
+            $records = $query->get();
 
             $return = [
-                'records' => $records->items(),
+                'records' => $records,
                 'headers' => $headers,
-                'total' => $records->total(),
+                'total' => $records->count(),
             ];
 
             return json_encode($return);
@@ -1194,6 +1206,16 @@ class Controller extends BaseController
         // Appending the base table for uniqueness
         $listFields = $this->appendBaseTableName($baseTable, $moduleName, $listFields);
         $listFields[] = "{$baseTable}.id";
+
+        // Keep hidden base contact fields available for widget renderers.
+        if ($moduleName === 'Contact') {
+            if (!in_array("{$baseTable}.phone_number", $listFields)) {
+                $listFields[] = "{$baseTable}.phone_number";
+            }
+            if (!in_array("{$baseTable}.email", $listFields)) {
+                $listFields[] = "{$baseTable}.email";
+            }
+        }
 
         $query->select($listFields);
         return $query;

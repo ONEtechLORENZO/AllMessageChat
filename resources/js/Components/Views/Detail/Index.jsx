@@ -205,6 +205,61 @@ export default function Index(props) {
         return classes.filter(Boolean).join(' ')
     }
 
+    function formatMultiselectValue(value) {
+        if (Array.isArray(value)) {
+            const values = value.filter((item) => item !== null && item !== undefined && item !== '');
+            return values.length ? values.join(', ') : '-';
+        }
+
+        if (typeof value === 'string') {
+            const trimmedValue = value.trim();
+            if (!trimmedValue) {
+                return '-';
+            }
+
+            try {
+                const parsedValue = JSON.parse(trimmedValue);
+                if (Array.isArray(parsedValue)) {
+                    const values = parsedValue.filter((item) => item !== null && item !== undefined && item !== '');
+                    return values.length ? values.join(', ') : '-';
+                }
+            } catch (error) {
+                // Fall back to rendering the raw string when it is not valid JSON.
+            }
+
+            return trimmedValue;
+        }
+
+        if (value === null || value === undefined || value === '') {
+            return '-';
+        }
+
+        return String(value);
+    }
+
+    function formatCollectionValue(value, itemKey) {
+        if (Array.isArray(value)) {
+            const values = value
+                .map((item) => {
+                    if (item && typeof item === 'object') {
+                        return item[itemKey];
+                    }
+
+                    return item;
+                })
+                .filter((item) => item !== null && item !== undefined && item !== '');
+
+            return values.length ? values.join(', ') : '';
+        }
+
+        if (value && typeof value === 'object') {
+            const itemValue = value[itemKey];
+            return itemValue ?? '';
+        }
+
+        return value ?? '';
+    }
+
     function removeClass() {
         if (!addClass) {
             setAddClass(true);
@@ -433,6 +488,16 @@ export default function Index(props) {
                                         </button>
                                     </div>
                                 }
+                                {props.module == 'Contact' &&
+                                    <div className="mt-1 text-sm text-white/70 whitespace-nowrap sm:mt-0 sm:ml-3">
+                                        <Link
+                                            href={route('listContact')}
+                                            className="inline-flex items-center px-4 py-2 border border-white/10 shadow-sm text-sm font-medium rounded-md text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60"
+                                        >
+                                            {props.translator['Back'] ?? 'Back'}
+                                        </Link>
+                                    </div>
+                                }
                                 {(props.module == 'Lead') || (props.module == 'Opportunity') ?
                                     <div className="mt-1 text-sm text-white/70 whitespace-nowrap sm:mt-0 sm:ml-3">
                                         {(props.module == 'Lead') ? <div>
@@ -566,7 +631,7 @@ export default function Index(props) {
                                                                         }
                                                                     }
                                                                     else if (field.type == 'multiselect') {
-                                                                        value = (value) ? value.join(', ') : '-';
+                                                                        value = formatMultiselectValue(value);
                                                                     }
 
                                                                     if (field.type == 'relate') {
@@ -589,30 +654,11 @@ export default function Index(props) {
                                                                     }
 
                                                                     if (field.type == 'phones' && key == 'phones') {
-                                                                        let phoneNumbers = record[key];
-                                                                        let numbers = [];
-                                                                        if (phoneNumbers) {
-                                                                            {
-                                                                                phoneNumbers && phoneNumbers.map((phone) => {
-                                                                                    numbers.push(phone[key]);
-                                                                                })
-                                                                            }
-                                                                        }
-                                                                        value = numbers ? (numbers).join(', ') : '';
+                                                                        value = formatCollectionValue(record[key], 'phones');
                                                                     }
 
                                                                     if (field.type == 'emails' && key == 'emails') {
-                                                                        let EmailAddress = record[key];
-                                                                        let emails = [];
-                                                                        if (EmailAddress) {
-                                                                            {
-                                                                                EmailAddress && EmailAddress.map((email) => {
-                                                                                    emails.push(email[key]);
-                                                                                })
-                                                                            }
-                                                                        }
-
-                                                                        value = emails ? (emails).join(', ') : '';
+                                                                        value = formatCollectionValue(record[key], 'emails');
                                                                     }
 
                                                                     if (field.type == 'selectable') {
@@ -718,7 +764,7 @@ export default function Index(props) {
                                                                 </dt>
                                                                 <Disclosure.Panel as="dd" className="mt-2 pr-12">
                                                                     <div className="divide-y divide-white/10">
-                                                                        {defaultHeader && Object.entries(defaultHeader).map(([key, field]) => {
+                                                                        {fields && Object.entries(fields).map(([key, field]) => {
                                                                             var field_name = key;
                                                                             var value = (record[key]) ? record[key] : (record.custom && record.custom[key]) ? record.custom[key] : '-';
 
@@ -730,11 +776,19 @@ export default function Index(props) {
                                                                                 }
                                                                             }
                                                                             else if (field.type == 'multiselect') {
-                                                                                value = (value) ? value.join(', ') : '-';
+                                                                                value = formatMultiselectValue(value);
                                                                             }
 
                                                                             if (field.type == 'checkbox') {
                                                                                 value = (value) ? 'Yes' : 'No';
+                                                                            }
+
+                                                                            if (field.type == 'phones' && key == 'phones') {
+                                                                                value = formatCollectionValue(record[key], 'phones');
+                                                                            }
+
+                                                                            if (field.type == 'emails' && key == 'emails') {
+                                                                                value = formatCollectionValue(record[key], 'emails');
                                                                             }
 
                                                                             if (field.type == 'relate') {
@@ -814,48 +868,47 @@ export default function Index(props) {
                             }
                             {activeTab == 'Contact' &&
                                 <SubPanels
+                                    {...props}
                                     module={'Contact'}
                                     parent_id={props.record.id}
                                     parent_name={props.record.name}
                                     parent_module={props.module}
-                                    {...props}
-
                                 />
                             }
                             {activeTab == 'Opportunity' &&
                                 <SubPanels
+                                    {...props}
                                     module={'Opportunity'}
                                     parent_id={props.record.id}
                                     parent_module={props.module}
                                     parent_name={props.record.name}
-                                    {...props}
                                 />
                             }
                             {activeTab == 'Order' &&
                                 <SubPanels
+                                    {...props}
                                     module={'Order'}
                                     parent_id={props.record.id}
                                     parent_module={props.module}
                                     parent_name={props.record.name}
-                                    {...props}
                                 />
                             }
                             {activeTab == 'Product' &&
                                 <SubPanels
+                                    {...props}
                                     module={'Product'}
                                     parent_id={props.record.id}
                                     parent_module={props.module}
                                     parent_name={props.record.name}
-                                    {...props}
                                 />
                             }
                             {activeTab == 'Document' &&
                                 <SubPanels
+                                    {...props}
                                     module={'Document'}
                                     parent_id={props.record.id}
                                     parent_module={props.module}
                                     parent_name={props.record.name}
-                                    {...props}
                                 />
                             }
                             {activeTab == 'company_plan' &&

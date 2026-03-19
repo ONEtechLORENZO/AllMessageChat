@@ -45,6 +45,11 @@ export default function MultiContainer(props) {
         setNumber(newNumber);
     }
 
+    const isEmailField = props.name === "emails";
+    const inputPlaceholder = isEmailField
+        ? props.translator?.["Enter email"] ?? "Enter email"
+        : props.translator?.["Enter phone number"] ?? "Enter phone number";
+
     return (
         <div>
             {numbers.map((number, index) => (
@@ -57,7 +62,8 @@ export default function MultiContainer(props) {
                                     id={`${props.name}-${index}`}
                                     name={props.name}
                                     value={number?.[props.name] ?? ""}
-                                    className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300"
+                                    placeholder={inputPlaceholder}
+                                    className="block w-full rounded-md border border-white/20 bg-[#0F0B1A] px-3 py-2 text-sm text-white placeholder:text-white/35 focus:border-[#1C9AE1] focus:outline-none focus:ring-2 focus:ring-[#1C9AE1]"
                                     onChange={(e) => phoneNumberHandler(e, index)}
                                 />
                             </div>
@@ -67,12 +73,21 @@ export default function MultiContainer(props) {
                                     id={`type-${index}`}
                                     name="type"
                                     value={number?.type ?? ""}
-                                    className="h-10 rounded-md border-transparent bg-transparent py-0 pl-2 pr-7 text-gray-500 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    className="h-10 w-full rounded-md border border-white/20 bg-[#0F0B1A] py-0 pl-3 pr-7 text-sm text-white focus:border-[#1C9AE1] focus:outline-none focus:ring-2 focus:ring-[#1C9AE1]"
                                     onChange={(e) => phoneNumberHandler(e, index)}
                                 >
-                                    <option value="">{props.translator["Select"]}</option>
+                                    <option
+                                        value=""
+                                        className="bg-[#0F0B1A] text-white"
+                                    >
+                                        {props.translator["Select"]}
+                                    </option>
                                     {types.map((type) => (
-                                        <option key={type.name} value={type.name}>
+                                        <option
+                                            key={type.name}
+                                            value={type.name}
+                                            className="bg-[#0F0B1A] text-white"
+                                        >
                                             {type.label}
                                         </option>
                                     ))}
