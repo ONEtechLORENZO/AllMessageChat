@@ -9,6 +9,6 @@ if (-not (Test-Path $PhpExe)) {
 }
 
 $env:PHP_MEMORY_LIMIT = "512M"
-$env:PHP_MAX_EXECUTION_TIME = "120"
+$env:PHP_MAX_EXECUTION_TIME = "0"
 
 & $PhpExe artisan serve --host=$Host --port=$Port

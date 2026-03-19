@@ -69,7 +69,7 @@ function ChatList(props) {
     const selectableChannels = Object.entries(channels).filter(
         ([name]) => name !== "all",
     );
-    const [current_tab, setCurrentTabId] = useState("unread");
+    const [current_tab, setCurrentTabId] = useState(props.mode || "unread");
     const tabs = [
         {
             name: props.translator["Unread"],
@@ -243,32 +243,22 @@ function ChatList(props) {
     function getContactMessage(contact, channel) {
         setSelectedContact(contact);
         setContainerCategory(channel);
+
         if (!contact) {
             return false;
         }
+
         nProgress.start(0.5);
         nProgress.inc(0.2);
         setMessages({});
-        var url = route("chat_list", {
-            contact_id: contact,
-            category: channel,
-        });
-        if (props.filter_id) {
-            url = url + "&filter_id=" + props.filter_id;
-        }
-        if (current_tab) {
-            url += "&mode=" + current_tab;
-        }
 
-        var url = route("get_message_list", {
+        const url = route("get_message_list", {
             contact_id: contact,
             category: channel,
             mode: "ajax",
         });
-        Axios({
-            method: "get",
-            url: url,
-        }).then((response) => {
+
+        Axios.get(url).then((response) => {
             setMessages(response.data);
             nProgress.done();
         });
@@ -308,10 +298,14 @@ function ChatList(props) {
         if (current_tab) {
             url += "&mode=" + current_tab;
         }
-        Inertia.get(url, {}, {
-            onError: () => setChannelLoading(false),
-            onCancel: () => setChannelLoading(false),
-        });
+        Inertia.get(
+            url,
+            {},
+            {
+                onError: () => setChannelLoading(false),
+                onCancel: () => setChannelLoading(false),
+            },
+        );
     }
 
     /**
@@ -348,10 +342,7 @@ function ChatList(props) {
             (entries) => {
                 const [entry] = entries;
 
-                if (
-                    entry?.isIntersecting &&
-                    !loadMoreLockedRef.current
-                ) {
+                if (entry?.isIntersecting && !loadMoreLockedRef.current) {
                     loadMoreLockedRef.current = true;
                     setPage((prevPage) => prevPage + 1);
                 }
@@ -379,57 +370,64 @@ function ChatList(props) {
         }
 
         setPageLoad(true);
-        var url = route("chat_list", { category: containerCategory });
+
+        let url = route("chat_list", { category: containerCategory });
+
         if (props.filter_id) {
             url = url + "&filter_id=" + props.filter_id;
         }
+
         if (activeTab) {
             url += "&mode=" + activeTab;
         }
+
         url += "&fetchContact=true&page=" + activePage;
 
-        Axios.get(url).then((response) => {
-            if (response.data.status) {
-                const fetchedContactsCount = Object.keys(
-                    response.data.contact_list || {},
-                ).length;
-                const fetchedContactItems = getChatListItems(
-                    response.data.contact_list,
+        Axios.get(url)
+            .then((response) => {
+                if (
+                    !response.data ||
+                    typeof response.data !== "object" ||
+                    response.data.status !== true
+                ) {
+                    console.error("Invalid lazy-load response:", response.data);
+                    setHasMore(false);
+                    setPageLoad(false);
+                    return;
+                }
+
+                const fetchedMap = response.data.contact_list || {};
+                const fetchedContactItems = Object.values(fetchedMap);
+
+                console.log("Lazy load page:", activePage);
+                console.log(
+                    "Fetched contacts:",
+                    Object.keys(fetchedMap).length,
                 );
+                console.log("Has more:", response.data.has_more);
+
+                if (activePage > 1 && fetchedContactItems.length === 0) {
+                    setHasMore(false);
+                }
 
                 if (activePage === 1) {
-                    // Tab switch or initial load — replace the list entirely
-                    setChatList(response.data.contact_list);
+                    setChatList(fetchedMap);
                     setChatListItems(fetchedContactItems);
                 } else {
-                    // Scroll pagination — merge using functional updater to avoid stale closure
-                    setChatList((prev) => ({
-                        ...prev,
-                        ...response.data.contact_list,
-                    }));
-                    setChatListItems((prev) => {
-                        const existingIds = new Set(
-                            prev.map((contact) => contact.id),
-                        );
-
-                        return [
-                            ...prev,
-                            ...fetchedContactItems.filter(
-                                (contact) => !existingIds.has(contact.id),
-                            ),
-                        ];
+                    setChatList((prev) => {
+                        const merged = { ...prev, ...fetchedMap };
+                        setChatListItems(Object.values(merged));
+                        return merged;
                     });
                 }
-                setHasMore(
-                    typeof response.data.has_more === "boolean"
-                        ? response.data.has_more
-                        : fetchedContactsCount === CHAT_LIST_PAGE_SIZE,
-                );
-            }
-            setPageLoad(false);
-        }).catch(() => {
-            setPageLoad(false);
-        });
+
+                setHasMore(Boolean(response.data.has_more));
+                setPageLoad(false);
+            })
+            .catch((error) => {
+                console.error("Lazy-load failed:", error);
+                setPageLoad(false);
+            });
     }
 
     // Auto-select the first contact if none is selected
@@ -496,7 +494,8 @@ function ChatList(props) {
         const selectedContactData = chatList["contact_id_" + selectedContact];
 
         if (containerCategory == "all" || !selectedAccount) {
-            const noAccountsAvailable = Object.keys(accountList || {}).length === 0;
+            const noAccountsAvailable =
+                Object.keys(accountList || {}).length === 0;
             notie.alert({
                 type: "warning",
                 text: noAccountsAvailable
@@ -692,7 +691,7 @@ function ChatList(props) {
                             </div>
                         </div>
                         <div className="flex justify-between gap-3 !p-3">
-                        <div className="w-10 h-10 flex items-center justify-center z-10">
+                            <div className="w-10 h-10 flex items-center justify-center z-10">
                                 <Filter
                                     module="Contact"
                                     filter={props.filter}
@@ -772,115 +771,117 @@ function ChatList(props) {
                                     ref={listRef}
                                 >
                                     {chatListItems.map((person) => (
-                                            <li key={`contact_id_${person.id}`}>
-                                                <div className={classNames(
+                                        <li key={`contact_id_${person.id}`}>
+                                            <div
+                                                className={classNames(
                                                     "group relative !px-3 !py-3 flex items-center space-x-3 hover:bg-white/5 focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#BF00FF]/40",
                                                     selectedContact == person.id
                                                         ? "bg-[#170024]/90"
                                                         : "",
-                                                )}>
-                                                    <div className="flex-shrink-0">
-                                                        <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-500">
-                                                            <span className="text-xl font-normal leading-none text-white">
-                                                                {person.name.substring(
-                                                                    0,
-                                                                    2,
-                                                                )}
-                                                            </span>
+                                                )}
+                                            >
+                                                <div className="flex-shrink-0">
+                                                    <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-500">
+                                                        <span className="text-xl font-normal leading-none text-white">
+                                                            {person.name.substring(
+                                                                0,
+                                                                2,
+                                                            )}
                                                         </span>
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                getContactMessage(
-                                                                    person.id,
-                                                                    resolveContactChannel(
-                                                                        person,
-                                                                    ),
-                                                                )
-                                                            }
-                                                            className="focus:outline-none"
-                                                        >
-                                                            {/* Extend touch target to entire panel */}
-                                                            <span
-                                                                className="absolute inset-0"
-                                                                aria-hidden="true"
-                                                            />
-                                                            <span className="text-sm font-semibold text-white flex items-start transition-colors group-hover:text-[#BF00FF]">
-                                                                {person &&
-                                                                person.name ? (
-                                                                    <>
-                                                                        {
-                                                                            person.name
-                                                                        }
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        {
-                                                                            person.number
-                                                                        }
-                                                                    </>
-                                                                )}
-                                                            </span>
-                                                            <span className="text-sm text-[#878787] truncate flex items-start">
-                                                                {getContactSecondaryValue(
-                                                                    person,
-                                                                )}
-                                                            </span>
-                                                        </button>
-                                                    </div>
-                                                    <div
-                                                        className="cursor-pointer"
-                                                        ype="button"
-                                                        //  onClick={() => getcategoryContacts()}
-                                                    >
-                                                        <Dropdown>
-                                                            <Dropdown.Trigger>
-                                                                <span className="inline-flex rounded-md">
-                                                                    <button type="button">
-                                                                        <EllipsisVerticalIcon className="h-4 w-4" />
-                                                                    </button>
-                                                                </span>
-                                                            </Dropdown.Trigger>
-
-                                                            <Dropdown.Content
-                                                                align="right"
-                                                                contentClasses="py-1 bg-white w-64 shadow-md"
-                                                            >
-                                                                <ul
-                                                                    role="list"
-                                                                    className="divide-y divide-gray-200 overflow-y-auto m-h-64 !pl-0"
-                                                                >
-                                                                    <li
-                                                                        onClick={() =>
-                                                                            setArchived(
-                                                                                person.id,
-                                                                            )
-                                                                        }
-                                                                        className={
-                                                                            "px-4 py-2 text-gray-900 text-sm hover:bg-sky-700 cursor-pointer "
-                                                                        }
-                                                                    >
-                                                                        {current_tab ==
-                                                                        "archived" ? (
-                                                                            <>
-                                                                                {" "}
-                                                                                Unarchive{" "}
-                                                                            </>
-                                                                        ) : (
-                                                                            <>
-                                                                                Archive
-                                                                            </>
-                                                                        )}
-                                                                    </li>
-                                                                </ul>
-                                                            </Dropdown.Content>
-                                                        </Dropdown>
-                                                    </div>
+                                                    </span>
                                                 </div>
-                                            </li>
-                                        ))}
+                                                <div className="flex-1 min-w-0">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            getContactMessage(
+                                                                person.id,
+                                                                resolveContactChannel(
+                                                                    person,
+                                                                ),
+                                                            )
+                                                        }
+                                                        className="focus:outline-none"
+                                                    >
+                                                        {/* Extend touch target to entire panel */}
+                                                        <span
+                                                            className="absolute inset-0"
+                                                            aria-hidden="true"
+                                                        />
+                                                        <span className="text-sm font-semibold text-white flex items-start transition-colors group-hover:text-[#BF00FF]">
+                                                            {person &&
+                                                            person.name ? (
+                                                                <>
+                                                                    {
+                                                                        person.name
+                                                                    }
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    {
+                                                                        person.number
+                                                                    }
+                                                                </>
+                                                            )}
+                                                        </span>
+                                                        <span className="text-sm text-[#878787] truncate flex items-start">
+                                                            {getContactSecondaryValue(
+                                                                person,
+                                                            )}
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                                <div
+                                                    className="cursor-pointer"
+                                                    ype="button"
+                                                    //  onClick={() => getcategoryContacts()}
+                                                >
+                                                    <Dropdown>
+                                                        <Dropdown.Trigger>
+                                                            <span className="inline-flex rounded-md">
+                                                                <button type="button">
+                                                                    <EllipsisVerticalIcon className="h-4 w-4" />
+                                                                </button>
+                                                            </span>
+                                                        </Dropdown.Trigger>
+
+                                                        <Dropdown.Content
+                                                            align="right"
+                                                            contentClasses="py-1 bg-white w-64 shadow-md"
+                                                        >
+                                                            <ul
+                                                                role="list"
+                                                                className="divide-y divide-gray-200 overflow-y-auto m-h-64 !pl-0"
+                                                            >
+                                                                <li
+                                                                    onClick={() =>
+                                                                        setArchived(
+                                                                            person.id,
+                                                                        )
+                                                                    }
+                                                                    className={
+                                                                        "px-4 py-2 text-gray-900 text-sm hover:bg-sky-700 cursor-pointer "
+                                                                    }
+                                                                >
+                                                                    {current_tab ==
+                                                                    "archived" ? (
+                                                                        <>
+                                                                            {" "}
+                                                                            Unarchive{" "}
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            Archive
+                                                                        </>
+                                                                    )}
+                                                                </li>
+                                                            </ul>
+                                                        </Dropdown.Content>
+                                                    </Dropdown>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    ))}
                                     {chatListItems.length == 0 && (
                                         <li>
                                             <div className="relative px-6 py-5 flex items-center justify-center space-x-3 text-[#878787] hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
@@ -895,7 +896,9 @@ function ChatList(props) {
                                             ref={loadMoreRef}
                                             className="flex items-center justify-center py-3"
                                         >
-                                            {pageLoading ? loadingIndicator : null}
+                                            {pageLoading
+                                                ? loadingIndicator
+                                                : null}
                                         </li>
                                     )}
                                 </ul>
@@ -971,15 +974,13 @@ function ChatList(props) {
                                             <Menu.Button className="max-w-xs px-3 py-1.5 flex items-center text-sm rounded-full bg-white/5 text-white/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/60 focus:ring-offset-0">
                                                 <div className="flex items-center gap-2">
                                                     <span>
-                                                        {selectedAccount ? (
-                                                            accountList[
-                                                                selectedAccount
-                                                            ]
-                                                        ) : (
-                                                            props.translator[
-                                                                "Account list"
-                                                            ]
-                                                        )}
+                                                        {selectedAccount
+                                                            ? accountList[
+                                                                  selectedAccount
+                                                              ]
+                                                            : props.translator[
+                                                                  "Account list"
+                                                              ]}
                                                     </span>
                                                     <span className="ml-1">
                                                         <svg
@@ -1014,7 +1015,7 @@ function ChatList(props) {
                                                         {loadingIndicator}
                                                     </div>
                                                 ) : Object.keys(accountList)
-                                                    .length === 0 ? (
+                                                      .length === 0 ? (
                                                     <div className="px-4 py-2 text-sm text-white/60">
                                                         {getNoAccountMessage(
                                                             category,
@@ -1104,10 +1105,7 @@ function ChatList(props) {
                                         </div>
 
                                         <div className="flex items-center gap-3">
-                                            <Menu
-                                                as="div"
-                                                className="relative"
-                                            >
+                                            <Menu as="div" className="relative">
                                                 <div>
                                                     <Menu.Button className="max-w-xs !px-3 !py-1.5 flex items-center gap-2 text-sm rounded-full bg-white/5 text-white/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/60 focus:ring-offset-0">
                                                         <selectedChannel.icon className="w-8 h-8 fill-current text-white/70" />
@@ -1168,10 +1166,7 @@ function ChatList(props) {
                                                     </Menu.Items>
                                                 </Transition>
                                             </Menu>
-                                            <Menu
-                                                as="div"
-                                                className="relative"
-                                            >
+                                            <Menu as="div" className="relative">
                                                 <div>
                                                     <Menu.Button className="max-w-xs px-3 py-1.5 flex items-center text-sm rounded-full bg-white/5 text-white/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/60 focus:ring-offset-0">
                                                         <div className="flex items-center gap-2">
@@ -1248,11 +1243,13 @@ function ChatList(props) {
                                                     <Menu.Items className="origin-top-right absolute right-0 mt-2 rounded-xl shadow-lg bg-[#0f0a14] py-1 focus:outline-none">
                                                         {channelLoading ? (
                                                             <div className="px-4 py-2 text-sm text-white/60">
-                                                                {loadingIndicator}
+                                                                {
+                                                                    loadingIndicator
+                                                                }
                                                             </div>
                                                         ) : Object.keys(
-                                                            accountList,
-                                                        ).length === 0 ? (
+                                                              accountList,
+                                                          ).length === 0 ? (
                                                             <div className="px-4 py-2 text-sm text-white/60">
                                                                 {getNoAccountMessage(
                                                                     category,
@@ -1262,7 +1259,10 @@ function ChatList(props) {
                                                             Object.entries(
                                                                 accountList,
                                                             ).map(
-                                                                ([id, name]) => (
+                                                                ([
+                                                                    id,
+                                                                    name,
+                                                                ]) => (
                                                                     <Menu.Item
                                                                         key={id}
                                                                     >
