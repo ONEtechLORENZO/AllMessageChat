@@ -273,16 +273,14 @@ return [
         'social_profile' => env('SOCIAL_PROFILE'),
     ],
 
-    // FaceBook
-    'fb' => [
-        'app_id' => env('FB_APP_ID'),
-        'app_secret' => env('APP_SECRET'),
-        'app_token' => env('APP_TOKEN'),
-        'app_graph_version' => env('DEFAULT_GRAPH_VERSION'),
-        'call_back_url' => env('CALL_BACK_URL'),
-        
-        'verification_code' => env('VERIFICATION_CODE'),
-        'api_url' => env('FB_API_URL'),
+    // Meta
+    'meta' => [
+        'app_id' => env('META_APP_ID'),
+        'app_secret' => env('META_APP_SECRET'),
+        'login_config_id' => env('META_LOGIN_CONFIG_ID'),
+        'redirect_uri' => env('META_REDIRECT_URI'),
+        'verify_token' => env('META_WEBHOOK_VERIFY_TOKEN'),
+        'graph_version' => env('META_GRAPH_VERSION', 'v23.0'),
     ],
 
     'admin_email' => env('ADMIN_EMAIL'),

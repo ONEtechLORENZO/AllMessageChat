@@ -2557,21 +2557,41 @@ class UserController extends Controller
     /**
      * Connect FaceBook
      */
-    public function connectFaceBook(Request $request, $accountId)
+    public function connectFaceBook(Request $request, $service)
     {
-        session_start();
+        $supportedServices = ['facebook', 'instagram'];
+        if (!in_array($service, $supportedServices, true)) {
+            abort(404);
+        }
 
-        $fb = new Facebook([
-            'app_id' => config('app.fb.app_id'),
-            'app_secret' => config('app.fb.app_secret'),
-            'default_graph_version' => config('app.fb.app_graph_version'),
+        if (!config('meta.app_id') || !config('meta.app_secret') || !config('meta.login_config_id')) {
+            return redirect()->route('account_registration', [
+                'error' => 'Meta connection is not configured yet.',
+            ]);
+        }
+
+        $state = Str::random(40);
+
+        session([
+            self::META_OAUTH_SESSION_KEY => [
+                'state' => $state,
+                'service' => $service,
+                'user_id' => optional($request->user())->id,
+            ],
+            'service' => $service,
         ]);
 
-        $helper = $fb->getRedirectLoginHelper();
-        $permissions = ['email', 'whatsapp_business_management', 'whatsapp_business_messaging', 'public_profile'];
-        $loginUrl = $helper->getLoginUrl(config('app.fb.call_back_url'), $permissions);
+        $version = config('meta.graph_version');
 
-        return redirect()->away($loginUrl);
+        $query = http_build_query([
+            'client_id' => config('meta.app_id'),
+            'redirect_uri' => config('meta.redirect_uri'),
+            'state' => $state,
+            'response_type' => 'code',
+            'config_id' => config('meta.login_config_id'),
+        ]);
+
+        return redirect()->away("https://www.facebook.com/{$version}/dialog/oauth?{$query}");
     }
 
     public function getTransactionHistory($request, $page)

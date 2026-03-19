@@ -16,7 +16,7 @@ use App\Http\Controllers\TemplateController;
 use Illuminate\Support\Str;
 
 class WhatsAppUsersController extends Controller
-{ 
+{
     private const META_OAUTH_SESSION_KEY = 'meta_oauth_context';
 
     /**
@@ -26,18 +26,18 @@ class WhatsAppUsersController extends Controller
     {
         $account = Account::find($account_id);
 
-        if(! $account) {
+        if (! $account) {
             return response()->json(['status' => false, 'message' => 'Invalid account id'], 400);
         }
-        if(! $account->src_name) {
+        if (! $account->src_name) {
             return response()->json(['status' => false, 'message' => 'Invalid account.'], 400);
         }
-        if(! $request->number) {
+        if (! $request->number) {
             return response()->json(['status' => false, 'message' => 'User number param missing .'], 405);
         }
 
-        $checkOptIn = (new WhatsAppUsers)->checkUserOptin($request->number , $account->src_name);
-        if(! $checkOptIn){
+        $checkOptIn = (new WhatsAppUsers)->checkUserOptin($request->number, $account->src_name);
+        if (! $checkOptIn) {
             return response()->json(['status' => false, 'message' => 'Invalid user'], 405);
         } else {
             return response()->json(['status' => false, 'message' => 'User accepted'], 200);
@@ -49,18 +49,19 @@ class WhatsAppUsersController extends Controller
      */
     public function connectFaceBook(Request $request, $service)
     {
-        $supportedServices = ['facebook', 'instagram', 'whatsapp', 'product', 'fb_token'];
-        if (! in_array($service, $supportedServices, true)) {
+        $supportedServices = ['facebook', 'instagram'];
+        if (!in_array($service, $supportedServices, true)) {
             abort(404);
         }
 
-        if (! config('app.fb.app_id') || ! config('app.fb.app_secret')) {
+        if (!config('app.meta.app_id') || !config('app.meta.app_secret') || !config('app.meta.login_config_id')) {
             return redirect()->route('account_registration', [
                 'error' => 'Meta connection is not configured yet.',
             ]);
         }
 
         $state = Str::random(40);
+
         session([
             self::META_OAUTH_SESSION_KEY => [
                 'state' => $state,
@@ -70,13 +71,14 @@ class WhatsAppUsersController extends Controller
             'service' => $service,
         ]);
 
-        $version = config('app.fb.app_graph_version');
+        $version = config('app.meta.graph_version');
+
         $query = http_build_query([
-            'client_id' => config('app.fb.app_id'),
-            'redirect_uri' => route('meta_connection_callback'),
+            'client_id' => config('app.meta.app_id'),
+            'redirect_uri' => config('app.meta.redirect_uri'),
             'state' => $state,
             'response_type' => 'code',
-            'scope' => implode(',', $this->getMetaPermissions($service)),
+            'config_id' => config('app.meta.login_config_id'),
         ]);
 
         return redirect()->away("https://www.facebook.com/{$version}/dialog/oauth?{$query}");
@@ -90,9 +92,11 @@ class WhatsAppUsersController extends Controller
         $oauthContext = session(self::META_OAUTH_SESSION_KEY, []);
         session()->forget(self::META_OAUTH_SESSION_KEY);
 
+        $currentUserId = optional($request->user())->id;
+
         if (
             ! $oauthContext
-            || (int) ($oauthContext['user_id'] ?? 0) !== (int) $request->user()->id
+            || (int) ($oauthContext['user_id'] ?? 0) !== (int) $currentUserId
         ) {
             return redirect()->route('account_registration', [
                 'error' => 'Meta connection session expired. Please try again.',
@@ -141,11 +145,11 @@ class WhatsAppUsersController extends Controller
             (string) $profile['id'],
         );
     }
-    
+
     /**
      * Store FB User token
      */
-    public function storeUserToken(Request $request , $app_name, $token)
+    public function storeUserToken(Request $request, $app_name, $token)
     {
         $service = session('service');
         $userId = $this->getFBUserId($token);
@@ -172,32 +176,31 @@ class WhatsAppUsersController extends Controller
             ]);
         }
 
-        if($service == 'product'){
-            $businessList = $this->getBusinessId($userId , $token);
+        if ($service == 'product') {
+            $businessList = $this->getBusinessId($userId, $token);
             $metaData = [
                 'is_fb_connect' => $token,
                 'fb_busness_list' => $businessList,
             ];
 
-            foreach($metaData as $key => $value){
+            foreach ($metaData as $key => $value) {
                 $userTokenData = Setting::where('meta_key', $key)->first();
-                if(! $userTokenData){
+                if (! $userTokenData) {
                     $userTokenData = new Setting();
                 }
                 $userTokenData->meta_key = $key;
                 $userTokenData->meta_value = base64_encode(serialize($value));
                 $userTokenData->save();
             }
-            
-            return redirect()->route('wallet_subscription', ['tab' => 'settings']);
 
+            return redirect()->route('wallet_subscription', ['tab' => 'settings']);
         } elseif ($service == 'whatsapp') {
             $pages = $this->getBusinessNumbers($userId, $token);
         } else if ($service == 'fb_token') {
-            $businessList = $this->getBusinessId($userId , $token);
+            $businessList = $this->getBusinessId($userId, $token);
 
             $fbToken = FaceBookAppToken::where('user_id', $userId)->first();
-            if(!$fbToken) {
+            if (!$fbToken) {
                 $fbToken = new FaceBookAppToken();
             }
 
@@ -208,11 +211,17 @@ class WhatsAppUsersController extends Controller
             $fbToken->save();
 
             return redirect()->route('listCatalog', ['fbToken' => $fbToken->id]);
-            
         } else {
-            $pages = $this->getPagesList($userId , $token);
+            $pages = $this->getPagesList($token);
+
+            foreach ($pages as $pageId => &$page) {
+                if (!empty($page['token'])) {
+                    $page['instagram'] = $this->getLinkedInstagramAccount($pageId, $page['token']);
+                }
+            }
+            unset($page);
         }
-       
+
         $account = new Account();
         $account->company_name = $app_name;
         $account->service = $service;
@@ -221,7 +230,7 @@ class WhatsAppUsersController extends Controller
         $account->fb_token = $token;
         $account->service_engine = 'facebook';
         $account->fb_user_id = $userId;
-        $account->fb_meta_data = base64_encode( serialize($pages));
+        $account->fb_meta_data = base64_encode(serialize($pages));
         $account->save();
 
         return redirect()->route('edit_account', $account->id);
@@ -261,11 +270,12 @@ class WhatsAppUsersController extends Controller
 
     private function exchangeMetaCodeForAccessToken(string $code): ?string
     {
-        $version = config('app.fb.app_graph_version');
+        $version = config('app.meta.graph_version');
+
         $response = Http::get("https://graph.facebook.com/{$version}/oauth/access_token", [
-            'client_id' => config('app.fb.app_id'),
-            'client_secret' => config('app.fb.app_secret'),
-            'redirect_uri' => route('meta_connection_callback'),
+            'client_id' => config('app.meta.app_id'),
+            'client_secret' => config('app.meta.app_secret'),
+            'redirect_uri' => config('app.meta.redirect_uri'),
             'code' => $code,
         ])->json();
 
@@ -274,10 +284,12 @@ class WhatsAppUsersController extends Controller
 
     private function exchangeMetaLongLivedToken(string $token): ?string
     {
-        $response = Http::get('https://graph.facebook.com/oauth/access_token', [
+        $version = config('app.meta.graph_version');
+
+        $response = Http::get("https://graph.facebook.com/{$version}/oauth/access_token", [
             'grant_type' => 'fb_exchange_token',
-            'client_id' => config('app.fb.app_id'),
-            'client_secret' => config('app.fb.app_secret'),
+            'client_id' => config('app.meta.app_id'),
+            'client_secret' => config('app.meta.app_secret'),
             'fb_exchange_token' => $token,
         ])->json();
 
@@ -286,7 +298,8 @@ class WhatsAppUsersController extends Controller
 
     private function getMetaUserProfile(string $token): array
     {
-        $version = config('app.fb.app_graph_version');
+        $version = config('app.meta.graph_version');
+
         $response = Http::get("https://graph.facebook.com/{$version}/me", [
             'fields' => 'id,name',
             'access_token' => $token,
@@ -300,7 +313,7 @@ class WhatsAppUsersController extends Controller
      */
     public function getFBUserId($token)
     {
-        $version = config('app.fb.app_graph_version');
+        $version = config('app.meta.graph_version');
         $url = "https://graph.facebook.com/{$version}/me?access_token={$token}";
         $response = Http::get($url);
         $response_body = json_decode($response->body(), true);
@@ -311,15 +324,15 @@ class WhatsAppUsersController extends Controller
     /**
      * Retrun business id
      */
-    public function getBusinessId($userId , $token)
+    public function getBusinessId($userId, $token)
     {
-        $version = config('app.fb.app_graph_version');
+        $version = config('app.meta.graph_version');
         $url = "https://graph.facebook.com/{$version}/{$userId}/businesses?access_token={$token}";
         $response = Http::get($url);
         $response_body = json_decode($response->body(), true);
         $businessList = [];
-        if(isset($response_body['data'])) {
-            foreach($response_body['data'] as $data) {
+        if (isset($response_body['data'])) {
+            foreach ($response_body['data'] as $data) {
                 $businessList[$data['id']] = $data['name'];
             }
         }
@@ -329,18 +342,42 @@ class WhatsAppUsersController extends Controller
     /**
      * Return FB Pages 
      */
-    public function getPagesList($userId , $token)
+    public function getPagesList(string $token): array
     {
         $pages = [];
-        $version = config('app.fb.app_graph_version');
-        $url = "https://graph.facebook.com/{$version}/{$userId}/accounts?access_token={$token}";
-        $response = Http::get($url);
-        $response_body = json_decode($response->body(), true);
-        $dataArr = isset($response_body['data']) ? $response_body['data'] : [];
-        foreach($dataArr as $page) {
-            $pages[$page['id']] = [ 'name' => $page['name'], 'token' => $page['access_token']];
+        $version = config('app.meta.graph_version');
+
+        $response = Http::get("https://graph.facebook.com/{$version}/me/accounts", [
+            'access_token' => $token,
+        ]);
+
+        $responseBody = $response->json();
+        $dataArr = $responseBody['data'] ?? [];
+
+        foreach ($dataArr as $page) {
+            $pages[$page['id']] = [
+                'name' => $page['name'] ?? '',
+                'token' => $page['access_token'] ?? '',
+            ];
         }
+
         return $pages;
+    }
+
+    public function getLinkedInstagramAccount(string $pageId, string $pageToken): ?array
+    {
+        $version = config('app.meta.graph_version');
+
+        $response = Http::get("https://graph.facebook.com/{$version}/{$pageId}", [
+            'fields' => 'instagram_business_account{id,username,name}',
+            'access_token' => $pageToken,
+        ])->json();
+
+        if (!empty($response['instagram_business_account'])) {
+            return $response['instagram_business_account'];
+        }
+
+        return null;
     }
 
     /**
@@ -350,27 +387,27 @@ class WhatsAppUsersController extends Controller
     {
         $accounts = [];
 
-        $version = config('app.fb.app_graph_version');
+        $version = config('app.meta.graph_version');
         $url = "https://graph.facebook.com/{$version}/{$userId}/businesses?fields=owned_whatsapp_business_accounts{id,name,phone_numbers},name&access_token={$token}";
 
         $response = Http::get($url);
         $response_body = json_decode($response->body(), true);
-       
-        if(isset($response_body['data'])) {
-            foreach($response_body['data'] as $business){
+
+        if (isset($response_body['data'])) {
+            foreach ($response_body['data'] as $business) {
                 $whatsappAccount = [];
-                if( isset($business['owned_whatsapp_business_accounts']['data'])) {
-                    foreach($business['owned_whatsapp_business_accounts']['data'] as $account){
+                if (isset($business['owned_whatsapp_business_accounts']['data'])) {
+                    foreach ($business['owned_whatsapp_business_accounts']['data'] as $account) {
                         $id = isset($account['phone_numbers']['data'][0]['id']) ? $account['phone_numbers']['data'][0]['id'] : '';
-                        if($id) {
-                            $whatsappAccount[$id] = [ 'name' => $account['name'] , 'waba_id' => $account['id']];
+                        if ($id) {
+                            $whatsappAccount[$id] = ['name' => $account['name'], 'waba_id' => $account['id']];
                         }
                     }
                 }
                 $accounts[$business['id']] = ['name' => $business['name'], 'whatsapp_account' => $whatsappAccount];
             }
         }
-     
+
         return $accounts;
     }
 
@@ -380,10 +417,10 @@ class WhatsAppUsersController extends Controller
     public function connectFB()
     {
         $fb = new Facebook([
-            'app_id' => config('app.fb.app_id'),
-            'app_secret' => config('app.fb.app_secret'),
-            'default_graph_version' => config('app.fb.app_graph_version'),
-            ]);
+            'app_id' => config('app.meta.app_id'),
+            'app_secret' => config('app.meta.app_secret'),
+            'default_graph_version' => config('app.meta.graph_version'),
+        ]);
 
         return $fb;
     }
@@ -397,51 +434,71 @@ class WhatsAppUsersController extends Controller
         $templateController->account_id = $account_id;
 
         $partnerToken = $templateController->getPartnerToken();
-        if(!$partnerToken) {
+        if (!$partnerToken) {
             return false;
         }
 
         $appId = $templateController->getAppId($partnerToken);
-        if(!$appId) {
+        if (!$appId) {
             return false;
         }
 
-        $url = 'https://api.gupshup.io/wa/app/'.$appId.'/optin/status?phoneNumber=' . $contactNumber;
+        $url = 'https://api.gupshup.io/wa/app/' . $appId . '/optin/status?phoneNumber=' . $contactNumber;
         $headers = [
             'Accept' => 'application/json',
             'apikey' => config('app.apiKey')
         ];
-    
+
         $response = Http::asForm()->withHeaders($headers)->get($url);
         $response_body = json_decode($response->body(), true);
-        $status = (isset($response_body['users']) && isset($response_body['users']['active']) && $response_body['users']['active'] ) ? true : false; 
+        $status = (isset($response_body['users']) && isset($response_body['users']['active']) && $response_body['users']['active']) ? true : false;
 
-        if($status){
-            return ['status' => true , 'session_start_time' => $response_body['users']['lastMessageSentTs']];
+        if ($status) {
+            return ['status' => true, 'session_start_time' => $response_body['users']['lastMessageSentTs']];
         } else {
             return ['status' => false];
         }
         die;
     }
 
-     /**
+    public function verifyMetaWebhook(Request $request)
+    {
+        $mode = $request->query('hub_mode');
+        $token = $request->query('hub_verify_token');
+        $challenge = $request->query('hub_challenge');
+
+        if ($mode === 'subscribe' && $token === config('app.meta.verify_token')) {
+            return response($challenge, 200);
+        }
+
+        return response('Invalid verify token', 403);
+    }
+
+    public function receiveMetaWebhook(Request $request)
+    {
+        \Log::info('Meta Webhook Payload', $request->all());
+
+        return response()->json(['status' => 'ok'], 200);
+    }
+
+    /**
      * Return contact chat status is Active Or Not
      */
     public function checkActiveStatus($account_id, $contactNumber)
     {
-        if(strpos($contactNumber, '+') === false){
-            $contact_number = '+'.$contactNumber;
-        }
+        $contact_number = strpos($contactNumber, '+') === false
+            ? '+' . $contactNumber
+            : $contactNumber;
 
         // Check contact is exist 
-        $contact = Contact::where('phone_number' , $contact_number)->first();
-        if(!$contact){
+        $contact = Contact::where('phone_number', $contact_number)->first();
+        if (!$contact) {
             return response()->json(['status' => false, 'message' => 'There is no contact given number '], 200);
         }
 
         // Check account is exist 
         $account = Account::find($account_id);
-        if(!$account){
+        if (!$account) {
             return response()->json(['status' => false, 'message' => 'There is no social profile given id '], 200);
         }
 
@@ -453,11 +510,11 @@ class WhatsAppUsersController extends Controller
         $session = Session::where($condition)
             ->where('created_at', '>=', Carbon::now()->subDay())
             ->first();
-        
-        $status = $this->checkGupshupStatus($account_id , $contactNumber);
 
-        if($status['status']) {
-            return response()->json(['status' => true, 'session_status' => 'active' , 'session_start_time' => $status['session_start_time']], 200);
+        $status = $this->checkGupshupStatus($account_id, $contactNumber);
+
+        if ($status['status']) {
+            return response()->json(['status' => true, 'session_status' => 'active', 'session_start_time' => $status['session_start_time']], 200);
         } else {
             return response()->json(['status' => false, 'session_status' => 'inactive'], 200);
         }
