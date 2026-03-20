@@ -136,8 +136,8 @@ const bottomNavigation = [
         show: ["all"],
     },
     {
-        name: "API Documentation",
-        href: route("api_documentation"),
+        name: "Api Reference",
+        href: route("listApi"),
         icon: CodeBracketIcon,
         show: ["all"],
     },

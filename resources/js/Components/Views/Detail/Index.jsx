@@ -498,6 +498,16 @@ export default function Index(props) {
                                         </Link>
                                     </div>
                                 }
+                                {props.module == 'Api' &&
+                                    <div className="mt-1 text-sm text-white/70 whitespace-nowrap sm:mt-0 sm:ml-3">
+                                        <Link
+                                            href={route('listApi')}
+                                            className="inline-flex items-center px-4 py-2 border border-white/10 shadow-sm text-sm font-medium rounded-md text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0815] focus:ring-[#BF00FF]/60"
+                                        >
+                                            {props.translator['Back'] ?? 'Back'}
+                                        </Link>
+                                    </div>
+                                }
                                 {(props.module == 'Lead') || (props.module == 'Opportunity') ?
                                     <div className="mt-1 text-sm text-white/70 whitespace-nowrap sm:mt-0 sm:ml-3">
                                         {(props.module == 'Lead') ? <div>

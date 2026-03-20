@@ -223,6 +223,38 @@ function ListView(props) {
     ]
         .filter(Boolean)
         .join(" ");
+    const showCreateOnLeft = props.createButtonPosition === "left";
+
+    function renderCreateAction() {
+        if (!(props.actions && props.actions.create === true)) {
+            return null;
+        }
+
+        if (props.add_link) {
+            return (
+                <Link
+                    href={props.add_link}
+                    style={{ backgroundColor: "#BF00FF" }}
+                    className="inline-flex items-center rounded-md border border-transparent px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:opacity-90"
+                >
+                    {props.add_button_text}
+                </Link>
+            );
+        }
+
+        return (
+            <Button
+                type='button'
+                onClick={() => setShowForm(true)}
+                style={{ backgroundColor: "#BF00FF", borderColor: "#BF00FF" }}
+                className='text-white hover:opacity-90'
+            >
+                {props.add_button_text ? props.add_button_text : `${props.translator['Add']} ${props.singular}`}
+            </Button>
+        );
+    }
+
+    const createAction = renderCreateAction();
 
     return (
         <>
@@ -230,8 +262,9 @@ function ListView(props) {
                 {(props.show_header && props.show_header === true) || (props.show_header == undefined) ?
                     <div className={headerCardClassName}>
                         <div className="relative z-30 flex min-w-0 justify-between">
-                        <Head title={props.translator[props.module]} />
-                        <div className='relative z-30 flex gap-3'>
+                        <Head title={props.pageHeadTitle ?? props.translator[props.module] ?? props.module} />
+                        <div className={['relative z-30 flex gap-3', (props.headerLeadContent || showCreateOnLeft) ? 'flex-col items-start' : ''].filter(Boolean).join(' ')}>
+                            {props.headerLeadContent ? props.headerLeadContent : null}
                             {(props.module === 'Transaction') || (props.module === 'Msg') ?
                                 <div className='flex items-center gap-3'>
                                     <CustomCalender {...props} />
@@ -250,9 +283,10 @@ function ListView(props) {
                                     translator={props.translator}
                                 />
                                 : ''}
+                            {showCreateOnLeft ? createAction : null}
 
                         </div>
-                        <div className='relative z-30 flex gap-3 align-self-center'>
+                        <div className={['relative z-30 flex gap-3 align-self-center', props.headerActionsClassName ?? ''].filter(Boolean).join(' ')}>
                             {props.headerActions ? props.headerActions : null}
                             {props.actions && props.actions.invite_user === true ?
                                 <>
@@ -341,36 +375,15 @@ function ListView(props) {
                             </>
                         : ''}
                         */}
-                            {props.actions && props.actions.create === true &&
-                                <>
-                                    {props.add_link &&
-                                        <Link
-                                            href={props.add_link}
-                                            style={{ backgroundColor: "#BF00FF" }}
-                                            className='inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest transition ease-in-out duration-150 hover:opacity-90'
-                                        >
-                                            {props.add_button_text}
-                                        </Link>
-                                    }
-
-                                    {!props.add_link &&
-                                        <Button
-                                            type='button'
-                                            onClick={() => setShowForm(true)}
-                                            style={{ backgroundColor: "#BF00FF", borderColor: "#BF00FF" }}
-                                            className='text-white hover:opacity-90'
-                                        >
-                                            {props.add_button_text ? props.add_button_text : `${props.translator['Add']} ${props.singular}`}
-                                        </Button>
-                                    }
-                                </>
-                            }
-                            <DropDown
-                                massEdit={massEdit}
-                                recordMerger={recordMerger}
-                                multiRecordDeleter={multiRecordDeleter}
-                                {...props}
-                            />
+                            {!showCreateOnLeft ? createAction : null}
+                            {!props.hideDropdownMenu ?
+                                <DropDown
+                                    massEdit={massEdit}
+                                    recordMerger={recordMerger}
+                                    multiRecordDeleter={multiRecordDeleter}
+                                    {...props}
+                                />
+                                : null}
                         </div>
                         </div>
                     </div>

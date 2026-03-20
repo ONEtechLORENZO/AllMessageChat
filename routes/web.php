@@ -375,7 +375,8 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/merge/remain', [SettingsController::class, 'deleteRemainRecords'])->name('remain_record');
 
         // API
-        Route::get('/api-key/list', [ApiController::class, 'index'])->name('listApi');
+        Route::redirect('/api-key/list', '/api-reference');
+        Route::get('/api-reference', [ApiController::class, 'index'])->name('listApi');
         Route::post('/api-key/store', [ApiController::class, 'store'])->name('storeApi');
         Route::post('/api-key/update', [ApiController::class, 'store'])->name('updateApi');
         Route::get('/api-key/detail/{id}', [ApiController::class, 'show'])->name('detailApi');

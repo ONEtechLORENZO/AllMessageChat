@@ -61,6 +61,26 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
 
+function getCreateTitle(props) {
+    if (props.module === "Api") {
+        return props.translator["Create Api key"] ?? "Create Api key";
+    }
+
+    return `${props.translator['Add']} ${props.module}`;
+}
+
+function getSubmitLabel(props) {
+    if (props.module === "Api") {
+        return props.recordId
+            ? props.translator["Update Api key"] ?? "Update Api key"
+            : props.translator["Create Api key"] ?? "Create Api key";
+    }
+
+    return props.recordId
+        ? `${props.translator['Update']} ${props.translator[props.module]}`
+        : `${props.translator['Create']} ${props.translator[props.module]}`;
+}
+
 export default function NewForm(props) {
     const [show, setShow] = useState(true);
     const [group, setGroup] = useState('General');
@@ -629,7 +649,7 @@ export default function NewForm(props) {
                                 <div className="flex min-h-0 flex-1">
                                     <div className="w-2/6 min-h-0 overflow-y-auto border-r border-white/10 bg-black p-6 text-white flex flex-col gap-4 items-center">
                                         <div className="text-xl font-semibold text-white">
-                                            {props.translator['Add']} {props.module}
+                                            {getCreateTitle(props)}
                                         </div>
                                         {/* <div className="flex items-center gap-2">
                                             <div className="w-8 h-8 rounded-full bg-[#D4D4D4] flex justify-center items-center">
@@ -1062,7 +1082,7 @@ export default function NewForm(props) {
                                                 className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-6 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:w-auto sm:text-sm"
                                                 onClick={() => saveForm()}
                                             >
-                                                {props.recordId ? <>{props.translator['Update']} {props.translator[props.module]}</> : <>{props.translator['Create']} {props.translator[props.module]}</>}
+                                                {getSubmitLabel(props)}
                                             </button>
                                         </div>
 

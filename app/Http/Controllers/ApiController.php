@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Api;
-use App\Models\Token;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class ApiController extends Controller
 {
@@ -33,7 +33,7 @@ class ApiController extends Controller
                 'singular' => __('Api'),
                 'plural' => __('Api keys'),
                 'module' => 'Api',
-                'current_page' => 'Api', 
+                'current_page' => 'Api Reference',
                 // Actions
                 'actions' => [
                     'create' => true,
@@ -144,8 +144,11 @@ class ApiController extends Controller
 
     public function deleteApiToken(Request $request) {
 
-        $token = Token::find($request->token_id);
-        $token->delete();
+        $token = PersonalAccessToken::find($request->token_id);
+
+        if ($token) {
+            $token->delete();
+        }
 
         return Redirect::route('detailApi', ['id' => $request->record_id]);
     }

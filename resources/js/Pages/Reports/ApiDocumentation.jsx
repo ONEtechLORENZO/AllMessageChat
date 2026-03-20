@@ -3,12 +3,10 @@ import { Head } from "@inertiajs/react";
 import Authenticated from "@/Layouts/Authenticated";
 import {
     ChevronDownIcon,
-    ClockIcon,
     CodeBracketIcon,
-    KeyIcon,
-    ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import { GlassCard } from "@/Pages/Subscription/company";
+import ApiReferenceOverviewCards from "@/Components/ApiReferenceOverviewCards";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
@@ -113,9 +111,6 @@ export default function ApiDocumentation(props) {
                 },
             ],
             rateLimits: [
-                { plan: "Starter", limit: "60 req/min", burst: "120" },
-                { plan: "Pro", limit: "300 req/min", burst: "600" },
-                { plan: "Enterprise", limit: "Custom", burst: "Custom" },
             ],
         }),
         [],
@@ -148,98 +143,7 @@ export default function ApiDocumentation(props) {
                     </div>
 
                     <div className="space-y-4">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                            <GlassCard className="bg-[#170024]/80">
-                                <div className="flex items-center gap-3 text-white text-lg font-semibold">
-                                    <ShieldCheckIcon className="h-5 w-5" />
-                                    <span className="text-[#03cada]">
-                                        {translator["Overview"] ?? "Overview"}
-                                    </span>
-                                </div>
-                                <div className="mt-4 space-y-3 text-sm">
-                                    <div className="flex items-center justify-between text-white">
-                                        <span className="text-[#878787]">
-                                            Base URL
-                                        </span>
-                                        <span className="font-mono text-xs bg-[#12001d]/90 px-3 py-1 rounded-md">
-                                            {apiData.baseUrl}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between text-white">
-                                        <span className="text-[#878787]">
-                                            Version
-                                        </span>
-                                        <span className="font-mono text-xs">
-                                            {apiData.version}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between text-white">
-                                        <span className="text-[#878787]">
-                                            Format
-                                        </span>
-                                        <span className="font-mono text-xs">
-                                            {apiData.format}
-                                        </span>
-                                    </div>
-                                </div>
-                            </GlassCard>
-
-                            <GlassCard className="bg-[#170024]/80">
-                                <div className="flex items-center gap-3 text-white text-lg font-semibold">
-                                    <KeyIcon className="h-5 w-5" />
-                                    <span className="text-[#ecdc00]">
-                                        {translator["Authentication"] ??
-                                            "Authentication"}
-                                    </span>
-                                </div>
-                                <p className="text-[#878787] text-sm mt-4">
-                                    {translator[
-                                        "Use a personal access token or OAuth token to authenticate requests."
-                                    ] ??
-                                        "Use a personal access token or OAuth token to authenticate requests."}
-                                </p>
-                                <div className="mt-4">
-                                    <div className="text-white text-sm font-semibold">
-                                        HTTP Header
-                                    </div>
-                                    <pre className="mt-2 text-xs text-white bg-[#12001d]/90 rounded-lg p-3 overflow-x-auto">
-                                        {apiData.authHeader}
-                                    </pre>
-                                </div>
-                            </GlassCard>
-
-                            <GlassCard className="bg-[#170024]/80">
-                                <div className="flex items-center gap-3 text-white text-lg font-semibold">
-                                    <ClockIcon className="h-5 w-5" />
-                                    <span className="text-[#ed0820]">
-                                        {translator["Rate Limits"] ??
-                                            "Rate Limits"}
-                                    </span>
-                                </div>
-                                <div className="mt-4 space-y-3">
-                                    {apiData.rateLimits.map((limit) => (
-                                        <div
-                                            key={limit.plan}
-                                            className="flex items-center justify-between bg-[#12001d]/90 rounded-xl px-4 py-3"
-                                        >
-                                            <div className="text-white text-sm font-semibold">
-                                                {limit.plan}
-                                            </div>
-                                            <div className="text-xs text-[#878787]">
-                                                {limit.limit} - Burst{" "}
-                                                {limit.burst}
-                                            </div>
-                                        </div>
-                                    ))}
-                                    <p className="text-xs text-[#878787]">
-                                        {translator[
-                                            "Rate limits reset every minute. Exceeding limits returns 429 with a Retry-After header."
-                                        ] ??
-                                            "Rate limits reset every minute. Exceeding limits returns 429 with a Retry-After header."}
-                                    </p>
-                                </div>
-                            </GlassCard>
-                        </div>
+                        <ApiReferenceOverviewCards translator={translator} />
 
                     <GlassCard className="bg-[#170024]/80">
                         <div className="flex items-center gap-3 text-white text-lg font-semibold">
