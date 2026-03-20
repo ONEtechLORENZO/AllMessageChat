@@ -382,6 +382,7 @@ export default function Authenticated({
     header,
     children,
     hideHeader,
+    hideAssistant = false,
     current_page,
     hidePageTitle,
     pageTitle,
@@ -1534,21 +1535,6 @@ export default function Authenticated({
                                                                                 </li>
                                                                             )}
                                                                             <li className="p-1">
-                                                                                <Link
-                                                                                    className="hover:text-white"
-                                                                                    href={route(
-                                                                                        "listApi",
-                                                                                    )}
-                                                                                    method="get"
-                                                                                >
-                                                                                    {" "}
-                                                                                    {translator[
-                                                                                        "API keys"
-                                                                                    ] ??
-                                                                                        "API keys"}
-                                                                                </Link>
-                                                                            </li>
-                                                                            <li className="p-1">
                                                                                 {" "}
                                                                                 <Link
                                                                                     className="hover:text-white"
@@ -1711,7 +1697,7 @@ export default function Authenticated({
                 </div>
             </div>
 
-            <CommandAssistant />
+            {hideAssistant !== true ? <CommandAssistant /> : null}
 
             {showModal && companyList?.[0]?.name ? (
                 <UserRegistration

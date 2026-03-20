@@ -1,11 +1,11 @@
 import React ,{ useState } from "react";
 import { Link } from '@inertiajs/react';
 import { confirmAlert } from 'react-confirm-alert';
-import 'react-confirm-alert/src/react-confirm-alert.css';
 import Alert from '@/Components/Alert';
 import { Badge } from "reactstrap";
 import { router as Inertia } from "@inertiajs/react";
 import nProgress from 'nprogress';
+import axios from "axios";
 
 import { PencilSquareIcon, ChevronLeftIcon, TrashIcon, PlusIcon, ChevronRightIcon  } from '@heroicons/react/24/solid';
 
@@ -33,33 +33,62 @@ export default function Accounts(props) {
         setDeleteAccountId(accountId);
 
         confirmAlert({
-            title: (props.translator['Confirm to Delete']),
-            message: (props.translator['Are you sure to do this?']),
-            buttons: [
-            {
-              label: (props.translator['Yes']),
-              onClick: () => {
-                nProgress.start(0.5);
-                nProgress.inc(0.2);
-                axios({
-                    method: 'post',
-                    url: route( 'delete_account'),
-                    data: {
-                        id: accountId
-                    }
-                })
-                .then( (response) =>{
-                    setAccountList(response.data.accounts);
-                    nProgress.done();
-                });
+            customUI: ({ onClose }) => (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
+                    <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#140816]/95 p-6 text-white shadow-2xl ring-1 ring-white/5">
+                        <div className="space-y-2">
+                            <div className="inline-flex rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-red-200">
+                                Delete Connection
+                            </div>
+                            <h2 className="text-3xl font-semibold text-white">
+                                {props.translator['Confirm to Delete']}
+                            </h2>
+                            <p className="text-sm leading-6 text-white/60">
+                                {props.translator['Are you sure to do this?']}
+                            </p>
+                        </div>
 
-              }
-            },
-            {
-              label: 'No',
-              onClick: () => setDeleteAccountId('')
-            }
-          ]
+                        <div className="mt-6 flex justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setDeleteAccountId('');
+                                    onClose();
+                                }}
+                                className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+                            >
+                                {props.translator['No'] || 'No'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    nProgress.start(0.5);
+                                    nProgress.inc(0.2);
+                                    axios({
+                                        method: 'post',
+                                        url: route('delete_account'),
+                                        data: {
+                                            id: accountId
+                                        }
+                                    })
+                                        .then((response) => {
+                                            setAccountList(response.data.accounts);
+                                            setDeleteAccountId('');
+                                            nProgress.done();
+                                            onClose();
+                                        })
+                                        .catch(() => {
+                                            nProgress.done();
+                                        });
+                                }}
+                                className="inline-flex items-center rounded-full bg-red-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-400"
+                            >
+                                {props.translator['Yes']}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ),
         });
     }
 

@@ -4,10 +4,29 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Account extends Model
 {
     use HasFactory;
+
+    protected $casts = [
+        'oauth_access_token_encrypted' => 'encrypted',
+        'oauth_refresh_token_encrypted' => 'encrypted',
+        'oauth_token_expires_at' => 'datetime',
+        'sync_last_at' => 'datetime',
+        'gmail_watch_expires_at' => 'datetime',
+        'connection_metadata' => 'array',
+        'api_partner' => 'boolean',
+    ];
+
+    protected $hidden = [
+        'service_token',
+        'fb_token',
+        'page_token',
+        'oauth_access_token_encrypted',
+        'oauth_refresh_token_encrypted',
+    ];
 
     /**
      * Create new bot in Gupshup
@@ -17,5 +36,10 @@ class Account extends Model
     public static function creatNewBot($account)
     {
         
+    }
+
+    public function chatThreads(): HasMany
+    {
+        return $this->hasMany(ChatListContact::class);
     }
 }

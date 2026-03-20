@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef, Fragment } from "react";
 import { Head, Link } from "@inertiajs/react";
 import MessageList from "./MessageList";
+import EmailComposeModal from "./EmailComposeModal";
 import Authenticated from "../../Layouts/Authenticated";
 import ApplicationLogo from "@/Components/ApplicationLogo";
-import Dropdown from "@/Components/Dropdown";
 import ContactSelection from "@/Components/ContactSelection";
 import notie from "notie";
 import Filter from "@/Components/Views/List/Filter2";
@@ -13,7 +13,6 @@ import ChatBox from "./ChatBox";
 import Axios from "axios";
 
 import {
-    EllipsisVerticalIcon,
     ChevronDownIcon,
     MagnifyingGlassIcon,
     Bars3Icon,
@@ -37,8 +36,56 @@ function classNames(...classes) {
 
 const CHAT_LIST_PAGE_SIZE = 15;
 
+function createEmptyEmailComposeData() {
+    return {
+        destination: "",
+        channel: "email",
+        content: "",
+        attachment: "",
+        template_id: "",
+        catalog_id: "",
+        product_retailer_id: "",
+        template_options: "",
+        template_type: "",
+        email_subject: "",
+    };
+}
+
 function getChatListItems(contactList) {
     return Object.values(contactList || {});
+}
+
+function getConversationKey(id) {
+    return `contact_id_${id}`;
+}
+
+function getDefaultTabForCategory(category) {
+    return category === "email" ? "all" : "unread";
+}
+
+function getModeForCategory(category, mode) {
+    if (category === "email") {
+        return "all";
+    }
+
+    if (mode === "archived") {
+        return "all";
+    }
+
+    return mode || getDefaultTabForCategory(category);
+}
+
+function formatLastSync(value) {
+    if (!value) {
+        return "Not synced yet";
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return "Not synced yet";
+    }
+
+    return date.toLocaleString();
 }
 
 function ChatList(props) {
@@ -48,6 +95,7 @@ function ChatList(props) {
     const [messages, setMessages] = useState({});
     const [containerCategory, setContainerCategory] = useState(props.category);
     const [showForm, setShowForm] = useState(false);
+    const [showEmailComposeModal, setShowEmailComposeModal] = useState(false);
     const [chatList, setChatList] = useState(props.contact_list);
     const [chatListItems, setChatListItems] = useState(
         getChatListItems(props.contact_list),
@@ -58,7 +106,12 @@ function ChatList(props) {
         content: "",
     });
     const [selectedAccount, setSelectedAccount] = useState("");
+    const [accountMeta, setAccountMeta] = useState(props.account_meta || {});
     const [searchKey, setSearchKey] = useState(props.search);
+    const [emailComposeData, setEmailComposeData] = useState(
+        createEmptyEmailComposeData(),
+    );
+    const [emailComposeSending, setEmailComposeSending] = useState(false);
     const channels = {
         all: { label: props.translator["All Channel"], icon: ApplicationLogo },
         whatsapp: { label: "WhatsApp", icon: WhatsAppIcon },
@@ -69,7 +122,9 @@ function ChatList(props) {
     const selectableChannels = Object.entries(channels).filter(
         ([name]) => name !== "all",
     );
-    const [current_tab, setCurrentTabId] = useState(props.mode || "unread");
+    const [current_tab, setCurrentTabId] = useState(
+        getModeForCategory(props.category, props.mode),
+    );
     const tabs = [
         {
             name: props.translator["Unread"],
@@ -83,18 +138,13 @@ function ChatList(props) {
             href: "#",
             current: false,
         },
-        {
-            name: props.translator["Archive"],
-            id: "archived",
-            href: "#",
-            current: false,
-        },
     ];
 
     const [time, setTime] = useState(Date.now());
     const accountList = props.account_list;
     const [loadedStory, setLoadedStory] = useState({});
     const [channelLoading, setChannelLoading] = useState(false);
+    const [syncNowLoading, setSyncNowLoading] = useState(false);
 
     const listRef = useRef(null);
     const loadMoreRef = useRef(null);
@@ -102,6 +152,9 @@ function ChatList(props) {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [pageLoading, setPageLoad] = useState(false);
+    const selectedConversation = selectedContact
+        ? chatList[getConversationKey(selectedContact)]
+        : null;
 
     function getContactSecondaryValue(contact, channel = containerCategory) {
         if (!contact) {
@@ -110,7 +163,7 @@ function ChatList(props) {
 
         switch (channel) {
             case "email":
-                return contact.email || "";
+                return contact.subject || contact.email || "";
             case "instagram":
                 return contact.insta_id || "";
             case "facebook":
@@ -161,6 +214,72 @@ function ChatList(props) {
         return contact?.channel || "whatsapp";
     }
 
+    function getEmailConversationMeta(contact) {
+        if (!contact || contact.channel !== "email") {
+            return "";
+        }
+
+        return contact.email || "";
+    }
+
+    function getContactInitials(value) {
+        const cleanedValue = String(value || "")
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
+
+        if (cleanedValue.length === 0) {
+            return "??";
+        }
+
+        return cleanedValue
+            .slice(0, 2)
+            .map((chunk) => chunk.charAt(0).toUpperCase())
+            .join("");
+    }
+
+    function formatConversationTime(value) {
+        if (!value) {
+            return "";
+        }
+
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            return "";
+        }
+
+        const now = new Date();
+        const isSameDay = date.toDateString() === now.toDateString();
+
+        return isSameDay
+            ? date.toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+              })
+            : date.toLocaleDateString([], {
+                  month: "short",
+                  day: "numeric",
+              });
+    }
+
+    function getEmailConversationSubject(contact) {
+        return contact?.subject || "(no subject)";
+    }
+
+    function getEmailConversationPreview(contact) {
+        if (!contact) {
+            return "";
+        }
+
+        return (
+            contact.preview ||
+            contact.email ||
+            contact.number ||
+            props.translator["No preview available."] ||
+            "No preview available."
+        );
+    }
+
     useEffect(() => {
         setChatList(props.contact_list);
         setChatListItems(getChatListItems(props.contact_list));
@@ -168,6 +287,8 @@ function ChatList(props) {
         setContainerCategory(props.category);
         setSearchKey(props.search);
         setMessages(props.messages || {});
+        setAccountMeta(props.account_meta || {});
+        setCurrentTabId(getModeForCategory(props.category, props.mode));
         setPage(1);
         setHasMore(true);
         loadMoreLockedRef.current = false;
@@ -189,6 +310,24 @@ function ChatList(props) {
     }, [selectedContact, containerCategory]);
 
     useEffect(() => {
+        if (containerCategory !== "email") {
+            return undefined;
+        }
+
+        const interval = setInterval(() => {
+            fetchContactList(current_tab, 1).then(() => {
+                if (selectedContact) {
+                    getMessageList();
+                }
+            });
+        }, 15000);
+
+        return () => {
+            clearInterval(interval);
+        };
+    }, [containerCategory, current_tab, selectedContact]);
+
+    useEffect(() => {
         const accountIds = Object.keys(accountList || {});
 
         if (accountIds.length === 1) {
@@ -202,11 +341,47 @@ function ChatList(props) {
     }, [accountList, selectedAccount]);
 
     useEffect(() => {
+        const conversationAccountId = selectedConversation?.account_id
+            ? String(selectedConversation.account_id)
+            : "";
+
+        if (
+            conversationAccountId &&
+            Object.prototype.hasOwnProperty.call(
+                accountList || {},
+                conversationAccountId,
+            )
+        ) {
+            setSelectedAccount(conversationAccountId);
+        }
+    }, [accountList, selectedConversation?.account_id]);
+
+    useEffect(() => {
         setData((prevState) => ({
             ...prevState,
             channel: containerCategory,
         }));
     }, [containerCategory]);
+
+    useEffect(() => {
+        if (containerCategory !== "email") {
+            setData((prevState) => ({
+                ...prevState,
+                email_subject: "",
+            }));
+            return;
+        }
+
+        setData((prevState) => ({
+            ...prevState,
+            email_subject:
+                selectedConversation?.subject || prevState.email_subject || "",
+        }));
+    }, [
+        containerCategory,
+        selectedConversation?.id,
+        selectedConversation?.subject,
+    ]);
 
     // Update select contact
     function updateContactData(contact) {
@@ -240,9 +415,26 @@ function ChatList(props) {
         setData(newState);
     }
 
+    function handleEmailComposeChange(e) {
+        let newState = Object.assign({}, emailComposeData);
+
+        if (e.target.type == "file" && e.target.files) {
+            newState[e.target.name] = e.target.files[0];
+        } else {
+            newState[e.target.name] = e.target.value;
+        }
+
+        setEmailComposeData(newState);
+    }
+
     function getContactMessage(contact, channel) {
         setSelectedContact(contact);
         setContainerCategory(channel);
+
+        const conversation = chatList[getConversationKey(contact)];
+        if (conversation?.account_id) {
+            setSelectedAccount(String(conversation.account_id));
+        }
 
         if (!contact) {
             return false;
@@ -265,7 +457,8 @@ function ChatList(props) {
     }
 
     function setCurrentTab(tab) {
-        setCurrentTabId(tab);
+        const nextTab = getModeForCategory(containerCategory, tab);
+        setCurrentTabId(nextTab);
         setSelectedContact("");
         setPage(1);
         setHasMore(true);
@@ -277,6 +470,8 @@ function ChatList(props) {
             return;
         }
 
+        const nextMode = getModeForCategory(name, current_tab);
+
         setChannelLoading(true);
         setSelectedContact("");
         setMessages({});
@@ -284,6 +479,7 @@ function ChatList(props) {
         setChatListItems([]);
         setSelectedAccount("");
         setContainerCategory(name);
+        setCurrentTabId(nextMode);
         setPage(1);
         setHasMore(true);
         setPageLoad(false);
@@ -295,8 +491,8 @@ function ChatList(props) {
         if (props.filter_id) {
             url = url + "&filter_id=" + props.filter_id;
         }
-        if (current_tab) {
-            url += "&mode=" + current_tab;
+        if (nextMode) {
+            url += "&mode=" + nextMode;
         }
         Inertia.get(
             url,
@@ -362,11 +558,14 @@ function ChatList(props) {
     }, [chatListItems, hasMore, pageLoading, channelLoading]);
 
     function fetchContactList(tabOverride, pageOverride) {
-        const activeTab = tabOverride !== undefined ? tabOverride : current_tab;
+        const activeTab = getModeForCategory(
+            containerCategory,
+            tabOverride !== undefined ? tabOverride : current_tab,
+        );
         const activePage = pageOverride !== undefined ? pageOverride : page;
 
         if (pageLoading) {
-            return;
+            return Promise.resolve(null);
         }
 
         setPageLoad(true);
@@ -383,7 +582,7 @@ function ChatList(props) {
 
         url += "&fetchContact=true&page=" + activePage;
 
-        Axios.get(url)
+        return Axios.get(url)
             .then((response) => {
                 if (
                     !response.data ||
@@ -393,11 +592,17 @@ function ChatList(props) {
                     console.error("Invalid lazy-load response:", response.data);
                     setHasMore(false);
                     setPageLoad(false);
-                    return;
+                    return response;
                 }
 
                 const fetchedMap = response.data.contact_list || {};
                 const fetchedContactItems = Object.values(fetchedMap);
+                if (
+                    response.data.account_meta &&
+                    typeof response.data.account_meta === "object"
+                ) {
+                    setAccountMeta(response.data.account_meta);
+                }
 
                 console.log("Lazy load page:", activePage);
                 console.log(
@@ -423,10 +628,83 @@ function ChatList(props) {
 
                 setHasMore(Boolean(response.data.has_more));
                 setPageLoad(false);
+                return response;
             })
             .catch((error) => {
                 console.error("Lazy-load failed:", error);
                 setPageLoad(false);
+                return null;
+            });
+    }
+
+    function getAccountLabel(accountId) {
+        if (!accountId) {
+            return props.translator["Account list"];
+        }
+
+        return (
+            accountMeta?.[accountId]?.label ||
+            accountList?.[accountId] ||
+            props.translator["Account list"]
+        );
+    }
+
+    function getSelectedAccountMeta() {
+        if (!selectedAccount) {
+            return null;
+        }
+
+        return accountMeta?.[selectedAccount] || null;
+    }
+
+    function syncEmailAccountNow() {
+        if (containerCategory !== "email" || !selectedAccount || syncNowLoading) {
+            return;
+        }
+
+        setSyncNowLoading(true);
+
+        Axios.post(route("sync_email_chat_account"), {
+            account_id: selectedAccount,
+        })
+            .then((response) => {
+                if (response.data?.account?.id) {
+                    setAccountMeta((prev) => ({
+                        ...prev,
+                        [response.data.account.id]: response.data.account,
+                    }));
+                }
+
+                if (response.data?.locked) {
+                    notie.alert({
+                        type: "info",
+                        text: "Gmail sync is already running for this account.",
+                        time: 4,
+                    });
+                } else {
+                    notie.alert({
+                        type: "success",
+                        text: "Gmail sync completed.",
+                        time: 3,
+                    });
+                }
+
+                return fetchContactList(current_tab, 1);
+            })
+            .then(() => {
+                if (selectedContact) {
+                    getMessageList();
+                }
+            })
+            .catch(() => {
+                notie.alert({
+                    type: "error",
+                    text: "Unable to sync Gmail right now.",
+                    time: 4,
+                });
+            })
+            .finally(() => {
+                setSyncNowLoading(false);
             });
     }
 
@@ -460,16 +738,6 @@ function ChatList(props) {
         });
     }
 
-    function setArchived(contact) {
-        var url = route("set_archive");
-        var data = { contact_id: contact };
-        Inertia.post(url, data, {
-            onSuccess: (response) => {
-                //  setChatList(response.props.contact_list);
-            },
-        });
-    }
-
     /**
      * search contacts based on key
      */
@@ -479,8 +747,12 @@ function ChatList(props) {
             if (props.filter_id) {
                 url = url + "&filter_id=" + props.filter_id;
             }
-            if (current_tab) {
-                url += "&mode=" + current_tab;
+            const activeMode = getModeForCategory(
+                containerCategory,
+                current_tab,
+            );
+            if (activeMode) {
+                url += "&mode=" + activeMode;
             }
             Inertia.get(url, {
                 onSuccess: (response) => {},
@@ -491,7 +763,11 @@ function ChatList(props) {
     // Send content to selected contact
     function sendMessage() {
         var formData = new FormData();
-        const selectedContactData = chatList["contact_id_" + selectedContact];
+        const selectedContactData = selectedConversation;
+
+        if (!selectedContactData) {
+            return;
+        }
 
         if (containerCategory == "all" || !selectedAccount) {
             const noAccountsAvailable =
@@ -528,6 +804,7 @@ function ChatList(props) {
         formData.append("template_options", data.template_options);
         formData.append("template_type", data.template_type);
         formData.append("email_subject", data.email_subject || "");
+        formData.append("conversation_id", selectedContact);
 
         if (!destination) {
             notie.alert({
@@ -557,6 +834,7 @@ function ChatList(props) {
                 ) {
                     let newState = Object.assign({}, data);
                     newState["content"] = "";
+                    newState["email_subject"] = "";
                     newState["template_id"] = "";
                     newState["attachment"] = "";
                     newState["template_type"] = "";
@@ -567,6 +845,181 @@ function ChatList(props) {
                 getMessageList();
             });
         }
+    }
+
+    function setEmailComposeTemplateInfo(template) {
+        const isEmailTemplate =
+            String(template?.service || "").toLowerCase() === "email" ||
+            String(template?.category || "").toUpperCase() === "EMAIL";
+
+        setEmailComposeData((prevState) => ({
+            ...prevState,
+            content: isEmailTemplate
+                ? String(template.body || "")
+                : template.name + " template selected ",
+            template_id: isEmailTemplate ? "" : template.template_uid,
+            email_subject: isEmailTemplate
+                ? String(template.email_subject || prevState.email_subject || "")
+                : prevState.email_subject,
+        }));
+    }
+
+    function clearEmailComposeContent() {
+        setEmailComposeData((prevState) => ({
+            ...prevState,
+            content: "",
+            template_id: "",
+            catalog_id: "",
+            product_retailer_id: "",
+            template_options: "",
+            template_type: "",
+        }));
+    }
+
+    function setEmailComposeProductInfo(product) {
+        setEmailComposeData((prevState) => ({
+            ...prevState,
+            content: product.name + " product selected",
+            catalog_id: product.catalog_id ? product.catalog_id : "",
+            product_retailer_id: product.retailer_id
+                ? product.retailer_id
+                : "",
+        }));
+    }
+
+    function setEmailComposeInteractiveMessage(interactiveMessage) {
+        setEmailComposeData((prevState) => ({
+            ...prevState,
+            content: interactiveMessage.content,
+            template_options: interactiveMessage.options,
+            template_type: interactiveMessage.option_type,
+        }));
+    }
+
+    function closeEmailComposeModal() {
+        setShowEmailComposeModal(false);
+        setEmailComposeData(createEmptyEmailComposeData());
+    }
+
+    function openNewMessage() {
+        if (containerCategory === "email") {
+            setEmailComposeData(createEmptyEmailComposeData());
+            setShowEmailComposeModal(true);
+            return;
+        }
+
+        setShowForm(true);
+    }
+
+    function sendEmailComposeMessage() {
+        const destination = (emailComposeData.destination || "").trim();
+        const content = (emailComposeData.content || "").trim();
+        const subject = (emailComposeData.email_subject || "").trim();
+
+        if (!selectedAccount) {
+            const noAccountsAvailable = Object.keys(accountList || {}).length === 0;
+
+            notie.alert({
+                type: "warning",
+                text: noAccountsAvailable
+                    ? getNoAccountMessage("email")
+                    : "Please select the correct account & channel ",
+                time: 5,
+            });
+            return;
+        }
+
+        if (!destination) {
+            notie.alert({
+                type: "warning",
+                text: "Please enter the receiver email.",
+                time: 4,
+            });
+            return;
+        }
+
+        if (!content) {
+            notie.alert({
+                type: "warning",
+                text: "Please write your email.",
+                time: 4,
+            });
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("account_id", selectedAccount);
+        formData.append("destination", destination);
+        formData.append("channel", "email");
+        formData.append("content", emailComposeData.content || "");
+        formData.append("attachment", emailComposeData.attachment || "");
+        formData.append("template_id", emailComposeData.template_id || "");
+        formData.append("catalog_id", emailComposeData.catalog_id || "");
+        formData.append(
+            "product_retailer_id",
+            emailComposeData.product_retailer_id || "",
+        );
+        formData.append(
+            "template_options",
+            emailComposeData.template_options || "",
+        );
+        formData.append("template_type", emailComposeData.template_type || "");
+        formData.append("email_subject", subject);
+
+        setEmailComposeSending(true);
+        nProgress.start(0.5);
+        nProgress.inc(0.2);
+
+        Axios({
+            method: "post",
+            headers: { "Content-Type": "multipart/form-data" },
+            url: route("send_message_to_contact"),
+            data: formData,
+        })
+            .then((response) => {
+                const result = response.data;
+                nProgress.done(true);
+
+                if (result.status == "Failed") {
+                    notie.alert({
+                        type: "error",
+                        text: result.error,
+                        time: 5,
+                    });
+                    return null;
+                }
+
+                return fetchContactList(current_tab, 1).then((listResponse) => {
+                    const conversationList = Object.values(
+                        listResponse?.data?.contact_list || {},
+                    );
+                    const matchedConversation = conversationList.find(
+                        (conversation) =>
+                            String(conversation.email || "")
+                                .trim()
+                                .toLowerCase() === destination.toLowerCase(),
+                    );
+
+                    closeEmailComposeModal();
+
+                    if (matchedConversation?.id) {
+                        getContactMessage(matchedConversation.id, "email");
+                    }
+
+                    return null;
+                });
+            })
+            .catch(() => {
+                nProgress.done(true);
+                notie.alert({
+                    type: "error",
+                    text: "Unable to send email right now.",
+                    time: 4,
+                });
+            })
+            .finally(() => {
+                setEmailComposeSending(false);
+            });
     }
 
     /**
@@ -613,12 +1066,31 @@ function ChatList(props) {
     }
 
     var category = containerCategory ? containerCategory : "all";
+    const isEmailWorkspace = containerCategory === "email";
     const selectedChannel = channels[category];
     const hasAccountsForChannel = Object.keys(accountList || {}).length > 0;
+    const selectedAccountInfo = getSelectedAccountMeta();
+    const visibleTabs = isEmailWorkspace ? [tabs[1]] : tabs;
     const emptySidebarMessage =
         !hasAccountsForChannel && category !== "all"
             ? getNoAccountMessage(category)
             : props.translator["No conversations found for this channel."];
+    const emailSyncAction =
+        isEmailWorkspace ? (
+            <button
+                type="button"
+                onClick={syncEmailAccountNow}
+                disabled={!selectedAccount || syncNowLoading}
+                className={classNames(
+                    !selectedAccount || syncNowLoading
+                        ? "cursor-not-allowed opacity-60"
+                        : "hover:bg-[#8a19d9]",
+                    "inline-flex items-center justify-center rounded-lg bg-[#A31EFF] px-3.5 py-2 text-sm font-semibold text-white transition",
+                )}
+            >
+                {syncNowLoading ? "Syncing..." : "Sync"}
+            </button>
+        ) : null;
 
     const loadingIndicator = (
         <div className="flex items-center justify-center gap-2 py-6">
@@ -639,13 +1111,14 @@ function ChatList(props) {
             auth={props.auth}
             errors={props.errors}
             current_page={"Chats"}
+            hideAssistant
             hidePageTitle
             fullHeight
             navigationMenu={props.menuBar}
         >
             <Head title="Chat" />
             <div className="flex h-full min-h-0">
-                <div className="w-1/3 h-full min-h-0">
+                <div className="h-full min-h-0 w-[31%]">
                     <div className="bg-[#140816]/70 !ml-1 rounded h-full min-h-0 text-white flex flex-col">
                         <div className="flex justify-between items-center p-3 md:hidden">
                             <div>
@@ -697,6 +1170,11 @@ function ChatList(props) {
                                     filter={props.filter}
                                     translator={props.translator}
                                     is_chat={true}
+                                    includeRelationFields={true}
+                                    allowedFieldNames={[
+                                        "list_relation",
+                                        "tag_relation",
+                                    ]}
                                 />
                             </div>
                             <div className="mt-1 relative ">
@@ -721,7 +1199,7 @@ function ChatList(props) {
                                 type="button"
                                 style={{ backgroundColor: "#BF00FF" }}
                                 className="inline-flex justify-center items-center whitespace-nowrap !py-2 !px-3 border border-transparent shadow-sm text-sm font-medium rounded-[4px] text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                                onClick={() => setShowForm(true)}
+                                onClick={openNewMessage}
                             >
                                 {props.translator["New Message"]}
                             </button>
@@ -732,7 +1210,7 @@ function ChatList(props) {
                                     className="mt-2 -mb-px flex space-x-3 pl-2"
                                     aria-label="Tabs"
                                 >
-                                    {tabs.map((tab) => (
+                                    {visibleTabs.map((tab) => (
                                         <a
                                             key={tab.name}
                                             //  href={tab.href}
@@ -771,26 +1249,39 @@ function ChatList(props) {
                                     ref={listRef}
                                 >
                                     {chatListItems.map((person) => (
-                                        <li key={`contact_id_${person.id}`}>
-                                            <div
-                                                className={classNames(
-                                                    "group relative !px-3 !py-3 flex items-center space-x-3 hover:bg-white/5 focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#BF00FF]/40",
-                                                    selectedContact == person.id
-                                                        ? "bg-[#170024]/90"
-                                                        : "",
-                                                )}
-                                            >
-                                                <div className="flex-shrink-0">
-                                                    <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-500">
-                                                        <span className="text-xl font-normal leading-none text-white">
-                                                            {person.name.substring(
-                                                                0,
-                                                                2,
+                                        <li key={getConversationKey(person.id)}>
+                                            {resolveContactChannel(person) ===
+                                            "email" ? (
+                                                <div
+                                                    className={classNames(
+                                                        "group mx-1 my-0.5 flex items-start gap-2 rounded-lg px-2 py-2 transition",
+                                                        selectedContact ==
+                                                            person.id
+                                                            ? "bg-[linear-gradient(135deg,rgba(191,0,255,0.10),rgba(38,11,52,0.82))]"
+                                                            : person.unread_count >
+                                                                0
+                                                              ? "bg-white/[0.018] hover:bg-white/[0.04]"
+                                                              : "bg-transparent hover:bg-white/[0.024]",
+                                                    )}
+                                                >
+                                                    <div className="flex-shrink-0 pt-0.5">
+                                                        <span
+                                                            className={classNames(
+                                                                "inline-flex h-8 w-8 items-center justify-center rounded-lg text-[11px] font-semibold text-white",
+                                                                person.unread_count >
+                                                                    0
+                                                                    ? "bg-[#A31EFF]/25"
+                                                                    : "bg-white/10",
+                                                            )}
+                                                        >
+                                                            {getContactInitials(
+                                                                person.name ||
+                                                                    person.email ||
+                                                                    person.number,
                                                             )}
                                                         </span>
-                                                    </span>
-                                                </div>
-                                                <div className="flex-1 min-w-0">
+                                                    </div>
+
                                                     <button
                                                         type="button"
                                                         onClick={() =>
@@ -801,85 +1292,149 @@ function ChatList(props) {
                                                                 ),
                                                             )
                                                         }
-                                                        className="focus:outline-none"
+                                                        className="min-w-0 flex-1 text-left focus:outline-none"
                                                     >
-                                                        {/* Extend touch target to entire panel */}
-                                                        <span
-                                                            className="absolute inset-0"
-                                                            aria-hidden="true"
-                                                        />
-                                                        <span className="text-sm font-semibold text-white flex items-start transition-colors group-hover:text-[#BF00FF]">
-                                                            {person &&
-                                                            person.name ? (
-                                                                <>
-                                                                    {
-                                                                        person.name
-                                                                    }
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    {
-                                                                        person.number
-                                                                    }
-                                                                </>
+                                                        <div className="flex items-start justify-between gap-3">
+                                                            <div className="min-w-0 flex-1">
+                                                                <div
+                                                                    className={classNames(
+                                                                "truncate text-[13px] font-semibold transition-colors",
+                                                                person.unread_count >
+                                                                    0
+                                                                    ? "text-white"
+                                                                            : "text-white/90 group-hover:text-white",
+                                                                    )}
+                                                                >
+                                                                    {person.name ||
+                                                                        person.email ||
+                                                                        person.number}
+                                                                </div>
+                                                            </div>
+                                                            <div className="shrink-0 text-[11px] text-white/40">
+                                                                {formatConversationTime(
+                                                                    person.last_message_at,
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {getEmailConversationMeta(
+                                                            person,
+                                                        ) && (
+                                                            <div className="mt-0.5 truncate text-[11px] text-white/46">
+                                                                {getEmailConversationMeta(
+                                                                    person,
+                                                                )}
+                                                            </div>
+                                                        )}
+
+                                                        <div
+                                                            className={classNames(
+                                                                "mt-0.5 truncate text-[12px]",
+                                                                person.unread_count >
+                                                                    0
+                                                                    ? "font-medium text-white/82"
+                                                                    : "text-white/66",
                                                             )}
-                                                        </span>
-                                                        <span className="text-sm text-[#878787] truncate flex items-start">
-                                                            {getContactSecondaryValue(
+                                                        >
+                                                            {getEmailConversationSubject(
                                                                 person,
                                                             )}
-                                                        </span>
+                                                        </div>
                                                     </button>
-                                                </div>
-                                                <div
-                                                    className="cursor-pointer"
-                                                    ype="button"
-                                                    //  onClick={() => getcategoryContacts()}
-                                                >
-                                                    <Dropdown>
-                                                        <Dropdown.Trigger>
-                                                            <span className="inline-flex rounded-md">
-                                                                <button type="button">
-                                                                    <EllipsisVerticalIcon className="h-4 w-4" />
-                                                                </button>
-                                                            </span>
-                                                        </Dropdown.Trigger>
 
-                                                        <Dropdown.Content
-                                                            align="right"
-                                                            contentClasses="py-1 bg-white w-64 shadow-md"
-                                                        >
-                                                            <ul
-                                                                role="list"
-                                                                className="divide-y divide-gray-200 overflow-y-auto m-h-64 !pl-0"
-                                                            >
-                                                                <li
-                                                                    onClick={() =>
-                                                                        setArchived(
-                                                                            person.id,
-                                                                        )
-                                                                    }
-                                                                    className={
-                                                                        "px-4 py-2 text-gray-900 text-sm hover:bg-sky-700 cursor-pointer "
-                                                                    }
-                                                                >
-                                                                    {current_tab ==
-                                                                    "archived" ? (
-                                                                        <>
-                                                                            {" "}
-                                                                            Unarchive{" "}
-                                                                        </>
-                                                                    ) : (
-                                                                        <>
-                                                                            Archive
-                                                                        </>
-                                                                    )}
-                                                                </li>
-                                                            </ul>
-                                                        </Dropdown.Content>
-                                                    </Dropdown>
+                                                    <div className="flex shrink-0 items-start gap-2 pt-0.5">
+                                                        {person.unread_count >
+                                                            0 && (
+                                                            <div className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-[#A31EFF] px-1.5 text-[10px] font-semibold text-white">
+                                                                {
+                                                                    person.unread_count
+                                                                }
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            ) : (
+                                                <div
+                                                    className={classNames(
+                                                        "group relative !px-3 !py-3 flex items-center space-x-3 hover:bg-white/5 focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#BF00FF]/40",
+                                                        selectedContact == person.id
+                                                            ? "bg-[#170024]/90"
+                                                            : "",
+                                                    )}
+                                                >
+                                                    <div className="flex-shrink-0">
+                                                        <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-500">
+                                                            <span className="text-xl font-normal leading-none text-white">
+                                                                {person.name.substring(
+                                                                    0,
+                                                                    2,
+                                                                )}
+                                                            </span>
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                getContactMessage(
+                                                                    person.id,
+                                                                    resolveContactChannel(
+                                                                        person,
+                                                                    ),
+                                                                )
+                                                            }
+                                                            className="focus:outline-none"
+                                                        >
+                                                            <span
+                                                                className="absolute inset-0"
+                                                                aria-hidden="true"
+                                                            />
+                                                            <span className="text-sm font-semibold text-white flex items-start transition-colors group-hover:text-[#BF00FF]">
+                                                                {person &&
+                                                                person.name ? (
+                                                                    <>
+                                                                        {
+                                                                            person.name
+                                                                        }
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        {
+                                                                            person.number
+                                                                        }
+                                                                    </>
+                                                                )}
+                                                            </span>
+                                                            <span className="text-sm text-[#878787] truncate flex items-start">
+                                                                {getContactSecondaryValue(
+                                                                    person,
+                                                                    resolveContactChannel(
+                                                                        person,
+                                                                    ),
+                                                                )}
+                                                            </span>
+                                                            {person.channel ===
+                                                                "email" &&
+                                                                getEmailConversationMeta(
+                                                                    person,
+                                                                ) && (
+                                                                    <span className="text-xs text-white/40 truncate flex items-start">
+                                                                        {getEmailConversationMeta(
+                                                                            person,
+                                                                        )}
+                                                                    </span>
+                                                                )}
+                                                        </button>
+                                                    </div>
+                                                    {person.unread_count > 0 && (
+                                                        <div className="flex-shrink-0 rounded-full bg-[#A31EFF] px-2 py-0.5 text-xs font-semibold text-white">
+                                                            {
+                                                                person.unread_count
+                                                            }
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </li>
                                     ))}
                                     {chatListItems.length == 0 && (
@@ -906,16 +1461,39 @@ function ChatList(props) {
                         </nav>
                     </div>
                 </div>
-                <div className="w-2/3 h-full min-h-0">
-                    <div className="flex-1 min-h-0 !sm:py-3 !sm:pr-3 pr-0 justify-between flex flex-col h-full bg-[#0b0b10] gap-3">
-                        {(!selectedContact ||
-                            !chatList["contact_id_" + selectedContact]) && (
-                            <div className="flex sm:items-center justify-between !py-3 !px-3 rounded-2xl bg-[#170024]/80 text-white">
+                <div className="h-full min-h-0 w-[69%]">
+                    <div
+                        className={classNames(
+                            "flex min-h-0 h-full flex-1 flex-col bg-[#0b0b10] pr-0 !sm:py-3 !sm:pr-3",
+                            isEmailWorkspace
+                                ? "justify-start gap-2"
+                                : "justify-between gap-3",
+                        )}
+                    >
+                        {(!selectedContact || !selectedConversation) && (
+                            <div
+                                className={classNames(
+                                    "justify-between rounded-2xl text-white",
+                                    isEmailWorkspace
+                                        ? "flex flex-col gap-2 bg-[#170024]/62 px-4 py-3"
+                                        : "flex sm:items-center !px-3 !py-3 bg-[#170024]/80",
+                                )}
+                            >
                                 <div className="text-sm text-white/60">
                                     {selectedChannel.label}
                                 </div>
 
-                                <div className="flex items-center gap-3">
+                                <div
+                                    className={classNames(
+                                        "flex items-center gap-3",
+                                        isEmailWorkspace
+                                            ? "justify-between"
+                                            : "",
+                                    )}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        {emailSyncAction}
+                                    </div>
                                     <Menu as="div" className="relative">
                                         <div>
                                             <Menu.Button className="max-w-xs !px-3 !py-1.5 flex items-center gap-2 text-sm rounded-full bg-white/5 text-white/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/60 focus:ring-offset-0">
@@ -974,13 +1552,9 @@ function ChatList(props) {
                                             <Menu.Button className="max-w-xs px-3 py-1.5 flex items-center text-sm rounded-full bg-white/5 text-white/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/60 focus:ring-offset-0">
                                                 <div className="flex items-center gap-2">
                                                     <span>
-                                                        {selectedAccount
-                                                            ? accountList[
-                                                                  selectedAccount
-                                                              ]
-                                                            : props.translator[
-                                                                  "Account list"
-                                                              ]}
+                                                        {getAccountLabel(
+                                                            selectedAccount,
+                                                        )}
                                                     </span>
                                                     <span className="ml-1">
                                                         <svg
@@ -1043,7 +1617,9 @@ function ChatList(props) {
                                                                     }
                                                                     className="block px-4 text-sm text-white/80 hover:text-white w-full cursor-pointer"
                                                                 >
-                                                                    {name}
+                                                                    {getAccountLabel(
+                                                                        id,
+                                                                    ) || name}
                                                                 </span>
                                                             </div>
                                                         </Menu.Item>
@@ -1056,47 +1632,113 @@ function ChatList(props) {
                             </div>
                         )}
 
-                        {selectedContact &&
-                            chatList["contact_id_" + selectedContact] && (
+                        {selectedContact && selectedConversation && (
                                 <>
-                                    <div className="flex sm:items-center justify-between !py-3 !px-3 rounded-2xl bg-[#170024]/80 text-white">
-                                        <div className="relative flex items-center space-x-2">
+                                    <div
+                                        className={classNames(
+                                            "justify-between rounded-2xl text-white",
+                                            isEmailWorkspace
+                                                ? "flex flex-col gap-3 bg-[#170024]/62 px-4 py-3 lg:flex-row lg:items-start"
+                                                : "flex sm:items-center !py-3 !px-3 bg-[#170024]/80",
+                                        )}
+                                    >
+                                        <div
+                                            className={classNames(
+                                                "relative flex",
+                                                isEmailWorkspace
+                                                    ? "min-w-0 flex-1 items-start gap-3"
+                                                    : "items-center space-x-2",
+                                            )}
+                                        >
                                             <div className="flex gap-1">
                                                 <div className="relative">
-                                                    <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/10">
-                                                        <span className="text-xl font-medium leading-none text-white">
-                                                            {chatList[
-                                                                "contact_id_" +
-                                                                    selectedContact
-                                                            ].name.substring(
-                                                                0,
-                                                                2,
+                                                    <span
+                                                        className={classNames(
+                                                            "inline-flex items-center justify-center text-white",
+                                                            isEmailWorkspace
+                                                                ? "h-10 w-10 rounded-lg bg-[#A31EFF]/18 text-sm font-semibold"
+                                                                : "h-10 w-10 rounded-full bg-white/10",
+                                                        )}
+                                                    >
+                                                        <span className="leading-none">
+                                                            {getContactInitials(
+                                                                selectedConversation.name ||
+                                                                    selectedConversation.email,
                                                             )}
                                                         </span>
                                                     </span>
                                                 </div>
                                             </div>
-                                            <div className="flex flex-col leading-tight">
-                                                <div className="text-sm font-semibold mt-1 flex items-center">
-                                                    <span className="text-white mr-3">
-                                                        <Link
-                                                            href={route(
-                                                                "detailContact",
+                                            <div
+                                                    className={classNames(
+                                                        "flex flex-col",
+                                                        isEmailWorkspace
+                                                            ? "min-w-0 flex-1 gap-1 leading-normal"
+                                                            : "leading-tight",
+                                                    )}
+                                                >
+                                                <div
+                                                    className={classNames(
+                                                        "flex items-center",
+                                                        isEmailWorkspace
+                                                            ? "flex-wrap gap-x-3 gap-y-1"
+                                                            : "text-sm font-semibold mt-1",
+                                                    )}
+                                                >
+                                                    {selectedConversation.contact_id ? (
+                                                        <span className="text-white">
+                                                            <Link
+                                                                href={route(
+                                                                    "detailContact",
+                                                                    {
+                                                                        id: selectedConversation.contact_id,
+                                                                    },
+                                                                )}
+                                                                className={classNames(
+                                                                    "cursor-pointer underline hover:decoration-white",
+                                                                    isEmailWorkspace
+                                                                        ? "truncate text-[15px] font-semibold decoration-white/20 underline-offset-4"
+                                                                        : "decoration-white/40",
+                                                                )}
+                                                            >
                                                                 {
-                                                                    id: selectedContact,
-                                                                },
+                                                                    selectedConversation.name
+                                                                }
+                                                            </Link>
+                                                        </span>
+                                                    ) : (
+                                                        <span
+                                                            className={classNames(
+                                                                "text-white",
+                                                                isEmailWorkspace
+                                                                    ? "truncate text-[15px] font-semibold"
+                                                                    : "mr-3",
                                                             )}
-                                                            className="cursor-pointer underline decoration-white/40 hover:decoration-white"
                                                         >
                                                             {
-                                                                chatList[
-                                                                    "contact_id_" +
-                                                                        selectedContact
-                                                                ].name
+                                                                selectedConversation.name
                                                             }
-                                                        </Link>
-                                                    </span>
+                                                        </span>
+                                                    )}
                                                 </div>
+                                                {selectedConversation.channel ===
+                                                    "email" && (
+                                                    <>
+                                                        {selectedConversation.email && (
+                                                            <span
+                                                                className={classNames(
+                                                                    isEmailWorkspace
+                                                                        ? "truncate text-[12px] text-white/48"
+                                                                        : "text-xs text-white/40",
+                                                                )}
+                                                            >
+                                                                {
+                                                                    selectedConversation.email
+                                                                }
+                                                            </span>
+                                                        )}
+                                                    </>
+                                                )}
                                             </div>
                                             {/* <EllipsisVerticalIcon
                                         className="h-4 w-4"
@@ -1104,10 +1746,22 @@ function ChatList(props) {
                                     /> */}
                                         </div>
 
-                                        <div className="flex items-center gap-3">
+                                        <div
+                                            className={classNames(
+                                                "flex items-center gap-3",
+                                                isEmailWorkspace
+                                                    ? "flex-wrap lg:justify-end lg:gap-2"
+                                                    : "",
+                                            )}
+                                        >
+                                            {isEmailWorkspace && (
+                                                <div className="flex items-center gap-2">
+                                                    {emailSyncAction}
+                                                </div>
+                                            )}
                                             <Menu as="div" className="relative">
                                                 <div>
-                                                    <Menu.Button className="max-w-xs !px-3 !py-1.5 flex items-center gap-2 text-sm rounded-full bg-white/5 text-white/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/60 focus:ring-offset-0">
+                                                    <Menu.Button className="max-w-xs !px-3 !py-1.5 flex items-center gap-2 text-sm rounded-lg bg-white/[0.04] text-white/75 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/50 focus:ring-offset-0">
                                                         <selectedChannel.icon className="w-8 h-8 fill-current text-white/70" />
                                                         <span>
                                                             {
@@ -1168,22 +1822,11 @@ function ChatList(props) {
                                             </Menu>
                                             <Menu as="div" className="relative">
                                                 <div>
-                                                    <Menu.Button className="max-w-xs px-3 py-1.5 flex items-center text-sm rounded-full bg-white/5 text-white/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/60 focus:ring-offset-0">
+                                                    <Menu.Button className="max-w-xs px-3 py-1.5 flex items-center text-sm rounded-lg bg-white/[0.04] text-white/75 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/50 focus:ring-offset-0">
                                                         <div className="flex items-center gap-2">
                                                             <span>
-                                                                {selectedAccount ? (
-                                                                    <>
-                                                                        {
-                                                                            accountList[
-                                                                                selectedAccount
-                                                                            ]
-                                                                        }
-                                                                    </>
-                                                                ) : (
-                                                                    props
-                                                                        .translator[
-                                                                        "Account list"
-                                                                    ]
+                                                                {getAccountLabel(
+                                                                    selectedAccount,
                                                                 )}
                                                             </span>
                                                             {containerCategory ==
@@ -1283,9 +1926,10 @@ function ChatList(props) {
                                                                                 }
                                                                                 className="block px-4 text-sm text-white/80 hover:text-white w-full cursor-pointer"
                                                                             >
-                                                                                {
-                                                                                    name
-                                                                                }
+                                                                                {getAccountLabel(
+                                                                                    id,
+                                                                                ) ||
+                                                                                    name}
                                                                             </span>
 
                                                                             {containerCategory ==
@@ -1335,7 +1979,14 @@ function ChatList(props) {
                                         setLoadedStory={setLoadedStory}
                                     />
 
-                                    <div className="rounded-2xl px-4 pt-4 mb-2 sm:mb-0 bg-[#170024]/80">
+                                    <div
+                                        className={classNames(
+                                            "mb-2 rounded-2xl sm:mb-0",
+                                            isEmailWorkspace
+                                                ? "bg-[#15061d]/58 px-3 py-2.5"
+                                                : "bg-[#170024]/80 px-4 pt-4",
+                                        )}
+                                    >
                                         <ChatBox
                                             handleChange={handleChange}
                                             handleKeyUp={handleKeyUp}
@@ -1357,11 +2008,11 @@ function ChatList(props) {
                                             data={data}
                                             sendMessage={sendMessage}
                                             logo={
-                                                selectedContact
-                                                    ? chatList[
-                                                          "contact_id_" +
-                                                              selectedContact
-                                                      ].name.substring(0, 2)
+                                                selectedConversation
+                                                    ? selectedConversation.name.substring(
+                                                          0,
+                                                          2,
+                                                      )
                                                     : ""
                                             }
                                         />
@@ -1483,6 +2134,22 @@ function ChatList(props) {
             ) : (
                 ""
             )}
+            <EmailComposeModal
+                open={showEmailComposeModal}
+                onClose={closeEmailComposeModal}
+                data={emailComposeData}
+                onChange={handleEmailComposeChange}
+                onSend={sendEmailComposeMessage}
+                sending={emailComposeSending}
+                templates={props.templates}
+                products={props.products}
+                interactiveMessages={props.interactiveMessages}
+                selectedAccount={selectedAccount}
+                setTemplateInfo={setEmailComposeTemplateInfo}
+                setProductInfo={setEmailComposeProductInfo}
+                setInteractiveMessage={setEmailComposeInteractiveMessage}
+                clearContent={clearEmailComposeContent}
+            />
         </Authenticated>
     );
 }

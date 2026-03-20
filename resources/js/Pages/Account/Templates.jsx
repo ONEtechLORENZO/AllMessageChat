@@ -66,6 +66,17 @@ function Templates(props) {
     }, [props.account?.id]);
 
     useEffect(() => {
+        if (
+            errors.template_name ||
+            errors.subject ||
+            errors.category ||
+            errors.languages
+        ) {
+            setIsCreateModalOpen(true);
+        }
+    }, [errors]);
+
+    useEffect(() => {
         if (typeof window === "undefined") {
             return;
         }
@@ -360,8 +371,12 @@ function Templates(props) {
 
         post(route("create_new_template", { id: selectedAccountId }), {
             preserveScroll: true,
+            preserveState: true,
             onSuccess: () => {
                 closeCreateTemplateModal();
+            },
+            onError: () => {
+                setIsCreateModalOpen(true);
             },
         });
     }
@@ -852,16 +867,14 @@ function Templates(props) {
                                                                 htmlFor="subject"
                                                                 className="block text-sm font-medium text-white/80"
                                                             >
-                                                                Subject{" "}
-                                                                <span className="text-red-500">*</span>
+                                                                Subject
                                                             </label>
                                                             <div className="mt-1 flex rounded-md shadow-sm">
                                                                 <Input
                                                                     name="subject"
-                                                                    required={true}
                                                                     id="subject"
                                                                     value={data.subject}
-                                                                    placeholder="Email subject"
+                                                                    placeholder="Optional. Defaults to the template name"
                                                                     handleChange={handleCreateTemplateChange}
                                                                     className="border-0 bg-[#171717] px-4 py-3 text-white placeholder:text-white/35 focus:border-fuchsia-500/60 focus:ring-fuchsia-500/20"
                                                                 />

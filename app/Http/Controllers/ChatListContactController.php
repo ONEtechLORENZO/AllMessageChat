@@ -105,17 +105,15 @@ class ChatListContactController extends Controller
      */
     public function setArchivedContact(Request $request)
     {
+        // Archiving chats is disabled. Keep the conversation visible in All Chats.
         $user = $request->user();
-        $contactId = $request->contact_id;
-        $chatListContact = ChatListContact::where('user_id', $user->id )->where('contact_id', $contactId)->first();
-        if(!$chatListContact->is_archive){
-            $chatListContact->is_archive = true;
-            $chatListContact->unread = false;
-        } else {
+        $conversationId = $request->contact_id;
+        $chatListContact = ChatListContact::where('user_id', $user->id)->where('id', $conversationId)->first();
+        if ($chatListContact) {
             $chatListContact->is_archive = false;
+            $chatListContact->save();
         }
-        
-        $chatListContact->save();
+
         return Redirect::route('chat_list');
     }
 }

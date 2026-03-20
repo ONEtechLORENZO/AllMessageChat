@@ -10,6 +10,7 @@ import CreatableSelect from 'react-select';
 
 function Filter(props) {
     const listRouteParams = props.listRouteParams ?? {};
+    const allowedFieldNames = props.allowedFieldNames ?? null;
     const newCondition = {
         'field_name': '',
         'field_type': 'text',
@@ -19,22 +20,22 @@ function Filter(props) {
     };
     const logic_operators = ['AND', 'OR'];
 
-    /* const relationFields = [
-          {
-              'field_label': props.translator.Tag,
-              'field_name': 'tag_relation',
-              'field_type': 'tag',
-              'is_mandatory': 0,
-              'options': props.filter.tag_list
-          },
-          {
-              'field_label': props.translator.List,
-              'field_name': 'list_relation',
-              'field_type': 'tag',
-              'is_mandatory': 0,
-              'options': props.filter.category_list
-          }
-      ];*/
+    const relationFields = [
+        {
+            'field_label': props.translator.Tag,
+            'field_name': 'tag_relation',
+            'field_type': 'tag',
+            'is_mandatory': 0,
+            'options': props.filter.tag_list
+        },
+        {
+            'field_label': props.translator.List,
+            'field_name': 'list_relation',
+            'field_type': 'tag',
+            'is_mandatory': 0,
+            'options': props.filter.category_list
+        }
+    ];
 
     const condition_operators = {
         'text': {
@@ -116,6 +117,22 @@ function Filter(props) {
     useEffect(() => {
         fetchModuleFields();
     }, []);
+
+    function getAvailableFields(baseFields = []) {
+        let mergedFields = baseFields;
+
+        if (props.includeRelationFields) {
+            mergedFields = [...baseFields, ...relationFields];
+        }
+
+        if (allowedFieldNames && allowedFieldNames.length) {
+            mergedFields = mergedFields.filter((field) =>
+                allowedFieldNames.includes(field.field_name),
+            );
+        }
+
+        return mergedFields;
+    }
 
     // Apply filter data
     function applyFilter(filter) {
@@ -448,8 +465,7 @@ function Filter(props) {
         Axios.get(endpoint_url).then((response) => {
             nProgress.done(true);
             if (response.data.status !== false) {
-                //response.data.fields = [...response.data.fields, ...relationFields];
-                setFields(response.data.fields);
+                setFields(getAvailableFields(response.data.fields));
             }
             else {
                 notie.alert({ type: 'error', text: response.data.message, time: 5 });

@@ -90,6 +90,8 @@ Route::get('/login-admin-user', [UserController::class, 'loginAdminUser']);
 
 Route::middleware('planrestriction')->group(function () {
 
+    Route::get('/integrations/gmail/callback', [UserController::class, 'handleGmailCallback'])->name('gmail_connection_callback');
+
     // Check user login
     Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -108,6 +110,7 @@ Route::middleware('planrestriction')->group(function () {
         // FaceBook
         Route::get('/connect/fb/{accountId}', [WhatsAppUsersController::class, 'connectFaceBook'])->name('connect_face_book');
         Route::get('/integrations/meta/callback', [WhatsAppUsersController::class, 'handleMetaCallback'])->name('meta_connection_callback');
+        Route::get('/integrations/gmail/connect', [UserController::class, 'connectGmail'])->name('connect_gmail');
         Route::get('/store-access-token/{app_name}/{token}', [WhatsAppUsersController::class, 'storeUserToken'])->name('store_user_code');
 
         // Wallet
@@ -171,6 +174,7 @@ Route::middleware('planrestriction')->group(function () {
 
         // Conversation Page
         Route::get('/chat', [MsgController::class, 'ChatList'])->name('chat_list');
+        Route::post('/chat/sync-email-account', [MsgController::class, 'syncEmailAccount'])->name('sync_email_chat_account');
         Route::get('/getMessages', [MsgController::class, 'getMessageList'])->name('get_message_list');
         Route::post('/sendMessage', [MsgController::class, 'sendMessage'])->name('send_message_to_contact');
         Route::post('/setArchivedContact', [ChatListContactController::class, 'setArchivedContact'])->name('set_archive');

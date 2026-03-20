@@ -95,14 +95,33 @@ class AccountObserver
      */
     public function updateSocialProfileToAdmin($account , $mode)
     {
-        $account['user_company'] = Company::first();
+        try {
+            $account['user_company'] = Company::first();
 
-        $url = config('app.admin_api_url')."/api/{$mode}-social-profile";  // Api url for create
-        $headers = ['api-key' => config('app.admin_api_key')]; 
-       
-        $response = Http::withHeaders($headers)->post($url, ['account' => $account]); // Send API call to create a social profile
-        $result = $response->body();
+            $url = config('app.admin_api_url')."/api/{$mode}-social-profile";
+            $headers = ['api-key' => config('app.admin_api_key')];
 
-        Log::info(['Social profile creation response ' => $result]);
+            $response = Http::withHeaders($headers)->post($url, ['account' => $account]);
+            $result = $response->body();
+
+            if (! $response->successful()) {
+                Log::warning('Admin social profile sync failed.', [
+                    'mode' => $mode,
+                    'account_id' => $account->id ?? null,
+                    'status' => $response->status(),
+                    'response' => $result,
+                ]);
+
+                return;
+            }
+
+            Log::info(['Social profile creation response ' => $result]);
+        } catch (\Throwable $e) {
+            Log::warning('Admin social profile sync threw an exception.', [
+                'mode' => $mode,
+                'account_id' => $account->id ?? null,
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 }

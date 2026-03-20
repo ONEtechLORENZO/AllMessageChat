@@ -17,10 +17,6 @@ import StepEmail from "./StepEmail";
 import axios from "axios";
 import notie from "notie";
 import nProgress from "nprogress";
-import {
-    getInitialEmailProvider,
-    withEmailProviderDefaults,
-} from "./emailProviderPresets";
 
 const mandatoryField = ["display_name", "phone_number", "company_name"];
 
@@ -96,22 +92,6 @@ export default function AccountRegistration(props) {
                     : event.target.value;
         }
         newData[field_name] = value;
-
-        if (field_name === "smtp_provider") {
-            newData = withEmailProviderDefaults(newData, value);
-        }
-
-        if (
-            field_name === "service" &&
-            value === "email" &&
-            !newData.smtp_provider
-        ) {
-            newData = withEmailProviderDefaults(
-                newData,
-                getInitialEmailProvider(newData),
-                { preserveExisting: true },
-            );
-        }
 
         setData(newData);
 

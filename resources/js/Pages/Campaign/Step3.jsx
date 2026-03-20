@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { Link } from "@inertiajs/react";
 import Dropdown from "@/Components/Forms/Dropdown";
 
 const options = {
@@ -9,6 +10,11 @@ const options = {
 }
 
 function Content(props){
+    const selectedService = String(props.data.service ?? "").toLowerCase();
+    const selectedAccountId = props.data.account_id ?? "";
+    const templateCount = props.templates ? Object.keys(props.templates).length : 0;
+    const showNoTemplatesMessage = selectedAccountId && templateCount === 0;
+    const isEmailService = selectedService === "email";
 
     return(
         <div className="w-full rounded-2xl border-0 bg-[#170024]/80 shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
@@ -65,6 +71,31 @@ function Content(props){
                                 className="border-0 bg-[#202020] focus:border-0 focus:ring-[#BF00FF]/40"
                             />
                         </div>
+                        {!selectedAccountId ? (
+                            <p className="mt-3 text-sm text-white/45">
+                                Select an account first to load its templates.
+                            </p>
+                        ) : null}
+                        {showNoTemplatesMessage ? (
+                            <div className="mt-3 rounded-xl border border-fuchsia-500/20 bg-fuchsia-500/10 px-4 py-3 text-sm text-fuchsia-100">
+                                {isEmailService ? (
+                                    <>
+                                        No email templates exist for this account yet. Campaigns only list templates already created for the selected Gmail account.{" "}
+                                        <Link
+                                            href={route("account_templates", { account_id: selectedAccountId })}
+                                            className="font-semibold text-white underline decoration-fuchsia-300/70 underline-offset-4 transition hover:text-fuchsia-200"
+                                        >
+                                            Create an email template
+                                        </Link>
+                                        .
+                                    </>
+                                ) : (
+                                    <>
+                                        No templates are available for this account yet. Create or sync a template first, then come back and select it here.
+                                    </>
+                                )}
+                            </div>
+                        ) : null}
                     </div>
                 </div>
                 

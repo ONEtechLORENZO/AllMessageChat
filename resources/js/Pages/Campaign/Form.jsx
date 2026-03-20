@@ -14,7 +14,7 @@ export default function Campaign(props) {
   const [status, setStatus] = useState();
   const [conditions, setConditions] = useState();
   const [recordCount, setRecordCount] = useState(null);
-  const [companyName, setCompanyName] = useState(null);
+  const [companyName, setCompanyName] = useState({});
   const [templates , setTemplates] = useState({});
   const [scheduleTime, setScheduleTime] = useState(new Date());
   
@@ -23,10 +23,17 @@ export default function Campaign(props) {
     setData(props.campaign);
     setStatus(props.status);
     setRecordCount(props.count);
-    if(props.campaign.account_id){
+    if(props.campaign.service){
       getCompanyName(props.campaign.service);
+    } else {
+      setCompanyName({});
+    }
+
+    if(props.campaign.account_id){
 
       getTemplateList(props.campaign.account_id);
+    } else {
+      setTemplates({});
     }
   },[props]);
 
@@ -42,10 +49,25 @@ export default function Campaign(props) {
         setScheduleTime(value)
       }
       if(name == 'service' && value != ''){
+         newState["account_id"] = "";
+         newState["template_id"] = "";
+         setCompanyName({});
+         setTemplates({});
          getCompanyName(value);
       }
+      if(name == 'service' && value == ''){
+        newState["account_id"] = "";
+        newState["template_id"] = "";
+        setCompanyName({});
+        setTemplates({});
+      }
       if(name == 'account_id' && value != ''){
+        newState["template_id"] = "";
         getTemplateList(value);
+      }
+      if(name == 'account_id' && value == ''){
+        newState["template_id"] = "";
+        setTemplates({});
       }
       newState[name] = value;
       setData(newState);
@@ -139,7 +161,10 @@ export default function Campaign(props) {
         .then((response) => {
           setTemplates(response.data.templates)
         });
+        return;
       }
+
+      setTemplates({});
     }
 
    function checkValidation(data, openTab, conditions){

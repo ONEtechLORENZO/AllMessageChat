@@ -16,6 +16,7 @@ use App\Models\Session;
 use App\Models\Company;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Msg extends Model
 {
@@ -27,6 +28,21 @@ class Msg extends Model
     public function msgable()
     {
         return $this->morphTo();
+    }
+
+    protected $casts = [
+        'recipient_to' => 'array',
+        'recipient_cc' => 'array',
+        'recipient_bcc' => 'array',
+        'sent_at' => 'datetime',
+        'received_at' => 'datetime',
+        'is_delivered' => 'boolean',
+        'is_read' => 'boolean',
+    ];
+
+    public function conversation(): BelongsTo
+    {
+        return $this->belongsTo(ChatListContact::class, 'chat_list_contact_id');
     }
 
     /**

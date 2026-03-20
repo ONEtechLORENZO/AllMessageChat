@@ -26,7 +26,9 @@ use App\Models\WebhookEvent;
 use App\Models\Plan;
 use App\Models\Automation;
 use App\Models\Session;
+use App\Services\GmailService;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -43,33 +45,9 @@ class UserController extends Controller
 {
     public $per_page = 15;
 
-    private const EMAIL_PROVIDER_PRESETS = [
-        'gmail' => [
-            'host' => 'smtp.gmail.com',
-            'port' => '587',
-            'encryption' => 'tls',
-        ],
-        'google_workspace' => [
-            'host' => 'smtp.gmail.com',
-            'port' => '587',
-            'encryption' => 'tls',
-        ],
-        'microsoft_365_outlook' => [
-            'host' => 'smtp.office365.com',
-            'port' => '587',
-            'encryption' => 'tls',
-        ],
-        'sendgrid' => [
-            'host' => 'smtp.sendgrid.net',
-            'port' => '587',
-            'encryption' => 'tls',
-        ],
-        'mailgun' => [
-            'host' => 'smtp.mailgun.org',
-            'port' => '587',
-            'encryption' => 'tls',
-        ],
-    ];
+    private const META_OAUTH_SESSION_KEY = 'meta_oauth_state';
+    private const GOOGLE_OAUTH_SESSION_KEY = 'google_oauth_state';
+    private const GOOGLE_OAUTH_CACHE_PREFIX = 'google_oauth_state:';
 
     public $webhook_events = [
         'received' => ['label' => 'Received', 'help_text' => 'Return sent messasge received response to callback url'],
@@ -837,9 +815,8 @@ class UserController extends Controller
             // Email-specific
             'email' => ['label' => __('Sender Email'), 'show' => ['email']],
             'display_name' => ['label' => __('Sender Name'), 'show' => ['email']],
-            'smtp_host' => ['label' => __('SMTP Host'), 'show' => ['email']],
-            'smtp_port' => ['label' => __('SMTP Port'), 'show' => ['email']],
-            'smtp_encryption' => ['label' => __('Encryption'), 'show' => ['email']],
+            'google_provider_user_id' => ['label' => __('Google Account ID'), 'show' => ['email'], 'user_show' => ['global_admin']],
+            'sync_last_at' => ['label' => __('Last Gmail Sync'), 'show' => ['email']],
 
             'Profile' => __('Profile'),
             'Callback URL' => __('Callback URL'),
@@ -958,11 +935,8 @@ class UserController extends Controller
         $accountData = $account->toArray();
 
         if ($account->service === 'email') {
-            $accountData['smtp_provider'] = $this->inferEmailProvider(
-                $account->smtp_host,
-                $account->smtp_port,
-                $account->smtp_encryption,
-            );
+            $accountData['gmail_connected'] = $account->service_engine === 'gmail_oauth'
+                && ! empty($account->oauth_refresh_token_encrypted);
         }
         $pages = [];
 
@@ -992,6 +966,11 @@ class UserController extends Controller
         $webhook = WebhookEvent::where('account_id', $account->id)->first();
         return Inertia::render('Account/Registration', [
             'account' => $accountData,
+            'googleConfigured' => (bool) (
+                config('services.google.client_id')
+                && config('services.google.client_secret')
+                && config('services.google.redirect')
+            ),
             'webhook_events' => $this->webhook_events,
             'events' => $webhook,
             'pages' => $pages,
@@ -1058,9 +1037,149 @@ class UserController extends Controller
             'error' => $error,
             'company' => $company,
             'accounts' => $accounts,
+            'googleConfigured' => (bool) (
+                config('services.google.client_id')
+                && config('services.google.client_secret')
+                && config('services.google.redirect')
+            ),
             'menuBar' => $menuBar,
             'translator' => Controller::getTranslations(),
         ]);
+    }
+
+    public function connectGmail(Request $request, GmailService $gmailService)
+    {
+        if (! config('services.google.client_id') || ! config('services.google.client_secret') || ! config('services.google.redirect')) {
+            return Redirect::route('account_registration', [
+                'error' => 'Google connection is not configured yet.',
+            ]);
+        }
+
+        $accountId = $request->integer('account_id') ?: null;
+        if ($accountId) {
+            $account = Account::where('id', $accountId)
+                ->where('user_id', $request->user()->id)
+                ->first();
+
+            if (! $account) {
+                abort(404);
+            }
+        }
+
+        $state = Str::random(40);
+
+        session([
+            self::GOOGLE_OAUTH_SESSION_KEY => [
+                'state' => $state,
+                'user_id' => $request->user()->id,
+                'account_id' => $accountId,
+            ],
+            'service' => 'email',
+        ]);
+        Cache::put(
+            $this->googleOauthCacheKey($state),
+            [
+                'state' => $state,
+                'user_id' => $request->user()->id,
+                'account_id' => $accountId,
+            ],
+            now()->addMinutes(15)
+        );
+
+        return redirect()->away($gmailService->authorizationUrl($state));
+    }
+
+    public function handleGmailCallback(Request $request, GmailService $gmailService)
+    {
+        $state = (string) $request->input('state');
+        $oauthSession = session(self::GOOGLE_OAUTH_SESSION_KEY);
+
+        if (! is_array($oauthSession) && $state !== '') {
+            $oauthSession = Cache::get($this->googleOauthCacheKey($state));
+        }
+
+        if (! is_array($oauthSession)) {
+            return Redirect::route('account_registration', [
+                'error' => 'Google connection session expired. Please try again.',
+            ]);
+        }
+
+        if ($request->filled('error')) {
+            $this->clearGoogleOauthState((string) ($oauthSession['state'] ?? $state));
+            $this->restoreGoogleOauthUserSession($request, (int) ($oauthSession['user_id'] ?? 0));
+
+            return Redirect::route('account_registration', [
+                'error' => 'Google connection was cancelled.',
+            ]);
+        }
+
+        if ($state !== (string) ($oauthSession['state'] ?? '')) {
+            $this->clearGoogleOauthState((string) ($oauthSession['state'] ?? $state));
+
+            return Redirect::route('account_registration', [
+                'error' => 'Google connection state mismatch.',
+            ]);
+        }
+
+        $userId = (int) ($oauthSession['user_id'] ?? 0);
+        $accountId = isset($oauthSession['account_id']) ? (int) $oauthSession['account_id'] : null;
+        $this->restoreGoogleOauthUserSession($request, $userId);
+
+        $existingAccount = null;
+        if ($accountId) {
+            $existingAccount = Account::where('id', $accountId)
+                ->where('user_id', $userId)
+                ->first();
+        }
+
+        try {
+            $tokens = $gmailService->exchangeCodeForTokens((string) $request->input('code'));
+            $profile = $gmailService->fetchUserProfile((string) ($tokens['access_token'] ?? ''));
+            $account = $gmailService->connectAccount($userId, $existingAccount, $profile, $tokens);
+            $gmailService->syncAccountSafely($account, 25);
+        } catch (\Throwable $e) {
+            $this->clearGoogleOauthState($state);
+            Log::warning('Google Gmail connect failed.', [
+                'user_id' => $userId,
+                'account_id' => $accountId,
+                'message' => $e->getMessage(),
+            ]);
+
+            return Redirect::route('account_registration', [
+                'error' => 'Unable to connect Gmail right now. Please try again.',
+            ]);
+        }
+
+        $this->clearGoogleOauthState($state);
+
+        return Redirect::route('account_view', $account->id);
+    }
+
+    private function googleOauthCacheKey(string $state): string
+    {
+        return self::GOOGLE_OAUTH_CACHE_PREFIX . $state;
+    }
+
+    private function clearGoogleOauthState(string $state): void
+    {
+        session()->forget(self::GOOGLE_OAUTH_SESSION_KEY);
+
+        if ($state !== '') {
+            Cache::forget($this->googleOauthCacheKey($state));
+        }
+    }
+
+    private function restoreGoogleOauthUserSession(Request $request, int $userId): void
+    {
+        if ($userId <= 0) {
+            return;
+        }
+
+        $currentUser = $request->user();
+        if (! $currentUser || (int) $currentUser->id !== $userId) {
+            Auth::loginUsingId($userId);
+            $request->session()->regenerate();
+        }
     }
 
     /**
@@ -1127,34 +1246,15 @@ class UserController extends Controller
         }
 
         if ($service == 'email') {
-            $request->merge([
-                'smtp_provider' => $this->normalizeEmailProvider(
-                    $request->input('smtp_provider')
-                ),
-            ]);
-
-            $preset = $this->resolveEmailProviderPreset($request->input('smtp_provider'));
-            if ($preset) {
-                $request->merge([
-                    'smtp_host' => $request->filled('smtp_host')
-                        ? $request->input('smtp_host')
-                        : $preset['host'],
-                    'smtp_port' => $request->filled('smtp_port')
-                        ? $request->input('smtp_port')
-                        : $preset['port'],
-                    'smtp_encryption' => $request->filled('smtp_encryption')
-                        ? $request->input('smtp_encryption')
-                        : $preset['encryption'],
+            if (! $id) {
+                return Redirect::route('account_registration', [
+                    'error' => 'Use Connect with Google to link a Gmail account.',
                 ]);
             }
 
             $request->validate([
-                'email' => 'required|email',
-                'service_token' => 'required',
-                'smtp_provider' => ['required', Rule::in(array_merge(array_keys(self::EMAIL_PROVIDER_PRESETS), ['custom']))],
-                'smtp_host' => 'required|string|max:255',
-                'smtp_port' => 'required|string|max:10',
-                'smtp_encryption' => ['required', Rule::in(['tls', 'ssl', 'none'])],
+                'company_name' => 'required|max:255',
+                'display_name' => 'nullable|max:255',
             ]);
         }
 
@@ -1181,7 +1281,7 @@ class UserController extends Controller
         }
 
         if ($request->service == 'email') {
-            $account->service_engine = 'smtp';
+            $account->service_engine = 'gmail_oauth';
             $account->status = 'Active';
         }
 
@@ -1214,7 +1314,7 @@ class UserController extends Controller
             $account->display_name = $request->display_name;
         }
 
-        $accountFields = ['company_name', 'category', 'description', 'email', 'service', 'service_token', 'fb_whatsapp_account_id', 'phone_number', 'src_name', 'business_manager_id', 'fb_insta_app_id', 'fb_page_name', 'insta_user_name', 'fb_business_name', 'fb_waba_name', 'api_partner_name', 'api_partner', 'smtp_host', 'smtp_port', 'smtp_encryption'];
+        $accountFields = ['company_name', 'category', 'description', 'email', 'service', 'fb_whatsapp_account_id', 'phone_number', 'src_name', 'business_manager_id', 'fb_insta_app_id', 'fb_page_name', 'insta_user_name', 'fb_business_name', 'fb_waba_name', 'api_partner_name', 'api_partner'];
 
         foreach ($accountFields as $field) {
             if ($request->has($field)) {
@@ -1238,70 +1338,6 @@ class UserController extends Controller
             $supportRequest->save();
             return response()->json(['status' => true, 'account_id' => $account->id]);
         }
-    }
-
-    private function normalizeEmailProvider(?string $provider): ?string
-    {
-        if (! $provider) {
-            return null;
-        }
-
-        $provider = strtolower(trim($provider));
-
-        return match ($provider) {
-            'gmail',
-            'google_workspace',
-            'microsoft_365_outlook',
-            'sendgrid',
-            'mailgun',
-            'custom' => $provider,
-            default => null,
-        };
-    }
-
-    private function normalizeEmailEncryption(?string $encryption): ?string
-    {
-        if (! $encryption) {
-            return null;
-        }
-
-        $encryption = strtolower(trim($encryption));
-
-        return in_array($encryption, ['tls', 'ssl', 'none'], true)
-            ? $encryption
-            : null;
-    }
-
-    private function resolveEmailProviderPreset(?string $provider): ?array
-    {
-        $provider = $this->normalizeEmailProvider($provider);
-
-        return $provider && isset(self::EMAIL_PROVIDER_PRESETS[$provider])
-            ? self::EMAIL_PROVIDER_PRESETS[$provider]
-            : null;
-    }
-
-    private function inferEmailProvider($host, $port, $encryption): ?string
-    {
-        $host = strtolower(trim((string) $host));
-        $port = trim((string) $port);
-        $encryption = $this->normalizeEmailEncryption($encryption);
-
-        if (! $host && ! $port && ! $encryption) {
-            return null;
-        }
-
-        foreach (self::EMAIL_PROVIDER_PRESETS as $provider => $preset) {
-            if (
-                $host === strtolower($preset['host']) &&
-                $port === (string) $preset['port'] &&
-                $encryption === $preset['encryption']
-            ) {
-                return $provider;
-            }
-        }
-
-        return 'custom';
     }
 
     /**
@@ -1390,16 +1426,23 @@ class UserController extends Controller
         if ($this->isEmailTemplateFlow($account)) {
             $request->validate([
                 'template_name' => $this->emailTemplateNameRule((int) $account_id),
-                'subject' => 'required|max:255',
+                'subject' => 'nullable|max:255',
             ]);
 
+            $templateName = trim((string) $request->get('template_name'));
+            $subject = trim((string) $request->get('subject', ''));
+
+            if ($subject === '') {
+                $subject = Str::title(str_replace(['_', '-'], ' ', $templateName));
+            }
+
             $template = new Template();
-            $template->name = $request->get('template_name');
+            $template->name = $templateName;
             $template->service = 'email';
             $template->category = 'EMAIL';
             $template->languages = [];
             $template->status = 'draft';
-            $template->email_subject = $request->get('subject');
+            $template->email_subject = $subject !== '' ? $subject : 'Untitled Email';
             $template->company_id = Cache::get('selected_company_' . $request->user()->id);
             $template->account_id = $account_id;
             $template->created_by = $request->user()->id;

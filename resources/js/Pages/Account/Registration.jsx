@@ -7,13 +7,6 @@ import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import Dropdown from "@/Components/Forms/Dropdown";
 import InputError from "@/Components/Forms/InputError";
 import { defaultPristineConfig } from "@/Pages/Constants";
-import {
-    CUSTOM_SMTP_PROVIDER,
-    SMTP_ENCRYPTION_OPTIONS,
-    SMTP_PROVIDER_OPTIONS,
-    getInitialEmailProvider,
-    withEmailProviderDefaults,
-} from "./Registration/emailProviderPresets";
 
 function Registration(props) {
     const { data, setData, post, processing, errors, register, reset } =
@@ -36,11 +29,6 @@ function Registration(props) {
             api_partner: false,
             terms_condition: false,
             oba: false,
-            smtp_provider: "",
-            smtp_host: "",
-            smtp_port: "",
-            smtp_encryption: "",
-            service_token: "",
             api_token: "",
             callback_url: "",
             enqueued: false,
@@ -86,19 +74,18 @@ function Registration(props) {
     };
 
     const [checked, setChecked] = useState(false);
+    const gmailConnected = Boolean(data.gmail_connected);
+    const gmailConnectUrl = data.id
+        ? route("connect_gmail", { account_id: data.id })
+        : route("connect_gmail");
+    const lastSyncLabel = data.sync_last_at
+        ? new Date(data.sync_last_at).toLocaleString()
+        : "";
 
     useEffect(() => {
         let newData = Object.assign({}, data);
         if (typeof props.account !== "undefined") {
             newData = Object.assign({}, props.account);
-        }
-
-        if (newData.service === "email") {
-            newData = withEmailProviderDefaults(
-                newData,
-                getInitialEmailProvider(newData),
-                { preserveExisting: true },
-            );
         }
 
         if (props.events) {
@@ -159,9 +146,6 @@ function Registration(props) {
             newState[name] = event.target.files[0];
         } else {
             newState[name] = value;
-        }
-        if (name === "smtp_provider") {
-            newState = withEmailProviderDefaults(newState, value);
         }
         if (name == "fb_phone_number_id") {
             newState["fb_page_name"] = props.pages[value];
@@ -737,153 +721,141 @@ function Registration(props) {
                                 <div className="md:grid md:grid-cols-3 md:gap-6">
                                     <div className="md:col-span-1">
                                         <h3 className="text-lg font-semibold leading-6 text-white">
-                                            Email Configuration
+                                            Gmail Connection
                                         </h3>
                                         <p className="mt-1 text-sm text-[#878787]">
-                                            Configure your outbound email (SMTP) settings.
+                                            Gmail is the only supported email
+                                            integration. We connect the mailbox
+                                            with Google OAuth and keep tokens
+                                            encrypted server-side.
                                         </p>
                                     </div>
                                     <div className="mt-5 md:mt-0 md:col-span-2">
-                                        {(() => {
-                                            const selectedEmailProvider =
-                                                getInitialEmailProvider(data);
-                                            const isCustomSmtp =
-                                                selectedEmailProvider ===
-                                                CUSTOM_SMTP_PROVIDER;
-
-                                            return (
                                         <div className="grid grid-cols-6 gap-6">
-                                            <div className="form-group col-span-6">
-                                                <label htmlFor="smtp_provider" className="block text-sm font-medium text-[#878787]">
-                                                    Provider
-                                                    <span className="text-sm text-red-700 mx-1"> * </span>
-                                                </label>
-                                                <div className="mt-1">
-                                                    <Dropdown
-                                                        required={true}
-                                                        id="smtp_provider"
-                                                        name="smtp_provider"
-                                                        handleChange={handleChange}
-                                                        options={SMTP_PROVIDER_OPTIONS}
-                                                        value={selectedEmailProvider}
-                                                        emptyOption="Select provider"
-                                                    />
-                                                </div>
-                                                <p className="mt-2 text-xs text-[#878787]">
-                                                    Preset providers auto-fill SMTP host, port, and encryption. Choose Custom SMTP for manual setup.
-                                                </p>
-                                                <InputError message={errors.smtp_provider} />
-                                            </div>
                                             <div className="form-group col-span-6 sm:col-span-4">
-                                                <label htmlFor="display_name" className="block text-sm font-medium text-[#878787]">
+                                                <label
+                                                    htmlFor="display_name"
+                                                    className="block text-sm font-medium text-[#878787]"
+                                                >
                                                     Sender Name
                                                 </label>
                                                 <div className="mt-1 flex rounded-md shadow-sm">
                                                     <Input
                                                         name="display_name"
-                                                        value={data.display_name}
+                                                        value={
+                                                            data.display_name
+                                                        }
                                                         id="display_name"
                                                         placeholder="e.g. Acme Support"
-                                                        handleChange={handleChange}
+                                                        handleChange={
+                                                            handleChange
+                                                        }
                                                         className="bg-[#0F0B1A] text-white border-white/10 placeholder:text-[#6c6c6c] focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
                                                     />
                                                 </div>
-                                                <InputError message={errors.display_name} />
+                                                <InputError
+                                                    message={
+                                                        errors.display_name
+                                                    }
+                                                />
                                             </div>
                                             <div className="form-group col-span-6 sm:col-span-4">
-                                                <label htmlFor="email" className="block text-sm font-medium text-[#878787]">
-                                                    Sender Email
-                                                    <span className="text-sm text-red-700 mx-1"> * </span>
+                                                <label className="block text-sm font-medium text-[#878787]">
+                                                    Gmail Address
                                                 </label>
-                                                <div className="mt-1 flex rounded-md shadow-sm">
-                                                    <Input
-                                                        required={true}
-                                                        type="email"
-                                                        name="email"
-                                                        value={data.email}
-                                                        id="email"
-                                                        placeholder="you@example.com"
-                                                        handleChange={handleChange}
-                                                        className="bg-[#0F0B1A] text-white border-white/10 placeholder:text-[#6c6c6c] focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
-                                                    />
+                                                <div className="mt-1 rounded-xl border border-white/10 bg-[#0F0B1A] px-4 py-3 text-sm text-white">
+                                                    {data.email ||
+                                                        "Not connected"}
                                                 </div>
-                                                <InputError message={errors.email} />
                                             </div>
-                                            <div className="form-group col-span-6 sm:col-span-4">
-                                                <label htmlFor="smtp_host" className="block text-sm font-medium text-[#878787]">
-                                                    SMTP Host
-                                                    {isCustomSmtp ? <span className="text-sm text-red-700 mx-1"> * </span> : null}
-                                                </label>
-                                                <div className="mt-1 flex rounded-md shadow-sm">
-                                                    <Input
-                                                        required={isCustomSmtp}
-                                                        name="smtp_host"
-                                                        value={data.smtp_host}
-                                                        id="smtp_host"
-                                                        placeholder="smtp.example.com"
-                                                        handleChange={handleChange}
-                                                        className="bg-[#0F0B1A] text-white border-white/10 placeholder:text-[#6c6c6c] focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
-                                                    />
+                                            <div className="form-group col-span-6">
+                                                <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4">
+                                                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                                        <div className="space-y-2">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-sm font-medium text-white">
+                                                                    Connection
+                                                                    status
+                                                                </span>
+                                                                <span
+                                                                    className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                                                        gmailConnected
+                                                                            ? "bg-emerald-500/15 text-emerald-200"
+                                                                            : "bg-amber-500/15 text-amber-200"
+                                                                    }`}
+                                                                >
+                                                                    {gmailConnected
+                                                                        ? "Connected"
+                                                                        : "Not connected"}
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-sm text-[#878787]">
+                                                                Connect a Gmail
+                                                                mailbox to send
+                                                                email, sync
+                                                                Inbox and Sent,
+                                                                and keep email
+                                                                threads inside
+                                                                the chat inbox.
+                                                            </p>
+                                                            {lastSyncLabel && (
+                                                                <p className="text-xs text-white/45">
+                                                                    Last sync:{" "}
+                                                                    {
+                                                                        lastSyncLabel
+                                                                    }
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                        <a
+                                                            href={
+                                                                props.googleConfigured
+                                                                    ? gmailConnectUrl
+                                                                    : "#"
+                                                            }
+                                                            className={`inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition ${
+                                                                props.googleConfigured
+                                                                    ? "bg-[#4285F4] text-white hover:bg-[#3674db]"
+                                                                    : "cursor-not-allowed bg-white/10 text-white/35"
+                                                            }`}
+                                                            onClick={(
+                                                                event,
+                                                            ) => {
+                                                                if (
+                                                                    !props.googleConfigured
+                                                                ) {
+                                                                    event.preventDefault();
+                                                                }
+                                                            }}
+                                                        >
+                                                            {gmailConnected
+                                                                ? "Reconnect Gmail"
+                                                                : "Connect with Google"}
+                                                        </a>
+                                                    </div>
                                                 </div>
-                                                <InputError message={errors.smtp_host} />
                                             </div>
-                                            <div className="form-group col-span-3 sm:col-span-2">
-                                                <label htmlFor="smtp_port" className="block text-sm font-medium text-[#878787]">
-                                                    SMTP Port
-                                                    {isCustomSmtp ? <span className="text-sm text-red-700 mx-1"> * </span> : null}
-                                                </label>
-                                                <div className="mt-1 flex rounded-md shadow-sm">
-                                                    <Input
-                                                        required={isCustomSmtp}
-                                                        name="smtp_port"
-                                                        value={data.smtp_port}
-                                                        id="smtp_port"
-                                                        placeholder="587"
-                                                        handleChange={handleChange}
-                                                        className="bg-[#0F0B1A] text-white border-white/10 placeholder:text-[#6c6c6c] focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
-                                                    />
+                                            {!props.googleConfigured && (
+                                                <div className="form-group col-span-6">
+                                                    <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+                                                        Google OAuth is not
+                                                        configured yet. Add the
+                                                        Google client ID, client
+                                                        secret, and redirect URI
+                                                        before linking Gmail.
+                                                    </div>
                                                 </div>
-                                                <InputError message={errors.smtp_port} />
-                                            </div>
-                                            <div className="form-group col-span-3 sm:col-span-2">
-                                                <label htmlFor="smtp_encryption" className="block text-sm font-medium text-[#878787]">
-                                                    Encryption
-                                                    {isCustomSmtp ? <span className="text-sm text-red-700 mx-1"> * </span> : null}
-                                                </label>
-                                                <div className="mt-1">
-                                                    <Dropdown
-                                                        required={isCustomSmtp}
-                                                        id="smtp_encryption"
-                                                        name="smtp_encryption"
-                                                        handleChange={handleChange}
-                                                        options={SMTP_ENCRYPTION_OPTIONS}
-                                                        value={data.smtp_encryption || "tls"}
-                                                    />
+                                            )}
+                                            {gmailConnected && (
+                                                <div className="form-group col-span-6">
+                                                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white/70">
+                                                        OAuth tokens are stored
+                                                        encrypted and are never
+                                                        returned to this form.
+                                                    </div>
                                                 </div>
-                                                <InputError message={errors.smtp_encryption} />
-                                            </div>
-                                            <div className="form-group col-span-6 sm:col-span-4">
-                                                <label htmlFor="service_token" className="block text-sm font-medium text-[#878787]">
-                                                    SMTP Password / API Key
-                                                    <span className="text-sm text-red-700 mx-1"> * </span>
-                                                </label>
-                                                <div className="mt-1 flex rounded-md shadow-sm">
-                                                    <Input
-                                                        required={true}
-                                                        type="password"
-                                                        name="service_token"
-                                                        value={data.service_token}
-                                                        id="service_token"
-                                                        placeholder="••••••••"
-                                                        handleChange={handleChange}
-                                                        className="bg-[#0F0B1A] text-white border-white/10 placeholder:text-[#6c6c6c] focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
-                                                    />
-                                                </div>
-                                                <InputError message={errors.service_token} />
-                                            </div>
+                                            )}
                                         </div>
-                                            );
-                                        })()}
                                     </div>
                                 </div>
                             </div>
@@ -996,130 +968,6 @@ function Registration(props) {
                                 )}
                             </>
                         )}
-                        {/* {(data.service_engine == 'facebook' && props.auth.user.role == 'admin' && data.service != 'instagram' ) &&
-                            <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
-                                <div className="md:grid md:grid-cols-3 md:gap-6">
-                                    <div className="md:col-span-1">
-                                        <h3 className="text-lg font-medium leading-6 text-gray-900">
-                                            Facebook Information
-                                        </h3>
-                                        <p className="mt-1 text-sm text-gray-500">
-                                            Information will be used to create your facebook business account
-                                        </p>
-                                    </div>
-                                    <div className="mt-5 md:mt-0 md:col-span-2">
-                                        <div className="grid grid-cols-6 gap-6">
-
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="service_token" className="block text-sm font-medium text-gray-700" >
-                                                        Service token
-                                                        <span className="text-sm text-red-700 mx-1"> * </span>
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <Input
-                                                            required={true}
-                                                            id="service_token"
-                                                            name="service_token"
-                                                            handleChange={handleChange}
-                                                            value={data.service_token}
-                                                        />
-                                                    </div>
-                                                    <InputError message={errors.service_token} />
-                                                </div>
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="fb_phone_number_id" className="block text-sm font-medium text-gray-700" >
-                                                        Facebook phone number ID
-                                                        <span className="text-sm text-red-700 mx-1"> * </span>
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <Input
-                                                            required={true}
-                                                            id="fb_phone_number_id"
-                                                            name="fb_phone_number_id"
-                                                            handleChange={handleChange}
-                                                            value={data.fb_phone_number_id}
-                                                        />
-                                                    </div>
-                                                    <InputError message={errors.fb_phone_number_id} />
-                                                </div>
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="fb_whatsapp_account_id" className="block text-sm font-medium text-gray-700" >
-                                                        Facebook whatsapp account ID
-                                                        <span className="text-sm text-red-700 mx-1"> * </span>
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <Input
-                                                            required={true}
-                                                            id="fb_whatsapp_account_id"
-                                                            name="fb_whatsapp_account_id"
-                                                            handleChange={handleChange}
-                                                            value={data.fb_whatsapp_account_id}
-                                                        />
-                                                    </div>
-                                                    <InputError message={errors.fb_whatsapp_account_id} />
-                                                </div>
-                                                
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        } */}
-
-                        {/*                        
-                        {( ( !data.service_engine || data.service_engine == 'gupshup') && props.auth.user.role == 'admin' ) &&
-                            <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
-                                <div className="md:grid md:grid-cols-3 md:gap-6">
-                                    <div className="md:col-span-1">
-                                        <h3 className="text-lg font-medium leading-6 text-gray-900">
-                                            API Information
-                                        </h3>
-                                        <p className="mt-1 text-sm text-gray-500">
-                                            Information will be used to create your whatsapp account
-                                        </p>
-                                    </div>
-                                    <div className="mt-5 md:mt-0 md:col-span-2">
-                                        <div className="grid grid-cols-6 gap-6">
-
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="service_token" className="block text-sm font-medium text-gray-700" >
-                                                        Source Name
-                                                        <span className="text-sm text-red-700 mx-1"> * </span>
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <Input
-                                                            required={true}
-                                                            id="src_name"
-                                                            name="src_name"
-                                                            handleChange={handleChange}
-                                                            value={data.src_name}
-                                                        />
-                                                    </div>
-                                                    <InputError message={errors.src_name} />
-                                                </div>
-                                                
-                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                    <label htmlFor="fb_whatsapp_account_id" className="block text-sm font-medium text-gray-700" >
-                                                        Whatsapp account ID (WABA)
-                                                        <span className="text-sm text-red-700 mx-1"> * </span>
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <Input
-                                                            required={true}
-                                                            id="fb_whatsapp_account_id"
-                                                            name="fb_whatsapp_account_id"
-                                                            handleChange={handleChange}
-                                                            value={data.fb_whatsapp_account_id}
-                                                        />
-                                                    </div>
-                                                    <InputError message={errors.fb_whatsapp_account_id} />
-                                                </div>
-                                                
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                        */}
                     </div>
                     {!data.id && (
                         <div className="form-group col-span-6 sm:col-span-4">

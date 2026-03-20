@@ -31,6 +31,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('command:HandleCatalogProduct')->everyMinute();
         $schedule->command('command:ResetSessionValue')->monthlyOn(1, '00:00');
 	$schedule->command('command:HandleDocumentStorage')->daily();
+        $schedule->command('command:SyncGmailAccounts')->everyMinute();
     }
 
     /**
