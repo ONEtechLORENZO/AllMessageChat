@@ -1,49 +1,25 @@
-import React,{useState,useEffect} from 'react';
-import Authenticated from '@/Layouts/Authenticated';
-import { Head, Link } from '@inertiajs/react';
-import Accounts from './Wallet/Accounts';
+import React from "react";
+import Authenticated from "@/Layouts/Authenticated";
+import { Head } from "@inertiajs/react";
+import Accounts from "./Wallet/Accounts";
 
 export default function Dashboard(props) {
-
     return (
         <Authenticated
             auth={props.auth}
             errors={props.errors}
-            current_page={'Social Profiles'} 
+            current_page={"Social Profiles"}
             message={props.message}
             navigationMenu={props.menuBar}
+            subduedBackground={true}
         >
-            
-            <Head title={props.translator['Your Social Channels']} />
+            <Head title="Social Profiles" />
 
-            <div className="pt-4 pb-8">
-                <div className="px-4 sm:px-6 lg:px-8">
-                    <div className="pb-4">
-                        <h3 className="text-2xl leading-6 font-semibold text-[#393939]">{props.translator['Your Social Channels']}</h3>
-                    </div>
-                        <Accounts 
-                        accounts={props.accounts}
-                        createAccount={true}
-                        {...props}
-                        />
-                    <div className='clear'></div>
-                    
+            <div className="px-4 pb-8 pt-5 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-4xl">
+                    <Accounts accounts={props.accounts} createAccount={true} {...props} />
                 </div>
             </div>
-            
-
         </Authenticated>
     );
 }
-
-
-
-
-
-
-
-
-
-
-
-

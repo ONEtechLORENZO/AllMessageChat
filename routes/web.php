@@ -40,6 +40,7 @@ use App\Http\Controllers\WhatsAppUsersController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\DashboardAssistantController;
+use App\Http\Controllers\MetaIntegrationController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsGlobalAdmin;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -83,14 +84,21 @@ Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
 Route::get('/fb-whatsapp', [MsgController::class, 'incomingFBWhatsApp']);
 Route::post('/fb-whatsapp', [MsgController::class, 'incomingFBWhatsApp']);
 
-Route::get('/fb-insta', [MsgController::class, 'incomingFBInsta']);
-Route::post('/fb-insta', [MsgController::class, 'incomingFBInsta']);
+// Legacy Instagram webhook route retained for compatibility while the
+// dedicated Meta webhook lives at /integrations/meta/webhook.
+Route::get('/fb-insta', [MetaIntegrationController::class, 'verifyLegacyInstagramWebhook']);
+Route::post('/fb-insta', [MetaIntegrationController::class, 'receiveLegacyInstagramWebhook']);
+
+Route::get('/integrations/meta/webhook', [MetaIntegrationController::class, 'verifyWebhook'])->name('meta_webhook_verify');
+Route::post('/integrations/meta/webhook', [MetaIntegrationController::class, 'receiveWebhook'])->name('meta_webhook_receive');
 
 Route::get('/login-admin-user', [UserController::class, 'loginAdminUser']);
 
 Route::middleware('planrestriction')->group(function () {
 
     Route::get('/integrations/gmail/callback', [UserController::class, 'handleGmailCallback'])->name('gmail_connection_callback');
+    Route::get('/integrations/meta/oauth/callback', [MetaIntegrationController::class, 'handleOauthCallback'])->name('meta_oauth_callback');
+    Route::get('/integrations/meta/callback', [MetaIntegrationController::class, 'handleOauthCallback'])->name('meta_connection_callback');
 
     // Check user login
     Route::middleware(['auth', 'verified'])->group(function () {
@@ -108,8 +116,9 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/fetch-social-profile-pages', [UserController::class, 'fetchSocialPages'])->name('fetch_social_profile_pages');
 
         // FaceBook
-        Route::get('/connect/fb/{accountId}', [WhatsAppUsersController::class, 'connectFaceBook'])->name('connect_face_book');
-        Route::get('/integrations/meta/callback', [WhatsAppUsersController::class, 'handleMetaCallback'])->name('meta_connection_callback');
+        Route::get('/connect/fb/{service}', [MetaIntegrationController::class, 'connect'])->name('connect_face_book');
+        Route::get('/integrations/meta/accounts/{account}/facebook-setup', [MetaIntegrationController::class, 'facebookSetupState'])->name('meta_facebook_setup');
+        Route::post('/integrations/meta/accounts/{account}/facebook-page', [MetaIntegrationController::class, 'saveFacebookPage'])->name('meta_facebook_page');
         Route::get('/integrations/gmail/connect', [UserController::class, 'connectGmail'])->name('connect_gmail');
         Route::get('/store-access-token/{app_name}/{token}', [WhatsAppUsersController::class, 'storeUserToken'])->name('store_user_code');
 
@@ -175,6 +184,7 @@ Route::middleware('planrestriction')->group(function () {
         // Conversation Page
         Route::get('/chat', [MsgController::class, 'ChatList'])->name('chat_list');
         Route::post('/chat/sync-email-account', [MsgController::class, 'syncEmailAccount'])->name('sync_email_chat_account');
+        Route::post('/chat/sync-facebook-account', [MsgController::class, 'syncFacebookAccount'])->name('sync_facebook_chat_account');
         Route::get('/getMessages', [MsgController::class, 'getMessageList'])->name('get_message_list');
         Route::post('/sendMessage', [MsgController::class, 'sendMessage'])->name('send_message_to_contact');
         Route::post('/setArchivedContact', [ChatListContactController::class, 'setArchivedContact'])->name('set_archive');

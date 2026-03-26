@@ -10,6 +10,7 @@ export default function Dropdown({
     handleChange,
     emptyOption = "Select",
     value = "",
+    disabled = false,
     readOnly,
 }) {
     const input = useRef(null);
@@ -34,7 +35,7 @@ export default function Dropdown({
             data-pristine-required={required}
             ref={input}
             onChange={handleChange}
-            disabled={readOnly}
+            disabled={disabled || readOnly}
         >
             <option className="bg-[#0F0B1A] text-white" value="">
                 {emptyOption}

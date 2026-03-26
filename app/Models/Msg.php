@@ -407,7 +407,7 @@ class Msg extends Model
             'access_token' => $token,
         ];
 
-        $version = config('app.fb.app_graph_version');
+        $version = config('app.meta.graph_version');
         $url = "https://graph.facebook.com/{$version}/{$pageId}/messages";
 
         try{

@@ -27,6 +27,7 @@ use App\Models\Plan;
 use App\Models\Automation;
 use App\Models\Session;
 use App\Services\GmailService;
+use App\Services\MetaIntegrationService;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -214,10 +215,25 @@ class UserController extends Controller
     /**
      * Show list of accounts related to logged in user
      */
-    public function socialProfile(Request $request)
+    public function socialProfile(Request $request, MetaIntegrationService $metaIntegrationService)
     {
-
-        $accounts = Account::select('company_name', 'service', 'accounts.id', 'accounts.status', 'fb_page_name')->get();
+        $accounts = Account::select(
+                'company_name',
+                'service',
+                'accounts.id',
+                'accounts.status',
+                'fb_page_name',
+                'fb_token',
+                'service_engine',
+                'fb_phone_number_id',
+                'fb_meta_data',
+                'fb_user_id',
+                'connection_metadata'
+            )
+            ->where('user_id', $request->user()->id)
+            ->get()
+            ->map(fn ($account) => $this->decorateAccountForFrontend($account, $metaIntegrationService))
+            ->values();
         $menuBar = $this->fetchMenuBar();
 
         return Inertia::render('Dashboard', [
@@ -739,7 +755,7 @@ class UserController extends Controller
     /**
      * Show detail view of account
      */
-    public function showAccount(Request $request, $id)
+    public function showAccount(Request $request, $id, MetaIntegrationService $metaIntegrationService)
     {
         $user = $request->user();
         $company = Company::first();
@@ -798,9 +814,12 @@ class UserController extends Controller
             }
         }
 
+        $accountView = $this->decorateAccountForFrontend($account, $metaIntegrationService);
+
         $field_info = [
             'company_name' => ['label' => __('Name')],
             'service' => ['label' => __('Service')],
+            'connection_status_label' => ['label' => __('Connection status'), 'show' => ['facebook']],
             'service_engine' => ['label' => 'Service Engine', 'user_show' => ['global_admin']],
 
             // WhatsApp-specific
@@ -810,6 +829,7 @@ class UserController extends Controller
             'fb_business_name' => ['label' => __('Business manager names'), 'show' => ['whatsapp']],
 
             // Instagram / Facebook-specific
+            'fb_page_name' => ['label' => 'Facebook Page', 'show' => ['facebook']],
             'fb_phone_number_id' => ['label' => 'Instagram Page Name', 'fb_show' => ['facebook'], 'show' => ['instagram']],
 
             // Email-specific
@@ -825,7 +845,7 @@ class UserController extends Controller
         ];
 
         return Inertia::render('Account/Detail', [
-            'account' => $account,
+            'account' => $accountView,
             'company' => $company,
             'field_info' => $field_info,
             'templates' => $template_details,
@@ -928,21 +948,22 @@ class UserController extends Controller
     /**
      * Edit Account Data
      */
-    public function editAccountData($id)
+    public function editAccountData($id, MetaIntegrationService $metaIntegrationService)
     {
         $company = Company::first();
         $account = Account::findOrFail($id);
-        $accountData = $account->toArray();
+        $accountData = $this->decorateAccountForFrontend($account, $metaIntegrationService);
 
         if ($account->service === 'email') {
             $accountData['gmail_connected'] = $account->service_engine === 'gmail_oauth'
                 && ! empty($account->oauth_refresh_token_encrypted);
         }
         $pages = [];
+        $facebookSetup = null;
 
         $instaAccounts = [];
         if ($account->service == 'instagram' || $account->service == 'facebook') {
-            $pagesList = unserialize(base64_decode($account->fb_meta_data));
+            $pagesList = $metaIntegrationService->availablePagesForAccount($account, $account->service === 'facebook');
             $pageId = $account->fb_phone_number_id;
             $pages = [];
             foreach ($pagesList as $id => $page) {
@@ -957,6 +978,9 @@ class UserController extends Controller
                 }
             }
             $account->fb_phone_number_id = $pageId;
+        }
+        if ($account->service === 'facebook') {
+            $facebookSetup = $metaIntegrationService->buildFacebookSetupPayload($account, true);
         }
         $whatsappAccountList = [];
         if ($company->service_engine == 'Facebook' && $account->service_engine  == 'facebook') {
@@ -974,6 +998,7 @@ class UserController extends Controller
             'webhook_events' => $this->webhook_events,
             'events' => $webhook,
             'pages' => $pages,
+            'facebook_setup' => $facebookSetup,
             'company' => $company,
             'insta_accounts' => $instaAccounts,
             'whatsapp_account_id' => $whatsappAccountList,
@@ -1022,7 +1047,7 @@ class UserController extends Controller
     /**
      * Show account registration form
      */
-    public function accountRegistration(Request $request)
+    public function accountRegistration(Request $request, MetaIntegrationService $metaIntegrationService)
     {
         $service = $error = '';
         if (isset($_GET['error'])) {
@@ -1030,7 +1055,28 @@ class UserController extends Controller
             $error = $_GET['error'];
         }
         $company = Company::first();
-        $accounts = Account::select('company_name', 'service', 'accounts.id', 'accounts.status', 'fb_page_name')->get();
+        $accounts = Account::select(
+                'company_name',
+                'service',
+                'accounts.id',
+                'accounts.status',
+                'fb_page_name',
+                'fb_token',
+                'service_engine',
+                'fb_phone_number_id',
+                'fb_meta_data',
+                'fb_user_id',
+                'connection_metadata',
+                'phone_number',
+                'src_name',
+                'email',
+                'display_name',
+                'insta_user_name'
+            )
+            ->where('user_id', $request->user()->id)
+            ->get()
+            ->map(fn ($account) => $this->decorateAccountForFrontend($account, $metaIntegrationService))
+            ->values();
         $menuBar = $this->fetchMenuBar();
         return Inertia::render('Account/Registration/Form', [
             'service' => $service,
@@ -1045,6 +1091,29 @@ class UserController extends Controller
             'menuBar' => $menuBar,
             'translator' => Controller::getTranslations(),
         ]);
+    }
+
+    private function decorateAccountForFrontend(Account $account, MetaIntegrationService $metaIntegrationService): array
+    {
+        $accountData = $account->toArray();
+        $accountData['connection_status'] = $account->status;
+        $accountData['connection_status_label'] = $account->status;
+        $accountData['requires_action'] = false;
+        $accountData['page_label'] = $account->fb_page_name ?: null;
+        $accountData['profile_name'] = $account->company_name;
+
+        if ($account->service === 'facebook' && $account->service_engine === 'facebook') {
+            $setup = $metaIntegrationService->buildFacebookSetupPayload($account);
+            $accountData['connection_setup'] = $setup;
+            $accountData['connection_status'] = $setup['status'];
+            $accountData['connection_status_label'] = $setup['status_label'];
+            $accountData['requires_action'] = $setup['requires_action'];
+            $accountData['page_label'] = $setup['page_name'] ?: 'Not selected';
+            $accountData['profile_name'] = $setup['account_name'] ?: $account->company_name;
+            $accountData['fb_page_name'] = $setup['page_name'];
+        }
+
+        return $accountData;
     }
 
     public function connectGmail(Request $request, GmailService $gmailService)
@@ -1343,11 +1412,13 @@ class UserController extends Controller
     /**
      * Delete account 
      */
-    public function deleteAccount(Request $request)
+    public function deleteAccount(Request $request, MetaIntegrationService $metaIntegrationService)
     {
         $account_id = $request->get('id');
         $user_id = $request->user()->id;
-        $account = Account::findOrFail($account_id);
+        $account = Account::where('id', $account_id)
+            ->where('user_id', $user_id)
+            ->firstOrFail();
 
         // Pre-delete the related record from this accounts 
         $templates = Template::where('account_id', $account_id)->get();
@@ -1367,7 +1438,28 @@ class UserController extends Controller
 
         $account->delete();
 
-        $accounts = Account::select('company_name', 'service', 'accounts.id', 'accounts.status', 'fb_page_name')->get();
+        $accounts = Account::select(
+                'company_name',
+                'service',
+                'accounts.id',
+                'accounts.status',
+                'fb_page_name',
+                'fb_token',
+                'service_engine',
+                'phone_number',
+                'src_name',
+                'email',
+                'display_name',
+                'insta_user_name',
+                'fb_phone_number_id',
+                'fb_meta_data',
+                'fb_user_id',
+                'connection_metadata'
+            )
+            ->where('user_id', $user_id)
+            ->get()
+            ->map(fn ($account) => $this->decorateAccountForFrontend($account, $metaIntegrationService))
+            ->values();
 
         return response()->json(['status' => true, 'accounts' => $accounts]);
     }

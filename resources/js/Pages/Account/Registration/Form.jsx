@@ -204,28 +204,13 @@ export default function AccountRegistration(props) {
             errors={props.errors}
             current_page={"Social Profiles"}
             navigationMenu={props.menuBar}
+            subduedBackground={true}
         >
             <Head title={props.translator["Link Account"]} />
 
-            <div className="px-4 pb-8 pt-4 sm:px-6 lg:px-8">
-                <div className="pb-4">
-                    <h3 className="text-2xl font-semibold leading-6 text-white">
-                        {props.translator["Your Social Channels"]}
-                    </h3>
-                    <p className="mt-2 max-w-2xl text-sm text-white/60">
-                        Review connected profiles and add a new one without losing context.
-                    </p>
-                </div>
-
-                <div className="relative">
-                    <div className="pointer-events-none absolute inset-0 rounded-[32px] bg-[radial-gradient(circle_at_top_left,rgba(191,0,255,0.14),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(56,189,248,0.12),transparent_35%)]" />
-                    <div className="relative rounded-[32px] border border-white/10 bg-[#12041f]/35 p-4 backdrop-blur-sm">
-                        <Accounts
-                            accounts={props.accounts}
-                            createAccount={true}
-                            {...props}
-                        />
-                    </div>
+            <div className="px-4 pb-8 pt-5 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-4xl">
+                    <Accounts accounts={props.accounts} createAccount={true} {...props} />
                 </div>
             </div>
 

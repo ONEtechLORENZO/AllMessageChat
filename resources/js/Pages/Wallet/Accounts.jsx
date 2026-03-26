@@ -1,37 +1,333 @@
-import React ,{ useState } from "react";
-import { Link } from '@inertiajs/react';
-import { confirmAlert } from 'react-confirm-alert';
-import Alert from '@/Components/Alert';
-import { Badge } from "reactstrap";
-import { router as Inertia } from "@inertiajs/react";
-import nProgress from 'nprogress';
+import React, { useEffect, useMemo, useState } from "react";
+import { Link } from "@inertiajs/react";
+import { confirmAlert } from "react-confirm-alert";
+import nProgress from "nprogress";
 import axios from "axios";
+import {
+    ChatBubbleLeftRightIcon,
+    EnvelopeIcon,
+    PhotoIcon,
+    UserGroupIcon,
+} from "@heroicons/react/24/solid";
+import ChannelCard from "@/Components/ConnectionsHub/ChannelCard";
 
-import { PencilSquareIcon, ChevronLeftIcon, TrashIcon, PlusIcon, ChevronRightIcon  } from '@heroicons/react/24/solid';
+const SERVICE_ORDER = ["whatsapp", "facebook", "instagram", "email"];
+const STATUS_PRIORITY = {
+    reconnect_required: 0,
+    needs_setup: 1,
+    connected: 2,
+    not_connected: 3,
+};
+
+const SERVICE_DEFINITIONS = {
+    whatsapp: {
+        label: "WhatsApp",
+        icon: ChatBubbleLeftRightIcon,
+        iconClassName: "bg-emerald-500/10 text-emerald-200",
+        emptyIdentity: "No WhatsApp channel connected",
+    },
+    facebook: {
+        label: "Facebook",
+        icon: UserGroupIcon,
+        iconClassName: "bg-blue-500/10 text-blue-200",
+        emptyIdentity: "No Facebook channel connected",
+    },
+    instagram: {
+        label: "Instagram",
+        icon: PhotoIcon,
+        iconClassName: "bg-pink-500/10 text-pink-200",
+        emptyIdentity: "No Instagram channel connected",
+    },
+    email: {
+        label: "Email",
+        icon: EnvelopeIcon,
+        iconClassName: "bg-sky-500/10 text-sky-200",
+        emptyIdentity: "No email channel connected",
+    },
+};
+
+function hasConnectionError(account) {
+    return (
+        account?.connection_status === "connection_error" ||
+        account?.status === "Inactive"
+    );
+}
+
+function normalizeStatus(account) {
+    if (!account) {
+        return "not_connected";
+    }
+
+    if (account.service === "facebook") {
+        switch (account.connection_status) {
+            case "connected":
+                return "connected";
+            case "oauth_connected_pending_page":
+                return "needs_setup";
+            case "connection_error":
+                return "not_connected";
+            case "not_connected":
+                return "not_connected";
+            default:
+                return account.fb_page_name ? "connected" : "needs_setup";
+        }
+    }
+
+    if (account.service === "email") {
+        if (
+            account.gmail_connected ||
+            account.connection_status === "connected" ||
+            account.status === "Active"
+        ) {
+            return "connected";
+        }
+
+        if (
+            account.connection_status === "connection_error" ||
+            account.status === "Inactive"
+        ) {
+            return "not_connected";
+        }
+
+        return account.id ? "needs_setup" : "not_connected";
+    }
+
+    if (
+        account.connection_status === "connected" ||
+        account.status === "Active"
+    ) {
+        return "connected";
+    }
+
+    if (
+        account.connection_status === "connection_error" ||
+        account.status === "Inactive"
+    ) {
+        return "not_connected";
+    }
+
+    if (account.connection_status === "not_connected") {
+        return "not_connected";
+    }
+
+    return account.id ? "needs_setup" : "not_connected";
+}
+
+function serviceDetail(service, status, account, profileCount) {
+    if (!account) {
+        return SERVICE_DEFINITIONS[service].emptyIdentity;
+    }
+
+    if (service === "facebook") {
+        if (status === "connected") {
+            return account.fb_page_name || "Facebook connected";
+        }
+
+        if (status === "needs_setup") {
+            return "Page not selected";
+        }
+
+        if (status === "reconnect_required") {
+            return "Connect Facebook again";
+        }
+
+        if (hasConnectionError(account)) {
+            return "Connect Facebook again";
+        }
+
+        return "No Facebook account connected";
+    }
+
+    if (service === "instagram") {
+        if (status === "connected") {
+            if (account.insta_user_name) {
+                return account.insta_user_name.startsWith("@")
+                    ? account.insta_user_name
+                    : `@${account.insta_user_name}`;
+            }
+
+            if (profileCount > 1) {
+                return `${profileCount} Instagram accounts connected`;
+            }
+
+            return account.company_name || "Instagram connected";
+        }
+
+        if (status === "needs_setup") {
+            return "Finish Instagram setup";
+        }
+
+        if (status === "reconnect_required") {
+            return "Connect Instagram again";
+        }
+
+        if (hasConnectionError(account)) {
+            return "Connect Instagram again";
+        }
+
+        return "No Instagram account connected";
+    }
+
+    if (service === "email") {
+        if (status === "connected") {
+            return (
+                account.email ||
+                account.display_name ||
+                account.company_name ||
+                "Email connected"
+            );
+        }
+
+        if (status === "needs_setup") {
+            return "Finish email setup";
+        }
+
+        if (status === "reconnect_required") {
+            return "Connect email again";
+        }
+
+        if (hasConnectionError(account)) {
+            return "Connect email again";
+        }
+
+        return "No email account connected";
+    }
+
+    if (status === "connected") {
+        return (
+            account.company_name ||
+            account.src_name ||
+            account.phone_number ||
+            "WhatsApp connected"
+        );
+    }
+
+    if (status === "needs_setup") {
+        return "Finish WhatsApp setup";
+    }
+
+    if (status === "reconnect_required") {
+        return "Connect WhatsApp again";
+    }
+
+    if (hasConnectionError(account)) {
+        return "Connect WhatsApp again";
+    }
+
+    return "No WhatsApp account connected";
+}
+
+function reconnectAction(service, account) {
+    if (service === "facebook" || service === "instagram") {
+        const params = account?.id
+            ? { service, account_id: account.id }
+            : { service };
+
+        return {
+            label: "Connect",
+            href: route("connect_face_book", params),
+        };
+    }
+
+    if (service === "email") {
+        return {
+            label: "Connect",
+            href: account?.id
+                ? route("connect_gmail", { account_id: account.id })
+                : route("connect_gmail"),
+        };
+    }
+
+    return {
+        label: "Manage",
+        href: account?.id ? route("edit_account", account.id) : route("account_registration"),
+    };
+}
+
+function primaryAction(service, status, account) {
+    if (status === "connected") {
+        return {
+            label: "Manage",
+            href: account?.id
+                ? route("account_view", account.id)
+                : route("account_registration"),
+            className:
+                "inline-flex h-9 items-center justify-center rounded-full border border-white/12 bg-white/[0.06] px-3.5 text-sm font-semibold text-white transition hover:bg-white/[0.1]",
+        };
+    }
+
+    if (status === "needs_setup") {
+        return {
+            label: "Finish setup",
+            href: account?.id
+                ? route("edit_account", account.id)
+                : route("account_registration"),
+            className:
+                "inline-flex h-9 items-center justify-center rounded-full bg-amber-400 px-3.5 text-sm font-semibold text-[#12041f] transition hover:bg-amber-300",
+        };
+    }
+
+    if (status === "reconnect_required") {
+        const reconnect = reconnectAction(service, account);
+
+        return {
+            ...reconnect,
+            className:
+                "inline-flex h-9 items-center justify-center rounded-full bg-blue-600 px-3.5 text-sm font-semibold text-white transition hover:bg-blue-500",
+        };
+    }
+
+    return {
+        label: "Connect",
+        href:
+            hasConnectionError(account) && account?.id
+                ? reconnectAction(service, account).href
+                : route("account_registration"),
+        className:
+            "inline-flex h-9 items-center justify-center rounded-full bg-blue-600 px-3.5 text-sm font-semibold text-white transition hover:bg-blue-500",
+    };
+}
+
+function buildChannelCard(service, serviceAccounts, onDelete) {
+    const sortedAccounts = [...serviceAccounts].sort(
+        (left, right) =>
+            STATUS_PRIORITY[normalizeStatus(left)] -
+            STATUS_PRIORITY[normalizeStatus(right)],
+    );
+    const account = sortedAccounts[0] || null;
+    const status = normalizeStatus(account);
+    const definition = SERVICE_DEFINITIONS[service];
+    const profileCount = serviceAccounts.length;
+    let disconnectAction = null;
+
+    if (account?.id) {
+        disconnectAction = {
+            label: "Disconnect",
+            kind: "button",
+            onClick: () => onDelete(account.id),
+        };
+    }
+
+    return {
+        service,
+        title: definition.label,
+        icon: definition.icon,
+        iconClassName: definition.iconClassName,
+        status,
+        detail: serviceDetail(service, status, account, profileCount),
+        primaryAction: primaryAction(service, status, account),
+        disconnectAction,
+    };
+}
 
 export default function Accounts(props) {
+    const [accounts, setAccountList] = useState(props.accounts || []);
 
-    const[ deleteAccoutId , setDeleteAccountId] = useState('');
-    const[ accounts , setAccountList] = useState(props.accounts);
-   
-    const tabs = [
-        { name: 'Whatsapp', href: '#', current: true, page: 'whatsapp' },
-        { name: 'Instagram', href: '#', current: false , page: 'instagram' },
-        { name: 'Facebook', href: '#', current: false , page: 'facebook' },
-        { name: 'Email', href: '#', current: false , page: 'email' },
-      ];
-    
-    function classNames(...classes) {
-        return classes.filter(Boolean).join(' ')
-    }
-    const [page, setPage] = useState('whatsapp');
+    useEffect(() => {
+        setAccountList(props.accounts || []);
+    }, [props.accounts]);
 
-
-    // Delete Account
-    function deleteAccount(accountId){
-       
-        setDeleteAccountId(accountId);
-
+    function deleteAccount(accountId) {
         confirmAlert({
             customUI: ({ onClose }) => (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
@@ -41,10 +337,10 @@ export default function Accounts(props) {
                                 Delete Connection
                             </div>
                             <h2 className="text-3xl font-semibold text-white">
-                                {props.translator['Confirm to Delete']}
+                                {props.translator["Confirm to Delete"]}
                             </h2>
                             <p className="text-sm leading-6 text-white/60">
-                                {props.translator['Are you sure to do this?']}
+                                {props.translator["Are you sure to do this?"]}
                             </p>
                         </div>
 
@@ -52,12 +348,11 @@ export default function Accounts(props) {
                             <button
                                 type="button"
                                 onClick={() => {
-                                    setDeleteAccountId('');
                                     onClose();
                                 }}
                                 className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
                             >
-                                {props.translator['No'] || 'No'}
+                                {props.translator["No"] || "No"}
                             </button>
                             <button
                                 type="button"
@@ -65,15 +360,14 @@ export default function Accounts(props) {
                                     nProgress.start(0.5);
                                     nProgress.inc(0.2);
                                     axios({
-                                        method: 'post',
-                                        url: route('delete_account'),
+                                        method: "post",
+                                        url: route("delete_account"),
                                         data: {
-                                            id: accountId
-                                        }
+                                            id: accountId,
+                                        },
                                     })
                                         .then((response) => {
-                                            setAccountList(response.data.accounts);
-                                            setDeleteAccountId('');
+                                            setAccountList(response.data.accounts || []);
                                             nProgress.done();
                                             onClose();
                                         })
@@ -83,7 +377,7 @@ export default function Accounts(props) {
                                 }}
                                 className="inline-flex items-center rounded-full bg-red-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-400"
                             >
-                                {props.translator['Yes']}
+                                {props.translator["Yes"]}
                             </button>
                         </div>
                     </div>
@@ -92,157 +386,43 @@ export default function Accounts(props) {
         });
     }
 
+    const channelCards = useMemo(() => {
+        const accountsByService = accounts.reduce((carry, account) => {
+            const service = account.service;
+
+            if (!carry[service]) {
+                carry[service] = [];
+            }
+
+            carry[service].push(account);
+            return carry;
+        }, {});
+
+        return SERVICE_ORDER.map((service) =>
+            buildChannelCard(
+                service,
+                accountsByService[service] || [],
+                deleteAccount,
+            ),
+        );
+    }, [accounts]);
+
     return (
-        <>
-        <div className="grid gap-4 grid-cols-2 border-white/10 border-b">
-            
-            <nav className="-mb-px flex space-x-3 pb-2" aria-label="Tabs">
-                {tabs.map((tab) => (
-                <a
-                    key={tab.name}
-                    href={tab.href}
-                    className={classNames(
-                    tab.page == page
-                        ? 'bg-[#BF00FF] text-white'
-                        : 'bg-white/10 text-white/70 hover:text-white',
-                    'whitespace-nowrap rounded-full px-4 py-2 font-medium text-sm border-0 outline-none ring-0'
-                    )}
-                    aria-current={tab.current ? 'page' : undefined}
-                    onClick={() => setPage(tab.page)}
-                >
-                    <span className="text-[11px] font-semibold uppercase tracking-wide">
-                        {tab.name}
-                    </span>
-                </a>
-                ))}
-            </nav>
-               
-            <div className="flex justify-end items-center">
+        <div className="mx-auto max-w-4xl space-y-3">
+            <div className="flex justify-end">
                 <Link
-                        href={route('account_registration')}
-                        style={{ backgroundColor: "#BF00FF", borderColor: "#BF00FF" }}
-                        className='ml-3 btn text-white hover:opacity-90'
-                    >
-                        {props.translator['Link Social Profile']}
+                    href={route("account_registration")}
+                    className="inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500"
+                >
+                    Connect channel
                 </Link>
             </div>
-        </div>
 
-        <div className="grid gap-4 grid-cols-1">
-            <div className=" overflow-hidden ">
-                <div className="space-y-4 my-4">
-                    {accounts && accounts.map((account) => {
-                        let status_class_names = 'text-[#e6e60b]';
-                        if(account.status == 'Active') {
-                            status_class_names = 'text-[#0be651]';
-                        }
-                        else if(account.status == 'Inactive') {
-                            status_class_names = 'text-[#f50515]';
-                        }
-                        if(account.service != page){
-                            return true;
-                        }
-
-                        return (
-                            <div
-                                key={account.id}
-                                className="pt-3 bg-[#140816]/70 backdrop-blur-3xl drop-shadow rounded-2xl grid grid-cols-12 px-6 py-4"
-                            >
-
-                                <div className='col-span-6 flex flex-col'>
-                                    <Link
-                                        className="text-white text-base font-semibold"
-                                        href={route('account_view', account.id)}
-                                    >
-                                        {account.company_name} ({account.service})
-                                    </Link>
-                                    <span className="truncate text-white">
-                                        Account Id : {account.id}
-                                    </span>
-                                    {(account.service == 'instagram' || account.service == 'facebook') &&
-                                        <span className="truncate text-[#878787]">
-                                            Page name : {account.fb_page_name}
-                                        </span>
-                                    }
-                                </div>
-
-                                <span className={`ml-3 text-sm inline-flex items-center px-2 col-span-5 py-0.5 rounded font-semibold ${status_class_names}`}>
-                                    {account.status}
-                                </span>
-                                
-                                <div className='inline-flex'>
-                                    <button
-                                        onClick={(e) => deleteAccount(account.id)}
-                                        type="button"
-                                        className="inline-flex items-center px-4 py-1 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                        >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
-                                
-                            </div>
-                        );
-                    })}
-                </div>
-
-                {!accounts ||accounts.length == 0 && 
-                    <div className="text-center py-12 mt-5">
-                            <p className="mt-1 text-sm text-gray-500 w-1/3 border-2 p-3 ml-4" >
-                            {props.translator['Hi']} {props.auth.user.name}, {props.translator['you have not linked any social account to your OneMessage yet. To do this']} <a href="#" className="text-indigo-500" onClick={() => {Inertia.get(route('account_registration'));} }>{props.translator['click']}</a> {props.translator['here or the blue button at the top right. Good work!']}
-                            </p>
-                    </div>
-                }
-
-{/* 
-                {!accounts || accounts.length == 0 ? 
-                    <>
-                    {props.createAccount ? 
-                        <div className="text-center py-12">
-                            <svg
-                                className="mx-auto h-12 w-12 text-gray-400"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                aria-hidden="true"
-                            >
-                                <path
-                                    vectorEffect="non-scaling-stroke"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
-                                />
-                            </svg>
-                            <h3 className="mt-2 text-sm font-medium text-gray-900">{props.translator['No profile']}</h3>
-                            <p className="mt-1 text-sm text-gray-500">{props.translator['Get started by creating a new social profile.']}</p>
-                            <div className="mt-6">
-                                <Link href={route('account_registration')} className="underline text-sm text-indigo-600 hover:text-indigo-900">
-                                    {props.translator['Click here to create a new social profile']}
-                                </Link>
-                            </div>
-                        </div>
-                    : 
-                        <Alert type='info' message= {props.translator['No records']} hideClose={true} />
-                    }
-                    </>
-                : ''}
-                 */}
-
+            <div className="space-y-2">
+                {channelCards.map((card) => (
+                    <ChannelCard key={card.service} {...card} />
+                ))}
             </div>
         </div>
-        </>
     );
 }
-
-
-
-
-
-
-
-
-
-
-

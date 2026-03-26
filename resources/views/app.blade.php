@@ -11,8 +11,20 @@
     <link rel="icon" href="/favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="/favicon.png">
 
+    @php
+        $vite = app(\Illuminate\Foundation\Vite::class);
+        $localHosts = ['localhost', '127.0.0.1', '::1'];
+        $useHotVite = app()->environment('local') && in_array(request()->getHost(), $localHosts, true);
+
+        if (! $useHotVite) {
+            $vite->useHotFile(storage_path('framework/vite-disabled.hot'));
+        }
+    @endphp
+
     @routes
-    @viteReactRefresh
+    @if ($useHotVite)
+        @viteReactRefresh
+    @endif
     @vite(['resources/js/app.jsx', 'resources/css/app.css'])
 </head>
 

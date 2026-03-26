@@ -389,6 +389,7 @@ export default function Authenticated({
     message,
     navigationMenu,
     fullHeight = false,
+    subduedBackground = false,
 }) {
     const { props: pageProps } = usePage();
     const [locale, setLocaleState] = useState(pageProps?.locale ?? getLocale());
@@ -747,7 +748,10 @@ export default function Authenticated({
             <div className="authenticated-shell min-h-screen bg-black text-white relative overflow-x-hidden flex font-sans selection:bg-[#38bdf8]/30">
                 {/* Tech grid background with spotlight effect */}
                 <div
-                    className="fixed inset-0 opacity-40 transition-opacity duration-1000 pointer-events-none"
+                    className={[
+                        "fixed inset-0 transition-opacity duration-1000 pointer-events-none",
+                        subduedBackground ? "opacity-20" : "opacity-40",
+                    ].join(" ")}
                     style={{
                         backgroundSize: "50px 50px",
                         backgroundImage:
@@ -764,7 +768,12 @@ export default function Authenticated({
                     aria-hidden="true"
                 >
                     <div
-                        className="absolute h-[650px] w-[650px] rounded-full bg-[#BF00FF] opacity-[0.08] mix-blend-screen blur-[130px] transition-transform duration-700 ease-out"
+                        className={[
+                            "absolute h-[650px] w-[650px] rounded-full bg-[#BF00FF] mix-blend-screen blur-[130px] transition-transform duration-700 ease-out",
+                            subduedBackground
+                                ? "opacity-[0.04]"
+                                : "opacity-[0.08]",
+                        ].join(" ")}
                         style={{
                             top: "5%",
                             left: "10%",
@@ -772,17 +781,28 @@ export default function Authenticated({
                         }}
                     />
                     <div
-                        className="absolute h-[650px] w-[650px] rounded-full bg-[#BF00FF] opacity-[0.08] mix-blend-screen blur-[140px] transition-transform duration-700 ease-out"
+                        className={[
+                            "absolute h-[650px] w-[650px] rounded-full bg-[#BF00FF] mix-blend-screen blur-[140px] transition-transform duration-700 ease-out",
+                            subduedBackground
+                                ? "opacity-[0.04]"
+                                : "opacity-[0.08]",
+                        ].join(" ")}
                         style={{
                             bottom: "5%",
                             right: "10%",
                             transform: `translate(${mousePosition.x * -0.02}px, ${mousePosition.y * -0.02}px)`,
                         }}
                     />
-                    <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[420px] w-[900px] rounded-full bg-white/5 blur-[120px] opacity-40" />
+                    <div
+                        className={[
+                            "absolute -top-40 left-1/2 -translate-x-1/2 h-[420px] w-[900px] rounded-full bg-white/5 blur-[120px]",
+                            subduedBackground ? "opacity-15" : "opacity-40",
+                        ].join(" ")}
+                    />
                 </div>
                 <div
                     className="purple-giant-arc platform-purple-arc"
+                    style={{ opacity: subduedBackground ? 0.25 : 1 }}
                     aria-hidden="true"
                 />
                 <Transition.Root show={sidebarOpen} as={Fragment}>

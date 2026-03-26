@@ -278,7 +278,7 @@ return [
         'app_id' => env('META_APP_ID'),
         'app_secret' => env('META_APP_SECRET'),
         'login_config_id' => env('META_LOGIN_CONFIG_ID'),
-        'redirect_uri' => env('META_REDIRECT_URI'),
+        'redirect_uri' => env('META_REDIRECT_URI', rtrim(env('APP_URL', 'http://localhost'), '/') . '/integrations/meta/oauth/callback'),
         'verify_token' => env('META_WEBHOOK_VERIFY_TOKEN'),
         'graph_version' => env('META_GRAPH_VERSION', 'v23.0'),
     ],

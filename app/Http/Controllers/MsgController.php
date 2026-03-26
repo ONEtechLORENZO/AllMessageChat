@@ -33,6 +33,7 @@ use Storage;
 use App\Models\ChatListContact;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 use Brick\PhoneNumber\PhoneNumber;
 use Brick\PhoneNumber\PhoneNumberParseException;
 use App\Models\InteractiveMessage;
@@ -423,9 +424,22 @@ class MsgController extends Controller
         $category = ($request->category) ? $request->category : '';
         $contactList = $messages = $accoutList = [];
         $user = $request->user();
-        $menuBar = $this->fetchMenuBar();
         $this->syncGmailChatAccounts($user->id, $category ?: 'whatsapp');
         $recordData = $this->getChatContactList($request);
+        [$accoutList, $accountMeta] = $this->buildChatAccountCollections($user->id, $category);
+
+        if ($request->boolean('fetchContact')) {
+            return response()->json([
+                'status' => true,
+                'contact_list' => $recordData['contact_list'] ?? [],
+                'account_meta' => $accountMeta,
+                'counts' => $recordData['counts'] ?? ['all' => 0, 'unread' => 0, 'archived' => 0],
+                'has_more' => $recordData['has_more'] ?? false,
+                'page' => $recordData['page'] ?? (int) $request->get('page', 1),
+            ]);
+        }
+
+        $menuBar = $this->fetchMenuBar();
         $sessions = [];
         if ($request->contact_id) {
             $isRecordContainCategory = array_key_exists("contact_id_{$request->contact_id}", $recordData['contact_list']);
@@ -445,29 +459,6 @@ class MsgController extends Controller
                 }
             }
         }
-        $accounts = Account::where('user_id', $user->id)->where(function ($query) use ($category) {
-            if ($category != 'all' && $category != '') {
-                $query->where('service', $category);
-            }
-        })->where('status', 'Active')->get();
-        $accountMeta = [];
-        foreach ($accounts as $account) {
-            if ($account->service == 'email') {
-                $accoutList[$account->id] = $account->company_name . ' (' . $account->email . ')';
-            } elseif ($account->service != 'whatsapp') {
-                $accoutList[$account->id] = $account->company_name . "- {$account->fb_page_name}";
-            } else {
-                $accoutList[$account->id] = $account->company_name;
-            }
-
-            $accountMeta[$account->id] = [
-                'id' => $account->id,
-                'label' => $accoutList[$account->id],
-                'service' => $account->service,
-                'service_engine' => $account->service_engine,
-                'last_sync_at' => optional($account->sync_last_at)->toIso8601String(),
-            ];
-        }
         $filterData = $this->getFiltersInfo($user->id, 'Contact', true);
         $translator = ['Your Profile' => __('Your Profile'), 'Settings' => __('Settings'), 'Sign out' => __('Sign out'), 'All Chats' => __('All Chats'), 'Unread' => __('Unread'), 'Archive' => __('Archived'), 'Add Column' => __('Add Column'), 'New Message' => __('New Message'), 'Conversation not start yet.' => __('Conversation not start yet.'), 'View notifications' => __('View notifications'), 'Junior Developer' => __('Junior Developer'), 'All Channel' => __('All Channel'), 'Account list' => __('Account list'), 'Write your message!' => __('Write your message!'), 'Select Contact' => __('Select Contact'), 'Add a contact' => __('Add a contact'), 'Add' => __('Add'), 'Cancel' => __('Cancel'), 'No conversations found for this channel.' => __('No conversations found for this channel.'), 'No account connected for this channel.' => __('No account connected for this channel.'), 'No WhatsApp account connected. Connect one WhatsApp account to use this channel.' => __('No WhatsApp account connected. Connect one WhatsApp account to use this channel.'), 'No Instagram account connected. This workspace supports one Instagram account per social profile.' => __('No Instagram account connected. This workspace supports one Instagram account per social profile.'), 'No Facebook account connected. This workspace supports one Facebook account per social profile.' => __('No Facebook account connected. This workspace supports one Facebook account per social profile.'), 'No Email account connected. Connect one Email account to use this channel.' => __('No Email account connected. Connect one Email account to use this channel.'),];
         $translator = array_merge($translator, $this->getTranslations());
@@ -476,10 +467,27 @@ class MsgController extends Controller
         $interactiveMessages = $this->getInteractiveMessages();
         $data = ['contact_list' => $contactList, 'account_list' => $accoutList, 'account_meta' => $accountMeta, 'messages' => $messages, 'selected_contact' => $selectedContact, 'templates' => $templates, 'current_page' => 'Chat', 'category' => ($category) ? $category : 'whatsapp', 'translator' => $translator, 'filter' => $filterData, 'menuBar' => $menuBar, 'sessions' => $sessions, 'products' => $products, 'interactiveMessages' => $interactiveMessages, 'has_channel_account' => count($accoutList) > 0,];
         $data = array_merge($data, $recordData);
-        if ($request->boolean('fetchContact')) {
-            return response()->json(['status' => true, 'contact_list' => $data['contact_list'] ?? [], 'account_meta' => $data['account_meta'] ?? [], 'has_more' => $data['has_more'] ?? false, 'page' => $data['page'] ?? (int) $request->get('page', 1),]);
-        }
         return Inertia::render('Messages/ChatList', $data);
+    }
+
+    protected function buildChatAccountCollections(int $userId, string $category = ''): array
+    {
+        $accountList = [];
+        $accountMeta = [];
+
+        $accounts = Account::where('user_id', $userId)->where(function ($query) use ($category) {
+            if ($category != 'all' && $category != '') {
+                $query->where('service', $category);
+            }
+        })->where('status', 'Active')->get();
+
+        foreach ($accounts as $account) {
+            $meta = $this->buildChatAccountMeta($account);
+            $accountList[$account->id] = $meta['label'];
+            $accountMeta[$account->id] = $meta;
+        }
+
+        return [$accountList, $accountMeta];
     }
 
     /**
@@ -534,29 +542,21 @@ class MsgController extends Controller
             ]);
 
         if ($selectedCategory !== 'all') {
-            $query->where(function ($categoryQuery) use ($selectedCategory) {
-                $categoryQuery->where('chat_list_contacts.channel', $selectedCategory)
-                    ->orWhere(function ($legacyConversationQuery) use ($selectedCategory) {
-                        $legacyConversationQuery
-                            ->where(function ($channelScope) {
-                                $channelScope->whereNull('chat_list_contacts.channel')
-                                    ->orWhere('chat_list_contacts.channel', '');
-                            })
-                            ->whereExists(function ($subQuery) use ($selectedCategory) {
-                                $subQuery->select(DB::raw(1))
-                                    ->from('msgs')
-                                    ->where('msgs.service', $selectedCategory)
-                                    ->where(function ($messageScope) {
-                                        $messageScope->whereColumn('msgs.chat_list_contact_id', 'chat_list_contacts.id')
-                                            ->orWhere(function ($legacyScope) {
-                                                $legacyScope->whereNull('msgs.chat_list_contact_id')
-                                                    ->whereColumn('msgs.msgable_id', 'contacts.id')
-                                                    ->where('msgs.msgable_type', Contact::class);
-                                            });
-                                    });
-                            });
-                    });
+            $query->where('chat_list_contacts.channel', $selectedCategory);
+        }
+
+        if ($selectedCategory === 'email') {
+            $query->where(function ($conversationQuery) {
+                $conversationQuery->whereNotNull('chat_list_contacts.gmail_thread_id')
+                    ->orWhereNotNull('chat_list_contacts.last_msg_id');
             });
+        } elseif ($selectedCategory === 'all') {
+            $query->where(function ($conversationQuery) {
+                $conversationQuery->whereNotNull('chat_list_contacts.gmail_thread_id')
+                    ->orWhereNotNull('chat_list_contacts.last_msg_id');
+            });
+        } else {
+            $query->whereNotNull('chat_list_contacts.last_msg_id');
         }
 
         if ($filterId && $filterId != 'All') {
@@ -587,7 +587,8 @@ class MsgController extends Controller
 
         // get count of categories
         $hasUnreadScope = function ($q) {
-            $q->where('unread', true)->orWhere('unread_count', '>', 0);
+            $q->where('chat_list_contacts.unread', true)
+                ->orWhere('chat_list_contacts.unread_count', '>', 0);
         };
 
         $allCount     = (clone $query)->count();
@@ -817,6 +818,228 @@ class MsgController extends Controller
         }
     }
 
+    protected function syncFacebookChatAccounts(int $userId, string $category): void
+    {
+        if (! in_array($category, ['facebook', 'all'], true)) {
+            return;
+        }
+
+        $accounts = Account::query()
+            ->where('user_id', $userId)
+            ->where('service', 'facebook')
+            ->where('status', 'Active')
+            ->whereNotNull('fb_phone_number_id')
+            ->get();
+
+        if ($accounts->isEmpty()) {
+            return;
+        }
+
+        foreach ($accounts as $account) {
+            if ($account->sync_last_at && $account->sync_last_at->gt(now()->subSeconds(30))) {
+                continue;
+            }
+
+            try {
+                $this->ensureFacebookWebhookSubscription($account);
+                $this->syncFacebookAccountConversations($account, 15, 50);
+                $account->sync_last_at = now();
+                $account->save();
+            } catch (\Throwable $e) {
+                Log::warning('Unable to refresh Facebook conversations for chat list.', [
+                    'account_id' => $account->id,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    protected function ensureFacebookWebhookSubscription(Account $account): void
+    {
+        if ($account->service !== 'facebook' || empty($account->fb_phone_number_id)) {
+            return;
+        }
+
+        try {
+            (new WhatsAppUsers())->subscripe($account);
+        } catch (\Throwable $e) {
+            Log::warning('Unable to subscribe Facebook page for webhooks.', [
+                'account_id' => $account->id,
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    protected function syncFacebookAccountConversations(Account $account, int $conversationLimit = 15, int $messageLimit = 50): void
+    {
+        $pageId = (string) ($account->fb_phone_number_id ?? '');
+        $pageToken = (string) ($account->page_token ?: '');
+
+        if ($pageId === '') {
+            return;
+        }
+
+        if ($pageToken === '') {
+            $pageToken = (string) ((new WhatsAppUsers())->getFbPageAccessToken($account) ?: '');
+        }
+
+        if ($pageToken === '') {
+            throw new \RuntimeException('Missing Facebook page token.');
+        }
+
+        $conversationPayload = $this->facebookGraphGet("/{$pageId}/conversations", [
+            'platform' => 'messenger',
+            'fields' => 'id,updated_time,message_count,unread_count,participants{id,name}',
+            'limit' => $conversationLimit,
+        ], $pageToken);
+
+        foreach ((array) ($conversationPayload['data'] ?? []) as $conversation) {
+            $conversationId = (string) ($conversation['id'] ?? '');
+            if ($conversationId === '') {
+                continue;
+            }
+
+            $participants = [];
+            foreach ((array) data_get($conversation, 'participants.data', []) as $participant) {
+                $participantId = (string) ($participant['id'] ?? '');
+                if ($participantId === '') {
+                    continue;
+                }
+
+                $participants[$participantId] = (string) ($participant['name'] ?? '');
+            }
+
+            $messagesPayload = $this->facebookGraphGet("/{$conversationId}/messages", [
+                'fields' => 'id,message,created_time,from,to,attachments',
+                'limit' => $messageLimit,
+            ], $pageToken);
+
+            $messages = collect((array) ($messagesPayload['data'] ?? []))
+                ->sortBy(function (array $message) {
+                    return (string) ($message['created_time'] ?? '');
+                })
+                ->values();
+
+            foreach ($messages as $message) {
+                $this->ingestFacebookConversationMessage($account, $participants, (array) $message);
+            }
+        }
+    }
+
+    protected function facebookGraphGet(string $path, array $query, string $token): array
+    {
+        $response = Http::timeout(20)
+            ->retry(2, 250)
+            ->get(sprintf(
+                'https://graph.facebook.com/%s%s',
+                config('app.meta.graph_version'),
+                $path
+            ), array_merge($query, [
+                'access_token' => $token,
+            ]))
+            ->throw()
+            ->json();
+
+        return is_array($response) ? $response : [];
+    }
+
+    protected function ingestFacebookConversationMessage(Account $account, array $participants, array $message): void
+    {
+        $pageId = (string) ($account->fb_phone_number_id ?? '');
+        $messageId = (string) ($message['id'] ?? '');
+        $fromId = (string) data_get($message, 'from.id', '');
+        $fromName = (string) data_get($message, 'from.name', '');
+
+        if ($pageId === '' || $messageId === '' || $fromId === '') {
+            return;
+        }
+
+        $isOutgoing = $fromId === $pageId;
+        $counterpartyId = $isOutgoing
+            ? $this->extractFacebookCounterpartyId($message, $pageId, $participants)
+            : $fromId;
+
+        if ($counterpartyId === '') {
+            return;
+        }
+
+        $counterpartyName = $participants[$counterpartyId]
+            ?? ($isOutgoing ? '' : $fromName);
+
+        $payload = [
+            'account' => $account->id,
+            'service' => 'facebook',
+            'type' => $isOutgoing ? 'outgoing' : 'incoming',
+            'status' => $isOutgoing ? 'Sent' : 'Received',
+            'messageId' => $messageId,
+            'sender' => $isOutgoing ? $pageId : $counterpartyId,
+            'recipient' => $isOutgoing ? $counterpartyId : $pageId,
+            'message' => (string) ($message['message'] ?? ''),
+            'occurred_at' => (string) ($message['created_time'] ?? ''),
+            // Historical imports should not mark outgoing Facebook messages as
+            // read. Read receipts must come from real Messenger webhook events.
+            'is_read' => $isOutgoing ? false : true,
+        ];
+
+        $attachment = collect((array) data_get($message, 'attachments.data', []))->first();
+        if (is_array($attachment)) {
+            $payload['attachment_type'] = (string) ($attachment['type'] ?? '');
+            $payload['attachment'] = (string) data_get(
+                $attachment,
+                'image_data.url',
+                data_get($attachment, 'video_data.url', data_get($attachment, 'file_url', data_get($attachment, 'payload.url', '')))
+            );
+        }
+
+        $previousIsSent = $_REQUEST['is_sent'] ?? null;
+        $previousFirstName = $_POST['first_name'] ?? null;
+        $previousLastName = $_POST['last_name'] ?? null;
+
+        $_REQUEST['is_sent'] = $isOutgoing ? 'sent' : 'received';
+        $_POST['first_name'] = $counterpartyName;
+        $_POST['last_name'] = '';
+
+        try {
+            $this->fbInstaMsgHandler(new Request($payload));
+        } finally {
+            if ($previousIsSent === null) {
+                unset($_REQUEST['is_sent']);
+            } else {
+                $_REQUEST['is_sent'] = $previousIsSent;
+            }
+
+            if ($previousFirstName === null) {
+                unset($_POST['first_name']);
+            } else {
+                $_POST['first_name'] = $previousFirstName;
+            }
+
+            if ($previousLastName === null) {
+                unset($_POST['last_name']);
+            } else {
+                $_POST['last_name'] = $previousLastName;
+            }
+        }
+    }
+
+    protected function extractFacebookCounterpartyId(array $message, string $pageId, array $participants): string
+    {
+        foreach ((array) data_get($message, 'to.data', []) as $recipient) {
+            $recipientId = (string) ($recipient['id'] ?? '');
+            if ($recipientId !== '' && $recipientId !== $pageId) {
+                return $recipientId;
+            }
+        }
+
+        foreach (array_keys($participants) as $participantId) {
+            if ((string) $participantId !== $pageId) {
+                return (string) $participantId;
+            }
+        }
+
+        return '';
+    }
+
     public function syncEmailAccount(Request $request, GmailService $gmailService)
     {
         $user = $request->user();
@@ -856,14 +1079,81 @@ class MsgController extends Controller
             'status' => true,
             'processed' => (int) ($result['processed'] ?? 0),
             'locked' => (bool) ($result['locked'] ?? false),
-            'account' => [
-                'id' => $account->id,
-                'label' => $account->company_name . ' (' . $account->email . ')',
-                'service' => $account->service,
-                'service_engine' => $account->service_engine,
-                'last_sync_at' => optional($account->sync_last_at)->toIso8601String(),
-            ],
+            'account' => $this->buildChatAccountMeta($account),
         ]);
+    }
+
+    public function syncFacebookAccount(Request $request)
+    {
+        $user = $request->user();
+        $accountId = (int) $request->input('account_id');
+
+        $account = Account::query()
+            ->where('id', $accountId)
+            ->where('user_id', $user->id)
+            ->where('service', 'facebook')
+            ->where('status', 'Active')
+            ->first();
+
+        if (! $account) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Facebook account not found.',
+            ], 404);
+        }
+
+        if ($account->sync_last_at && $account->sync_last_at->gt(now()->subSeconds(30))) {
+            return response()->json([
+                'status' => true,
+                'processed' => 0,
+                'locked' => true,
+                'account' => $this->buildChatAccountMeta($account),
+            ]);
+        }
+
+        try {
+            $this->ensureFacebookWebhookSubscription($account);
+            $this->syncFacebookAccountConversations($account, 25, 75);
+            $account->sync_last_at = now();
+            $account->save();
+            $account->refresh();
+        } catch (\Throwable $e) {
+            Log::warning('Manual Facebook sync failed.', [
+                'account_id' => $accountId,
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Unable to sync Facebook right now.',
+            ], 422);
+        }
+
+        return response()->json([
+            'status' => true,
+            'processed' => 1,
+            'locked' => false,
+            'account' => $this->buildChatAccountMeta($account),
+        ]);
+    }
+
+    protected function buildChatAccountMeta(Account $account): array
+    {
+        if ($account->service === 'email') {
+            $label = $account->company_name . ' (' . $account->email . ')';
+        } elseif ($account->service !== 'whatsapp') {
+            $label = $account->company_name . "- {$account->fb_page_name}";
+        } else {
+            $label = $account->company_name;
+        }
+
+        return [
+            'id' => $account->id,
+            'label' => $label,
+            'service' => $account->service,
+            'service_engine' => $account->service_engine,
+            'last_sync_at' => optional($account->sync_last_at)->toIso8601String(),
+        ];
     }
 
     protected function getPrimaryContactEmail(Contact $contact): string
@@ -939,15 +1229,30 @@ class MsgController extends Controller
                 ->orderByRaw('COALESCE(received_at, sent_at, created_at) asc')
                 ->get();
         } else {
-            $contact = Contact::where('id', $conversation->contact_id)->first();
-            if (! $contact) {
-                return $messages;
-            }
+            $serviceScope = ($conversation->channel && $conversation->channel !== 'all')
+                ? [$conversation->channel]
+                : $category;
 
-            $messageCollection = $contact->messages
-                ->whereIn('service', $category)
-                ->sortBy('created_at')
-                ->values();
+            $linkedMessageQuery = Msg::query()
+                ->where('chat_list_contact_id', $conversation->id)
+                ->whereIn('service', $serviceScope);
+
+            if ($linkedMessageQuery->exists()) {
+                $messageCollection = $linkedMessageQuery
+                    ->orderByRaw('COALESCE(received_at, sent_at, created_at) asc')
+                    ->get();
+            } else {
+                $messageCollection = Msg::query()
+                    ->whereNull('chat_list_contact_id')
+                    ->where('msgable_id', $conversation->contact_id)
+                    ->where('msgable_type', Contact::class)
+                    ->whereIn('service', $serviceScope)
+                    ->when($conversation->account_id, function ($query) use ($conversation) {
+                        $query->where('account_id', $conversation->account_id);
+                    })
+                    ->orderByRaw('COALESCE(received_at, sent_at, created_at) asc')
+                    ->get();
+            }
         }
 
         foreach ($messageCollection as $message) {
@@ -1500,11 +1805,172 @@ class MsgController extends Controller
 
         // Update Session and Price 
         // if(($message->msg_mode == 'outgoing' && $message->status == 'Sent') || $message->msg_mode == 'incoming' ){
-        if ($message->msg_mode == 'incoming') {
+        if ($message->msg_mode == 'incoming' && $message->service === 'whatsapp') {
             $message = $this->updateMessageSession($message);
         }
 
         $message->save();
+        $this->syncConversationFromMessage($message);
+    }
+
+    protected function syncConversationFromMessage(Msg $message): void
+    {
+        if (
+            ! $message->account_id
+            || ! $message->msgable_id
+            || $message->msgable_type !== Contact::class
+            || $message->service === 'email'
+        ) {
+            return;
+        }
+
+        $account = Account::find($message->account_id);
+        $contact = Contact::find($message->msgable_id);
+
+        if (! $account || ! $contact) {
+            return;
+        }
+
+        $this->refreshSocialContactNameIfMissing($contact, $account, (string) $message->service);
+
+        $conversation = null;
+
+        if ($message->chat_list_contact_id) {
+            $conversation = ChatListContact::where('id', $message->chat_list_contact_id)
+                ->where('user_id', $account->user_id)
+                ->first();
+        }
+
+        if (! $conversation) {
+            $conversation = ChatListContact::where('user_id', $account->user_id)
+                ->where('contact_id', $message->msgable_id)
+                ->where(function ($query) use ($message) {
+                    $query->where('channel', $message->service)
+                        ->orWhereNull('channel')
+                        ->orWhere('channel', '');
+                })
+                ->orderByRaw(
+                    "CASE
+                        WHEN channel = ? THEN 0
+                        WHEN channel IS NULL OR channel = '' THEN 1
+                        ELSE 2
+                    END",
+                    [$message->service]
+                )
+                ->orderByDesc('id')
+                ->first();
+        }
+
+        if (! $conversation) {
+            $conversation = new ChatListContact();
+            $conversation->user_id = $account->user_id;
+            $conversation->contact_id = $message->msgable_id;
+        }
+
+        $conversation->channel = $message->service;
+        $conversation->account_id = $message->account_id;
+        $conversation->last_msg_id = $message->id;
+        $conversation->last_message_at = $message->received_at ?: $message->sent_at ?: $message->created_at;
+
+        if ($message->msg_mode === 'incoming') {
+            $conversation->unread = ! (bool) $message->is_read;
+        } else {
+            $conversation->unread = false;
+        }
+
+        $conversation->save();
+
+        if ((int) $message->chat_list_contact_id !== (int) $conversation->id) {
+            Msg::withoutEvents(function () use ($message, $conversation) {
+                $message->chat_list_contact_id = $conversation->id;
+                $message->save();
+            });
+        }
+
+        if ($message->msg_mode === 'incoming') {
+            $conversation->unread_count = Msg::where('chat_list_contact_id', $conversation->id)
+                ->where('service', $message->service)
+                ->where('msg_mode', 'incoming')
+                ->where(function ($query) {
+                    $query->where('is_read', false)->orWhereNull('is_read');
+                })
+                ->count();
+        } else {
+            $conversation->unread_count = 0;
+        }
+
+        $conversation->save();
+    }
+
+    protected function refreshSocialContactNameIfMissing(Contact $contact, Account $account, string $service): void
+    {
+        if (! in_array($service, ['facebook', 'instagram'], true)) {
+            return;
+        }
+
+        $currentName = trim(($contact->first_name ?: '') . ' ' . ($contact->last_name ?: ''));
+        $serviceId = $service === 'facebook'
+            ? (string) ($contact->facebook_username ?: '')
+            : (string) ($contact->instagram_username ?: '');
+
+        if ($serviceId === '') {
+            return;
+        }
+
+        if ($currentName !== '' && $currentName !== $serviceId) {
+            return;
+        }
+
+        try {
+            $contactData = (new WhatsAppUsers())->getServiceUserInfo($serviceId, $account);
+        } catch (\Throwable $e) {
+            Log::warning('Unable to refresh social contact name.', [
+                'account_id' => $account->id,
+                'service' => $service,
+                'contact_id' => $contact->id,
+                'message' => $e->getMessage(),
+            ]);
+
+            return;
+        }
+
+        if (! data_get($contactData, 'status')) {
+            return;
+        }
+
+        $profile = (array) data_get($contactData, 'contact_data', []);
+        $firstName = '';
+        $lastName = '';
+
+        if ($service === 'instagram') {
+            $name = trim((string) ($profile['name'] ?? ''));
+            if ($name !== '') {
+                $nameParts = preg_split('/\s+/', $name, 2);
+                $firstName = (string) ($nameParts[0] ?? '');
+                $lastName = (string) ($nameParts[1] ?? '');
+            }
+
+            if ($firstName === '' && ! empty($profile['username'])) {
+                $firstName = (string) $profile['username'];
+            }
+        } else {
+            $firstName = (string) ($profile['first_name'] ?? '');
+            $lastName = (string) ($profile['last_name'] ?? '');
+
+            if ($firstName === '' && ! empty($profile['name'])) {
+                $nameParts = preg_split('/\s+/', trim((string) $profile['name']), 2);
+                $firstName = (string) ($nameParts[0] ?? '');
+                $lastName = (string) ($nameParts[1] ?? '');
+            }
+        }
+
+        if ($firstName === '' && $lastName === '') {
+            return;
+        }
+
+        $contact->first_name = $firstName;
+        $contact->last_name = $lastName;
+        $contact->save();
     }
 
     /**
@@ -1596,12 +2062,19 @@ class MsgController extends Controller
             $chatContact->channel = $type;
         }
 
-        if (isset($_REQUEST['is_sent']) && $_REQUEST['is_sent'] == 'sent') {
-            $chatContact->unread = false;
+        if ($type === 'whatsapp') {
+            if (isset($_REQUEST['is_sent']) && $_REQUEST['is_sent'] == 'sent') {
+                $chatContact->unread = false;
+            } else {
+                $chatContact->unread = true;
+            }
+
+            $chatContact->save();
         } else {
-            $chatContact->unread = true;
+            if (! $chatContact->exists) {
+                $chatContact->save();
+            }
         }
-        $chatContact->save();
         return $contact->id;
     }
 
@@ -2029,6 +2502,8 @@ class MsgController extends Controller
         $price = 0;
         $policy = '';
         $updateSession = false;
+        $sessionTable = (new Session())->getTable();
+        $hasSessionAccountId = Schema::hasColumn($sessionTable, 'account_id');
         if ($msg->msg_mode == 'outgoing' && $msg->status == 'Sent') {
             $updateSession = true;
             $policy = 'BIC';
@@ -2039,9 +2514,11 @@ class MsgController extends Controller
 
         if ($updateSession) {
             $condition = [
-                'account_id' => $msg->account_id,
                 'contact_id' => $msg->msgable_id,
             ];
+            if ($hasSessionAccountId) {
+                $condition['account_id'] = $msg->account_id;
+            }
             $session = Session::where($condition)
                 ->where('created_at', '>=', Carbon::now()->subDay())
                 ->first();
@@ -2075,7 +2552,9 @@ class MsgController extends Controller
                 // Create Session 
                 DB::beginTransaction();
                 $session = new Session();
-                $session->account_id = $msg->account_id;
+                if ($hasSessionAccountId) {
+                    $session->account_id = $msg->account_id;
+                }
                 $session->contact_id = $msg->msgable_id;
                 $session->policy = $policy;
                 $session->amount = $price;
@@ -2195,7 +2674,11 @@ class MsgController extends Controller
             return response()->json(['status' => true, 'message' => 'Message stored successfully.'], 200);
         }
 
-        if ($request->status == 'Read' && ($request->service == 'instagram' || $request->service == 'facebook')) {
+        if (
+            $request->status == 'Read'
+            && ($request->service == 'instagram' || $request->service == 'facebook')
+            && ! $request->filled('messageId')
+        ) {
             return false;
         }
 
@@ -2252,7 +2735,7 @@ class MsgController extends Controller
                 $contact->last_name = $request->name;
             }
             $contact->$field = $contactServiceId;
-            $contact->creater_id = 1;
+            $contact->creater_id = $account->user_id;
 
             $contact->save();
         }
@@ -2269,13 +2752,20 @@ class MsgController extends Controller
             'status' => $status,
             'msg_type' => ($fileUrl) ? 'story' : 'Text',
             'file_path' => $fileUrl,
-            'is_delivered' => ($request->status == 'Delivered') ? true : false,
-            'is_read' => ($request->status == 'Read') ? true : false,
+            'is_delivered' => $request->has('is_delivered') ? $request->boolean('is_delivered') : (($request->status == 'Delivered') ? true : false),
+            'is_read' => $request->has('is_read') ? $request->boolean('is_read') : (($request->status == 'Read') ? true : false),
         ];
         if ($request->type == 'incoming' && $request->service == 'whatsapp') {
             $messageData['message'] = $request->message;
         } else if ($request->service != 'whatsapp') {
             $messageData['message'] = $request->message;
+        }
+        if ($request->filled('occurred_at')) {
+            if ($request->type === 'incoming') {
+                $messageData['received_at'] = $request->occurred_at;
+            } else {
+                $messageData['sent_at'] = $request->occurred_at;
+            }
         }
         if ($status == 'Failed') {
             $messageData['error_response'] = $request->error_msg;
@@ -2318,16 +2808,6 @@ class MsgController extends Controller
         }
 
         $this->processMessage($messageData);
-
-        $chatList = ChatListContact::where(['contact_id' => $messagableId, 'channel' => $request->service])->first();
-        if (! $chatList) {
-            $chatList = new ChatListContact();
-            $chatList->contact_id = $messagableId;
-            $chatList->channel = $request->service;
-            $chatList->user_id = $account->user_id;
-        }
-        $chatList->unread = true;
-        $chatList->save();
         return response()->json(['status' => true, 'message' => 'Message stored successfully.'], 200);
     }
 

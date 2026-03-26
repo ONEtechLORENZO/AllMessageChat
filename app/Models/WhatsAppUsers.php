@@ -102,40 +102,34 @@ class WhatsAppUsers extends Model
     {
         // Got the app's access token from below call
         // https://developers.facebook.com/docs/facebook-login/guides/access-tokens/#apptokens
-        $app_access_token = config('app.fb.app_token');
+        $appId = (string) config('app.meta.app_id');
+        $appSecret = (string) config('app.meta.app_secret');
+        $app_access_token = ($appId && $appSecret) ? "{$appId}|{$appSecret}" : '';
 
         $access_token = $account->fb_token; // Facebook user access token
         $pageId = $account->fb_phone_number_id;
-        $version = config('app.fb.app_graph_version');
+        $version = config('app.meta.graph_version');
         $pageAccessToken = $account->page_token; // Facebook page access token
-     
-        if($pageAccessToken) {
-            $fb = $this->connectFb();
-              
-            try {
-                // Debugging the token to find out whether token is valid or not.
-                $debugToken = $fb->get("/debug_token?input_token={$pageAccessToken}", $app_access_token)->getDecodedBody();
-               
-                if ($debugToken['data']['is_valid'] && !$debugToken['data']['expires_at']) {
-                    return $pageAccessToken;
-                } 
-                else {
-                    // Token is expired, refresh it
-                    $accessToken = $fb->getOAuth2Client()->getLongLivedAccessToken($pageAccessToken);
-                    $new_access_token = $accessToken->getValue();
+        $pagesList = [];
 
-                    // Store the access token for future use
-                    $account->page_token = $new_access_token;
-                    $account->save();
-    
-                    return $new_access_token;
-                }
-            } catch(Facebook\Exceptions\FacebookResponseException $e) {
-                $result = ['status' => false, 'message' => 'Graph returned an error: ' . $e->getMessage()];
-                
-            } catch(Facebook\Exceptions\FacebookSDKException $e) {
-                $result = ['status' => false, 'message' => 'Facebook SDK returned an error: ' . $e->getMessage()];
+        if (! empty($account->fb_meta_data)) {
+            $decodedPages = base64_decode((string) $account->fb_meta_data, true);
+            if ($decodedPages !== false) {
+                $pagesList = @unserialize($decodedPages, ['allowed_classes' => false]);
+                $pagesList = is_array($pagesList) ? $pagesList : [];
             }
+        }
+
+        if($pageAccessToken) {
+            return $pageAccessToken;
+        }
+
+        if (! empty($pagesList[$pageId]['token'])) {
+            $pageAccessToken = $pagesList[$pageId]['token'];
+            $account->page_token = $pageAccessToken;
+            $account->save();
+
+            return $pageAccessToken;
         } else if( $pageId && $access_token ) {
             $url = "https://graph.facebook.com/{$version}/{$pageId}?fields=access_token&access_token={$access_token}";
 
@@ -171,7 +165,7 @@ class WhatsAppUsers extends Model
         $pageToken = $this->getFbPageAccessToken($account);
         $result = ['status' => false, 'message' => 'Invalid page token'];
         if($pageToken){
-            $version = config('app.fb.app_graph_version');
+            $version = config('app.meta.graph_version');
             $url = "https://graph.facebook.com/{$version}/{$userId}?access_token={$pageToken}";
             //echo $url;
             try{
@@ -198,7 +192,7 @@ class WhatsAppUsers extends Model
        
         if($pageToken){
             //$fb = $this->connectFb();
-            $version = config('app.fb.app_graph_version');
+            $version = config('app.meta.graph_version');
             $url = "https://graph.facebook.com/{$version}/{$pageId}?fields=connected_instagram_account&access_token={$pageToken}";
             try{
                 $response = Http::get($url);
@@ -241,11 +235,13 @@ class WhatsAppUsers extends Model
     {
         $pagesList = unserialize( base64_decode($account->fb_meta_data) );
         $pageId = $account->fb_phone_number_id;
-        $pageToken = $pagesList[$pageId]['token'];
+        $pageToken = $account->page_token ?: ($pagesList[$pageId]['token'] ?? '');
 
         if($pageToken){
-            $version = config('app.fb.app_graph_version');
-            $url = "https://graph.facebook.com/{$version}/{$pageId}/subscribed_apps?subscribed_fields=messages,message_reads&access_token={$pageToken}";
+            $version = config('app.meta.graph_version');
+            // message_echoes is required to receive outbound messages sent directly
+            // from the Facebook Page inbox, not only inbound customer messages.
+            $url = "https://graph.facebook.com/{$version}/{$pageId}/subscribed_apps?subscribed_fields=messages,message_echoes,message_reads,message_deliveries,messaging_postbacks&access_token={$pageToken}";
             try{
                 $response = Http::post($url);
                 $result = json_decode($response->body(), true);
@@ -261,12 +257,12 @@ class WhatsAppUsers extends Model
     /**
      * Return Facebook meta data object
      */
-    public function connectFB(Type $var = null)
+    public function connectFB($var = null)
     {
         $return = new Facebook([
-            'app_id' => config('app.fb.app_id'),
-            'app_secret' => config('app.fb.app_secret'),
-            'default_graph_version' => config('app.fb.app_graph_version'),
+            'app_id' => config('app.meta.app_id'),
+            'app_secret' => config('app.meta.app_secret'),
+            'default_graph_version' => config('app.meta.graph_version'),
         ]);
         return $return;
     }

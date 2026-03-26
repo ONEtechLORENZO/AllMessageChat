@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Authenticated from "@/Layouts/Authenticated";
 import Input from "@/Components/Forms/Input";
 import PristineJS from "pristinejs";
@@ -7,6 +7,7 @@ import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import Dropdown from "@/Components/Forms/Dropdown";
 import InputError from "@/Components/Forms/InputError";
 import { defaultPristineConfig } from "@/Pages/Constants";
+import axios from "axios";
 
 function Registration(props) {
     const { data, setData, post, processing, errors, register, reset } =
@@ -74,6 +75,14 @@ function Registration(props) {
     };
 
     const [checked, setChecked] = useState(false);
+    const [facebookSetup, setFacebookSetup] = useState(
+        props.facebook_setup || null,
+    );
+    const [facebookSetupLoading, setFacebookSetupLoading] = useState(false);
+    const [facebookSetupError, setFacebookSetupError] = useState("");
+    const [facebookAutoSelecting, setFacebookAutoSelecting] = useState(false);
+    const [facebookAutoSelectionKey, setFacebookAutoSelectionKey] =
+        useState("");
     const gmailConnected = Boolean(data.gmail_connected);
     const gmailConnectUrl = data.id
         ? route("connect_gmail", { account_id: data.id })
@@ -81,6 +90,55 @@ function Registration(props) {
     const lastSyncLabel = data.sync_last_at
         ? new Date(data.sync_last_at).toLocaleString()
         : "";
+    const facebookPageOptions = useMemo(() => {
+        const options = {};
+
+        (facebookSetup?.available_pages || []).forEach((page) => {
+            options[page.id] = page.name;
+        });
+
+        return options;
+    }, [facebookSetup]);
+    const facebookReconnectUrl = data.id
+        ? route("connect_face_book", { service: "facebook", account_id: data.id })
+        : route("connect_face_book", "facebook");
+    const facebookSetupStatus = facebookSetup?.status || data.connection_status;
+    const facebookSelectedPageId =
+        facebookSetup?.page_id || data.fb_phone_number_id || "";
+    const facebookSelectedPageName =
+        facebookSetup?.page_name || data.fb_page_name || "";
+    const facebookAccountName =
+        facebookSetup?.account_name || data.profile_name || data.company_name;
+    const facebookRequiresCompletion =
+        data.service === "facebook" &&
+        (facebookSetupStatus === "oauth_connected_pending_page" ||
+            (!facebookSelectedPageName && !facebookSelectedPageId));
+    const hasAvailableFacebookPages =
+        (facebookSetup?.available_pages || []).length > 0;
+    const facebookNeedsNewConnect =
+        facebookSetupStatus === "connection_error" ||
+        (!facebookSetupLoading &&
+            !hasAvailableFacebookPages &&
+            !facebookRequiresCompletion);
+    const facebookSingleAvailablePage =
+        (facebookSetup?.available_pages || []).length === 1
+            ? facebookSetup.available_pages[0]
+            : null;
+    const facebookStatusBadgeMeta =
+        facebookSetupStatus === "connected"
+            ? {
+                  label: "Connected",
+                  className: "bg-emerald-500/15 text-emerald-200",
+              }
+            : facebookNeedsNewConnect
+              ? {
+                    label: "Not connected",
+                    className: "bg-slate-500/15 text-slate-100",
+                }
+              : {
+                    label: "Needs setup",
+                    className: "bg-amber-500/15 text-amber-200",
+                };
 
     useEffect(() => {
         let newData = Object.assign({}, data);
@@ -103,12 +161,136 @@ function Registration(props) {
             });
         }
         setData(newData);
+
+        if (newData.service === "facebook" && newData.id) {
+            refreshFacebookSetup(newData.id);
+        }
     }, []);
+
+    function refreshFacebookSetup(accountId) {
+        setFacebookSetupLoading(true);
+        setFacebookSetupError("");
+
+        axios
+            .get(route("meta_facebook_setup", { account: accountId }))
+            .then((response) => {
+                const setup = response.data;
+                setFacebookSetup(setup);
+                setData((prev) => ({
+                    ...prev,
+                    connection_status: setup.status,
+                    connection_status_label: setup.status_label,
+                    fb_phone_number_id: setup.page_id || prev.fb_phone_number_id || "",
+                    fb_page_name: setup.page_name || prev.fb_page_name || "",
+                    page_label: setup.page_name || "Not selected",
+                }));
+            })
+            .catch(() => {
+                setFacebookSetupError(
+                    "Unable to load the Facebook Page selection state.",
+                );
+            })
+            .finally(() => setFacebookSetupLoading(false));
+    }
+
+    function saveFacebookPageSelection(pageId = data.fb_phone_number_id, { auto = false } = {}) {
+        if (!data.id || !pageId) {
+            setFacebookSetupError(
+                "Select a Facebook Page to finish setup.",
+            );
+            return;
+        }
+
+        if (auto) {
+            setFacebookAutoSelecting(true);
+        }
+
+        setFacebookSetupLoading(true);
+        setFacebookSetupError("");
+
+        axios
+            .post(route("meta_facebook_page", { account: data.id }), {
+                page_id: pageId,
+            })
+            .then((response) => {
+                const setup = response.data.setup;
+                setFacebookSetup(setup);
+                setData((prev) => ({
+                    ...prev,
+                    status: response.data.account.status,
+                    connection_status: setup.status,
+                    connection_status_label: setup.status_label,
+                    fb_phone_number_id: setup.page_id || "",
+                    fb_page_name: setup.page_name || "",
+                    page_label: setup.page_name || "Not selected",
+                }));
+            })
+            .catch((error) => {
+                setFacebookSetupError(
+                    error.response?.data?.message ||
+                        (auto
+                            ? "Facebook account connected, but we could not finish setup automatically. Please choose the Facebook Page manually."
+                            : "Unable to save the selected Facebook Page."),
+                );
+            })
+            .finally(() => {
+                setFacebookSetupLoading(false);
+                if (auto) {
+                    setFacebookAutoSelecting(false);
+                }
+            });
+    }
+
+    useEffect(() => {
+        if (
+            data.service !== "facebook" ||
+            !data.id ||
+            facebookSetupStatus !== "oauth_connected_pending_page" ||
+            !facebookSingleAvailablePage ||
+            facebookSetupLoading ||
+            facebookAutoSelecting
+        ) {
+            return;
+        }
+
+        const nextKey = `${data.id}:${facebookSingleAvailablePage.id}`;
+        if (facebookAutoSelectionKey === nextKey) {
+            return;
+        }
+
+        setFacebookAutoSelectionKey(nextKey);
+        setData((prev) => ({
+            ...prev,
+            fb_phone_number_id: facebookSingleAvailablePage.id,
+            fb_page_name:
+                facebookSingleAvailablePage.name || prev.fb_page_name || "",
+        }));
+        saveFacebookPageSelection(facebookSingleAvailablePage.id, {
+            auto: true,
+        });
+    }, [
+        data.service,
+        data.id,
+        facebookSetupStatus,
+        facebookSingleAvailablePage,
+        facebookSetupLoading,
+        facebookAutoSelecting,
+        facebookAutoSelectionKey,
+    ]);
 
     /**
      * Validate the form and submit
      */
     function validateAndSubmitForm() {
+        if (facebookRequiresCompletion) {
+            setFacebookSetupError(
+                hasAvailableFacebookPages
+                    ? "Select a Facebook Page to finish setup."
+                    : "Facebook account connected, but no Pages were returned. Check Page access and permissions, then connect Facebook again.",
+            );
+            return false;
+        }
+
         // if(!data.id){
         //     if((document.getElementById("terms_condition").checked)==false)
         //     {
@@ -148,11 +330,12 @@ function Registration(props) {
             newState[name] = value;
         }
         if (name == "fb_phone_number_id") {
-            newState["fb_page_name"] = props.pages[value];
+            newState["fb_page_name"] =
+                facebookPageOptions[value] || props.pages[value] || "";
         }
         if (name == "fb_insta_app_id") {
             newState["insta_user_name"] =
-                props.insta_accounts[data.fb_phone_number_id][value];
+                props.insta_accounts[data.fb_phone_number_id]?.[value];
         }
         if (
             name == "business_manager_id" &&
@@ -859,114 +1042,256 @@ function Registration(props) {
                                     </div>
                                 </div>
                             </div>
-                        ) : (
-                            <>
-                                {data.service == "instagram" ||
-                                data.service == "facebook" ? (
-                                    <>
-                                        <div className='className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6"'>
-                                            <div className="md:grid md:grid-cols-3 md:gap-6">
-                                                <div className="md:col-span-1">
-                                                    <h3 className="text-lg font-medium leading-6 text-gray-900">
-                                                        {
-                                                            props.translator[
-                                                                "Instagram Information"
-                                                            ]
-                                                        }
-                                                    </h3>
-                                                    <p className="mt-1 text-sm text-gray-500">
-                                                        {
-                                                            props.translator[
-                                                                "Information will be used to create your instagram business account"
-                                                            ]
-                                                        }
-                                                    </p>
+                        ) : data.service == "facebook" ? (
+                            <div className="bg-[#140816]/70 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5 shadow px-4 py-5 sm:rounded-2xl sm:p-6">
+                                <div className="md:grid md:grid-cols-3 md:gap-6">
+                                    <div className="md:col-span-1">
+                                        <h3 className="text-lg font-semibold leading-6 text-white">
+                                            Facebook Page
+                                        </h3>
+                                        <p className="mt-1 text-sm text-[#878787]">
+                                            Facebook login only connects the account. Choose the Facebook Page to finish setup.
+                                        </p>
+                                    </div>
+                                    <div className="mt-5 md:mt-0 md:col-span-2">
+                                        <div className="grid grid-cols-6 gap-6">
+                                            {facebookRequiresCompletion && (
+                                                <div className="form-group col-span-6">
+                                                    <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3">
+                                                        <div className="text-sm font-semibold text-amber-100">
+                                                            Facebook account connected
+                                                        </div>
+                                                        <div className="mt-1 text-sm text-amber-50/90">
+                                                            Select a Facebook Page to finish setup.
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div className="mt-5 md:mt-0 md:col-span-2">
+                                            )}
+
+                                            <div className="form-group col-span-6">
+                                                <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4">
+                                                    <div className="space-y-3">
+                                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                                            <div>
+                                                                <div className="text-sm font-medium text-white">
+                                                                    {facebookAccountName}
+                                                                </div>
+                                                                <div className="text-xs uppercase tracking-[0.2em] text-white/45">
+                                                                    Facebook
+                                                                </div>
+                                                            </div>
+                                                            <span
+                                                                className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${facebookStatusBadgeMeta.className}`}
+                                                            >
+                                                                {facebookStatusBadgeMeta.label}
+                                                            </span>
+                                                        </div>
+                                                        <div className="grid gap-3 text-sm text-white/80 sm:grid-cols-2">
+                                                            <div>
+                                                                <div className="text-white/45">
+                                                                    Account
+                                                                </div>
+                                                                <div>
+                                                                    {facebookRequiresCompletion
+                                                                        ? "Facebook account connected"
+                                                                        : facebookNeedsNewConnect
+                                                                          ? "Connect Facebook again"
+                                                                          : "Facebook Page connected"}
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-white/45">Page</div>
+                                                                <div>
+                                                                    {facebookSelectedPageName ||
+                                                                        "Not selected"}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-sm text-white/65">
+                                                            {facebookRequiresCompletion
+                                                                ? "Select a Facebook Page to finish setup."
+                                                                : facebookNeedsNewConnect
+                                                                  ? "Connect Facebook again to continue."
+                                                                  : "This Facebook channel is ready to use."}
+                                                        </div>
+                                                        {facebookAutoSelecting && (
+                                                            <div className="rounded-2xl border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-sm text-blue-100">
+                                                                One Facebook Page was found. Finishing setup automatically...
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="form-group col-span-6 sm:col-span-4">
+                                                <label
+                                                    htmlFor="fb_phone_number_id"
+                                                    className="block text-sm font-medium text-[#878787]"
+                                                >
+                                                    Choose the Facebook Page
+                                                </label>
+
+                                                <div className="mt-1 flex rounded-md shadow-sm">
+                                                    <Dropdown
+                                                        required={true}
+                                                        id="fb_phone_number_id"
+                                                        name="fb_phone_number_id"
+                                                        handleChange={handleChange}
+                                                        options={facebookPageOptions}
+                                                        value={facebookSelectedPageId}
+                                                        className="bg-[#0F0B1A] text-white border-white/10"
+                                                        disabled={!hasAvailableFacebookPages}
+                                                        emptyOption="Select a Facebook Page"
+                                                    />
+                                                </div>
+                                                <InputError message={errors.fb_phone_number_id} />
+                                            </div>
+
+                                            <div className="form-group col-span-6">
+                                                <div className="flex flex-wrap gap-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={
+                                                            facebookNeedsNewConnect
+                                                                ? () => {
+                                                                      window.location.href =
+                                                                          facebookReconnectUrl;
+                                                                  }
+                                                                : saveFacebookPageSelection
+                                                        }
+                                                        disabled={
+                                                            facebookNeedsNewConnect
+                                                                ? false
+                                                                : facebookSetupLoading ||
+                                                                  facebookAutoSelecting ||
+                                                                  !hasAvailableFacebookPages ||
+                                                                  !facebookSelectedPageId
+                                                        }
+                                                        className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                                    >
+                                                        {facebookNeedsNewConnect
+                                                            ? "Connect Facebook"
+                                                            : facebookSetupStatus === "connected"
+                                                            ? "Update Page"
+                                                            : "Finish setup"}
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {facebookSetupLoading && (
+                                                <div className="form-group col-span-6">
+                                                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white/70">
+                                                        Loading Facebook connection details...
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {facebookSetupError && (
+                                                <div className="form-group col-span-6">
+                                                    <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+                                                        {facebookSetupError}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {!facebookSetupLoading &&
+                                                !hasAvailableFacebookPages && (
+                                                    <div className="form-group col-span-6">
+                                                        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+                                                            <div className="text-sm font-semibold text-white">
+                                                                No Facebook Pages found
+                                                            </div>
+                                                            <div className="mt-1 text-sm text-white/70">
+                                                                Facebook account connected, but Meta did not return any Pages. Check that this user manages a Facebook Page and granted the required permissions, then connect Facebook again.
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : data.service == "instagram" ? (
+                            <div className="bg-[#140816]/70 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5 shadow px-4 py-5 sm:rounded-2xl sm:p-6">
+                                <div className="md:grid md:grid-cols-3 md:gap-6">
+                                    <div className="md:col-span-1">
+                                        <h3 className="text-lg font-medium leading-6 text-gray-900">
+                                            {
+                                                props.translator[
+                                                    "Instagram Information"
+                                                ]
+                                            }
+                                        </h3>
+                                        <p className="mt-1 text-sm text-gray-500">
+                                            {
+                                                props.translator[
+                                                    "Information will be used to create your instagram business account"
+                                                ]
+                                            }
+                                        </p>
+                                    </div>
+                                    <div className="mt-5 md:mt-0 md:col-span-2">
+                                        <div className="grid grid-cols-6 gap-6"></div>
+                                        <div className="form-group col-span-6 sm:col-span-4">
+                                            <label
+                                                htmlFor="fb_phone_number_id"
+                                                className="block text-sm font-medium text-gray-700"
+                                            >
+                                                Page Name
+                                            </label>
+
+                                            <div className="mt-1 flex rounded-md shadow-sm">
+                                                <Dropdown
+                                                    required={true}
+                                                    id="fb_phone_number_id"
+                                                    name="fb_phone_number_id"
+                                                    handleChange={handleChange}
+                                                    options={props.pages}
+                                                    value={data.fb_phone_number_id}
+                                                />
+                                            </div>
+                                            <InputError
+                                                message={errors.fb_phone_number_id}
+                                            />
+                                        </div>
+
+                                        {data.fb_phone_number_id &&
+                                            props.insta_accounts[data.fb_phone_number_id] && (
+                                                <div className="mt-5">
                                                     <div className="grid grid-cols-6 gap-6"></div>
                                                     <div className="form-group col-span-6 sm:col-span-4">
                                                         <label
-                                                            htmlFor="fb_phone_number_id"
+                                                            htmlFor="fb_insta_app_id"
                                                             className="block text-sm font-medium text-gray-700"
                                                         >
-                                                            Page Name
+                                                            Instagram account
                                                         </label>
 
                                                         <div className="mt-1 flex rounded-md shadow-sm">
                                                             <Dropdown
                                                                 required={true}
-                                                                id="fb_phone_number_id"
-                                                                name="fb_phone_number_id"
-                                                                handleChange={
-                                                                    handleChange
-                                                                }
+                                                                id="fb_insta_app_id"
+                                                                name="fb_insta_app_id"
+                                                                handleChange={handleChange}
                                                                 options={
-                                                                    props.pages
+                                                                    props.insta_accounts[
+                                                                        data.fb_phone_number_id
+                                                                    ]
                                                                 }
-                                                                value={
-                                                                    data.fb_phone_number_id
-                                                                }
+                                                                value={data.fb_insta_app_id}
                                                             />
                                                         </div>
                                                         <InputError
-                                                            message={
-                                                                errors.fb_phone_number_id
-                                                            }
+                                                            message={errors.fb_insta_app_id}
                                                         />
                                                     </div>
-
-                                                    {data.fb_phone_number_id &&
-                                                        data.service ==
-                                                            "instagram" && (
-                                                            <div className="mt-5">
-                                                                <div className="grid grid-cols-6 gap-6"></div>
-                                                                <div className="form-group col-span-6 sm:col-span-4">
-                                                                    <label
-                                                                        htmlFor="fb_insta_app_id"
-                                                                        className="block text-sm font-medium text-gray-700"
-                                                                    >
-                                                                        Instagram
-                                                                        account
-                                                                    </label>
-
-                                                                    <div className="mt-1 flex rounded-md shadow-sm">
-                                                                        <Dropdown
-                                                                            required={
-                                                                                true
-                                                                            }
-                                                                            id="fb_insta_app_id"
-                                                                            name="fb_insta_app_id"
-                                                                            handleChange={
-                                                                                handleChange
-                                                                            }
-                                                                            options={
-                                                                                props
-                                                                                    .insta_accounts[
-                                                                                    data
-                                                                                        .fb_phone_number_id
-                                                                                ]
-                                                                            }
-                                                                            value={
-                                                                                data.fb_insta_app_id
-                                                                            }
-                                                                        />
-                                                                    </div>
-                                                                    <InputError
-                                                                        message={
-                                                                            errors.fb_insta_app_id
-                                                                        }
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        )}
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </>
-                                ) : (
-                                    ""
-                                )}
-                            </>
+                                            )}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            ""
                         )}
                     </div>
                     {!data.id && (
@@ -1022,15 +1347,17 @@ function Registration(props) {
                             {props.translator["Cancel"]}
                         </Link>
 
-                        <button
-                            type="button"
-                            id="save"
-                            title=""
-                            onClick={validateAndSubmitForm}
-                            className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1C9AE1]"
-                        >
-                            {props.translator["Save"]}
-                        </button>
+                        {!facebookRequiresCompletion && (
+                            <button
+                                type="button"
+                                id="save"
+                                title=""
+                                onClick={validateAndSubmitForm}
+                                className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1C9AE1]"
+                            >
+                                {props.translator["Save"]}
+                            </button>
+                        )}
                     </div>
                 </form>
             </div>

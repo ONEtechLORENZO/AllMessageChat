@@ -16,6 +16,7 @@ import {
     ChevronDownIcon,
     MagnifyingGlassIcon,
     Bars3Icon,
+    ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 
 import { Menu, Popover, Transition } from "@headlessui/react";
@@ -107,6 +108,9 @@ function ChatList(props) {
     });
     const [selectedAccount, setSelectedAccount] = useState("");
     const [accountMeta, setAccountMeta] = useState(props.account_meta || {});
+    const [chatCounts, setChatCounts] = useState(
+        props.counts || { all: 0, unread: 0, archived: 0 },
+    );
     const [searchKey, setSearchKey] = useState(props.search);
     const [emailComposeData, setEmailComposeData] = useState(
         createEmptyEmailComposeData(),
@@ -149,6 +153,7 @@ function ChatList(props) {
     const listRef = useRef(null);
     const loadMoreRef = useRef(null);
     const loadMoreLockedRef = useRef(false);
+    const messageRequestRef = useRef(false);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [pageLoading, setPageLoad] = useState(false);
@@ -288,6 +293,7 @@ function ChatList(props) {
         setSearchKey(props.search);
         setMessages(props.messages || {});
         setAccountMeta(props.account_meta || {});
+        setChatCounts(props.counts || { all: 0, unread: 0, archived: 0 });
         setCurrentTabId(getModeForCategory(props.category, props.mode));
         setPage(1);
         setHasMore(true);
@@ -300,10 +306,13 @@ function ChatList(props) {
         props.category,
         props.search,
         props.messages,
+        props.counts,
     ]);
 
     useEffect(() => {
-        const interval = setInterval(() => getMessageList(), 5000);
+        const refreshInterval =
+            containerCategory === "whatsapp" ? 5000 : 15000;
+        const interval = setInterval(() => getMessageList(), refreshInterval);
         return () => {
             clearInterval(interval);
         };
@@ -444,14 +453,7 @@ function ChatList(props) {
         nProgress.inc(0.2);
         setMessages({});
 
-        const url = route("get_message_list", {
-            contact_id: contact,
-            category: channel,
-            mode: "ajax",
-        });
-
-        Axios.get(url).then((response) => {
-            setMessages(response.data);
+        getMessageList(contact, channel).finally(() => {
             nProgress.done();
         });
     }
@@ -603,13 +605,9 @@ function ChatList(props) {
                 ) {
                     setAccountMeta(response.data.account_meta);
                 }
-
-                console.log("Lazy load page:", activePage);
-                console.log(
-                    "Fetched contacts:",
-                    Object.keys(fetchedMap).length,
-                );
-                console.log("Has more:", response.data.has_more);
+                if (response.data.counts) {
+                    setChatCounts(response.data.counts);
+                }
 
                 if (activePage > 1 && fetchedContactItems.length === 0) {
                     setHasMore(false);
@@ -708,6 +706,61 @@ function ChatList(props) {
             });
     }
 
+    function syncFacebookAccountNow(options = {}) {
+        const { silent = false } = options;
+
+        if (
+            containerCategory !== "facebook" ||
+            !selectedAccount ||
+            syncNowLoading
+        ) {
+            return Promise.resolve(null);
+        }
+
+        setSyncNowLoading(true);
+
+        return Axios.post(route("sync_facebook_chat_account"), {
+            account_id: selectedAccount,
+        })
+            .then((response) => {
+                if (response.data?.account?.id) {
+                    setAccountMeta((prev) => ({
+                        ...prev,
+                        [response.data.account.id]: response.data.account,
+                    }));
+                }
+
+                if (!silent) {
+                    notie.alert({
+                        type: response.data?.locked ? "info" : "success",
+                        text: response.data?.locked
+                            ? "Facebook sync just ran. Please wait a moment."
+                            : "Facebook chats synced.",
+                        time: 3,
+                    });
+                }
+
+                return fetchContactList(current_tab, 1);
+            })
+            .then(() => {
+                if (selectedContact) {
+                    getMessageList();
+                }
+            })
+            .catch(() => {
+                if (!silent) {
+                    notie.alert({
+                        type: "error",
+                        text: "Unable to sync Facebook right now.",
+                        time: 4,
+                    });
+                }
+            })
+            .finally(() => {
+                setSyncNowLoading(false);
+            });
+    }
+
     // Auto-select the first contact if none is selected
     useEffect(() => {
         if (!selectedContact && chatListItems.length > 0) {
@@ -721,20 +774,25 @@ function ChatList(props) {
     }, [chatListItems, selectedContact, current_tab]);
 
     // Return conversation history
-    function getMessageList() {
-        if (!selectedContact) {
-            return false;
+    function getMessageList(contactId = selectedContact, category = containerCategory) {
+        if (!contactId || messageRequestRef.current) {
+            return Promise.resolve(null);
         }
+
+        messageRequestRef.current = true;
         var url = route("get_message_list", {
-            contact_id: selectedContact,
-            category: containerCategory,
+            contact_id: contactId,
+            category: category,
             mode: "ajax",
         });
-        Axios({
+        return Axios({
             method: "get",
             url: url,
         }).then((response) => {
             setMessages(response.data);
+            return response;
+        }).finally(() => {
+            messageRequestRef.current = false;
         });
     }
 
@@ -1067,6 +1125,7 @@ function ChatList(props) {
 
     var category = containerCategory ? containerCategory : "all";
     const isEmailWorkspace = containerCategory === "email";
+    const isFacebookWorkspace = containerCategory === "facebook";
     const selectedChannel = channels[category];
     const hasAccountsForChannel = Object.keys(accountList || {}).length > 0;
     const selectedAccountInfo = getSelectedAccountMeta();
@@ -1075,19 +1134,27 @@ function ChatList(props) {
         !hasAccountsForChannel && category !== "all"
             ? getNoAccountMessage(category)
             : props.translator["No conversations found for this channel."];
-    const emailSyncAction =
-        isEmailWorkspace ? (
+    const syncAction =
+        isEmailWorkspace || isFacebookWorkspace ? (
             <button
                 type="button"
-                onClick={syncEmailAccountNow}
+                onClick={
+                    isEmailWorkspace
+                        ? syncEmailAccountNow
+                        : () => syncFacebookAccountNow()
+                }
                 disabled={!selectedAccount || syncNowLoading}
+                title={`Last synced: ${formatLastSync(
+                    selectedAccountInfo?.last_sync_at,
+                )}`}
                 className={classNames(
                     !selectedAccount || syncNowLoading
                         ? "cursor-not-allowed opacity-60"
                         : "hover:bg-[#8a19d9]",
-                    "inline-flex items-center justify-center rounded-lg bg-[#A31EFF] px-3.5 py-2 text-sm font-semibold text-white transition",
+                    "inline-flex items-center justify-center gap-2 rounded-lg bg-[#A31EFF] px-3.5 py-2 text-sm font-semibold text-white transition",
                 )}
             >
+                <ArrowPathIcon className="h-4 w-4" />
                 {syncNowLoading ? "Syncing..." : "Sync"}
             </button>
         ) : null;
@@ -1234,7 +1301,7 @@ function ChatList(props) {
                                                     "hidden ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block",
                                                 )}
                                             >
-                                                {props.counts[tab.id]}
+                                                {chatCounts?.[tab.id] || 0}
                                             </span>
                                         </a>
                                     ))}
@@ -1365,9 +1432,12 @@ function ChatList(props) {
                                                     <div className="flex-shrink-0">
                                                         <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-500">
                                                             <span className="text-xl font-normal leading-none text-white">
-                                                                {person.name.substring(
-                                                                    0,
-                                                                    2,
+                                                                {getContactInitials(
+                                                                    person.name ||
+                                                                        person.number ||
+                                                                        person.fb_id ||
+                                                                        person.insta_id ||
+                                                                        person.email,
                                                                 )}
                                                             </span>
                                                         </span>
@@ -1492,7 +1562,7 @@ function ChatList(props) {
                                     )}
                                 >
                                     <div className="flex items-center gap-2">
-                                        {emailSyncAction}
+                                        {syncAction}
                                     </div>
                                     <Menu as="div" className="relative">
                                         <div>
@@ -1754,9 +1824,10 @@ function ChatList(props) {
                                                     : "",
                                             )}
                                         >
-                                            {isEmailWorkspace && (
+                                            {(isEmailWorkspace ||
+                                                isFacebookWorkspace) && (
                                                 <div className="flex items-center gap-2">
-                                                    {emailSyncAction}
+                                                    {syncAction}
                                                 </div>
                                             )}
                                             <Menu as="div" className="relative">
