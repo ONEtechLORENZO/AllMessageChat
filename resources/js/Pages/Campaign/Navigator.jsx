@@ -1,11 +1,10 @@
 import React from "react";
-import { CheckIcon } from '@heroicons/react/24/solid';
   
 const steps = [
-    { name: 'Step 1', href: '#', status: '1' },
-    { name: 'Step 2', href: '#', status: '2' },
-    { name: 'Step 3', href: '#', status: '3' },
-    { name: 'Step 4', href: '#', status: '4' },
+    { name: 'Step 1', label: '01', status: '1' },
+    { name: 'Step 2', label: '02', status: '2' },
+    { name: 'Step 3', label: '03', status: '3' },
+    { name: 'Step 4', label: '04', status: '4' },
 ];
 
 function classNames(...classes) {
@@ -13,58 +12,42 @@ function classNames(...classes) {
 }
 
 export default function Navigator(props){
+    const currentStep = Number(props.current_page ?? 1);
+    const isNew = props.status == 'new';
 
     return(
-       <div className="px-2 py-1">
+       <div className="w-full max-w-[760px] px-2 py-1">
          <nav aria-label="Progress">
-           <ol role="list" className="flex items-center">
+           <ol role="list" className="flex items-center justify-between">
               {steps.map((step, index) => (  
-             <li key={step.name} className={classNames(index !== steps.length - 1 ? 'pr-8 sm:pr-16' : '', 'relative')}>
-               { step.status < props.current_page || props.status == 'new' ? (
-                 <>
-                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div className="h-0.5 w-full bg-[#BF00FF]/70" />
-                  </div>
-                  <a
-                    href="#"
-                    className="relative flex h-7 w-7 items-center justify-center rounded-full bg-[#BF00FF] shadow-[0_8px_20px_rgba(191,0,255,0.35)] transition hover:bg-[#a100df]"
-                  >
-                    <CheckIcon className="w-5 h-5 text-white" aria-hidden="true" />
+             <li key={step.name} className="relative flex flex-1 items-center last:flex-none">
+               {index !== steps.length - 1 ? (
+                <div
+                    className={classNames(
+                        Number(step.status) < currentStep || isNew
+                            ? 'bg-[#6E45E2]/70'
+                            : 'bg-white/15',
+                        'mx-4 h-px flex-1 transition-colors duration-300'
+                    )}
+                    aria-hidden="true"
+                />
+               ) : null}
+               <div className="relative z-10 flex items-center justify-center">
+                    <div
+                        className={classNames(
+                            Number(step.status) === currentStep
+                                ? 'border-[#8B5CF6] bg-[#13091d] text-white shadow-[0_12px_32px_rgba(139,92,246,0.3)]'
+                                : Number(step.status) < currentStep || isNew
+                                    ? 'border-[#6E45E2]/70 bg-[#1A1126] text-white'
+                                    : 'border-white/30 bg-[#120a1b]/60 text-white/60',
+                            'flex h-14 w-14 items-center justify-center rounded-full border-2 text-lg font-black tracking-[0.08em] transition-all duration-300'
+                        )}
+                        aria-current={Number(step.status) === currentStep ? 'step' : undefined}
+                    >
+                        {step.label}
+                    </div>
                     <span className="sr-only">{step.name}</span>
-                  </a>
-                </>
-              ) : step.status == props.current_page ? (
-                <>
-                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div className="h-0.5 w-full bg-white/10" />
-                  </div>
-                  <a
-                    href="#"
-                    className="relative flex h-7 w-7 items-center justify-center rounded-full border border-[#BF00FF]/70 bg-[#140b1f]"
-                    aria-current="step"
-                  >
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#BF00FF]" aria-hidden="true" />
-                    <span className="sr-only">{step.name}</span>
-        
-                  </a>
-                </>
-              ) : (
-                <>
-                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div className="h-0.5 w-full bg-white/10" />
-                  </div>
-                  <a
-                    href="#"
-                    className="group relative flex h-7 w-7 items-center justify-center rounded-full border border-white/25 bg-transparent transition hover:border-white/50"
-                  >
-                    <span
-                      className="h-2.5 w-2.5 rounded-full bg-transparent group-hover:bg-white/30"
-                      aria-hidden="true"
-                    />
-                    <span className="sr-only">{step.name}</span>
-                  </a>
-                </>
-              )}
+               </div>
             </li>
              ))}
            </ol>

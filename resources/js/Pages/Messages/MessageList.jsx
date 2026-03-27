@@ -20,7 +20,7 @@ export default function MessageList(props) {
         <>
             <div
                 id="messages"
-                className="chat-pattern-bg flex-col flex-1 justify-end space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch bg-[#0b0b10] rounded-2xl"
+                className="chat-pattern-bg flex h-full flex-col justify-end gap-4 overflow-y-auto rounded-[2rem] bg-[#0a0810] px-5 py-6 scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch"
             >
                 {Object.entries(props.messages).map(([key, message], j) => {
                     var content = message.content;
@@ -84,8 +84,8 @@ export default function MessageList(props) {
                             {message.mode == 'incoming' ?
                                 <div className="chat-message">
                                     <div className="flex items-end">
-                                        <div className="flex flex-col space-y-2 text-sm max-w-xs mx-2 order-2 items-start">
-                                        <div className="text-white/90 px-4 py-2 rounded-2xl rounded-bl-none bg-white/5">
+                                        <div className="order-2 mx-2 flex max-w-[min(30rem,78%)] flex-col space-y-2 text-sm items-start">
+                                        <div className="rounded-[1.5rem] rounded-bl-md bg-white/[0.04] px-4 py-3 text-white/90 shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
                                                 <span className="inline-block text-sm">
                                                     {content}
                                                 </span>
@@ -115,8 +115,8 @@ export default function MessageList(props) {
                                 :
                                 <div className="chat-message">
                                     <div className="flex items-end justify-end">
-                                        <div className="flex flex-col space-y-2 text-sm max-w-xs mx-2 order-1 items-end">
-                                            <div className="text-white/90 px-4 py-2 rounded-2xl rounded-bl-none bg-[#A31EFF]/15">
+                                        <div className="order-1 mx-2 flex max-w-[min(32rem,78%)] flex-col space-y-2 text-sm items-end">
+                                            <div className="rounded-[1.5rem] rounded-br-md bg-[linear-gradient(135deg,rgba(163,30,255,0.28),rgba(255,59,194,0.16))] px-4 py-3 text-white/90 shadow-[0_20px_60px_rgba(127,0,190,0.18)]">
                                                 <span className="inline-block text-sm">
                                                     {content}
                                                 </span>

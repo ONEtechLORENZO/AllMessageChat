@@ -476,12 +476,12 @@ function Filter(props) {
             <div className="overscroll-auto z-10 mt-1">
                 <Dropdown >
                     <Dropdown.Trigger>
-                        <span className="inline-flex rounded-md">
+                        <span className="inline-flex rounded-[1.1rem] overflow-hidden">
                             <button
                                 type="button"
-                                className={`p-2 text-white shadow-sm flex items-center justify-center ${
+                                className={`flex h-12 w-12 items-center justify-center rounded-[1.1rem] text-white transition ${
                                     props.is_chat
-                                        ? "bg-[#BF00FF] border border-[#BF00FF]"
+                                        ? "bg-[linear-gradient(135deg,#ff4fd8,#a31eff)] shadow-[0_16px_34px_rgba(163,30,255,0.35)]"
                                         : "bg-[#140816]/70 border border-white/10"
                                 } backdrop-blur-xl`}
                             >
