@@ -16,6 +16,7 @@ class VerifyCsrfToken extends Middleware
         '/incoming-cm',
         '/fb-whatsapp',
         '/integrations/meta/webhook',
+        '/integrations/instagram/webhook',
         '/stripe-incoming',
         '/v1/send-wa-message',
         '/fb-insta'

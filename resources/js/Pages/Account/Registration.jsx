@@ -32,6 +32,11 @@ function Registration(props) {
             oba: false,
             api_token: "",
             callback_url: "",
+            meta_page_id: "",
+            meta_page_name: "",
+            instagram_account_id: "",
+            instagram_username: "",
+            instagram_name: "",
             enqueued: false,
             failed: false,
             read: false,
@@ -83,6 +88,12 @@ function Registration(props) {
     const [facebookAutoSelecting, setFacebookAutoSelecting] = useState(false);
     const [facebookAutoSelectionKey, setFacebookAutoSelectionKey] =
         useState("");
+    const [instagramSetup, setInstagramSetup] = useState(
+        props.instagram_setup || null,
+    );
+    const [instagramSetupLoading, setInstagramSetupLoading] = useState(false);
+    const [instagramSetupError, setInstagramSetupError] = useState("");
+    const [instagramFinalizing, setInstagramFinalizing] = useState(false);
     const gmailConnected = Boolean(data.gmail_connected);
     const gmailConnectUrl = data.id
         ? route("connect_gmail", { account_id: data.id })
@@ -124,6 +135,77 @@ function Registration(props) {
         (facebookSetup?.available_pages || []).length === 1
             ? facebookSetup.available_pages[0]
             : null;
+    const instagramConnectUrl = data.id
+        ? route("connect_instagram", { account_id: data.id })
+        : route("connect_instagram");
+    const instagramSetupStatus =
+        instagramSetup?.status || data.connection_status || "incomplete";
+    const instagramAvailablePages = instagramSetup?.available_pages || [];
+    const instagramPageOptions = useMemo(() => {
+        const options = {};
+
+        instagramAvailablePages.forEach((page) => {
+            options[page.id] = page.name;
+        });
+
+        return options;
+    }, [instagramAvailablePages]);
+    const instagramSelectedPageId =
+        instagramSetup?.selected_page?.id || data.meta_page_id || "";
+    const instagramSelectedPageName =
+        instagramSetup?.selected_page?.name || data.meta_page_name || "";
+    const instagramLinkedAccounts = instagramSetup?.linked_instagram_accounts || [];
+    const instagramAccountOptions = useMemo(() => {
+        const options = {};
+
+        instagramLinkedAccounts.forEach((account) => {
+            const labelParts = [];
+
+            if (account.name) {
+                labelParts.push(account.name);
+            }
+
+            if (account.username) {
+                labelParts.push(
+                    account.username.startsWith("@")
+                        ? account.username
+                        : `@${account.username}`,
+                );
+            }
+
+            options[account.id] = labelParts.join(" ") || account.id;
+        });
+
+        return options;
+    }, [instagramLinkedAccounts]);
+    const instagramSelectedAccountId =
+        instagramSetup?.selected_instagram_account?.id ||
+        data.instagram_account_id ||
+        "";
+    const instagramSelectedAccountName =
+        instagramSetup?.selected_instagram_account?.name ||
+        data.instagram_name ||
+        "";
+    const instagramSelectedUsername =
+        instagramSetup?.selected_instagram_account?.username ||
+        data.instagram_username ||
+        "";
+    const instagramOAuthConnected = Boolean(instagramSetup?.oauth_connected);
+    const instagramSetupComplete = Boolean(
+        instagramSetup?.setup_complete &&
+            (instagramSetup?.selected_instagram_account?.id ||
+                data.instagram_account_id),
+    );
+    const instagramNeedsConnect =
+        data.service === "instagram" &&
+        (!instagramOAuthConnected ||
+            instagramSetupStatus === "incomplete" ||
+            instagramSetupStatus === "error");
+    const instagramNeedsPage =
+        data.service === "instagram" && instagramSetupStatus === "needs_page";
+    const instagramNeedsInstagramAccount =
+        data.service === "instagram" &&
+        instagramSetupStatus === "needs_instagram";
     const facebookStatusBadgeMeta =
         facebookSetupStatus === "connected"
             ? {
@@ -165,6 +247,10 @@ function Registration(props) {
         if (newData.service === "facebook" && newData.id) {
             refreshFacebookSetup(newData.id);
         }
+
+        if (newData.service === "instagram" && newData.id) {
+            refreshInstagramSetup(newData.id);
+        }
     }, []);
 
     function refreshFacebookSetup(accountId) {
@@ -191,6 +277,37 @@ function Registration(props) {
                 );
             })
             .finally(() => setFacebookSetupLoading(false));
+    }
+
+    function refreshInstagramSetup(accountId) {
+        setInstagramSetupLoading(true);
+        setInstagramSetupError("");
+
+        axios
+            .get(route("instagram_status", { account: accountId }))
+            .then((response) => {
+                const setup = response.data;
+                setInstagramSetup(setup);
+                setData((prev) => ({
+                    ...prev,
+                    connection_status: setup.status,
+                    connection_status_label: setup.status_label,
+                    meta_page_id: setup.selected_page?.id || "",
+                    meta_page_name: setup.selected_page?.name || "",
+                    instagram_account_id:
+                        setup.selected_instagram_account?.id || "",
+                    instagram_username:
+                        setup.selected_instagram_account?.username || "",
+                    instagram_name:
+                        setup.selected_instagram_account?.name || "",
+                }));
+            })
+            .catch(() => {
+                setInstagramSetupError(
+                    "Unable to load the Instagram connection state.",
+                );
+            })
+            .finally(() => setInstagramSetupLoading(false));
     }
 
     function saveFacebookPageSelection(pageId = data.fb_phone_number_id, { auto = false } = {}) {
@@ -239,6 +356,99 @@ function Registration(props) {
                     setFacebookAutoSelecting(false);
                 }
             });
+    }
+
+    function saveInstagramPageSelection(
+        pageId = data.meta_page_id || instagramSelectedPageId,
+    ) {
+        if (!data.id || !pageId) {
+            setInstagramSetupError("Select a Facebook Page to continue.");
+            return;
+        }
+
+        setInstagramSetupLoading(true);
+        setInstagramSetupError("");
+
+        axios
+            .post(route("instagram_select_page", { account: data.id }), {
+                page_id: pageId,
+            })
+            .then((response) => {
+                const setup = response.data.setup;
+                setInstagramSetup(setup);
+                setData((prev) => ({
+                    ...prev,
+                    connection_status: setup.status,
+                    connection_status_label: setup.status_label,
+                    meta_page_id: setup.selected_page?.id || "",
+                    meta_page_name: setup.selected_page?.name || "",
+                    instagram_account_id:
+                        setup.selected_instagram_account?.id || "",
+                    instagram_username:
+                        setup.selected_instagram_account?.username || "",
+                    instagram_name:
+                        setup.selected_instagram_account?.name || "",
+                }));
+            })
+            .catch((error) => {
+                setInstagramSetupError(
+                    error.response?.data?.message ||
+                        "Unable to save the selected Facebook Page for Instagram.",
+                );
+            })
+            .finally(() => setInstagramSetupLoading(false));
+    }
+
+    function finalizeInstagramConnection(
+        pageId = data.meta_page_id || instagramSelectedPageId,
+        instagramAccountId =
+            data.instagram_account_id || instagramSelectedAccountId,
+    ) {
+        if (!data.id || !pageId) {
+            setInstagramSetupError("Select a Facebook Page to continue.");
+            return;
+        }
+
+        if (!instagramAccountId) {
+            setInstagramSetupError(
+                "Select a linked Instagram account to finish setup.",
+            );
+            return;
+        }
+
+        setInstagramFinalizing(true);
+        setInstagramSetupError("");
+
+        axios
+            .post(route("instagram_finalize", { account: data.id }), {
+                page_id: pageId,
+                instagram_account_id: instagramAccountId,
+            })
+            .then((response) => {
+                const setup = response.data.setup;
+                setInstagramSetup(setup);
+                setData((prev) => ({
+                    ...prev,
+                    status: response.data.account.status,
+                    connection_status: setup.status,
+                    connection_status_label: setup.status_label,
+                    meta_page_id: setup.selected_page?.id || "",
+                    meta_page_name: setup.selected_page?.name || "",
+                    instagram_account_id:
+                        setup.selected_instagram_account?.id || "",
+                    instagram_username:
+                        setup.selected_instagram_account?.username || "",
+                    instagram_name:
+                        setup.selected_instagram_account?.name || "",
+                }));
+            })
+            .catch((error) => {
+                setInstagramSetupError(
+                    error.response?.data?.message ||
+                        "Unable to finish Instagram setup.",
+                );
+            })
+            .finally(() => setInstagramFinalizing(false));
     }
 
     useEffect(() => {
@@ -291,6 +501,14 @@ function Registration(props) {
             return false;
         }
 
+        if (data.service === "instagram" && !instagramSetupComplete) {
+            setInstagramSetupError(
+                instagramSetup?.message ||
+                    "Finish the Instagram setup steps before saving.",
+            );
+            return false;
+        }
+
         // if(!data.id){
         //     if((document.getElementById("terms_condition").checked)==false)
         //     {
@@ -333,9 +551,16 @@ function Registration(props) {
             newState["fb_page_name"] =
                 facebookPageOptions[value] || props.pages[value] || "";
         }
-        if (name == "fb_insta_app_id") {
-            newState["insta_user_name"] =
-                props.insta_accounts[data.fb_phone_number_id]?.[value];
+        if (name == "meta_page_id") {
+            newState["meta_page_name"] = instagramPageOptions[value] || "";
+        }
+        if (name == "instagram_account_id") {
+            const selectedInstagramAccount = instagramLinkedAccounts.find(
+                (account) => account.id === value,
+            );
+            newState["instagram_username"] =
+                selectedInstagramAccount?.username || "";
+            newState["instagram_name"] = selectedInstagramAccount?.name || "";
         }
         if (
             name == "business_manager_id" &&
@@ -1215,78 +1440,250 @@ function Registration(props) {
                             <div className="bg-[#140816]/70 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5 shadow px-4 py-5 sm:rounded-2xl sm:p-6">
                                 <div className="md:grid md:grid-cols-3 md:gap-6">
                                     <div className="md:col-span-1">
-                                        <h3 className="text-lg font-medium leading-6 text-gray-900">
-                                            {
-                                                props.translator[
-                                                    "Instagram Information"
-                                                ]
-                                            }
+                                        <h3 className="text-lg font-semibold leading-6 text-white">
+                                            Instagram connection
                                         </h3>
-                                        <p className="mt-1 text-sm text-gray-500">
-                                            {
-                                                props.translator[
-                                                    "Information will be used to create your instagram business account"
-                                                ]
-                                            }
+                                        <p className="mt-1 text-sm text-[#878787]">
+                                            Connect your Facebook account,
+                                            choose a Facebook Page, then confirm
+                                            the linked Instagram account.
                                         </p>
                                     </div>
-                                    <div className="mt-5 md:mt-0 md:col-span-2">
-                                        <div className="grid grid-cols-6 gap-6"></div>
-                                        <div className="form-group col-span-6 sm:col-span-4">
-                                            <label
-                                                htmlFor="fb_phone_number_id"
-                                                className="block text-sm font-medium text-gray-700"
-                                            >
-                                                Page Name
-                                            </label>
-
-                                            <div className="mt-1 flex rounded-md shadow-sm">
-                                                <Dropdown
-                                                    required={true}
-                                                    id="fb_phone_number_id"
-                                                    name="fb_phone_number_id"
-                                                    handleChange={handleChange}
-                                                    options={props.pages}
-                                                    value={data.fb_phone_number_id}
-                                                />
-                                            </div>
-                                            <InputError
-                                                message={errors.fb_phone_number_id}
-                                            />
-                                        </div>
-
-                                        {data.fb_phone_number_id &&
-                                            props.insta_accounts[data.fb_phone_number_id] && (
-                                                <div className="mt-5">
-                                                    <div className="grid grid-cols-6 gap-6"></div>
-                                                    <div className="form-group col-span-6 sm:col-span-4">
-                                                        <label
-                                                            htmlFor="fb_insta_app_id"
-                                                            className="block text-sm font-medium text-gray-700"
-                                                        >
-                                                            Instagram account
-                                                        </label>
-
-                                                        <div className="mt-1 flex rounded-md shadow-sm">
-                                                            <Dropdown
-                                                                required={true}
-                                                                id="fb_insta_app_id"
-                                                                name="fb_insta_app_id"
-                                                                handleChange={handleChange}
-                                                                options={
-                                                                    props.insta_accounts[
-                                                                        data.fb_phone_number_id
-                                                                    ]
-                                                                }
-                                                                value={data.fb_insta_app_id}
-                                                            />
-                                                        </div>
-                                                        <InputError
-                                                            message={errors.fb_insta_app_id}
-                                                        />
+                                    <div className="mt-5 space-y-5 md:mt-0 md:col-span-2">
+                                        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4">
+                                            <div className="flex flex-wrap items-start justify-between gap-4">
+                                                <div>
+                                                    <div className="text-sm font-semibold text-white">
+                                                        Step 1. Connect Meta account
+                                                    </div>
+                                                    <div className="mt-1 text-sm text-white/70">
+                                                        {instagramOAuthConnected
+                                                            ? "Facebook account connected"
+                                                            : "Connect your Facebook account to start Instagram setup."}
                                                     </div>
                                                 </div>
+                                                <span
+                                                    className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                                        instagramOAuthConnected
+                                                            ? "bg-emerald-500/15 text-emerald-200"
+                                                            : "bg-slate-500/15 text-slate-100"
+                                                    }`}
+                                                >
+                                                    {instagramOAuthConnected
+                                                        ? "Connected"
+                                                        : "Not connected"}
+                                                </span>
+                                            </div>
+                                            {!instagramOAuthConnected && (
+                                                <div className="mt-4">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            window.location.href =
+                                                                instagramConnectUrl;
+                                                        }}
+                                                        className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+                                                    >
+                                                        Connect Meta account
+                                                    </button>
+                                                </div>
                                             )}
+                                        </div>
+
+                                        {instagramOAuthConnected && (
+                                            <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 space-y-4">
+                                                <div className="flex flex-wrap items-start justify-between gap-4">
+                                                    <div>
+                                                        <div className="text-sm font-semibold text-white">
+                                                            Step 2. Select Facebook Page
+                                                        </div>
+                                                        <div className="mt-1 text-sm text-white/70">
+                                                            {instagramSelectedPageName
+                                                                ? `Selected page: ${instagramSelectedPageName}`
+                                                                : "Select a Facebook Page to continue"}
+                                                        </div>
+                                                    </div>
+                                                    <span
+                                                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                                            instagramSelectedPageId
+                                                                ? "bg-emerald-500/15 text-emerald-200"
+                                                                : "bg-amber-500/15 text-amber-200"
+                                                        }`}
+                                                    >
+                                                        {instagramSelectedPageId
+                                                            ? "Selected"
+                                                            : "Needs setup"}
+                                                    </span>
+                                                </div>
+
+                                                <div className="form-group col-span-6 sm:col-span-4">
+                                                    <label
+                                                        htmlFor="meta_page_id"
+                                                        className="block text-sm font-medium text-[#878787]"
+                                                    >
+                                                        Facebook Page
+                                                    </label>
+
+                                                    <div className="mt-1 flex rounded-md shadow-sm">
+                                                        <Dropdown
+                                                            required={true}
+                                                            id="meta_page_id"
+                                                            name="meta_page_id"
+                                                            handleChange={handleChange}
+                                                            options={instagramPageOptions}
+                                                            value={instagramSelectedPageId}
+                                                            className="bg-[#0F0B1A] text-white border-white/10"
+                                                            disabled={
+                                                                instagramSetupLoading ||
+                                                                instagramAvailablePages.length ===
+                                                                    0
+                                                            }
+                                                            emptyOption="Select a Facebook Page"
+                                                        />
+                                                    </div>
+                                                    <InputError
+                                                        message={errors.meta_page_id}
+                                                    />
+                                                </div>
+
+                                                <div className="flex flex-wrap gap-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            saveInstagramPageSelection(
+                                                                instagramSelectedPageId,
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            instagramSetupLoading ||
+                                                            !instagramSelectedPageId
+                                                        }
+                                                        className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                                    >
+                                                        {instagramSetupLoading
+                                                            ? "Saving..."
+                                                            : "Continue"}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {instagramOAuthConnected &&
+                                            instagramSelectedPageId && (
+                                                <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 space-y-4">
+                                                    <div className="flex flex-wrap items-start justify-between gap-4">
+                                                        <div>
+                                                            <div className="text-sm font-semibold text-white">
+                                                                Step 3. Select linked Instagram account
+                                                            </div>
+                                                            <div className="mt-1 text-sm text-white/70">
+                                                                {instagramSetupComplete
+                                                                    ? "Ready to manage Instagram DMs"
+                                                                    : instagramNeedsInstagramAccount
+                                                                      ? instagramSetup?.message ||
+                                                                        "No Instagram account linked to this Page"
+                                                                      : "Choose the linked Instagram account for this Facebook Page."}
+                                                            </div>
+                                                        </div>
+                                                        <span
+                                                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                                                instagramSetupComplete
+                                                                    ? "bg-emerald-500/15 text-emerald-200"
+                                                                    : "bg-amber-500/15 text-amber-200"
+                                                            }`}
+                                                        >
+                                                            {instagramSetupComplete
+                                                                ? "Connected"
+                                                                : "Needs setup"}
+                                                        </span>
+                                                    </div>
+
+                                                    {instagramLinkedAccounts.length >
+                                                        0 && (
+                                                        <div className="form-group col-span-6 sm:col-span-4">
+                                                            <label
+                                                                htmlFor="instagram_account_id"
+                                                                className="block text-sm font-medium text-[#878787]"
+                                                            >
+                                                                Linked Instagram account
+                                                            </label>
+
+                                                            <div className="mt-1 flex rounded-md shadow-sm">
+                                                                <Dropdown
+                                                                    required={true}
+                                                                    id="instagram_account_id"
+                                                                    name="instagram_account_id"
+                                                                    handleChange={handleChange}
+                                                                    options={
+                                                                        instagramAccountOptions
+                                                                    }
+                                                                    value={
+                                                                        instagramSelectedAccountId
+                                                                    }
+                                                                    className="bg-[#0F0B1A] text-white border-white/10"
+                                                                    emptyOption="Select an Instagram account"
+                                                                />
+                                                            </div>
+                                                            <InputError
+                                                                message={
+                                                                    errors.instagram_account_id
+                                                                }
+                                                            />
+                                                        </div>
+                                                    )}
+
+                                                    {instagramSetupComplete && (
+                                                        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+                                                            Instagram connected
+                                                            {instagramSelectedAccountName
+                                                                ? `: ${instagramSelectedAccountName}`
+                                                                : instagramSelectedUsername
+                                                                  ? `: @${instagramSelectedUsername.replace(
+                                                                        /^@/,
+                                                                        "",
+                                                                    )}`
+                                                                  : ""}
+                                                        </div>
+                                                    )}
+
+                                                    {!instagramSetupComplete &&
+                                                        instagramLinkedAccounts.length >
+                                                            0 && (
+                                                            <div className="flex flex-wrap gap-3">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        finalizeInstagramConnection(
+                                                                            instagramSelectedPageId,
+                                                                            instagramSelectedAccountId,
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        instagramFinalizing ||
+                                                                        !instagramSelectedAccountId
+                                                                    }
+                                                                    className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                                                >
+                                                                    {instagramFinalizing
+                                                                        ? "Finishing..."
+                                                                        : "Finish setup"}
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                </div>
+                                            )}
+
+                                        {instagramSetupLoading && (
+                                            <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white/70">
+                                                Loading Instagram connection details...
+                                            </div>
+                                        )}
+
+                                        {instagramSetupError && (
+                                            <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+                                                {instagramSetupError}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -1347,7 +1744,9 @@ function Registration(props) {
                             {props.translator["Cancel"]}
                         </Link>
 
-                        {!facebookRequiresCompletion && (
+                        {!facebookRequiresCompletion &&
+                            (data.service !== "instagram" ||
+                                instagramSetupComplete) && (
                             <button
                                 type="button"
                                 id="save"
@@ -1357,7 +1756,7 @@ function Registration(props) {
                             >
                                 {props.translator["Save"]}
                             </button>
-                        )}
+                            )}
                     </div>
                 </form>
             </div>

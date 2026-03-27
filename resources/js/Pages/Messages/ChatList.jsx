@@ -61,7 +61,7 @@ function getConversationKey(id) {
 }
 
 function getDefaultTabForCategory(category) {
-    return category === "email" ? "all" : "unread";
+    return "all";
 }
 
 function getModeForCategory(category, mode) {
@@ -310,6 +310,10 @@ function ChatList(props) {
     ]);
 
     useEffect(() => {
+        if (containerCategory === "instagram") {
+            return undefined;
+        }
+
         const refreshInterval =
             containerCategory === "whatsapp" ? 5000 : 15000;
         const interval = setInterval(() => getMessageList(), refreshInterval);
@@ -317,6 +321,32 @@ function ChatList(props) {
             clearInterval(interval);
         };
     }, [selectedContact, containerCategory]);
+
+    useEffect(() => {
+        if (
+            containerCategory !== "instagram" ||
+            !selectedContact ||
+            !selectedConversation
+        ) {
+            return undefined;
+        }
+
+        const interval = setInterval(() => {
+            Axios.get(
+                route("instagram_conversation_messages", {
+                    conversation: selectedContact,
+                }),
+            )
+                .then((response) => {
+                    setMessages(response.data);
+                })
+                .catch(() => {});
+        }, 20000);
+
+        return () => {
+            clearInterval(interval);
+        };
+    }, [containerCategory, selectedContact, selectedConversation?.id]);
 
     useEffect(() => {
         if (containerCategory !== "email") {
@@ -1125,7 +1155,9 @@ function ChatList(props) {
 
     var category = containerCategory ? containerCategory : "all";
     const isEmailWorkspace = containerCategory === "email";
-    const isFacebookWorkspace = containerCategory === "facebook";
+    const canStartNewConversation = !["facebook", "instagram"].includes(
+        containerCategory,
+    );
     const selectedChannel = channels[category];
     const hasAccountsForChannel = Object.keys(accountList || {}).length > 0;
     const selectedAccountInfo = getSelectedAccountMeta();
@@ -1134,14 +1166,11 @@ function ChatList(props) {
         !hasAccountsForChannel && category !== "all"
             ? getNoAccountMessage(category)
             : props.translator["No conversations found for this channel."];
-    const syncAction =
-        isEmailWorkspace || isFacebookWorkspace ? (
+    const syncAction = isEmailWorkspace ? (
             <button
                 type="button"
                 onClick={
-                    isEmailWorkspace
-                        ? syncEmailAccountNow
-                        : () => syncFacebookAccountNow()
+                    syncEmailAccountNow
                 }
                 disabled={!selectedAccount || syncNowLoading}
                 title={`Last synced: ${formatLastSync(
@@ -1262,14 +1291,16 @@ function ChatList(props) {
                                     placeholder="Search"
                                 />
                             </div>
-                            <button
-                                type="button"
-                                style={{ backgroundColor: "#BF00FF" }}
-                                className="inline-flex justify-center items-center whitespace-nowrap !py-2 !px-3 border border-transparent shadow-sm text-sm font-medium rounded-[4px] text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                                onClick={openNewMessage}
-                            >
-                                {props.translator["New Message"]}
-                            </button>
+                            {canStartNewConversation && (
+                                <button
+                                    type="button"
+                                    style={{ backgroundColor: "#BF00FF" }}
+                                    className="inline-flex justify-center items-center whitespace-nowrap !py-2 !px-3 border border-transparent shadow-sm text-sm font-medium rounded-[4px] text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                    onClick={openNewMessage}
+                                >
+                                    {props.translator["New Message"]}
+                                </button>
+                            )}
                         </div>
                         <div>
                             <div className="border-b border-white/10">
@@ -1824,8 +1855,7 @@ function ChatList(props) {
                                                     : "",
                                             )}
                                         >
-                                            {(isEmailWorkspace ||
-                                                isFacebookWorkspace) && (
+                                            {isEmailWorkspace && (
                                                 <div className="flex items-center gap-2">
                                                     {syncAction}
                                                 </div>

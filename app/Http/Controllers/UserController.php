@@ -228,7 +228,15 @@ class UserController extends Controller
                 'fb_phone_number_id',
                 'fb_meta_data',
                 'fb_user_id',
-                'connection_metadata'
+                'connection_metadata',
+                'meta_page_id',
+                'meta_page_name',
+                'instagram_account_id',
+                'instagram_username',
+                'instagram_name',
+                'connection_status',
+                'setup_state',
+                'connection_error'
             )
             ->where('user_id', $request->user()->id)
             ->get()
@@ -819,7 +827,7 @@ class UserController extends Controller
         $field_info = [
             'company_name' => ['label' => __('Name')],
             'service' => ['label' => __('Service')],
-            'connection_status_label' => ['label' => __('Connection status'), 'show' => ['facebook']],
+            'connection_status_label' => ['label' => __('Connection status'), 'show' => ['facebook', 'instagram']],
             'service_engine' => ['label' => 'Service Engine', 'user_show' => ['global_admin']],
 
             // WhatsApp-specific
@@ -830,7 +838,9 @@ class UserController extends Controller
 
             // Instagram / Facebook-specific
             'fb_page_name' => ['label' => 'Facebook Page', 'show' => ['facebook']],
-            'fb_phone_number_id' => ['label' => 'Instagram Page Name', 'fb_show' => ['facebook'], 'show' => ['instagram']],
+            'meta_page_name' => ['label' => 'Facebook Page', 'show' => ['instagram']],
+            'instagram_name' => ['label' => 'Instagram account', 'show' => ['instagram']],
+            'instagram_username' => ['label' => 'Instagram username', 'show' => ['instagram']],
 
             // Email-specific
             'email' => ['label' => __('Sender Email'), 'show' => ['email']],
@@ -960,27 +970,28 @@ class UserController extends Controller
         }
         $pages = [];
         $facebookSetup = null;
-
+        $instagramSetup = null;
         $instaAccounts = [];
         if ($account->service == 'instagram' || $account->service == 'facebook') {
-            $pagesList = $metaIntegrationService->availablePagesForAccount($account, $account->service === 'facebook');
-            $pageId = $account->fb_phone_number_id;
+            $pagesList = $metaIntegrationService->availablePagesForAccount($account, true);
             $pages = [];
             foreach ($pagesList as $id => $page) {
                 $pages[$id] = isset($page['name']) ? $page['name'] : $page;
-                if ($account->service == 'instagram') {
-                    $account->page_token = $page['token'];
-                    $getLinkedAccounts = (new WhatsAppUsers())->getLinkedAccounts($id, $account);
-                    $account->fb_token = '';
-                    if ($getLinkedAccounts['status']) {
-                        $instaAccounts[$id] = $getLinkedAccounts['data'];
-                    }
+                if ($account->service == 'instagram' && ! empty($page['instagram'])) {
+                    $instaAccounts[$id] = [
+                        (string) $page['instagram']['id'] => trim(sprintf(
+                            '%s (%s)',
+                            (string) ($page['instagram']['name'] ?? $page['instagram']['username'] ?? 'Instagram account'),
+                            (string) ($page['instagram']['username'] ?? '')
+                        ), ' ()'),
+                    ];
                 }
             }
-            $account->fb_phone_number_id = $pageId;
         }
         if ($account->service === 'facebook') {
             $facebookSetup = $metaIntegrationService->buildFacebookSetupPayload($account, true);
+        } elseif ($account->service === 'instagram') {
+            $instagramSetup = $metaIntegrationService->buildInstagramSetupPayload($account, true);
         }
         $whatsappAccountList = [];
         if ($company->service_engine == 'Facebook' && $account->service_engine  == 'facebook') {
@@ -999,6 +1010,7 @@ class UserController extends Controller
             'events' => $webhook,
             'pages' => $pages,
             'facebook_setup' => $facebookSetup,
+            'instagram_setup' => $instagramSetup,
             'company' => $company,
             'insta_accounts' => $instaAccounts,
             'whatsapp_account_id' => $whatsappAccountList,
@@ -1071,7 +1083,15 @@ class UserController extends Controller
                 'src_name',
                 'email',
                 'display_name',
-                'insta_user_name'
+                'insta_user_name',
+                'meta_page_id',
+                'meta_page_name',
+                'instagram_account_id',
+                'instagram_username',
+                'instagram_name',
+                'connection_status',
+                'setup_state',
+                'connection_error'
             )
             ->where('user_id', $request->user()->id)
             ->get()
@@ -1111,6 +1131,20 @@ class UserController extends Controller
             $accountData['page_label'] = $setup['page_name'] ?: 'Not selected';
             $accountData['profile_name'] = $setup['account_name'] ?: $account->company_name;
             $accountData['fb_page_name'] = $setup['page_name'];
+        } elseif ($account->service === 'instagram' && $account->service_engine === 'facebook') {
+            $setup = $metaIntegrationService->buildInstagramSetupPayload($account);
+            $accountData['connection_setup'] = $setup;
+            $accountData['connection_status'] = $setup['status'];
+            $accountData['connection_status_label'] = $setup['status_label'];
+            $accountData['requires_action'] = ! $setup['setup_complete'];
+            $accountData['page_label'] = data_get($setup, 'selected_page.name') ?: 'Not selected';
+            $accountData['profile_name'] = data_get($setup, 'selected_instagram_account.name')
+                ?: data_get($setup, 'selected_instagram_account.username')
+                ?: $setup['account_name']
+                ?: $account->company_name;
+            $accountData['meta_page_name'] = data_get($setup, 'selected_page.name');
+            $accountData['instagram_username'] = data_get($setup, 'selected_instagram_account.username');
+            $accountData['instagram_name'] = data_get($setup, 'selected_instagram_account.name');
         }
 
         return $accountData;
@@ -1254,7 +1288,7 @@ class UserController extends Controller
     /**
      * Store account registration
      */
-    public function storeAccountRegistration(Request $request)
+    public function storeAccountRegistration(Request $request, MetaIntegrationService $metaIntegrationService)
     {
         $id = '';
         $displayName = '';
@@ -1344,7 +1378,7 @@ class UserController extends Controller
         if ($request->service == 'instagram' || $request->service == 'facebook') {
             $request->status = '';
             $request->service_engine = 'facebook';
-            if ($request->fb_phone_number_id) {
+            if ($request->service === 'facebook' && $request->fb_phone_number_id) {
                 $account->status = 'Active';
             }
         }
@@ -1383,12 +1417,41 @@ class UserController extends Controller
             $account->display_name = $request->display_name;
         }
 
-        $accountFields = ['company_name', 'category', 'description', 'email', 'service', 'fb_whatsapp_account_id', 'phone_number', 'src_name', 'business_manager_id', 'fb_insta_app_id', 'fb_page_name', 'insta_user_name', 'fb_business_name', 'fb_waba_name', 'api_partner_name', 'api_partner'];
+        $accountFields = [
+            'company_name',
+            'category',
+            'description',
+            'email',
+            'service',
+            'fb_whatsapp_account_id',
+            'phone_number',
+            'src_name',
+            'business_manager_id',
+            'fb_insta_app_id',
+            'fb_page_name',
+            'insta_user_name',
+            'fb_business_name',
+            'fb_waba_name',
+            'api_partner_name',
+            'api_partner',
+            'meta_page_id',
+            'meta_page_name',
+            'instagram_account_id',
+            'instagram_username',
+            'instagram_name',
+        ];
 
         foreach ($accountFields as $field) {
             if ($request->has($field)) {
                 $account->$field = $request->$field;
             }
+        }
+
+        if ($request->service === 'instagram') {
+            $metaIntegrationService->buildInstagramSetupPayload($account, true);
+        } elseif ($request->service === 'facebook') {
+            $facebookSetup = $metaIntegrationService->buildFacebookSetupPayload($account, true);
+            $account->status = $facebookSetup['status'] === 'connected' ? 'Active' : 'Draft';
         }
 
         $account->save();
@@ -1454,7 +1517,15 @@ class UserController extends Controller
                 'fb_phone_number_id',
                 'fb_meta_data',
                 'fb_user_id',
-                'connection_metadata'
+                'connection_metadata',
+                'meta_page_id',
+                'meta_page_name',
+                'instagram_account_id',
+                'instagram_username',
+                'instagram_name',
+                'connection_status',
+                'setup_state',
+                'connection_error'
             )
             ->where('user_id', $user_id)
             ->get()

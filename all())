@@ -17,6 +17,6 @@
       Psy\Exception\ParseErrorException::fromParseError(Object(PhpParser\Error))
 
   2   vendor\psy\psysh\src\CodeCleaner.php:269
-      Psy\CodeCleaner::parse("<?php dump(App\Models\ChatListContact::where('user_id',1)-,'instagram')-,'account_id','contact_id','last_msg_id','unread','updated_at'])-;
+      Psy\CodeCleaner::parse("<?php dump(App\Models\Account::where('user_id',1)-,'instagram')-,'status','connection_status','instagram_username','meta_page_id'])-;
 ")
 

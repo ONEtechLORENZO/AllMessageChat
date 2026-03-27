@@ -49,6 +49,7 @@ const SERVICE_DEFINITIONS = {
 function hasConnectionError(account) {
     return (
         account?.connection_status === "connection_error" ||
+        account?.connection_status === "error" ||
         account?.status === "Inactive"
     );
 }
@@ -85,6 +86,28 @@ function normalizeStatus(account) {
         if (
             account.connection_status === "connection_error" ||
             account.status === "Inactive"
+        ) {
+            return "not_connected";
+        }
+
+        return account.id ? "needs_setup" : "not_connected";
+    }
+
+    if (account.service === "instagram") {
+        if (account.connection_status === "connected") {
+            return "connected";
+        }
+
+        if (
+            account.connection_status === "needs_page" ||
+            account.connection_status === "needs_instagram"
+        ) {
+            return "needs_setup";
+        }
+
+        if (
+            account.connection_status === "incomplete" ||
+            account.connection_status === "error"
         ) {
             return "not_connected";
         }
@@ -140,25 +163,39 @@ function serviceDetail(service, status, account, profileCount) {
 
     if (service === "instagram") {
         if (status === "connected") {
-            if (account.insta_user_name) {
-                return account.insta_user_name.startsWith("@")
-                    ? account.insta_user_name
-                    : `@${account.insta_user_name}`;
+            const instagramHandle =
+                account.instagram_username || account.insta_user_name;
+
+            if (instagramHandle) {
+                return instagramHandle.startsWith("@")
+                    ? instagramHandle
+                    : `@${instagramHandle}`;
             }
 
             if (profileCount > 1) {
                 return `${profileCount} Instagram accounts connected`;
             }
 
-            return account.company_name || "Instagram connected";
+            return (
+                account.instagram_name ||
+                account.company_name ||
+                "Instagram connected"
+            );
         }
 
         if (status === "needs_setup") {
-            return "Finish Instagram setup";
-        }
+            if (account.connection_status === "needs_page") {
+                return "Select a Facebook Page to continue";
+            }
 
-        if (status === "reconnect_required") {
-            return "Connect Instagram again";
+            if (account.connection_status === "needs_instagram") {
+                return (
+                    account.connection_setup?.message ||
+                    "Linked Instagram account not selected"
+                );
+            }
+
+            return "Finish Instagram setup";
         }
 
         if (hasConnectionError(account)) {

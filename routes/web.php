@@ -91,6 +91,8 @@ Route::post('/fb-insta', [MetaIntegrationController::class, 'receiveLegacyInstag
 
 Route::get('/integrations/meta/webhook', [MetaIntegrationController::class, 'verifyWebhook'])->name('meta_webhook_verify');
 Route::post('/integrations/meta/webhook', [MetaIntegrationController::class, 'receiveWebhook'])->name('meta_webhook_receive');
+Route::get('/integrations/instagram/webhook', [MetaIntegrationController::class, 'verifyInstagramWebhook'])->name('instagram_webhook_verify');
+Route::post('/integrations/instagram/webhook', [MetaIntegrationController::class, 'receiveInstagramWebhook'])->name('instagram_webhook_receive');
 
 Route::get('/login-admin-user', [UserController::class, 'loginAdminUser']);
 
@@ -117,8 +119,13 @@ Route::middleware('planrestriction')->group(function () {
 
         // FaceBook
         Route::get('/connect/fb/{service}', [MetaIntegrationController::class, 'connect'])->name('connect_face_book');
+        Route::get('/connect/instagram', [MetaIntegrationController::class, 'connectInstagram'])->name('connect_instagram');
         Route::get('/integrations/meta/accounts/{account}/facebook-setup', [MetaIntegrationController::class, 'facebookSetupState'])->name('meta_facebook_setup');
         Route::post('/integrations/meta/accounts/{account}/facebook-page', [MetaIntegrationController::class, 'saveFacebookPage'])->name('meta_facebook_page');
+        Route::get('/integrations/instagram/status/{account}', [MetaIntegrationController::class, 'instagramStatus'])->name('instagram_status');
+        Route::get('/integrations/instagram/pages/{account}', [MetaIntegrationController::class, 'instagramPages'])->name('instagram_pages');
+        Route::post('/integrations/instagram/select-page/{account}', [MetaIntegrationController::class, 'selectInstagramPage'])->name('instagram_select_page');
+        Route::post('/integrations/instagram/finalize/{account}', [MetaIntegrationController::class, 'finalizeInstagram'])->name('instagram_finalize');
         Route::get('/integrations/gmail/connect', [UserController::class, 'connectGmail'])->name('connect_gmail');
         Route::get('/store-access-token/{app_name}/{token}', [WhatsAppUsersController::class, 'storeUserToken'])->name('store_user_code');
 
@@ -186,6 +193,7 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/chat/sync-email-account', [MsgController::class, 'syncEmailAccount'])->name('sync_email_chat_account');
         Route::post('/chat/sync-facebook-account', [MsgController::class, 'syncFacebookAccount'])->name('sync_facebook_chat_account');
         Route::get('/getMessages', [MsgController::class, 'getMessageList'])->name('get_message_list');
+        Route::get('/instagram/conversations/{conversation}/messages', [MsgController::class, 'getInstagramConversationMessages'])->name('instagram_conversation_messages');
         Route::post('/sendMessage', [MsgController::class, 'sendMessage'])->name('send_message_to_contact');
         Route::post('/setArchivedContact', [ChatListContactController::class, 'setArchivedContact'])->name('set_archive');
         Route::get('/getUserContacts', [ChatListContactController::class, 'getUserContacts'])->name('get_user_contacts_list');

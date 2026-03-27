@@ -17,6 +17,7 @@ class Account extends Model
         'sync_last_at' => 'datetime',
         'gmail_watch_expires_at' => 'datetime',
         'connection_metadata' => 'array',
+        'instagram_meta_data' => 'array',
         'api_partner' => 'boolean',
     ];
 
@@ -24,6 +25,7 @@ class Account extends Model
         'service_token',
         'fb_token',
         'page_token',
+        'meta_page_token',
         'oauth_access_token_encrypted',
         'oauth_refresh_token_encrypted',
     ];

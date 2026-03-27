@@ -37,7 +37,9 @@ use Illuminate\Support\Facades\Schema;
 use Brick\PhoneNumber\PhoneNumber;
 use Brick\PhoneNumber\PhoneNumberParseException;
 use App\Models\InteractiveMessage;
+use App\Jobs\SyncInstagramMessagesJob;
 use App\Services\GmailService;
+use App\Services\MetaIntegrationService;
 
 class MsgController extends Controller
 {
@@ -425,6 +427,7 @@ class MsgController extends Controller
         $contactList = $messages = $accoutList = [];
         $user = $request->user();
         $this->syncGmailChatAccounts($user->id, $category ?: 'whatsapp');
+        $this->syncSocialChatAccounts($user->id, $category ?: 'whatsapp');
         $recordData = $this->getChatContactList($request);
         [$accoutList, $accountMeta] = $this->buildChatAccountCollections($user->id, $category);
 
@@ -501,7 +504,11 @@ class MsgController extends Controller
         $filterId = $request->has('filter_id') && $request->get('filter_id') ? $request->get('filter_id') : '';
         $selectedCategory = $request->has('category') && $request->get('category') ? $request->get('category') : 'whatsapp';
         $page = max((int) $request->get('page', 1), 1);
-        $mode = $request->get('mode', 'unread');
+        $mode = (string) $request->get('mode', 'all');
+
+        if ($selectedCategory === 'whatsapp' || $selectedCategory === 'all') {
+            $this->ensureConversationIndexForService($user->id, 'whatsapp');
+        }
 
         if (
             $selectedCategory !== 'all'
@@ -594,6 +601,15 @@ class MsgController extends Controller
         $allCount     = (clone $query)->count();
         $unreadCount  = (clone $query)->where($hasUnreadScope)->count();
 
+        if (
+            $mode === 'unread'
+            && $unreadCount === 0
+            && $allCount > 0
+            && in_array($selectedCategory, ['whatsapp', 'facebook', 'instagram'], true)
+        ) {
+            $mode = 'all';
+        }
+
         $recordCounts = ['all' => $allCount, 'unread' => $unreadCount, 'archived' => 0];
 
         if ($mode == 'unread') {
@@ -652,6 +668,94 @@ class MsgController extends Controller
             die;
         }
         return $data;
+    }
+
+    protected function ensureConversationIndexForService(int $userId, string $service): void
+    {
+        if ($service !== 'whatsapp') {
+            return;
+        }
+
+        $accountIds = Account::query()
+            ->where('user_id', $userId)
+            ->where('service', $service)
+            ->pluck('id');
+
+        if ($accountIds->isEmpty()) {
+            return;
+        }
+
+        $hasConversationRows = ChatListContact::query()
+            ->where('user_id', $userId)
+            ->where('channel', $service)
+            ->whereIn('account_id', $accountIds)
+            ->exists();
+
+        if ($hasConversationRows) {
+            return;
+        }
+
+        $latestMessages = Msg::query()
+            ->selectRaw('account_id, msgable_id, MAX(id) as last_msg_id')
+            ->where('service', $service)
+            ->whereIn('account_id', $accountIds)
+            ->where('msgable_type', Contact::class)
+            ->whereNotNull('msgable_id')
+            ->groupBy('account_id', 'msgable_id');
+
+        $unreadMessages = Msg::query()
+            ->selectRaw('account_id, msgable_id, COUNT(*) as unread_count')
+            ->where('service', $service)
+            ->whereIn('account_id', $accountIds)
+            ->where('msgable_type', Contact::class)
+            ->whereNotNull('msgable_id')
+            ->where('msg_mode', 'incoming')
+            ->where(function ($query) {
+                $query->where('is_read', false)->orWhereNull('is_read');
+            })
+            ->groupBy('account_id', 'msgable_id');
+
+        DB::query()
+            ->fromSub($latestMessages, 'latest_messages')
+            ->join('accounts', 'accounts.id', '=', 'latest_messages.account_id')
+            ->join('msgs as last_msg', 'last_msg.id', '=', 'latest_messages.last_msg_id')
+            ->leftJoinSub($unreadMessages, 'unread_messages', function ($join) {
+                $join->on('unread_messages.account_id', '=', 'latest_messages.account_id')
+                    ->on('unread_messages.msgable_id', '=', 'latest_messages.msgable_id');
+            })
+            ->leftJoin('chat_list_contacts as existing_contacts', function ($join) use ($service, $userId) {
+                $join->on('existing_contacts.account_id', '=', 'latest_messages.account_id')
+                    ->on('existing_contacts.contact_id', '=', 'latest_messages.msgable_id')
+                    ->where('existing_contacts.channel', '=', $service)
+                    ->where('existing_contacts.user_id', '=', $userId);
+            })
+            ->whereNull('existing_contacts.id')
+            ->where('accounts.user_id', $userId)
+            ->where('accounts.service', $service)
+            ->orderBy('latest_messages.account_id')
+            ->orderBy('latest_messages.msgable_id')
+            ->chunk(1000, function ($rows) use ($service) {
+                $payload = [];
+
+                foreach ($rows as $row) {
+                    $payload[] = [
+                        'contact_id' => $row->msgable_id,
+                        'account_id' => $row->account_id,
+                        'channel' => $service,
+                        'last_msg_id' => $row->last_msg_id,
+                        'user_id' => $row->user_id,
+                        'unread' => (int) ($row->unread_count ?? 0) > 0,
+                        'unread_count' => (int) ($row->unread_count ?? 0),
+                        'last_message_at' => $row->last_message_at,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+
+                if ($payload !== []) {
+                    ChatListContact::insert($payload);
+                }
+            }, 'latest_messages.last_msg_id');
     }
 
     protected function chatFilterUsesOnlyRelationFields($searchData): bool
@@ -848,6 +952,44 @@ class MsgController extends Controller
             } catch (\Throwable $e) {
                 Log::warning('Unable to refresh Facebook conversations for chat list.', [
                     'account_id' => $account->id,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    protected function syncSocialChatAccounts(int $userId, string $category): void
+    {
+        if (! in_array($category, ['facebook', 'all'], true)) {
+            return;
+        }
+
+        $services = $category === 'all' ? ['facebook'] : [$category];
+
+        $accounts = Account::query()
+            ->where('user_id', $userId)
+            ->where('status', 'Active')
+            ->whereIn('service', $services)
+            ->get();
+
+        if ($accounts->isEmpty()) {
+            return;
+        }
+
+        $metaIntegrationService = app(MetaIntegrationService::class);
+        $staleCutoff = now()->subMinutes(2);
+
+        foreach ($accounts as $account) {
+            if ($account->sync_last_at && $account->sync_last_at->gt($staleCutoff)) {
+                continue;
+            }
+
+            try {
+                $metaIntegrationService->syncHistoricalChatsIfNeeded($account, true);
+            } catch (\Throwable $e) {
+                Log::warning('Unable to refresh social conversations for chat list.', [
+                    'account_id' => $account->id,
+                    'service' => $account->service,
                     'message' => $e->getMessage(),
                 ]);
             }
@@ -1210,19 +1352,107 @@ class MsgController extends Controller
     public function getMessageList(Request $request)
     {
         $user = $request->user();
-        $messages = [];
         $conversationId = (int) $request->contact_id;
-        $conversation = ChatListContact::where('user_id', $user->id)
-            ->where('id', $conversationId)
-            ->first();
+        $conversation = $this->findConversationForUser($user->id, $conversationId);
 
         if (! $conversation) {
-            return $messages;
+            return [];
         }
 
         // Update Channel
         $this->updateChatChannel($user->id, $conversationId, $request->category);
         $category = ($request->category == 'all') ? ['instagram', 'whatsapp', 'facebook', 'email'] : [$request->category];
+        $messages = $this->buildConversationMessages($conversation, $category);
+
+        if ($conversation->channel === 'email') {
+            $conversation->unread = false;
+            $conversation->unread_count = 0;
+            $conversation->save();
+
+            Msg::where('chat_list_contact_id', $conversation->id)
+                ->where('service', 'email')
+                ->where('msg_mode', 'incoming')
+                ->update(['is_read' => true]);
+        }
+
+        return $messages;
+    }
+
+    public function getInstagramConversationMessages(
+        Request $request,
+        ChatListContact $conversation,
+        MetaIntegrationService $metaIntegrationService
+    ) {
+        $user = $request->user();
+
+        if ((int) $conversation->user_id !== (int) $user->id) {
+            abort(404);
+        }
+
+        if ($conversation->channel !== 'instagram') {
+            return response()->json([
+                'message' => 'Conversation is not an Instagram conversation.',
+            ], 422);
+        }
+
+        $account = Account::query()
+            ->where('id', $conversation->account_id)
+            ->where('user_id', $user->id)
+            ->where('service', 'instagram')
+            ->first();
+
+        if (! $account) {
+            return response()->json([
+                'message' => 'Instagram account not found.',
+            ], 404);
+        }
+
+        if (
+            (string) ($account->connection_status ?? '') !== 'connected'
+            || empty($account->instagram_account_id)
+        ) {
+            return response()->json([
+                'message' => 'Instagram account setup is incomplete.',
+            ], 422);
+        }
+
+        $contact = Contact::find($conversation->contact_id);
+        if (! $contact) {
+            return response()->json([
+                'message' => 'Instagram contact not found.',
+            ], 404);
+        }
+
+        try {
+            $metaIntegrationService->syncInstagramConversationMessages($account, $contact);
+        } catch (\Throwable $e) {
+            Log::warning('Unable to sync Instagram conversation messages.', [
+                'conversation_id' => $conversation->id,
+                'account_id' => $account->id,
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Unable to sync Instagram conversation right now.',
+            ], 422);
+        }
+
+        return response()->json(
+            $this->buildConversationMessages($conversation, ['instagram'])
+        );
+    }
+
+    protected function findConversationForUser(int $userId, int $conversationId): ?ChatListContact
+    {
+        return ChatListContact::where('user_id', $userId)
+            ->where('id', $conversationId)
+            ->first();
+    }
+
+    protected function buildConversationMessages(ChatListContact $conversation, array $category): array
+    {
+        $messages = [];
+
         if ($conversation->channel === 'email') {
             $messageCollection = Msg::where('chat_list_contact_id', $conversation->id)
                 ->where('service', 'email')
@@ -1277,18 +1507,7 @@ class MsgController extends Controller
             ];
         }
 
-        if ($conversation->channel === 'email') {
-            $conversation->unread = false;
-            $conversation->unread_count = 0;
-            $conversation->save();
-
-            Msg::where('chat_list_contact_id', $conversation->id)
-                ->where('service', 'email')
-                ->where('msg_mode', 'incoming')
-                ->update(['is_read' => true]);
-        }
-
-        return ($messages);
+        return $messages;
     }
 
     /**
@@ -1619,10 +1838,25 @@ class MsgController extends Controller
 
             // Get Page token
             $helper = new WhatsAppUsers();
+            $pageId = $account->fb_phone_number_id;
             $pageToken = $helper->getFbPageAccessToken($account);
 
+            if ($request->channel == 'instagram') {
+                $instagramStatus = (string) ($account->connection_status ?? '');
+                $instagramAccountId = (string) ($account->instagram_account_id ?? '');
+                $pageId = $account->meta_page_id ?: $account->fb_phone_number_id;
+                $pageToken = $account->meta_page_token ?: $pageToken;
+
+                if ($instagramStatus !== 'connected' || $instagramAccountId === '' || $pageId === '' || $pageToken === '') {
+                    return response()->json([
+                        'status' => 'Failed',
+                        'error' => 'Instagram setup is incomplete. Select a Facebook Page and linked Instagram Business account first.',
+                    ], 422);
+                }
+            }
+
             $msg = new Msg();
-            $response = $msg->sendInstaMessage($request->content, $request->destination, $account->fb_phone_number_id, $pageToken, $document);
+            $response = $msg->sendInstaMessage($request->content, $request->destination, $pageId, $pageToken, $document);
 
             $status = 'Send';
             if (isset($response['error'])) {
@@ -1755,7 +1989,39 @@ class MsgController extends Controller
         if (isset($result['messageId']))
             $this->handleMessageResult($request, $account->id, $result);
 
+        if (
+            isset($result['messageId'])
+            && in_array($request->channel, ['facebook', 'instagram'], true)
+        ) {
+            $this->queueSocialHistorySync($account->id, $request->channel);
+        }
+
         return response()->json($result);
+    }
+
+    protected function queueSocialHistorySync(int $accountId, string $channel): void
+    {
+        app()->terminating(function () use ($accountId, $channel) {
+            try {
+                $account = Account::find($accountId);
+
+                if (! $account || $account->service !== $channel) {
+                    return;
+                }
+
+                if ($channel === 'instagram') {
+                    SyncInstagramMessagesJob::dispatchSync($accountId, true);
+                } else {
+                    app(MetaIntegrationService::class)->syncHistoricalChatsIfNeeded($account, true);
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Unable to refresh social history after outbound send.', [
+                    'account_id' => $accountId,
+                    'service' => $channel,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        });
     }
 
     /**
