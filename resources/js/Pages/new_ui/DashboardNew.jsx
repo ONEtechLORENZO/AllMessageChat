@@ -22,6 +22,16 @@ import ReactEcharts from "echarts-for-react";
 
 export default function DashboardNew(props) {
     const totalMessages = Number(props.message_details?.total_messages || 0);
+    const businessInitiatedChats = Number(
+        props.message_details?.BIC?.count || 0,
+    );
+    const userInitiatedChats = Number(props.message_details?.UIC?.count || 0);
+    const businessInitiatedPercent = totalMessages
+        ? Math.min(100, Math.round((businessInitiatedChats / totalMessages) * 100))
+        : 0;
+    const userInitiatedPercent = totalMessages
+        ? Math.min(100, Math.round((userInitiatedChats / totalMessages) * 100))
+        : 0;
     const dailyAverageValue = Number((totalMessages / 30).toFixed(3));
     const trendPointOne = totalMessages;
     const trendPointThree = dailyAverageValue;
@@ -527,6 +537,27 @@ export default function DashboardNew(props) {
                             </div>
                         </div>
 
+                        <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <InitiatedChatsCard
+                                title={
+                                    props.translator["Business initiated chats"] ??
+                                    "Business initiated chats"
+                                }
+                                totalChats={businessInitiatedChats}
+                                percentage={businessInitiatedPercent}
+                                variant="bars"
+                            />
+                            <InitiatedChatsCard
+                                title={
+                                    props.translator["User initiated chats"] ??
+                                    "User initiated chats"
+                                }
+                                totalChats={userInitiatedChats}
+                                percentage={userInitiatedPercent}
+                                variant="score"
+                            />
+                        </div>
+
                         {/* ✅ Message log: full width under everything */}
                         {false && (
                             <GlassCard className="mt-8">
@@ -966,5 +997,172 @@ export function GlassCard({ className = "", children }) {
                 {children}
             </div>
         </div>
+    );
+}
+
+function InitiatedChatsCard({
+    title,
+    totalChats,
+    percentage,
+    variant = "circle",
+}) {
+    const miniBarHeights = [72, 48, 30, 64, 100, 84, 96, 60].map(
+        (value, index) => {
+            const adjustment = (Number(totalChats || 0) + index * 17) % 18;
+            return Math.max(24, Math.min(100, value - 9 + adjustment));
+        },
+    );
+
+    return (
+        <GlassCard className="min-h-[198px]">
+            <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                    <svg
+                        width={26}
+                        height={26}
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z"
+                            fill="white"
+                        />
+                        <path
+                            d="M12 14C7.58172 14 4 17.134 4 21H20C20 17.134 16.4183 14 12 14Z"
+                            fill="white"
+                        />
+                    </svg>
+                </div>
+                <div className="text-white text-xl font-semibold leading-tight">
+                    {title}
+                </div>
+            </div>
+
+            {variant !== "score" && (
+                <div className="mt-8 flex items-end justify-between gap-4">
+                    <div>
+                        <div className="text-white/55 text-xs uppercase tracking-[0.16em]">
+                            Total chats
+                        </div>
+                        <div className="mt-2 text-white text-3xl font-semibold leading-none">
+                            {totalChats}
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <div className="text-white/55 text-xs">
+                            Count for the month
+                        </div>
+                        <div className="mt-2 text-white text-xl font-semibold">
+                            {totalChats}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {variant === "bars" ? (
+                <div className="mt-6">
+                    <div className="mb-4 text-[11px] font-medium uppercase tracking-[0.24em] text-white/45">
+                        Monthly stats
+                    </div>
+                    <div className="px-2 py-2">
+                        <div className="flex h-[82px] items-end justify-between gap-3">
+                            {miniBarHeights.map((height, index) => (
+                                <div
+                                    key={index}
+                                    className="relative flex h-full items-end justify-center"
+                                >
+                                    <div
+                                        className="absolute bottom-0 w-4 rounded-full blur-[10px]"
+                                        style={{
+                                            height: `${Math.max(14, height * 0.4)}%`,
+                                            background:
+                                                "linear-gradient(180deg, rgba(255,79,163,0.16) 0%, rgba(155,77,255,0.28) 100%)",
+                                        }}
+                                    />
+                                    <div
+                                        className="relative z-10 w-[5px] rounded-full"
+                                        style={{
+                                            height: `${height}%`,
+                                            background:
+                                                "linear-gradient(180deg, #ff8ccd 0%, #ff4fa3 38%, #c85cff 100%)",
+                                            boxShadow:
+                                                "0 0 14px rgba(216,12,255,0.3), 0 0 24px rgba(255,79,163,0.16)",
+                                        }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-3 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-white/18">
+                            <span>Week 1</span>
+                            <span>Week 2</span>
+                            <span>Week 3</span>
+                            <span>Week 4</span>
+                        </div>
+                    </div>
+                </div>
+            ) : variant === "score" ? (
+                <div className="mt-6 px-2 py-2">
+                    <div className="flex items-center justify-between gap-5">
+                        <div className="flex min-w-0 flex-1 flex-col gap-3 max-w-[320px]">
+                            <div className="rounded-2xl bg-black/14 px-4 py-3">
+                                <div className="text-[11px] font-medium text-white/55">
+                                    Total chats
+                                </div>
+                                <div className="mt-1 text-2xl font-semibold text-white leading-none">
+                                    {totalChats}
+                                </div>
+                            </div>
+                            <div className="rounded-2xl bg-black/14 px-4 py-3">
+                                <div className="text-[11px] font-medium text-white/55">
+                                    Count for the month
+                                </div>
+                                <div className="mt-1 text-2xl font-semibold text-white leading-none">
+                                    {totalChats}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex shrink-0 justify-center">
+                            <div
+                                className="relative h-[128px] w-[128px] rounded-full"
+                                style={{
+                                    background: `conic-gradient(#d80cff 0% ${percentage}%, #8f3dff ${Math.max(0, percentage - 12)}%, rgba(255,255,255,0.08) ${percentage}% 100%)`,
+                                    boxShadow:
+                                        "0 0 24px rgba(164, 76, 255, 0.18), inset 0 0 18px rgba(255,255,255,0.03)",
+                                }}
+                            >
+                                <div className="absolute inset-[8px] rounded-full border border-white/5 bg-[#180026] flex flex-col items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                                    <span className="text-[11px] uppercase tracking-[0.12em] text-white/40">
+                                        Progress
+                                    </span>
+                                    <span className="mt-1 text-4xl font-semibold leading-none text-white drop-shadow-[0_0_12px_rgba(216,12,255,0.2)]">
+                                        {percentage}
+                                    </span>
+                                    <span className="mt-1 text-[11px] uppercase tracking-[0.12em] text-white/40">
+                                        Monthly %
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="mt-8 flex justify-center">
+                    <div
+                        className="relative h-[82px] w-[82px] rounded-full shrink-0"
+                        style={{
+                            background: `conic-gradient(${percentage > 0 ? "#d80cff" : "rgba(255,255,255,0.12)"} 0% ${percentage}%, rgba(255,255,255,0.12) ${percentage}% 100%)`,
+                        }}
+                    >
+                        <div className="absolute inset-[8px] rounded-full bg-[#12001d] ring-1 ring-white/10 flex flex-col items-center justify-center">
+                            <span className="text-lg font-semibold text-white leading-none">
+                                {percentage}%
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+        </GlassCard>
     );
 }
