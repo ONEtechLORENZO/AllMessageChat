@@ -5,6 +5,7 @@
 /storage/import*
 /storage/*.key
 /storage/logs
+/database/database.sqlite
 /vendor
 .env
 .env.backup

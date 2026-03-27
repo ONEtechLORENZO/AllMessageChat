@@ -63,7 +63,7 @@ Route::middleware('guest')->group(function () {
     session()->forget('global_user');
     session()->flush();
 
-    Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('login');
+    Route::get('/', [AuthenticatedSessionController::class, 'create']);
 });
 
 Route::get('/new-ui', function () {

@@ -1,0 +1,26 @@
+name: Deploy to Lightsail
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_KEY }}
+          port: ${{ secrets.LIGHTSAIL_PORT }}
+          script: |
+            export APP_DIR="${{ secrets.APP_DIR }}"
+            export BRANCH="main"
+            bash "$APP_DIR/scripts/deploy.sh"
