@@ -1,9 +1,8 @@
-import React, { useEffect, useRef } from "react";
-import ReactAudioPlayer from "react-audio-player";
+import React from 'react';
+import ReactAudioPlayer from 'react-audio-player';
 import {
     WhatsAppIcon,
     InstaIcon,
-    EmailIcon,
     ErrorIcon,
     QueueIcon,
     SentIcon,
@@ -11,213 +10,55 @@ import {
     ReadIcon,
 } from "../icons";
 
-import StoryContent from "./StoryContent";
+import StoryContent from './StoryContent';
 import { BsFacebook } from "react-icons/bs";
 import { PopoverHeader, PopoverBody, UncontrolledPopover } from "reactstrap";
 
-function classNames(...classes) {
-    return classes.filter(Boolean).join(" ");
-}
-
 export default function MessageList(props) {
-    const messageContainerRef = useRef(null);
-    const shouldStickToBottomRef = useRef(true);
-    const pendingInitialScrollRef = useRef(true);
-    const messageEntries = Object.entries(props.messages ?? {});
-    const displayEntries = messageEntries;
-    const lastMessageKey = messageEntries.length
-        ? messageEntries[messageEntries.length - 1][0]
-        : null;
-
-    const scrollToBottom = () => {
-        if (!messageContainerRef.current) {
-            return;
-        }
-
-        messageContainerRef.current.scrollTop =
-            messageContainerRef.current.scrollHeight;
-    };
-
-    useEffect(() => {
-        pendingInitialScrollRef.current = true;
-        shouldStickToBottomRef.current = true;
-    }, [props.selectedContact]);
-
-    useEffect(() => {
-        if (!displayEntries.length) {
-            return undefined;
-        }
-
-        if (
-            !pendingInitialScrollRef.current &&
-            !shouldStickToBottomRef.current
-        ) {
-            return undefined;
-        }
-
-        const frame = window.requestAnimationFrame(() => {
-            scrollToBottom();
-            pendingInitialScrollRef.current = false;
-        });
-
-        return () => window.cancelAnimationFrame(frame);
-    }, [lastMessageKey, displayEntries.length, props.selectedContact]);
-
-    function handleScroll() {
-        if (!messageContainerRef.current) {
-            return;
-        }
-
-        const { scrollTop, clientHeight, scrollHeight } =
-            messageContainerRef.current;
-
-        shouldStickToBottomRef.current =
-            scrollTop + clientHeight >= scrollHeight - 24;
-    }
-
-    function renderChannelIcon(category) {
-        if (props.containerCategory !== "all") {
-            return null;
-        }
-
-        switch (category) {
-            case "whatsapp":
-                return <WhatsAppIcon width="20" height="20" />;
-            case "instagram":
-                return <InstaIcon width="20" height="20" />;
-            case "facebook":
-                return (
-                    <BsFacebook className="w-5 h-4 fill-current text-indigo-500" />
-                );
-            case "email":
-                return <EmailIcon width="20" height="20" />;
-            default:
-                return null;
-        }
-    }
-
-    function renderOutgoingStatus(message, key) {
-        if (message.category === "email") {
-            return null;
-        }
-
-        return (
-            <span className="!pl-2" id={message.type + key}>
-                {(message.status == "Failed" || message.status == "FAILED") && (
-                    <>
-                        <ErrorIcon />
-                        <UncontrolledPopover
-                            placement="top"
-                            target={message.type + key}
-                            trigger="hover"
-                            transition={{ timeout: 150 }}
-                        >
-                            <PopoverHeader></PopoverHeader>
-                            <PopoverBody>{message.error}</PopoverBody>
-                        </UncontrolledPopover>
-                    </>
-                )}
-                {message.status == "Queued" &&
-                    message.delivered == 0 &&
-                    message.read == 0 && <QueueIcon />}
-                {(message.status == "Sent" || message.status == "Send") &&
-                    message.delivered == 0 &&
-                    message.read == 0 && <SentIcon />}
-                {message.delivered == 1 && message.read == 0 && (
-                    <DeliveredIcon />
-                )}
-                {(message.read == 1 || message.status == "Read") && (
-                    <ReadIcon />
-                )}
-            </span>
-        );
-    }
-
-    function renderEmailCard(message, key, content) {
-        const isIncoming = message.mode == "incoming";
-        const subject = message.email_subject || "(no subject)";
-
-        return (
-            <div
-                key={key}
-                className={classNames(
-                    "flex w-full",
-                    isIncoming ? "justify-start" : "justify-end",
-                )}
-            >
-                <article
-                    className={classNames(
-                        "w-full max-w-[38rem] overflow-hidden rounded-[20px] shadow-[0_14px_28px_rgba(0,0,0,0.16)] transition",
-                        isIncoming
-                            ? "bg-[#15111b]"
-                            : "bg-[linear-gradient(180deg,rgba(163,30,255,0.12),rgba(24,12,31,0.98))]",
-                    )}
-                >
-                    <div className="flex flex-col gap-2 px-4 py-2.5 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0">
-                            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/28">
-                                Subject
-                            </div>
-                            <div className="mt-1 truncate text-sm font-semibold text-white">
-                                {subject}
-                            </div>
-                        </div>
-
-                        <div className="flex shrink-0 items-center gap-2 text-xs text-white/42">
-                            <span>{message.date}</span>
-                            {!isIncoming && (
-                                <span className="rounded-full bg-[#A31EFF]/16 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/72">
-                                    {message.status || "Sent"}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="px-4 py-3 text-sm leading-6 text-white/88">
-                        <div className="whitespace-pre-wrap break-words">
-                            {content || (
-                                <span className="text-white/35">
-                                    Empty email body
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                </article>
-            </div>
-        );
-    }
 
     return (
-        <div
-            id="messages"
-            ref={messageContainerRef}
-            onScroll={handleScroll}
-            className={classNames(
-                "flex-col flex-1 min-h-0 overflow-y-auto rounded-2xl p-3 scrolling-touch",
-                props.containerCategory === "email"
-                    ? "space-y-3 bg-[#0d0b12] px-4 py-4"
-                    : "chat-pattern-bg justify-end space-y-4 bg-[#0b0b10]",
-            )}
-        >
-            {displayEntries.map(([key, message]) => {
-                let content = message.content;
-                const mediaClass = "object-contain h-48 w-96";
-                const bubbleMaxWidth =
-                    message.category === "email" ? "max-w-2xl" : "max-w-xs";
-
-                switch (message.type) {
-                    case "image":
-                        content = (
-                            <div>
-                                <img src={message.path} className={mediaClass} />
+        <>
+            <div className="chat-pattern-bg relative h-full overflow-hidden rounded-[2rem] bg-[#0a0810]">
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                    <svg
+                        viewBox="0 0 24 24"
+                        className="h-[21rem] w-[21rem] opacity-[0.11] blur-[0.2px] md:h-[29rem] md:w-[29rem]"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M20.3 7.5875C18.6125 5.9 16.3625 5 14 5C9.05 5 5 9.05 5 14C5 15.575 5.45001 17.15 6.23751 18.5L5 23L9.72501 21.7625C11.075 22.4375 12.5375 22.8875 14 22.8875C18.95 22.8875 23 18.8375 23 13.8875C23 11.525 21.9875 9.275 20.3 7.5875ZM14 21.425C12.65 21.425 11.3 21.0875 10.175 20.4125L9.94999 20.3L7.13749 21.0875L7.92501 18.3875L7.69999 18.05C6.91249 16.8125 6.57499 15.4625 6.57499 14.1125C6.57499 10.0625 9.95 6.6875 14 6.6875C16.025 6.6875 17.825 7.475 19.2875 8.825C20.75 10.2875 21.425 12.0875 21.425 14.1125C21.425 18.05 18.1625 21.425 14 21.425ZM18.05 15.8C17.825 15.6875 16.7 15.125 16.475 15.125C16.25 15.0125 16.1375 15.0125 16.025 15.2375C15.9125 15.4625 15.4625 15.9125 15.35 16.1375C15.2375 16.25 15.125 16.25 14.9 16.25C14.675 16.1375 14 15.9125 13.1 15.125C12.425 14.5625 11.975 13.775 11.8625 13.55C11.75 13.325 11.8625 13.2125 11.975 13.1C12.0875 12.9875 12.2 12.875 12.3125 12.7625C12.425 12.65 12.425 12.5375 12.5375 12.425C12.65 12.3125 12.5375 12.2 12.5375 12.0875C12.5375 11.975 12.0875 10.85 11.8625 10.4C11.75 10.0625 11.525 10.0625 11.4125 10.0625C11.3 10.0625 11.1875 10.0625 10.9625 10.0625C10.85 10.0625 10.625 10.0625 10.4 10.2875C10.175 10.5125 9.61251 11.075 9.61251 12.2C9.61251 13.325 10.4 14.3375 10.5125 14.5625C10.625 14.675 12.0875 17.0375 14.3375 17.9375C16.25 18.725 16.5875 18.5 17.0375 18.5C17.4875 18.5 18.3875 17.9375 18.5 17.4875C18.725 16.925 18.725 16.475 18.6125 16.475C18.5 15.9125 18.275 15.9125 18.05 15.8Z"
+                            fill="url(#chatWhatsappTheme)"
+                        />
+                        <defs>
+                            <linearGradient id="chatWhatsappTheme" x1="5" y1="5" x2="23" y2="23" gradientUnits="userSpaceOnUse">
+                                <stop stopColor="#25D366" />
+                                <stop offset="1" stopColor="#128C7E" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div
+                    id="messages"
+                    className="relative z-10 flex h-full min-h-0 flex-col justify-end gap-4 overflow-y-auto overscroll-contain px-5 py-6"
+                    style={{ scrollbarGutter: "stable" }}
+                >
+                    {Object.entries(props.messages).map(([key, message], j) => {
+                    var content = message.content;
+                    var mediaClass = "object-contain h-48 w-96";
+                    switch (message.type) {
+                        case 'image':
+                            content = <div className=" ">
+                                <img
+                                    src={message.path}
+                                    className={mediaClass}
+                                />
                                 {content}
-                            </div>
-                        );
-                        break;
+                            </div>;
+                            break;
 
-                    case "video":
-                        content = (
-                            <div>
+                        case 'video':
+                            content = <div className=" ">
                                 <video
                                     src={message.path}
                                     autoPlay
@@ -226,117 +67,154 @@ export default function MessageList(props) {
                                     className={mediaClass}
                                 />
                                 {content}
-                            </div>
-                        );
-                        break;
+                            </div>;
+                            break;
 
-                    case "audio":
-                        content = (
-                            <div>
-                                <ReactAudioPlayer src={message.path} controls />
+                        case 'audio':
+                            content = <div className=" ">
+                                <ReactAudioPlayer
+                                    src={message.path}
+                                    className={''}
+                                    controls
+                                />
                                 {content}
-                            </div>
-                        );
-                        break;
+                            </div>;
+                            break;
 
-                    case "application":
-                        content = (
-                            <div>
-                                <a href={message.path}>
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-14 w-14"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                        />
+                        case 'application':
+                            content = <div className=" ">
+                                <a href={message.path} >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
                                 </a>
                                 {message.content}
-                            </div>
-                        );
-                        break;
-
-                    case "story":
-                        content = (
-                            <StoryContent
+                            </div>;
+                            break;
+                        case 'story':
+                            content = <StoryContent
                                 data={message}
                                 className={mediaClass}
                                 loadedStory={props.loadedStory}
                                 setLoadedStory={props.setLoadedStory}
                             />
-                        );
-                        break;
-                }
+                            break;
+                    }
+                        return (
+                            <>
+                                {message.mode == 'incoming' ?
+                                    <div className="chat-message">
+                                        <div className="flex items-end">
+                                            <div className="order-2 mx-2 flex max-w-[min(30rem,78%)] flex-col space-y-2 text-sm items-start">
+                                            <div className="rounded-[1.5rem] rounded-bl-md bg-white/[0.04] px-4 py-3 text-white/90 shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
+                                                    <span className="inline-block text-sm">
+                                                        {content}
+                                                    </span>
+                                                    <div className='flex w-full !mt-4 items-center gap-2'>
+                                                        <span className="text-xs text-left">
+                                                            {props.containerCategory == 'all' &&
+                                                                <>
+                                                                    {message.category == 'whatsapp' &&
+                                                                        <WhatsAppIcon width={`20`} height={`20`} />
+                                                                    }
 
-                if (message.category === "email") {
-                    return renderEmailCard(message, key, content);
-                }
+                                                                    {message.category == 'instagram' &&
+                                                                        <InstaIcon width={`20`} height={`20`} />
+                                                                    }
+                                                                </>
 
-                if (message.mode == "incoming") {
-                    return (
-                        <div key={key} className="chat-message">
-                            <div className="flex items-end">
-                                <div
-                                    className={`flex flex-col space-y-2 text-sm ${bubbleMaxWidth} mx-2 order-2 items-start`}
-                                >
-                                    <div className="text-white/90 px-4 py-2 rounded-2xl rounded-bl-none bg-white/5">
-                                        <span className="inline-block text-sm whitespace-pre-wrap break-words">
-                                            {content}
-                                        </span>
-                                        <div className="flex w-full !mt-4 items-center gap-2">
-                                            <span className="text-xs text-left">
-                                                {renderChannelIcon(
-                                                    message.category,
-                                                )}
-                                            </span>
-                                            <span className="text-xs text-right text-white/50">
-                                                {message.date}
-                                            </span>
+                                                            }
+                                                        </span>
+                                                        <span className="text-xs text-right text-white/50">
+                                                            {message.date}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    );
-                }
+                                    :
+                                    <div className="chat-message">
+                                        <div className="flex items-end justify-end">
+                                            <div className="order-1 mx-2 flex max-w-[min(32rem,78%)] flex-col space-y-2 text-sm items-end">
+                                                <div className="rounded-[1.5rem] rounded-br-md bg-[linear-gradient(135deg,rgba(163,30,255,0.28),rgba(255,59,194,0.16))] px-4 py-3 text-white/90 shadow-[0_20px_60px_rgba(127,0,190,0.18)]">
+                                                    <span className="inline-block text-sm">
+                                                        {content}
+                                                    </span>
+                                                    <div className='flex w-full !mt-4 items-center gap-2'>
+                                                        <span className="text-xs text-left">
+                                                            {props.containerCategory == 'all' &&
+                                                                <>
+                                                                    {message.category == 'whatsapp' &&
+                                                                        <WhatsAppIcon width={`20`} height={`20`} />
+                                                                    }
 
-                return (
-                    <div key={key} className="chat-message">
-                        <div className="flex items-end justify-end">
-                            <div
-                                className={`flex flex-col space-y-2 text-sm ${bubbleMaxWidth} mx-2 order-1 items-end`}
-                            >
-                                <div className="text-white/90 px-4 py-2 rounded-2xl rounded-bl-none bg-[#A31EFF]/15">
-                                    <span className="inline-block text-sm whitespace-pre-wrap break-words">
-                                        {content}
-                                    </span>
-                                    <div className="flex w-full !mt-4 items-center gap-2">
-                                        <span className="text-xs text-left">
-                                            {renderChannelIcon(
-                                                message.category,
-                                            )}
-                                        </span>
-                                        <span className="text-xs text-right flex text-white/50">
-                                            {message.date}
-                                            {renderOutgoingStatus(
-                                                message,
-                                                key,
-                                            )}
-                                        </span>
+                                                                    {message.category == 'instagram' &&
+                                                                        <InstaIcon width={`20`} height={`20`} />
+                                                                    }
+                                                                    {message.category == 'facebook' &&
+                                                                        <BsFacebook className="w-5 h-4 fill-current text-indigo-500" />
+                                                                    }
+                                                                </>
+                                                            }
+                                                        </span>
+                                                        <span className="text-xs text-right flex text-white/50">
+                                                            {message.date}
+                                                            <span className='!pl-2' id={message.type + key}>
+                                                                {(message.status == 'Failed' || message.status == 'FAILED') ?
+                                                                    <>
+                                                                        <ErrorIcon />
+                                                                        <UncontrolledPopover
+                                                                            placement="top"
+                                                                            target={message.type + key}
+                                                                            trigger="hover"
+                                                                            transition={{ timeout: 150 }}
+                                                                        >
+                                                                            <PopoverHeader></PopoverHeader>
+                                                                            <PopoverBody>
+                                                                                {message.error}
+                                                                            </PopoverBody>
+                                                                        </UncontrolledPopover>
+                                                                    </>
+                                                                    : ''
+                                                                }
+                                                                {(message.status == 'Queued' && message.delivered == 0 && message.read == 0) &&
+                                                                    <QueueIcon />
+                                                                }
+                                                                {((message.status == 'Sent' || message.status == 'Send') && message.delivered == 0 && message.read == 0) &&
+                                                                    <SentIcon />
+                                                                }
+                                                                {(message.delivered == 1 && message.read == 0) &&
+                                                                    <DeliveredIcon />
+                                                                }
+                                                                {(message.read == 1 || message.status == 'Read') &&
+                                                                    <ReadIcon />
+                                                                }
+
+                                                            </span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                );
-            })}
-        </div>
+                                }
+                            </>
+                        )
+                    })}
+                </div>
+            </div>
+        </>
     );
 }
+
+
+
+
+
+
+
+
+
+
+

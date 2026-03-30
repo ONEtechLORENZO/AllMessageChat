@@ -87,10 +87,6 @@ const navigation = [
                 name: "Campaigns",
                 href: route("listCampaign"),
             },
-            {
-                name: "Contacts",
-                href: route("listContact"),
-            },
         ],
     },
     {
@@ -136,8 +132,8 @@ const bottomNavigation = [
         show: ["all"],
     },
     {
-        name: "Api Reference",
-        href: route("listApi"),
+        name: "API Documentation",
+        href: route("api_documentation"),
         icon: CodeBracketIcon,
         show: ["all"],
     },
@@ -285,11 +281,6 @@ const menuBar = [
         ],
     },
     {
-        name: "Contacts",
-        href: route("listContact"),
-        icon: UsersIcon,
-    },
-    {
         name: "Reports",
         href: route("listMessage"),
         icon: ChartBarIcon,
@@ -346,9 +337,7 @@ function NavItem({
                 <Icon
                     className={[
                         "h-5 w-5 transition-colors duration-200",
-                        active
-                            ? "text-white"
-                            : "text-white/70 group-hover:text-white",
+                        active ? "text-white" : "text-white/70 group-hover:text-white",
                     ].join(" ")}
                 />
             </div>
@@ -382,17 +371,16 @@ export default function Authenticated({
     header,
     children,
     hideHeader,
-    hideAssistant = false,
     current_page,
     hidePageTitle,
     pageTitle,
     message,
     navigationMenu,
-    fullHeight = false,
-    subduedBackground = false,
 }) {
     const { props: pageProps } = usePage();
-    const [locale, setLocaleState] = useState(pageProps?.locale ?? getLocale());
+    const [locale, setLocaleState] = useState(
+        pageProps?.locale ?? getLocale(),
+    );
     const translator = useMemo(
         () => createTranslator(pageProps?.translator ?? {}, locale),
         [pageProps?.translator, locale],
@@ -423,7 +411,7 @@ export default function Authenticated({
         pageProps?.plural ??
         null;
     const translatedPageTitle = resolvedPageTitle
-        ? (translator[resolvedPageTitle] ?? resolvedPageTitle)
+        ? translator[resolvedPageTitle] ?? resolvedPageTitle
         : null;
     const showPageTitle = hidePageTitle !== true && !!translatedPageTitle;
 
@@ -634,12 +622,7 @@ export default function Authenticated({
                 const existingSubmenu =
                     resolvedNavigationMenuBar[item.name].submenu ?? {};
                 item.subMenu.forEach((sub) => {
-                    if (
-                        !Object.prototype.hasOwnProperty.call(
-                            existingSubmenu,
-                            sub.name,
-                        )
-                    ) {
+                    if (!Object.prototype.hasOwnProperty.call(existingSubmenu, sub.name)) {
                         existingSubmenu[sub.name] = true;
                     }
                 });
@@ -748,10 +731,7 @@ export default function Authenticated({
             <div className="authenticated-shell min-h-screen bg-black text-white relative overflow-x-hidden flex font-sans selection:bg-[#38bdf8]/30">
                 {/* Tech grid background with spotlight effect */}
                 <div
-                    className={[
-                        "fixed inset-0 transition-opacity duration-1000 pointer-events-none",
-                        subduedBackground ? "opacity-20" : "opacity-40",
-                    ].join(" ")}
+                    className="fixed inset-0 opacity-40 transition-opacity duration-1000 pointer-events-none"
                     style={{
                         backgroundSize: "50px 50px",
                         backgroundImage:
@@ -768,12 +748,7 @@ export default function Authenticated({
                     aria-hidden="true"
                 >
                     <div
-                        className={[
-                            "absolute h-[650px] w-[650px] rounded-full bg-[#BF00FF] mix-blend-screen blur-[130px] transition-transform duration-700 ease-out",
-                            subduedBackground
-                                ? "opacity-[0.04]"
-                                : "opacity-[0.08]",
-                        ].join(" ")}
+                        className="absolute h-[650px] w-[650px] rounded-full bg-[#BF00FF] opacity-[0.08] mix-blend-screen blur-[130px] transition-transform duration-700 ease-out"
                         style={{
                             top: "5%",
                             left: "10%",
@@ -781,30 +756,16 @@ export default function Authenticated({
                         }}
                     />
                     <div
-                        className={[
-                            "absolute h-[650px] w-[650px] rounded-full bg-[#BF00FF] mix-blend-screen blur-[140px] transition-transform duration-700 ease-out",
-                            subduedBackground
-                                ? "opacity-[0.04]"
-                                : "opacity-[0.08]",
-                        ].join(" ")}
+                        className="absolute h-[650px] w-[650px] rounded-full bg-[#BF00FF] opacity-[0.08] mix-blend-screen blur-[140px] transition-transform duration-700 ease-out"
                         style={{
                             bottom: "5%",
                             right: "10%",
                             transform: `translate(${mousePosition.x * -0.02}px, ${mousePosition.y * -0.02}px)`,
                         }}
                     />
-                    <div
-                        className={[
-                            "absolute -top-40 left-1/2 -translate-x-1/2 h-[420px] w-[900px] rounded-full bg-white/5 blur-[120px]",
-                            subduedBackground ? "opacity-15" : "opacity-40",
-                        ].join(" ")}
-                    />
+                    <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[420px] w-[900px] rounded-full bg-white/5 blur-[120px] opacity-40" />
                 </div>
-                <div
-                    className="purple-giant-arc platform-purple-arc"
-                    style={{ opacity: subduedBackground ? 0.25 : 1 }}
-                    aria-hidden="true"
-                />
+                <div className="purple-giant-arc platform-purple-arc" aria-hidden="true" />
                 <Transition.Root show={sidebarOpen} as={Fragment}>
                     <Dialog
                         as="div"
@@ -1183,7 +1144,14 @@ export default function Authenticated({
                     </aside>
 
                     {/* Content Area */}
-                    <main className="flex-1 min-w-0 flex h-screen flex-col overflow-y-auto">
+                    <main
+                        className={[
+                            "flex-1 min-w-0 flex h-screen flex-col",
+                            current_page === "Chats"
+                                ? "overflow-hidden"
+                                : "overflow-y-auto",
+                        ].join(" ")}
+                    >
                         {hideHeader !== true ? (
                             <header className="sticky top-0 z-20 border-b border-white/10 bg-black/40 backdrop-blur-2xl">
                                 <nav>
@@ -1555,6 +1523,21 @@ export default function Authenticated({
                                                                                 </li>
                                                                             )}
                                                                             <li className="p-1">
+                                                                                <Link
+                                                                                    className="hover:text-white"
+                                                                                    href={route(
+                                                                                        "listApi",
+                                                                                    )}
+                                                                                    method="get"
+                                                                                >
+                                                                                    {" "}
+                                                                                    {translator[
+                                                                                        "API keys"
+                                                                                    ] ??
+                                                                                        "API keys"}
+                                                                                </Link>
+                                                                            </li>
+                                                                            <li className="p-1">
                                                                                 {" "}
                                                                                 <Link
                                                                                     className="hover:text-white"
@@ -1677,47 +1660,39 @@ export default function Authenticated({
                             </header>
                         ) : null}
 
-                        {fullHeight ? (
-                            /* Full-height mode (e.g. /chat): no padding, no inner wrapper.
-                               overflow-hidden + min-h-0 give flex children a definite
-                               height so their own overflow-y-auto regions scroll
-                               independently instead of growing the page. */
-                            <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-                                {children}
-                            </div>
-                        ) : (
+                        <div
+                            className={[
+                                "flex-1",
+                                current_page === "Chats" ? "min-h-0 overflow-hidden" : "",
+                                showPageTitle
+                                    ? "px-3 pb-3 pt-0 md:px-8 md:pb-8 md:pt-0"
+                                    : "p-3 md:p-8",
+                            ].join(" ")}
+                        >
+                            {showPageTitle ? (
+                                <div className="px-1 pt-4 md:px-0 md:pt-6">
+                                    <h1 className="platform-page-title one-tech-special">
+                                        {translatedPageTitle}
+                                    </h1>
+                                </div>
+                            ) : null}
+
                             <div
                                 className={[
-                                    "flex-1",
-                                    showPageTitle
-                                        ? "px-3 pb-3 pt-0 md:px-8 md:pb-8 md:pt-0"
-                                        : "p-3 md:p-8",
-                                ].join(" ")}
+                                    showPageTitle ? "pt-4 md:pt-5" : "",
+                                    current_page === "Chats" ? "h-full min-h-0 overflow-hidden" : "",
+                                ]
+                                    .filter(Boolean)
+                                    .join(" ")}
                             >
-                                {showPageTitle ? (
-                                    <div className="px-1 pt-4 md:px-0 md:pt-6">
-                                        <h1 className="platform-page-title one-tech-special">
-                                            {translatedPageTitle}
-                                        </h1>
-                                    </div>
-                                ) : null}
-
-                                <div
-                                    className={
-                                        showPageTitle
-                                            ? "pt-4 md:pt-5"
-                                            : undefined
-                                    }
-                                >
-                                    {children}
-                                </div>
+                                {children}
                             </div>
-                        )}
+                        </div>
                     </main>
                 </div>
             </div>
 
-            {hideAssistant !== true ? <CommandAssistant /> : null}
+            <CommandAssistant />
 
             {showModal && companyList?.[0]?.name ? (
                 <UserRegistration

@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef, Fragment } from "react";
 import { Head, Link } from "@inertiajs/react";
 import MessageList from "./MessageList";
-import EmailComposeModal from "./EmailComposeModal";
 import Authenticated from "../../Layouts/Authenticated";
 import ApplicationLogo from "@/Components/ApplicationLogo";
+import Dropdown from "@/Components/Dropdown";
 import ContactSelection from "@/Components/ContactSelection";
 import notie from "notie";
 import Filter from "@/Components/Views/List/Filter2";
@@ -13,11 +13,13 @@ import ChatBox from "./ChatBox";
 import Axios from "axios";
 
 import {
+    EllipsisVerticalIcon,
     ChevronDownIcon,
     MagnifyingGlassIcon,
     Bars3Icon,
-    ArrowPathIcon,
+    UserIcon,
 } from "@heroicons/react/24/outline";
+import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
 
 import { Menu, Popover, Transition } from "@headlessui/react";
 
@@ -28,66 +30,14 @@ import {
     NotifiIcon,
     InstaIcon,
     fbIcon,
-    EmailIcon,
+    SettingIcon,
 } from "../icons";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
 
-const CHAT_LIST_PAGE_SIZE = 15;
-
-function createEmptyEmailComposeData() {
-    return {
-        destination: "",
-        channel: "email",
-        content: "",
-        attachment: "",
-        template_id: "",
-        catalog_id: "",
-        product_retailer_id: "",
-        template_options: "",
-        template_type: "",
-        email_subject: "",
-    };
-}
-
-function getChatListItems(contactList) {
-    return Object.values(contactList || {});
-}
-
-function getConversationKey(id) {
-    return `contact_id_${id}`;
-}
-
-function getDefaultTabForCategory(category) {
-    return "all";
-}
-
-function getModeForCategory(category, mode) {
-    if (category === "email") {
-        return "all";
-    }
-
-    if (mode === "archived") {
-        return "all";
-    }
-
-    return mode || getDefaultTabForCategory(category);
-}
-
-function formatLastSync(value) {
-    if (!value) {
-        return "Not synced yet";
-    }
-
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-        return "Not synced yet";
-    }
-
-    return date.toLocaleString();
-}
+const NEW_MESSAGE_LABEL = "New Message";
 
 function ChatList(props) {
     const [selectedContact, setSelectedContact] = useState(
@@ -96,39 +46,21 @@ function ChatList(props) {
     const [messages, setMessages] = useState({});
     const [containerCategory, setContainerCategory] = useState(props.category);
     const [showForm, setShowForm] = useState(false);
-    const [showEmailComposeModal, setShowEmailComposeModal] = useState(false);
     const [chatList, setChatList] = useState(props.contact_list);
-    const [chatListItems, setChatListItems] = useState(
-        getChatListItems(props.contact_list),
-    );
     const [data, setData] = useState({
         destination: "",
         channel: containerCategory,
         content: "",
     });
     const [selectedAccount, setSelectedAccount] = useState("");
-    const [accountMeta, setAccountMeta] = useState(props.account_meta || {});
-    const [chatCounts, setChatCounts] = useState(
-        props.counts || { all: 0, unread: 0, archived: 0 },
-    );
     const [searchKey, setSearchKey] = useState(props.search);
-    const [emailComposeData, setEmailComposeData] = useState(
-        createEmptyEmailComposeData(),
-    );
-    const [emailComposeSending, setEmailComposeSending] = useState(false);
     const channels = {
         all: { label: props.translator["All Channel"], icon: ApplicationLogo },
         whatsapp: { label: "WhatsApp", icon: WhatsAppIcon },
         instagram: { label: "Instagram", icon: InstaIcon },
         facebook: { label: "Facebook", icon: fbIcon },
-        email: { label: "Email", icon: EmailIcon },
     };
-    const selectableChannels = Object.entries(channels).filter(
-        ([name]) => name !== "all",
-    );
-    const [current_tab, setCurrentTabId] = useState(
-        getModeForCategory(props.category, props.mode),
-    );
+    const [current_tab, setCurrentTabId] = useState("unread");
     const tabs = [
         {
             name: props.translator["Unread"],
@@ -142,192 +74,36 @@ function ChatList(props) {
             href: "#",
             current: false,
         },
+        {
+            name: props.translator["Archive"],
+            id: "archived",
+            href: "#",
+            current: false,
+        },
     ];
 
     const [time, setTime] = useState(Date.now());
     const accountList = props.account_list;
     const [loadedStory, setLoadedStory] = useState({});
-    const [channelLoading, setChannelLoading] = useState(false);
-    const [syncNowLoading, setSyncNowLoading] = useState(false);
+    const selectedConversation = selectedContact
+        ? chatList["contact_id_" + selectedContact]
+        : null;
 
     const listRef = useRef(null);
-    const loadMoreRef = useRef(null);
-    const loadMoreLockedRef = useRef(false);
-    const messageRequestRef = useRef(false);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [pageLoading, setPageLoad] = useState(false);
-    const selectedConversation = selectedContact
-        ? chatList[getConversationKey(selectedContact)]
-        : null;
-
-    function getContactSecondaryValue(contact, channel = containerCategory) {
-        if (!contact) {
-            return "";
-        }
-
-        switch (channel) {
-            case "email":
-                return contact.subject || contact.email || "";
-            case "instagram":
-                return contact.insta_id || "";
-            case "facebook":
-                return contact.fb_id || "";
-            case "whatsapp":
-                return contact.number || "";
-            default:
-                return (
-                    contact.number ||
-                    contact.email ||
-                    contact.insta_id ||
-                    contact.fb_id ||
-                    ""
-                );
-        }
-    }
-
-    function getNoAccountMessage(channel) {
-        switch (channel) {
-            case "whatsapp":
-                return props.translator[
-                    "No WhatsApp account connected. Connect one WhatsApp account to use this channel."
-                ];
-            case "instagram":
-                return props.translator[
-                    "No Instagram account connected. This workspace supports one Instagram account per social profile."
-                ];
-            case "facebook":
-                return props.translator[
-                    "No Facebook account connected. This workspace supports one Facebook account per social profile."
-                ];
-            case "email":
-                return props.translator[
-                    "No Email account connected. Connect one Email account to use this channel."
-                ];
-            default:
-                return props.translator[
-                    "No account connected for this channel."
-                ];
-        }
-    }
-
-    function resolveContactChannel(contact) {
-        if (containerCategory && containerCategory !== "all") {
-            return containerCategory;
-        }
-
-        return contact?.channel || "whatsapp";
-    }
-
-    function getEmailConversationMeta(contact) {
-        if (!contact || contact.channel !== "email") {
-            return "";
-        }
-
-        return contact.email || "";
-    }
-
-    function getContactInitials(value) {
-        const cleanedValue = String(value || "")
-            .trim()
-            .split(/\s+/)
-            .filter(Boolean);
-
-        if (cleanedValue.length === 0) {
-            return "??";
-        }
-
-        return cleanedValue
-            .slice(0, 2)
-            .map((chunk) => chunk.charAt(0).toUpperCase())
-            .join("");
-    }
-
-    function formatConversationTime(value) {
-        if (!value) {
-            return "";
-        }
-
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) {
-            return "";
-        }
-
-        const now = new Date();
-        const isSameDay = date.toDateString() === now.toDateString();
-
-        return isSameDay
-            ? date.toLocaleTimeString([], {
-                  hour: "numeric",
-                  minute: "2-digit",
-              })
-            : date.toLocaleDateString([], {
-                  month: "short",
-                  day: "numeric",
-              });
-    }
-
-    function getEmailConversationSubject(contact) {
-        return contact?.subject || "(no subject)";
-    }
-
-    function getEmailConversationPreview(contact) {
-        if (!contact) {
-            return "";
-        }
-
-        return (
-            contact.preview ||
-            contact.email ||
-            contact.number ||
-            props.translator["No preview available."] ||
-            "No preview available."
-        );
-    }
 
     useEffect(() => {
         setChatList(props.contact_list);
-        setChatListItems(getChatListItems(props.contact_list));
-        setSelectedContact(props.selected_contact);
-        setContainerCategory(props.category);
-        setSearchKey(props.search);
-        setMessages(props.messages || {});
-        setAccountMeta(props.account_meta || {});
-        setChatCounts(props.counts || { all: 0, unread: 0, archived: 0 });
-        setCurrentTabId(getModeForCategory(props.category, props.mode));
-        setPage(1);
-        setHasMore(true);
-        loadMoreLockedRef.current = false;
-        setPageLoad(false);
-        setChannelLoading(false);
-    }, [
-        props.contact_list,
-        props.selected_contact,
-        props.category,
-        props.search,
-        props.messages,
-        props.counts,
-    ]);
-
-    useEffect(() => {
-        if (containerCategory === "instagram") {
-            return undefined;
-        }
-
-        const refreshInterval =
-            containerCategory === "whatsapp" ? 5000 : 15000;
-        const interval = setInterval(() => getMessageList(), refreshInterval);
+        const interval = setInterval(() => getMessageList(), 5000);
         return () => {
             clearInterval(interval);
         };
-    }, [selectedContact, containerCategory]);
+    }, [props]);
 
     useEffect(() => {
-        if (
-            containerCategory !== "instagram" ||
-            !selectedContact ||
-            !selectedConversation
-        ) {
+        if (containerCategory !== "instagram" || !selectedContact) {
             return undefined;
         }
 
@@ -475,86 +251,62 @@ function ChatList(props) {
         setData(newState);
     }
 
-    function handleEmailComposeChange(e) {
-        let newState = Object.assign({}, emailComposeData);
-
-        if (e.target.type == "file" && e.target.files) {
-            newState[e.target.name] = e.target.files[0];
-        } else {
-            newState[e.target.name] = e.target.value;
-        }
-
-        setEmailComposeData(newState);
-    }
-
     function getContactMessage(contact, channel) {
         setSelectedContact(contact);
         setContainerCategory(channel);
-
-        const conversation = chatList[getConversationKey(contact)];
-        if (conversation?.account_id) {
-            setSelectedAccount(String(conversation.account_id));
-        }
-
         if (!contact) {
             return false;
         }
-
         nProgress.start(0.5);
         nProgress.inc(0.2);
         setMessages({});
+        var url = route("chat_list", {
+            contact_id: contact,
+            category: channel,
+        });
+        if (props.filter_id) {
+            url = url + "&filter_id=" + props.filter_id;
+        }
+        if (current_tab) {
+            url += "&mode=" + current_tab;
+        }
 
-        getMessageList(contact, channel).finally(() => {
+        var url = route("get_message_list", {
+            contact_id: contact,
+            category: channel,
+            mode: "ajax",
+        });
+        Axios({
+            method: "get",
+            url: url,
+        }).then((response) => {
+            setMessages(response.data);
             nProgress.done();
         });
     }
 
     function setCurrentTab(tab) {
-        const nextTab = getModeForCategory(containerCategory, tab);
-        setCurrentTabId(nextTab);
+        setCurrentTabId(tab);
         setSelectedContact("");
+        setChatList({});
+        fetchContactList();
         setPage(1);
-        setHasMore(true);
-        fetchContactList(tab, 1); // pass tab and page explicitly — state updates are async
     }
 
     function selectContactCategory(name) {
-        if (name === containerCategory) {
-            return;
-        }
-
-        const nextMode = getModeForCategory(name, current_tab);
-
-        setChannelLoading(true);
-        setSelectedContact("");
-        setMessages({});
-        setChatList({});
-        setChatListItems([]);
-        setSelectedAccount("");
-        setContainerCategory(name);
-        setCurrentTabId(nextMode);
-        setPage(1);
-        setHasMore(true);
-        setPageLoad(false);
-        loadMoreLockedRef.current = false;
-
         var url = route("chat_list", {
+            contact_id: selectedContact,
             category: name,
         });
         if (props.filter_id) {
             url = url + "&filter_id=" + props.filter_id;
         }
-        if (nextMode) {
-            url += "&mode=" + nextMode;
+        if (current_tab) {
+            url += "&mode=" + current_tab;
         }
-        Inertia.get(
-            url,
-            {},
-            {
-                onError: () => setChannelLoading(false),
-                onCancel: () => setChannelLoading(false),
-            },
-        );
+        Inertia.get(url, {
+            onSuccess: (response) => {},
+        });
     }
 
     /**
@@ -562,288 +314,66 @@ function ChatList(props) {
      */
     useEffect(() => {
         if (page > 1) {
-            fetchContactList(current_tab, page); // state is settled by the time this effect fires
+            fetchContactList();
         }
     }, [page]);
 
-    useEffect(() => {
-        if (!pageLoading && !channelLoading) {
-            loadMoreLockedRef.current = false;
-        }
-    }, [pageLoading, channelLoading]);
-
-    useEffect(() => {
-        const container = listRef.current;
-        const target = loadMoreRef.current;
-
-        if (
-            !container ||
-            !target ||
-            !hasMore ||
-            pageLoading ||
-            channelLoading ||
-            chatListItems.length === 0
-        ) {
-            return;
-        }
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                const [entry] = entries;
-
-                if (entry?.isIntersecting && !loadMoreLockedRef.current) {
-                    loadMoreLockedRef.current = true;
-                    setPage((prevPage) => prevPage + 1);
-                }
-            },
-            {
-                root: container,
-                rootMargin: "0px 0px 160px 0px",
-                threshold: 0.01,
-            },
-        );
-
-        observer.observe(target);
-
-        return () => {
-            observer.disconnect();
-        };
-    }, [chatListItems, hasMore, pageLoading, channelLoading]);
-
-    function fetchContactList(tabOverride, pageOverride) {
-        const activeTab = getModeForCategory(
-            containerCategory,
-            tabOverride !== undefined ? tabOverride : current_tab,
-        );
-        const activePage = pageOverride !== undefined ? pageOverride : page;
-
-        if (pageLoading) {
-            return Promise.resolve(null);
-        }
-
+    function fetchContactList() {
         setPageLoad(true);
-
-        let url = route("chat_list", { category: containerCategory });
-
+        var url = route("chat_list", { category: containerCategory });
         if (props.filter_id) {
             url = url + "&filter_id=" + props.filter_id;
         }
-
-        if (activeTab) {
-            url += "&mode=" + activeTab;
+        if (current_tab) {
+            url += "&mode=" + current_tab;
         }
+        url += "&fetchContact=true&page=" + page;
 
-        url += "&fetchContact=true&page=" + activePage;
-
-        return Axios.get(url)
-            .then((response) => {
-                if (
-                    !response.data ||
-                    typeof response.data !== "object" ||
-                    response.data.status !== true
-                ) {
-                    console.error("Invalid lazy-load response:", response.data);
-                    setHasMore(false);
-                    setPageLoad(false);
-                    return response;
-                }
-
-                const fetchedMap = response.data.contact_list || {};
-                const fetchedContactItems = Object.values(fetchedMap);
-                if (
-                    response.data.account_meta &&
-                    typeof response.data.account_meta === "object"
-                ) {
-                    setAccountMeta(response.data.account_meta);
-                }
-                if (response.data.counts) {
-                    setChatCounts(response.data.counts);
-                }
-
-                if (activePage > 1 && fetchedContactItems.length === 0) {
-                    setHasMore(false);
-                }
-
-                if (activePage === 1) {
-                    setChatList(fetchedMap);
-                    setChatListItems(fetchedContactItems);
-                } else {
-                    setChatList((prev) => {
-                        const merged = { ...prev, ...fetchedMap };
-                        setChatListItems(Object.values(merged));
-                        return merged;
-                    });
-                }
-
-                setHasMore(Boolean(response.data.has_more));
+        return Axios.get(url).then((response) => {
+            if (response.data.status) {
+                var mergedList = { ...chatList, ...response.data.contact_list };
+                setChatList(mergedList);
                 setPageLoad(false);
-                return response;
-            })
-            .catch((error) => {
-                console.error("Lazy-load failed:", error);
-                setPageLoad(false);
-                return null;
-            });
-    }
+            }
 
-    function getAccountLabel(accountId) {
-        if (!accountId) {
-            return props.translator["Account list"];
-        }
-
-        return (
-            accountMeta?.[accountId]?.label ||
-            accountList?.[accountId] ||
-            props.translator["Account list"]
-        );
-    }
-
-    function getSelectedAccountMeta() {
-        if (!selectedAccount) {
-            return null;
-        }
-
-        return accountMeta?.[selectedAccount] || null;
-    }
-
-    function syncEmailAccountNow() {
-        if (containerCategory !== "email" || !selectedAccount || syncNowLoading) {
-            return;
-        }
-
-        setSyncNowLoading(true);
-
-        Axios.post(route("sync_email_chat_account"), {
-            account_id: selectedAccount,
-        })
-            .then((response) => {
-                if (response.data?.account?.id) {
-                    setAccountMeta((prev) => ({
-                        ...prev,
-                        [response.data.account.id]: response.data.account,
-                    }));
-                }
-
-                if (response.data?.locked) {
-                    notie.alert({
-                        type: "info",
-                        text: "Gmail sync is already running for this account.",
-                        time: 4,
-                    });
-                } else {
-                    notie.alert({
-                        type: "success",
-                        text: "Gmail sync completed.",
-                        time: 3,
-                    });
-                }
-
-                return fetchContactList(current_tab, 1);
-            })
-            .then(() => {
-                if (selectedContact) {
-                    getMessageList();
-                }
-            })
-            .catch(() => {
-                notie.alert({
-                    type: "error",
-                    text: "Unable to sync Gmail right now.",
-                    time: 4,
-                });
-            })
-            .finally(() => {
-                setSyncNowLoading(false);
-            });
-    }
-
-    function syncFacebookAccountNow(options = {}) {
-        const { silent = false } = options;
-
-        if (
-            containerCategory !== "facebook" ||
-            !selectedAccount ||
-            syncNowLoading
-        ) {
-            return Promise.resolve(null);
-        }
-
-        setSyncNowLoading(true);
-
-        return Axios.post(route("sync_facebook_chat_account"), {
-            account_id: selectedAccount,
-        })
-            .then((response) => {
-                if (response.data?.account?.id) {
-                    setAccountMeta((prev) => ({
-                        ...prev,
-                        [response.data.account.id]: response.data.account,
-                    }));
-                }
-
-                if (!silent) {
-                    notie.alert({
-                        type: response.data?.locked ? "info" : "success",
-                        text: response.data?.locked
-                            ? "Facebook sync just ran. Please wait a moment."
-                            : "Facebook chats synced.",
-                        time: 3,
-                    });
-                }
-
-                return fetchContactList(current_tab, 1);
-            })
-            .then(() => {
-                if (selectedContact) {
-                    getMessageList();
-                }
-            })
-            .catch(() => {
-                if (!silent) {
-                    notie.alert({
-                        type: "error",
-                        text: "Unable to sync Facebook right now.",
-                        time: 4,
-                    });
-                }
-            })
-            .finally(() => {
-                setSyncNowLoading(false);
-            });
+            return response.data;
+        });
     }
 
     // Auto-select the first contact if none is selected
     useEffect(() => {
-        if (!selectedContact && chatListItems.length > 0) {
-            const firstContact = chatListItems[0];
+        if (!selectedContact && Object.keys(chatList).length > 0) {
+            const firstContact = Object.values(chatList)[0];
             setSelectedContact(firstContact.id);
-            getContactMessage(
-                firstContact.id,
-                resolveContactChannel(firstContact),
-            );
+            getContactMessage(firstContact.id, "whatsapp");
         }
-    }, [chatListItems, selectedContact, current_tab]);
+    }, [chatList, selectedContact, current_tab]);
 
     // Return conversation history
-    function getMessageList(contactId = selectedContact, category = containerCategory) {
-        if (!contactId || messageRequestRef.current) {
-            return Promise.resolve(null);
+    function getMessageList() {
+        if (!selectedContact) {
+            return false;
         }
-
-        messageRequestRef.current = true;
         var url = route("get_message_list", {
-            contact_id: contactId,
-            category: category,
+            contact_id: selectedContact,
+            category: containerCategory,
             mode: "ajax",
         });
-        return Axios({
+        Axios({
             method: "get",
             url: url,
         }).then((response) => {
             setMessages(response.data);
-            return response;
-        }).finally(() => {
-            messageRequestRef.current = false;
+        });
+    }
+
+    function setArchived(contact) {
+        var url = route("set_archive");
+        var data = { contact_id: contact };
+        Inertia.post(url, data, {
+            onSuccess: (response) => {
+                //  setChatList(response.props.contact_list);
+            },
         });
     }
 
@@ -856,12 +386,8 @@ function ChatList(props) {
             if (props.filter_id) {
                 url = url + "&filter_id=" + props.filter_id;
             }
-            const activeMode = getModeForCategory(
-                containerCategory,
-                current_tab,
-            );
-            if (activeMode) {
-                url += "&mode=" + activeMode;
+            if (current_tab) {
+                url += "&mode=" + current_tab;
             }
             Inertia.get(url, {
                 onSuccess: (response) => {},
@@ -872,33 +398,21 @@ function ChatList(props) {
     // Send content to selected contact
     function sendMessage() {
         var formData = new FormData();
-        const selectedContactData = selectedConversation;
-
-        if (!selectedContactData) {
-            return;
-        }
 
         if (containerCategory == "all" || !selectedAccount) {
-            const noAccountsAvailable =
-                Object.keys(accountList || {}).length === 0;
             notie.alert({
                 type: "warning",
-                text: noAccountsAvailable
-                    ? getNoAccountMessage(containerCategory)
-                    : "Please select the correct account & channel ",
+                text: "Please select the correct account & channel ",
                 time: 5,
             });
-            return;
         }
         var destination = "";
         if (containerCategory == "whatsapp") {
-            destination = selectedContactData?.number;
+            destination = chatList["contact_id_" + selectedContact].number;
         } else if (containerCategory == "instagram") {
-            destination = selectedContactData?.insta_id;
+            destination = chatList["contact_id_" + selectedContact].insta_id;
         } else if (containerCategory == "facebook") {
-            destination = selectedContactData?.fb_id;
-        } else if (containerCategory == "email") {
-            destination = selectedContactData?.email;
+            destination = chatList["contact_id_" + selectedContact].fb_id;
         }
 
         // Append form data
@@ -912,8 +426,6 @@ function ChatList(props) {
         formData.append("product_retailer_id", data.product_retailer_id);
         formData.append("template_options", data.template_options);
         formData.append("template_type", data.template_type);
-        formData.append("email_subject", data.email_subject || "");
-        formData.append("conversation_id", selectedContact);
 
         if (!destination) {
             notie.alert({
@@ -943,7 +455,6 @@ function ChatList(props) {
                 ) {
                     let newState = Object.assign({}, data);
                     newState["content"] = "";
-                    newState["email_subject"] = "";
                     newState["template_id"] = "";
                     newState["attachment"] = "";
                     newState["template_type"] = "";
@@ -954,181 +465,6 @@ function ChatList(props) {
                 getMessageList();
             });
         }
-    }
-
-    function setEmailComposeTemplateInfo(template) {
-        const isEmailTemplate =
-            String(template?.service || "").toLowerCase() === "email" ||
-            String(template?.category || "").toUpperCase() === "EMAIL";
-
-        setEmailComposeData((prevState) => ({
-            ...prevState,
-            content: isEmailTemplate
-                ? String(template.body || "")
-                : template.name + " template selected ",
-            template_id: isEmailTemplate ? "" : template.template_uid,
-            email_subject: isEmailTemplate
-                ? String(template.email_subject || prevState.email_subject || "")
-                : prevState.email_subject,
-        }));
-    }
-
-    function clearEmailComposeContent() {
-        setEmailComposeData((prevState) => ({
-            ...prevState,
-            content: "",
-            template_id: "",
-            catalog_id: "",
-            product_retailer_id: "",
-            template_options: "",
-            template_type: "",
-        }));
-    }
-
-    function setEmailComposeProductInfo(product) {
-        setEmailComposeData((prevState) => ({
-            ...prevState,
-            content: product.name + " product selected",
-            catalog_id: product.catalog_id ? product.catalog_id : "",
-            product_retailer_id: product.retailer_id
-                ? product.retailer_id
-                : "",
-        }));
-    }
-
-    function setEmailComposeInteractiveMessage(interactiveMessage) {
-        setEmailComposeData((prevState) => ({
-            ...prevState,
-            content: interactiveMessage.content,
-            template_options: interactiveMessage.options,
-            template_type: interactiveMessage.option_type,
-        }));
-    }
-
-    function closeEmailComposeModal() {
-        setShowEmailComposeModal(false);
-        setEmailComposeData(createEmptyEmailComposeData());
-    }
-
-    function openNewMessage() {
-        if (containerCategory === "email") {
-            setEmailComposeData(createEmptyEmailComposeData());
-            setShowEmailComposeModal(true);
-            return;
-        }
-
-        setShowForm(true);
-    }
-
-    function sendEmailComposeMessage() {
-        const destination = (emailComposeData.destination || "").trim();
-        const content = (emailComposeData.content || "").trim();
-        const subject = (emailComposeData.email_subject || "").trim();
-
-        if (!selectedAccount) {
-            const noAccountsAvailable = Object.keys(accountList || {}).length === 0;
-
-            notie.alert({
-                type: "warning",
-                text: noAccountsAvailable
-                    ? getNoAccountMessage("email")
-                    : "Please select the correct account & channel ",
-                time: 5,
-            });
-            return;
-        }
-
-        if (!destination) {
-            notie.alert({
-                type: "warning",
-                text: "Please enter the receiver email.",
-                time: 4,
-            });
-            return;
-        }
-
-        if (!content) {
-            notie.alert({
-                type: "warning",
-                text: "Please write your email.",
-                time: 4,
-            });
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append("account_id", selectedAccount);
-        formData.append("destination", destination);
-        formData.append("channel", "email");
-        formData.append("content", emailComposeData.content || "");
-        formData.append("attachment", emailComposeData.attachment || "");
-        formData.append("template_id", emailComposeData.template_id || "");
-        formData.append("catalog_id", emailComposeData.catalog_id || "");
-        formData.append(
-            "product_retailer_id",
-            emailComposeData.product_retailer_id || "",
-        );
-        formData.append(
-            "template_options",
-            emailComposeData.template_options || "",
-        );
-        formData.append("template_type", emailComposeData.template_type || "");
-        formData.append("email_subject", subject);
-
-        setEmailComposeSending(true);
-        nProgress.start(0.5);
-        nProgress.inc(0.2);
-
-        Axios({
-            method: "post",
-            headers: { "Content-Type": "multipart/form-data" },
-            url: route("send_message_to_contact"),
-            data: formData,
-        })
-            .then((response) => {
-                const result = response.data;
-                nProgress.done(true);
-
-                if (result.status == "Failed") {
-                    notie.alert({
-                        type: "error",
-                        text: result.error,
-                        time: 5,
-                    });
-                    return null;
-                }
-
-                return fetchContactList(current_tab, 1).then((listResponse) => {
-                    const conversationList = Object.values(
-                        listResponse?.data?.contact_list || {},
-                    );
-                    const matchedConversation = conversationList.find(
-                        (conversation) =>
-                            String(conversation.email || "")
-                                .trim()
-                                .toLowerCase() === destination.toLowerCase(),
-                    );
-
-                    closeEmailComposeModal();
-
-                    if (matchedConversation?.id) {
-                        getContactMessage(matchedConversation.id, "email");
-                    }
-
-                    return null;
-                });
-            })
-            .catch(() => {
-                nProgress.done(true);
-                notie.alert({
-                    type: "error",
-                    text: "Unable to send email right now.",
-                    time: 4,
-                });
-            })
-            .finally(() => {
-                setEmailComposeSending(false);
-            });
     }
 
     /**
@@ -1179,69 +515,38 @@ function ChatList(props) {
         setData(newState);
     }
 
-    var category = containerCategory ? containerCategory : "all";
-    const isEmailWorkspace = containerCategory === "email";
-    const canStartNewConversation = !["facebook", "instagram"].includes(
-        containerCategory,
-    );
-    const selectedChannel = channels[category];
-    const hasAccountsForChannel = Object.keys(accountList || {}).length > 0;
-    const selectedAccountInfo = getSelectedAccountMeta();
-    const visibleTabs = isEmailWorkspace ? [tabs[1]] : tabs;
-    const emptySidebarMessage =
-        !hasAccountsForChannel && category !== "all"
-            ? getNoAccountMessage(category)
-            : props.translator["No conversations found for this channel."];
-    const syncAction = isEmailWorkspace ? (
-            <button
-                type="button"
-                onClick={
-                    syncEmailAccountNow
-                }
-                disabled={!selectedAccount || syncNowLoading}
-                title={`Last synced: ${formatLastSync(
-                    selectedAccountInfo?.last_sync_at,
-                )}`}
-                className={classNames(
-                    !selectedAccount || syncNowLoading
-                        ? "cursor-not-allowed opacity-60"
-                        : "hover:bg-[#8a19d9]",
-                    "inline-flex items-center justify-center gap-2 rounded-lg bg-[#A31EFF] px-3.5 py-2 text-sm font-semibold text-white transition",
-                )}
-            >
-                <ArrowPathIcon className="h-4 w-4" />
-                {syncNowLoading ? "Syncing..." : "Sync"}
-            </button>
-        ) : null;
+    // Update Page count based on scroll
+    const handleScroll = () => {
+        const container = listRef.current;
+        if (!container || !hasMore) return;
 
-    const loadingIndicator = (
-        <div className="flex items-center justify-center gap-2 py-6">
-            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-white/45"></span>
-            <span
-                className="h-2.5 w-2.5 animate-pulse rounded-full bg-white/45"
-                style={{ animationDelay: "150ms" }}
-            ></span>
-            <span
-                className="h-2.5 w-2.5 animate-pulse rounded-full bg-white/45"
-                style={{ animationDelay: "300ms" }}
-            ></span>
-        </div>
-    );
+        // Check if scrolled to the bottom
+        if (
+            container.scrollTop + container.clientHeight >=
+            container.scrollHeight
+        ) {
+            setPage((prevPage) => prevPage + 1);
+        }
+    };
+
+    var category = containerCategory ? containerCategory : "all";
+    const selectedChannel = channels[category];
+    const activeContact = selectedContact
+        ? chatList["contact_id_" + selectedContact]
+        : null;
 
     return (
         <Authenticated
             auth={props.auth}
             errors={props.errors}
             current_page={"Chats"}
-            hideAssistant
             hidePageTitle
-            fullHeight
             navigationMenu={props.menuBar}
         >
             <Head title="Chat" />
-            <div className="flex h-full min-h-0">
-                <div className="h-full min-h-0 w-[31%]">
-                    <div className="bg-[#140816]/70 !ml-1 rounded h-full min-h-0 text-white flex flex-col">
+            <div className="flex h-[calc(100vh-7rem)] min-h-0 flex-col gap-5 overflow-hidden px-4 pb-4 pt-3 xl:flex-row xl:gap-4">
+                <div className="h-[34rem] w-full min-h-0 xl:h-full xl:w-[28rem] xl:shrink-0">
+                    <div className="flex h-full min-h-0 flex-col rounded-[2rem] bg-[linear-gradient(180deg,rgba(25,7,35,0.98),rgba(13,6,20,0.98))] p-4 text-white shadow-[0_24px_80px_rgba(0,0,0,0.3)]">
                         <div className="flex justify-between items-center p-3 md:hidden">
                             <div>
                                 <svg
@@ -1285,24 +590,19 @@ function ChatList(props) {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex justify-between gap-3 !p-3">
-                            <div className="w-10 h-10 flex items-center justify-center z-10">
+                        <div className="mt-2 flex items-center gap-3">
+                            <div className="flex h-12 w-12 items-center justify-center">
                                 <Filter
                                     module="Contact"
                                     filter={props.filter}
                                     translator={props.translator}
                                     is_chat={true}
-                                    includeRelationFields={true}
-                                    allowedFieldNames={[
-                                        "list_relation",
-                                        "tag_relation",
-                                    ]}
                                 />
                             </div>
-                            <div className="mt-1 relative ">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <div className="relative flex-1">
+                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                                     <MagnifyingGlassIcon
-                                        className="h-5 w-5 text-[#878787]"
+                                        className="h-5 w-5 text-white/45"
                                         aria-hidden="true"
                                     />
                                 </div>
@@ -1313,190 +613,84 @@ function ChatList(props) {
                                         setSearchKey(e.target.value)
                                     }
                                     onKeyPress={(e) => handleSearchContact(e)}
-                                    className="block w-full pl-10 sm:text-sm rounded-md h-10 border-0 bg-white/5 text-white placeholder-white/60 focus:ring-[#BF00FF]/40"
+                                    className="h-12 w-full rounded-2xl border border-white/7 bg-white/[0.05] pl-12 pr-4 text-sm text-white placeholder-white/45 focus:border-[#BF00FF]/40 focus:ring-[#BF00FF]/40"
                                     placeholder="Search"
                                 />
                             </div>
-                            {canStartNewConversation && (
-                                <button
-                                    type="button"
-                                    style={{ backgroundColor: "#BF00FF" }}
-                                    className="inline-flex justify-center items-center whitespace-nowrap !py-2 !px-3 border border-transparent shadow-sm text-sm font-medium rounded-[4px] text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                                    onClick={openNewMessage}
-                                >
-                                    {props.translator["New Message"]}
-                                </button>
-                            )}
+                            <button
+                                type="button"
+                                className="chat-new-message-button shrink-0 focus:outline-none focus:ring-2 focus:ring-[#BF00FF]/40"
+                                onClick={() => setShowForm(true)}
+                            >
+                                <span className="chat-new-message-button__outline" />
+                                <span className="chat-new-message-button__inner" />
+                                <span className="chat-new-message-button__state">
+                                    <span className="chat-new-message-button__icon">
+                                        <PaperAirplaneIcon className="h-4 w-4" />
+                                    </span>
+                                    <span className="chat-new-message-button__label">
+                                        {NEW_MESSAGE_LABEL.split("").map((char, index) => (
+                                            <span
+                                                key={`${char}-${index}`}
+                                                style={{ "--i": index }}
+                                                className="chat-new-message-button__letter"
+                                            >
+                                                {char === " " ? "\u00A0" : char}
+                                            </span>
+                                        ))}
+                                    </span>
+                                </span>
+                            </button>
                         </div>
-                        <div>
-                            <div className="border-b border-white/10">
+                        <div className="mt-4 overflow-hidden rounded-[1.55rem] bg-[linear-gradient(180deg,rgba(29,9,41,0.98),rgba(22,8,31,0.94))] shadow-[0_18px_40px_rgba(0,0,0,0.28)] ring-1 ring-white/5">
+                            <div>
                                 <nav
-                                    className="mt-2 -mb-px flex space-x-3 pl-2"
+                                    className="grid grid-cols-3 gap-0"
                                     aria-label="Tabs"
                                 >
-                                    {visibleTabs.map((tab) => (
-                                        <a
+                                    {tabs.map((tab) => (
+                                        <button
                                             key={tab.name}
-                                            //  href={tab.href}
+                                            type="button"
                                             onClick={() =>
                                                 setCurrentTab(tab.id)
                                             }
                                             className={classNames(
                                                 tab.id == current_tab
-                                                    ? "border-purple-500 text-white"
-                                                    : "border-transparent text-white hover:text-white hover:border-white/20",
-                                                "whitespace-nowrap !py-4 !px-1 border-b-2 font-medium text-base cursor-pointer",
+                                                    ? "bg-[linear-gradient(135deg,rgba(255,79,216,0.34),rgba(163,30,255,0.32))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_12px_30px_rgba(127,0,190,0.22)]"
+                                                    : "text-white/72 hover:bg-white/[0.04] hover:text-white",
+                                                "flex min-h-[4.35rem] flex-col justify-center px-5 py-2.5 text-left transition first:rounded-l-[1.55rem] last:rounded-r-[1.55rem]",
                                             )}
                                         >
-                                            {tab.name}
-
-                                            <span
-                                                className={classNames(
-                                                    tab.id == current_tab
-                                                        ? "bg-white/10 text-white"
-                                                        : "bg-white/5 text-white",
-                                                    "hidden ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block",
-                                                )}
-                                            >
-                                                {chatCounts?.[tab.id] || 0}
+                                            <span className="text-[0.9rem] font-semibold leading-tight">{tab.name}</span>
+                                            <span className="mt-1.5 text-[0.8rem] font-medium text-white/50">
+                                                {props.counts[tab.id]}
                                             </span>
-                                        </a>
+                                        </button>
                                     ))}
                                 </nav>
                             </div>
                         </div>
-                        <nav className="flex-1 min-h-0" aria-label="Directory">
-                            <div className="relative h-full min-h-0">
+                        <nav className="mt-4 flex-1 min-h-0" aria-label="Directory">
+                            <div className="relative h-full min-h-0 overflow-hidden rounded-[1.75rem] bg-white/[0.03] shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
                                 <ul
                                     role="list"
-                                    className="relative z-0 divide-y divide-white/10 !pl-1 overflow-y-auto h-full"
+                                    className="contact-list-scrollbar relative z-0 h-full overflow-y-auto divide-y divide-white/8 px-0 pr-2"
                                     ref={listRef}
+                                    onScroll={handleScroll}
                                 >
-                                    {chatListItems.map((person) => (
-                                        <li key={getConversationKey(person.id)}>
-                                            {resolveContactChannel(person) ===
-                                            "email" ? (
-                                                <div
-                                                    className={classNames(
-                                                        "group mx-1 my-0.5 flex items-start gap-2 rounded-lg px-2 py-2 transition",
-                                                        selectedContact ==
-                                                            person.id
-                                                            ? "bg-[linear-gradient(135deg,rgba(191,0,255,0.10),rgba(38,11,52,0.82))]"
-                                                            : person.unread_count >
-                                                                0
-                                                              ? "bg-white/[0.018] hover:bg-white/[0.04]"
-                                                              : "bg-transparent hover:bg-white/[0.024]",
-                                                    )}
-                                                >
-                                                    <div className="flex-shrink-0 pt-0.5">
-                                                        <span
-                                                            className={classNames(
-                                                                "inline-flex h-8 w-8 items-center justify-center rounded-lg text-[11px] font-semibold text-white",
-                                                                person.unread_count >
-                                                                    0
-                                                                    ? "bg-[#A31EFF]/25"
-                                                                    : "bg-white/10",
-                                                            )}
-                                                        >
-                                                            {getContactInitials(
-                                                                person.name ||
-                                                                    person.email ||
-                                                                    person.number,
-                                                            )}
-                                                        </span>
-                                                    </div>
-
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            getContactMessage(
-                                                                person.id,
-                                                                resolveContactChannel(
-                                                                    person,
-                                                                ),
-                                                            )
-                                                        }
-                                                        className="min-w-0 flex-1 text-left focus:outline-none"
-                                                    >
-                                                        <div className="flex items-start justify-between gap-3">
-                                                            <div className="min-w-0 flex-1">
-                                                                <div
-                                                                    className={classNames(
-                                                                "truncate text-[13px] font-semibold transition-colors",
-                                                                person.unread_count >
-                                                                    0
-                                                                    ? "text-white"
-                                                                            : "text-white/90 group-hover:text-white",
-                                                                    )}
-                                                                >
-                                                                    {person.name ||
-                                                                        person.email ||
-                                                                        person.number}
-                                                                </div>
-                                                            </div>
-                                                            <div className="shrink-0 text-[11px] text-white/40">
-                                                                {formatConversationTime(
-                                                                    person.last_message_at,
-                                                                )}
-                                                            </div>
-                                                        </div>
-
-                                                        {getEmailConversationMeta(
-                                                            person,
-                                                        ) && (
-                                                            <div className="mt-0.5 truncate text-[11px] text-white/46">
-                                                                {getEmailConversationMeta(
-                                                                    person,
-                                                                )}
-                                                            </div>
-                                                        )}
-
-                                                        <div
-                                                            className={classNames(
-                                                                "mt-0.5 truncate text-[12px]",
-                                                                person.unread_count >
-                                                                    0
-                                                                    ? "font-medium text-white/82"
-                                                                    : "text-white/66",
-                                                            )}
-                                                        >
-                                                            {getEmailConversationSubject(
-                                                                person,
-                                                            )}
-                                                        </div>
-                                                    </button>
-
-                                                    <div className="flex shrink-0 items-start gap-2 pt-0.5">
-                                                        {person.unread_count >
-                                                            0 && (
-                                                            <div className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-[#A31EFF] px-1.5 text-[10px] font-semibold text-white">
-                                                                {
-                                                                    person.unread_count
-                                                                }
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div
-                                                    className={classNames(
-                                                        "group relative !px-3 !py-3 flex items-center space-x-3 hover:bg-white/5 focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#BF00FF]/40",
-                                                        selectedContact == person.id
-                                                            ? "bg-[#170024]/90"
-                                                            : "",
-                                                    )}
-                                                >
+                                    {Object.entries(chatList).map(
+                                        ([id, person], j) => (
+                                            <li key={id}>
+                                                <div className={classNames(
+                                                    "group relative flex w-full items-center gap-3 px-6 py-4 transition hover:bg-white/[0.04] focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#BF00FF]/40",
+                                                    selectedContact == person.id
+                                                        ? "bg-[linear-gradient(135deg,rgba(163,30,255,0.16),rgba(255,79,216,0.08))] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+                                                        : "",
+                                                )}>
                                                     <div className="flex-shrink-0">
-                                                        <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-500">
-                                                            <span className="text-xl font-normal leading-none text-white">
-                                                                {getContactInitials(
-                                                                    person.name ||
-                                                                        person.number ||
-                                                                        person.fb_id ||
-                                                                        person.insta_id ||
-                                                                        person.email,
-                                                                )}
-                                                            </span>
+                                                        <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.04))] text-white/80 shadow-[0_8px_20px_rgba(0,0,0,0.18)]">
+                                                            <UserIcon className="h-6 w-6" />
                                                         </span>
                                                     </div>
                                                     <div className="flex-1 min-w-0">
@@ -1505,18 +699,17 @@ function ChatList(props) {
                                                             onClick={() =>
                                                                 getContactMessage(
                                                                     person.id,
-                                                                    resolveContactChannel(
-                                                                        person,
-                                                                    ),
+                                                                    person.channel,
                                                                 )
                                                             }
                                                             className="focus:outline-none"
                                                         >
+                                                            {/* Extend touch target to entire panel */}
                                                             <span
                                                                 className="absolute inset-0"
                                                                 aria-hidden="true"
                                                             />
-                                                            <span className="text-sm font-semibold text-white flex items-start transition-colors group-hover:text-[#BF00FF]">
+                                                            <span className="flex items-start text-sm font-semibold text-white transition-colors group-hover:text-[#ff7de5]">
                                                                 {person &&
                                                                 person.name ? (
                                                                     <>
@@ -1532,369 +725,139 @@ function ChatList(props) {
                                                                     </>
                                                                 )}
                                                             </span>
-                                                            <span className="text-sm text-[#878787] truncate flex items-start">
-                                                                {getContactSecondaryValue(
-                                                                    person,
-                                                                    resolveContactChannel(
-                                                                        person,
-                                                                    ),
-                                                                )}
+                                                            <span className="flex items-start truncate text-sm text-white/45">
+                                                                {person.number}
                                                             </span>
-                                                            {person.channel ===
-                                                                "email" &&
-                                                                getEmailConversationMeta(
-                                                                    person,
-                                                                ) && (
-                                                                    <span className="text-xs text-white/40 truncate flex items-start">
-                                                                        {getEmailConversationMeta(
-                                                                            person,
-                                                                        )}
-                                                                    </span>
-                                                                )}
                                                         </button>
                                                     </div>
-                                                    {person.unread_count > 0 && (
-                                                        <div className="flex-shrink-0 rounded-full bg-[#A31EFF] px-2 py-0.5 text-xs font-semibold text-white">
-                                                            {
-                                                                person.unread_count
-                                                            }
-                                                        </div>
-                                                    )}
+                                                    <div
+                                                        className="cursor-pointer"
+                                                        ype="button"
+                                                        //  onClick={() => getcategoryContacts()}
+                                                    >
+                                                        <Dropdown>
+                                                            <Dropdown.Trigger>
+                                                                <span className="inline-flex rounded-md">
+                                                                    <button type="button">
+                                                                        <EllipsisVerticalIcon className="h-4 w-4 text-white/45" />
+                                                                    </button>
+                                                                </span>
+                                                            </Dropdown.Trigger>
+
+                                                            <Dropdown.Content
+                                                                align="right"
+                                                                contentClasses="py-1 bg-white w-64 shadow-md"
+                                                            >
+                                                                <ul
+                                                                    role="list"
+                                                                    className="divide-y divide-gray-200 overflow-y-auto m-h-64 !pl-0"
+                                                                >
+                                                                    <li
+                                                                        onClick={() =>
+                                                                            setArchived(
+                                                                                person.id,
+                                                                            )
+                                                                        }
+                                                                        className={
+                                                                            "px-4 py-2 text-gray-900 text-sm hover:bg-sky-700 cursor-pointer "
+                                                                        }
+                                                                    >
+                                                                        {current_tab ==
+                                                                        "archived" ? (
+                                                                            <>
+                                                                                {" "}
+                                                                                Unarchive{" "}
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                Archive
+                                                                            </>
+                                                                        )}
+                                                                    </li>
+                                                                </ul>
+                                                            </Dropdown.Content>
+                                                        </Dropdown>
+                                                    </div>
                                                 </div>
-                                            )}
-                                        </li>
-                                    ))}
-                                    {chatListItems.length == 0 && (
+                                            </li>
+                                        ),
+                                    )}
+                                    {Object.entries(chatList).length == 0 && (
                                         <li>
-                                            <div className="relative px-6 py-5 flex items-center justify-center space-x-3 text-[#878787] hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
-                                                {channelLoading
-                                                    ? loadingIndicator
-                                                    : emptySidebarMessage}
+                                            <div className="flex items-center justify-center px-6 py-8 text-center text-sm text-white/45">
+                                                {
+                                                    props.translator[
+                                                        "Conversation not start yet."
+                                                    ]
+                                                }
                                             </div>
                                         </li>
                                     )}
-                                    {chatListItems.length > 0 && (
-                                        <li
-                                            ref={loadMoreRef}
-                                            className="flex items-center justify-center py-3"
-                                        >
-                                            {pageLoading
-                                                ? loadingIndicator
-                                                : null}
-                                        </li>
-                                    )}
                                 </ul>
+                                {pageLoading && (
+                                    <div className="flex justify-center py-4">
+                                        <div className="flex space-x-2 animate-pulse">
+                                            <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                                            <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                                            <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </nav>
                     </div>
                 </div>
-                <div className="h-full min-h-0 w-[69%]">
-                    <div
-                        className={classNames(
-                            "flex min-h-0 h-full flex-1 flex-col bg-[#0b0b10] pr-0 !sm:py-3 !sm:pr-3",
-                            isEmailWorkspace
-                                ? "justify-start gap-2"
-                                : "justify-between gap-3",
-                        )}
-                    >
-                        {(!selectedContact || !selectedConversation) && (
-                            <div
-                                className={classNames(
-                                    "justify-between rounded-2xl text-white",
-                                    isEmailWorkspace
-                                        ? "flex flex-col gap-2 bg-[#170024]/62 px-4 py-3"
-                                        : "flex sm:items-center !px-3 !py-3 bg-[#170024]/80",
-                                )}
-                            >
-                                <div className="text-sm text-white/60">
-                                    {selectedChannel.label}
-                                </div>
-
-                                <div
-                                    className={classNames(
-                                        "flex items-center gap-3",
-                                        isEmailWorkspace
-                                            ? "justify-between"
-                                            : "",
-                                    )}
-                                >
-                                    <div className="flex items-center gap-2">
-                                        {syncAction}
-                                    </div>
-                                    <Menu as="div" className="relative">
-                                        <div>
-                                            <Menu.Button className="max-w-xs !px-3 !py-1.5 flex items-center gap-2 text-sm rounded-full bg-white/5 text-white/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/60 focus:ring-offset-0">
-                                                <selectedChannel.icon className="w-8 h-8 fill-current text-white/70" />
-                                                <span>
-                                                    {selectedChannel.label}
-                                                </span>
-                                            </Menu.Button>
-                                        </div>
-                                        <Transition
-                                            as={Fragment}
-                                            enter="transition ease-out duration-100"
-                                            enterFrom="transform opacity-0 scale-95"
-                                            enterTo="transform opacity-100 scale-100"
-                                            leave="transition ease-in duration-75"
-                                            leaveFrom="transform opacity-100 scale-100"
-                                            leaveTo="transform opacity-0 scale-95"
-                                        >
-                                            <Menu.Items className="origin-top-right absolute right-0 mt-2 rounded-xl shadow-lg bg-[#0f0a14] py-1 focus:outline-none">
-                                                {selectableChannels.map(
-                                                    ([name, channel]) => (
-                                                        <Menu.Item key={name}>
-                                                            <div
-                                                                className={classNames(
-                                                                    containerCategory ==
-                                                                        name
-                                                                        ? "bg-white/10"
-                                                                        : "",
-                                                                    "p-2 flex items-center gap-2",
-                                                                )}
-                                                            >
-                                                                <channel.icon className="w-8 h-8 fill-current text-white/70" />
-                                                                <button
-                                                                    onClick={() =>
-                                                                        selectContactCategory(
-                                                                            name,
-                                                                        )
-                                                                    }
-                                                                    type="button"
-                                                                    className="block py-2 px-2 text-sm text-white/80 hover:text-white w-full text-left"
-                                                                >
-                                                                    {
-                                                                        channel.label
-                                                                    }
-                                                                </button>
-                                                            </div>
-                                                        </Menu.Item>
-                                                    ),
-                                                )}
-                                            </Menu.Items>
-                                        </Transition>
-                                    </Menu>
-
-                                    <Menu as="div" className="relative">
-                                        <div>
-                                            <Menu.Button className="max-w-xs px-3 py-1.5 flex items-center text-sm rounded-full bg-white/5 text-white/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/60 focus:ring-offset-0">
-                                                <div className="flex items-center gap-2">
-                                                    <span>
-                                                        {getAccountLabel(
-                                                            selectedAccount,
-                                                        )}
-                                                    </span>
-                                                    <span className="ml-1">
-                                                        <svg
-                                                            className="-mr-1 ml-2 h-5 w-5"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            viewBox="0 0 20 20"
-                                                            fill="currentColor"
-                                                            aria-hidden="true"
-                                                        >
-                                                            <path
-                                                                fillRule="evenodd"
-                                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                                clipRule="evenodd"
-                                                            />
-                                                        </svg>
-                                                    </span>
-                                                </div>
-                                            </Menu.Button>
-                                        </div>
-                                        <Transition
-                                            as={Fragment}
-                                            enter="transition ease-out duration-100"
-                                            enterFrom="transform opacity-0 scale-95"
-                                            enterTo="transform opacity-100 scale-100"
-                                            leave="transition ease-in duration-75"
-                                            leaveFrom="transform opacity-100 scale-100"
-                                            leaveTo="transform opacity-0 scale-95"
-                                        >
-                                            <Menu.Items className="origin-top-right absolute right-0 mt-2 rounded-xl shadow-lg bg-[#0f0a14] py-1 focus:outline-none">
-                                                {channelLoading ? (
-                                                    <div className="px-4 py-2 text-sm text-white/60">
-                                                        {loadingIndicator}
-                                                    </div>
-                                                ) : Object.keys(accountList)
-                                                      .length === 0 ? (
-                                                    <div className="px-4 py-2 text-sm text-white/60">
-                                                        {getNoAccountMessage(
-                                                            category,
-                                                        )}
-                                                    </div>
-                                                ) : (
-                                                    Object.entries(
-                                                        accountList,
-                                                    ).map(([id, name]) => (
-                                                        <Menu.Item key={id}>
-                                                            <div
-                                                                className={classNames(
-                                                                    selectedAccount ==
-                                                                        id
-                                                                        ? "bg-white/10"
-                                                                        : "",
-                                                                    "p-2 flex items-center gap-2",
-                                                                )}
-                                                            >
-                                                                <span
-                                                                    onClick={() =>
-                                                                        setSelectedAccount(
-                                                                            id,
-                                                                        )
-                                                                    }
-                                                                    className="block px-4 text-sm text-white/80 hover:text-white w-full cursor-pointer"
-                                                                >
-                                                                    {getAccountLabel(
-                                                                        id,
-                                                                    ) || name}
-                                                                </span>
-                                                            </div>
-                                                        </Menu.Item>
-                                                    ))
-                                                )}
-                                            </Menu.Items>
-                                        </Transition>
-                                    </Menu>
-                                </div>
-                            </div>
-                        )}
-
-                        {selectedContact && selectedConversation && (
+                <div className="min-h-0 flex-1 overflow-hidden">
+                    <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden">
+                        {selectedContact &&
+                            chatList["contact_id_" + selectedContact] && (
                                 <>
-                                    <div
-                                        className={classNames(
-                                            "justify-between rounded-2xl text-white",
-                                            isEmailWorkspace
-                                                ? "flex flex-col gap-3 bg-[#170024]/62 px-4 py-3 lg:flex-row lg:items-start"
-                                                : "flex sm:items-center !py-3 !px-3 bg-[#170024]/80",
-                                        )}
-                                    >
-                                        <div
-                                            className={classNames(
-                                                "relative flex",
-                                                isEmailWorkspace
-                                                    ? "min-w-0 flex-1 items-start gap-3"
-                                                    : "items-center space-x-2",
-                                            )}
-                                        >
+                                    <div className="relative z-30 grid grid-cols-1 gap-3 overflow-visible lg:grid-cols-[minmax(0,1fr)_auto_auto]">
+                                        <div className="flex min-h-[5.25rem] items-center gap-4 rounded-[1.85rem] bg-[linear-gradient(135deg,rgba(26,10,38,0.98),rgba(11,8,18,0.98))] px-5 text-white shadow-[0_24px_80px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.06)] ring-1 ring-[#8f38d9]/18">
+                                        <div className="relative flex items-center space-x-2">
                                             <div className="flex gap-1">
                                                 <div className="relative">
-                                                    <span
-                                                        className={classNames(
-                                                            "inline-flex items-center justify-center text-white",
-                                                            isEmailWorkspace
-                                                                ? "h-10 w-10 rounded-lg bg-[#A31EFF]/18 text-sm font-semibold"
-                                                                : "h-10 w-10 rounded-full bg-white/10",
-                                                        )}
-                                                    >
-                                                        <span className="leading-none">
-                                                            {getContactInitials(
-                                                                selectedConversation.name ||
-                                                                    selectedConversation.email,
-                                                            )}
-                                                        </span>
+                                                    <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,115,226,0.35),rgba(147,51,234,0.22)_55%,rgba(255,255,255,0.02)_100%)] text-white shadow-[0_12px_30px_rgba(127,0,190,0.28),inset_0_1px_0_rgba(255,255,255,0.14)] ring-1 ring-white/8">
+                                                        <UserIcon className="h-7 w-7" />
                                                     </span>
                                                 </div>
                                             </div>
-                                            <div
-                                                    className={classNames(
-                                                        "flex flex-col",
-                                                        isEmailWorkspace
-                                                            ? "min-w-0 flex-1 gap-1 leading-normal"
-                                                            : "leading-tight",
-                                                    )}
-                                                >
-                                                <div
-                                                    className={classNames(
-                                                        "flex items-center",
-                                                        isEmailWorkspace
-                                                            ? "flex-wrap gap-x-3 gap-y-1"
-                                                            : "text-sm font-semibold mt-1",
-                                                    )}
-                                                >
-                                                    {selectedConversation.contact_id ? (
-                                                        <span className="text-white">
-                                                            <Link
-                                                                href={route(
-                                                                    "detailContact",
-                                                                    {
-                                                                        id: selectedConversation.contact_id,
-                                                                    },
-                                                                )}
-                                                                className={classNames(
-                                                                    "cursor-pointer underline hover:decoration-white",
-                                                                    isEmailWorkspace
-                                                                        ? "truncate text-[15px] font-semibold decoration-white/20 underline-offset-4"
-                                                                        : "decoration-white/40",
-                                                                )}
-                                                            >
+                                            <div className="flex flex-col leading-tight">
+                                                <div className="mt-1 flex items-center text-sm font-semibold">
+                                                    <span className="mr-3 text-white">
+                                                        <Link
+                                                            href={route(
+                                                                "detailContact",
                                                                 {
-                                                                    selectedConversation.name
-                                                                }
-                                                            </Link>
-                                                        </span>
-                                                    ) : (
-                                                        <span
-                                                            className={classNames(
-                                                                "text-white",
-                                                                isEmailWorkspace
-                                                                    ? "truncate text-[15px] font-semibold"
-                                                                    : "mr-3",
+                                                                    id: selectedContact,
+                                                                },
                                                             )}
+                                                            className="cursor-pointer text-lg font-semibold text-white no-underline drop-shadow-[0_1px_10px_rgba(0,0,0,0.32)] hover:text-[#ff92eb]"
                                                         >
-                                                            {
-                                                                selectedConversation.name
-                                                            }
-                                                        </span>
-                                                    )}
+                                                            {activeContact.number || activeContact.name}
+                                                        </Link>
+                                                    </span>
                                                 </div>
-                                                {selectedConversation.channel ===
-                                                    "email" && (
-                                                    <>
-                                                        {selectedConversation.email && (
-                                                            <span
-                                                                className={classNames(
-                                                                    isEmailWorkspace
-                                                                        ? "truncate text-[12px] text-white/48"
-                                                                        : "text-xs text-white/40",
-                                                                )}
-                                                            >
-                                                                {
-                                                                    selectedConversation.email
-                                                                }
-                                                            </span>
-                                                        )}
-                                                    </>
-                                                )}
                                             </div>
-                                            {/* <EllipsisVerticalIcon
-                                        className="h-4 w-4"
-                                        aria-hidden="true"
-                                    /> */}
+                                        </div>
                                         </div>
 
-                                        <div
-                                            className={classNames(
-                                                "flex items-center gap-3",
-                                                isEmailWorkspace
-                                                    ? "flex-wrap lg:justify-end lg:gap-2"
-                                                    : "",
-                                            )}
-                                        >
-                                            {isEmailWorkspace && (
-                                                <div className="flex items-center gap-2">
-                                                    {syncAction}
-                                                </div>
-                                            )}
-                                            <Menu as="div" className="relative">
+                                        <div className="flex items-center gap-2 rounded-[1rem] bg-[#09070d] px-2.5 text-white shadow-[0_18px_48px_rgba(0,0,0,0.26)]">
+                                            <Menu
+                                                as="div"
+                                                className="relative"
+                                            >
                                                 <div>
-                                                    <Menu.Button className="max-w-xs !px-3 !py-1.5 flex items-center gap-2 text-sm rounded-lg bg-white/[0.04] text-white/75 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/50 focus:ring-offset-0">
-                                                        <selectedChannel.icon className="w-8 h-8 fill-current text-white/70" />
-                                                        <span>
-                                                            {
-                                                                selectedChannel.label
-                                                            }
-                                                        </span>
+                                                    <Menu.Button className="flex min-h-[3.35rem] min-w-[6.35rem] items-center justify-between gap-2 text-[0.88rem] text-white/90 focus:outline-none">
+                                                        <div className="flex items-center gap-2">
+                                                            <selectedChannel.icon className="h-4.5 w-4.5 fill-current text-white" />
+                                                            <span className="font-medium">
+                                                                {
+                                                                    selectedChannel.label
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                        <ChevronDownIcon className="h-3 w-3 text-white/60" />
                                                     </Menu.Button>
                                                 </div>
                                                 <Transition
@@ -1906,8 +869,10 @@ function ChatList(props) {
                                                     leaveFrom="transform opacity-100 scale-100"
                                                     leaveTo="transform opacity-0 scale-95"
                                                 >
-                                                    <Menu.Items className="origin-top-right absolute right-0 mt-2 rounded-xl shadow-lg bg-[#0f0a14] py-1 focus:outline-none">
-                                                        {selectableChannels.map(
+                                                    <Menu.Items className="origin-top-right absolute right-0 z-40 mt-2 min-w-[180px] rounded-[1.2rem] bg-[linear-gradient(180deg,rgba(26,10,38,0.98),rgba(11,8,18,0.98))] p-1.5 shadow-[0_22px_60px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.06)] ring-1 ring-[#8f38d9]/20 focus:outline-none">
+                                                        {Object.entries(
+                                                            channels,
+                                                        ).map(
                                                             ([
                                                                 name,
                                                                 channel,
@@ -1919,12 +884,12 @@ function ChatList(props) {
                                                                         className={classNames(
                                                                             containerCategory ==
                                                                                 name
-                                                                                ? "bg-white/10"
+                                                                                ? "bg-[linear-gradient(135deg,rgba(255,79,216,0.24),rgba(163,30,255,0.2))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
                                                                                 : "",
-                                                                            "p-2 flex items-center gap-2",
+                                                                            "rounded-[0.95rem] px-3 py-2.5 flex items-center gap-2 transition hover:bg-white/[0.06]",
                                                                         )}
                                                                     >
-                                                                        <channel.icon className="w-8 h-8 fill-current text-white/70" />
+                                                                        <channel.icon className="w-5 h-5 fill-current text-white/75" />
                                                                         <button
                                                                             onClick={() =>
                                                                                 selectContactCategory(
@@ -1934,7 +899,7 @@ function ChatList(props) {
                                                                             type={
                                                                                 "button"
                                                                             }
-                                                                            className="block py-2 px-2 text-sm text-white/80 hover:text-white w-full text-left"
+                                                                            className="block py-1 text-sm text-white/85 hover:text-white w-full text-left"
                                                                         >
                                                                             {
                                                                                 channel.label
@@ -1947,173 +912,133 @@ function ChatList(props) {
                                                     </Menu.Items>
                                                 </Transition>
                                             </Menu>
-                                            <Menu as="div" className="relative">
-                                                <div>
-                                                    <Menu.Button className="max-w-xs px-3 py-1.5 flex items-center text-sm rounded-lg bg-white/[0.04] text-white/75 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/50 focus:ring-offset-0">
-                                                        <div className="flex items-center gap-2">
-                                                            <span>
-                                                                {getAccountLabel(
-                                                                    selectedAccount,
-                                                                )}
-                                                            </span>
-                                                            {containerCategory ==
-                                                                "whatsapp" &&
-                                                                selectedAccount &&
-                                                                selectedContact && (
-                                                                    <>
-                                                                        {props
-                                                                            .sessions[
-                                                                            selectedContact
-                                                                        ] &&
-                                                                        props
-                                                                            .sessions[
-                                                                            selectedContact
-                                                                        ][
-                                                                            selectedAccount
-                                                                        ] ? (
-                                                                            <span
-                                                                                title="Session active"
-                                                                                className="rounded-full p-1 bg-green-500"
-                                                                            ></span>
-                                                                        ) : (
-                                                                            <span
-                                                                                title="Session inactive"
-                                                                                className="rounded-full p-1 bg-red-500"
-                                                                            ></span>
-                                                                        )}
-                                                                    </>
-                                                                )}
-                                                            <span className="ml-1">
-                                                                <svg
-                                                                    className="-mr-1 ml-2 h-5 w-5"
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                    viewBox="0 0 20 20"
-                                                                    fill="currentColor"
-                                                                    aria-hidden="true"
-                                                                >
-                                                                    <path
-                                                                        fillRule="evenodd"
-                                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                                        clipRule="evenodd"
-                                                                    />
-                                                                </svg>
-                                                            </span>
-                                                        </div>
-                                                    </Menu.Button>
-                                                </div>
-                                                <Transition
-                                                    as={Fragment}
-                                                    enter="transition ease-out duration-100"
-                                                    enterFrom="transform opacity-0 scale-95"
-                                                    enterTo="transform opacity-100 scale-100"
-                                                    leave="transition ease-in duration-75"
-                                                    leaveFrom="transform opacity-100 scale-100"
-                                                    leaveTo="transform opacity-0 scale-95"
-                                                >
-                                                    <Menu.Items className="origin-top-right absolute right-0 mt-2 rounded-xl shadow-lg bg-[#0f0a14] py-1 focus:outline-none">
-                                                        {channelLoading ? (
-                                                            <div className="px-4 py-2 text-sm text-white/60">
-                                                                {
-                                                                    loadingIndicator
-                                                                }
-                                                            </div>
-                                                        ) : Object.keys(
-                                                              accountList,
-                                                          ).length === 0 ? (
-                                                            <div className="px-4 py-2 text-sm text-white/60">
-                                                                {getNoAccountMessage(
-                                                                    category,
-                                                                )}
-                                                            </div>
-                                                        ) : (
-                                                            Object.entries(
-                                                                accountList,
-                                                            ).map(
-                                                                ([
-                                                                    id,
-                                                                    name,
-                                                                ]) => (
-                                                                    <Menu.Item
-                                                                        key={id}
-                                                                    >
-                                                                        <div
-                                                                            className={classNames(
-                                                                                selectedAccount ==
-                                                                                    id
-                                                                                    ? "bg-white/10"
-                                                                                    : "",
-                                                                                "p-2 flex items-center gap-2",
-                                                                            )}
-                                                                        >
-                                                                            <span
-                                                                                onClick={() =>
-                                                                                    setSelectedAccount(
-                                                                                        id,
-                                                                                    )
-                                                                                }
-                                                                                className="block px-4 text-sm text-white/80 hover:text-white w-full cursor-pointer"
-                                                                            >
-                                                                                {getAccountLabel(
-                                                                                    id,
-                                                                                ) ||
-                                                                                    name}
-                                                                            </span>
-
-                                                                            {containerCategory ==
-                                                                                "whatsapp" &&
-                                                                                selectedContact &&
-                                                                                selectedContact && (
-                                                                                    <>
-                                                                                        {props
-                                                                                            .sessions[
-                                                                                            selectedContact
-                                                                                        ] &&
-                                                                                        props
-                                                                                            .sessions[
-                                                                                            selectedContact
-                                                                                        ][
-                                                                                            id
-                                                                                        ] ? (
-                                                                                            <span
-                                                                                                title="Session active"
-                                                                                                className="rounded-full p-1 bg-green-500"
-                                                                                            ></span>
-                                                                                        ) : (
-                                                                                            <span
-                                                                                                title="Session inactive"
-                                                                                                className="rounded-full p-1 bg-red-500"
-                                                                                            ></span>
-                                                                                        )}
-                                                                                    </>
-                                                                                )}
-                                                                        </div>
-                                                                    </Menu.Item>
-                                                                ),
-                                                            )
-                                                        )}
-                                                    </Menu.Items>
-                                                </Transition>
-                                            </Menu>
                                         </div>
 
-                                        {/* Chat header user menu removed (global header keeps user menu) */}
-                                    </div>
-                                    <MessageList
-                                        messages={messages}
-                                        selectedContact={selectedContact}
-                                        containerCategory={containerCategory}
-                                        loadedStory={loadedStory}
-                                        setLoadedStory={setLoadedStory}
-                                    />
+                                        <div className="flex items-center gap-2 rounded-[1rem] bg-[#09070d] px-2.5 text-white shadow-[0_18px_48px_rgba(0,0,0,0.26)]">
+                                        <Menu
+                                            as="div"
+                                            className="relative"
+                                        >
+                                            <div>
+                                                <Menu.Button className="flex min-h-[3.35rem] min-w-[6.55rem] items-center justify-between text-[0.88rem] text-white/90 focus:outline-none">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-medium uppercase tracking-[0.04em]">
+                                                            {selectedAccount ? (
+                                                                <>{accountList[selectedAccount]}</>
+                                                            ) : (
+                                                                "AESSEFIN"
+                                                            )}
+                                                        </span>
+                                                        {containerCategory ==
+                                                            "whatsapp" &&
+                                                            selectedAccount &&
+                                                            selectedContact && (
+                                                                <>
+                                                                    {props
+                                                                        .sessions[
+                                                                        selectedContact
+                                                                    ] &&
+                                                                    props
+                                                                        .sessions[
+                                                                        selectedContact
+                                                                    ][
+                                                                        selectedAccount
+                                                                    ] ? (
+                                                                        <span
+                                                                            title="Session active"
+                                                                            className="rounded-full p-1 bg-green-500"
+                                                                        ></span>
+                                                                    ) : (
+                                                                        <span
+                                                                            title="Session inactive"
+                                                                            className="rounded-full p-1 bg-red-500"
+                                                                        ></span>
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                        <span className="ml-1">
+                                                            <ChevronDownIcon className="h-3 w-3 text-white/60" />
+                                                        </span>
+                                                    </div>
+                                                </Menu.Button>
+                                            </div>
+                                            <Transition
+                                                as={Fragment}
+                                                enter="transition ease-out duration-100"
+                                                enterFrom="transform opacity-0 scale-95"
+                                                enterTo="transform opacity-100 scale-100"
+                                                leave="transition ease-in duration-75"
+                                                leaveFrom="transform opacity-100 scale-100"
+                                                leaveTo="transform opacity-0 scale-95"
+                                            >
+                                                <Menu.Items className="origin-top-right absolute right-0 z-40 mt-2 min-w-[220px] rounded-[1.2rem] bg-[linear-gradient(180deg,rgba(26,10,38,0.98),rgba(11,8,18,0.98))] p-1.5 shadow-[0_22px_60px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.06)] ring-1 ring-[#8f38d9]/20 focus:outline-none">
+                                                    {Object.entries(accountList).map(([id, name]) => (
+                                                        <Menu.Item key={id}>
+                                                            <div
+                                                                className={classNames(
+                                                                    selectedAccount ==
+                                                                        id
+                                                                        ? "bg-[linear-gradient(135deg,rgba(255,79,216,0.24),rgba(163,30,255,0.2))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                                                                        : "",
+                                                                    "rounded-[0.95rem] px-3 py-2.5 flex items-center gap-2 transition hover:bg-white/[0.06]",
+                                                                )}
+                                                            >
+                                                                <span
+                                                                    onClick={() =>
+                                                                        setSelectedAccount(
+                                                                            id,
+                                                                        )
+                                                                    }
+                                                                    className="block text-sm text-white/85 hover:text-white w-full cursor-pointer"
+                                                                >
+                                                                    {name}
+                                                                </span>
 
-                                    <div
-                                        className={classNames(
-                                            "mb-2 rounded-2xl sm:mb-0",
-                                            isEmailWorkspace
-                                                ? "bg-[#15061d]/58 px-3 py-2.5"
-                                                : "bg-[#170024]/80 px-4 pt-4",
-                                        )}
-                                    >
+                                                                {containerCategory ==
+                                                                    "whatsapp" &&
+                                                                    selectedContact &&
+                                                                    selectedContact && (
+                                                                        <>
+                                                                            {props
+                                                                                .sessions[
+                                                                                selectedContact
+                                                                            ] &&
+                                                                            props
+                                                                                .sessions[
+                                                                                selectedContact
+                                                                            ][
+                                                                                id
+                                                                            ] ? (
+                                                                                <span
+                                                                                    title="Session active"
+                                                                                    className="rounded-full p-1 bg-green-500"
+                                                                                ></span>
+                                                                            ) : (
+                                                                                <span
+                                                                                    title="Session inactive"
+                                                                                    className="rounded-full p-1 bg-red-500"
+                                                                                ></span>
+                                                                            )}
+                                                                        </>
+                                                                    )}
+                                                            </div>
+                                                        </Menu.Item>
+                                                    ))}
+                                                </Menu.Items>
+                                            </Transition>
+                                        </Menu>
+                                        </div>
+                                    </div>
+                                    <div className="min-h-0 overflow-hidden rounded-[2rem] bg-[linear-gradient(180deg,rgba(8,7,11,0.98),rgba(6,5,10,0.98))] p-4 shadow-[0_28px_90px_rgba(0,0,0,0.34)]">
+                                        <MessageList
+                                            messages={messages}
+                                            containerCategory={containerCategory}
+                                            loadedStory={loadedStory}
+                                            setLoadedStory={setLoadedStory}
+                                        />
+                                    </div>
+
+                                    <div className="shrink-0">
                                         <ChatBox
                                             handleChange={handleChange}
                                             handleKeyUp={handleKeyUp}
@@ -2134,14 +1059,7 @@ function ChatList(props) {
                                             }
                                             data={data}
                                             sendMessage={sendMessage}
-                                            logo={
-                                                selectedConversation
-                                                    ? selectedConversation.name.substring(
-                                                          0,
-                                                          2,
-                                                      )
-                                                    : ""
-                                            }
+                                            logo={activeContact ? activeContact.name.substring(0, 2) : ""}
                                         />
                                         {/* 
                                 <div className="flex gap-4 items-end">
@@ -2231,24 +1149,6 @@ function ChatList(props) {
                                     </div>
                                 </>
                             )}
-                        {!selectedContact && (
-                            <div className="flex h-full items-center justify-center px-8 text-center">
-                                <div className="max-w-md rounded-2xl border border-white/10 bg-[#170024]/50 px-6 py-8 text-white">
-                                    {channelLoading ? (
-                                        loadingIndicator
-                                    ) : (
-                                        <p className="text-lg font-semibold">
-                                            {!hasAccountsForChannel &&
-                                            category !== "all"
-                                                ? getNoAccountMessage(category)
-                                                : props.translator[
-                                                      "No conversations found for this channel."
-                                                  ]}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
@@ -2261,22 +1161,6 @@ function ChatList(props) {
             ) : (
                 ""
             )}
-            <EmailComposeModal
-                open={showEmailComposeModal}
-                onClose={closeEmailComposeModal}
-                data={emailComposeData}
-                onChange={handleEmailComposeChange}
-                onSend={sendEmailComposeMessage}
-                sending={emailComposeSending}
-                templates={props.templates}
-                products={props.products}
-                interactiveMessages={props.interactiveMessages}
-                selectedAccount={selectedAccount}
-                setTemplateInfo={setEmailComposeTemplateInfo}
-                setProductInfo={setEmailComposeProductInfo}
-                setInteractiveMessage={setEmailComposeInteractiveMessage}
-                clearContent={clearEmailComposeContent}
-            />
         </Authenticated>
     );
 }
