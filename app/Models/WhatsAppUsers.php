@@ -98,7 +98,7 @@ class WhatsAppUsers extends Model
     /**
      * Return page token
      */
-    public function getFbPageAccessToken($account)
+    public function getFbPageAccessToken($account, bool $forceRefresh = false)
     {
         // Got the app's access token from below call
         // https://developers.facebook.com/docs/facebook-login/guides/access-tokens/#apptokens
@@ -111,6 +111,7 @@ class WhatsAppUsers extends Model
         $version = config('app.meta.graph_version');
         $pageAccessToken = $account->page_token; // Facebook page access token
         $pagesList = [];
+        $result = ['status' => false, 'message' => 'Page access token unavailable'];
 
         if (! empty($account->fb_meta_data)) {
             $decodedPages = base64_decode((string) $account->fb_meta_data, true);
@@ -120,11 +121,11 @@ class WhatsAppUsers extends Model
             }
         }
 
-        if($pageAccessToken) {
+        if($pageAccessToken && ! $forceRefresh) {
             return $pageAccessToken;
         }
 
-        if (! empty($pagesList[$pageId]['token'])) {
+        if (! $forceRefresh && ! empty($pagesList[$pageId]['token'])) {
             $pageAccessToken = $pagesList[$pageId]['token'];
             $account->page_token = $pageAccessToken;
             $account->save();

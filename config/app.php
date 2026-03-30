@@ -281,6 +281,11 @@ return [
         'redirect_uri' => env('META_REDIRECT_URI', rtrim(env('APP_URL', 'http://localhost'), '/') . '/integrations/meta/oauth/callback'),
         'verify_token' => env('META_WEBHOOK_VERIFY_TOKEN'),
         'graph_version' => env('META_GRAPH_VERSION', 'v23.0'),
+        'instagram' => [
+            'app_id' => env('META_INSTAGRAM_APP_ID'),
+            'app_secret' => env('META_INSTAGRAM_APP_SECRET'),
+            'redirect_uri' => env('META_INSTAGRAM_REDIRECT_URI'),
+        ],
     ],
 
     'admin_email' => env('ADMIN_EMAIL'),

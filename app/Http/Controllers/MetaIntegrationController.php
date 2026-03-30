@@ -18,11 +18,49 @@ class MetaIntegrationController extends Controller
 
     public function connectInstagram(Request $request, MetaIntegrationService $metaIntegrationService)
     {
-        return $this->connect($request, 'instagram', $metaIntegrationService);
+        if (! $metaIntegrationService->isInstagramLoginConfigured()) {
+            return Redirect::route('account_registration', [
+                'error' => 'Instagram Login is not configured yet.',
+            ]);
+        }
+
+        $accountId = $request->integer('account_id') ?: null;
+        if ($accountId) {
+            $account = Account::where('id', $accountId)
+                ->where('user_id', $request->user()->id)
+                ->where('service', 'instagram')
+                ->first();
+
+            if (! $account) {
+                abort(404);
+            }
+        }
+
+        $state = Str::random(40);
+        $context = [
+            'state' => $state,
+            'service' => 'instagram',
+            'flow' => 'instagram_login',
+            'user_id' => $request->user()->id,
+            'account_id' => $accountId,
+        ];
+
+        session([
+            self::OAUTH_SESSION_KEY => $context,
+            'service' => 'instagram',
+        ]);
+
+        Cache::put($this->cacheKey($state), $context, now()->addMinutes(15));
+
+        return redirect()->away($metaIntegrationService->instagramLoginAuthorizationUrl($state));
     }
 
     public function connect(Request $request, string $service, MetaIntegrationService $metaIntegrationService)
     {
+        if ($service === 'instagram') {
+            return $this->connectInstagram($request, $metaIntegrationService);
+        }
+
         if (! in_array($service, $metaIntegrationService->supportedServices(), true)) {
             abort(404);
         }
@@ -60,6 +98,107 @@ class MetaIntegrationController extends Controller
         Cache::put($this->cacheKey($state), $context, now()->addMinutes(15));
 
         return redirect()->away($metaIntegrationService->authorizationUrl($service, $state));
+    }
+
+    public function handleInstagramOauthCallback(Request $request, MetaIntegrationService $metaIntegrationService)
+    {
+        $state = (string) $request->input('state');
+        $oauthContext = session(self::OAUTH_SESSION_KEY);
+
+        if (! is_array($oauthContext) && $state !== '') {
+            $oauthContext = Cache::get($this->cacheKey($state));
+        }
+
+        if (! is_array($oauthContext) || (string) ($oauthContext['flow'] ?? '') !== 'instagram_login') {
+            return Redirect::route('account_registration', [
+                'error' => 'Instagram connection session expired. Please try again.',
+            ]);
+        }
+
+        $userId = (int) ($oauthContext['user_id'] ?? 0);
+        $accountId = isset($oauthContext['account_id']) ? (int) $oauthContext['account_id'] : null;
+
+        if ($request->filled('error') || $request->filled('error_description')) {
+            $this->clearOauthState((string) ($oauthContext['state'] ?? $state));
+            $this->restoreUserSession($request, $userId);
+
+            Log::info('Instagram Login callback returned an error.', [
+                'user_id' => $userId,
+                'account_id' => $accountId,
+                'error' => $request->input('error'),
+            ]);
+
+            return Redirect::route('account_registration', [
+                'error' => $request->input('error_description', 'Instagram connection was cancelled.'),
+            ]);
+        }
+
+        if ($state !== (string) ($oauthContext['state'] ?? '')) {
+            $this->clearOauthState((string) ($oauthContext['state'] ?? $state));
+
+            return Redirect::route('account_registration', [
+                'error' => 'Invalid Instagram connection state.',
+            ]);
+        }
+
+        if (! $request->filled('code')) {
+            $this->clearOauthState($state);
+
+            return Redirect::route('account_registration', [
+                'error' => 'Instagram did not return an authorization code.',
+            ]);
+        }
+
+        $this->restoreUserSession($request, $userId);
+
+        $existingAccount = null;
+        if ($accountId) {
+            $existingAccount = Account::where('id', $accountId)
+                ->where('user_id', $userId)
+                ->where('service', 'instagram')
+                ->first();
+        }
+
+        Log::info('Instagram Login callback started.', [
+            'user_id' => $userId,
+            'account_id' => $accountId,
+        ]);
+
+        try {
+            $tokenPayload = $metaIntegrationService->exchangeInstagramLoginCodeForAccessToken((string) $request->input('code'));
+            $token = (string) ($tokenPayload['access_token'] ?? '');
+
+            $longLivedTokenPayload = $metaIntegrationService->exchangeInstagramLoginLongLivedToken($token);
+            if (is_array($longLivedTokenPayload) && isset($longLivedTokenPayload['access_token'])) {
+                $tokenPayload = $longLivedTokenPayload;
+                $token = (string) $longLivedTokenPayload['access_token'];
+            }
+
+            $profile = $metaIntegrationService->fetchInstagramLoginProfile($token);
+            $account = $metaIntegrationService->persistInstagramLoginConnection(
+                $userId,
+                $profile,
+                $token,
+                $tokenPayload,
+                $existingAccount
+            );
+
+            $this->clearOauthState($state);
+
+            return Redirect::route('account_view', $account->id);
+        } catch (\Throwable $e) {
+            $this->clearOauthState($state);
+
+            Log::warning('Instagram Login connect failed.', [
+                'user_id' => $userId,
+                'account_id' => $accountId,
+                'message' => $e->getMessage(),
+            ]);
+
+            return Redirect::route('account_registration', [
+                'error' => 'Unable to connect Instagram right now. Please try again.',
+            ]);
+        }
     }
 
     public function handleOauthCallback(Request $request, MetaIntegrationService $metaIntegrationService)

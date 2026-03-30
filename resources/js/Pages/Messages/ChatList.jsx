@@ -349,6 +349,27 @@ function ChatList(props) {
     }, [containerCategory, selectedContact, selectedConversation?.id]);
 
     useEffect(() => {
+        if (
+            containerCategory !== "instagram" &&
+            containerCategory !== "facebook"
+        ) {
+            return undefined;
+        }
+
+        const interval = setInterval(() => {
+            fetchContactList(current_tab, 1).then(() => {
+                if (selectedContact && containerCategory === "facebook") {
+                    getMessageList();
+                }
+            });
+        }, 15000);
+
+        return () => {
+            clearInterval(interval);
+        };
+    }, [containerCategory, current_tab, selectedContact]);
+
+    useEffect(() => {
         if (containerCategory !== "email") {
             return undefined;
         }
@@ -1117,8 +1138,13 @@ function ChatList(props) {
      */
     function setTemplateInfo(template) {
         let newState = Object.assign({}, data);
-        newState["content"] = template.name + " template selected ";
-        newState["template_id"] = template.template_uid;
+        const isInternalSocialTemplate = ["facebook", "instagram"].includes(
+            String(template?.service || "").toLowerCase(),
+        );
+        newState["content"] = isInternalSocialTemplate
+            ? String(template?.body || template?.name || "Template selected")
+            : template.name + " template selected ";
+        newState["template_id"] = template.template_uid || template.id;
         setData(newState);
     }
 

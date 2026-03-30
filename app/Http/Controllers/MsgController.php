@@ -40,6 +40,8 @@ use App\Models\InteractiveMessage;
 use App\Jobs\SyncInstagramMessagesJob;
 use App\Services\GmailService;
 use App\Services\MetaIntegrationService;
+use App\Services\Templates\TemplateAdapterException;
+use App\Services\Templates\TemplateRenderService;
 
 class MsgController extends Controller
 {
@@ -1315,9 +1317,11 @@ class MsgController extends Controller
      */
     public function getTemplates()
     {
+        $templateRenderService = app(TemplateRenderService::class);
         $messageTemplates = Template::join('messages', 'templates.id', '=', 'messages.template_id')
             ->where('messages.status', 'APPROVED')
             ->get([
+                'templates.id',
                 'messages.template_uid',
                 'templates.account_id',
                 'messages.body',
@@ -1325,6 +1329,7 @@ class MsgController extends Controller
                 'templates.service',
                 'templates.category',
                 'templates.email_subject',
+                'templates.type',
             ]);
 
         $emailTemplates = Template::query()
@@ -1335,15 +1340,62 @@ class MsgController extends Controller
             ->where('templates.status', 'APPROVED')
             ->get([
                 'templates.id as template_uid',
+                'templates.id',
                 'templates.account_id',
                 DB::raw("COALESCE(NULLIF(templates.text_body, ''), NULLIF(templates.html_body, ''), '') as body"),
                 'templates.name',
                 'templates.service',
                 'templates.category',
                 'templates.email_subject',
+                'templates.type',
             ]);
 
-        return $messageTemplates->concat($emailTemplates)->values();
+        $socialTemplates = Template::query()
+            ->whereIn('templates.service', ['facebook', 'instagram'])
+            ->whereNotNull('templates.payload_json')
+            ->where('templates.status', 'active')
+            ->where('templates.is_active', true)
+            ->get([
+                'templates.id',
+                'templates.account_id',
+                'templates.name',
+                'templates.service',
+                'templates.category',
+                'templates.email_subject',
+                'templates.type',
+                'templates.payload_json',
+                'templates.variables_json',
+            ])
+            ->map(function (Template $template) use ($templateRenderService) {
+                return (object) [
+                    'id' => $template->id,
+                    'template_uid' => $template->id,
+                    'account_id' => $template->account_id,
+                    'body' => $templateRenderService->resolvePreviewText($template),
+                    'name' => $template->name,
+                    'service' => $template->service,
+                    'category' => $template->category,
+                    'email_subject' => $template->email_subject,
+                    'type' => $template->type,
+                    'is_internal_template' => true,
+                    'variables_json' => $template->variables_json,
+                ];
+            });
+
+        return $messageTemplates->concat($emailTemplates)->concat($socialTemplates)->values();
+    }
+
+    protected function resolveInternalSocialTemplate(Account $account, $templateReference, string $channel): ?Template
+    {
+        if (! $templateReference || $templateReference === 'undefined') {
+            return null;
+        }
+
+        return Template::where('account_id', $account->id)
+            ->where('service', $channel)
+            ->where('id', $templateReference)
+            ->whereNotNull('payload_json')
+            ->first();
     }
 
     /**
@@ -1830,6 +1882,7 @@ class MsgController extends Controller
         }
 
         $parent = $this->getInfoUsingContactUniqueId($request->destination, $request->channel, $user->id);
+        $contact = $parent ? Contact::find($parent) : null;
 
         // Send Message to Facebook or Instagram
         if ($request->channel == 'instagram' || $request->channel == 'facebook') {
@@ -1840,23 +1893,104 @@ class MsgController extends Controller
             $helper = new WhatsAppUsers();
             $pageId = $account->fb_phone_number_id;
             $pageToken = $helper->getFbPageAccessToken($account);
+            $internalTemplate = $this->resolveInternalSocialTemplate($account, $request->template_id, (string) $request->channel);
+            $renderedTemplate = null;
 
-            if ($request->channel == 'instagram') {
-                $instagramStatus = (string) ($account->connection_status ?? '');
-                $instagramAccountId = (string) ($account->instagram_account_id ?? '');
-                $pageId = $account->meta_page_id ?: $account->fb_phone_number_id;
-                $pageToken = $account->meta_page_token ?: $pageToken;
-
-                if ($instagramStatus !== 'connected' || $instagramAccountId === '' || $pageId === '' || $pageToken === '') {
+            if ($internalTemplate) {
+                try {
+                    $renderedTemplate = app(TemplateRenderService::class)->renderForContact($internalTemplate, $contact);
+                } catch (TemplateAdapterException $e) {
                     return response()->json([
                         'status' => 'Failed',
-                        'error' => 'Instagram setup is incomplete. Select a Facebook Page and linked Instagram Business account first.',
+                        'error' => $e->getMessage(),
                     ], 422);
                 }
             }
 
-            $msg = new Msg();
-            $response = $msg->sendInstaMessage($request->content, $request->destination, $pageId, $pageToken, $document);
+            if ($request->channel == 'instagram') {
+                $instagramStatus = (string) ($account->connection_status ?? '');
+                $instagramAccountId = (string) ($account->instagram_account_id ?? '');
+                $connectionModel = (string) ($account->connection_model ?? '');
+
+                if ($connectionModel === 'instagram_login') {
+                    if ($instagramStatus !== 'connected' || $instagramAccountId === '') {
+                        return response()->json([
+                            'status' => 'Failed',
+                            'error' => 'Instagram setup is incomplete. Reconnect Instagram to continue.',
+                        ], 422);
+                    }
+
+                    try {
+                        $response = app(MetaIntegrationService::class)->sendInstagramMessage(
+                            $account,
+                            (string) $request->destination,
+                            $renderedTemplate ?: (string) $request->content,
+                            is_array($document ?? null) ? $document : []
+                        );
+                    } catch (\Throwable $e) {
+                        return response()->json([
+                            'status' => 'Failed',
+                            'error' => $e->getMessage(),
+                        ], 422);
+                    }
+                } else {
+                    $pageId = $account->meta_page_id ?: $account->fb_phone_number_id;
+                    $pageToken = $account->meta_page_token ?: $pageToken;
+
+                    if ($instagramStatus !== 'connected' || $instagramAccountId === '' || $pageId === '' || $pageToken === '') {
+                        return response()->json([
+                            'status' => 'Failed',
+                            'error' => 'Instagram setup is incomplete. Reconnect Instagram to continue.',
+                        ], 422);
+                    }
+
+                    $msg = new Msg();
+                    $response = $msg->sendInstaMessage($renderedTemplate ?: $request->content, $request->destination, $pageId, $pageToken, $document);
+                }
+            } else {
+                $msg = new Msg();
+                $metaIntegrationService = app(MetaIntegrationService::class);
+
+                if ((bool) ($account->requires_reconnect ?? false)) {
+                    return response()->json([
+                        'status' => 'Failed',
+                        'error' => 'Connect Facebook again to continue.',
+                    ], 422);
+                }
+
+                $response = $msg->sendInstaMessage($renderedTemplate ?: $request->content, $request->destination, $pageId, $pageToken, $document);
+
+                $responseError = $response['error']['message'] ?? $response['error'] ?? '';
+                if ($metaIntegrationService->isMetaAccessTokenInvalid($responseError)) {
+                    $refreshedPageToken = $metaIntegrationService->refreshFacebookPageAccessToken($account);
+
+                    if ($refreshedPageToken !== '') {
+                        $response = $msg->sendInstaMessage(
+                            $renderedTemplate ?: $request->content,
+                            $request->destination,
+                            $pageId,
+                            $refreshedPageToken,
+                            $document
+                        );
+                        $responseError = $response['error']['message'] ?? $response['error'] ?? '';
+                    }
+
+                    if ($metaIntegrationService->isMetaAccessTokenInvalid($responseError)) {
+                        $metaIntegrationService->markFacebookReconnectRequired(
+                            $account,
+                            'Facebook session expired. Connect Facebook again to continue.'
+                        );
+
+                        return response()->json([
+                            'status' => 'Failed',
+                            'error' => 'Facebook session expired. Connect Facebook again to continue.',
+                            'result' => [
+                                'msg_type' => $document ? 'Media' : 'Text',
+                            ],
+                        ], 422);
+                    }
+                }
+            }
 
             $status = 'Send';
             if (isset($response['error'])) {
@@ -1864,7 +1998,7 @@ class MsgController extends Controller
                 $request->channel = 'instgram';
                 $result['error'] = $response['error']['message'];
             } else {
-                $result['messageId'] = $response['message_id'];
+                $result['messageId'] = $response['message_id'] ?? $response['id'] ?? null;
             }
 
             $result['status'] = $status;
@@ -2171,6 +2305,13 @@ class MsgController extends Controller
     protected function refreshSocialContactNameIfMissing(Contact $contact, Account $account, string $service): void
     {
         if (! in_array($service, ['facebook', 'instagram'], true)) {
+            return;
+        }
+
+        if (
+            $service === 'instagram'
+            && (string) ($account->connection_model ?? '') === 'instagram_login'
+        ) {
             return;
         }
 
@@ -2894,29 +3035,54 @@ class MsgController extends Controller
         $user = $request->user();
         $account_id = $request->account_number;
         $account = Account::where('id', $account_id)->orWhere('phone_number', $account_id)->first();
-        $access_token = $account->fb_token;
-        $pageId = $account->fb_phone_number_id;
-        if (!$access_token) {
-            return response()->json(['status' => false, 'message' => 'Access token not generated.'], 400);
-        }
-        if (!$pageId) {
-            return response()->json(['status' => false, 'message' => 'This account has not connected to any page.'], 400);
+        if (! $account || $account->service !== 'instagram') {
+            return response()->json(['status' => false, 'message' => 'Invalid Instagram account.'], 400);
         }
 
-        $helper = new WhatsAppUsers();
-        $pageToken = $helper->getFbPageAccessToken($account);
+        if ((string) ($account->connection_model ?? '') === 'instagram_login') {
+            try {
+                $result = app(MetaIntegrationService::class)->sendInstagramMessage(
+                    $account,
+                    (string) $request->destination,
+                    (string) $request->content
+                );
+            } catch (\Throwable $e) {
+                return response()->json(['status' => false, 'message' => $e->getMessage()], 422);
+            }
 
-        $msg = new Msg();
-        $result = $msg->sendInstaMessage($request->content, $request->destination, $pageId, $pageToken);
-        // $statusCode = 400;
-        if (isset($result['error'])) {
-            $result['status'] = 'Failed';
-            $result['result']['msg_type'] = 'TEXT';
-            $request->channel = 'instgram';
+            if (isset($result['error'])) {
+                $result['status'] = 'Failed';
+                $result['result']['msg_type'] = 'TEXT';
+                $request->channel = 'instgram';
+            } else {
+                $result['status'] = 'Sent';
+                $result['messageId'] = $result['message_id'] ?? $result['id'] ?? null;
+            }
         } else {
-            $result['status'] = 'Sent';
-            $result['messageId'] = $result['message_id'];
+            $access_token = $account->fb_token;
+            $pageId = $account->fb_phone_number_id;
+            if (!$access_token) {
+                return response()->json(['status' => false, 'message' => 'Access token not generated.'], 400);
+            }
+            if (!$pageId) {
+                return response()->json(['status' => false, 'message' => 'This account has not connected to any page.'], 400);
+            }
+
+            $helper = new WhatsAppUsers();
+            $pageToken = $helper->getFbPageAccessToken($account);
+
+            $msg = new Msg();
+            $result = $msg->sendInstaMessage($request->content, $request->destination, $pageId, $pageToken);
+            if (isset($result['error'])) {
+                $result['status'] = 'Failed';
+                $result['result']['msg_type'] = 'TEXT';
+                $request->channel = 'instgram';
+            } else {
+                $result['status'] = 'Sent';
+                $result['messageId'] = $result['message_id'];
+            }
         }
+
         $this->handleMessageResult($request, $account->id, $result);
 
         return response()->json($result, 200);
@@ -2980,22 +3146,44 @@ class MsgController extends Controller
         $messagableId = '';
         if (! $contact) {
             if ($request->service != 'whatsapp') {
-                $facebookData = new WhatsAppUsers();
-                $contactData = $facebookData->getServiceUserInfo($contactServiceId, $account);
-
-                // log::info(['contact_data' => $contactData]);
                 $contact = new Contact();
-                if ($contactData['status']) {
-                    if ($request->service == 'instagram') {
-                        $name = isset($contactData['contact_data']['name']) ? explode(' ', $contactData['contact_data']['name']) : ['', $contactData['contact_data']['username']];
-                        $lastName = $name[1];
-                        $firstName = $name[0];
+
+                if (
+                    $request->service === 'instagram'
+                    && (string) ($account->connection_model ?? '') === 'instagram_login'
+                ) {
+                    $displayName = trim((string) (
+                        $request->input('contact_name')
+                        ?: $request->input('sender_name')
+                        ?: $request->input('username')
+                        ?: ''
+                    ));
+
+                    if ($displayName !== '') {
+                        $nameParts = preg_split('/\s+/', $displayName, 2) ?: [];
+                        $contact->first_name = $nameParts[0] ?? 'Instagram';
+                        $contact->last_name = $nameParts[1] ?? 'User';
                     } else {
-                        $lastName = isset($contactData['contact_data']['last_name']) ? $contactData['contact_data']['last_name'] : '';
-                        $firstName = isset($contactData['contact_data']['first_name']) ? $contactData['contact_data']['first_name'] : '';
+                        $contact->first_name = 'Instagram';
+                        $contact->last_name = 'User';
                     }
-                    $contact->last_name = $lastName;
-                    $contact->first_name = $firstName;
+                } else {
+                    $facebookData = new WhatsAppUsers();
+                    $contactData = $facebookData->getServiceUserInfo($contactServiceId, $account);
+
+                    if (! empty($contactData['status'])) {
+                        if ($request->service == 'instagram') {
+                            $displayName = trim((string) ($contactData['contact_data']['name'] ?? ''));
+                            $username = trim((string) ($contactData['contact_data']['username'] ?? ''));
+                            $resolvedName = $displayName !== '' ? $displayName : $username;
+                            $nameParts = preg_split('/\s+/', $resolvedName, 2) ?: [];
+                            $contact->first_name = $nameParts[0] ?? 'Instagram';
+                            $contact->last_name = $nameParts[1] ?? 'User';
+                        } else {
+                            $contact->last_name = isset($contactData['contact_data']['last_name']) ? $contactData['contact_data']['last_name'] : '';
+                            $contact->first_name = isset($contactData['contact_data']['first_name']) ? $contactData['contact_data']['first_name'] : '';
+                        }
+                    }
                 }
             } else {
                 $contact->last_name = $request->name;

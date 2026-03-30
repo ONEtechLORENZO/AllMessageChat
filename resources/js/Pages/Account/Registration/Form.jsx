@@ -46,13 +46,74 @@ export default function AccountRegistration(props) {
     const [checkPermission, setPermission] = useState({});
     const [accountId, setAccountid] = useState();
     const [socialProfiles, setSocialProfiles] = useState();
+    const lockedService = props.service || "";
 
     useEffect(() => {
-        setData({});
-    }, []);
+        const initialService = props.service || "";
+        const initialData = initialService
+            ? {
+                  service: initialService,
+                  ...(props.presetAccountId
+                      ? { profile_list: String(props.presetAccountId) }
+                      : {}),
+              }
+            : {};
 
-    const totalSteps = 4;
-    const progressStep = curretpage === 8 ? 2 : Math.min(curretpage, totalSteps);
+        setData(initialData);
+
+        if (initialService === "email") {
+            setCurrentPage(8);
+        } else if (initialService === "whatsapp") {
+            setCurrentPage(6);
+        } else {
+            setCurrentPage(1);
+        }
+
+        if (initialService === "facebook" || initialService === "instagram") {
+            fetchExistProfiles(initialService);
+        }
+    }, [props.service, props.presetAccountId]);
+
+    function flowMeta(service, page) {
+        if (service === "facebook" || service === "instagram") {
+            return { totalSteps: 1, progressStep: 1 };
+        }
+
+        if (service === "email") {
+            return { totalSteps: 1, progressStep: 1 };
+        }
+
+        if (service === "whatsapp") {
+            const stepMap = {
+                6: 1,
+                2: 2,
+                7: 2,
+                3: 3,
+                4: 4,
+            };
+
+            return {
+                totalSteps: 4,
+                progressStep: stepMap[page] || 1,
+            };
+        }
+
+        return {
+            totalSteps: 1,
+            progressStep: 1,
+        };
+    }
+
+    const { totalSteps, progressStep } = flowMeta(
+        data.service || lockedService,
+        curretpage,
+    );
+    const activeServiceLabel = {
+        whatsapp: "Connect WhatsApp",
+        facebook: "Connect Facebook",
+        instagram: "Connect Instagram",
+        email: "Connect Email",
+    }[data.service || lockedService];
 
     function closeModal() {
         setOpen(false);
@@ -251,10 +312,15 @@ export default function AccountRegistration(props) {
                                             <div className="flex items-start justify-between gap-4">
                                                 <div>
                                                     <Dialog.Title className="text-2xl font-semibold text-white">
-                                                        {props.translator["Link Account"]}
+                                                        {activeServiceLabel ||
+                                                            props.translator[
+                                                                "Link Account"
+                                                            ]}
                                                     </Dialog.Title>
                                                     <p className="mt-1 text-sm text-white/55">
-                                                        Connect a channel to your workspace.
+                                                        {activeServiceLabel
+                                                            ? "Complete the setup for this channel."
+                                                            : "Connect a channel to your workspace."}
                                                     </p>
                                                 </div>
 
@@ -293,6 +359,8 @@ export default function AccountRegistration(props) {
                                                         formHandler={formHandler}
                                                         serviceHandler={serviceHandler}
                                                         socialProfiles={socialProfiles}
+                                                        lockedService={lockedService}
+                                                        presetAccountId={props.presetAccountId}
                                                         {...props}
                                                     />
                                                 </GlassCard>
@@ -370,6 +438,7 @@ export default function AccountRegistration(props) {
                                                         formHandler={formHandler}
                                                         setCurrentPage={setCurrentPage}
                                                         setAccountid={setAccountid}
+                                                        lockedService={lockedService}
                                                         {...props}
                                                     />
                                                 </GlassCard>

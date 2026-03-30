@@ -14,10 +14,15 @@ class Account extends Model
         'oauth_access_token_encrypted' => 'encrypted',
         'oauth_refresh_token_encrypted' => 'encrypted',
         'oauth_token_expires_at' => 'datetime',
+        'instagram_user_access_token_encrypted' => 'encrypted',
+        'instagram_token_expires_at' => 'datetime',
+        'instagram_token_last_refreshed_at' => 'datetime',
         'sync_last_at' => 'datetime',
         'gmail_watch_expires_at' => 'datetime',
         'connection_metadata' => 'array',
         'instagram_meta_data' => 'array',
+        'instagram_refresh_metadata' => 'array',
+        'requires_reconnect' => 'boolean',
         'api_partner' => 'boolean',
     ];
 
@@ -28,6 +33,7 @@ class Account extends Model
         'meta_page_token',
         'oauth_access_token_encrypted',
         'oauth_refresh_token_encrypted',
+        'instagram_user_access_token_encrypted',
     ];
 
     /**

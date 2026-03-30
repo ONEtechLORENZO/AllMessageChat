@@ -14,7 +14,22 @@ class Template extends Model
     protected $casts = [
         'languages' => 'array',
         'sample_data' => 'array',
+        'payload_json' => 'array',
+        'variables_json' => 'array',
+        'is_active' => 'boolean',
     ];
+
+    public function isInternalSocialTemplate(): bool
+    {
+        return in_array((string) $this->service, ['facebook', 'instagram'], true)
+            && is_array($this->payload_json)
+            && $this->payload_json !== [];
+    }
+
+    public function isWhatsAppTemplate(): bool
+    {
+        return (string) $this->service === 'whatsapp';
+    }
 
     /**
      * Submit the request on GupShup
