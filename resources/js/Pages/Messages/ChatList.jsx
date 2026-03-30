@@ -629,15 +629,19 @@ function ChatList(props) {
                                         <PaperAirplaneIcon className="h-4 w-4" />
                                     </span>
                                     <span className="chat-new-message-button__label">
-                                        {NEW_MESSAGE_LABEL.split("").map((char, index) => (
-                                            <span
-                                                key={`${char}-${index}`}
-                                                style={{ "--i": index }}
-                                                className="chat-new-message-button__letter"
-                                            >
-                                                {char === " " ? "\u00A0" : char}
-                                            </span>
-                                        ))}
+                                        {NEW_MESSAGE_LABEL.split("").map(
+                                            (char, index) => (
+                                                <span
+                                                    key={`${char}-${index}`}
+                                                    style={{ "--i": index }}
+                                                    className="chat-new-message-button__letter"
+                                                >
+                                                    {char === " "
+                                                        ? "\u00A0"
+                                                        : char}
+                                                </span>
+                                            ),
+                                        )}
                                     </span>
                                 </span>
                             </button>
@@ -662,7 +666,9 @@ function ChatList(props) {
                                                 "flex min-h-[4.35rem] flex-col justify-center px-5 py-2.5 text-left transition first:rounded-l-[1.55rem] last:rounded-r-[1.55rem]",
                                             )}
                                         >
-                                            <span className="text-[0.9rem] font-semibold leading-tight">{tab.name}</span>
+                                            <span className="text-[0.9rem] font-semibold leading-tight">
+                                                {tab.name}
+                                            </span>
                                             <span className="mt-1.5 text-[0.8rem] font-medium text-white/50">
                                                 {props.counts[tab.id]}
                                             </span>
@@ -671,7 +677,10 @@ function ChatList(props) {
                                 </nav>
                             </div>
                         </div>
-                        <nav className="mt-4 flex-1 min-h-0" aria-label="Directory">
+                        <nav
+                            className="mt-4 flex-1 min-h-0"
+                            aria-label="Directory"
+                        >
                             <div className="relative h-full min-h-0 overflow-hidden rounded-[1.75rem] bg-white/[0.03] shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
                                 <ul
                                     role="list"
@@ -682,12 +691,15 @@ function ChatList(props) {
                                     {Object.entries(chatList).map(
                                         ([id, person], j) => (
                                             <li key={id}>
-                                                <div className={classNames(
-                                                    "group relative flex w-full items-center gap-3 px-6 py-4 transition hover:bg-white/[0.04] focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#BF00FF]/40",
-                                                    selectedContact == person.id
-                                                        ? "bg-[linear-gradient(135deg,rgba(163,30,255,0.16),rgba(255,79,216,0.08))] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
-                                                        : "",
-                                                )}>
+                                                <div
+                                                    className={classNames(
+                                                        "group relative flex w-full items-center gap-3 px-6 py-4 transition hover:bg-white/[0.04] focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#BF00FF]/40",
+                                                        selectedContact ==
+                                                            person.id
+                                                            ? "bg-[linear-gradient(135deg,rgba(163,30,255,0.16),rgba(255,79,216,0.08))] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+                                                            : "",
+                                                    )}
+                                                >
                                                     <div className="flex-shrink-0">
                                                         <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.04))] text-white/80 shadow-[0_8px_20px_rgba(0,0,0,0.18)]">
                                                             <UserIcon className="h-6 w-6" />
@@ -814,39 +826,37 @@ function ChatList(props) {
                                 <>
                                     <div className="relative z-30 grid grid-cols-1 gap-3 overflow-visible lg:grid-cols-[minmax(0,1fr)_auto_auto]">
                                         <div className="flex min-h-[5.25rem] items-center gap-4 rounded-[1.85rem] bg-[linear-gradient(135deg,rgba(26,10,38,0.98),rgba(11,8,18,0.98))] px-5 text-white shadow-[0_24px_80px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.06)] ring-1 ring-[#8f38d9]/18">
-                                        <div className="relative flex items-center space-x-2">
-                                            <div className="flex gap-1">
-                                                <div className="relative">
-                                                    <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,115,226,0.35),rgba(147,51,234,0.22)_55%,rgba(255,255,255,0.02)_100%)] text-white shadow-[0_12px_30px_rgba(127,0,190,0.28),inset_0_1px_0_rgba(255,255,255,0.14)] ring-1 ring-white/8">
-                                                        <UserIcon className="h-7 w-7" />
-                                                    </span>
+                                            <div className="relative flex items-center space-x-2">
+                                                <div className="flex gap-1">
+                                                    <div className="relative">
+                                                        <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,115,226,0.35),rgba(147,51,234,0.22)_55%,rgba(255,255,255,0.02)_100%)] text-white shadow-[0_12px_30px_rgba(127,0,190,0.28),inset_0_1px_0_rgba(255,255,255,0.14)] ring-1 ring-white/8">
+                                                            <UserIcon className="h-7 w-7" />
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col leading-tight">
+                                                    <div className="mt-1 flex items-center text-sm font-semibold">
+                                                        <span className="mr-3 text-white">
+                                                            <Link
+                                                                href={route(
+                                                                    "detailContact",
+                                                                    {
+                                                                        id: selectedContact,
+                                                                    },
+                                                                )}
+                                                                className="cursor-pointer text-lg font-semibold text-white no-underline drop-shadow-[0_1px_10px_rgba(0,0,0,0.32)] hover:text-[#ff92eb]"
+                                                            >
+                                                                {activeContact.number ||
+                                                                    activeContact.name}
+                                                            </Link>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="flex flex-col leading-tight">
-                                                <div className="mt-1 flex items-center text-sm font-semibold">
-                                                    <span className="mr-3 text-white">
-                                                        <Link
-                                                            href={route(
-                                                                "detailContact",
-                                                                {
-                                                                    id: selectedContact,
-                                                                },
-                                                            )}
-                                                            className="cursor-pointer text-lg font-semibold text-white no-underline drop-shadow-[0_1px_10px_rgba(0,0,0,0.32)] hover:text-[#ff92eb]"
-                                                        >
-                                                            {activeContact.number || activeContact.name}
-                                                        </Link>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
                                         </div>
 
                                         <div className="flex items-center gap-2 rounded-[1rem] bg-[#09070d] px-2.5 text-white shadow-[0_18px_48px_rgba(0,0,0,0.26)]">
-                                            <Menu
-                                                as="div"
-                                                className="relative"
-                                            >
+                                            <Menu as="div" className="relative">
                                                 <div>
                                                     <Menu.Button className="flex min-h-[3.35rem] min-w-[6.35rem] items-center justify-between gap-2 text-[0.88rem] text-white/90 focus:outline-none">
                                                         <div className="flex items-center gap-2">
@@ -915,124 +925,131 @@ function ChatList(props) {
                                         </div>
 
                                         <div className="flex items-center gap-2 rounded-[1rem] bg-[#09070d] px-2.5 text-white shadow-[0_18px_48px_rgba(0,0,0,0.26)]">
-                                        <Menu
-                                            as="div"
-                                            className="relative"
-                                        >
-                                            <div>
-                                                <Menu.Button className="flex min-h-[3.35rem] min-w-[6.55rem] items-center justify-between text-[0.88rem] text-white/90 focus:outline-none">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="font-medium uppercase tracking-[0.04em]">
-                                                            {selectedAccount ? (
-                                                                <>{accountList[selectedAccount]}</>
-                                                            ) : (
-                                                                "AESSEFIN"
-                                                            )}
-                                                        </span>
-                                                        {containerCategory ==
-                                                            "whatsapp" &&
-                                                            selectedAccount &&
-                                                            selectedContact && (
-                                                                <>
-                                                                    {props
-                                                                        .sessions[
-                                                                        selectedContact
-                                                                    ] &&
-                                                                    props
-                                                                        .sessions[
-                                                                        selectedContact
-                                                                    ][
-                                                                        selectedAccount
-                                                                    ] ? (
-                                                                        <span
-                                                                            title="Session active"
-                                                                            className="rounded-full p-1 bg-green-500"
-                                                                        ></span>
-                                                                    ) : (
-                                                                        <span
-                                                                            title="Session inactive"
-                                                                            className="rounded-full p-1 bg-red-500"
-                                                                        ></span>
-                                                                    )}
-                                                                </>
-                                                            )}
-                                                        <span className="ml-1">
-                                                            <ChevronDownIcon className="h-3 w-3 text-white/60" />
-                                                        </span>
-                                                    </div>
-                                                </Menu.Button>
-                                            </div>
-                                            <Transition
-                                                as={Fragment}
-                                                enter="transition ease-out duration-100"
-                                                enterFrom="transform opacity-0 scale-95"
-                                                enterTo="transform opacity-100 scale-100"
-                                                leave="transition ease-in duration-75"
-                                                leaveFrom="transform opacity-100 scale-100"
-                                                leaveTo="transform opacity-0 scale-95"
-                                            >
-                                                <Menu.Items className="origin-top-right absolute right-0 z-40 mt-2 min-w-[220px] rounded-[1.2rem] bg-[linear-gradient(180deg,rgba(26,10,38,0.98),rgba(11,8,18,0.98))] p-1.5 shadow-[0_22px_60px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.06)] ring-1 ring-[#8f38d9]/20 focus:outline-none">
-                                                    {Object.entries(accountList).map(([id, name]) => (
-                                                        <Menu.Item key={id}>
-                                                            <div
-                                                                className={classNames(
-                                                                    selectedAccount ==
-                                                                        id
-                                                                        ? "bg-[linear-gradient(135deg,rgba(255,79,216,0.24),rgba(163,30,255,0.2))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
-                                                                        : "",
-                                                                    "rounded-[0.95rem] px-3 py-2.5 flex items-center gap-2 transition hover:bg-white/[0.06]",
+                                            <Menu as="div" className="relative">
+                                                <div>
+                                                    <Menu.Button className="flex min-h-[3.35rem] min-w-[6.55rem] items-center justify-between text-[0.88rem] text-white/90 focus:outline-none">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-medium uppercase tracking-[0.04em]">
+                                                                {selectedAccount ? (
+                                                                    <>
+                                                                        {
+                                                                            accountList[
+                                                                                selectedAccount
+                                                                            ]
+                                                                        }
+                                                                    </>
+                                                                ) : (
+                                                                    "AESSEFIN"
                                                                 )}
-                                                            >
-                                                                <span
-                                                                    onClick={() =>
-                                                                        setSelectedAccount(
-                                                                            id,
-                                                                        )
-                                                                    }
-                                                                    className="block text-sm text-white/85 hover:text-white w-full cursor-pointer"
-                                                                >
-                                                                    {name}
-                                                                </span>
-
-                                                                {containerCategory ==
-                                                                    "whatsapp" &&
-                                                                    selectedContact &&
-                                                                    selectedContact && (
-                                                                        <>
-                                                                            {props
-                                                                                .sessions[
-                                                                                selectedContact
-                                                                            ] &&
-                                                                            props
-                                                                                .sessions[
-                                                                                selectedContact
-                                                                            ][
-                                                                                id
-                                                                            ] ? (
-                                                                                <span
-                                                                                    title="Session active"
-                                                                                    className="rounded-full p-1 bg-green-500"
-                                                                                ></span>
-                                                                            ) : (
-                                                                                <span
-                                                                                    title="Session inactive"
-                                                                                    className="rounded-full p-1 bg-red-500"
-                                                                                ></span>
-                                                                            )}
-                                                                        </>
+                                                            </span>
+                                                            {containerCategory ==
+                                                                "whatsapp" &&
+                                                                selectedAccount &&
+                                                                selectedContact && (
+                                                                    <>
+                                                                        {props
+                                                                            .sessions[
+                                                                            selectedContact
+                                                                        ] &&
+                                                                        props
+                                                                            .sessions[
+                                                                            selectedContact
+                                                                        ][
+                                                                            selectedAccount
+                                                                        ] ? (
+                                                                            <span
+                                                                                title="Session active"
+                                                                                className="rounded-full p-1 bg-green-500"
+                                                                            ></span>
+                                                                        ) : (
+                                                                            <span
+                                                                                title="Session inactive"
+                                                                                className="rounded-full p-1 bg-red-500"
+                                                                            ></span>
+                                                                        )}
+                                                                    </>
+                                                                )}
+                                                            <span className="ml-1">
+                                                                <ChevronDownIcon className="h-3 w-3 text-white/60" />
+                                                            </span>
+                                                        </div>
+                                                    </Menu.Button>
+                                                </div>
+                                                <Transition
+                                                    as={Fragment}
+                                                    enter="transition ease-out duration-100"
+                                                    enterFrom="transform opacity-0 scale-95"
+                                                    enterTo="transform opacity-100 scale-100"
+                                                    leave="transition ease-in duration-75"
+                                                    leaveFrom="transform opacity-100 scale-100"
+                                                    leaveTo="transform opacity-0 scale-95"
+                                                >
+                                                    <Menu.Items className="origin-top-right absolute right-0 z-40 mt-2 min-w-[220px] rounded-[1.2rem] bg-[linear-gradient(180deg,rgba(26,10,38,0.98),rgba(11,8,18,0.98))] p-1.5 shadow-[0_22px_60px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.06)] ring-1 ring-[#8f38d9]/20 focus:outline-none">
+                                                        {Object.entries(
+                                                            accountList,
+                                                        ).map(([id, name]) => (
+                                                            <Menu.Item key={id}>
+                                                                <div
+                                                                    className={classNames(
+                                                                        selectedAccount ==
+                                                                            id
+                                                                            ? "bg-[linear-gradient(135deg,rgba(255,79,216,0.24),rgba(163,30,255,0.2))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                                                                            : "",
+                                                                        "rounded-[0.95rem] px-3 py-2.5 flex items-center gap-2 transition hover:bg-white/[0.06]",
                                                                     )}
-                                                            </div>
-                                                        </Menu.Item>
-                                                    ))}
-                                                </Menu.Items>
-                                            </Transition>
-                                        </Menu>
+                                                                >
+                                                                    <span
+                                                                        onClick={() =>
+                                                                            setSelectedAccount(
+                                                                                id,
+                                                                            )
+                                                                        }
+                                                                        className="block text-sm text-white/85 hover:text-white w-full cursor-pointer"
+                                                                    >
+                                                                        {name}
+                                                                    </span>
+
+                                                                    {containerCategory ==
+                                                                        "whatsapp" &&
+                                                                        selectedContact &&
+                                                                        selectedContact && (
+                                                                            <>
+                                                                                {props
+                                                                                    .sessions[
+                                                                                    selectedContact
+                                                                                ] &&
+                                                                                props
+                                                                                    .sessions[
+                                                                                    selectedContact
+                                                                                ][
+                                                                                    id
+                                                                                ] ? (
+                                                                                    <span
+                                                                                        title="Session active"
+                                                                                        className="rounded-full p-1 bg-green-500"
+                                                                                    ></span>
+                                                                                ) : (
+                                                                                    <span
+                                                                                        title="Session inactive"
+                                                                                        className="rounded-full p-1 bg-red-500"
+                                                                                    ></span>
+                                                                                )}
+                                                                            </>
+                                                                        )}
+                                                                </div>
+                                                            </Menu.Item>
+                                                        ))}
+                                                    </Menu.Items>
+                                                </Transition>
+                                            </Menu>
                                         </div>
                                     </div>
                                     <div className="min-h-0 overflow-hidden rounded-[2rem] bg-[linear-gradient(180deg,rgba(8,7,11,0.98),rgba(6,5,10,0.98))] p-4 shadow-[0_28px_90px_rgba(0,0,0,0.34)]">
                                         <MessageList
                                             messages={messages}
-                                            containerCategory={containerCategory}
+                                            containerCategory={
+                                                containerCategory
+                                            }
                                             loadedStory={loadedStory}
                                             setLoadedStory={setLoadedStory}
                                         />
@@ -1059,7 +1076,14 @@ function ChatList(props) {
                                             }
                                             data={data}
                                             sendMessage={sendMessage}
-                                            logo={activeContact ? activeContact.name.substring(0, 2) : ""}
+                                            logo={
+                                                activeContact
+                                                    ? activeContact.name.substring(
+                                                          0,
+                                                          2,
+                                                      )
+                                                    : ""
+                                            }
                                         />
                                         {/* 
                                 <div className="flex gap-4 items-end">
