@@ -60,7 +60,10 @@ function ChatList(props) {
         instagram: { label: "Instagram", icon: InstaIcon },
         facebook: { label: "Facebook", icon: fbIcon },
     };
-    const [current_tab, setCurrentTabId] = useState("unread");
+    const [current_tab, setCurrentTabId] = useState(props.mode || "all");
+    const [counts, setCounts] = useState(
+        props.counts || { all: 0, unread: 0, archived: 0 },
+    );
     const tabs = [
         {
             name: props.translator["Unread"],
@@ -98,6 +101,19 @@ function ChatList(props) {
             clearInterval(interval);
         };
     }, [props]);
+
+    useEffect(() => {
+        if (
+            Object.keys(props.contact_list ?? {}).length === 0 &&
+            Object.keys(props.account_list ?? {}).length > 0
+        ) {
+            fetchContactList(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        setCounts(props.counts || { all: 0, unread: 0, archived: 0 });
+    }, [props.counts]);
 
     useEffect(() => {
         if (accountList) {
@@ -180,8 +196,8 @@ function ChatList(props) {
         setCurrentTabId(tab);
         setSelectedContact("");
         setChatList({});
-        fetchContactList();
         setPage(1);
+        fetchContactList(true, tab, containerCategory);
     }
 
     function selectContactCategory(name) {
@@ -209,21 +225,40 @@ function ChatList(props) {
         }
     }, [page]);
 
-    function fetchContactList() {
+    function fetchContactList(
+        reset = false,
+        tab = current_tab,
+        category = containerCategory,
+    ) {
         setPageLoad(true);
-        var url = route("chat_list", { category: containerCategory });
+        const targetPage = reset ? 1 : page;
+        var url = route("chat_list", { category });
         if (props.filter_id) {
             url = url + "&filter_id=" + props.filter_id;
         }
-        if (current_tab) {
-            url += "&mode=" + current_tab;
+        if (tab) {
+            url += "&mode=" + tab;
         }
-        url += "&fetchContact=true&page=" + page;
+        url += "&fetchContact=true&page=" + targetPage;
 
         Axios.get(url).then((response) => {
             if (response.data.status) {
-                var mergedList = { ...chatList, ...response.data.contact_list };
-                setChatList(mergedList);
+                setChatList((previousList) =>
+                    reset
+                        ? response.data.contact_list
+                        : { ...previousList, ...response.data.contact_list },
+                );
+                setCounts(
+                    response.data.counts || {
+                        all: 0,
+                        unread: 0,
+                        archived: 0,
+                    },
+                );
+                setHasMore(Boolean(response.data.has_more));
+                if (reset) {
+                    setPage(1);
+                }
                 setPageLoad(false);
             }
         });
@@ -234,7 +269,10 @@ function ChatList(props) {
         if (!selectedContact && Object.keys(chatList).length > 0) {
             const firstContact = Object.values(chatList)[0];
             setSelectedContact(firstContact.id);
-            getContactMessage(firstContact.id, "whatsapp");
+            getContactMessage(
+                firstContact.id,
+                firstContact.channel || containerCategory || "whatsapp",
+            );
         }
     }, [chatList, selectedContact, current_tab]);
 
@@ -548,7 +586,7 @@ function ChatList(props) {
                                         >
                                             <span className="text-[0.9rem] font-semibold leading-tight">{tab.name}</span>
                                             <span className="mt-1.5 text-[0.8rem] font-medium text-white/50">
-                                                {props.counts[tab.id]}
+                                                {counts[tab.id]}
                                             </span>
                                         </button>
                                     ))}

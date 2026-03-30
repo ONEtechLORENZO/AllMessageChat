@@ -426,9 +426,18 @@ class MsgController extends Controller
         $category = ($request->category) ? $request->category : '';
         $contactList = $messages = $accoutList = [];
         $user = $request->user();
-        $this->syncGmailChatAccounts($user->id, $category ?: 'whatsapp');
-        $this->syncSocialChatAccounts($user->id, $category ?: 'whatsapp');
-        $recordData = $this->getChatContactList($request);
+        $shouldHydrateInitialContactList = $request->boolean('fetchContact') || $request->filled('contact_id');
+        $recordData = $shouldHydrateInitialContactList
+            ? $this->getChatContactList($request)
+            : [
+                'contact_list' => [],
+                'filter_id' => $request->get('filter_id', ''),
+                'search' => $request->get('search', ''),
+                'mode' => (string) $request->get('mode', 'all'),
+                'has_more' => true,
+                'page' => 1,
+                'counts' => ['all' => 0, 'unread' => 0, 'archived' => 0],
+            ];
         [$accoutList, $accountMeta] = $this->buildChatAccountCollections($user->id, $category);
 
         if ($request->boolean('fetchContact')) {
@@ -506,8 +515,8 @@ class MsgController extends Controller
         $page = max((int) $request->get('page', 1), 1);
         $mode = (string) $request->get('mode', 'all');
 
-        if ($selectedCategory === 'whatsapp' || $selectedCategory === 'all') {
-            $this->ensureConversationIndexForService($user->id, 'whatsapp');
+        if (in_array($selectedCategory, ['whatsapp', 'facebook', 'instagram'], true)) {
+            $this->backfillConversationMetadataForService($user->id, $selectedCategory);
         }
 
         if (
@@ -555,15 +564,22 @@ class MsgController extends Controller
         if ($selectedCategory === 'email') {
             $query->where(function ($conversationQuery) {
                 $conversationQuery->whereNotNull('chat_list_contacts.gmail_thread_id')
-                    ->orWhereNotNull('chat_list_contacts.last_msg_id');
+                    ->orWhereNotNull('chat_list_contacts.last_msg_id')
+                    ->orWhereNotNull('chat_list_contacts.last_message_at');
             });
         } elseif ($selectedCategory === 'all') {
             $query->where(function ($conversationQuery) {
                 $conversationQuery->whereNotNull('chat_list_contacts.gmail_thread_id')
-                    ->orWhereNotNull('chat_list_contacts.last_msg_id');
+                    ->orWhereNotNull('chat_list_contacts.last_msg_id')
+                    ->orWhereNotNull('chat_list_contacts.last_message_at');
             });
         } else {
-            $query->whereNotNull('chat_list_contacts.last_msg_id');
+            $query->where(function ($conversationQuery) {
+                $conversationQuery->whereNotNull('chat_list_contacts.last_msg_id')
+                    ->orWhereNotNull('chat_list_contacts.last_message_at')
+                    ->orWhere('chat_list_contacts.unread', true)
+                    ->orWhere('chat_list_contacts.unread_count', '>', 0);
+            });
         }
 
         if ($filterId && $filterId != 'All') {
@@ -598,8 +614,30 @@ class MsgController extends Controller
                 ->orWhere('chat_list_contacts.unread_count', '>', 0);
         };
 
-        $allCount     = (clone $query)->count();
-        $unreadCount  = (clone $query)->where($hasUnreadScope)->count();
+        $countQuery = ChatListContact::query()
+            ->where('chat_list_contacts.user_id', $user->id);
+
+        if ($selectedCategory !== 'all') {
+            $countQuery->where('chat_list_contacts.channel', $selectedCategory);
+        }
+
+        if ($selectedCategory === 'email' || $selectedCategory === 'all') {
+            $countQuery->where(function ($conversationQuery) {
+                $conversationQuery->whereNotNull('chat_list_contacts.gmail_thread_id')
+                    ->orWhereNotNull('chat_list_contacts.last_msg_id')
+                    ->orWhereNotNull('chat_list_contacts.last_message_at');
+            });
+        } else {
+            $countQuery->where(function ($conversationQuery) {
+                $conversationQuery->whereNotNull('chat_list_contacts.last_msg_id')
+                    ->orWhereNotNull('chat_list_contacts.last_message_at')
+                    ->orWhere('chat_list_contacts.unread', true)
+                    ->orWhere('chat_list_contacts.unread_count', '>', 0);
+            });
+        }
+
+        $allCount = (clone $countQuery)->count();
+        $unreadCount = (clone $countQuery)->where($hasUnreadScope)->count();
 
         if (
             $mode === 'unread'
@@ -617,7 +655,7 @@ class MsgController extends Controller
         }
         $query->orderByRaw('COALESCE(chat_list_contacts.last_message_at, chat_list_contacts.updated_at) desc');
 
-        $chatListContact = $query->paginate(15, ['*'], 'page', $page);
+        $chatListContact = $query->simplePaginate(15, ['*'], 'page', $page);
 
         $contactList = [];
         foreach ($chatListContact as $conversation) {
@@ -670,9 +708,117 @@ class MsgController extends Controller
         return $data;
     }
 
+    protected function backfillConversationMetadataForService(int $userId, string $service): void
+    {
+        $cacheKey = sprintf('chat-conversation-backfill:%s:%d', $service, $userId);
+
+        if (Cache::has($cacheKey)) {
+            return;
+        }
+
+        $accountIds = Account::query()
+            ->where('user_id', $userId)
+            ->where('service', $service)
+            ->where('status', 'Active')
+            ->pluck('id');
+
+        if ($accountIds->isEmpty()) {
+            return;
+        }
+
+        $hasStaleRows = ChatListContact::query()
+            ->where('user_id', $userId)
+            ->where('channel', $service)
+            ->where(function ($query) {
+                $query->whereNull('account_id')
+                    ->orWhereNull('last_msg_id')
+                    ->orWhereNull('last_message_at');
+            })
+            ->exists();
+
+        if (! $hasStaleRows) {
+            Cache::put($cacheKey, true, now()->addMinutes(10));
+            return;
+        }
+
+        $latestMessages = Msg::query()
+            ->selectRaw('account_id, msgable_id, MAX(id) as last_msg_id')
+            ->where('service', $service)
+            ->whereIn('account_id', $accountIds)
+            ->where('msgable_type', Contact::class)
+            ->whereNotNull('msgable_id')
+            ->groupBy('account_id', 'msgable_id');
+
+        $unreadMessages = Msg::query()
+            ->selectRaw('account_id, msgable_id, COUNT(*) as unread_count')
+            ->where('service', $service)
+            ->whereIn('account_id', $accountIds)
+            ->where('msgable_type', Contact::class)
+            ->whereNotNull('msgable_id')
+            ->where('msg_mode', 'incoming')
+            ->where(function ($query) {
+                $query->where('is_read', false)->orWhereNull('is_read');
+            })
+            ->groupBy('account_id', 'msgable_id');
+
+        DB::query()
+            ->fromSub($latestMessages, 'latest_messages')
+            ->join('msgs as last_msg', 'last_msg.id', '=', 'latest_messages.last_msg_id')
+            ->leftJoinSub($unreadMessages, 'unread_messages', function ($join) {
+                $join->on('unread_messages.account_id', '=', 'latest_messages.account_id')
+                    ->on('unread_messages.msgable_id', '=', 'latest_messages.msgable_id');
+            })
+            ->join('chat_list_contacts as existing_contacts', function ($join) use ($service, $userId) {
+                $join->on('existing_contacts.contact_id', '=', 'latest_messages.msgable_id')
+                    ->where('existing_contacts.channel', '=', $service)
+                    ->where('existing_contacts.user_id', '=', $userId);
+            })
+            ->where(function ($query) {
+                $query->whereNull('existing_contacts.account_id')
+                    ->orWhere('existing_contacts.account_id', '=', DB::raw('latest_messages.account_id'));
+            })
+            ->where(function ($query) {
+                $query->whereNull('existing_contacts.last_msg_id')
+                    ->orWhereNull('existing_contacts.last_message_at')
+                    ->orWhereNull('existing_contacts.account_id');
+            })
+            ->selectRaw('existing_contacts.id as conversation_id, latest_messages.account_id, latest_messages.last_msg_id, COALESCE(last_msg.received_at, last_msg.sent_at, last_msg.created_at) as last_message_at, COALESCE(unread_messages.unread_count, 0) as unread_count')
+            ->orderBy('existing_contacts.id')
+            ->chunk(1000, function ($rows) {
+                $payload = [];
+
+                foreach ($rows as $row) {
+                    $payload[] = [
+                        'id' => $row->conversation_id,
+                        'account_id' => $row->account_id,
+                        'last_msg_id' => $row->last_msg_id,
+                        'last_message_at' => $row->last_message_at,
+                        'unread' => (int) $row->unread_count > 0,
+                        'unread_count' => (int) $row->unread_count,
+                    ];
+                }
+
+                if ($payload !== []) {
+                    ChatListContact::upsert(
+                        $payload,
+                        ['id'],
+                        ['account_id', 'last_msg_id', 'last_message_at', 'unread', 'unread_count']
+                    );
+                }
+            }, 'existing_contacts.id');
+
+        Cache::put($cacheKey, true, now()->addMinutes(10));
+    }
+
     protected function ensureConversationIndexForService(int $userId, string $service): void
     {
         if ($service !== 'whatsapp') {
+            return;
+        }
+
+        $cacheKey = sprintf('chat-conversation-index:%s:%d', $service, $userId);
+
+        if (Cache::has($cacheKey)) {
             return;
         }
 
@@ -692,6 +838,7 @@ class MsgController extends Controller
             ->exists();
 
         if ($hasConversationRows) {
+            Cache::put($cacheKey, true, now()->addMinutes(5));
             return;
         }
 
@@ -756,6 +903,8 @@ class MsgController extends Controller
                     ChatListContact::insert($payload);
                 }
             }, 'latest_messages.last_msg_id');
+
+        Cache::put($cacheKey, true, now()->addMinutes(5));
     }
 
     protected function chatFilterUsesOnlyRelationFields($searchData): bool

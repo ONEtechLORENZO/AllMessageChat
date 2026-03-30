@@ -16,7 +16,21 @@ class RunDueCampaigns
 
     public function terminate($request, $response): void
     {
-        if (! Auth::check()) {
+        $httpFallbackEnabled = ! app()->environment(['local', 'testing'])
+            || filter_var((string) env('ENABLE_HTTP_CAMPAIGN_FALLBACK', false), FILTER_VALIDATE_BOOL);
+
+        if (! $httpFallbackEnabled) {
+            return;
+        }
+
+        try {
+            if (! Auth::check()) {
+                return;
+            }
+        } catch (\Throwable $exception) {
+            Log::warning('Skipping HTTP campaign fallback because auth state could not be resolved.', [
+                'exception' => $exception,
+            ]);
             return;
         }
 

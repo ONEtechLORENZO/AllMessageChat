@@ -4,6 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AuthUserSetLocale
 {
@@ -16,12 +18,15 @@ class AuthUserSetLocale
      */
     public function handle($request, Closure $next)
     {
-     
-        if (\Auth::check()) {
-            \App::setLocale(\Auth::user()->language);
+        try {
+            if (Auth::check()) {
+                app()->setLocale(Auth::user()->language);
+            }
+        } catch (\Throwable $exception) {
+            Log::warning('Skipping locale resolution because auth state could not be loaded.', [
+                'exception' => $exception,
+            ]);
         }
-        //die($request->language);
-        //\App::setLocale($request->language);
 
         return $next($request);
     }
