@@ -383,6 +383,7 @@ class CampaignExecutionService
             'email' => ['label' => __('Email'), 'type' => 'text'],
             'phone_number' => ['label' => __('Phone number'), 'type' => 'phone_number'],
             'instagram_username' => ['label' => __('Instagram Username'), 'type' => 'text'],
+            'facebook_username' => ['label' => __('Facebook Username'), 'type' => 'text'],
         ];
 
         $controller = new Controller();
@@ -407,6 +408,8 @@ class CampaignExecutionService
             $campaign->save();
             return 0;
         }
+
+        $batchSendAttempted = false;
 
         foreach ($contacts as $contact) {
             $response = null;
@@ -512,16 +515,33 @@ class CampaignExecutionService
                 }
             }
 
-            if ($sendAttempted && ! $this->sendResponseSuccessful($response)) {
-                $reason = is_array($response)
-                    ? (string) ($response['error'] ?? $response['result']['message'] ?? $response['result']['error'] ?? 'Delivery failed.')
-                    : 'Delivery failed.';
+            if ($sendAttempted) {
+                $batchSendAttempted = true;
 
-                $this->markCampaignFailed($campaign, $reason);
-                return 0;
+                if (! $this->sendResponseSuccessful($response)) {
+                    $reason = is_array($response)
+                        ? (string) ($response['error'] ?? $response['result']['message'] ?? $response['result']['error'] ?? 'Delivery failed.')
+                        : 'Delivery failed.';
+
+                    $this->markCampaignFailed($campaign, $reason);
+                    return 0;
+                }
             }
 
             $count++;
+        }
+
+        if (! $batchSendAttempted && $offset === 0) {
+            $channelLabel = ucfirst($channel);
+            $fieldLabel = match ($channel) {
+                'facebook'  => 'Facebook username',
+                'instagram' => 'Instagram username',
+                'whatsapp'  => 'phone number',
+                'email'     => 'email address',
+                default     => 'destination field',
+            };
+            $this->markCampaignFailed($campaign, "No contacts in this campaign have a {$fieldLabel} set. Please update your contacts before sending a {$channelLabel} campaign.");
+            return 0;
         }
 
         $campaign->offset = $offset + $count;
