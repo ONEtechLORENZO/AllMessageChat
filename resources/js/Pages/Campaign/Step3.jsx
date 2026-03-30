@@ -91,10 +91,13 @@ function Content(props){
                                     </>
                                 ) : (
                                     <>
-                                        No templates are available for this account yet. Create or sync a template first, then come back and select it here.
+                                        No active templates are available for this account yet. Create or activate a valid template first, then come back and select it here.
                                     </>
                                 )}
                             </div>
+                        ) : null}
+                        {props.errors?.template_id ? (
+                            <p className="mt-3 text-sm font-medium text-rose-300">{props.errors.template_id}</p>
                         ) : null}
                     </div>
                 </div>

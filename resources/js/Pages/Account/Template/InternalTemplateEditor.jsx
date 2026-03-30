@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Head, Link, router } from "@inertiajs/react";
 import Authenticated from "@/Layouts/Authenticated";
 import notie from "notie";
@@ -140,17 +140,22 @@ export default function InternalTemplateEditor(props) {
     const isFacebookTemplate = channel === "facebook";
     const isInstagramTemplate = channel === "instagram";
     const isMetaSocialTemplate = isFacebookTemplate || isInstagramTemplate;
-    const initialPayload =
-        props.template?.payload_json && typeof props.template.payload_json === "object"
-            ? { ...props.template.payload_json }
-            : defaultPayload(props.template?.type || "text");
-
-    const [form, setForm] = useState({
-        template_name: props.template?.name || "",
-        type: props.template?.type || "text",
-        status: props.template?.status || "draft",
-        payload_json: initialPayload,
+    const buildFormFromTemplate = (template) => ({
+        template_name: template?.name || "",
+        type: template?.type || "text",
+        status: template?.status || "draft",
+        payload_json:
+            template?.payload_json && typeof template.payload_json === "object"
+                ? clone(template.payload_json)
+                : defaultPayload(template?.type || "text"),
     });
+
+    const [form, setForm] = useState(buildFormFromTemplate(props.template));
+
+    useEffect(() => {
+        setForm(buildFormFromTemplate(props.template));
+    }, [props.template?.id, props.template?.updated_at]);
+
     const [processing, setProcessing] = useState(false);
     const [focusedPath, setFocusedPath] = useState("");
     const [errors, setErrors] = useState({});
@@ -164,7 +169,12 @@ export default function InternalTemplateEditor(props) {
         () => (isFacebookTemplate ? buildFacebookValidation(form.payload_json) : { usedVariables: [], issues: [] }),
         [form.payload_json, isFacebookTemplate],
     );
-    const blockingIssues = isFacebookTemplate ? facebookValidation.issues : [];
+    const blockingIssues = [
+        ...(isFacebookTemplate ? facebookValidation.issues : []),
+        ...(isMetaSocialTemplate && form.payload_json?.type === "media" && !form.payload_json?.media_url?.trim()
+            ? ["Media templates require a media URL."]
+            : []),
+    ];
     const availableFields = isMetaSocialTemplate ? FACEBOOK_VARIABLES : props.fields;
 
     function setPayload(path, value) {
@@ -285,6 +295,11 @@ export default function InternalTemplateEditor(props) {
     }
 
     function saveTemplate(statusAction = "save") {
+        if (statusAction && typeof statusAction === "object" && typeof statusAction.preventDefault === "function") {
+            statusAction.preventDefault();
+            statusAction = "save";
+        }
+
         if (statusAction === "activate" && blockingIssues.length) {
             setErrors((current) => ({
                 ...current,
@@ -323,12 +338,17 @@ export default function InternalTemplateEditor(props) {
             status_action: statusAction,
         }, {
             preserveScroll: true,
+            preserveState: false,
             onSuccess: () => {
-                setForm((current) => ({ ...current, status: nextStatus }));
+                setErrors({});
                 notie.alert({
                     type: "success",
                     text: "Template saved successfully",
                     time: 4,
+                });
+                router.reload({
+                    only: ["template", "channel", "fields", "sampleData"],
+                    preserveScroll: true,
                 });
             },
             onError: (nextErrors) => setErrors(nextErrors || {}),
@@ -371,7 +391,7 @@ export default function InternalTemplateEditor(props) {
                                     <button
                                         type="button"
                                         disabled={processing}
-                                        onClick={saveTemplate}
+                                        onClick={() => saveTemplate("save")}
                                         className="inline-flex items-center rounded-full bg-fuchsia-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-fuchsia-500 disabled:opacity-60"
                                     >
                                         Save
@@ -415,7 +435,9 @@ export default function InternalTemplateEditor(props) {
                                                 <option value="media">Media</option>
                                                 <option value="card">Card</option>
                                                 <option value="carousel">Carousel</option>
-                                                <option value="quick_replies">Quick replies</option>
+                                                {!isInstagramTemplate && (
+                                                    <option value="quick_replies">Quick replies</option>
+                                                )}
                                             </select>
                                             <p className="mt-2 text-sm text-white/50">
                                                 Defines how the message will be structured when sent.
@@ -509,6 +531,7 @@ export default function InternalTemplateEditor(props) {
                                                     type="url"
                                                     value={form.payload_json.media_url || ""}
                                                     onChange={(event) => setPayload("media_url", event.target.value)}
+                                                    placeholder="https://example.com/media.mp4"
                                                     className="w-full rounded-xl border border-white/10 bg-[#171717] px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-fuchsia-500/60 focus:outline-none"
                                                 />
                                             </label>

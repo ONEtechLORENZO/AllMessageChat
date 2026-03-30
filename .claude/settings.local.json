@@ -11,7 +11,11 @@
       "Read(//c/Users//**)",
       "Bash(\"/c/Users/AESSEFIN PRESTITIù/.config/herd/bin/php.bat\" artisan migrate --path=database/migrations/2025_03_16_000001_add_smtp_fields_to_accounts.php)",
       "Bash(\"/c/Users/AESSEFIN PRESTITIù/.config/herd/bin/php.bat\" artisan migrate --path=database/migrations/2025_03_16_000002_add_email_subject_to_msgs_and_templates.php)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(grep -E \"\\\\.\\(php|ts|tsx|js\\)$\")",
+      "Bash(grep -l \"campaigns\\\\|templates\\\\|messages\" /c/code/chat_backup/dev.allmessage.chat/database/migrations/*.php)",
+      "Bash(grep -l \"payload_json\\\\|payload\\\\|media_type\\\\|media_url\" /c/code/chat_backup/dev.allmessage.chat/database/migrations/*.php)",
+      "Bash(node_modules/.bin/vite build:*)"
     ]
   }
 }

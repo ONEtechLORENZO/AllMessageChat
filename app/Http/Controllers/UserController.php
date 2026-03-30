@@ -1898,6 +1898,26 @@ class UserController extends Controller
     }
 
     /**
+     * Upload a media file for use in templates and return its public URL.
+     */
+    public function uploadTemplateMedia(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:jpg,jpeg,png,gif,mp4,mov,avi,webm|max:51200',
+        ]);
+
+        $file = $request->file('file');
+        $fileName = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+        $destinationPath = public_path('attach_files');
+        $file->move($destinationPath, $fileName);
+
+        return response()->json([
+            'status' => true,
+            'url' => asset('attach_files/' . $fileName),
+        ]);
+    }
+
+    /**
      * Store template
      */
     public function storeTemplate(Request $request, $account_id, $template_id)
@@ -1985,7 +2005,9 @@ class UserController extends Controller
                 $status = 'active';
             } elseif (! $isFacebookTemplate) {
                 $status = in_array($requestedStatus, ['draft', 'active'], true) ? $requestedStatus : 'draft';
-            } elseif ($status === 'active' && $validationErrors !== []) {
+            }
+
+            if ($status === 'active' && $validationErrors !== []) {
                 $status = 'draft';
             }
 

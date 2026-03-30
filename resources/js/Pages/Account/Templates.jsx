@@ -110,12 +110,13 @@ function Templates(props) {
     const isSocialTemplateAccount = ["facebook", "instagram"].includes(
         String(resolvedAccount?.service ?? "").toLowerCase(),
     );
+    const isInstagramAccount = String(resolvedAccount?.service ?? "").toLowerCase() === "instagram";
     const templateTypeOptions = [
         { value: "text", label: "Text" },
         { value: "media", label: "Media" },
         { value: "card", label: "Card" },
         { value: "carousel", label: "Carousel" },
-        { value: "quick_replies", label: "Quick replies" },
+        ...(!isInstagramAccount ? [{ value: "quick_replies", label: "Quick replies" }] : []),
     ];
 
     function openAccount(accountId) {

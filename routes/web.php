@@ -176,6 +176,7 @@ Route::middleware('planrestriction')->group(function () {
         Route::post('/account/{id}/template', [UserController::class, 'createNewTemplate'])->name('create_new_template');
         Route::get('/account/{id}/template/{template_id}', [UserController::class, 'templateDetailView'])->name('template_detail_view');
         Route::post('/account/{id}/template/{template_id}', [UserController::class, 'storeTemplate'])->name('store_template');
+        Route::post('/template/upload-media', [UserController::class, 'uploadTemplateMedia'])->name('upload_template_media');
         Route::get('/account/{id}', [UserController::class, 'showAccount'])->name('account_view');
         Route::post('/account/delete_account', [UserController::class, 'deleteAccount'])->name('delete_account');
         Route::post('/saveTemplateStatus/account/{acc_id}/template/{tmp_id}', [UserController::class, 'saveTemplateStatus'])->name('template_status_form');
