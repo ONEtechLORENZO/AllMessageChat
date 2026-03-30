@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "@inertiajs/react";
 import { confirmAlert } from "react-confirm-alert";
 import nProgress from "nprogress";
 import axios from "axios";
@@ -18,6 +17,16 @@ const STATUS_PRIORITY = {
     connected: 2,
     not_connected: 3,
 };
+
+function connectionModalHref(service, account) {
+    const params = { service };
+
+    if (account?.id) {
+        params.account_id = account.id;
+    }
+
+    return route("account_registration", params);
+}
 
 const SERVICE_DEFINITIONS = {
     whatsapp: {
@@ -94,25 +103,27 @@ function normalizeStatus(account) {
     }
 
     if (account.service === "instagram") {
-        if (account.connection_status === "connected") {
-            return "connected";
-        }
-
         if (
-            account.connection_status === "needs_page" ||
-            account.connection_status === "needs_instagram"
+            account.legacy_connection ||
+            account.connection_model === "legacy_page_linked" ||
+            account.requires_reconnect
         ) {
             return "needs_setup";
         }
 
-        if (
-            account.connection_status === "incomplete" ||
-            account.connection_status === "error"
-        ) {
+        if (account.connection_status === "connected") {
+            return "connected";
+        }
+
+        if (account.connection_status === "incomplete") {
+            return "needs_setup";
+        }
+
+        if (account.connection_status === "error") {
             return "not_connected";
         }
 
-        return account.id ? "needs_setup" : "not_connected";
+        return account.id ? "not_connected" : "not_connected";
     }
 
     if (
@@ -184,18 +195,15 @@ function serviceDetail(service, status, account, profileCount) {
         }
 
         if (status === "needs_setup") {
-            if (account.connection_status === "needs_page") {
-                return "Select a Facebook Page to continue";
+            if (
+                account.legacy_connection ||
+                account.connection_model === "legacy_page_linked" ||
+                account.requires_reconnect
+            ) {
+                return "Legacy Instagram connection. Reconnect to upgrade";
             }
 
-            if (account.connection_status === "needs_instagram") {
-                return (
-                    account.connection_setup?.message ||
-                    "Linked Instagram account not selected"
-                );
-            }
-
-            return "Finish Instagram setup";
+            return account.connection_setup?.message || "Connect Instagram";
         }
 
         if (hasConnectionError(account)) {
@@ -255,23 +263,31 @@ function serviceDetail(service, status, account, profileCount) {
 }
 
 function reconnectAction(service, account) {
-    if (service === "facebook" || service === "instagram") {
-        const params = account?.id
-            ? { service, account_id: account.id }
-            : { service };
-
+    if (service === "instagram") {
         return {
             label: "Connect",
-            href: route("connect_face_book", params),
+            href: connectionModalHref(service, account),
+        };
+    }
+
+    if (service === "facebook") {
+        return {
+            label: "Connect",
+            href: connectionModalHref(service, account),
         };
     }
 
     if (service === "email") {
         return {
             label: "Connect",
-            href: account?.id
-                ? route("connect_gmail", { account_id: account.id })
-                : route("connect_gmail"),
+            href: connectionModalHref(service, account),
+        };
+    }
+
+    if (service === "whatsapp") {
+        return {
+            label: "Connect",
+            href: connectionModalHref(service, account),
         };
     }
 
@@ -294,11 +310,20 @@ function primaryAction(service, status, account) {
     }
 
     if (status === "needs_setup") {
+        if (service === "instagram") {
+            return {
+                label: "Connect",
+                href: connectionModalHref(service, account),
+                className:
+                    "inline-flex h-9 items-center justify-center rounded-full bg-blue-600 px-3.5 text-sm font-semibold text-white transition hover:bg-blue-500",
+            };
+        }
+
         return {
             label: "Finish setup",
             href: account?.id
                 ? route("edit_account", account.id)
-                : route("account_registration"),
+                : connectionModalHref(service, account),
             className:
                 "inline-flex h-9 items-center justify-center rounded-full bg-amber-400 px-3.5 text-sm font-semibold text-[#12041f] transition hover:bg-amber-300",
         };
@@ -319,7 +344,7 @@ function primaryAction(service, status, account) {
         href:
             hasConnectionError(account) && account?.id
                 ? reconnectAction(service, account).href
-                : route("account_registration"),
+                : connectionModalHref(service, account),
         className:
             "inline-flex h-9 items-center justify-center rounded-full bg-blue-600 px-3.5 text-sm font-semibold text-white transition hover:bg-blue-500",
     };
@@ -404,7 +429,13 @@ export default function Accounts(props) {
                                         },
                                     })
                                         .then((response) => {
-                                            setAccountList(response.data.accounts || []);
+                                            setAccountList((current) =>
+                                                current.filter(
+                                                    (account) =>
+                                                        account.id !==
+                                                        accountId
+                                                )
+                                            );
                                             nProgress.done();
                                             onClose();
                                         })
@@ -446,15 +477,6 @@ export default function Accounts(props) {
 
     return (
         <div className="mx-auto max-w-4xl space-y-3">
-            <div className="flex justify-end">
-                <Link
-                    href={route("account_registration")}
-                    className="inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500"
-                >
-                    Connect channel
-                </Link>
-            </div>
-
             <div className="space-y-2">
                 {channelCards.map((card) => (
                     <ChannelCard key={card.service} {...card} />

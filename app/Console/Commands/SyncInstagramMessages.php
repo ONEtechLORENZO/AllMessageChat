@@ -11,7 +11,7 @@ class SyncInstagramMessages extends Command
 {
     protected $signature = 'command:SyncInstagramMessages {--account_id=}';
 
-    protected $description = 'Synchronize Instagram conversations for connected page-linked Instagram accounts.';
+    protected $description = 'Synchronize Instagram conversations for connected Instagram accounts, including Instagram Login connections.';
 
     public function handle(): int
     {

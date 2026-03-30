@@ -4,6 +4,7 @@ export default function StepEmail({
     setCurrentPage,
     translator,
     googleConfigured,
+    lockedService,
 }) {
     const buttonBase =
         "inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition";
@@ -54,7 +55,14 @@ export default function StepEmail({
             <div className="flex justify-between pt-2">
                 <button
                     type="button"
-                    onClick={() => setCurrentPage(1)}
+                    onClick={() => {
+                        if (lockedService) {
+                            window.location.href = route("social_profile");
+                            return;
+                        }
+
+                        setCurrentPage(1);
+                    }}
                     className={`${buttonBase} border border-white/10 bg-white/5 text-white/75 hover:bg-white/10 hover:text-white`}
                 >
                     {translator?.["Back"] ?? "Back"}

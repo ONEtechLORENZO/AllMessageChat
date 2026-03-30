@@ -100,6 +100,7 @@ Route::middleware('planrestriction')->group(function () {
 
     Route::get('/integrations/gmail/callback', [UserController::class, 'handleGmailCallback'])->name('gmail_connection_callback');
     Route::get('/integrations/meta/oauth/callback', [MetaIntegrationController::class, 'handleOauthCallback'])->name('meta_oauth_callback');
+    Route::get('/integrations/instagram/oauth/callback', [MetaIntegrationController::class, 'handleInstagramOauthCallback'])->name('instagram_oauth_callback');
     Route::get('/integrations/meta/callback', [MetaIntegrationController::class, 'handleOauthCallback'])->name('meta_connection_callback');
 
     // Check user login

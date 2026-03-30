@@ -22,7 +22,7 @@ class Document extends Model
     /**
      * Return list view fields
      */
-    public function getListViewFields(Type $var = null)
+    public function getListViewFields($var = null)
     {
         $list_view_columns = [
             'title' => ['label' => 'Title', 'type' => 'text'],
@@ -35,7 +35,7 @@ class Document extends Model
     /**
      * Store Document and return file path
      */
-    public function storeDocument($type = '' , $url , $parentId, $account)
+    public function storeDocument($type, $url, $parentId, $account)
     {
         $response = Http::get($url);
 
@@ -111,7 +111,7 @@ class Document extends Model
     /**
      * Save Document
      */
-    public function saveDocument($name = '', $type, $file, $parentId, $parentModule, $path, $url ='')
+    public function saveDocument($name, $type, $file, $parentId, $parentModule, $path, $url = '')
     {
         if($type){
             $extension = explode('/', $type)[1];

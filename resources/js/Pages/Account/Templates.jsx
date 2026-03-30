@@ -51,6 +51,7 @@ function Templates(props) {
             category: "",
             languages: ["en"],
             service: "",
+            template_type: "text",
         });
 
     useEffect(() => {
@@ -70,7 +71,8 @@ function Templates(props) {
             errors.template_name ||
             errors.subject ||
             errors.category ||
-            errors.languages
+            errors.languages ||
+            errors.template_type
         ) {
             setIsCreateModalOpen(true);
         }
@@ -105,6 +107,16 @@ function Templates(props) {
     }, [props.account, props.accounts, selectedAccountId]);
     const isEmailAccount =
         String(resolvedAccount?.service ?? "").toLowerCase() === "email";
+    const isSocialTemplateAccount = ["facebook", "instagram"].includes(
+        String(resolvedAccount?.service ?? "").toLowerCase(),
+    );
+    const templateTypeOptions = [
+        { value: "text", label: "Text" },
+        { value: "media", label: "Media" },
+        { value: "card", label: "Card" },
+        { value: "carousel", label: "Carousel" },
+        { value: "quick_replies", label: "Quick replies" },
+    ];
 
     function openAccount(accountId) {
         setSelectedAccountId(String(accountId));
@@ -186,6 +198,10 @@ function Templates(props) {
         "UTILITY",
     ];
     const templateStatusOptions = useMemo(() => {
+        if (isSocialTemplateAccount) {
+            return ["DRAFT", "ACTIVE"];
+        }
+
         const preferredStatuses = ["APPROVED", "PENDING", "DRAFT"];
         const existingStatuses = (templates ?? [])
             .map((template) => String(template.status ?? "").toUpperCase())
@@ -194,7 +210,7 @@ function Templates(props) {
         return Array.from(
             new Set([...preferredStatuses, ...existingStatuses]),
         );
-    }, [templates]);
+    }, [isSocialTemplateAccount, templates]);
 
     const filteredTemplates = useMemo(() => {
         const normalizedNameSearch = templateNameSearch.trim().toLowerCase();
@@ -312,9 +328,14 @@ function Templates(props) {
         setData({
             template_name: "",
             subject: "",
-            category: isEmailAccount ? "EMAIL" : "",
-            languages: isEmailAccount ? [] : [],
+            category: isEmailAccount
+                ? "EMAIL"
+                : isSocialTemplateAccount
+                  ? String(resolvedAccount?.service ?? "").toUpperCase()
+                  : "",
+            languages: isEmailAccount || isSocialTemplateAccount ? [] : [],
             service: isEmailAccount ? "email" : String(resolvedAccount?.service ?? ""),
+            template_type: "text",
         });
         setIsCreateModalOpen(true);
     }
@@ -365,7 +386,7 @@ function Templates(props) {
             return false;
         }
 
-        if (!isEmailAccount && !data.languages?.length) {
+        if (!isEmailAccount && !isSocialTemplateAccount && !data.languages?.length) {
             return false;
         }
 
@@ -383,16 +404,26 @@ function Templates(props) {
 
     const createTemplateTitle = isEmailAccount
         ? "Add Email Template"
-        : props.translator["Add template"] ?? "Add template";
+        : isSocialTemplateAccount
+          ? String(resolvedAccount?.service ?? "").toLowerCase() === "facebook"
+              ? "Create Facebook Message Template"
+              : "Create Instagram Message Template"
+          : props.translator["Add template"] ?? "Add template";
     const createTemplateDescription = isEmailAccount
         ? "Create a minimal email template with an internal name and a default subject. You will complete the HTML body and preview in the editor after creation."
-        : props.translator[
+        : isSocialTemplateAccount
+          ? String(resolvedAccount?.service ?? "").toLowerCase() === "facebook"
+              ? "Create a reusable message template for Facebook campaigns."
+              : "Create a reusable message template for Instagram campaigns."
+          : props.translator[
               "Create a new WhatsApp template. Each template must have a unique name consisting of lowercase alphanumeric characters.Spaces must be replaced with underscores (_). Only WhatsApp templates within the pre-defined categories can be accepted."
           ] ??
           "Create a new WhatsApp template. Each template must have a unique name consisting of lowercase alphanumeric characters. Spaces must be replaced with underscores (_). Only WhatsApp templates within the pre-defined categories can be accepted.";
     const createTemplateButtonLabel = isEmailAccount
         ? "Add Email Template"
-        : props.translator["Add template"] ?? "Add template";
+        : isSocialTemplateAccount
+          ? "Add template"
+          : props.translator["Add template"] ?? "Add template";
 
     function getStatusClasses(status) {
         const normalizedStatus = (status || "").toLowerCase();
@@ -512,7 +543,7 @@ function Templates(props) {
                                     {createTemplateButtonLabel}
                                 </button>
 
-                                {!isEmailAccount ? (
+                                {!isEmailAccount && !isSocialTemplateAccount ? (
                                     <button
                                         onClick={() => syncTemplates()}
                                         disabled={!hasAccount || isLoading}
@@ -589,7 +620,7 @@ function Templates(props) {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                <div className="grid gap-4 border-b border-white/10 px-5 pb-5 lg:grid-cols-[minmax(0,1.4fr)_180px_140px_184px] lg:items-end lg:gap-6">
+                                <div className="grid gap-4 border-b border-white/10 px-5 pb-5 lg:grid-cols-[minmax(0,1.25fr)_140px_180px_140px_184px] lg:items-end lg:gap-6">
                                     <label className="block">
                                         <span className="mb-2 block text-sm font-medium text-white/70">
                                             {props.translator["Name"] ?? "Name"}
@@ -613,6 +644,8 @@ function Templates(props) {
                                             <MagnifyingGlassIcon className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
                                         </div>
                                     </label>
+
+                                    <div className="hidden lg:block" />
 
                                     <label className="block">
                                         <span className="mb-2 block text-sm font-medium text-white/70">
@@ -658,9 +691,12 @@ function Templates(props) {
                                     <div className="hidden lg:block" />
                                 </div>
 
-                                <div className="hidden border-b border-white/10 px-5 pb-3 lg:grid lg:grid-cols-[minmax(0,1.4fr)_180px_140px_184px] lg:items-center lg:gap-6">
+                                <div className="hidden border-b border-white/10 px-5 pb-3 lg:grid lg:grid-cols-[minmax(0,1.25fr)_140px_180px_140px_184px] lg:items-center lg:gap-6">
                                     <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
                                         {props.translator["Name"] ?? "Name"}
+                                    </div>
+                                    <div className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
+                                        {props.translator["Type"] ?? "Type"}
                                     </div>
                                     <div className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
                                         {props.translator["Created On"] ?? "Created On"}
@@ -677,7 +713,7 @@ function Templates(props) {
                                             key={data.id}
                                             className="group overflow-hidden rounded-2xl bg-[#100517]/85 px-5 py-4 shadow-[0_16px_40px_rgba(0,0,0,0.24)] transition hover:bg-[#14081d]/90"
                                         >
-                                            <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1.4fr)_180px_140px_184px] lg:items-center lg:gap-5">
+                                            <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1.25fr)_140px_180px_140px_184px] lg:items-center lg:gap-5">
                                                 <div className="min-w-0 flex-1 space-y-2">
                                                     <div className="min-w-0 space-y-1">
                                                         <Link
@@ -696,21 +732,33 @@ function Templates(props) {
                                                             <div className="truncate text-sm text-white/50">
                                                                 Subject: {data.subject}
                                                             </div>
+                                                        ) : data.preview ? (
+                                                            <div className="truncate text-sm text-white/50">
+                                                                {data.preview}
+                                                            </div>
                                                         ) : null}
                                                     </div>
 
                                                     <div className="flex flex-wrap gap-2">
-                                                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-white/70">
-                                                            {data.service === "email"
-                                                                ? "Email"
-                                                                : data.language}
-                                                        </span>
+                                                        {!data.type ? (
+                                                            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-white/70">
+                                                                {data.service === "email"
+                                                                    ? "Email"
+                                                                    : data.language}
+                                                            </span>
+                                                        ) : null}
                                                         {data.template_uid ? (
                                                             <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 font-mono text-xs text-white/55">
                                                                 {data.template_uid}
                                                             </span>
                                                         ) : null}
                                                     </div>
+                                                </div>
+
+                                                <div className="text-center text-sm text-white/65">
+                                                    {data.type
+                                                        ? String(data.type).replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase())
+                                                        : "—"}
                                                 </div>
 
                                                 <div className="text-center text-sm text-white/60">
@@ -841,7 +889,9 @@ function Templates(props) {
                                                             htmlFor="template_name"
                                                             className="block text-sm font-medium text-white/80"
                                                         >
-                                                            {props.translator["Name"] ?? "Name"}{" "}
+                                                            {isSocialTemplateAccount
+                                                                ? "Template name"
+                                                                : props.translator["Name"] ?? "Name"}{" "}
                                                             <span className="text-red-500">*</span>
                                                         </label>
                                                         <div className="mt-1 flex rounded-md shadow-sm">
@@ -851,8 +901,10 @@ function Templates(props) {
                                                                 id="template_name"
                                                                 value={data.template_name}
                                                                 placeholder={
-                                                                    props.translator["Template name"] ??
-                                                                    "Template name"
+                                                                    isSocialTemplateAccount
+                                                                        ? "e.g. Welcome message, Promo April"
+                                                                        : props.translator["Template name"] ??
+                                                                          "Template name"
                                                                 }
                                                                 handleChange={handleCreateTemplateChange}
                                                                 className="border-0 bg-[#171717] px-4 py-3 text-white placeholder:text-white/35 focus:border-fuchsia-500/60 focus:ring-fuchsia-500/20"
@@ -880,6 +932,36 @@ function Templates(props) {
                                                                 />
                                                             </div>
                                                             <InputError message={errors.subject} />
+                                                        </div>
+                                                    ) : isSocialTemplateAccount ? (
+                                                        <div className="form-group col-span-6 sm:col-span-4">
+                                                            <label
+                                                                htmlFor="template_type"
+                                                                className="block text-sm font-medium text-white/80"
+                                                            >
+                                                                Message format{" "}
+                                                                <span className="text-red-500">*</span>
+                                                            </label>
+                                                            <div className="mt-1">
+                                                                <select
+                                                                    id="template_type"
+                                                                    name="template_type"
+                                                                    value={data.template_type}
+                                                                    data-pristine-required
+                                                                    onChange={handleCreateTemplateChange}
+                                                                    className="block w-full rounded-xl border border-white/10 bg-[#171717] px-4 py-3 text-sm text-white focus:border-fuchsia-500/60 focus:outline-none focus:ring-fuchsia-500/20"
+                                                                >
+                                                                    {templateTypeOptions.map((option) => (
+                                                                        <option key={option.value} value={option.value}>
+                                                                            {option.label}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                            <p className="mt-2 text-sm text-white/50">
+                                                                Defines how the message will be structured when sent.
+                                                            </p>
+                                                            <InputError message={errors.template_type} />
                                                         </div>
                                                     ) : (
                                                         <>
@@ -957,14 +1039,14 @@ function Templates(props) {
                                             className="inline-flex w-full justify-center rounded-xl border border-transparent bg-fuchsia-600 px-4 py-3 text-base font-medium text-white shadow-sm transition hover:bg-fuchsia-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/40 focus:ring-offset-0 disabled:opacity-60 sm:col-start-2 sm:text-sm"
                                             onClick={createTemplate}
                                         >
-                                            {props.translator["Create"] ?? "Create"}
+                                            {isSocialTemplateAccount ? "Continue" : props.translator["Create"] ?? "Create"}
                                         </button>
                                         <button
                                             type="button"
                                             className="mt-3 inline-flex w-full justify-center rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-base font-medium text-white/85 shadow-sm transition hover:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-fuchsia-500/40 focus:ring-offset-0 sm:col-start-1 sm:mt-0 sm:text-sm"
                                             onClick={closeCreateTemplateModal}
                                         >
-                                            {props.translator["Close"] ?? "Close"}
+                                            {isSocialTemplateAccount ? "Cancel" : props.translator["Close"] ?? "Close"}
                                         </button>
                                     </div>
                                 </Dialog.Panel>

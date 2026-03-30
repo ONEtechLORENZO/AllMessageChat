@@ -88,6 +88,9 @@ function ChatList(props) {
     const [time, setTime] = useState(Date.now());
     const accountList = props.account_list;
     const [loadedStory, setLoadedStory] = useState({});
+    const selectedConversation = selectedContact
+        ? chatList["contact_id_" + selectedContact]
+        : null;
 
     const listRef = useRef(null);
     const [page, setPage] = useState(1);
@@ -116,15 +119,121 @@ function ChatList(props) {
     }, [props.counts]);
 
     useEffect(() => {
-        if (accountList) {
-            let accountLength = Object.keys(accountList).length;
-            if (accountLength == 1) {
-                Object.entries(accountList).map(([id, name]) => {
-                    setSelectedAccount(id);
-                });
-            }
+        if (containerCategory !== "instagram" || !selectedContact) {
+            return undefined;
         }
-    }, []);
+
+        const interval = setInterval(() => {
+            Axios.get(
+                route("instagram_conversation_messages", {
+                    conversation: selectedContact,
+                }),
+            )
+                .then((response) => {
+                    setMessages(response.data);
+                })
+                .catch(() => {});
+        }, 20000);
+
+        return () => {
+            clearInterval(interval);
+        };
+    }, [containerCategory, selectedContact, selectedConversation?.id]);
+
+    useEffect(() => {
+        if (
+            containerCategory !== "instagram" &&
+            containerCategory !== "facebook"
+        ) {
+            return undefined;
+        }
+
+        const interval = setInterval(() => {
+            fetchContactList(true, current_tab, containerCategory).then(() => {
+                if (selectedContact && containerCategory === "facebook") {
+                    getMessageList();
+                }
+            });
+        }, 15000);
+
+        return () => {
+            clearInterval(interval);
+        };
+    }, [containerCategory, current_tab, selectedContact]);
+
+    useEffect(() => {
+        if (containerCategory !== "email") {
+            return undefined;
+        }
+
+        const interval = setInterval(() => {
+            fetchContactList(true, current_tab, containerCategory).then(() => {
+                if (selectedContact) {
+                    getMessageList();
+                }
+            });
+        }, 15000);
+
+        return () => {
+            clearInterval(interval);
+        };
+    }, [containerCategory, current_tab, selectedContact]);
+
+    useEffect(() => {
+        const accountIds = Object.keys(accountList || {});
+
+        if (accountIds.length === 1) {
+            setSelectedAccount(accountIds[0]);
+            return;
+        }
+
+        if (!accountIds.includes(String(selectedAccount))) {
+            setSelectedAccount("");
+        }
+    }, [accountList, selectedAccount]);
+
+    useEffect(() => {
+        const conversationAccountId = selectedConversation?.account_id
+            ? String(selectedConversation.account_id)
+            : "";
+
+        if (
+            conversationAccountId &&
+            Object.prototype.hasOwnProperty.call(
+                accountList || {},
+                conversationAccountId,
+            )
+        ) {
+            setSelectedAccount(conversationAccountId);
+        }
+    }, [accountList, selectedConversation?.account_id]);
+
+    useEffect(() => {
+        setData((prevState) => ({
+            ...prevState,
+            channel: containerCategory,
+        }));
+    }, [containerCategory]);
+
+    useEffect(() => {
+        if (containerCategory !== "email") {
+            setData((prevState) => ({
+                ...prevState,
+                email_subject: "",
+            }));
+            return;
+        }
+
+        setData((prevState) => ({
+            ...prevState,
+            email_subject:
+                selectedConversation?.subject || prevState.email_subject || "",
+        }));
+    }, [
+        containerCategory,
+        selectedConversation?.id,
+        selectedConversation?.subject,
+    ]);
 
     // Update select contact
     function updateContactData(contact) {
@@ -241,7 +350,7 @@ function ChatList(props) {
         }
         url += "&fetchContact=true&page=" + targetPage;
 
-        Axios.get(url).then((response) => {
+        return Axios.get(url).then((response) => {
             if (response.data.status) {
                 setChatList((previousList) =>
                     reset
@@ -261,6 +370,8 @@ function ChatList(props) {
                 }
                 setPageLoad(false);
             }
+
+            return response.data;
         });
     }
 
@@ -401,8 +512,13 @@ function ChatList(props) {
      */
     function setTemplateInfo(template) {
         let newState = Object.assign({}, data);
-        newState["content"] = template.name + " template selected ";
-        newState["template_id"] = template.template_uid;
+        const isInternalSocialTemplate = ["facebook", "instagram"].includes(
+            String(template?.service || "").toLowerCase(),
+        );
+        newState["content"] = isInternalSocialTemplate
+            ? String(template?.body || template?.name || "Template selected")
+            : template.name + " template selected ";
+        newState["template_id"] = template.template_uid || template.id;
         setData(newState);
     }
 

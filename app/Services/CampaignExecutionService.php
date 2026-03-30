@@ -11,6 +11,8 @@ use App\Models\Message;
 use App\Models\Msg;
 use App\Models\Template;
 use App\Models\WhatsAppUsers;
+use App\Services\Templates\TemplateAdapterException;
+use App\Services\Templates\TemplateRenderService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
@@ -269,13 +271,41 @@ class CampaignExecutionService
         return (string) ($template?->name ?? '');
     }
 
-    protected function resolveSocialDestination(Contact $contact, string $channel): string
+    protected function resolveInternalSocialTemplate($templateReference, ?int $accountId = null, ?string $channel = null): ?Template
+    {
+        if (! $templateReference || ! $accountId || ! $channel) {
+            return null;
+        }
+
+        return Template::where('id', $templateReference)
+            ->where('account_id', $accountId)
+            ->where('service', $channel)
+            ->whereNotNull('payload_json')
+            ->first();
+    }
+
+    protected function resolveSocialDestination(Contact $contact, string $channel, ?Account $account = null): string
     {
         return match ($channel) {
             'facebook' => (string) ($contact->facebook_username ?? ''),
-            'instagram' => (string) ($contact->instagram_username ?? ''),
+            'instagram' => $this->resolveInstagramDestination($contact, $account),
             default => '',
         };
+    }
+
+    protected function resolveInstagramDestination(Contact $contact, ?Account $account = null): string
+    {
+        $destination = trim((string) ($contact->instagram_username ?? ''));
+
+        if (
+            (string) ($account?->connection_model ?? '') === 'instagram_login'
+            && $destination !== ''
+            && ! preg_match('/^\d+$/', $destination)
+        ) {
+            return '';
+        }
+
+        return $destination;
     }
 
     protected function getNextDueCampaign(array $excludedCampaignIds = []): ?Campaign
@@ -409,13 +439,36 @@ class CampaignExecutionService
                     );
                 }
             } elseif (in_array($channel, ['instagram', 'facebook'], true)) {
-                $destination = $this->resolveSocialDestination($contact, $channel);
+                $destination = $this->resolveSocialDestination($contact, $channel, $account);
 
                 if ($destination) {
                     $sendAttempted = true;
+                    $internalTemplate = $this->resolveInternalSocialTemplate($template, (int) $campaign->account_id, $channel);
                     $messageBody = $this->resolveSocialTemplateBody($template);
+                    $renderedPayload = null;
 
-                    if ($account->service_engine === 'facebook') {
+                    if ($internalTemplate) {
+                        try {
+                            $renderedPayload = app(TemplateRenderService::class)->renderForContact($internalTemplate, $contact);
+                        } catch (TemplateAdapterException $e) {
+                            $this->markCampaignFailed($campaign, $e->getMessage());
+                            return 0;
+                        }
+                    }
+
+                    if ($channel === 'instagram' && (string) ($account->connection_model ?? '') === 'instagram_login') {
+                        try {
+                            $response = app(\App\Services\MetaIntegrationService::class)->sendInstagramMessage(
+                                $account,
+                                $destination,
+                                $renderedPayload ?: $messageBody
+                            );
+                        } catch (\Throwable $e) {
+                            $this->markCampaignFailed($campaign, $e->getMessage());
+                            return 0;
+                        }
+                    } elseif ($account->service_engine === 'facebook') {
+                        $metaIntegrationService = app(\App\Services\MetaIntegrationService::class);
                         $pageToken = (new WhatsAppUsers())->getFbPageAccessToken($account);
 
                         if (! $pageToken) {
@@ -424,11 +477,35 @@ class CampaignExecutionService
                         }
 
                         $response = $msg->sendInstaMessage(
-                            $messageBody,
+                            $renderedPayload ?: $messageBody,
                             $destination,
                             $account->fb_phone_number_id,
                             $pageToken
                         );
+
+                        $responseError = $response['error']['message'] ?? $response['error'] ?? '';
+                        if ($channel === 'facebook' && $metaIntegrationService->isMetaAccessTokenInvalid($responseError)) {
+                            $refreshedPageToken = $metaIntegrationService->refreshFacebookPageAccessToken($account);
+
+                            if ($refreshedPageToken !== '') {
+                                $response = $msg->sendInstaMessage(
+                                    $renderedPayload ?: $messageBody,
+                                    $destination,
+                                    $account->fb_phone_number_id,
+                                    $refreshedPageToken
+                                );
+                                $responseError = $response['error']['message'] ?? $response['error'] ?? '';
+                            }
+
+                            if ($metaIntegrationService->isMetaAccessTokenInvalid($responseError)) {
+                                $metaIntegrationService->markFacebookReconnectRequired(
+                                    $account,
+                                    'Facebook session expired. Connect Facebook again to continue.'
+                                );
+                                $this->markCampaignFailed($campaign, 'Facebook session expired. Connect Facebook again to continue.');
+                                return 0;
+                            }
+                        }
                     } else {
                         $response = $msg->sendInstagramMessage($messageBody, $destination, $account->src_name);
                     }

@@ -28,6 +28,7 @@ use App\Models\Automation;
 use App\Models\Session;
 use App\Services\GmailService;
 use App\Services\MetaIntegrationService;
+use App\Services\Templates\TemplateRenderService;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -231,6 +232,10 @@ class UserController extends Controller
                 'connection_metadata',
                 'meta_page_id',
                 'meta_page_name',
+                'connection_model',
+                'requires_reconnect',
+                'instagram_user_access_token_encrypted',
+                'instagram_app_scoped_user_id',
                 'instagram_account_id',
                 'instagram_username',
                 'instagram_name',
@@ -773,6 +778,7 @@ class UserController extends Controller
             abort(401, __('You are not authorised to see this record.'));
         }
         $template_details = [];
+        $templateRenderService = app(TemplateRenderService::class);
         $templates = Template::where('account_id', $id)->get();
         $messages = Message::select('messages.template_id', 'messages.template_uid', 'messages.language')
             ->join('templates', 'messages.template_id', 'templates.id')
@@ -872,6 +878,7 @@ class UserController extends Controller
     public function accountTemplates(Request $request)
     {
         $userId = $request->user()->id;
+        $templateRenderService = app(TemplateRenderService::class);
         $accounts = Account::where('user_id', $userId)
             ->select(
                 'accounts.id',
@@ -938,7 +945,16 @@ class UserController extends Controller
                         'service' => $template->service ?: $account->service,
                         'subject' => $template->email_subject,
                         'status' => $template->status,
-                        'language' => $template->service === 'email' ? 'Email' : $templateLanguageId,
+                        'language' => $template->service === 'email'
+                            ? 'Email'
+                            : ($template->isInternalSocialTemplate()
+                                ? ucfirst((string) ($template->type ?: 'template'))
+                                : $templateLanguageId),
+                        'type' => $template->type,
+                        'is_active' => (bool) $template->is_active,
+                        'preview' => $template->isInternalSocialTemplate()
+                            ? $templateRenderService->resolvePreviewText($template)
+                            : null,
                         'created_at' => $template->created_at,
                     ];
                 }
@@ -973,18 +989,20 @@ class UserController extends Controller
         $instagramSetup = null;
         $instaAccounts = [];
         if ($account->service == 'instagram' || $account->service == 'facebook') {
-            $pagesList = $metaIntegrationService->availablePagesForAccount($account, true);
-            $pages = [];
-            foreach ($pagesList as $id => $page) {
-                $pages[$id] = isset($page['name']) ? $page['name'] : $page;
-                if ($account->service == 'instagram' && ! empty($page['instagram'])) {
-                    $instaAccounts[$id] = [
-                        (string) $page['instagram']['id'] => trim(sprintf(
-                            '%s (%s)',
-                            (string) ($page['instagram']['name'] ?? $page['instagram']['username'] ?? 'Instagram account'),
-                            (string) ($page['instagram']['username'] ?? '')
-                        ), ' ()'),
-                    ];
+            if (! ($account->service === 'instagram' && $account->connection_model === 'instagram_login')) {
+                $pagesList = $metaIntegrationService->availablePagesForAccount($account, true);
+                $pages = [];
+                foreach ($pagesList as $id => $page) {
+                    $pages[$id] = isset($page['name']) ? $page['name'] : $page;
+                    if ($account->service == 'instagram' && ! empty($page['instagram'])) {
+                        $instaAccounts[$id] = [
+                            (string) $page['instagram']['id'] => trim(sprintf(
+                                '%s (%s)',
+                                (string) ($page['instagram']['name'] ?? $page['instagram']['username'] ?? 'Instagram account'),
+                                (string) ($page['instagram']['username'] ?? '')
+                            ), ' ()'),
+                        ];
+                    }
                 }
             }
         }
@@ -1061,7 +1079,9 @@ class UserController extends Controller
      */
     public function accountRegistration(Request $request, MetaIntegrationService $metaIntegrationService)
     {
-        $service = $error = '';
+        $service = (string) $request->query('service', '');
+        $presetAccountId = $request->query('account_id');
+        $error = '';
         if (isset($_GET['error'])) {
             $service = session('service');
             $error = $_GET['error'];
@@ -1086,6 +1106,10 @@ class UserController extends Controller
                 'insta_user_name',
                 'meta_page_id',
                 'meta_page_name',
+                'connection_model',
+                'requires_reconnect',
+                'instagram_user_access_token_encrypted',
+                'instagram_app_scoped_user_id',
                 'instagram_account_id',
                 'instagram_username',
                 'instagram_name',
@@ -1100,6 +1124,7 @@ class UserController extends Controller
         $menuBar = $this->fetchMenuBar();
         return Inertia::render('Account/Registration/Form', [
             'service' => $service,
+            'presetAccountId' => $presetAccountId ? (string) $presetAccountId : null,
             'error' => $error,
             'company' => $company,
             'accounts' => $accounts,
@@ -1125,6 +1150,8 @@ class UserController extends Controller
         if ($account->service === 'facebook' && $account->service_engine === 'facebook') {
             $setup = $metaIntegrationService->buildFacebookSetupPayload($account);
             $accountData['connection_setup'] = $setup;
+            $accountData['requires_reconnect'] = (bool) ($setup['requires_reconnect'] ?? false);
+            $accountData['connection_error'] = $setup['connection_error'] ?? null;
             $accountData['connection_status'] = $setup['status'];
             $accountData['connection_status_label'] = $setup['status_label'];
             $accountData['requires_action'] = $setup['requires_action'];
@@ -1134,10 +1161,14 @@ class UserController extends Controller
         } elseif ($account->service === 'instagram' && $account->service_engine === 'facebook') {
             $setup = $metaIntegrationService->buildInstagramSetupPayload($account);
             $accountData['connection_setup'] = $setup;
+            $accountData['connection_model'] = $setup['connection_model'] ?? $account->connection_model;
+            $accountData['legacy_connection'] = (bool) ($setup['legacy_connection'] ?? false);
+            $accountData['requires_reconnect'] = (bool) ($setup['requires_reconnect'] ?? false);
             $accountData['connection_status'] = $setup['status'];
             $accountData['connection_status_label'] = $setup['status_label'];
             $accountData['requires_action'] = ! $setup['setup_complete'];
-            $accountData['page_label'] = data_get($setup, 'selected_page.name') ?: 'Not selected';
+            $accountData['page_label'] = data_get($setup, 'selected_page.name')
+                ?: ($setup['connection_model'] === 'instagram_login' ? null : 'Not selected');
             $accountData['profile_name'] = data_get($setup, 'selected_instagram_account.name')
                 ?: data_get($setup, 'selected_instagram_account.username')
                 ?: $setup['account_name']
@@ -1434,11 +1465,6 @@ class UserController extends Controller
             'fb_waba_name',
             'api_partner_name',
             'api_partner',
-            'meta_page_id',
-            'meta_page_name',
-            'instagram_account_id',
-            'instagram_username',
-            'instagram_name',
         ];
 
         foreach ($accountFields as $field) {
@@ -1483,17 +1509,16 @@ class UserController extends Controller
             ->where('user_id', $user_id)
             ->firstOrFail();
 
-        // Pre-delete the related record from this accounts 
-        $templates = Template::where('account_id', $account_id)->get();
-        foreach ($templates as $template) {
-            $messages = Message::where('template_id', $template->id)->get();
-            foreach ($messages as $message) {
-                if ($message) {
-                    MessageButton::where('message_id', $message->id)->delete();
-                    $message->delete();
-                }
+        // Bulk-delete account-owned template data to avoid per-row loops.
+        $templateIds = Template::where('account_id', $account_id)->pluck('id');
+        if ($templateIds->isNotEmpty()) {
+            $messageIds = Message::whereIn('template_id', $templateIds)->pluck('id');
+            if ($messageIds->isNotEmpty()) {
+                MessageButton::whereIn('message_id', $messageIds)->delete();
             }
-            $template->delete();
+
+            Message::whereIn('template_id', $templateIds)->delete();
+            Template::whereIn('id', $templateIds)->delete();
         }
 
         $webhook = WebhookEvent::where('account_id', $account_id)->delete();
@@ -1501,38 +1526,10 @@ class UserController extends Controller
 
         $account->delete();
 
-        $accounts = Account::select(
-                'company_name',
-                'service',
-                'accounts.id',
-                'accounts.status',
-                'fb_page_name',
-                'fb_token',
-                'service_engine',
-                'phone_number',
-                'src_name',
-                'email',
-                'display_name',
-                'insta_user_name',
-                'fb_phone_number_id',
-                'fb_meta_data',
-                'fb_user_id',
-                'connection_metadata',
-                'meta_page_id',
-                'meta_page_name',
-                'instagram_account_id',
-                'instagram_username',
-                'instagram_name',
-                'connection_status',
-                'setup_state',
-                'connection_error'
-            )
-            ->where('user_id', $user_id)
-            ->get()
-            ->map(fn ($account) => $this->decorateAccountForFrontend($account, $metaIntegrationService))
-            ->values();
-
-        return response()->json(['status' => true, 'accounts' => $accounts]);
+        return response()->json([
+            'status' => true,
+            'deleted_account_id' => (int) $account_id,
+        ]);
     }
 
     /**
@@ -1551,6 +1548,36 @@ class UserController extends Controller
         }
 
         return strtolower((string) ($account?->service ?? '')) === 'email';
+    }
+
+    protected function isInternalSocialTemplateFlow(?Account $account = null, ?Template $template = null): bool
+    {
+        $templateService = strtolower((string) ($template?->service ?? ''));
+        if ($templateService !== '') {
+            return in_array($templateService, ['facebook', 'instagram'], true);
+        }
+
+        return in_array(strtolower((string) ($account?->service ?? '')), ['facebook', 'instagram'], true);
+    }
+
+    protected function getContactTemplateFields(?string $service = null): array
+    {
+        if (strtolower((string) $service) === 'facebook') {
+            return app(TemplateRenderService::class)->facebookAllowedVariables();
+        }
+
+        $fields = [];
+        $getFields = Field::where('module_name', 'Contact')
+            ->where('field_type', '!=', 'relate')
+            ->groupBy('field_name')
+            ->orderBy('id')
+            ->get();
+
+        foreach ($getFields as $field) {
+            $fields[$field->field_name] = $field->field_label;
+        }
+
+        return $fields;
     }
 
     protected function emailTemplateNameRule(int $accountId, ?int $ignoreTemplateId = null): array
@@ -1612,6 +1639,35 @@ class UserController extends Controller
             $template->save();
 
             Log::info('Email template saved successfully');
+
+            return Redirect::route('template_detail_view', [$account_id, $template->id]);
+        }
+
+        if ($this->isInternalSocialTemplateFlow($account)) {
+            $request->validate([
+                'template_name' => ['required', 'max:255'],
+                'template_type' => ['required', Rule::in(['text', 'media', 'card', 'carousel', 'quick_replies'])],
+            ]);
+
+            $templateRenderService = app(TemplateRenderService::class);
+            $templateType = (string) $request->get('template_type');
+
+            $template = new Template();
+            $template->name = trim((string) $request->get('template_name'));
+            $template->service = (string) $account->service;
+            $template->category = strtoupper((string) $account->service);
+            $template->languages = [];
+            $template->status = 'draft';
+            $template->type = $templateType;
+            $template->payload_json = $templateRenderService->defaultPayloadForChannel((string) $account->service, $templateType);
+            $template->variables_json = $templateRenderService->extractVariables($template);
+            $template->is_active = false;
+            $template->company_id = Cache::get('selected_company_' . $request->user()->id);
+            $template->account_id = $account_id;
+            $template->created_by = $request->user()->id;
+            $template->save();
+
+            Log::info('Social template saved successfully');
 
             return Redirect::route('template_detail_view', [$account_id, $template->id]);
         }
@@ -1753,6 +1809,19 @@ class UserController extends Controller
             ]);
         }
 
+        if ($this->isInternalSocialTemplateFlow($account, $template)) {
+            $templateRenderService = app(TemplateRenderService::class);
+
+            return Inertia::render('Account/Template/InternalTemplateEditor', [
+                'template' => $template,
+                'channel' => $template->service,
+                'fields' => $this->getContactTemplateFields($template->service),
+                'sampleData' => $template->service === 'facebook' ? $templateRenderService->facebookSampleData() : [],
+                'menuBar' => $menuBar,
+                'translator' => Controller::getTranslations(),
+            ]);
+        }
+
         $templateContent = $this->fetchTemplateContent($template_id, $account_id);
         if ($templateContent instanceof \Illuminate\Http\RedirectResponse) {
             return $templateContent;
@@ -1779,6 +1848,15 @@ class UserController extends Controller
 
         if (! $template) {
             return Redirect::route('dashboard');
+        }
+
+        if ($template->isInternalSocialTemplate()) {
+            return [
+                'template' => $template,
+                'temp_contents' => [],
+                'languages' => [],
+                'fields' => $this->getContactTemplateFields($template->service),
+            ];
         }
         // Setting language
         $languages = array_values(array_unique($template->languages));
@@ -1811,23 +1889,11 @@ class UserController extends Controller
             $temp_contents[$language]['message_buttons'] = $message_buttons;
         }
 
-        // Get module fields
-        $fields = [];
-        $getFields = Field::where('module_name', 'Contact')
-            ->where('field_type', '!=', 'relate')
-            ->groupBy('field_name')
-            ->orderBy('id')
-            ->get();
-
-        foreach ($getFields as $field) {
-            $fields[$field->field_name] = $field->field_label;
-        }
-
         return [
             'template' => $template,
             'temp_contents' => $temp_contents,
             'languages' => $languages,
-            'fields' => $fields,
+            'fields' => $this->getContactTemplateFields(),
         ];
     }
 
@@ -1878,6 +1944,66 @@ class UserController extends Controller
             $template->save();
 
             return Redirect::route('account_templates', ['account_id' => $account_id]);
+        }
+
+        if ($this->isInternalSocialTemplateFlow($account, $template)) {
+            $request->validate([
+                'template_name' => ['required', 'max:255'],
+                'status' => ['nullable', Rule::in(['draft', 'active'])],
+                'status_action' => ['nullable', Rule::in(['save', 'activate', 'draft'])],
+                'type' => ['required', Rule::in(['text', 'media', 'card', 'carousel', 'quick_replies'])],
+                'payload_json' => ['required', 'array'],
+            ]);
+
+            $templateRenderService = app(TemplateRenderService::class);
+            $payload = $request->get('payload_json');
+            $validationTemplate = clone $template;
+            $validationTemplate->service = (string) $template->service;
+            $validationTemplate->type = $template->service === 'facebook'
+                ? (string) $template->type
+                : (string) $request->get('type');
+            $validationTemplate->payload_json = is_array($payload) ? $payload : [];
+            $validationErrors = $templateRenderService->validateInternalTemplate($validationTemplate);
+            $statusAction = (string) $request->get('status_action', 'save');
+            $requestedStatus = (string) $request->get('status', (string) $template->status);
+            $isFacebookTemplate = $template->service === 'facebook';
+
+            if ($statusAction === 'activate' && $validationErrors !== []) {
+                throw ValidationException::withMessages([
+                    'payload_json' => implode(' ', $validationErrors),
+                    'status_action' => 'This template cannot be activated until all variable errors are resolved.',
+                ]);
+            }
+
+            $status = in_array((string) $template->status, ['draft', 'active'], true)
+                ? (string) $template->status
+                : 'draft';
+
+            if ($statusAction === 'draft') {
+                $status = 'draft';
+            } elseif ($statusAction === 'activate') {
+                $status = 'active';
+            } elseif (! $isFacebookTemplate) {
+                $status = in_array($requestedStatus, ['draft', 'active'], true) ? $requestedStatus : 'draft';
+            } elseif ($status === 'active' && $validationErrors !== []) {
+                $status = 'draft';
+            }
+
+            $template->name = $isFacebookTemplate
+                ? (string) $template->name
+                : trim((string) $request->get('template_name'));
+            $template->service = (string) $account->service;
+            $template->category = strtoupper((string) $account->service);
+            $template->status = $status;
+            $template->type = $isFacebookTemplate
+                ? (string) $template->type
+                : (string) $request->get('type');
+            $template->payload_json = $validationTemplate->payload_json;
+            $template->variables_json = $templateRenderService->extractVariables($validationTemplate);
+            $template->is_active = $status === 'active';
+            $template->save();
+
+            return Redirect::route('template_detail_view', [$account_id, $template_id]);
         }
 
         $validation_array = [

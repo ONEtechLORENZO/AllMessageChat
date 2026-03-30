@@ -388,41 +388,59 @@ class Msg extends Model
      */
     public function sendInstaMessage($content, $recipient , $pageId, $token, $attachment = '')
     {
-       
-        $message = '';
-        if($attachment){
-            $message = [
+        $version = config('app.meta.graph_version');
+        $url = "https://graph.facebook.com/{$version}/{$pageId}/messages";
+        $messages = [];
+
+        if (is_array($content) && isset($content['messages']) && is_array($content['messages'])) {
+            $messages = array_values(array_filter($content['messages'], 'is_array'));
+        } else if($attachment){
+            $messages[] = [
                 'attachment' => [
                     'type' => $attachment['type'],
                     'payload' => [ 'url' => $attachment['url']]
                 ]
             ];
         } else {
-            $message = ['text' => $content];
+            $messages[] = ['text' => $content];
         }
-        $post_data = [
-            'recipient' => [ 'id' => $recipient ],
-            'message' => $message,
-            'messaging_type' => 'RESPONSE',
-            'access_token' => $token,
-        ];
-
-        $version = config('app.meta.graph_version');
-        $url = "https://graph.facebook.com/{$version}/{$pageId}/messages";
 
         try{
-            $response = Http::asForm()->post($url, $post_data);
-            $result = json_decode($response->body(), true);
-            if(isset($result['error']) && isset($result['error']['code']) && $result['error']['code'] == 100) {
-                $controlUrl = "https://graph.facebook.com/{$version}/{$pageId}/take_thread_control";
-                $controlData = [
+            $result = [];
+            $messageIds = [];
+            foreach ($messages as $message) {
+                $post_data = [
                     'recipient' => [ 'id' => $recipient ],
+                    'message' => $message,
+                    'messaging_type' => 'RESPONSE',
                     'access_token' => $token,
                 ];
-                $response = Http::asForm()->post($controlUrl, $controlData);
+
+                $response = Http::asForm()->post($url, $post_data);
                 $result = json_decode($response->body(), true);
+
+                if(isset($result['error']) && isset($result['error']['code']) && $result['error']['code'] == 100) {
+                    $controlUrl = "https://graph.facebook.com/{$version}/{$pageId}/take_thread_control";
+                    $controlData = [
+                        'recipient' => [ 'id' => $recipient ],
+                        'access_token' => $token,
+                    ];
+                    Http::asForm()->post($controlUrl, $controlData);
+                    $response = Http::asForm()->post($url, $post_data);
+                    $result = json_decode($response->body(), true);
+                }
+
+                if (isset($result['message_id'])) {
+                    $messageIds[] = $result['message_id'];
+                } elseif (isset($result['id'])) {
+                    $messageIds[] = $result['id'];
+                }
             }
-           
+
+            if ($messageIds !== []) {
+                $result['message_ids'] = $messageIds;
+                $result['message_id'] = end($messageIds);
+            }
         } catch(Exception $e){
             $result = (['status' => false, 'message' => $e->getMessage()]);
         }
