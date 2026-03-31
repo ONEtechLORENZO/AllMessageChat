@@ -102,18 +102,42 @@ const PRICING_PLANS = [
 
 const ADD_ONS = [
     {
-        id: "DEDICATED_SERVER",
-        name: "Dedicated server (AWS EC2 + RDS)",
-        priceLabel: "Contact sales",
+        id: "ADDITIONAL_WABA",
+        name: "Additional WABA",
+        price: 50,
         description:
-            "Included in Enterprise and Platinum. Available as an extra service for Pro and Business.",
+            "Monthly cost for each additional WABA outside the selected plan.",
     },
     {
-        id: "LONG_TERM_STORAGE",
-        name: "Document storage over 30 days (dedicated database)",
-        priceLabel: "Contact sales",
-        description:
-            "Included in Enterprise and Platinum. Available as an extra service for Pro and Business.",
+        id: "ADDITIONAL_WA_API_NUMBER",
+        name: "Additional WA API number",
+        price: 10,
+        description: "Monthly cost for each additional WhatsApp API number.",
+    },
+    {
+        id: "ADDITIONAL_INSTAGRAM",
+        name: "Additional Instagram integration",
+        price: 5,
+        description: "Monthly cost for each additional Instagram integration.",
+    },
+    {
+        id: "ADDITIONAL_FACEBOOK",
+        name: "Additional Facebook integration",
+        price: 5,
+        description: "Monthly cost for each additional Facebook integration.",
+    },
+];
+
+const TEMPLATE_PRICING = [
+    {
+        id: "MARKETING_TEMPLATE",
+        name: "Marketing Template",
+        priceLabel: "€0,0572 per message",
+    },
+    {
+        id: "UTILITY_TEMPLATE",
+        name: "Utility / Service Template",
+        priceLabel: "€0,0319 per message",
     },
 ];
 
@@ -165,12 +189,12 @@ function getMonthlySaving(plan) {
 
 function FeatureStatusBadge({ included, translator }) {
     return included ? (
-        <span className="inline-flex min-w-[108px] items-center justify-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-300">
+        <span className="inline-flex min-w-[112px] items-center justify-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-300">
             <CheckIcon className="h-4 w-4" />
             {t(translator, "Included")}
         </span>
     ) : (
-        <span className="inline-flex min-w-[108px] items-center justify-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/65">
+        <span className="inline-flex min-w-[112px] items-center justify-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/65">
             <XMarkIcon className="h-4 w-4" />
             {t(translator, "Not included")}
         </span>
@@ -192,7 +216,7 @@ function PlanCard({ plan, translator, onChoose }) {
     return (
         <article
             className={[
-                "relative flex h-full min-h-[830px] flex-col rounded-[28px] border bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-7",
+                "relative flex h-full min-h-[860px] flex-col rounded-[28px] border bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-7",
                 isFeatured
                     ? "border-[#d000ff]/55 ring-1 ring-[#d000ff]/30"
                     : "border-white/12",
@@ -239,7 +263,7 @@ function PlanCard({ plan, translator, onChoose }) {
                         </div>
 
                         <div className="mt-4 flex items-end gap-1.5 whitespace-nowrap">
-                            <span className="text-[34px] font-bold leading-none tracking-tight text-white sm:text-[38px]">
+                            <span className="text-[34px] font-bold leading-none tracking-tight text-white sm:text-[38px] tabular-nums">
                                 {formatEuroNumber(plan.monthlyPrice)}
                             </span>
                             <span className="pb-0.5 text-[26px] font-bold leading-none text-white sm:text-[28px]">
@@ -258,7 +282,7 @@ function PlanCard({ plan, translator, onChoose }) {
                         </div>
 
                         <div className="mt-3 flex items-end gap-1.5 whitespace-nowrap">
-                            <span className="text-[26px] font-bold leading-none tracking-tight text-white">
+                            <span className="text-[26px] font-bold leading-none tracking-tight text-white tabular-nums">
                                 {formatEuroNumber(plan.annualMonthlyPrice)}
                             </span>
                             <span className="pb-0.5 text-[20px] font-bold leading-none text-white">
@@ -523,7 +547,7 @@ export default function PlanSubscription(props) {
                 <div className="absolute -right-24 bottom-20 h-[340px] w-[340px] rounded-full bg-[radial-gradient(circle_at_center,rgba(0,92,255,0.10),transparent_72%)]" />
             </div>
 
-            <div className="relative mx-auto max-w-[1560px] px-4 py-14 sm:px-6 lg:px-8">
+            <div className="relative mx-auto max-w-[1640px] px-4 py-14 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-4xl text-center">
                     <button
                         type="button"
@@ -600,7 +624,7 @@ export default function PlanSubscription(props) {
                         </div>
                     </div>
 
-                    <div className="mx-auto grid max-w-[1480px] items-stretch gap-6 md:grid-cols-2 2xl:grid-cols-4">
+                    <div className="mx-auto grid max-w-[1560px] items-stretch gap-6 xl:grid-cols-2 2xl:grid-cols-4">
                         {visiblePlans.map((plan) => (
                             <PlanCard
                                 key={plan.planId}
@@ -728,7 +752,7 @@ export default function PlanSubscription(props) {
                         <p className="mt-2 text-base leading-7 text-white/68">
                             {t(
                                 props.translator,
-                                "These services are already included in Enterprise and Platinum. For Pro and Business, contact sales to add them.",
+                                "These add-ons are billed monthly and can be added on top of the selected plan.",
                             )}
                         </p>
                     </div>
@@ -753,11 +777,41 @@ export default function PlanSubscription(props) {
                                     </div>
 
                                     <span className="inline-flex w-fit shrink-0 rounded-full border border-[#d7b3ff]/35 bg-[#d000ff]/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#e9cfff]">
-                                        {t(props.translator, addOn.priceLabel)}
+                                        {formatEuro(addOn.price)} /{" "}
+                                        {t(props.translator, "month")}
                                     </span>
                                 </div>
                             </div>
                         ))}
+                    </div>
+
+                    <div className="mt-8 rounded-3xl border border-white/12 bg-white/[0.03] p-6">
+                        <h4 className="text-2xl font-bold text-white">
+                            {t(props.translator, "Template pricing")}
+                        </h4>
+
+                        <ul className="mt-4 space-y-3">
+                            {TEMPLATE_PRICING.map((item) => (
+                                <li
+                                    key={item.id}
+                                    className="flex items-start justify-between gap-4 rounded-2xl border border-white/8 bg-black/10 px-4 py-4"
+                                >
+                                    <span className="text-base font-medium text-white/85">
+                                        {t(props.translator, item.name)}
+                                    </span>
+                                    <span className="shrink-0 text-base font-semibold text-white">
+                                        {t(props.translator, item.priceLabel)}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+
+                        <p className="mt-5 text-sm leading-7 text-white/68">
+                            {t(
+                                props.translator,
+                                "For Marketing and Utility templates, ONE applies the same Meta pricing with no markup.",
+                            )}
+                        </p>
                     </div>
                 </section>
 
