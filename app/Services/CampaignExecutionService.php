@@ -403,6 +403,38 @@ class CampaignExecutionService
             return 0;
         }
 
+        if ($offset === 0) {
+            $destinationField = match ($channel) {
+                'facebook'  => 'facebook_username',
+                'instagram' => 'instagram_username',
+                'whatsapp'  => 'phone_number',
+                'email'     => 'email',
+                default     => null,
+            };
+
+            if ($destinationField) {
+                $preflightQuery = $module->newQuery()
+                    ->leftJoin('taggables', 'contacts.id', 'taggable_id')
+                    ->leftJoin('categorables', 'contacts.id', 'categorable_id')
+                    ->whereNotNull("contacts.{$destinationField}")
+                    ->where("contacts.{$destinationField}", '!=', '');
+                $preflightQuery = $controller->prepareQuery($searchData, $preflightQuery, 'contacts');
+
+                if (! $preflightQuery->exists()) {
+                    $channelLabel = ucfirst($channel);
+                    $fieldLabel = match ($channel) {
+                        'facebook'  => 'Facebook username',
+                        'instagram' => 'Instagram username',
+                        'whatsapp'  => 'phone number',
+                        'email'     => 'email address',
+                        default     => 'destination field',
+                    };
+                    $this->markCampaignFailed($campaign, "No contacts in this campaign have a {$fieldLabel} set. Please update your contacts before sending a {$channelLabel} campaign.");
+                    return 0;
+                }
+            }
+        }
+
         if (! count($contacts)) {
             $campaign->status = 'Completed';
             $campaign->save();
@@ -529,19 +561,6 @@ class CampaignExecutionService
             }
 
             $count++;
-        }
-
-        if (! $batchSendAttempted && $offset === 0) {
-            $channelLabel = ucfirst($channel);
-            $fieldLabel = match ($channel) {
-                'facebook'  => 'Facebook username',
-                'instagram' => 'Instagram username',
-                'whatsapp'  => 'phone number',
-                'email'     => 'email address',
-                default     => 'destination field',
-            };
-            $this->markCampaignFailed($campaign, "No contacts in this campaign have a {$fieldLabel} set. Please update your contacts before sending a {$channelLabel} campaign.");
-            return 0;
         }
 
         $campaign->offset = $offset + $count;
