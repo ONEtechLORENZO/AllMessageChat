@@ -8,6 +8,7 @@ import {
     SentIcon,
     DeliveredIcon,
     ReadIcon,
+    EmailIcon,
 } from "../icons";
 
 import StoryContent from './StoryContent';
@@ -29,6 +30,13 @@ export default function MessageList(props) {
                         <BsInstagram
                             className="h-[21rem] w-[21rem] opacity-[0.09] blur-[0.2px] md:h-[29rem] md:w-[29rem]"
                             style={{ color: "#E1306C" }}
+                        />
+                    ) : props.containerCategory === "email" ? (
+                        <EmailIcon
+                            width="420"
+                            height="420"
+                            className="opacity-[0.04] blur-[1px]"
+                            style={{ color: "#FA3C16" }}
                         />
                     ) : (
                         <svg

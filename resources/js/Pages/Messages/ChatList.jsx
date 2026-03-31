@@ -31,6 +31,7 @@ import {
     InstaIcon,
     fbIcon,
     SettingIcon,
+    EmailIcon,
 } from "../icons";
 
 function classNames(...classes) {
@@ -59,6 +60,7 @@ function ChatList(props) {
         whatsapp: { label: "WhatsApp", icon: WhatsAppIcon },
         instagram: { label: "Instagram", icon: InstaIcon },
         facebook: { label: "Facebook", icon: fbIcon },
+        email: { label: "Emails", icon: EmailIcon },
     };
     const [current_tab, setCurrentTabId] = useState(props.mode || "all");
     const [counts, setCounts] = useState(
@@ -736,23 +738,16 @@ function ChatList(props) {
                                                                 aria-hidden="true"
                                                             />
                                                             <span className="flex items-start text-sm font-semibold text-white transition-colors group-hover:text-[#ff7de5]">
-                                                                {person &&
-                                                                person.name ? (
-                                                                    <>
-                                                                        {
-                                                                            person.name
-                                                                        }
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        {
-                                                                            person.number
-                                                                        }
-                                                                    </>
-                                                                )}
+                                                                {containerCategory === "email"
+                                                                    ? (person.email || person.name || person.number)
+                                                                    : (person.name || person.number)
+                                                                }
                                                             </span>
                                                             <span className="flex items-start truncate text-sm text-white/45">
-                                                                {person.number}
+                                                                {containerCategory === "email"
+                                                                    ? (person.email || "")
+                                                                    : person.number
+                                                                }
                                                             </span>
                                                         </button>
                                                     </div>

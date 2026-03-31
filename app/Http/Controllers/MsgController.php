@@ -662,8 +662,13 @@ class MsgController extends Controller
         $contactList = [];
         foreach ($chatListContact as $conversation) {
             $name = trim(($conversation->first_name ?: '') . ' ' . ($conversation->last_name ?: ' '));
+            if ($conversation->channel === 'email') {
+                $name = (string) ($conversation->email_address ?: $conversation->contact_email);
+            } else {
+                $name = trim(($conversation->first_name ?: '') . ' ' . ($conversation->last_name ?: ' '));
+            }
 
-            if ($name === '') {
+            if (trim($name) === '') {
                 if ($conversation->phone_number) {
                     $name = $conversation->phone_number;
                 } elseif ($conversation->instagram_username) {
@@ -1950,10 +1955,11 @@ class MsgController extends Controller
 
         $document = '';
         // Attachment handling
-        if ($attachment) {
+        if ($request->hasFile('attachment')) {
             $attachment = $request->file('attachment');
             $extention =  $attachment->getClientOriginalExtension();
             $attachment_name = 'ba_' . time() . $extention . '.' . $extention;
+            $attachment_name = 'ba_' . time() . '.' . $extention;
             $path = public_path('/uploads/sent_files');
             $attachment->move($path, $attachment_name);
             $mimeType = $request->file('attachment')->getClientMimeType();
