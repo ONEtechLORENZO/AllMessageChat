@@ -192,7 +192,7 @@ function PlanCard({ plan, translator, onChoose }) {
     return (
         <article
             className={[
-                "relative flex h-full min-h-[760px] flex-col rounded-[28px] border bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-7",
+                "relative flex h-full min-h-[830px] flex-col rounded-[28px] border bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-7",
                 isFeatured
                     ? "border-[#d000ff]/55 ring-1 ring-[#d000ff]/30"
                     : "border-white/12",
@@ -204,93 +204,96 @@ function PlanCard({ plan, translator, onChoose }) {
                 </div>
             )}
 
-            <div className={isFeatured ? "pt-2" : ""}>
-                <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0 flex-1">
-                        <h2 className="text-3xl font-bold leading-tight text-white">
-                            {t(translator, plan.name)}
-                        </h2>
-                        <p className="mt-2 text-sm leading-6 text-white/76">
-                            {t(translator, plan.bestFor)}
-                        </p>
-                    </div>
+            <div className={`flex h-full flex-col ${isFeatured ? "pt-3" : ""}`}>
+                <div className="min-h-[250px]">
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0 flex-1 pr-2">
+                            <h2 className="text-3xl font-bold leading-tight text-white">
+                                {t(translator, plan.name)}
+                            </h2>
 
-                    <div className="shrink-0 rounded-full border border-white/20 bg-white/5 px-3 py-2 text-center">
-                        <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/60">
-                            {t(translator, "Chats")}
+                            <p className="mt-3 min-h-[72px] text-sm leading-7 text-white/76">
+                                {t(translator, plan.bestFor)}
+                            </p>
                         </div>
-                        <div className="text-sm font-bold text-white">
-                            {plan.monthlyBundleChats}
+
+                        <div className="shrink-0 rounded-full border border-white/20 bg-white/5 px-3 py-2 text-center">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/60">
+                                {t(translator, "Chats")}
+                            </div>
+                            <div className="text-sm font-bold text-white">
+                                {plan.monthlyBundleChats}
+                            </div>
                         </div>
                     </div>
+
+                    <p className="mt-5 min-h-[98px] text-sm leading-7 text-white/62">
+                        {t(translator, plan.description)}
+                    </p>
                 </div>
 
-                <p className="mt-4 min-h-[96px] text-sm leading-6 text-white/62">
-                    {t(translator, plan.description)}
-                </p>
-            </div>
+                <div className="mt-6 flex min-h-[320px] flex-col rounded-3xl border border-white/10 bg-black/15 p-5">
+                    <div>
+                        <div className="text-sm font-semibold text-white/60">
+                            {t(translator, "Monthly fee")}
+                        </div>
 
-            <div className="mt-6 rounded-3xl border border-white/10 bg-black/15 p-5">
-                <div className="text-sm font-semibold text-white/60">
-                    {t(translator, "Monthly fee")}
-                </div>
-
-                <div className="mt-3">
-                    <div className="flex items-end gap-2">
-                        <span className="text-[36px] font-bold leading-none tracking-tight text-white sm:text-[40px]">
-                            {formatEuroNumber(plan.monthlyPrice)}
-                        </span>
-                        <span className="shrink-0 text-[32px] font-bold leading-none text-white sm:text-[36px]">
-                            €
-                        </span>
-                    </div>
-                    <div className="mt-2 text-sm text-white/65">
-                        {t(translator, "per month")}
-                    </div>
-                </div>
-
-                <div className="mt-5 rounded-2xl border border-[#d8b4fe]/25 bg-[#7b1fa2]/10 p-4">
-                    <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#d7b3ff]">
-                        {t(translator, "Annual plan")}
-                    </div>
-
-                    <div className="mt-3">
-                        <div className="flex items-end gap-2">
-                            <span className="text-[28px] font-bold leading-none tracking-tight text-white">
-                                {formatEuroNumber(plan.annualMonthlyPrice)}
+                        <div className="mt-4 flex items-end gap-1.5 whitespace-nowrap">
+                            <span className="text-[34px] font-bold leading-none tracking-tight text-white sm:text-[38px]">
+                                {formatEuroNumber(plan.monthlyPrice)}
                             </span>
-                            <span className="shrink-0 text-[22px] font-bold leading-none text-white">
+                            <span className="pb-0.5 text-[26px] font-bold leading-none text-white sm:text-[28px]">
                                 €
                             </span>
                         </div>
+
                         <div className="mt-2 text-sm text-white/65">
                             {t(translator, "per month")}
                         </div>
                     </div>
 
-                    <p className="mt-3 text-sm font-medium text-emerald-300">
-                        {t(translator, "Save")} {formatEuro(monthlySaving)}{" "}
-                        {t(translator, "per month")}
-                    </p>
-                </div>
-            </div>
+                    <div className="mt-6 rounded-2xl border border-[#d8b4fe]/25 bg-[#7b1fa2]/10 p-4">
+                        <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#d7b3ff]">
+                            {t(translator, "Annual plan")}
+                        </div>
 
-            <div className="mt-6">
-                <div className="text-sm font-semibold uppercase tracking-[0.14em] text-white/55">
-                    {t(translator, "What is included")}
+                        <div className="mt-3 flex items-end gap-1.5 whitespace-nowrap">
+                            <span className="text-[26px] font-bold leading-none tracking-tight text-white">
+                                {formatEuroNumber(plan.annualMonthlyPrice)}
+                            </span>
+                            <span className="pb-0.5 text-[20px] font-bold leading-none text-white">
+                                €
+                            </span>
+                        </div>
+
+                        <div className="mt-2 text-sm text-white/65">
+                            {t(translator, "per month")}
+                        </div>
+
+                        <p className="mt-3 text-sm font-medium leading-6 text-emerald-300">
+                            {t(translator, "Save")} {formatEuro(monthlySaving)}{" "}
+                            {t(translator, "per month")}
+                        </p>
+                    </div>
                 </div>
 
-                <ul className="mt-4 space-y-3">
-                    {plan.summaryPoints.map((point) => (
-                        <li
-                            key={`${plan.planId}-${point}`}
-                            className="flex items-start gap-3 text-sm leading-7 text-white/84"
-                        >
-                            <CheckIcon className="mt-1 h-4.5 w-4.5 shrink-0 text-[#d000ff]" />
-                            <span>{t(translator, point)}</span>
-                        </li>
-                    ))}
-                </ul>
+                <div className="mt-6 min-h-[190px]">
+                    <div className="text-sm font-semibold uppercase tracking-[0.14em] text-white/55">
+                        {t(translator, "What is included")}
+                    </div>
+
+                    <ul className="mt-4 space-y-3">
+                        {plan.summaryPoints.map((point) => (
+                            <li
+                                key={`${plan.planId}-${point}`}
+                                className="flex items-start gap-3 text-sm leading-7 text-white/84"
+                            >
+                                <CheckIcon className="mt-1 h-4 w-4 shrink-0 text-[#d000ff]" />
+                                <span>{t(translator, point)}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
 
                 <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4">
                     <div className="flex items-center justify-between gap-4 py-2">
@@ -315,21 +318,21 @@ function PlanCard({ plan, translator, onChoose }) {
                         />
                     </div>
                 </div>
-            </div>
 
-            <div className="mt-auto pt-8">
-                <button
-                    type="button"
-                    onClick={() => onChoose(plan.planId)}
-                    className={[
-                        "w-full rounded-2xl px-6 py-4 text-base font-bold transition",
-                        isFeatured
-                            ? "bg-gradient-to-r from-[#ff2bd6] to-[#9d00ff] text-white shadow-[0_12px_30px_rgba(208,0,255,0.35)] hover:opacity-95"
-                            : "border border-white/20 bg-white/[0.04] text-white hover:border-[#d000ff]/60 hover:bg-white/10",
-                    ].join(" ")}
-                >
-                    {t(translator, plan.buttonText)}
-                </button>
+                <div className="mt-auto pt-8">
+                    <button
+                        type="button"
+                        onClick={() => onChoose(plan.planId)}
+                        className={[
+                            "w-full rounded-2xl px-6 py-4 text-base font-bold transition",
+                            isFeatured
+                                ? "bg-gradient-to-r from-[#ff2bd6] to-[#9d00ff] text-white shadow-[0_12px_30px_rgba(208,0,255,0.35)] hover:opacity-95"
+                                : "border border-white/20 bg-white/[0.04] text-white hover:border-[#d000ff]/60 hover:bg-white/10",
+                        ].join(" ")}
+                    >
+                        {t(translator, plan.buttonText)}
+                    </button>
+                </div>
             </div>
         </article>
     );
@@ -520,7 +523,7 @@ export default function PlanSubscription(props) {
                 <div className="absolute -right-24 bottom-20 h-[340px] w-[340px] rounded-full bg-[radial-gradient(circle_at_center,rgba(0,92,255,0.10),transparent_72%)]" />
             </div>
 
-            <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+            <div className="relative mx-auto max-w-[1560px] px-4 py-14 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-4xl text-center">
                     <button
                         type="button"
@@ -597,7 +600,7 @@ export default function PlanSubscription(props) {
                         </div>
                     </div>
 
-                    <div className="grid items-stretch gap-6 md:grid-cols-2 2xl:grid-cols-4">
+                    <div className="mx-auto grid max-w-[1480px] items-stretch gap-6 md:grid-cols-2 2xl:grid-cols-4">
                         {visiblePlans.map((plan) => (
                             <PlanCard
                                 key={plan.planId}
