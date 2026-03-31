@@ -16,6 +16,8 @@ function List(props) {
     const contactActions = {
         ...(props.actions ?? {}),
         create: true,
+        mass_edit: false,
+        merge: false,
     };
 
     const tabs = [

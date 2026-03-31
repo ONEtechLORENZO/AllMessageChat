@@ -459,7 +459,8 @@ class PlanController extends Controller
                     'Chats' => 'chat_conversation',
                     'Campaigns' => 'campaigns',
                     'Social Profiles' => 'social_profile',
-                    'Templates' => 'chat_conversation'
+                    'Templates' => 'chat_conversation',
+                    'Contacts' => 'chat_conversation'
                 ],
                 'show' => false
             ],

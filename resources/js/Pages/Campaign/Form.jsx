@@ -11,6 +11,7 @@ import axios from "axios";
 export default function Campaign(props) {
   const [openTab, setOpenTab] = useState();
   const [data, setData] = useState([]);
+  const [errors, setErrors] = useState(props.errors || {});
   const [status, setStatus] = useState();
   const [conditions, setConditions] = useState();
   const [recordCount, setRecordCount] = useState(null);
@@ -21,6 +22,7 @@ export default function Campaign(props) {
   useEffect(() => {
     setOpenTab(props.campaign.current_page);
     setData(props.campaign);
+    setErrors(props.errors || {});
     setStatus(props.status);
     setRecordCount(props.count);
     if(props.campaign.service){
@@ -71,6 +73,18 @@ export default function Campaign(props) {
       }
       newState[name] = value;
       setData(newState);
+      setErrors((current) => {
+        if (!current || Object.keys(current).length === 0) {
+          return current;
+        }
+
+        const nextErrors = { ...current };
+        delete nextErrors[name];
+        if (name === 'service' || name === 'account_id') {
+          delete nextErrors.template_id;
+        }
+        return nextErrors;
+      });
   }
 
   function saveCampaign(){
@@ -271,6 +285,7 @@ export default function Campaign(props) {
              >
                <Content 
                  data={data}
+                 errors={errors}
                  handleChange={handleChange}
                  saveCampaign={saveCampaign}
                  previous={setOpenTab}

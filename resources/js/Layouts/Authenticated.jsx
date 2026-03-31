@@ -87,6 +87,10 @@ const navigation = [
                 name: "Campaigns",
                 href: route("listCampaign"),
             },
+            {
+                name: "Contacts",
+                href: route("listContact"),
+            },
         ],
     },
     {
@@ -277,6 +281,10 @@ const menuBar = [
             {
                 name: "Campaigns",
                 href: route("listCampaign"),
+            },
+            {
+                name: "Contacts",
+                href: route("listContact"),
             },
         ],
     },

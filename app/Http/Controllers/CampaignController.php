@@ -14,9 +14,59 @@ use App\Models\Taggable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use App\Models\Template;
+use App\Services\Templates\TemplateRenderService;
+use Illuminate\Validation\ValidationException;
 
 class CampaignController extends Controller
 {
+    protected function resolveEligibleCampaignTemplate(?string $service, $accountId, $templateId): ?Template
+    {
+        if (! $service || ! $accountId || ! $templateId) {
+            return null;
+        }
+
+        $template = Template::where('id', $templateId)
+            ->where('account_id', $accountId)
+            ->where('service', $service)
+            ->first();
+
+        if (! $template) {
+            return null;
+        }
+
+        if (in_array((string) $service, ['facebook', 'instagram'], true)) {
+            if ((string) $template->status !== 'active' || ! (bool) $template->is_active) {
+                return null;
+            }
+
+            $validationErrors = app(TemplateRenderService::class)->validateInternalTemplate($template);
+            if ($validationErrors !== []) {
+                return null;
+            }
+        }
+
+        return $template;
+    }
+
+    protected function validateCampaignTemplateSelection(Request $request): void
+    {
+        $service = (string) $request->get('service');
+        $accountId = $request->get('account_id');
+        $templateId = $request->get('template_id');
+
+        if (! in_array($service, ['facebook', 'instagram'], true) || ! $accountId || ! $templateId) {
+            return;
+        }
+
+        if ($this->resolveEligibleCampaignTemplate($service, $accountId, $templateId)) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'template_id' => 'Select an active, valid template before scheduling this campaign.',
+        ]);
+    }
+
     protected function getCampaignAccountsForUser(int $userId, ?string $service = null)
     {
         return Account::where('user_id', $userId)
@@ -133,6 +183,8 @@ class CampaignController extends Controller
                 'name' => 'required'
             ]);
         }
+
+        $this->validateCampaignTemplateSelection($request);
 
         $user_id = $request->user()->id;
         $company_id = 1;
@@ -376,9 +428,23 @@ class CampaignController extends Controller
     public function getTemplateList(Request $request, $account)
     {
         $templateList = [];
+        $accountModel = Account::find($account);
+        $service = strtolower((string) ($accountModel?->service ?? ''));
+
         $templates = Template::where('account_id', $account)
+            ->when(in_array($service, ['facebook', 'instagram'], true), function ($query) {
+                $query->where('status', 'active')
+                    ->where('is_active', true);
+            })
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->filter(function ($template) use ($service, $account) {
+                if (! in_array($service, ['facebook', 'instagram'], true)) {
+                    return true;
+                }
+
+                return $this->resolveEligibleCampaignTemplate($service, $account, $template->id) !== null;
+            });
         foreach($templates as $template){
             $templateList[$template->id] = $template->name;
         }
