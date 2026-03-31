@@ -15,8 +15,8 @@ export default function Dashboard(props) {
         >
             <Head title="Social Profiles" />
 
-            <div className="px-4 pb-8 pt-5 sm:px-6 lg:px-8">
-                <div className="mx-auto max-w-4xl">
+            <div className="px-4 pb-10 pt-6 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl">
                     <Accounts accounts={props.accounts} createAccount={true} {...props} />
                 </div>
             </div>

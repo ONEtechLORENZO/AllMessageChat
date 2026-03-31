@@ -1,8 +1,8 @@
 import React from "react";
 import Input from "@/Components/Input";
 
-function Information(props){
-    return(
+function Information(props) {
+    return (
         <div className="grid items-center gap-8 lg:min-h-[540px] lg:grid-cols-[minmax(0,1.09fr)_minmax(430px,0.92fr)]">
             <div className="px-2 sm:px-4 lg:px-8">
                 <div className="max-w-xl">
@@ -37,14 +37,14 @@ function Information(props){
                         </label>
                         <div className="mt-4">
                             <Input
-                              type="text"
-                              name="name"
-                              id="campaign_name"
-                              className="w-full rounded-[22px] border border-white/8 bg-white/10 px-6 py-5 text-lg text-white shadow-none placeholder-white/35 focus:border-[#8B5CF6]/60 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/30"
-                              placeholder={props.translator['Title']}
-                              value={props.data.name}
-                              handleChange={props.handleChange}
-                              isFocused
+                                type="text"
+                                name="name"
+                                id="campaign_name"
+                                className="w-full rounded-[22px] border border-white/8 bg-white/10 px-6 py-5 text-lg text-white shadow-none placeholder-white/35 focus:border-[#8B5CF6]/60 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/30"
+                                placeholder={props.translator['Title']}
+                                value={props.data.name}
+                                handleChange={props.handleChange}
+                                isFocused
                             />
                         </div>
                     </div>

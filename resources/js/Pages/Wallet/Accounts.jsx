@@ -3,12 +3,10 @@ import { confirmAlert } from "react-confirm-alert";
 import nProgress from "nprogress";
 import axios from "axios";
 import {
-    ChatBubbleLeftRightIcon,
-    EnvelopeIcon,
-    PhotoIcon,
-    UserGroupIcon,
+    TrashIcon,
 } from "@heroicons/react/24/solid";
-import ChannelCard from "@/Components/ConnectionsHub/ChannelCard";
+import { BsFacebook, BsInstagram, BsWhatsapp } from "react-icons/bs";
+import { GoMail } from "react-icons/go";
 
 const SERVICE_ORDER = ["whatsapp", "facebook", "instagram", "email"];
 const STATUS_PRIORITY = {
@@ -28,29 +26,45 @@ function connectionModalHref(service, account) {
     return route("account_registration", params);
 }
 
+function profileManageHref(service, status, account) {
+    if (status === "connected" && account?.id) {
+        return route("account_view", account.id);
+    }
+
+    if (status === "needs_setup" && account?.id) {
+        return route("edit_account", account.id);
+    }
+
+    return connectionModalHref(service, account);
+}
+
 const SERVICE_DEFINITIONS = {
     whatsapp: {
         label: "WhatsApp",
-        icon: ChatBubbleLeftRightIcon,
-        iconClassName: "bg-emerald-500/10 text-emerald-200",
+        icon: BsWhatsapp,
+        iconClassName:
+            "bg-emerald-500/12 text-emerald-300 ring-1 ring-emerald-400/20",
         emptyIdentity: "No WhatsApp channel connected",
     },
     facebook: {
         label: "Facebook",
-        icon: UserGroupIcon,
-        iconClassName: "bg-blue-500/10 text-blue-200",
+        icon: BsFacebook,
+        iconClassName:
+            "bg-sky-500/12 text-sky-300 ring-1 ring-sky-400/20",
         emptyIdentity: "No Facebook channel connected",
     },
     instagram: {
         label: "Instagram",
-        icon: PhotoIcon,
-        iconClassName: "bg-pink-500/10 text-pink-200",
+        icon: BsInstagram,
+        iconClassName:
+            "bg-fuchsia-500/12 text-fuchsia-300 ring-1 ring-fuchsia-400/20",
         emptyIdentity: "No Instagram channel connected",
     },
     email: {
         label: "Email",
-        icon: EnvelopeIcon,
-        iconClassName: "bg-sky-500/10 text-sky-200",
+        icon: GoMail,
+        iconClassName:
+            "bg-amber-500/12 text-amber-300 ring-1 ring-amber-400/20",
         emptyIdentity: "No email channel connected",
     },
 };
@@ -262,94 +276,6 @@ function serviceDetail(service, status, account, profileCount) {
     return "No WhatsApp account connected";
 }
 
-function reconnectAction(service, account) {
-    if (service === "instagram") {
-        return {
-            label: "Connect",
-            href: connectionModalHref(service, account),
-        };
-    }
-
-    if (service === "facebook") {
-        return {
-            label: "Connect",
-            href: connectionModalHref(service, account),
-        };
-    }
-
-    if (service === "email") {
-        return {
-            label: "Connect",
-            href: connectionModalHref(service, account),
-        };
-    }
-
-    if (service === "whatsapp") {
-        return {
-            label: "Connect",
-            href: connectionModalHref(service, account),
-        };
-    }
-
-    return {
-        label: "Manage",
-        href: account?.id ? route("edit_account", account.id) : route("account_registration"),
-    };
-}
-
-function primaryAction(service, status, account) {
-    if (status === "connected") {
-        return {
-            label: "Manage",
-            href: account?.id
-                ? route("account_view", account.id)
-                : route("account_registration"),
-            className:
-                "inline-flex h-9 items-center justify-center rounded-full border border-white/12 bg-white/[0.06] px-3.5 text-sm font-semibold text-white transition hover:bg-white/[0.1]",
-        };
-    }
-
-    if (status === "needs_setup") {
-        if (service === "instagram") {
-            return {
-                label: "Connect",
-                href: connectionModalHref(service, account),
-                className:
-                    "inline-flex h-9 items-center justify-center rounded-full bg-blue-600 px-3.5 text-sm font-semibold text-white transition hover:bg-blue-500",
-            };
-        }
-
-        return {
-            label: "Finish setup",
-            href: account?.id
-                ? route("edit_account", account.id)
-                : connectionModalHref(service, account),
-            className:
-                "inline-flex h-9 items-center justify-center rounded-full bg-amber-400 px-3.5 text-sm font-semibold text-[#12041f] transition hover:bg-amber-300",
-        };
-    }
-
-    if (status === "reconnect_required") {
-        const reconnect = reconnectAction(service, account);
-
-        return {
-            ...reconnect,
-            className:
-                "inline-flex h-9 items-center justify-center rounded-full bg-blue-600 px-3.5 text-sm font-semibold text-white transition hover:bg-blue-500",
-        };
-    }
-
-    return {
-        label: "Connect",
-        href:
-            hasConnectionError(account) && account?.id
-                ? reconnectAction(service, account).href
-                : connectionModalHref(service, account),
-        className:
-            "inline-flex h-9 items-center justify-center rounded-full bg-blue-600 px-3.5 text-sm font-semibold text-white transition hover:bg-blue-500",
-    };
-}
-
 function buildChannelCard(service, serviceAccounts, onDelete) {
     const sortedAccounts = [...serviceAccounts].sort(
         (left, right) =>
@@ -377,7 +303,7 @@ function buildChannelCard(service, serviceAccounts, onDelete) {
         iconClassName: definition.iconClassName,
         status,
         detail: serviceDetail(service, status, account, profileCount),
-        primaryAction: primaryAction(service, status, account),
+        primaryActionHref: profileManageHref(service, status, account),
         disconnectAction,
     };
 }
@@ -476,11 +402,110 @@ export default function Accounts(props) {
     }, [accounts]);
 
     return (
-        <div className="mx-auto max-w-4xl space-y-3">
-            <div className="space-y-2">
-                {channelCards.map((card) => (
-                    <ChannelCard key={card.service} {...card} />
-                ))}
+        <div className="mx-auto max-w-7xl">
+            <div className="grid gap-10 lg:grid-cols-[minmax(240px,360px)_minmax(0,1fr)] lg:items-start xl:gap-16">
+                <div className="space-y-8 pt-2 lg:sticky lg:top-24">
+                    <div className="space-y-5">
+                        <p className="text-4xl font-black leading-[0.92] tracking-tight text-transparent bg-gradient-to-r from-fuchsia-300 via-violet-400 to-fuchsia-500 bg-clip-text sm:text-5xl xl:text-6xl">
+                        </p>
+
+                        <p className="max-w-[27rem] text-base leading-7 text-white/68">
+                            <span className="block">
+                               
+                            </span>
+                            <span className="block">
+                              
+                            </span>
+                        </p>
+                    </div>
+
+                    <div className="hidden min-h-[24rem] items-center gap-8 pt-24 lg:flex xl:pt-52">
+                        <div className="space-y-5">
+                            <p className="text-3xl font-light uppercase tracking-[0.08em] text-white/90">
+                                Connect Channel
+                            </p>
+                            <a
+                                href={route("account_registration", { service: "whatsapp" })}
+                                className="connect-btn"
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                    <polyline points="12 5 19 12 12 19" />
+                                </svg>
+                                <span className="connect-btn-text">Connect</span>
+                            </a>
+                        </div>
+                        <div className="h-72 w-px bg-gradient-to-b from-transparent via-[#7c3aed] to-transparent opacity-90" />
+                    </div>
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2 xl:gap-6">
+                    {channelCards.map((card) => {
+                        const Icon = card.icon;
+                        const hasAccount = Boolean(card.disconnectAction);
+
+                        return (
+                            <div
+                                key={card.service}
+                                className="group relative flex min-h-[20rem] flex-col overflow-hidden rounded-[2rem] bg-[linear-gradient(160deg,rgba(28,12,44,0.98),rgba(16,8,28,0.99))] p-7 shadow-[0_32px_80px_rgba(0,0,0,0.4)] ring-1 ring-white/[0.07] transition hover:ring-white/[0.14] hover:shadow-[0_36px_90px_rgba(0,0,0,0.5)]"
+                            >
+                                {/* Large background watermark icon */}
+                                <div className="pointer-events-none absolute -right-6 -top-6 opacity-[0.07]">
+                                    <Icon className="h-56 w-56" />
+                                </div>
+
+                                {/* Subtle top glow accent */}
+                                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+                                <div className="mb-5 flex justify-center">
+                                    <div
+                                        className={`flex h-28 w-28 items-center justify-center rounded-full ${card.iconClassName} shadow-[0_20px_50px_rgba(0,0,0,0.25)]`}
+                                    >
+                                        <Icon className="h-16 w-16" />
+                                    </div>
+                                </div>
+
+                                <div className="relative mt-2 space-y-2 text-left">
+                                    <h2 className="text-2xl font-extrabold text-white">
+                                        {card.title}
+                                    </h2>
+                                    <p className="min-h-[3.5rem] max-w-[16rem] text-base leading-5 text-white/60">
+                                        {card.detail}
+                                    </p>
+                                </div>
+
+                                <div className="mt-auto flex items-end justify-between gap-3 pt-2">
+                                    <a
+                                        href={card.primaryActionHref}
+                                        className="inline-flex h-11 min-w-[9.25rem] items-center justify-center rounded-[1rem] border border-white/70 bg-white/[0.04] px-5 text-sm font-semibold text-white transition hover:bg-white/[0.08]"
+                                    >
+                                        Manage
+                                    </a>
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            hasAccount &&
+                                            card.disconnectAction.onClick()
+                                        }
+                                        disabled={!hasAccount}
+                                        className={`inline-flex h-11 w-11 items-center justify-center transition ${hasAccount
+                                            ? "text-red-400 hover:text-red-300"
+                                            : "cursor-not-allowed text-white/15"
+                                            }`}
+                                        aria-label={
+                                            hasAccount
+                                                ? `Delete ${card.title} connection`
+                                                : `${card.title} not connected`
+                                        }
+                                    >
+                                        <TrashIcon className="h-6 w-6" />
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );

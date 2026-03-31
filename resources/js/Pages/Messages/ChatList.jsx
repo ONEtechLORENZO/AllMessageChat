@@ -582,8 +582,8 @@ function ChatList(props) {
             navigationMenu={props.menuBar}
         >
             <Head title="Chat" />
-            <div className="flex h-[calc(100vh-7rem)] min-h-0 flex-col gap-5 overflow-hidden px-4 pb-4 pt-3 xl:flex-row xl:gap-4">
-                <div className="h-[34rem] w-full min-h-0 xl:h-full xl:w-[28rem] xl:shrink-0">
+            <div className="flex h-[calc(100vh-7rem)] min-h-0 flex-col gap-5 overflow-hidden px-4 pb-4 pt-3 xl:flex-row xl:gap-4 xl:min-w-0">
+                <div className="h-[34rem] w-full min-h-0 xl:h-full xl:w-[28rem] xl:shrink-0 xl:min-w-0">
                     <div className="flex h-full min-h-0 flex-col rounded-[2rem] bg-[linear-gradient(180deg,rgba(25,7,35,0.98),rgba(13,6,20,0.98))] p-4 text-white shadow-[0_24px_80px_rgba(0,0,0,0.3)]">
                         <div className="flex justify-between items-center p-3 md:hidden">
                             <div>
@@ -845,348 +845,263 @@ function ChatList(props) {
                         </nav>
                     </div>
                 </div>
-                <div className="min-h-0 flex-1 overflow-hidden">
-                    <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden">
-                        {selectedContact &&
-                            chatList["contact_id_" + selectedContact] && (
-                                <>
-                                    <div className="relative z-30 grid grid-cols-1 gap-3 overflow-visible lg:grid-cols-[minmax(0,1fr)_auto_auto]">
-                                        <div className="flex min-h-[5.25rem] items-center gap-4 rounded-[1.85rem] bg-[linear-gradient(135deg,rgba(26,10,38,0.98),rgba(11,8,18,0.98))] px-5 text-white shadow-[0_24px_80px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.06)] ring-1 ring-[#8f38d9]/18">
-                                        <div className="relative flex items-center space-x-2">
-                                            <div className="flex gap-1">
-                                                <div className="relative">
-                                                    <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,115,226,0.35),rgba(147,51,234,0.22)_55%,rgba(255,255,255,0.02)_100%)] text-white shadow-[0_12px_30px_rgba(127,0,190,0.28),inset_0_1px_0_rgba(255,255,255,0.14)] ring-1 ring-white/8">
-                                                        <UserIcon className="h-7 w-7" />
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-col leading-tight">
-                                                <div className="mt-1 flex items-center text-sm font-semibold">
-                                                    <span className="mr-3 text-white">
-                                                        <Link
-                                                            href={route(
-                                                                "detailContact",
-                                                                {
-                                                                    id: selectedContact,
-                                                                },
-                                                            )}
-                                                            className="cursor-pointer text-lg font-semibold text-white no-underline drop-shadow-[0_1px_10px_rgba(0,0,0,0.32)] hover:text-[#ff92eb]"
-                                                        >
-                                                            {activeContact.number || activeContact.name}
-                                                        </Link>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-2 rounded-[1rem] bg-[#09070d] px-2.5 text-white shadow-[0_18px_48px_rgba(0,0,0,0.26)]">
-                                            <Menu
-                                                as="div"
-                                                className="relative"
-                                            >
-                                                <div>
-                                                    <Menu.Button className="flex min-h-[3.35rem] min-w-[6.35rem] items-center justify-between gap-2 text-[0.88rem] text-white/90 focus:outline-none">
-                                                        <div className="flex items-center gap-2">
-                                                            <selectedChannel.icon className="h-4.5 w-4.5 fill-current text-white" />
-                                                            <span className="font-medium">
-                                                                {
-                                                                    selectedChannel.label
-                                                                }
-                                                            </span>
-                                                        </div>
-                                                        <ChevronDownIcon className="h-3 w-3 text-white/60" />
-                                                    </Menu.Button>
-                                                </div>
-                                                <Transition
-                                                    as={Fragment}
-                                                    enter="transition ease-out duration-100"
-                                                    enterFrom="transform opacity-0 scale-95"
-                                                    enterTo="transform opacity-100 scale-100"
-                                                    leave="transition ease-in duration-75"
-                                                    leaveFrom="transform opacity-100 scale-100"
-                                                    leaveTo="transform opacity-0 scale-95"
-                                                >
-                                                    <Menu.Items className="origin-top-right absolute right-0 z-40 mt-2 min-w-[180px] rounded-[1.2rem] bg-[linear-gradient(180deg,rgba(26,10,38,0.98),rgba(11,8,18,0.98))] p-1.5 shadow-[0_22px_60px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.06)] ring-1 ring-[#8f38d9]/20 focus:outline-none">
-                                                        {Object.entries(
-                                                            channels,
-                                                        ).map(
-                                                            ([
-                                                                name,
-                                                                channel,
-                                                            ]) => (
-                                                                <Menu.Item
-                                                                    key={name}
-                                                                >
-                                                                    <div
-                                                                        className={classNames(
-                                                                            containerCategory ==
-                                                                                name
-                                                                                ? "bg-[linear-gradient(135deg,rgba(255,79,216,0.24),rgba(163,30,255,0.2))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
-                                                                                : "",
-                                                                            "rounded-[0.95rem] px-3 py-2.5 flex items-center gap-2 transition hover:bg-white/[0.06]",
-                                                                        )}
-                                                                    >
-                                                                        <channel.icon className="w-5 h-5 fill-current text-white/75" />
-                                                                        <button
-                                                                            onClick={() =>
-                                                                                selectContactCategory(
-                                                                                    name,
-                                                                                )
-                                                                            }
-                                                                            type={
-                                                                                "button"
-                                                                            }
-                                                                            className="block py-1 text-sm text-white/85 hover:text-white w-full text-left"
-                                                                        >
-                                                                            {
-                                                                                channel.label
-                                                                            }
-                                                                        </button>
-                                                                    </div>
-                                                                </Menu.Item>
-                                                            ),
-                                                        )}
-                                                    </Menu.Items>
-                                                </Transition>
-                                            </Menu>
-                                        </div>
-
-                                        <div className="flex items-center gap-2 rounded-[1rem] bg-[#09070d] px-2.5 text-white shadow-[0_18px_48px_rgba(0,0,0,0.26)]">
-                                        <Menu
-                                            as="div"
-                                            className="relative"
-                                        >
-                                            <div>
-                                                <Menu.Button className="flex min-h-[3.35rem] min-w-[6.55rem] items-center justify-between text-[0.88rem] text-white/90 focus:outline-none">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="font-medium uppercase tracking-[0.04em]">
-                                                            {selectedAccount ? (
-                                                                <>{accountList[selectedAccount]}</>
-                                                            ) : (
-                                                                "AESSEFIN"
-                                                            )}
-                                                        </span>
-                                                        {containerCategory ==
-                                                            "whatsapp" &&
-                                                            selectedAccount &&
-                                                            selectedContact && (
-                                                                <>
-                                                                    {props
-                                                                        .sessions[
-                                                                        selectedContact
-                                                                    ] &&
-                                                                    props
-                                                                        .sessions[
-                                                                        selectedContact
-                                                                    ][
-                                                                        selectedAccount
-                                                                    ] ? (
-                                                                        <span
-                                                                            title="Session active"
-                                                                            className="rounded-full p-1 bg-green-500"
-                                                                        ></span>
-                                                                    ) : (
-                                                                        <span
-                                                                            title="Session inactive"
-                                                                            className="rounded-full p-1 bg-red-500"
-                                                                        ></span>
-                                                                    )}
-                                                                </>
-                                                            )}
-                                                        <span className="ml-1">
-                                                            <ChevronDownIcon className="h-3 w-3 text-white/60" />
-                                                        </span>
-                                                    </div>
-                                                </Menu.Button>
-                                            </div>
-                                            <Transition
-                                                as={Fragment}
-                                                enter="transition ease-out duration-100"
-                                                enterFrom="transform opacity-0 scale-95"
-                                                enterTo="transform opacity-100 scale-100"
-                                                leave="transition ease-in duration-75"
-                                                leaveFrom="transform opacity-100 scale-100"
-                                                leaveTo="transform opacity-0 scale-95"
-                                            >
-                                                <Menu.Items className="origin-top-right absolute right-0 z-40 mt-2 min-w-[220px] rounded-[1.2rem] bg-[linear-gradient(180deg,rgba(26,10,38,0.98),rgba(11,8,18,0.98))] p-1.5 shadow-[0_22px_60px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.06)] ring-1 ring-[#8f38d9]/20 focus:outline-none">
-                                                    {Object.entries(accountList).map(([id, name]) => (
-                                                        <Menu.Item key={id}>
-                                                            <div
-                                                                className={classNames(
-                                                                    selectedAccount ==
-                                                                        id
-                                                                        ? "bg-[linear-gradient(135deg,rgba(255,79,216,0.24),rgba(163,30,255,0.2))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
-                                                                        : "",
-                                                                    "rounded-[0.95rem] px-3 py-2.5 flex items-center gap-2 transition hover:bg-white/[0.06]",
-                                                                )}
-                                                            >
-                                                                <span
-                                                                    onClick={() =>
-                                                                        setSelectedAccount(
-                                                                            id,
-                                                                        )
-                                                                    }
-                                                                    className="block text-sm text-white/85 hover:text-white w-full cursor-pointer"
-                                                                >
-                                                                    {name}
-                                                                </span>
-
-                                                                {containerCategory ==
-                                                                    "whatsapp" &&
-                                                                    selectedContact &&
-                                                                    selectedContact && (
-                                                                        <>
-                                                                            {props
-                                                                                .sessions[
-                                                                                selectedContact
-                                                                            ] &&
-                                                                            props
-                                                                                .sessions[
-                                                                                selectedContact
-                                                                            ][
-                                                                                id
-                                                                            ] ? (
-                                                                                <span
-                                                                                    title="Session active"
-                                                                                    className="rounded-full p-1 bg-green-500"
-                                                                                ></span>
-                                                                            ) : (
-                                                                                <span
-                                                                                    title="Session inactive"
-                                                                                    className="rounded-full p-1 bg-red-500"
-                                                                                ></span>
-                                                                            )}
-                                                                        </>
-                                                                    )}
-                                                            </div>
-                                                        </Menu.Item>
-                                                    ))}
-                                                </Menu.Items>
-                                            </Transition>
-                                        </Menu>
-                                        </div>
-                                    </div>
-                                    <div className="min-h-0 overflow-hidden rounded-[2rem] bg-[linear-gradient(180deg,rgba(8,7,11,0.98),rgba(6,5,10,0.98))] p-4 shadow-[0_28px_90px_rgba(0,0,0,0.34)]">
-                                        <MessageList
-                                            messages={messages}
-                                            containerCategory={containerCategory}
-                                            loadedStory={loadedStory}
-                                            setLoadedStory={setLoadedStory}
-                                        />
-                                    </div>
-
-                                    <div className="shrink-0">
-                                        <ChatBox
-                                            handleChange={handleChange}
-                                            handleKeyUp={handleKeyUp}
-                                            templates={props.templates}
-                                            products={props.products}
-                                            interactiveMessages={
-                                                props.interactiveMessages
-                                            }
-                                            setTemplateInfo={setTemplateInfo}
-                                            selectedAccount={selectedAccount}
-                                            clearContent={clearContent}
-                                            setProductInfo={setProductInfo}
-                                            setInteractiveMessage={
-                                                setInteractiveMessage
-                                            }
-                                            containerCategory={
-                                                containerCategory
-                                            }
-                                            data={data}
-                                            sendMessage={sendMessage}
-                                            logo={activeContact ? activeContact.name.substring(0, 2) : ""}
-                                        />
-                                        {/* 
-                                <div className="flex gap-4 items-end">
-                                    <div className="flex flex-col gap-1 ">
-                                        <div className="flex rounded-md bg-white h-7 w-7 justify-center items-center cursor-pointer">
-                                            <SmileEmoji />
-                                        </div>
-                                        <div className="flex rounded-md bg-white h-7 w-7 justify-center items-center cursor-pointer">
-                                           
-                                            <Popover className="relative">
-                                                <Popover.Button>
-                                                    <AttachIcon />
-                                                </Popover.Button>
-                                                <Popover.Panel className="absolute z-10">
-                                                    <div className="flex justify-center">
-                                                        <input 
-                                                            type={'file'} 
-                                                            name="attachment" 
-                                                            onChange={(e) => handleChange(e)} 
-                                                        />
-                                                    </div>
-                                                </Popover.Panel>
-                                            </Popover>
-                                        </div>
-                                    </div>
-
-                                    <div className="relative flex flex-1">
-                                        <input
-                                            type="text"
-                                            onChange={(e) => handleChange(e)}
-                                            onKeyUp={(e) => handleKeyUp(e)}
-                                            name="content"
-                                            value={data.content}
-                                            placeholder={props.translator['Write your message!']}
-                                            className="w-full focus:outline-none border-0 focus:placeholder-gray-400 text-gray-600 placeholder-gray-600 pl-3 bg-white rounded-2xl rounded-br-none py-3"
-                                        />
-                                        <div className="absolute right-0 items-center inset-y-0 hidden sm:flex">
-                                            <button
-                                                type="button"
-                                                onClick={sendMessage}
-                                                className={classNames(
-                                                    (containerCategory ==  'all' || !selectedAccount )
-                                                        ? 'text-[#d5aff0]'
-                                                        : 'text-[#A31EFF]',
-                                                        "inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out focus:outline-none"
-                                                )}
-                                            >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                    className="h-6 w-6 ml-2 transform rotate-90"
-                                                >
-                                                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex flex-col gap-1 ">
-                                       
-                                        <div className="flex rounded-md bg-white h-7 w-7 justify-center items-center cursor-pointer">
-                                         
-                                            <Popover className="relative">
-                                                <Popover.Button>
-                                                    <ChevronDownIcon className={open ? 'rotate-180 transform w-5 h-5' : 'w-5 h-5'} />
-                                                </Popover.Button>
-                                                <Popover.Panel className="absolute z-10">
-                                                    <div className="flex justify-center">
-                                                        <ul className="bg-[#0f0a14] rounded-lg border-0 w-96 text-white/90">
-                                                            {props.templates && Object.entries(props.templates).map(([key, template]) => {
-                                                                if(template.account_id != selectedAccount) {
-                                                                    return false;
-                                                                }
-                                                                return(
-                                                                    <li className="px-6 py-2 rounded-b-lg" onClick={()=> setTemplateInfo(template)}> {template.name} </li>
-                                                                )
-                                                            })}
-                                                        </ul>
-                                                    </div>
-                                                </Popover.Panel>
-                                            </Popover>
-                                        </div>
+                <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden">
+                    <div className="relative z-30 grid grid-cols-1 gap-3 overflow-visible lg:grid-cols-[minmax(0,1fr)_auto_auto] flex-shrink-0">
+                        <div className="flex min-h-[5.25rem] items-center gap-4 rounded-[1.85rem] bg-[linear-gradient(135deg,rgba(26,10,38,0.98),rgba(11,8,18,0.98))] px-5 text-white shadow-[0_24px_80px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.06)] ring-1 ring-[#8f38d9]/18">
+                            <div className="relative flex items-center space-x-2">
+                                <div className="flex gap-1">
+                                    <div className="relative">
+                                        <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,115,226,0.35),rgba(147,51,234,0.22)_55%,rgba(255,255,255,0.02)_100%)] text-white shadow-[0_12px_30px_rgba(127,0,190,0.28),inset_0_1px_0_rgba(255,255,255,0.14)] ring-1 ring-white/8">
+                                            <UserIcon className="h-7 w-7" />
+                                        </span>
                                     </div>
                                 </div>
-                                 */}
+                                <div className="flex flex-col leading-tight">
+                                    <div className="mt-1 flex items-center text-sm font-semibold">
+                                        <span className="mr-3 text-white">
+                                            {selectedContact && activeContact ? (
+                                                <Link
+                                                    href={route(
+                                                        "detailContact",
+                                                        {
+                                                            id: selectedContact,
+                                                        },
+                                                    )}
+                                                    className="cursor-pointer text-lg font-semibold text-white no-underline drop-shadow-[0_1px_10px_rgba(0,0,0,0.32)] hover:text-[#ff92eb]"
+                                                >
+                                                    {activeContact.number || activeContact.name}
+                                                </Link>
+                                            ) : (
+                                                <span className="text-lg font-semibold text-white/60">
+                                                    No chat selected
+                                                </span>
+                                            )}
+                                        </span>
                                     </div>
-                                </>
-                            )}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 rounded-[1rem] bg-[#09070d] px-2.5 text-white shadow-[0_18px_48px_rgba(0,0,0,0.26)]">
+                            <Menu
+                                as="div"
+                                className="relative"
+                            >
+                                <div>
+                                    <Menu.Button className="flex min-h-[3.35rem] min-w-[6.35rem] items-center justify-between gap-2 text-[0.88rem] text-white/90 focus:outline-none">
+                                        <div className="flex items-center gap-2">
+                                            <selectedChannel.icon className="h-4.5 w-4.5 fill-current text-white" />
+                                            <span className="font-medium">
+                                                {
+                                                    selectedChannel.label
+                                                }
+                                            </span>
+                                        </div>
+                                        <ChevronDownIcon className="h-3 w-3 text-white/60" />
+                                    </Menu.Button>
+                                </div>
+                                <Transition
+                                    as={Fragment}
+                                    enter="transition ease-out duration-100"
+                                    enterFrom="transform opacity-0 scale-95"
+                                    enterTo="transform opacity-100 scale-100"
+                                    leave="transition ease-in duration-75"
+                                    leaveFrom="transform opacity-100 scale-100"
+                                    leaveTo="transform opacity-0 scale-95"
+                                >
+                                    <Menu.Items className="origin-top-right absolute right-0 z-40 mt-2 min-w-[180px] rounded-[1.2rem] bg-[linear-gradient(180deg,rgba(26,10,38,0.98),rgba(11,8,18,0.98))] p-1.5 shadow-[0_22px_60px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.06)] ring-1 ring-[#8f38d9]/20 focus:outline-none">
+                                        {Object.entries(
+                                            channels,
+                                        ).map(
+                                            ([
+                                                name,
+                                                channel,
+                                            ]) => (
+                                                <Menu.Item
+                                                    key={name}
+                                                >
+                                                    <div
+                                                        className={classNames(
+                                                            containerCategory ==
+                                                                name
+                                                                ? "bg-[linear-gradient(135deg,rgba(255,79,216,0.24),rgba(163,30,255,0.2))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                                                                : "",
+                                                            "rounded-[0.95rem] px-3 py-2.5 flex items-center gap-2 transition hover:bg-white/[0.06]",
+                                                        )}
+                                                    >
+                                                        <channel.icon className="w-5 h-5 fill-current text-white/75" />
+                                                        <button
+                                                            onClick={() =>
+                                                                selectContactCategory(
+                                                                    name,
+                                                                )
+                                                            }
+                                                            type={
+                                                                "button"
+                                                            }
+                                                            className="block py-1 text-sm text-white/85 hover:text-white w-full text-left"
+                                                        >
+                                                            {
+                                                                channel.label
+                                                            }
+                                                        </button>
+                                                    </div>
+                                                </Menu.Item>
+                                            ),
+                                        )}
+                                    </Menu.Items>
+                                </Transition>
+                            </Menu>
+                        </div>
+
+                        <div className="flex items-center gap-2 rounded-[1rem] bg-[#09070d] px-2.5 text-white shadow-[0_18px_48px_rgba(0,0,0,0.26)]">
+                            <Menu
+                                as="div"
+                                className="relative"
+                            >
+                                <div>
+                                    <Menu.Button className="flex min-h-[3.35rem] min-w-[6.55rem] items-center justify-between text-[0.88rem] text-white/90 focus:outline-none">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-medium uppercase tracking-[0.04em]">
+                                                {selectedAccount ? (
+                                                    <>{accountList[selectedAccount]}</>
+                                                ) : (
+                                                    "AESSEFIN"
+                                                )}
+                                            </span>
+                                            {containerCategory ==
+                                                "whatsapp" &&
+                                                selectedAccount &&
+                                                selectedContact && (
+                                                    <>
+                                                        {props
+                                                            .sessions[
+                                                            selectedContact
+                                                        ] &&
+                                                        props
+                                                            .sessions[
+                                                            selectedContact
+                                                        ][
+                                                            selectedAccount
+                                                        ] ? (
+                                                            <span
+                                                                title="Session active"
+                                                                className="rounded-full p-1 bg-green-500"
+                                                            ></span>
+                                                        ) : (
+                                                            <span
+                                                                title="Session inactive"
+                                                                className="rounded-full p-1 bg-red-500"
+                                                            ></span>
+                                                        )}
+                                                    </>
+                                                )}
+                                            <span className="ml-1">
+                                                <ChevronDownIcon className="h-3 w-3 text-white/60" />
+                                            </span>
+                                        </div>
+                                    </Menu.Button>
+                                </div>
+                                <Transition
+                                    as={Fragment}
+                                    enter="transition ease-out duration-100"
+                                    enterFrom="transform opacity-0 scale-95"
+                                    enterTo="transform opacity-100 scale-100"
+                                    leave="transition ease-in duration-75"
+                                    leaveFrom="transform opacity-100 scale-100"
+                                    leaveTo="transform opacity-0 scale-95"
+                                >
+                                    <Menu.Items className="origin-top-right absolute right-0 z-40 mt-2 min-w-[220px] rounded-[1.2rem] bg-[linear-gradient(180deg,rgba(26,10,38,0.98),rgba(11,8,18,0.98))] p-1.5 shadow-[0_22px_60px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.06)] ring-1 ring-[#8f38d9]/20 focus:outline-none">
+                                        {Object.entries(accountList).map(([id, name]) => (
+                                            <Menu.Item key={id}>
+                                                <div
+                                                    className={classNames(
+                                                        selectedAccount ==
+                                                            id
+                                                            ? "bg-[linear-gradient(135deg,rgba(255,79,216,0.24),rgba(163,30,255,0.2))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                                                            : "",
+                                                        "rounded-[0.95rem] px-3 py-2.5 flex items-center gap-2 transition hover:bg-white/[0.06]",
+                                                    )}
+                                                >
+                                                    <span
+                                                        onClick={() =>
+                                                            setSelectedAccount(
+                                                                id,
+                                                            )
+                                                        }
+                                                        className="block text-sm text-white/85 hover:text-white w-full cursor-pointer"
+                                                    >
+                                                        {name}
+                                                    </span>
+
+                                                    {containerCategory ==
+                                                        "whatsapp" &&
+                                                        selectedContact &&
+                                                        selectedContact && (
+                                                            <>
+                                                                {props
+                                                                    .sessions[
+                                                                    selectedContact
+                                                                ] &&
+                                                                props
+                                                                    .sessions[
+                                                                    selectedContact
+                                                                ][
+                                                                    id
+                                                                ] ? (
+                                                                    <span
+                                                                        title="Session active"
+                                                                        className="rounded-full p-1 bg-green-500"
+                                                                    ></span>
+                                                                ) : (
+                                                                    <span
+                                                                        title="Session inactive"
+                                                                        className="rounded-full p-1 bg-red-500"
+                                                                    ></span>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                </div>
+                                            </Menu.Item>
+                                        ))}
+                                    </Menu.Items>
+                                </Transition>
+                            </Menu>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 min-h-0 overflow-hidden rounded-[2rem] bg-[linear-gradient(180deg,rgba(8,7,11,0.98),rgba(6,5,10,0.98))] p-4 shadow-[0_28px_90px_rgba(0,0,0,0.34)]">
+                        <MessageList
+                            messages={messages}
+                            containerCategory={containerCategory}
+                            loadedStory={loadedStory}
+                            setLoadedStory={setLoadedStory}
+                        />
+                    </div>
+
+                    <div className="flex-shrink-0">
+                        <ChatBox
+                            handleChange={handleChange}
+                            handleKeyUp={handleKeyUp}
+                            templates={props.templates}
+                            products={props.products}
+                            interactiveMessages={
+                                props.interactiveMessages
+                            }
+                            setTemplateInfo={setTemplateInfo}
+                            selectedAccount={selectedAccount}
+                            clearContent={clearContent}
+                            setProductInfo={setProductInfo}
+                            setInteractiveMessage={
+                                setInteractiveMessage
+                            }
+                            containerCategory={
+                                containerCategory
+                            }
+                            data={data}
+                            sendMessage={sendMessage}
+                            logo={activeContact ? activeContact.name.substring(0, 2) : ""}
+                        />
                     </div>
                 </div>
             </div>
