@@ -5,6 +5,7 @@ namespace App\Exceptions;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 use App\Models\Api;
+use Inertia\Inertia;
 
 class Handler extends ExceptionHandler
 {
