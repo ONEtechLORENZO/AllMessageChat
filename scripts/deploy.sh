@@ -2,7 +2,7 @@
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-/var/www/allmessagechat}"
-BRANCH="${BRANCH:-main}"
+BRANCH="${BRANCH:-nishant}"
 
 if [[ ! -d "$APP_DIR" ]]; then
   echo "App directory not found: $APP_DIR"
@@ -16,9 +16,9 @@ if [[ ! -f ".env" ]]; then
   exit 1
 fi
 
-git fetch --all --prune
+git fetch origin
 git checkout "$BRANCH"
-git pull --ff-only origin "$BRANCH"
+git reset --hard "origin/$BRANCH"
 
 if command -v composer >/dev/null 2>&1; then
   composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
@@ -27,8 +27,8 @@ else
 fi
 
 if command -v npm >/dev/null 2>&1; then
-  npm ci
-  npm run build
+  npm install
+  NODE_OPTIONS="--max-old-space-size=3072" npm run build
 fi
 
 php artisan migrate --force
