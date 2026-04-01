@@ -433,6 +433,7 @@ class MsgController extends Controller
             ? $this->getChatContactList($request)
             : [
                 'contact_list' => [],
+                'filter_condition' => $request->get('filter', ''),
                 'filter_id' => $request->get('filter_id', ''),
                 'search' => $request->get('search', ''),
                 'mode' => (string) $request->get('mode', 'all'),
@@ -534,6 +535,7 @@ class MsgController extends Controller
         ) {
             $emptyData = [
                 'contact_list' => [],
+                'filter_condition' => $filter,
                 'filter_id' => $filterId,
                 'search' => $search,
                 'mode' => $mode,
@@ -712,6 +714,7 @@ class MsgController extends Controller
 
         $data = [
             'contact_list' => $contactList,
+            'filter_condition' => $filter,
             'filter_id' => $filterId,
             'search' => $search,
             'mode' => $mode,

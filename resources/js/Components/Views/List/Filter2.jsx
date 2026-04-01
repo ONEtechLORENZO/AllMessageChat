@@ -11,6 +11,8 @@ import CreatableSelect from 'react-select';
 function Filter(props) {
     const listRouteParams = props.listRouteParams ?? {};
     const allowedFieldNames = props.allowedFieldNames ?? null;
+    const hideFilterName = props.hideFilterName ?? false;
+    const hideAddGroup = props.hideAddGroup ?? false;
     const newCondition = {
         'field_name': '',
         'field_type': 'text',
@@ -373,12 +375,21 @@ function Filter(props) {
             return false;
         }
 
-        if (!filterName) {
+        const resolvedFilterName = hideFilterName
+            ? filterName || "Chat filter"
+            : filterName;
+
+        if (!resolvedFilterName) {
             let newError = Object.assign({}, errors);
             newError['filter_name'] = true;
             setErrors(newError);
         } else {
-            var data = { 'filter': JSON.stringify(filter), 'module_name': props.module, 'filter_name': filterName, 'filter_id': selectedFilter };
+            var data = {
+                'filter': JSON.stringify(filter),
+                'module_name': props.module,
+                'filter_name': resolvedFilterName,
+                'filter_id': selectedFilter
+            };
             if (props.is_chat) {
                 data['is_chat'] = props.is_chat;
             }
@@ -849,46 +860,57 @@ function Filter(props) {
                                                         )}
                                                     </>
                                                 )}
-                                                <div className="w-full">
-                                                    <button
-                                                        type="button"
-                                                        onClick={addConditionGroup}
-                                                        className="inline-flex items-center mt-6 px-3 py-2 border border-white/10 shadow-sm text-sm leading-4 font-medium rounded-sm text-white bg-white/10 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/20"
-                                                    >
-                                                        <AddIcon
+                                                {!hideAddGroup && (
+                                                    <div className="w-full">
+                                                        <button
                                                             type="button"
                                                             onClick={addConditionGroup}
-                                                            className="-ml-0.5 mr-2 h-4 w-4"
-                                                            aria-hidden="true" />
-                                                        {props.translator['Add Group']}
-                                                    </button>
-                                                </div>
+                                                            className="inline-flex items-center mt-6 px-3 py-2 border border-white/10 shadow-sm text-sm leading-4 font-medium rounded-sm text-white bg-white/10 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/20"
+                                                        >
+                                                            <AddIcon
+                                                                type="button"
+                                                                onClick={addConditionGroup}
+                                                                className="-ml-0.5 mr-2 h-4 w-4"
+                                                                aria-hidden="true"
+                                                            />
+                                                            {props.translator['Add Group']}
+                                                        </button>
+                                                    </div>
+                                                )}
                                                 <br />
-                                                <div className="mt-6 sm:mt-5 space-y-6 sm:space-y-5 clear-both">
-                                                    <div className="sm:grid sm:grid-cols-4 sm:gap-4 sm:items-start sm:border-t sm:border-white/10 sm:pt-5">
-                                                        <label htmlFor="filter_name" className="block text-sm text-right font-medium text-white sm:mt-px sm:pt-2">
-                                                            {props.translator['Filter name']}
-                                                        </label>
-                                                        <div className="mt-1 sm:mt-0 sm:col-span-3">
-                                                            <div className="max-w-lg flex rounded-sm shadow-sm">
-                                                                <input
-                                                                    type="text"
-                                                                    name="filter_name"
-                                                                    value={filterName}
-                                                                    id="filter_name"
-                                                                    autoComplete="filter_name"
-                                                                    onChange={(e) => handleChange(e)}
-                                                                    className="flex-1 block w-full bg-[#0F0B1A] text-white placeholder-[#878787] focus:ring-[#1C9AE1] focus:border-[#1C9AE1] min-w-0 rounded-none rounded-r-md sm:text-sm border border-white/10"
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                {errors.filter_name &&
-                                                                    <small className="text-red-500"> {props.translator['Please fill the name']} </small>
-                                                                }
+                                                {!hideFilterName && (
+                                                    <div className="mt-6 sm:mt-5 space-y-6 sm:space-y-5 clear-both">
+                                                        <div className="sm:grid sm:grid-cols-4 sm:gap-4 sm:items-start sm:border-t sm:border-white/10 sm:pt-5">
+                                                            <label
+                                                                htmlFor="filter_name"
+                                                                className="block text-sm text-right font-medium text-white sm:mt-px sm:pt-2"
+                                                            >
+                                                                {props.translator['Filter name']}
+                                                            </label>
+                                                            <div className="mt-1 sm:mt-0 sm:col-span-3">
+                                                                <div className="max-w-lg flex rounded-sm shadow-sm">
+                                                                    <input
+                                                                        type="text"
+                                                                        name="filter_name"
+                                                                        value={filterName}
+                                                                        id="filter_name"
+                                                                        autoComplete="filter_name"
+                                                                        onChange={(e) => handleChange(e)}
+                                                                        className="flex-1 block w-full bg-[#0F0B1A] text-white placeholder-[#878787] focus:ring-[#1C9AE1] focus:border-[#1C9AE1] min-w-0 rounded-none rounded-r-md sm:text-sm border border-white/10"
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    {errors.filter_name && (
+                                                                        <small className="text-red-500">
+                                                                            {" "}
+                                                                            {props.translator['Please fill the name']}{" "}
+                                                                        </small>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                )}
                                             </div>
 
 
