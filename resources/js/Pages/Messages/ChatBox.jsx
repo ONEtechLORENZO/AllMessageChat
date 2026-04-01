@@ -65,6 +65,7 @@ function ChatBox(props)
                                    searchProduct={searchProduct}
                                    searchTemplates={searchTemplates}
                                    searchInteractiveMessages={searchInteractiveMessages}
+                                   allowProducts={false}
                                    setInteractiveMessage={props.setInteractiveMessage}
                                    setProductInfo={props.setProductInfo}
                                    setTemplateInfo={props.setTemplateInfo}

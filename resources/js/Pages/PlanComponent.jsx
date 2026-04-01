@@ -1,658 +1,1158 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from "react";
 import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import { AiFillCaretDown, AiFillCaretUp, AiOutlineInfoCircle } from "react-icons/ai";
-import { Disclosure } from '@headlessui/react'
-import { Dialog, Transition } from '@headlessui/react';
-import { Elements, CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import { Dialog, Transition } from "@headlessui/react";
+import {
+    Elements,
+    CardElement,
+    useElements,
+    useStripe,
+} from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 import { router as Inertia } from "@inertiajs/react";
-import nProgress from 'nprogress';
-import axios from 'axios';
-import notie from 'notie';
+import nProgress from "nprogress";
+import axios from "axios";
+import notie from "notie";
 
+const PLAN_ORDER = ["PRO", "BUSINESS", "ENTERPRISE", "PLATINUM"];
 
-
-const subscriptionPlan = [
-  'CONVERSATION_API', 'STARTER', 'PRO', 'BUSINESS', 'CUSTOM'
+const PRICING_PLANS = [
+    {
+        planId: "PRO",
+        backendFallbackId: "PRO",
+        name: "Pro",
+        monthlyBundleChats: "5.000",
+        monthlyPrice: 599,
+        annualMonthlyPrice: 569.05,
+        dedicatedServer: false,
+        longTermStorage: false,
+        featured: false,
+        bestFor: "For small teams that want a reliable starting plan.",
+        description:
+            "Simple monthly pricing with enough capacity for smaller support and sales teams.",
+        summaryPoints: [
+            "5,000 bundled active chats per month",
+            "Monthly billing available",
+            "Easy starting plan for smaller teams",
+        ],
+        buttonText: "Choose plan",
+    },
+    {
+        planId: "BUSINESS",
+        backendFallbackId: "BUSINESS",
+        name: "Business",
+        monthlyBundleChats: "10.000",
+        monthlyPrice: 899,
+        annualMonthlyPrice: 854.05,
+        dedicatedServer: false,
+        longTermStorage: false,
+        featured: true,
+        bestFor:
+            "For growing teams that need more volume and more flexibility.",
+        description:
+            "A balanced SaaS plan for businesses that want more capacity without moving yet to dedicated infrastructure.",
+        summaryPoints: [
+            "10,000 bundled active chats per month",
+            "Best value for growing companies",
+            "Clear monthly or annual billing",
+        ],
+        buttonText: "Choose plan",
+    },
+    {
+        planId: "ENTERPRISE",
+        backendFallbackId: "ENTERPRISE",
+        name: "Enterprise",
+        monthlyBundleChats: "25.000",
+        monthlyPrice: 1999,
+        annualMonthlyPrice: 1899.05,
+        dedicatedServer: true,
+        longTermStorage: true,
+        featured: false,
+        bestFor: "For larger operations that need infrastructure included.",
+        description:
+            "Built for teams that need dedicated resources, stronger performance, and long-term data handling.",
+        summaryPoints: [
+            "25,000 bundled active chats per month",
+            "Dedicated server included",
+            "Long-term document storage included",
+        ],
+        buttonText: "Choose plan",
+    },
+    {
+        planId: "PLATINUM",
+        backendFallbackId: "CUSTOM",
+        name: "Platinum",
+        monthlyBundleChats: "40.000",
+        monthlyPrice: 2849,
+        annualMonthlyPrice: 2706.55,
+        dedicatedServer: true,
+        longTermStorage: true,
+        featured: false,
+        bestFor:
+            "For high-volume teams that want the highest standard capacity.",
+        description:
+            "Our most advanced standard plan for organizations managing high conversation volume at scale.",
+        summaryPoints: [
+            "40,000 bundled active chats per month",
+            "Dedicated server included",
+            "Long-term document storage included",
+        ],
+        buttonText: "Choose plan",
+    },
 ];
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
+const ADD_ONS = [
+    {
+        id: "ADDITIONAL_WABA",
+        name: "Additional WABA",
+        price: 50,
+        description:
+            "Monthly cost for each additional WABA outside the selected plan.",
+    },
+    {
+        id: "ADDITIONAL_WA_API_NUMBER",
+        name: "Additional WA API number",
+        price: 10,
+        description: "Monthly cost for each additional WhatsApp API number.",
+    },
+    {
+        id: "ADDITIONAL_INSTAGRAM",
+        name: "Additional Instagram integration",
+        price: 5,
+        description: "Monthly cost for each additional Instagram integration.",
+    },
+    {
+        id: "ADDITIONAL_FACEBOOK",
+        name: "Additional Facebook integration",
+        price: 5,
+        description: "Monthly cost for each additional Facebook integration.",
+    },
+];
+
+const TEMPLATE_PRICING = [
+    {
+        id: "MARKETING_TEMPLATE",
+        name: "Marketing Template",
+        priceLabel: "€0,0572 per message",
+    },
+    {
+        id: "UTILITY_TEMPLATE",
+        name: "Utility / Service Template",
+        priceLabel: "€0,0319 per message",
+    },
+];
+
+function t(translator, key) {
+    return translator?.[key] ?? key;
+}
+
+function normalizePlanId(value) {
+    return String(value || "")
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, "_");
+}
+
+function normalizeBackendPlanId(value) {
+    const normalized = normalizePlanId(value);
+
+    const aliasMap = {
+        CUSTOM: "PLATINUM",
+    };
+
+    return aliasMap[normalized] ?? normalized;
+}
+
+function formatEuro(value) {
+    if (value === null || value === undefined || value === "") return "-";
+
+    return new Intl.NumberFormat("it-IT", {
+        style: "currency",
+        currency: "EUR",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(Number(value));
+}
+
+function formatEuroNumber(value) {
+    if (value === null || value === undefined || value === "") return "-";
+
+    return new Intl.NumberFormat("it-IT", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(Number(value));
+}
+
+function getMonthlySaving(plan) {
+    const saving = Number(plan.monthlyPrice) - Number(plan.annualMonthlyPrice);
+    return saving > 0 ? saving : 0;
+}
+
+function FeatureStatusBadge({ included, translator }) {
+    return included ? (
+        <span className="inline-flex min-w-[112px] items-center justify-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-300">
+            <CheckIcon className="h-4 w-4" />
+            {t(translator, "Included")}
+        </span>
+    ) : (
+        <span className="inline-flex min-w-[112px] items-center justify-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/65">
+            <XMarkIcon className="h-4 w-4" />
+            {t(translator, "Not included")}
+        </span>
+    );
+}
+
+function IntroPill({ children }) {
+    return (
+        <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium leading-6 text-white/78">
+            {children}
+        </div>
+    );
+}
+
+function PlanCard({ plan, translator, onChoose }) {
+    const isFeatured = plan.featured;
+    const monthlySaving = getMonthlySaving(plan);
+
+    return (
+        <article
+            className={[
+                "relative flex h-full min-h-[860px] flex-col rounded-[28px] border bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-7",
+                isFeatured
+                    ? "border-[#d000ff]/55 ring-1 ring-[#d000ff]/30"
+                    : "border-white/12",
+            ].join(" ")}
+        >
+            {isFeatured && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#ff2bd6] to-[#9d00ff] px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[0_10px_25px_rgba(208,0,255,0.35)]">
+                    {t(translator, "Most popular")}
+                </div>
+            )}
+
+            <div className={`flex h-full flex-col ${isFeatured ? "pt-3" : ""}`}>
+                <div className="min-h-[250px]">
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0 flex-1 pr-2">
+                            <h2 className="text-3xl font-bold leading-tight text-white">
+                                {t(translator, plan.name)}
+                            </h2>
+
+                            <p className="mt-3 min-h-[72px] text-sm leading-7 text-white/76">
+                                {t(translator, plan.bestFor)}
+                            </p>
+                        </div>
+
+                        <div className="shrink-0 rounded-full border border-white/20 bg-white/5 px-3 py-2 text-center">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/60">
+                                {t(translator, "Chats")}
+                            </div>
+                            <div className="text-sm font-bold text-white">
+                                {plan.monthlyBundleChats}
+                            </div>
+                        </div>
+                    </div>
+
+                    <p className="mt-5 min-h-[98px] text-sm leading-7 text-white/62">
+                        {t(translator, plan.description)}
+                    </p>
+                </div>
+
+                <div className="mt-6 flex min-h-[320px] flex-col rounded-3xl border border-white/10 bg-black/15 p-5">
+                    <div>
+                        <div className="text-sm font-semibold text-white/60">
+                            {t(translator, "Monthly fee")}
+                        </div>
+
+                        <div className="mt-4 flex items-end gap-1.5 whitespace-nowrap">
+                            <span className="text-[34px] font-bold leading-none tracking-tight text-white sm:text-[38px] tabular-nums">
+                                {formatEuroNumber(plan.monthlyPrice)}
+                            </span>
+                            <span className="pb-0.5 text-[26px] font-bold leading-none text-white sm:text-[28px]">
+                                €
+                            </span>
+                        </div>
+
+                        <div className="mt-2 text-sm text-white/65">
+                            {t(translator, "per month")}
+                        </div>
+                    </div>
+
+                    <div className="mt-6 rounded-2xl border border-[#d8b4fe]/25 bg-[#7b1fa2]/10 p-4">
+                        <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#d7b3ff]">
+                            {t(translator, "Annual plan")}
+                        </div>
+
+                        <div className="mt-3 flex items-end gap-1.5 whitespace-nowrap">
+                            <span className="text-[26px] font-bold leading-none tracking-tight text-white tabular-nums">
+                                {formatEuroNumber(plan.annualMonthlyPrice)}
+                            </span>
+                            <span className="pb-0.5 text-[20px] font-bold leading-none text-white">
+                                €
+                            </span>
+                        </div>
+
+                        <div className="mt-2 text-sm text-white/65">
+                            {t(translator, "per month")}
+                        </div>
+
+                        <p className="mt-3 text-sm font-medium leading-6 text-emerald-300">
+                            {t(translator, "Save")} {formatEuro(monthlySaving)}{" "}
+                            {t(translator, "per month")}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="mt-6 min-h-[190px]">
+                    <div className="text-sm font-semibold uppercase tracking-[0.14em] text-white/55">
+                        {t(translator, "What is included")}
+                    </div>
+
+                    <ul className="mt-4 space-y-3">
+                        {plan.summaryPoints.map((point) => (
+                            <li
+                                key={`${plan.planId}-${point}`}
+                                className="flex items-start gap-3 text-sm leading-7 text-white/84"
+                            >
+                                <CheckIcon className="mt-1 h-4 w-4 shrink-0 text-[#d000ff]" />
+                                <span>{t(translator, point)}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+                <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <div className="flex items-center justify-between gap-4 py-2">
+                        <span className="text-sm leading-6 text-white/78">
+                            {t(translator, "Dedicated server")}
+                        </span>
+                        <FeatureStatusBadge
+                            included={plan.dedicatedServer}
+                            translator={translator}
+                        />
+                    </div>
+
+                    <div className="my-2 h-px bg-white/8" />
+
+                    <div className="flex items-center justify-between gap-4 py-2">
+                        <span className="text-sm leading-6 text-white/78">
+                            {t(translator, "Document storage over 30 days")}
+                        </span>
+                        <FeatureStatusBadge
+                            included={plan.longTermStorage}
+                            translator={translator}
+                        />
+                    </div>
+                </div>
+
+                <div className="mt-auto pt-8">
+                    <button
+                        type="button"
+                        onClick={() => onChoose(plan.planId)}
+                        className={[
+                            "w-full rounded-2xl px-6 py-4 text-base font-bold transition",
+                            isFeatured
+                                ? "bg-gradient-to-r from-[#ff2bd6] to-[#9d00ff] text-white shadow-[0_12px_30px_rgba(208,0,255,0.35)] hover:opacity-95"
+                                : "border border-white/20 bg-white/[0.04] text-white hover:border-[#d000ff]/60 hover:bg-white/10",
+                        ].join(" ")}
+                    >
+                        {t(translator, plan.buttonText)}
+                    </button>
+                </div>
+            </div>
+        </article>
+    );
 }
 
 export default function PlanSubscription(props) {
+    const [showForm, setShowForm] = useState(false);
+    const [subscriptionId, setSubscriptionId] = useState(null);
+    const [status, setStatus] = useState("new");
 
-  const [showFeatures, setShowFeatures] = useState(false);
-  const [plans, setPlan] = useState(props.plans);
-  const [showForm, setShowForm] = useState(false);
-  const [subscriptionId, setSubscriptionId] = useState();
-  const [status, setStatus] = useState('new');
-  const hasPlans = Array.isArray(plans) && plans.length > 0;
+    const availablePlansFromBackend = Array.isArray(props.plans)
+        ? props.plans
+        : [];
+    const hasPlans = availablePlansFromBackend.length > 0;
 
-  const tiers = [
-    {
-      name: 'Api only',
-      isFree: true,
-      href: '#',
+    const visiblePlans = PRICING_PLANS;
 
-      description: 'Short sentence to indicate what type of business is this plan aimed at.',
-      includedFeatures: ['Particularity of the plan', 'Particularity of the plan'],
-      btnText: 'Start for free',
-      plan: 'Api'
-    },
-    {
-      name: 'Starter',
-      href: '#',
-      priceMonthly: '€15',
-      description: 'Short sentence to indicate what type of business is this plan aimed at.',
-      includedFeatures: ['Particularity of the plan', 'Particularity of the plan',],
-      btnText: 'Choose Plan',
-      plan: 'Starter'
-    },
-    {
-      name: 'Pro',
-      href: '#',
-      priceMonthly: '€30',
-      description: 'Short sentence to indicate what type of business is this plan aimed at.',
-      includedFeatures: [
-        'Particularity of the plan',
-        'Particularity of the plan',
-        'Particularity of the plan',
-      ],
-      btnText: 'Choose Plan',
-      plan: 'Pro'
-    },
-    {
-      name: 'Business',
-      href: '#',
-      priceMonthly: '€50',
-      description: 'Short sentence to indicate what type of business is this plan aimed at.',
-      includedFeatures: [
-        'Particularity of the plan',
-        'Particularity of the plan',
-        'Particularity of the plan',
-        'Particularity of the plan',
-      ],
-      btnText: 'Choose Plan',
-      plan: 'Business'
-    },
-    {
-      name: 'Enterprise',
-      href: '#',
-      isEnterprice: true,
-      description: 'Short sentence to indicate what type of business is this plan aimed at.',
-      includedFeatures: [
-        'Particularity of the plan',
-        'Particularity of the plan',
-        'Particularity of the plan',
-        'Particularity of the plan',
-        'Particularity of the plan',
-        'Particularity of the plan',
-      ],
-      btnText: 'Contact sales',
-      plan: 'Enterprise'
-    },
-  ]
-
-  const sections = [
-    {
-      header: 'Active users',
-      rows: [
-        { label: 'Monthly Max Active Users', name: 'active_users' }
-      ]
-    },
-    {
-      header: 'CRM',
-      rows: [
-        { label: 'CRM Leads', name: 'crm_leads' },
-        { label: 'CRM Contacts', name: 'crm_contacts' },
-        { label: 'Organization', name: 'crm_organizations' },
-        { label: 'Deals', name: 'crm_deals' },
-        { label: 'Custom Fields', name: 'crm_custom_fields' },
-      ]
-    },
-    {
-      header: 'Conversations',
-      rows: [
-        { label: 'Broadcasting (Campaigns)', name: 'campaigns' },
-        { label: '121 Chats', name: 'chat_conversation' },
-      ]
-    },
-    {
-      header: 'Automations',
-      rows: [
-        { label: 'Visual Workflow Designer Builder', name: 'workflows' },
-        { label: 'Number of Operations per month', name: 'workflow_operations' },
-      ]
-    },
-    {
-      header: 'Sales Features',
-      rows: [
-        { label: 'Product Catalogs', name: 'product_category' },
-        { label: 'Sales Orders', name: 'sale_orders' },
-      ]
-    },
-    {
-      header: 'Analytics',
-      rows: [
-        { label: 'Analytics Reports', name: 'reports' },
-      ]
-    },
-    {
-      header: 'API Endpoints',
-      rows: [
-        { label: 'Conversations', name: 'api_conversation' },
-        { label: 'Leads, Deals, Contacts & Organizations', name: 'api_module_access' },
-        { label: 'Products & Orders', name: 'api_product_order' },
-      ]
-    },
-  ];
-
-  useEffect(() => {
-    if (props.status) {
-      setStatus('update');
-    }
-  }, []);
-
-  if (props.errors && props.errors.message) {
-    notie.alert({ type: 'warning', text: props.errors.message, time: 5 });
-  }
-
-  function buySubscription(planStatus, view, subscribe_id) {
-    axios.post(route('subcription_complete')).then((response) => {
-      props.redirectDashBoard();
-    })
-    //waxios.post(route('subcription_complete')).then( (response) => {})
-    /*
-    if('CUSTOM' == subscribe_id) {
-      return false;
-    }
-    let checkUpdate = checkToChangePlan(subscribe_id);
-    if(checkUpdate){
-      if(planStatus == 'update') {
-        confirmToSubscribe(subscribe_id);
-      } else {
-          let show = view ? false : true;
-          setShowForm(show);
-      }
-      setSubscriptionId(subscribe_id);
-    }
-    */
-  }
-
-  function checkToChangePlan(plan_id) {
-    let checkUpdate = false;
-    const current_plan = props.company.plan;
-    let current_plan_index = '';
-    let update_plan_index = '';
-    subscriptionPlan.map((plan, index) => {
-      if (plan == current_plan) {
-        current_plan_index = index;
-      }
-      if (plan == plan_id) {
-        update_plan_index = index
-      }
-    });
-
-    if (current_plan_index < update_plan_index) {
-      checkUpdate = true;
-    } else if (current_plan_index == update_plan_index) {
-      if (status != 'new') {
-        notie.alert({ type: 'error', text: 'You are already in this plan.', time: 5 });
-      } else {
-        checkUpdate = true;
-      }
-    } else {
-      notie.alert({ type: 'warning', text: 'You are not able downgrade your plan.', time: 5 });
-    }
-
-    return checkUpdate;
-  }
-
-  function confirmToSubscribe(id) {
-
-    if (id == 'CUSTOM') {
-      return false;
-    }
-
-    let confirm = window.confirm('Are you sure to update your plan?');
-
-    if (confirm) {
-      let url = route('subscribe_plan', { 'plan': id });
-      let data = { status: 'update', user_id: props.user.id }
-
-      Inertia.post(url, data, {
-        onSuccess: (response) => {
-          if (response) {
-            notie.alert({ type: 'success', text: 'Your plan has been updated.', time: 5 });
-          }
+    useEffect(() => {
+        if (props.status) {
+            setStatus("update");
         }
-      });
+    }, [props.status]);
+
+    useEffect(() => {
+        if (props.errors?.message) {
+            notie.alert({
+                type: "warning",
+                text: props.errors.message,
+                time: 5,
+            });
+        }
+    }, [props.errors?.message]);
+
+    function getMatchedBackendPlanId(planId) {
+        if (!hasPlans) {
+            const matchedStaticPlan = PRICING_PLANS.find(
+                (plan) =>
+                    normalizePlanId(plan.planId) === normalizePlanId(planId),
+            );
+
+            return matchedStaticPlan?.backendFallbackId ?? planId;
+        }
+
+        const found = availablePlansFromBackend.find(
+            (plan) =>
+                normalizeBackendPlanId(
+                    plan?.plan ?? plan?.plan_id ?? plan?.name,
+                ) === normalizePlanId(planId),
+        );
+
+        if (found?.plan_id) return found.plan_id;
+
+        const matchedStaticPlan = PRICING_PLANS.find(
+            (plan) => normalizePlanId(plan.planId) === normalizePlanId(planId),
+        );
+
+        return matchedStaticPlan?.backendFallbackId ?? planId;
     }
-  }
 
-  function Subscribe() {
-    axios.post(route('subscribe_plan', { 'plan': subscriptionId }), { user_id: props.user.id, is_register_step: true, status: 'new' })
-      .then((response) => {
-        props.redirectDashBoard();
-      });
-  }
+    function checkToChangePlan(nextPlanId) {
+        const currentPlanId = normalizeBackendPlanId(
+            props.company?.plan ?? props.company?.plan_id,
+        );
+        const normalizedNextPlanId = normalizeBackendPlanId(nextPlanId);
 
-  function redirectToHome() {
-    if (status == 'update') {
-      Inertia.get(route('home'), {}, {});
-    }
-  }
+        if (!currentPlanId || !PLAN_ORDER.includes(currentPlanId)) {
+            return true;
+        }
 
-  return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0b0611] text-white">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(191,0,255,0.28),transparent_65%)]" />
-        <div className="absolute -bottom-52 right-0 h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.18),transparent_70%)]" />
-      </div>
-        <div className="relative mx-auto max-w-7xl py-24 px-4 sm:px-6 lg:px-8">
-        <div className="sm:align-center sm:flex sm:flex-col">
-          <div className="w-full p-2 flex justify-center items-center flex-col text-center">
-            <div className="w-full flex justify-center items-center" onClick={() => redirectToHome()}>
-              <span className="text-5xl sm:text-6xl font-semibold tracking-tight">
-                <span className="one-tech-special">One</span>
-                <span className="text-white"> message</span>
-              </span>
-            </div>
-            <h1 className="text-[32px] sm:text-[38px] font-bold !mt-6 text-white">
-              {props.translator['We have finally arrived']}
-            </h1>
-            <p className="text-white/60 text-base sm:text-lg max-w-2xl">
-              {props.translator['let us drop anchor.']}
-            </p>
+        const currentIndex = PLAN_ORDER.indexOf(currentPlanId);
+        const nextIndex = PLAN_ORDER.indexOf(normalizedNextPlanId);
 
-            <p className="text-base font-semibold text-white/70 !mt-8">
-              {props.translator['Choose the right plan for you.']}
-            </p>
-          </div>
-        </div>
+        if (nextIndex === -1) return true;
 
-        <div className="mt-12 space-y-4 sm:mt-16 sm:grid sm:grid-cols-2 sm:gap-6 sm:space-y-0 lg:grid-cols-3 lg:gap-8 xl:mx-0 xl:max-w-none xl:grid-cols-5">
-          {tiers.map((tier) => {
-            const isFeatured = tier.plan === 'Pro';
+        if (currentIndex < nextIndex) {
+            return true;
+        }
 
-            const headingColor = tier.isEnterprice ? 'text-white' : 'text-white';
-            const textColor = tier.isEnterprice ? 'text-white/70' : 'text-white/60';
-            const cardClass = tier.isEnterprice
-              ? 'bg-[#1b0f24]/90 border border-[#BF00FF]/40'
-              : tier.isFree
-                ? 'bg-[#0F0B1A]/80 border border-white/15'
-                : 'bg-[#140816]/80 border border-white/10';
-            const btnColor = tier.isFree
-              ? 'border border-white/30 text-white/80 hover:border-[#BF00FF]/70 hover:text-white'
-              : tier.isEnterprice
-                ? 'bg-white text-[#0b0611] hover:bg-white/90'
-                : 'bg-[#BF00FF] text-white hover:bg-[#a100df]';
-
-            if (hasPlans) {
-              let isShowable = false;
-              plans.forEach(plan => {
-                if (plan.plan == tier.plan) {
-                  isShowable = true;
-                }
-              })
-              if (!isShowable) {
-                return null;
-              }
+        if (currentIndex === nextIndex) {
+            if (status !== "new") {
+                notie.alert({
+                    type: "error",
+                    text: t(props.translator, "You are already in this plan."),
+                    time: 5,
+                });
+                return false;
             }
-            const matchedPlan = hasPlans
-              ? plans.find((p) => p.plan === tier.plan)
-              : { plan_id: tier.plan };
 
-            return (
-              <div
-                key={tier.name}
-                className={[
-                  "relative rounded-2xl shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-2xl",
-                  "flex flex-col justify-between items-start transition-all duration-300",
-                  "hover:-translate-y-1 hover:shadow-[0_30px_60px_rgba(0,0,0,0.5)]",
-                  "group",
-                  cardClass,
-                  isFeatured ? "ring-1 ring-[#BF00FF]/40" : "",
-                ].join(" ")}
-              >
-                {isFeatured && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-widest bg-[#BF00FF] text-white shadow-[0_10px_25px_rgba(191,0,255,0.35)]">
-                    Most popular
-                  </div>
-                )}
-                <div className="p-6 w-full">
-                  <div className="flex items-center justify-center gap-2">
-                    <h2 className={`text-xl font-bold text-center ${headingColor}`}>{props.translator[tier.name]}</h2>
-                    {tier.isFree && (
-                      <span className="rounded-full border border-[#BF00FF]/40 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-[#BF00FF]">
-                        Free
-                      </span>
-                    )}
-                  </div>
-                  <p className={`mt-4 text-sm text-center ${textColor}`}>{props.translator[tier.description]}</p>
-                  <div className={`mt-8 ${textColor} ${(tier.isFree || tier.isEnterprice) ? 'hidden' : ''}`}>
-                    <div className="flex items-center gap-1">
-                      <span className="text-right">
-                        <span className="text-4xl font-semibold leading-8 -tracking-[2%] text-white">{tier.priceMonthly}</span><br />
-                        <span className="text-base font-normal tracking-tight text-white/60">{props.translator['per month']}</span>
-                      </span>
-                      <span className="text-[64px] font-extralight leading-5 text-white/30">/</span>
-                      <span className="text-base font-bold text-white/70">{props.translator['user']}</span>
-                    </div>
-                  </div>
+            return true;
+        }
 
-                  <p className={`py-4 text-2xl text-center leading-8 font-semibold ${tier.isFree ? 'text-white' : textColor} ${(tier.isFree || tier.isEnterprice) ? '' : 'hidden'}`}>
-                    {(tier.isFree) ? props.translator['Free'] : props.translator['Contact us']}
-                  </p>
+        notie.alert({
+            type: "warning",
+            text: t(
+                props.translator,
+                "You are not able to downgrade your plan.",
+            ),
+            time: 5,
+        });
 
-                  <ul role="list" className="mt-6 space-y-4 !pl-0">
-                    {tier.includedFeatures.map((feature, idx) => (
-                      <li key={`${tier.plan}-feature-${idx}`} className="flex space-x-3">
-                        <span className={`text-sm ${textColor}`}>{props.translator[feature]}</span>
-                      </li>
-                    ))}
-                  </ul>
+        return false;
+    }
 
-                </div>
-                <div className="p-6 w-full !mb-6">
-                  {matchedPlan && (
-                    <button
-                      className={`block w-full rounded-md py-2 text-center text-sm font-bold transition ${btnColor}`}
-                      onClick={() => buySubscription(status, showForm, matchedPlan.plan_id)}
-                    >
-                      {props.translator[tier.btnText]}
-                    </button>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
+    function buySubscription(planId) {
+        const backendPlanId = getMatchedBackendPlanId(planId);
 
-        <div className="w-full text-center !mt-6 flex flex-col items-center">
-          {/* <p className="text-sm">Write here if the prices include taxes or not</p> */}
-          {/* <p className="text-[#7653FF] text-base flex gap-2 items-center" onClick={() => setShowFeatures(!showFeatures)}>{props.translator['View all plan features']} {(showFeatures) ? <AiFillCaretDown size={'1.5rem'} className='cursor-pointer'/> : <AiFillCaretUp size={'1.5rem'} className='cursor-pointer'/> }</p> */}
-        </div>
+        if (!checkToChangePlan(backendPlanId)) return;
 
-        {showFeatures &&
-          <div className='w-full mt-10 rounded-2xl border border-white/10 bg-[#120815]/70 p-6 shadow-[0_18px_40px_rgba(0,0,0,0.35)]'>
-            <div className='grid grid-cols-7 font-semibold text-xl leading-8 border-b border-white/10 !pb-4'>
-              <div className='col-span-2 text-white/60'>
-                {props.translator['Features']}
-              </div>
-              <div className='text-center text-white/80'>{props.translator['Api only']}</div>
-              <div className='text-center text-white/80'>{props.translator['Starter']}</div>
-              <div className='text-center text-white/80'>{props.translator['Pro']}</div>
-              <div className='text-center text-white/80'>{props.translator['Business']}</div>
-              <div className='text-center text-white/80'>{props.translator['Enterprise']}</div>
+        if (status === "update") {
+            confirmToSubscribe(backendPlanId);
+            return;
+        }
+
+        setSubscriptionId(backendPlanId);
+        setShowForm(true);
+    }
+
+    function confirmToSubscribe(planId) {
+        const confirmUpdate = window.confirm(
+            t(props.translator, "Are you sure you want to update your plan?"),
+        );
+
+        if (!confirmUpdate) return;
+
+        const url = route("subscribe_plan", { plan: planId });
+        const data = {
+            status: "update",
+            user_id: props.user.id,
+        };
+
+        Inertia.post(url, data, {
+            onSuccess: () => {
+                notie.alert({
+                    type: "success",
+                    text: t(props.translator, "Your plan has been updated."),
+                    time: 5,
+                });
+            },
+            onError: () => {
+                notie.alert({
+                    type: "error",
+                    text: t(
+                        props.translator,
+                        "Something went wrong while updating the plan.",
+                    ),
+                    time: 5,
+                });
+            },
+        });
+    }
+
+    async function Subscribe() {
+        if (!subscriptionId) return;
+
+        try {
+            await axios.post(
+                route("subscribe_plan", { plan: subscriptionId }),
+                {
+                    user_id: props.user.id,
+                    is_register_step: true,
+                    status: "new",
+                },
+            );
+
+            props.redirectDashBoard();
+        } catch (error) {
+            notie.alert({
+                type: "error",
+                text:
+                    error?.response?.data?.message ||
+                    t(props.translator, "Unable to complete the subscription."),
+                time: 5,
+            });
+        }
+    }
+
+    function redirectToHome() {
+        if (status === "update") {
+            Inertia.get(route("home"), {}, {});
+        }
+    }
+
+    return (
+        <div className="relative min-h-screen overflow-hidden bg-[#08050d] text-white">
+            <div className="pointer-events-none absolute inset-0">
+                <div className="absolute left-1/2 top-0 h-[380px] w-[380px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(173,58,255,0.24),transparent_70%)]" />
+                <div className="absolute -left-24 top-60 h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle_at_center,rgba(114,0,255,0.12),transparent_70%)]" />
+                <div className="absolute -right-24 bottom-20 h-[340px] w-[340px] rounded-full bg-[radial-gradient(circle_at_center,rgba(0,92,255,0.10),transparent_72%)]" />
             </div>
 
-            {sections.map((section) => (
-              <div key={section.header} className="space-y-3 !mt-6">
-                <Disclosure as="div" className="!py-3 !px-6 !pr-7 relative rounded-2xl border border-white/10 bg-[#0F0B1A]/80">
-                  {({ open }) => (
-                    <>
-                      <Disclosure.Button className="flex w-full items-start justify-between text-left text-white/70">
-                        <span className="px-2 text-xl font-semibold text-white mb-2">
-                          {props.translator[section.header]}
+            <div className="relative mx-auto max-w-[1640px] px-4 py-14 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-4xl text-center">
+                    <button
+                        type="button"
+                        onClick={redirectToHome}
+                        className="mx-auto inline-flex items-center justify-center"
+                    >
+                        <span className="text-5xl font-semibold tracking-tight sm:text-6xl">
+                            <span className="text-[#7c5cff]">all</span>
+                            <span className="text-white">message</span>
                         </span>
-                        <span className="ml-6 flex h-7 items-center">
-                          <AiFillCaretDown
-                            size="1.5rem"
-                            className={classNames(open ? "-rotate-180" : "rotate-0", "transform cursor-pointer text-[#BF00FF]")}
-                          />
-                        </span>
-                      </Disclosure.Button>
+                    </button>
 
-                      <Disclosure.Panel as="dd" className="mt-1">
-                        {section.rows.map((row) => (
-                          <div key={`${section.header}-${row.name}`} className="grid grid-cols-7 items-center">
-                            <div className="font-normal text-base items-center py-2 px-2 text-white/70">
-                              {props.translator[row.label]}
-                            </div>
+                    <div className="mx-auto mt-8 max-w-3xl">
+                        <h1 className="text-4xl font-bold leading-tight text-white sm:text-5xl">
+                            {t(
+                                props.translator,
+                                "Simple pricing for growing teams",
+                            )}
+                        </h1>
 
-                            <div className="font-normal text-base flex justify-end text-white/50">
-                              <AiOutlineInfoCircle className="cursor-pointer" />
-                            </div>
+                        <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-white/72">
+                            {t(
+                                props.translator,
+                                "Choose the plan that fits your monthly WhatsApp volume. Clear prices, simple comparison, and no confusion.",
+                            )}
+                        </p>
+                    </div>
+                </div>
 
-                            {plans.map((plan) => {
-                              let value = plan[row.name];
+                <div className="mx-auto mt-10 grid max-w-6xl gap-4 md:grid-cols-3">
+                    <IntroPill>
+                        <span className="font-semibold text-white">
+                            {t(props.translator, "Monthly or annual billing.")}
+                        </span>{" "}
+                        {t(
+                            props.translator,
+                            "Annual billing gives you a monthly saving.",
+                        )}
+                    </IntroPill>
 
-                              if (value === "-") value = "∞";
-                              else if (value === "true") value = <CheckIcon className="h-5 w-5 text-green-500" />;
-                              else if (value === "false") value = <XMarkIcon className="h-5 w-5 text-red-900" />;
+                    <IntroPill>
+                        <span className="font-semibold text-white">
+                            {t(props.translator, "Easy comparison.")}
+                        </span>{" "}
+                        {t(
+                            props.translator,
+                            "You can quickly see which plans include dedicated infrastructure and long-term storage.",
+                        )}
+                    </IntroPill>
 
-                              const content =
-                                (plan.plan === "Starter" || plan.plan === "Pro") &&
-                                  (row.name === "product_category" || row.name === "sale_orders")
-                                  ? `+${value}${props.translator["€/user"]}`
-                                  : value;
+                    <IntroPill>
+                        <span className="font-semibold text-white">
+                            {t(props.translator, "Business is recommended.")}
+                        </span>{" "}
+                        {t(
+                            props.translator,
+                            "It is the best fit for many growing SaaS teams.",
+                        )}
+                    </IntroPill>
+                </div>
 
-                              return (
-                                <div key={`${section.header}-${row.name}-${plan.plan}`} className="flex justify-center">
-                                  {content}
-                                </div>
-                              );
-                            })}
-                          </div>
+                <section className="mt-12">
+                    <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                            <h2 className="text-3xl font-bold text-white">
+                                {t(props.translator, "Plans")}
+                            </h2>
+                            <p className="mt-2 text-base leading-7 text-white/68">
+                                {t(
+                                    props.translator,
+                                    "Start with a clear monthly price. Upgrade when your conversation volume grows.",
+                                )}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="mx-auto grid max-w-[1560px] items-stretch gap-6 xl:grid-cols-2 2xl:grid-cols-4">
+                        {visiblePlans.map((plan) => (
+                            <PlanCard
+                                key={plan.planId}
+                                plan={plan}
+                                translator={props.translator}
+                                onChoose={buySubscription}
+                            />
                         ))}
-                      </Disclosure.Panel>
-                    </>
-                  )}
-                </Disclosure>
-              </div>
-            ))}
-          </div>
-        }
-      </div>
+                    </div>
+                </section>
 
-      {showForm &&
-        <BuyPlan
-          setShowForm={setShowForm}
-          Subscribe={Subscribe}
-          {...props}
-        />
-      }
-    </div>
-  )
+                <section className="mt-14 overflow-hidden rounded-3xl border border-white/12 bg-[#110814]/85 shadow-[0_18px_40px_rgba(0,0,0,0.30)]">
+                    <div className="border-b border-white/10 px-6 py-6 sm:px-8">
+                        <h3 className="text-3xl font-bold text-white">
+                            {t(props.translator, "Quick comparison")}
+                        </h3>
+                        <p className="mt-2 text-base leading-7 text-white/68">
+                            {t(
+                                props.translator,
+                                "See all plans side by side before making your choice.",
+                            )}
+                        </p>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full text-left">
+                            <thead className="bg-white/5">
+                                <tr className="text-sm text-white/75">
+                                    <th className="px-5 py-4 font-semibold sm:px-6">
+                                        {t(props.translator, "Plan")}
+                                    </th>
+                                    <th className="px-5 py-4 font-semibold sm:px-6">
+                                        {t(
+                                            props.translator,
+                                            "Bundled active chats",
+                                        )}
+                                    </th>
+                                    <th className="px-5 py-4 font-semibold sm:px-6">
+                                        {t(props.translator, "Monthly fee")}
+                                    </th>
+                                    <th className="px-5 py-4 font-semibold sm:px-6">
+                                        {t(props.translator, "Annual plan fee")}
+                                    </th>
+                                    <th className="px-5 py-4 font-semibold sm:px-6">
+                                        {t(
+                                            props.translator,
+                                            "Dedicated server",
+                                        )}
+                                    </th>
+                                    <th className="px-5 py-4 font-semibold sm:px-6">
+                                        {t(
+                                            props.translator,
+                                            "30+ day document storage",
+                                        )}
+                                    </th>
+                                    <th className="px-5 py-4 font-semibold text-right sm:px-6">
+                                        {t(props.translator, "Action")}
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <tbody className="divide-y divide-white/10">
+                                {visiblePlans.map((plan) => (
+                                    <tr
+                                        key={`comparison-${plan.planId}`}
+                                        className="text-sm text-white/85"
+                                    >
+                                        <td className="whitespace-nowrap px-5 py-5 font-semibold text-white sm:px-6">
+                                            {t(props.translator, plan.name)}
+                                        </td>
+                                        <td className="whitespace-nowrap px-5 py-5 sm:px-6">
+                                            {plan.monthlyBundleChats}
+                                        </td>
+                                        <td className="whitespace-nowrap px-5 py-5 sm:px-6">
+                                            {formatEuro(plan.monthlyPrice)}
+                                        </td>
+                                        <td className="px-5 py-5 sm:px-6">
+                                            <div className="whitespace-nowrap font-semibold text-white">
+                                                {formatEuro(
+                                                    plan.annualMonthlyPrice,
+                                                )}
+                                            </div>
+                                            <div className="mt-1 whitespace-nowrap text-xs text-emerald-300">
+                                                {t(props.translator, "Save")}{" "}
+                                                {formatEuro(
+                                                    getMonthlySaving(plan),
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-5 py-5 sm:px-6">
+                                            <FeatureStatusBadge
+                                                included={plan.dedicatedServer}
+                                                translator={props.translator}
+                                            />
+                                        </td>
+                                        <td className="px-5 py-5 sm:px-6">
+                                            <FeatureStatusBadge
+                                                included={plan.longTermStorage}
+                                                translator={props.translator}
+                                            />
+                                        </td>
+                                        <td className="px-5 py-5 text-right sm:px-6">
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    buySubscription(plan.planId)
+                                                }
+                                                className="whitespace-nowrap rounded-xl border border-white/20 bg-white/[0.04] px-4 py-2.5 text-sm font-semibold text-white transition hover:border-[#d000ff]/60 hover:bg-white/10"
+                                            >
+                                                {t(props.translator, "Select")}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section className="mt-12 rounded-3xl border border-white/12 bg-[#110814]/85 p-6 sm:p-8">
+                    <div className="max-w-3xl">
+                        <h3 className="text-3xl font-bold text-white">
+                            {t(props.translator, "Optional add-ons")}
+                        </h3>
+                        <p className="mt-2 text-base leading-7 text-white/68">
+                            {t(
+                                props.translator,
+                                "These add-ons are billed monthly and can be added on top of the selected plan.",
+                            )}
+                        </p>
+                    </div>
+
+                    <div className="mt-6 grid gap-5 lg:grid-cols-2">
+                        {ADD_ONS.map((addOn) => (
+                            <div
+                                key={addOn.id}
+                                className="rounded-3xl border border-white/12 bg-white/[0.03] p-6"
+                            >
+                                <div className="flex h-full flex-col gap-5 md:flex-row md:items-start md:justify-between">
+                                    <div className="max-w-xl">
+                                        <h4 className="text-2xl font-bold leading-tight text-white">
+                                            {t(props.translator, addOn.name)}
+                                        </h4>
+                                        <p className="mt-3 text-base leading-7 text-white/72">
+                                            {t(
+                                                props.translator,
+                                                addOn.description,
+                                            )}
+                                        </p>
+                                    </div>
+
+                                    <span className="inline-flex w-fit shrink-0 rounded-full border border-[#d7b3ff]/35 bg-[#d000ff]/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#e9cfff]">
+                                        {formatEuro(addOn.price)} /{" "}
+                                        {t(props.translator, "month")}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-8 rounded-3xl border border-white/12 bg-white/[0.03] p-6">
+                        <h4 className="text-2xl font-bold text-white">
+                            {t(props.translator, "Template pricing")}
+                        </h4>
+
+                        <ul className="mt-4 space-y-3">
+                            {TEMPLATE_PRICING.map((item) => (
+                                <li
+                                    key={item.id}
+                                    className="flex items-start justify-between gap-4 rounded-2xl border border-white/8 bg-black/10 px-4 py-4"
+                                >
+                                    <span className="text-base font-medium text-white/85">
+                                        {t(props.translator, item.name)}
+                                    </span>
+                                    <span className="shrink-0 text-base font-semibold text-white">
+                                        {t(props.translator, item.priceLabel)}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+
+                        <p className="mt-5 text-sm leading-7 text-white/68">
+                            {t(
+                                props.translator,
+                                "For Marketing and Utility templates, ONE applies the same Meta pricing with no markup.",
+                            )}
+                        </p>
+                    </div>
+                </section>
+
+                <section className="mt-12 rounded-3xl border border-white/12 bg-white/5 p-6 sm:p-8">
+                    <div className="grid gap-8 md:grid-cols-2">
+                        <div>
+                            <h4 className="text-3xl font-bold text-white">
+                                One S.r.l.
+                            </h4>
+                            <div className="mt-5 space-y-3 text-base leading-7 text-white/72">
+                                <p>
+                                    <span className="font-semibold text-white">
+                                        {t(props.translator, "VAT")}:
+                                    </span>{" "}
+                                    IT10071971211
+                                </p>
+                                <p>
+                                    <span className="font-semibold text-white">
+                                        {t(props.translator, "REA")}:
+                                    </span>{" "}
+                                    1079019
+                                </p>
+                                <p>
+                                    <span className="font-semibold text-white">
+                                        {t(props.translator, "Tax Code")}:
+                                    </span>{" "}
+                                    10071971211
+                                </p>
+                                <p>
+                                    <span className="font-semibold text-white">
+                                        {t(props.translator, "Certified Email")}
+                                        :
+                                    </span>{" "}
+                                    one@pec.cloud
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4 text-base leading-7 text-white/72">
+                            <p>
+                                <span className="font-semibold text-white">
+                                    {t(props.translator, "Sales email")}:
+                                </span>{" "}
+                                <a
+                                    className="text-white underline decoration-white/20 underline-offset-4 hover:text-[#f0d7ff]"
+                                    href="mailto:sales@otech.one"
+                                >
+                                    sales@otech.one
+                                </a>
+                            </p>
+
+                            <p>
+                                <span className="font-semibold text-white">
+                                    {t(props.translator, "Support email")}:
+                                </span>{" "}
+                                <a
+                                    className="text-white underline decoration-white/20 underline-offset-4 hover:text-[#f0d7ff]"
+                                    href="mailto:support@otech.one"
+                                >
+                                    support@otech.one
+                                </a>
+                            </p>
+
+                            <p>
+                                <span className="font-semibold text-white">
+                                    {t(
+                                        props.translator,
+                                        "Operational office (IT)",
+                                    )}
+                                    :
+                                </span>{" "}
+                                Via Fabio Filzi, 27, 20124 Milano MI
+                            </p>
+
+                            <p>
+                                <span className="font-semibold text-white">
+                                    {t(
+                                        props.translator,
+                                        "Operational office (UK)",
+                                    )}
+                                    :
+                                </span>{" "}
+                                Marlborough House, 298 Regents Park Rd, N3 2SZ
+                                London
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            {showForm && (
+                <BuyPlan
+                    setShowForm={setShowForm}
+                    Subscribe={Subscribe}
+                    translator={props.translator}
+                    stripe_public_key={props.stripe_public_key}
+                />
+            )}
+        </div>
+    );
 }
 
 const BuyPlan = (props) => {
+    const [formErrors] = useState({});
+    const [stripePromise, setStripePromise] = useState(null);
+    const [intent, setIntent] = useState({});
+    const cancelButtonRef = useRef(null);
 
-  const [formErrors, setErrors] = useState({});
-
-  const [stripePromise, setStripePromise] = useState('');
-
-  const [intent, setIntent] = useState({});
-  const [open, setOpen] = useState(true)
-
-  const cancelButtonRef = useRef(null);
-
-  useEffect(() => {
-    setStripePromise(loadStripe(props.stripe_public_key));
-    createStripeSetupIntent();
-  }, []);
-
-  function createStripeSetupIntent() {
-    axios({
-      method: 'get',
-      url: route('createStripeSetupIntent'),
-    })
-      .then((response) => {
-        if (response.status == 200) {
-          setIntent(response.data.intent);
+    useEffect(() => {
+        if (props.stripe_public_key) {
+            setStripePromise(loadStripe(props.stripe_public_key));
+            createStripeSetupIntent();
         }
-      });
-  }
+    }, [props.stripe_public_key]);
 
-  return (
-    <Transition.Root show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-10" initialFocus={cancelButtonRef} onClose={() => { }} >
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black/70 transition-opacity" />
-        </Transition.Child>
+    async function createStripeSetupIntent() {
+        try {
+            const response = await axios({
+                method: "get",
+                url: route("createStripeSetupIntent"),
+            });
 
-        <div className="fixed z-10 inset-0 overflow-y-auto">
-          <div className="flex items-end sm:items-center justify-center min-h-full p-4 text-center sm:p-0">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              enterTo="opacity-100 translate-y-0 sm:scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            if (response.status === 200) {
+                setIntent(response.data.intent || {});
+            }
+        } catch (error) {
+            notie.alert({
+                type: "error",
+                text:
+                    error?.response?.data?.message ||
+                    t(props.translator, "Unable to initialize card setup."),
+                time: 5,
+            });
+        }
+    }
+
+    return (
+        <Transition.Root show={true} as={Fragment}>
+            <Dialog
+                as="div"
+                className="relative z-20"
+                initialFocus={cancelButtonRef}
+                onClose={() => props.setShowForm(false)}
             >
-              <Dialog.Panel className="relative rounded-2xl border border-white/10 bg-[#120815] text-left overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.55)] transform transition-all sm:my-8 sm:max-w-xl sm:w-full">
-                <div>
-                  <div className="bg-white/5 px-4 pt-2 pb-2 sm:p-4 sm:pb-4">
-                    <div className="sm:flex sm:items-start">
-                      <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                        <Dialog.Title as="h3" className="text-lg leading-6 font-bold text-white">
-                          {props.translator['Add your Card']}
-                        </Dialog.Title>
-                      </div>
+                <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                >
+                    <div className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity" />
+                </Transition.Child>
+
+                <div className="fixed inset-0 z-20 overflow-y-auto">
+                    <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                        <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-300"
+                            enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                            enterTo="opacity-100 translate-y-0 sm:scale-100"
+                            leave="ease-in duration-200"
+                            leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                            leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                        >
+                            <Dialog.Panel className="relative w-full max-w-xl transform overflow-hidden rounded-3xl border border-white/12 bg-[#120815] text-left shadow-[0_30px_60px_rgba(0,0,0,0.55)] transition-all">
+                                <div className="border-b border-white/10 bg-white/5 px-6 py-5">
+                                    <Dialog.Title className="text-2xl font-bold text-white">
+                                        {t(props.translator, "Add your card")}
+                                    </Dialog.Title>
+                                    <p className="mt-2 text-sm leading-6 text-white/65">
+                                        {t(
+                                            props.translator,
+                                            "Enter your payment card to continue with the selected plan.",
+                                        )}
+                                    </p>
+                                </div>
+
+                                {Object.keys(formErrors).length > 0 && (
+                                    <div className="p-4">
+                                        <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-200">
+                                            {Object.values(formErrors).map(
+                                                (error, idx) => (
+                                                    <p key={idx}>{error}</p>
+                                                ),
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="p-6 sm:p-8">
+                                    {stripePromise && intent.client_secret ? (
+                                        <Elements
+                                            stripe={stripePromise}
+                                            options={{
+                                                clientSecret:
+                                                    intent.client_secret,
+                                            }}
+                                        >
+                                            <Form
+                                                Subscribe={props.Subscribe}
+                                                setShowForm={props.setShowForm}
+                                                translator={props.translator}
+                                            />
+                                        </Elements>
+                                    ) : (
+                                        <div className="text-base text-white/65">
+                                            {t(
+                                                props.translator,
+                                                "Loading payment form...",
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="border-t border-white/10 bg-white/5 px-6 py-4 sm:flex sm:flex-row-reverse">
+                                    <button
+                                        type="button"
+                                        className="mt-3 inline-flex w-full justify-center rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-base font-semibold text-white/75 shadow-sm hover:bg-white/10 sm:ml-3 sm:mt-0 sm:w-auto"
+                                        onClick={() => props.setShowForm(false)}
+                                        ref={cancelButtonRef}
+                                    >
+                                        {t(props.translator, "Cancel")}
+                                    </button>
+                                </div>
+                            </Dialog.Panel>
+                        </Transition.Child>
                     </div>
-                  </div>
-
-                  {Object.keys(formErrors) > 0 ?
-                    <div className='p-4'>
-                      <ValidationErrors errors={formErrors} />
-                    </div>
-                    : ''}
-
-                  <div className='p-8 space-y-4'>
-                    {stripePromise && intent.client_secret ?
-                      <Elements stripe={stripePromise} options={{ clientSecret: intent.client_secret }}>
-                        <Form
-                          Subscribe={props.Subscribe}
-                          {...props}
-                        />
-                      </Elements>
-                      : ''}
-                  </div>
-
-                  <div className="bg-white/5 px-4 py-3 sm:px-3 sm:flex sm:flex-row-reverse">
-                    <button
-                      type="button"
-                      className="mt-3 w-full inline-flex justify-center rounded-md border border-white/20 shadow-sm px-4 py-2 bg-white/5 text-base font-medium text-white/70 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#BF00FF]/40 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                      onClick={() => props.setShowForm(false)}
-                      ref={cancelButtonRef}
-                    >
-                      {props.translator['Cancel']}
-                    </button>
-                  </div>
                 </div>
-              </Dialog.Panel>
-            </Transition.Child>
-          </div>
-        </div>
-      </Dialog>
-    </Transition.Root>
-  )
-}
-
-const Form = (props) => {
-  const stripe = useStripe();
-
-  const elements = useElements();
-
-  const [loading, setLoading] = useState(false);
-  const cardElementOptions = {
-    style: {
-      base: {
-        color: "#ffffff",
-        fontSize: "16px",
-        fontFamily: "inherit",
-        "::placeholder": {
-          color: "rgba(255,255,255,0.5)"
-        }
-      },
-      invalid: {
-        color: "#fca5a5"
-      }
-    }
-  };
-
-  const handleSubmit = async (event) => {
-
-    event.preventDefault();
-
-    if (!stripe || !elements) {
-      // Stripe.js has not yet loaded.
-      return;
-    }
-
-    const element = elements.getElement(CardElement);
-
-    setLoading(true);
-    const result = await stripe.createPaymentMethod({
-      type: 'card',
-      card: element,
-    });
-
-    if (result.error) {
-      notie.alert({ type: 'error', text: result.error.message, time: 5 });
-      setLoading(false);
-    } else {
-      nProgress.start(0.5);
-      nProgress.inc(0.2);
-
-      axios({
-        method: 'post',
-        url: route('relatePaymentMethod'),
-        data: {
-          id: result.paymentMethod.id,
-        }
-      })
-        .then((response) => {
-          nProgress.done(true);
-          notie.alert({ type: 'success', text: response.data.message, time: 5 });
-          setLoading(false);
-
-          if (response.data.status == true) {
-            props.Subscribe();
-            props.setShowForm(false);
-          }
-        });
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <div className="rounded-lg border border-white/15 bg-[#0F0B1A] p-3">
-        <CardElement options={cardElementOptions} />
-      </div>
-      <div className='pt-10'>
-        <button
-          className="w-full rounded-md px-8 py-4 flex items-center justify-center text-lg leading-6 font-semibold bg-[#BF00FF] text-white shadow-[0_12px_25px_rgba(191,0,255,0.35)] transition hover:bg-[#a100df] md:px-10"
-          disabled={!stripe || loading}
-        >
-          {loading ? 'Loading...' : 'Subscribe'}
-        </button>
-      </div>
-    </form>
-  );
+            </Dialog>
+        </Transition.Root>
+    );
 };
 
+const Form = (props) => {
+    const stripe = useStripe();
+    const elements = useElements();
+    const [loading, setLoading] = useState(false);
 
+    const cardElementOptions = {
+        style: {
+            base: {
+                color: "#ffffff",
+                fontSize: "18px",
+                fontFamily: "inherit",
+                "::placeholder": {
+                    color: "rgba(255,255,255,0.5)",
+                },
+            },
+            invalid: {
+                color: "#fca5a5",
+            },
+        },
+    };
 
+    async function handleSubmit(event) {
+        event.preventDefault();
 
+        if (!stripe || !elements) return;
 
+        const element = elements.getElement(CardElement);
 
+        setLoading(true);
 
+        const result = await stripe.createPaymentMethod({
+            type: "card",
+            card: element,
+        });
 
+        if (result.error) {
+            notie.alert({
+                type: "error",
+                text: result.error.message,
+                time: 5,
+            });
+            setLoading(false);
+            return;
+        }
 
+        try {
+            nProgress.start();
+            nProgress.inc(0.2);
 
+            const response = await axios({
+                method: "post",
+                url: route("relatePaymentMethod"),
+                data: {
+                    id: result.paymentMethod.id,
+                },
+            });
 
+            nProgress.done(true);
 
+            notie.alert({
+                type: "success",
+                text: response.data.message,
+                time: 5,
+            });
 
+            if (response.data.status === true) {
+                await props.Subscribe();
+                props.setShowForm(false);
+            }
+        } catch (error) {
+            nProgress.done(true);
+
+            notie.alert({
+                type: "error",
+                text:
+                    error?.response?.data?.message ||
+                    t(props.translator, "Unable to save the payment method."),
+                time: 5,
+            });
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <label className="mb-3 block text-sm font-semibold uppercase tracking-[0.14em] text-white/60">
+                {t(props.translator, "Card details")}
+            </label>
+
+            <div className="rounded-2xl border border-white/15 bg-[#0F0B1A] p-4">
+                <CardElement options={cardElementOptions} />
+            </div>
+
+            <div className="pt-8">
+                <button
+                    type="submit"
+                    disabled={!stripe || loading}
+                    className="flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-[#ff2bd6] to-[#9d00ff] px-8 py-4 text-lg font-bold text-white shadow-[0_12px_25px_rgba(191,0,255,0.35)] transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                    {loading
+                        ? t(props.translator, "Loading...")
+                        : t(props.translator, "Subscribe")}
+                </button>
+            </div>
+        </form>
+    );
+};

@@ -2,11 +2,9 @@ import React, { useEffect, useState, useRef, Fragment } from "react";
 import { Head, Link } from "@inertiajs/react";
 import MessageList from "./MessageList";
 import Authenticated from "../../Layouts/Authenticated";
-import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
 import ContactSelection from "@/Components/ContactSelection";
 import notie from "notie";
-import Filter from "@/Components/Views/List/Filter2";
 import { router as Inertia } from "@inertiajs/react";
 import nProgress from "nprogress";
 import ChatBox from "./ChatBox";
@@ -38,7 +36,66 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
 
-const NEW_MESSAGE_LABEL = "New Message";
+const DEFAULT_NEW_MESSAGE_LABEL = "New Message";
+const WHATSAPP_NEW_CHAT_LABEL = "New chat";
+
+function extractRelationFilterValues(filterCondition) {
+    if (!filterCondition) {
+        return { tagValue: "", listValue: "" };
+    }
+
+    try {
+        const parsedFilter = JSON.parse(filterCondition);
+        const conditions = parsedFilter?.[0]?.AND ?? [];
+        const tagCondition = conditions.find(
+            (condition) => condition.field_name === "tag_relation",
+        );
+        const listCondition = conditions.find(
+            (condition) => condition.field_name === "list_relation",
+        );
+
+        return {
+            tagValue: tagCondition?.condition_value
+                ? String(tagCondition.condition_value)
+                : "",
+            listValue: listCondition?.condition_value
+                ? String(listCondition.condition_value)
+                : "",
+        };
+    } catch {
+        return { tagValue: "", listValue: "" };
+    }
+}
+
+function buildRelationFilterCondition(tagValue = "", listValue = "") {
+    const conditions = [];
+
+    if (tagValue) {
+        conditions.push({
+            field_name: "tag_relation",
+            field_type: "tag",
+            record_condition: "equal",
+            condition_value: String(tagValue),
+            condition_operator: "AND",
+        });
+    }
+
+    if (listValue) {
+        conditions.push({
+            field_name: "list_relation",
+            field_type: "tag",
+            record_condition: "equal",
+            condition_value: String(listValue),
+            condition_operator: "AND",
+        });
+    }
+
+    if (!conditions.length) {
+        return "";
+    }
+
+    return JSON.stringify([{ AND: conditions }]);
+}
 
 function ChatList(props) {
     const [selectedContact, setSelectedContact] = useState(
@@ -55,8 +112,13 @@ function ChatList(props) {
     });
     const [selectedAccount, setSelectedAccount] = useState("");
     const [searchKey, setSearchKey] = useState(props.search);
+    const [activeChatFilterCondition, setActiveChatFilterCondition] = useState(
+        props.filter_condition || "",
+    );
+    const [activeChatFilterId, setActiveChatFilterId] = useState(
+        props.filter_id || "",
+    );
     const channels = {
-        all: { label: props.translator["All Channel"], icon: ApplicationLogo },
         whatsapp: { label: "WhatsApp", icon: WhatsAppIcon },
         instagram: { label: "Instagram", icon: InstaIcon },
         facebook: { label: "Facebook", icon: fbIcon },
@@ -119,6 +181,18 @@ function ChatList(props) {
     useEffect(() => {
         setCounts(props.counts || { all: 0, unread: 0, archived: 0 });
     }, [props.counts]);
+
+    useEffect(() => {
+        setSearchKey(props.search || "");
+    }, [props.search]);
+
+    useEffect(() => {
+        setActiveChatFilterCondition(props.filter_condition || "");
+    }, [props.filter_condition]);
+
+    useEffect(() => {
+        setActiveChatFilterId(props.filter_id || "");
+    }, [props.filter_id]);
 
     useEffect(() => {
         if (containerCategory !== "instagram" || !selectedContact) {
@@ -247,6 +321,70 @@ function ChatList(props) {
         */
     }
 
+    function getChatListUrl({
+        category = containerCategory,
+        contactId = "",
+        search = "",
+        tab = current_tab,
+        filterCondition = activeChatFilterCondition,
+        filterId = activeChatFilterId,
+        fetchContact = false,
+        pageNumber = "",
+    } = {}) {
+        let url = route("chat_list", {
+            ...(contactId ? { contact_id: contactId } : {}),
+            ...(category ? { category } : {}),
+            ...(search ? { search } : {}),
+        });
+
+        const params = [];
+        const allowRelationFilter = category === "whatsapp";
+
+        if (allowRelationFilter && filterCondition) {
+            params.push(`filter=${encodeURIComponent(filterCondition)}`);
+        } else if (allowRelationFilter && filterId && filterId !== "All") {
+            params.push(`filter_id=${encodeURIComponent(filterId)}`);
+        }
+
+        if (tab) {
+            params.push(`mode=${encodeURIComponent(tab)}`);
+        }
+
+        if (fetchContact) {
+            params.push("fetchContact=true");
+        }
+
+        if (pageNumber) {
+            params.push(`page=${encodeURIComponent(pageNumber)}`);
+        }
+
+        if (params.length) {
+            url += `${url.includes("?") ? "&" : "?"}${params.join("&")}`;
+        }
+
+        return url;
+    }
+
+    function updateWhatsAppRelationFilter(nextTagValue = "", nextListValue = "") {
+        const nextFilterCondition = buildRelationFilterCondition(
+            nextTagValue,
+            nextListValue,
+        );
+
+        setActiveChatFilterCondition(nextFilterCondition);
+        setActiveChatFilterId("");
+        setSelectedContact("");
+        setChatList({});
+        setPage(1);
+        setContainerCategory("whatsapp");
+
+        fetchContactList(true, current_tab, "whatsapp", {
+            search: searchKey,
+            filterCondition: nextFilterCondition,
+            filterId: "",
+        });
+    }
+
     function handleKeyUp(e) {
         if (e.key == "Enter" && !e.shiftKey && containerCategory) {
             sendMessage();
@@ -275,17 +413,6 @@ function ChatList(props) {
         nProgress.start(0.5);
         nProgress.inc(0.2);
         setMessages({});
-        var url = route("chat_list", {
-            contact_id: contact,
-            category: channel,
-        });
-        if (props.filter_id) {
-            url = url + "&filter_id=" + props.filter_id;
-        }
-        if (current_tab) {
-            url += "&mode=" + current_tab;
-        }
-
         var url = route("get_message_list", {
             contact_id: contact,
             category: channel,
@@ -309,18 +436,17 @@ function ChatList(props) {
     }
 
     function selectContactCategory(name) {
-        var url = route("chat_list", {
-            contact_id: selectedContact,
+        const url = getChatListUrl({
+            contactId: selectedContact,
             category: name,
+            search: searchKey,
+            tab: current_tab,
+            filterCondition:
+                name === "whatsapp" ? activeChatFilterCondition : "",
+            filterId: name === "whatsapp" ? activeChatFilterId : "",
         });
-        if (props.filter_id) {
-            url = url + "&filter_id=" + props.filter_id;
-        }
-        if (current_tab) {
-            url += "&mode=" + current_tab;
-        }
-        Inertia.get(url, {
-            onSuccess: (response) => {},
+        Inertia.get(url, {}, {
+            onSuccess: () => {},
         });
     }
 
@@ -334,41 +460,64 @@ function ChatList(props) {
         reset = false,
         tab = current_tab,
         category = containerCategory,
+        overrides = {},
     ) {
         setPageLoad(true);
         const targetPage = reset ? 1 : page;
-        var url = route("chat_list", { category });
-        if (props.filter_id) {
-            url = url + "&filter_id=" + props.filter_id;
-        }
-        if (tab) {
-            url += "&mode=" + tab;
-        }
-        url += "&fetchContact=true&page=" + targetPage;
-
-        return Axios.get(url).then((response) => {
-            if (response.data.status) {
-                setChatList((previousList) =>
-                    reset
-                        ? response.data.contact_list
-                        : { ...previousList, ...response.data.contact_list },
-                );
-                setCounts(
-                    response.data.counts || {
-                        all: 0,
-                        unread: 0,
-                        archived: 0,
-                    },
-                );
-                setHasMore(Boolean(response.data.has_more));
-                if (reset) {
-                    setPage(1);
-                }
-                setPageLoad(false);
-            }
-
-            return response.data;
+        const effectiveSearch =
+            overrides.search !== undefined ? overrides.search : searchKey;
+        const effectiveFilterCondition =
+            overrides.filterCondition !== undefined
+                ? overrides.filterCondition
+                : category === "whatsapp"
+                  ? activeChatFilterCondition
+                  : "";
+        const effectiveFilterId =
+            overrides.filterId !== undefined
+                ? overrides.filterId
+                : category === "whatsapp"
+                  ? activeChatFilterId
+                  : "";
+        const url = getChatListUrl({
+            category,
+            search: effectiveSearch,
+            tab,
+            fetchContact: true,
+            pageNumber: targetPage,
+            filterCondition: effectiveFilterCondition,
+            filterId: effectiveFilterId,
         });
+
+        return Axios.get(url)
+            .then((response) => {
+                if (response.data.status) {
+                    setChatList((previousList) =>
+                        reset
+                            ? response.data.contact_list
+                            : {
+                                  ...previousList,
+                                  ...response.data.contact_list,
+                              },
+                    );
+                    setCounts(
+                        response.data.counts || {
+                            all: 0,
+                            unread: 0,
+                            archived: 0,
+                        },
+                    );
+                    setHasMore(Boolean(response.data.has_more));
+                    if (reset) {
+                        setPage(1);
+                    }
+                }
+
+                return response.data;
+            })
+            .catch(() => ({ status: false }))
+            .finally(() => {
+                setPageLoad(false);
+            });
     }
 
     useEffect(() => {
@@ -411,15 +560,11 @@ function ChatList(props) {
 
     function handleSearchContact(e) {
         if (e.key === "Enter") {
-            var url = route("chat_list", { search: searchKey });
-            if (props.filter_id) {
-                url = url + "&filter_id=" + props.filter_id;
-            }
-            if (current_tab) {
-                url += "&mode=" + current_tab;
-            }
-            Inertia.get(url, {
-                onSuccess: (response) => {},
+            setSelectedContact("");
+            setChatList({});
+            setPage(1);
+            fetchContactList(true, current_tab, containerCategory, {
+                search: searchKey,
             });
         }
     }
@@ -551,6 +696,26 @@ function ChatList(props) {
     const activeContact = selectedContact
         ? chatList["contact_id_" + selectedContact]
         : null;
+    const showNewMessageButton = !["instagram", "facebook"].includes(
+        containerCategory,
+    );
+    const showWhatsAppQuickFilters = containerCategory === "whatsapp";
+    const relationFilterValues = extractRelationFilterValues(
+        activeChatFilterCondition,
+    );
+    const selectedTagValue = relationFilterValues.tagValue;
+    const selectedListValue = relationFilterValues.listValue;
+    const tagOptions = props.filter?.tag_list || [];
+    const listOptions = props.filter?.category_list || [];
+    const selectedTagLabel =
+        tagOptions.find((tag) => String(tag.value) === selectedTagValue)
+            ?.label || props.translator.Tag;
+    const selectedListLabel =
+        listOptions.find((list) => String(list.value) === selectedListValue)
+            ?.label || props.translator.List;
+    const newMessageLabel = showWhatsAppQuickFilters
+        ? WHATSAPP_NEW_CHAT_LABEL
+        : DEFAULT_NEW_MESSAGE_LABEL;
 
     return (
         <Authenticated
@@ -607,15 +772,15 @@ function ChatList(props) {
                                 </div>
                             </div>
                         </div>
-                        <div className="mt-2 flex items-center gap-3">
-                            <div className="flex h-12 w-12 items-center justify-center">
-                                <Filter
-                                    module="Contact"
-                                    filter={props.filter}
-                                    translator={props.translator}
-                                    is_chat={true}
-                                />
-                            </div>
+                        <div
+                            className={classNames(
+                                "mt-2",
+                                showWhatsAppQuickFilters
+                                    ? "space-y-2.5"
+                                    : "flex items-center gap-3",
+                            )}
+                        >
+                            <div className="flex items-center gap-3">
                             <div className="relative flex-1">
                                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                                     <MagnifyingGlassIcon
@@ -629,41 +794,200 @@ function ChatList(props) {
                                     onChange={(e) =>
                                         setSearchKey(e.target.value)
                                     }
-                                    onKeyPress={(e) => handleSearchContact(e)}
-                                    className="h-12 w-full rounded-2xl border border-white/7 bg-white/[0.05] pl-12 pr-4 text-sm text-white placeholder-white/45 focus:border-[#BF00FF]/40 focus:ring-[#BF00FF]/40"
+                                    onKeyDown={(e) => handleSearchContact(e)}
+                                    className={classNames(
+                                        "w-full border border-white/7 bg-white/[0.05] pl-12 pr-4 text-sm text-white placeholder-white/45 focus:border-[#BF00FF]/40 focus:ring-[#BF00FF]/40",
+                                        showWhatsAppQuickFilters
+                                            ? "h-11 rounded-[1.15rem]"
+                                            : "h-12 rounded-2xl",
+                                    )}
                                     placeholder="Search"
                                 />
                             </div>
-                            <button
-                                type="button"
-                                className="chat-new-message-button shrink-0 focus:outline-none focus:ring-2 focus:ring-[#BF00FF]/40"
-                                onClick={() => setShowForm(true)}
-                            >
-                                <span className="chat-new-message-button__outline" />
-                                <span className="chat-new-message-button__inner" />
-                                <span className="chat-new-message-button__state">
-                                    <span className="chat-new-message-button__icon">
-                                        <PaperAirplaneIcon className="h-4 w-4" />
+                            {showNewMessageButton && (
+                                <button
+                                    type="button"
+                                    className="chat-new-message-button shrink-0 focus:outline-none focus:ring-2 focus:ring-[#BF00FF]/40"
+                                    onClick={() => setShowForm(true)}
+                                >
+                                    <span className="chat-new-message-button__outline" />
+                                    <span className="chat-new-message-button__inner" />
+                                    <span className="chat-new-message-button__state">
+                                        <span className="chat-new-message-button__icon">
+                                            <PaperAirplaneIcon className="h-4 w-4" />
+                                        </span>
+                                        <span className="chat-new-message-button__label">
+                                            {newMessageLabel.split("").map(
+                                                (char, index) => (
+                                                    <span
+                                                        key={`${char}-${index}`}
+                                                        style={{ "--i": index }}
+                                                        className="chat-new-message-button__letter"
+                                                    >
+                                                        {char === " "
+                                                            ? "\u00A0"
+                                                            : char}
+                                                    </span>
+                                                ),
+                                            )}
+                                        </span>
                                     </span>
-                                    <span className="chat-new-message-button__label">
-                                        {NEW_MESSAGE_LABEL.split("").map(
-                                            (char, index) => (
-                                                <span
-                                                    key={`${char}-${index}`}
-                                                    style={{ "--i": index }}
-                                                    className="chat-new-message-button__letter"
-                                                >
-                                                    {char === " "
-                                                        ? "\u00A0"
-                                                        : char}
+                                </button>
+                            )}
+                            </div>
+                            {showWhatsAppQuickFilters && (
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <Dropdown>
+                                        <Dropdown.Trigger>
+                                            <button
+                                                type="button"
+                                                className={classNames(
+                                                    "inline-flex h-9 min-w-[5.75rem] max-w-[7.5rem] items-center justify-between gap-2 rounded-xl border px-3 text-[0.82rem] font-medium text-white transition",
+                                                    selectedTagValue
+                                                        ? "border-[#BF00FF]/40 bg-[linear-gradient(135deg,rgba(255,79,216,0.16),rgba(163,30,255,0.12))]"
+                                                        : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]",
+                                                )}
+                                            >
+                                                <span className="truncate">
+                                                    {selectedTagLabel}
                                                 </span>
-                                            ),
-                                        )}
-                                    </span>
-                                </span>
-                            </button>
+                                                <ChevronDownIcon className="h-4 w-4 shrink-0 text-white/50" />
+                                            </button>
+                                        </Dropdown.Trigger>
+                                        <Dropdown.Content
+                                            align="left"
+                                            width="64"
+                                            contentClasses="overflow-hidden border border-white/10 bg-[#140816]/95 py-2 backdrop-blur-xl"
+                                        >
+                                            <div className="max-h-72 overflow-y-auto px-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        updateWhatsAppRelationFilter(
+                                                            "",
+                                                            selectedListValue,
+                                                        )
+                                                    }
+                                                    className={classNames(
+                                                        "flex w-full items-center rounded-xl px-3 py-2 text-left text-sm transition",
+                                                        selectedTagValue
+                                                            ? "text-white/80 hover:bg-white/[0.06] hover:text-white"
+                                                            : "bg-white/[0.08] text-white",
+                                                    )}
+                                                >
+                                                    All tags
+                                                </button>
+                                                {tagOptions.map((tag) => (
+                                                    <button
+                                                        key={`tag-${tag.value}`}
+                                                        type="button"
+                                                        onClick={() =>
+                                                            updateWhatsAppRelationFilter(
+                                                                String(
+                                                                    tag.value,
+                                                                ),
+                                                                selectedListValue,
+                                                            )
+                                                        }
+                                                        className={classNames(
+                                                            "mt-1 flex w-full items-center rounded-xl px-3 py-2 text-left text-sm transition",
+                                                            String(tag.value) ===
+                                                                selectedTagValue
+                                                                ? "bg-[linear-gradient(135deg,rgba(255,79,216,0.24),rgba(163,30,255,0.18))] text-white"
+                                                                : "text-white/80 hover:bg-white/[0.06] hover:text-white",
+                                                        )}
+                                                    >
+                                                        {tag.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </Dropdown.Content>
+                                    </Dropdown>
+
+                                    <Dropdown>
+                                        <Dropdown.Trigger>
+                                            <button
+                                                type="button"
+                                                className={classNames(
+                                                    "inline-flex h-9 min-w-[5.75rem] max-w-[7.5rem] items-center justify-between gap-2 rounded-xl border px-3 text-[0.82rem] font-medium text-white transition",
+                                                    selectedListValue
+                                                        ? "border-[#BF00FF]/40 bg-[linear-gradient(135deg,rgba(255,79,216,0.16),rgba(163,30,255,0.12))]"
+                                                        : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]",
+                                                )}
+                                            >
+                                                <span className="truncate">
+                                                    {selectedListLabel}
+                                                </span>
+                                                <ChevronDownIcon className="h-4 w-4 shrink-0 text-white/50" />
+                                            </button>
+                                        </Dropdown.Trigger>
+                                        <Dropdown.Content
+                                            align="left"
+                                            width="64"
+                                            contentClasses="overflow-hidden border border-white/10 bg-[#140816]/95 py-2 backdrop-blur-xl"
+                                        >
+                                            <div className="max-h-72 overflow-y-auto px-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        updateWhatsAppRelationFilter(
+                                                            selectedTagValue,
+                                                            "",
+                                                        )
+                                                    }
+                                                    className={classNames(
+                                                        "flex w-full items-center rounded-xl px-3 py-2 text-left text-sm transition",
+                                                        selectedListValue
+                                                            ? "text-white/80 hover:bg-white/[0.06] hover:text-white"
+                                                            : "bg-white/[0.08] text-white",
+                                                    )}
+                                                >
+                                                    All lists
+                                                </button>
+                                                {listOptions.map((list) => (
+                                                    <button
+                                                        key={`list-${list.value}`}
+                                                        type="button"
+                                                        onClick={() =>
+                                                            updateWhatsAppRelationFilter(
+                                                                selectedTagValue,
+                                                                String(
+                                                                    list.value,
+                                                                ),
+                                                            )
+                                                        }
+                                                        className={classNames(
+                                                            "mt-1 flex w-full items-center rounded-xl px-3 py-2 text-left text-sm transition",
+                                                            String(
+                                                                list.value,
+                                                            ) ===
+                                                                selectedListValue
+                                                                ? "bg-[linear-gradient(135deg,rgba(255,79,216,0.24),rgba(163,30,255,0.18))] text-white"
+                                                                : "text-white/80 hover:bg-white/[0.06] hover:text-white",
+                                                        )}
+                                                    >
+                                                        {list.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </Dropdown.Content>
+                                    </Dropdown>
+
+                                    {(selectedTagValue || selectedListValue) && (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                updateWhatsAppRelationFilter()
+                                            }
+                                            className="inline-flex h-9 items-center rounded-xl border border-white/10 bg-white/[0.03] px-3 text-[0.82rem] font-medium text-white/70 transition hover:bg-white/[0.06] hover:text-white"
+                                        >
+                                            Clear
+                                        </button>
+                                    )}
+                                </div>
+                            )}
                         </div>
-                        <div className="mt-4 overflow-hidden rounded-[1.55rem] bg-[linear-gradient(180deg,rgba(29,9,41,0.98),rgba(22,8,31,0.94))] shadow-[0_18px_40px_rgba(0,0,0,0.28)] ring-1 ring-white/5">
+                        <div className="mt-3 overflow-hidden rounded-[1.55rem] bg-[linear-gradient(180deg,rgba(29,9,41,0.98),rgba(22,8,31,0.94))] shadow-[0_18px_40px_rgba(0,0,0,0.28)] ring-1 ring-white/5">
                             <div>
                                 <nav
                                     className="grid grid-cols-3 gap-0"
@@ -678,15 +1002,31 @@ function ChatList(props) {
                                             }
                                             className={classNames(
                                                 tab.id == current_tab
-                                                    ? "bg-[linear-gradient(135deg,rgba(255,79,216,0.34),rgba(163,30,255,0.32))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_12px_30px_rgba(127,0,190,0.22)]"
+                                                    ? "bg-[linear-gradient(135deg,rgba(255,79,216,0.28),rgba(163,30,255,0.26))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_22px_rgba(127,0,190,0.16)]"
                                                     : "text-white/72 hover:bg-white/[0.04] hover:text-white",
-                                                "flex min-h-[4.35rem] flex-col justify-center px-5 py-2.5 text-left transition first:rounded-l-[1.55rem] last:rounded-r-[1.55rem]",
+                                                showWhatsAppQuickFilters
+                                                    ? "flex min-h-[3.4rem] flex-col justify-center px-4 py-1.5 text-left transition first:rounded-l-[1.55rem] last:rounded-r-[1.55rem]"
+                                                    : "flex min-h-[4.35rem] flex-col justify-center px-5 py-2.5 text-left transition first:rounded-l-[1.55rem] last:rounded-r-[1.55rem]",
                                             )}
                                         >
-                                            <span className="text-[0.9rem] font-semibold leading-tight">
+                                            <span
+                                                className={classNames(
+                                                    "font-semibold leading-tight",
+                                                    showWhatsAppQuickFilters
+                                                        ? "text-[0.82rem]"
+                                                        : "text-[0.9rem]",
+                                                )}
+                                            >
                                                 {tab.name}
                                             </span>
-                                            <span className="mt-1.5 text-[0.8rem] font-medium text-white/50">
+                                            <span
+                                                className={classNames(
+                                                    "font-medium text-white/50",
+                                                    showWhatsAppQuickFilters
+                                                        ? "mt-1 text-[0.75rem]"
+                                                        : "mt-1.5 text-[0.8rem]",
+                                                )}
+                                            >
                                                 {counts[tab.id]}
                                             </span>
                                         </button>
@@ -805,11 +1145,18 @@ function ChatList(props) {
                                     {Object.entries(chatList).length == 0 && (
                                         <li>
                                             <div className="flex items-center justify-center px-6 py-8 text-center text-sm text-white/45">
-                                                {
+                                                {pageLoading ? (
+                                                    <span
+                                                        className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/5"
+                                                        aria-label="Loading conversations"
+                                                    >
+                                                        <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-[#ff7de5]" />
+                                                    </span>
+                                                ) : (
                                                     props.translator[
                                                         "Conversation not start yet."
                                                     ]
-                                                }
+                                                )}
                                             </div>
                                         </li>
                                     )}
@@ -849,7 +1196,8 @@ function ChatList(props) {
                                                         href={route(
                                                             "detailContact",
                                                             {
-                                                                id: selectedContact,
+                                                                id:
+                                                                    activeContact.contact_id,
                                                             },
                                                         )}
                                                         className="cursor-pointer text-lg font-semibold text-white no-underline drop-shadow-[0_1px_10px_rgba(0,0,0,0.32)] hover:text-[#ff92eb]"
