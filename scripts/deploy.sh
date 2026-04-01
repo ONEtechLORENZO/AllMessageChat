@@ -39,7 +39,5 @@ php artisan route:cache
 php artisan view:cache
 php artisan storage:link || true
 
-sudo chown -R www-data:www-data storage bootstrap/cache || true
-sudo chmod -R ug+rwX storage bootstrap/cache || true
 
 echo "Deploy finished."
