@@ -38,6 +38,7 @@ use Brick\PhoneNumber\PhoneNumber;
 use Brick\PhoneNumber\PhoneNumberParseException;
 use App\Models\InteractiveMessage;
 use App\Jobs\SyncInstagramMessagesJob;
+use App\Jobs\SendChatMessageJob;
 use App\Services\GmailService;
 use App\Services\MetaIntegrationService;
 use App\Services\Templates\TemplateAdapterException;
@@ -2096,6 +2097,10 @@ class MsgController extends Controller
         $attachment = isset($_FILES['attachment']) ? $_FILES['attachment'] : '';
 
         $document = '';
+        $attachment_name = '';
+        $path = '';
+        $mimeType = '';
+        $type = [];
         // Attachment handling
         if ($request->hasFile('attachment')) {
             $attachment = $request->file('attachment');
@@ -2131,6 +2136,84 @@ class MsgController extends Controller
             $document = array_merge($document, $docParams);
 
             //log::info(['Docuemnt data ' => $document ]);
+        } elseif ($request->filled('attachment_path')) {
+            $attachmentPath = (string) $request->input('attachment_path');
+            $attachment_name = (string) ($request->input('attachment_name') ?: basename($attachmentPath));
+            $path = dirname($attachmentPath);
+            $mimeType = (string) ($request->input('attachment_mime') ?: 'application/octet-stream');
+            $type = explode('/', $mimeType);
+            $document = [
+                'type' => $type[0],
+                'url' => url('uploads/sent_files/' . $attachment_name),
+                'caption' => (string) $request->content,
+            ];
+
+            if ($type[0] == 'image') {
+                $docParams = [
+                    'previewUrl' => url('uploads/sent_files/' . $attachment_name),
+                    'originalUrl' => url('uploads/sent_files/' . $attachment_name),
+                ];
+            } else {
+                $docParams = [
+                    'url' => url('uploads/sent_files/' . $attachment_name),
+                    'filename' => (string) $request->content,
+                ];
+            }
+            if ($type[0] != 'image' && $type[0] != 'video') {
+                $document['type'] = ($account->service_engine == 'facebook') ? 'document' : 'file';
+                unset($document['caption']);
+            }
+            $document = array_merge($document, $docParams);
+            $attachment = true;
+        }
+
+        if (
+            in_array($request->channel, ['instagram', 'facebook', 'email'], true)
+            && ! $request->boolean('skip_queue')
+            && config('queue.default') !== 'sync'
+        ) {
+            $payload = $request->only([
+                'account_id',
+                'destination',
+                'channel',
+                'content',
+                'template_id',
+                'catalog_id',
+                'product_retailer_id',
+                'template_options',
+                'template_type',
+                'conversation_id',
+                'email_subject',
+            ]);
+
+            if ($attachment && $attachment_name && $path) {
+                $payload['attachment_path'] = $path . '/' . $attachment_name;
+                $payload['attachment_name'] = $attachment_name;
+                $payload['attachment_mime'] = $mimeType ?: 'application/octet-stream';
+            }
+
+            try {
+                SendChatMessageJob::dispatch($user->id, $payload)->afterResponse();
+            } catch (\Throwable $e) {
+                Log::warning('Failed to dispatch queued social/email message.', [
+                    'user_id' => $user?->id,
+                    'channel' => $request->channel,
+                    'message' => $e->getMessage(),
+                ]);
+
+                return response()->json([
+                    'status' => 'Failed',
+                    'error' => 'Unable to queue the message right now.',
+                ], 422);
+            }
+
+            return response()->json([
+                'status' => 'Queued',
+                'result' => [
+                    'status' => 'submitted',
+                    'msg_type' => $attachment ? 'Media' : 'Text',
+                ],
+            ]);
         }
 
         // Send Message via Email
@@ -2150,6 +2233,18 @@ class MsgController extends Controller
 
             $subject = trim((string) ($request->email_subject ?: $conversation?->email_subject ?: '(no subject)'));
 
+            $emailAttachments = [];
+            if ($request->hasFile('attachment') && isset($attachment_name, $path)) {
+                $attachmentPath = $path . '/' . $attachment_name;
+                if (file_exists($attachmentPath)) {
+                    $emailAttachments[] = [
+                        'filename' => $attachment_name,
+                        'mime' => $mimeType ?? 'application/octet-stream',
+                        'content' => file_get_contents($attachmentPath),
+                    ];
+                }
+            }
+
             try {
                 $sendResult = $gmailService->sendMessage($account, [
                     'to' => [$request->destination],
@@ -2159,6 +2254,7 @@ class MsgController extends Controller
                     'thread_id' => $conversation?->gmail_thread_id ?: $latestEmailMessage?->gmail_thread_id,
                     'in_reply_to' => $latestEmailMessage?->internet_message_id,
                     'references_header' => $latestEmailMessage?->references_header ?: $latestEmailMessage?->internet_message_id,
+                    'attachments' => $emailAttachments,
                 ]);
 
                 return response()->json([

@@ -9,6 +9,8 @@ function classNames(...classes) {
 
 export default function SearchTemplate(props) {
     const filterTemplatesByAccount = props.filterTemplatesByAccount ?? true;
+    const filterTemplatesByService = props.filterTemplatesByService ?? false;
+    const templateService = String(props.templateService || '').toLowerCase();
     const isDarkTheme = props.theme === 'dark';
     const hideTemplateSearch = props.hideTemplateSearch === true;
     const filteredTemplates = (props.templates || []).filter((template) => {
@@ -16,7 +18,18 @@ export default function SearchTemplate(props) {
             return true;
         }
 
-        return String(template.account_id) === String(props.selectedAccount);
+        if (String(template.account_id) !== String(props.selectedAccount)) {
+            return false;
+        }
+
+        if (filterTemplatesByService && templateService) {
+            const service = String(template.service || '').toLowerCase();
+            if (service && service !== templateService) {
+                return false;
+            }
+        }
+
+        return true;
     });
     const availableNavigators = [
         {name: 'template_search', label: 'Template'},

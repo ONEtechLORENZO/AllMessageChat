@@ -37,7 +37,7 @@ function classNames(...classes) {
 }
 
 const DEFAULT_NEW_MESSAGE_LABEL = "New Message";
-const WHATSAPP_NEW_CHAT_LABEL = "New chat";
+const ADD_CONTACT_LABEL = "Add Contact";
 
 function extractRelationFilterValues(filterCondition) {
     if (!filterCondition) {
@@ -338,7 +338,12 @@ function ChatList(props) {
         });
 
         const params = [];
-        const allowRelationFilter = category === "whatsapp";
+        const allowRelationFilter = [
+            "whatsapp",
+            "instagram",
+            "facebook",
+            "email",
+        ].includes(category);
 
         if (allowRelationFilter && filterCondition) {
             params.push(`filter=${encodeURIComponent(filterCondition)}`);
@@ -365,7 +370,7 @@ function ChatList(props) {
         return url;
     }
 
-    function updateWhatsAppRelationFilter(nextTagValue = "", nextListValue = "") {
+    function updateChatRelationFilter(nextTagValue = "", nextListValue = "") {
         const nextFilterCondition = buildRelationFilterCondition(
             nextTagValue,
             nextListValue,
@@ -376,9 +381,9 @@ function ChatList(props) {
         setSelectedContact("");
         setChatList({});
         setPage(1);
-        setContainerCategory("whatsapp");
+        setContainerCategory(containerCategory || "whatsapp");
 
-        fetchContactList(true, current_tab, "whatsapp", {
+        fetchContactList(true, current_tab, containerCategory || "whatsapp", {
             search: searchKey,
             filterCondition: nextFilterCondition,
             filterId: "",
@@ -395,8 +400,27 @@ function ChatList(props) {
         let newState = Object.assign({}, data);
 
         if (e.target.type == "file" && e.target.files) {
-            newState[e.target.name] = e.target.files[0];
-            newState["content"] = e.target.files[0].name;
+            const file = e.target.files[0];
+            const isInstagram = containerCategory === "instagram";
+            const isAllowedInstagramAttachment =
+                file &&
+                ["image/", "video/", "audio/"].some((prefix) =>
+                    String(file.type || "").startsWith(prefix),
+                );
+
+            if (isInstagram && file && !isAllowedInstagramAttachment) {
+                notie.alert({
+                    type: "error",
+                    text: "Instagram only supports image, video, or audio attachments.",
+                    time: 5,
+                });
+                newState[e.target.name] = "";
+                newState["content"] = "";
+                e.target.value = "";
+            } else {
+                newState[e.target.name] = file;
+                newState["content"] = file ? file.name : "";
+            }
         } else {
             newState[e.target.name] = e.target.value;
         }
@@ -441,9 +465,16 @@ function ChatList(props) {
             category: name,
             search: searchKey,
             tab: current_tab,
-            filterCondition:
-                name === "whatsapp" ? activeChatFilterCondition : "",
-            filterId: name === "whatsapp" ? activeChatFilterId : "",
+            filterCondition: ["whatsapp", "instagram", "facebook", "email"].includes(
+                name,
+            )
+                ? activeChatFilterCondition
+                : "",
+            filterId: ["whatsapp", "instagram", "facebook", "email"].includes(
+                name,
+            )
+                ? activeChatFilterId
+                : "",
         });
         Inertia.get(url, {}, {
             onSuccess: () => {},
@@ -469,13 +500,17 @@ function ChatList(props) {
         const effectiveFilterCondition =
             overrides.filterCondition !== undefined
                 ? overrides.filterCondition
-                : category === "whatsapp"
+                : ["whatsapp", "instagram", "facebook", "email"].includes(
+                      category,
+                  )
                   ? activeChatFilterCondition
                   : "";
         const effectiveFilterId =
             overrides.filterId !== undefined
                 ? overrides.filterId
-                : category === "whatsapp"
+                : ["whatsapp", "instagram", "facebook", "email"].includes(
+                      category,
+                  )
                   ? activeChatFilterId
                   : "";
         const url = getChatListUrl({
@@ -586,6 +621,8 @@ function ChatList(props) {
             destination = chatList["contact_id_" + selectedContact].insta_id;
         } else if (containerCategory == "facebook") {
             destination = chatList["contact_id_" + selectedContact].fb_id;
+        } else if (containerCategory == "email") {
+            destination = chatList["contact_id_" + selectedContact].email;
         }
 
         formData.append("account_id", selectedAccount);
@@ -598,6 +635,10 @@ function ChatList(props) {
         formData.append("product_retailer_id", data.product_retailer_id);
         formData.append("template_options", data.template_options);
         formData.append("template_type", data.template_type);
+        if (containerCategory == "email") {
+            formData.append("conversation_id", selectedContact || "");
+            formData.append("email_subject", data.email_subject || "");
+        }
 
         if (!destination) {
             notie.alert({
@@ -606,7 +647,7 @@ function ChatList(props) {
                 time: 5,
             });
         }
-        if (data.content && destination && selectedAccount) {
+        if ((data.content || data.attachment) && destination && selectedAccount) {
             nProgress.start(0.5);
             nProgress.inc(0.2);
 
@@ -699,7 +740,12 @@ function ChatList(props) {
     const showNewMessageButton = !["instagram", "facebook"].includes(
         containerCategory,
     );
-    const showWhatsAppQuickFilters = containerCategory === "whatsapp";
+    const showChatRelationFilters = [
+        "whatsapp",
+        "instagram",
+        "facebook",
+        "email",
+    ].includes(containerCategory);
     const relationFilterValues = extractRelationFilterValues(
         activeChatFilterCondition,
     );
@@ -713,8 +759,8 @@ function ChatList(props) {
     const selectedListLabel =
         listOptions.find((list) => String(list.value) === selectedListValue)
             ?.label || props.translator.List;
-    const newMessageLabel = showWhatsAppQuickFilters
-        ? WHATSAPP_NEW_CHAT_LABEL
+    const newMessageLabel = showChatRelationFilters
+        ? ADD_CONTACT_LABEL
         : DEFAULT_NEW_MESSAGE_LABEL;
 
     return (
@@ -775,7 +821,7 @@ function ChatList(props) {
                         <div
                             className={classNames(
                                 "mt-2",
-                                showWhatsAppQuickFilters
+                                showChatRelationFilters
                                     ? "space-y-2.5"
                                     : "flex items-center gap-3",
                             )}
@@ -797,7 +843,7 @@ function ChatList(props) {
                                     onKeyDown={(e) => handleSearchContact(e)}
                                     className={classNames(
                                         "w-full border border-white/7 bg-white/[0.05] pl-12 pr-4 text-sm text-white placeholder-white/45 focus:border-[#BF00FF]/40 focus:ring-[#BF00FF]/40",
-                                        showWhatsAppQuickFilters
+                                        showChatRelationFilters
                                             ? "h-11 rounded-[1.15rem]"
                                             : "h-12 rounded-2xl",
                                     )}
@@ -812,14 +858,11 @@ function ChatList(props) {
                                 >
                                     <span className="chat-new-message-button__outline" />
                                     <span className="chat-new-message-button__inner" />
-                                    <span className="chat-new-message-button__state">
-                                        <span className="chat-new-message-button__icon">
-                                            <PaperAirplaneIcon className="h-4 w-4" />
-                                        </span>
-                                        <span className="chat-new-message-button__label">
-                                            {newMessageLabel.split("").map(
-                                                (char, index) => (
-                                                    <span
+                                        <span className="chat-new-message-button__state">
+                                            <span className="chat-new-message-button__label">
+                                                {newMessageLabel.split("").map(
+                                                    (char, index) => (
+                                                        <span
                                                         key={`${char}-${index}`}
                                                         style={{ "--i": index }}
                                                         className="chat-new-message-button__letter"
@@ -835,7 +878,7 @@ function ChatList(props) {
                                 </button>
                             )}
                             </div>
-                            {showWhatsAppQuickFilters && (
+                            {showChatRelationFilters && (
                                 <div className="flex flex-wrap items-center gap-2">
                                     <Dropdown>
                                         <Dropdown.Trigger>
@@ -863,7 +906,7 @@ function ChatList(props) {
                                                 <button
                                                     type="button"
                                                     onClick={() =>
-                                                        updateWhatsAppRelationFilter(
+                                                        updateChatRelationFilter(
                                                             "",
                                                             selectedListValue,
                                                         )
@@ -882,7 +925,7 @@ function ChatList(props) {
                                                         key={`tag-${tag.value}`}
                                                         type="button"
                                                         onClick={() =>
-                                                            updateWhatsAppRelationFilter(
+                                                            updateChatRelationFilter(
                                                                 String(
                                                                     tag.value,
                                                                 ),
@@ -930,7 +973,7 @@ function ChatList(props) {
                                                 <button
                                                     type="button"
                                                     onClick={() =>
-                                                        updateWhatsAppRelationFilter(
+                                                        updateChatRelationFilter(
                                                             selectedTagValue,
                                                             "",
                                                         )
@@ -949,7 +992,7 @@ function ChatList(props) {
                                                         key={`list-${list.value}`}
                                                         type="button"
                                                         onClick={() =>
-                                                            updateWhatsAppRelationFilter(
+                                                            updateChatRelationFilter(
                                                                 selectedTagValue,
                                                                 String(
                                                                     list.value,
@@ -977,7 +1020,7 @@ function ChatList(props) {
                                         <button
                                             type="button"
                                             onClick={() =>
-                                                updateWhatsAppRelationFilter()
+                                                updateChatRelationFilter()
                                             }
                                             className="inline-flex h-9 items-center rounded-xl border border-white/10 bg-white/[0.03] px-3 text-[0.82rem] font-medium text-white/70 transition hover:bg-white/[0.06] hover:text-white"
                                         >
@@ -1004,7 +1047,7 @@ function ChatList(props) {
                                                 tab.id == current_tab
                                                     ? "bg-[linear-gradient(135deg,rgba(255,79,216,0.28),rgba(163,30,255,0.26))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_22px_rgba(127,0,190,0.16)]"
                                                     : "text-white/72 hover:bg-white/[0.04] hover:text-white",
-                                                showWhatsAppQuickFilters
+                                                showChatRelationFilters
                                                     ? "flex min-h-[3.4rem] flex-col justify-center px-4 py-1.5 text-left transition first:rounded-l-[1.55rem] last:rounded-r-[1.55rem]"
                                                     : "flex min-h-[4.35rem] flex-col justify-center px-5 py-2.5 text-left transition first:rounded-l-[1.55rem] last:rounded-r-[1.55rem]",
                                             )}
@@ -1012,7 +1055,7 @@ function ChatList(props) {
                                             <span
                                                 className={classNames(
                                                     "font-semibold leading-tight",
-                                                    showWhatsAppQuickFilters
+                                                    showChatRelationFilters
                                                         ? "text-[0.82rem]"
                                                         : "text-[0.9rem]",
                                                 )}
@@ -1022,7 +1065,7 @@ function ChatList(props) {
                                             <span
                                                 className={classNames(
                                                     "font-medium text-white/50",
-                                                    showWhatsAppQuickFilters
+                                                    showChatRelationFilters
                                                         ? "mt-1 text-[0.75rem]"
                                                         : "mt-1.5 text-[0.8rem]",
                                                 )}
@@ -1429,6 +1472,7 @@ function ChatList(props) {
                 <ContactSelection
                     setShowForm={setShowForm}
                     parent_module="Chat"
+                    startWithCreateForm={true}
                     {...props}
                 />
             ) : (

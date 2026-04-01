@@ -441,8 +441,12 @@ class Msg extends Model
                 $result['message_ids'] = $messageIds;
                 $result['message_id'] = end($messageIds);
             }
-        } catch(Exception $e){
-            $result = (['status' => false, 'message' => $e->getMessage()]);
+        } catch (\Throwable $e) {
+            $result = [
+                'error' => [
+                    'message' => $e->getMessage(),
+                ],
+            ];
         }
         Log::info( [' Insta send message response' =>  $result]);
         return $result;

@@ -10,6 +10,7 @@ function ChatBox(props)
     const [templates, setTemplates] = useState(props.templates);
     const [products, setProducts] = useState(props.products);
     const [interactiveMessages, setInteractiveMessage] = useState(props.interactiveMessages);
+    const templateService = String(props.containerCategory || '').toLowerCase();
 
     function searchTemplates(key){
         var templateList = [];
@@ -40,14 +41,35 @@ function ChatBox(props)
         });
     }
 
+    function countTemplatesForService(service) {
+        const normalizedService = String(service || '').toLowerCase();
+        const filtered = (props.templates || []).filter((template) => {
+            if (String(template.account_id) !== String(props.selectedAccount)) {
+                return false;
+            }
+
+            if (['instagram', 'facebook', 'email'].includes(normalizedService)) {
+                const templateService = String(template.service || '').toLowerCase();
+                return templateService === normalizedService;
+            }
+
+            return true;
+        });
+
+        return filtered.length;
+    }
+
+    const hasTemplates = countTemplatesForService(templateService) > 0;
+    const showTemplatePicker = ['whatsapp', 'instagram', 'facebook', 'email'].includes(templateService);
+
     return(
        <>
        <div className="rounded-[1.9rem] bg-[linear-gradient(135deg,rgba(23,10,34,0.98),rgba(10,8,17,0.98))] p-3 shadow-[0_24px_70px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.05)] ring-1 ring-[#8f38d9]/16">
             <form action="#">
                 <div className="flex items-center gap-3 rounded-[1.45rem] bg-[linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04))] px-4 py-3 shadow-[0_20px_46px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.06)] ring-1 ring-white/8">
                     <div className="flex shrink-0 items-center gap-2 text-white/78">
-                        <label className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-white/78 transition hover:bg-white/[0.06] hover:text-white">
-                            <AttachIcon />
+                        <label className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl text-white/78 transition hover:bg-white/[0.06] hover:text-white">
+                            <AttachIcon className="h-5 w-5 translate-y-[1px]" />
                             <input
                                 className="absolute inset-0 cursor-pointer opacity-0"
                                 type={'file'}
@@ -56,7 +78,7 @@ function ChatBox(props)
                             />
                             <span className="sr-only">Attach a file</span>
                         </label>
-                        {props.containerCategory == 'whatsapp' &&
+                        {showTemplatePicker && (
                             <div className="flex h-10 w-10 items-center justify-center rounded-full text-white/78 transition hover:bg-white/[0.06] hover:text-white">
                                 <SearchTemplate
                                    templates={templates}
@@ -66,13 +88,17 @@ function ChatBox(props)
                                    searchTemplates={searchTemplates}
                                    searchInteractiveMessages={searchInteractiveMessages}
                                    allowProducts={false}
+                                   allowInteractiveMessages={props.containerCategory == 'whatsapp'}
+                                   hideTemplateSearch={!hasTemplates}
                                    setInteractiveMessage={props.setInteractiveMessage}
                                    setProductInfo={props.setProductInfo}
                                    setTemplateInfo={props.setTemplateInfo}
                                    selectedAccount={props.selectedAccount}
+                                   filterTemplatesByService={['instagram', 'facebook', 'email'].includes(templateService)}
+                                   templateService={templateService}
                                 />
                             </div>
-                        }
+                        )}
                     </div>
                     <div className="min-w-0 flex-1 rounded-[1rem] bg-[#1F1F1F] px-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                         <label htmlFor="content" className="sr-only">

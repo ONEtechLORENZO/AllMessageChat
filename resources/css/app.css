@@ -88,9 +88,9 @@ a:focus {
   --chat-button-radius: 18px;
   position: relative;
   display: inline-flex;
-  min-width: 178px;
+  min-width: 140px;
   height: 58px;
-  padding: 0 22px;
+  padding: 0 18px;
   align-items: center;
   justify-content: center;
   border: none;
