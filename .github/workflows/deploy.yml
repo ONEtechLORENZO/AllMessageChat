@@ -3,10 +3,10 @@ name: Deploy to Lightsail
 on:
   push:
     branches:
-      - main
+      - nishant
 
 concurrency:
-  group: deploy-main
+  group: deploy-nishant
   cancel-in-progress: true
 
 jobs:
@@ -22,5 +22,5 @@ jobs:
           port: ${{ secrets.LIGHTSAIL_PORT }}
           script: |
             export APP_DIR="${{ secrets.APP_DIR }}"
-            export BRANCH="main"
+            export BRANCH="nishant"
             bash "$APP_DIR/scripts/deploy.sh"
