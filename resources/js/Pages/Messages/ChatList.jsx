@@ -346,29 +346,36 @@ function ChatList(props) {
         }
         url += "&fetchContact=true&page=" + targetPage;
 
-        return Axios.get(url).then((response) => {
-            if (response.data.status) {
-                setChatList((previousList) =>
-                    reset
-                        ? response.data.contact_list
-                        : { ...previousList, ...response.data.contact_list },
-                );
-                setCounts(
-                    response.data.counts || {
-                        all: 0,
-                        unread: 0,
-                        archived: 0,
-                    },
-                );
-                setHasMore(Boolean(response.data.has_more));
-                if (reset) {
-                    setPage(1);
+        return Axios.get(url)
+            .then((response) => {
+                if (response.data.status) {
+                    setChatList((previousList) =>
+                        reset
+                            ? response.data.contact_list
+                            : {
+                                  ...previousList,
+                                  ...response.data.contact_list,
+                              },
+                    );
+                    setCounts(
+                        response.data.counts || {
+                            all: 0,
+                            unread: 0,
+                            archived: 0,
+                        },
+                    );
+                    setHasMore(Boolean(response.data.has_more));
+                    if (reset) {
+                        setPage(1);
+                    }
                 }
-                setPageLoad(false);
-            }
 
-            return response.data;
-        });
+                return response.data;
+            })
+            .catch(() => ({ status: false }))
+            .finally(() => {
+                setPageLoad(false);
+            });
     }
 
     useEffect(() => {
@@ -805,11 +812,18 @@ function ChatList(props) {
                                     {Object.entries(chatList).length == 0 && (
                                         <li>
                                             <div className="flex items-center justify-center px-6 py-8 text-center text-sm text-white/45">
-                                                {
+                                                {pageLoading ? (
+                                                    <span
+                                                        className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/5"
+                                                        aria-label="Loading conversations"
+                                                    >
+                                                        <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-[#ff7de5]" />
+                                                    </span>
+                                                ) : (
                                                     props.translator[
                                                         "Conversation not start yet."
                                                     ]
-                                                }
+                                                )}
                                             </div>
                                         </li>
                                     )}
@@ -849,7 +863,8 @@ function ChatList(props) {
                                                         href={route(
                                                             "detailContact",
                                                             {
-                                                                id: selectedContact,
+                                                                id:
+                                                                    activeContact.contact_id,
                                                             },
                                                         )}
                                                         className="cursor-pointer text-lg font-semibold text-white no-underline drop-shadow-[0_1px_10px_rgba(0,0,0,0.32)] hover:text-[#ff92eb]"

@@ -521,6 +521,10 @@ class MsgController extends Controller
             $this->backfillConversationMetadataForService($user->id, $selectedCategory);
         }
 
+        if (in_array($selectedCategory, ['all', 'whatsapp', 'facebook', 'instagram'], true)) {
+            $this->collapseDuplicateChatListContacts($user->id, $selectedCategory);
+        }
+
         if (
             $selectedCategory !== 'all'
             && !Account::where('user_id', $user->id)
@@ -561,6 +565,10 @@ class MsgController extends Controller
 
         if ($selectedCategory !== 'all') {
             $query->where('chat_list_contacts.channel', $selectedCategory);
+        }
+
+        if ($selectedCategory === 'whatsapp') {
+            $this->applyWhatsAppContactNumberFilter($query);
         }
 
         if ($selectedCategory === 'email') {
@@ -621,6 +629,11 @@ class MsgController extends Controller
 
         if ($selectedCategory !== 'all') {
             $countQuery->where('chat_list_contacts.channel', $selectedCategory);
+        }
+
+        if ($selectedCategory === 'whatsapp') {
+            $countQuery->join('contacts', 'contact_id', 'contacts.id');
+            $this->applyWhatsAppContactNumberFilter($countQuery);
         }
 
         if ($selectedCategory === 'email' || $selectedCategory === 'all') {
@@ -713,6 +726,123 @@ class MsgController extends Controller
             die;
         }
         return $data;
+    }
+
+    protected function getWhatsAppContactNumberColumn(): string
+    {
+        if (Schema::hasColumn('contacts', 'whatsapp_number')) {
+            return 'whatsapp_number';
+        }
+
+        return 'phone_number';
+    }
+
+    protected function applyWhatsAppContactNumberFilter($query): void
+    {
+        $hasWhatsappNumberColumn = Schema::hasColumn('contacts', 'whatsapp_number');
+        $hasPhoneNumberColumn = Schema::hasColumn('contacts', 'phone_number');
+
+        $query->where(function ($contactQuery) use ($hasWhatsappNumberColumn, $hasPhoneNumberColumn) {
+            if ($hasWhatsappNumberColumn) {
+                $contactQuery->whereNotNull('contacts.whatsapp_number')
+                    ->where('contacts.whatsapp_number', '!=', '');
+            }
+
+            if ($hasPhoneNumberColumn) {
+                $method = $hasWhatsappNumberColumn ? 'orWhere' : 'where';
+
+                $contactQuery->{$method}(function ($phoneQuery) {
+                    $phoneQuery->whereNotNull('contacts.phone_number')
+                        ->where('contacts.phone_number', '!=', '');
+                });
+            }
+        });
+    }
+
+    protected function collapseDuplicateChatListContacts(int $userId, string $service): void
+    {
+        $channels = $service === 'all'
+            ? ['whatsapp', 'facebook', 'instagram']
+            : [$service];
+
+        if ($channels === ['email']) {
+            return;
+        }
+
+        $duplicateGroups = ChatListContact::query()
+            ->select('contact_id', 'account_id', 'channel', DB::raw('COUNT(*) as duplicate_count'))
+            ->where('user_id', $userId)
+            ->whereIn('channel', $channels)
+            ->whereNotNull('contact_id')
+            ->groupBy('contact_id', 'account_id', 'channel')
+            ->havingRaw('COUNT(*) > 1')
+            ->get();
+
+        foreach ($duplicateGroups as $group) {
+            $this->mergeDuplicateConversationGroup(
+                $userId,
+                (string) $group->channel,
+                (int) $group->contact_id,
+                $group->account_id !== null ? (int) $group->account_id : null
+            );
+        }
+    }
+
+    protected function mergeDuplicateConversationGroup(
+        int $userId,
+        string $channel,
+        int $contactId,
+        ?int $accountId = null
+    ): ?ChatListContact {
+        $conversationQuery = ChatListContact::query()
+            ->where('user_id', $userId)
+            ->where('channel', $channel)
+            ->where('contact_id', $contactId);
+
+        if ($accountId === null) {
+            $conversationQuery->whereNull('account_id');
+        } else {
+            $conversationQuery->where('account_id', $accountId);
+        }
+
+        $conversations = $conversationQuery
+            ->orderByRaw('COALESCE(last_message_at, updated_at, created_at) desc')
+            ->orderByDesc('id')
+            ->get();
+
+        if ($conversations->count() <= 1) {
+            return $conversations->first();
+        }
+
+        $primaryConversation = $conversations->first();
+        $duplicateConversationIds = $conversations->slice(1)->pluck('id')->values()->all();
+        $latestConversationAt = $conversations->pluck('last_message_at')->filter()->sortDesc()->first();
+
+        $primaryConversation->account_id = $primaryConversation->account_id
+            ?: $conversations->pluck('account_id')->filter()->first();
+        $primaryConversation->last_msg_id = $primaryConversation->last_msg_id
+            ?: $conversations->pluck('last_msg_id')->filter()->first();
+        $primaryConversation->unread_count = (int) $conversations->max(function ($conversation) {
+            return (int) ($conversation->unread_count ?? 0);
+        });
+        $primaryConversation->unread = $conversations->contains(function ($conversation) {
+            return (bool) $conversation->unread || (int) ($conversation->unread_count ?? 0) > 0;
+        });
+
+        if ($latestConversationAt) {
+            $primaryConversation->last_message_at = $latestConversationAt;
+        }
+
+        $primaryConversation->save();
+
+        if ($duplicateConversationIds !== []) {
+            Msg::whereIn('chat_list_contact_id', $duplicateConversationIds)
+                ->update(['chat_list_contact_id' => $primaryConversation->id]);
+
+            ChatListContact::whereIn('id', $duplicateConversationIds)->delete();
+        }
+
+        return $primaryConversation;
     }
 
     protected function backfillConversationMetadataForService(int $userId, string $service): void
@@ -2400,17 +2530,23 @@ class MsgController extends Controller
             $conversation = ChatListContact::where('user_id', $account->user_id)
                 ->where('contact_id', $message->msgable_id)
                 ->where(function ($query) use ($message) {
+                    $query->where('account_id', $message->account_id)
+                        ->orWhereNull('account_id');
+                })
+                ->where(function ($query) use ($message) {
                     $query->where('channel', $message->service)
                         ->orWhereNull('channel')
                         ->orWhere('channel', '');
                 })
                 ->orderByRaw(
                     "CASE
-                        WHEN channel = ? THEN 0
-                        WHEN channel IS NULL OR channel = '' THEN 1
+                        WHEN account_id = ? AND channel = ? THEN 0
+                        WHEN account_id = ? AND (channel IS NULL OR channel = '') THEN 1
+                        WHEN account_id IS NULL AND channel = ? THEN 2
+                        WHEN account_id IS NULL AND (channel IS NULL OR channel = '') THEN 3
                         ELSE 2
                     END",
-                    [$message->service]
+                    [$message->account_id, $message->service, $message->account_id, $message->service]
                 )
                 ->orderByDesc('id')
                 ->first();
@@ -2434,6 +2570,13 @@ class MsgController extends Controller
         }
 
         $conversation->save();
+
+        $conversation = $this->mergeDuplicateConversationGroup(
+            $account->user_id,
+            (string) $message->service,
+            (int) $message->msgable_id,
+            (int) $message->account_id
+        ) ?: $conversation;
 
         if ((int) $message->chat_list_contact_id !== (int) $conversation->id) {
             Msg::withoutEvents(function () use ($message, $conversation) {
@@ -2615,7 +2758,23 @@ class MsgController extends Controller
         }
 
         // Update contact last update time
-        $chatContact = ChatListContact::where('contact_id', $contact->id)->where('user_id', $user_id)->first();
+        $chatContact = ChatListContact::where('contact_id', $contact->id)
+            ->where('user_id', $user_id)
+            ->where(function ($query) use ($type) {
+                $query->where('channel', $type)
+                    ->orWhereNull('channel')
+                    ->orWhere('channel', '');
+            })
+            ->orderByRaw(
+                "CASE
+                    WHEN channel = ? THEN 0
+                    WHEN channel IS NULL OR channel = '' THEN 1
+                    ELSE 2
+                END",
+                [$type]
+            )
+            ->orderByDesc('id')
+            ->first();
 
         if (! $chatContact) {
             $chatContact = new ChatListContact();
@@ -2637,6 +2796,9 @@ class MsgController extends Controller
                 $chatContact->save();
             }
         }
+
+        $this->mergeDuplicateConversationGroup($user_id, $type, (int) $contact->id);
+
         return $contact->id;
     }
 
