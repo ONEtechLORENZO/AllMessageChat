@@ -96,6 +96,7 @@ function ChatBox(props)
                                    selectedAccount={props.selectedAccount}
                                    filterTemplatesByService={['instagram', 'facebook', 'email'].includes(templateService)}
                                    templateService={templateService}
+                                   theme="dark"
                                 />
                             </div>
                         )}
@@ -108,7 +109,7 @@ function ChatBox(props)
                             rows={1}
                             id="content"
                             onChange={(e) => props.handleChange(e)}
-                            onKeyUp={(e) => props.handleKeyUp(e)}
+                            onKeyDown={(e) => props.handleKeyDown(e)}
                             name="content"
                             disabled={(props.data.template_id || props.data.catalog_id)? true : false }
                             value={props.data.content}

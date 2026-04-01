@@ -2,8 +2,9 @@ import React, { useEffect, useState, useRef, Fragment } from "react";
 import { Head, Link } from "@inertiajs/react";
 import MessageList from "./MessageList";
 import Authenticated from "../../Layouts/Authenticated";
-import Dropdown from "@/Components/Dropdown";
-import ContactSelection from "@/Components/ContactSelection";
+import Dropdown from "../../Components/Dropdown.jsx";
+import ContactSelection from "../../Components/ContactSelection.jsx";
+import EmailComposeModal from "./EmailComposeModal";
 import notie from "notie";
 import { router as Inertia } from "@inertiajs/react";
 import nProgress from "nprogress";
@@ -38,6 +39,7 @@ function classNames(...classes) {
 
 const DEFAULT_NEW_MESSAGE_LABEL = "New Message";
 const ADD_CONTACT_LABEL = "Add Contact";
+const EMAIL_COMPOSE_LABEL = "Compose";
 
 function extractRelationFilterValues(filterCondition) {
     if (!filterCondition) {
@@ -104,11 +106,20 @@ function ChatList(props) {
     const [messages, setMessages] = useState({});
     const [containerCategory, setContainerCategory] = useState(props.category);
     const [showForm, setShowForm] = useState(false);
+    const [showEmailComposeModal, setShowEmailComposeModal] = useState(false);
+    const [isSending, setIsSending] = useState(false);
     const [chatList, setChatList] = useState(props.contact_list);
     const [data, setData] = useState({
         destination: "",
         channel: containerCategory,
         content: "",
+        email_subject: "",
+        attachment: "",
+        template_id: "",
+        catalog_id: "",
+        product_retailer_id: "",
+        template_options: "",
+        template_type: "",
     });
     const [selectedAccount, setSelectedAccount] = useState("");
     const [searchKey, setSearchKey] = useState(props.search);
@@ -390,8 +401,9 @@ function ChatList(props) {
         });
     }
 
-    function handleKeyUp(e) {
-        if (e.key == "Enter" && !e.shiftKey && containerCategory) {
+    function handleKeyDown(e) {
+        if (e.key === "Enter" && !e.shiftKey && containerCategory) {
+            e.preventDefault();
             sendMessage();
         }
     }
@@ -606,6 +618,10 @@ function ChatList(props) {
 
     function sendMessage() {
         var formData = new FormData();
+        const isEmailComposeFlow =
+            containerCategory === "email" &&
+            showEmailComposeModal &&
+            String(data.destination || "").trim() !== "";
 
         if (containerCategory == "all" || !selectedAccount) {
             notie.alert({
@@ -622,7 +638,9 @@ function ChatList(props) {
         } else if (containerCategory == "facebook") {
             destination = chatList["contact_id_" + selectedContact].fb_id;
         } else if (containerCategory == "email") {
-            destination = chatList["contact_id_" + selectedContact].email;
+            destination = isEmailComposeFlow
+                ? String(data.destination || "").trim()
+                : chatList["contact_id_" + selectedContact].email;
         }
 
         formData.append("account_id", selectedAccount);
@@ -636,7 +654,10 @@ function ChatList(props) {
         formData.append("template_options", data.template_options);
         formData.append("template_type", data.template_type);
         if (containerCategory == "email") {
-            formData.append("conversation_id", selectedContact || "");
+            formData.append(
+                "conversation_id",
+                isEmailComposeFlow ? "" : selectedContact || "",
+            );
             formData.append("email_subject", data.email_subject || "");
         }
 
@@ -648,6 +669,7 @@ function ChatList(props) {
             });
         }
         if ((data.content || data.attachment) && destination && selectedAccount) {
+            setIsSending(true);
             nProgress.start(0.5);
             nProgress.inc(0.2);
 
@@ -664,31 +686,104 @@ function ChatList(props) {
                     notie.alert({ type: "error", text: result.error, time: 5 });
                 } else if (
                     result.status == "Queued" ||
+                    result.status == "Sent" ||
                     response.data.status == "Send"
                 ) {
                     let newState = Object.assign({}, data);
+                    const shouldCloseEmailCompose =
+                        containerCategory === "email" && showEmailComposeModal;
                     newState["content"] = "";
                     newState["template_id"] = "";
                     newState["attachment"] = "";
                     newState["template_type"] = "";
                     newState["template_options"] = "";
+                    newState["catalog_id"] = "";
+                    newState["product_retailer_id"] = "";
+                    if (containerCategory === "email") {
+                        newState["destination"] = "";
+                        newState["email_subject"] = "";
+                    }
                     setData(newState);
+                    if (shouldCloseEmailCompose) {
+                        setShowEmailComposeModal(false);
+                    }
                 }
 
                 getMessageList();
-            });
+                if (containerCategory === "email") {
+                    fetchContactList(true, current_tab, containerCategory);
+                }
+            })
+                .catch((error) => {
+                    notie.alert({
+                        type: "error",
+                        text:
+                            error?.response?.data?.error ||
+                            "Unable to send the message right now.",
+                        time: 5,
+                    });
+                })
+                .finally(() => {
+                    setIsSending(false);
+                    nProgress.done(true);
+                });
         }
+    }
+
+    function openPrimaryAction() {
+        if (containerCategory === "email") {
+            setData((prevState) => ({
+                ...prevState,
+                destination: "",
+                content: "",
+                attachment: "",
+                template_id: "",
+                catalog_id: "",
+                product_retailer_id: "",
+                template_options: "",
+                template_type: "",
+                email_subject: "",
+            }));
+            setShowEmailComposeModal(true);
+            return;
+        }
+
+        setShowForm(true);
+    }
+
+    function closeEmailComposeModal() {
+        setShowEmailComposeModal(false);
+        setData((prevState) => ({
+            ...prevState,
+            destination: "",
+            content: "",
+            attachment: "",
+            template_id: "",
+            catalog_id: "",
+            product_retailer_id: "",
+            template_options: "",
+            template_type: "",
+            email_subject:
+                containerCategory === "email"
+                    ? selectedConversation?.subject || ""
+                    : "",
+        }));
     }
 
     function setTemplateInfo(template) {
         let newState = Object.assign({}, data);
-        const isInternalSocialTemplate = ["facebook", "instagram"].includes(
+        const isDirectBodyTemplate = ["facebook", "instagram", "email"].includes(
             String(template?.service || "").toLowerCase(),
         );
-        newState["content"] = isInternalSocialTemplate
+        newState["content"] = isDirectBodyTemplate
             ? String(template?.body || template?.name || "Template selected")
             : template.name + " template selected ";
         newState["template_id"] = template.template_uid || template.id;
+        if (String(template?.service || "").toLowerCase() === "email") {
+            newState["email_subject"] = String(
+                template?.email_subject || newState["email_subject"] || "",
+            );
+        }
         setData(newState);
     }
 
@@ -760,7 +855,9 @@ function ChatList(props) {
         listOptions.find((list) => String(list.value) === selectedListValue)
             ?.label || props.translator.List;
     const newMessageLabel = showChatRelationFilters
-        ? ADD_CONTACT_LABEL
+        ? containerCategory === "email"
+            ? EMAIL_COMPOSE_LABEL
+            : ADD_CONTACT_LABEL
         : DEFAULT_NEW_MESSAGE_LABEL;
 
     return (
@@ -854,7 +951,7 @@ function ChatList(props) {
                                 <button
                                     type="button"
                                     className="chat-new-message-button shrink-0 focus:outline-none focus:ring-2 focus:ring-[#BF00FF]/40"
-                                    onClick={() => setShowForm(true)}
+                                    onClick={openPrimaryAction}
                                 >
                                     <span className="chat-new-message-button__outline" />
                                     <span className="chat-new-message-button__inner" />
@@ -1446,7 +1543,7 @@ function ChatList(props) {
                         <div className="flex-shrink-0">
                             <ChatBox
                                 handleChange={handleChange}
-                                handleKeyUp={handleKeyUp}
+                                handleKeyDown={handleKeyDown}
                                 templates={props.templates}
                                 products={props.products}
                                 interactiveMessages={props.interactiveMessages}
@@ -1478,6 +1575,21 @@ function ChatList(props) {
             ) : (
                 ""
             )}
+            <EmailComposeModal
+                open={showEmailComposeModal}
+                onClose={closeEmailComposeModal}
+                onSend={sendMessage}
+                onChange={handleChange}
+                data={data}
+                templates={props.templates}
+                products={props.products}
+                interactiveMessages={props.interactiveMessages}
+                setInteractiveMessage={setInteractiveMessage}
+                setProductInfo={setProductInfo}
+                setTemplateInfo={setTemplateInfo}
+                selectedAccount={selectedAccount}
+                sending={isSending}
+            />
         </Authenticated>
     );
 }

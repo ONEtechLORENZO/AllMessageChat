@@ -160,6 +160,8 @@ function EmailComposeModal(props) {
                                 allowInteractiveMessages={false}
                                 theme="dark"
                                 hideTemplateSearch={true}
+                                filterTemplatesByService={true}
+                                templateService="email"
                             />
 
                             {attachedFileName ? (
