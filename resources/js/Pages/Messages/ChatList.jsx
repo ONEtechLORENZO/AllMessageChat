@@ -56,7 +56,6 @@ function ChatList(props) {
     const [selectedAccount, setSelectedAccount] = useState("");
     const [searchKey, setSearchKey] = useState(props.search);
     const channels = {
-        all: { label: props.translator["All Channel"], icon: ApplicationLogo },
         whatsapp: { label: "WhatsApp", icon: WhatsAppIcon },
         instagram: { label: "Instagram", icon: InstaIcon },
         facebook: { label: "Facebook", icon: fbIcon },
@@ -558,6 +557,9 @@ function ChatList(props) {
     const activeContact = selectedContact
         ? chatList["contact_id_" + selectedContact]
         : null;
+    const showNewMessageButton = !["instagram", "facebook"].includes(
+        containerCategory,
+    );
 
     return (
         <Authenticated
@@ -641,34 +643,36 @@ function ChatList(props) {
                                     placeholder="Search"
                                 />
                             </div>
-                            <button
-                                type="button"
-                                className="chat-new-message-button shrink-0 focus:outline-none focus:ring-2 focus:ring-[#BF00FF]/40"
-                                onClick={() => setShowForm(true)}
-                            >
-                                <span className="chat-new-message-button__outline" />
-                                <span className="chat-new-message-button__inner" />
-                                <span className="chat-new-message-button__state">
-                                    <span className="chat-new-message-button__icon">
-                                        <PaperAirplaneIcon className="h-4 w-4" />
+                            {showNewMessageButton && (
+                                <button
+                                    type="button"
+                                    className="chat-new-message-button shrink-0 focus:outline-none focus:ring-2 focus:ring-[#BF00FF]/40"
+                                    onClick={() => setShowForm(true)}
+                                >
+                                    <span className="chat-new-message-button__outline" />
+                                    <span className="chat-new-message-button__inner" />
+                                    <span className="chat-new-message-button__state">
+                                        <span className="chat-new-message-button__icon">
+                                            <PaperAirplaneIcon className="h-4 w-4" />
+                                        </span>
+                                        <span className="chat-new-message-button__label">
+                                            {NEW_MESSAGE_LABEL.split("").map(
+                                                (char, index) => (
+                                                    <span
+                                                        key={`${char}-${index}`}
+                                                        style={{ "--i": index }}
+                                                        className="chat-new-message-button__letter"
+                                                    >
+                                                        {char === " "
+                                                            ? "\u00A0"
+                                                            : char}
+                                                    </span>
+                                                ),
+                                            )}
+                                        </span>
                                     </span>
-                                    <span className="chat-new-message-button__label">
-                                        {NEW_MESSAGE_LABEL.split("").map(
-                                            (char, index) => (
-                                                <span
-                                                    key={`${char}-${index}`}
-                                                    style={{ "--i": index }}
-                                                    className="chat-new-message-button__letter"
-                                                >
-                                                    {char === " "
-                                                        ? "\u00A0"
-                                                        : char}
-                                                </span>
-                                            ),
-                                        )}
-                                    </span>
-                                </span>
-                            </button>
+                                </button>
+                            )}
                         </div>
                         <div className="mt-4 overflow-hidden rounded-[1.55rem] bg-[linear-gradient(180deg,rgba(29,9,41,0.98),rgba(22,8,31,0.94))] shadow-[0_18px_40px_rgba(0,0,0,0.28)] ring-1 ring-white/5">
                             <div>
