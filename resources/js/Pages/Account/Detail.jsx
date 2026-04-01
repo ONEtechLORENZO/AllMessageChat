@@ -1,4 +1,4 @@
-import React, { Fragment, useMemo, useRef, useState } from 'react';
+import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import Authenticated from '@/Layouts/Authenticated';
 import { router as Inertia } from '@inertiajs/react';
@@ -27,8 +27,14 @@ function Detail(props) {
 
     const tabs = [
         { name: 'Info', page: 'info' },
-        { name: 'WebHooks', page: 'webhooks' },
+        ...(props.account.service === 'whatsapp' ? [{ name: 'WebHooks', page: 'webhooks' }] : []),
     ];
+
+    useEffect(() => {
+        if (props.account.service !== 'whatsapp' && selectedTab === 'webhooks') {
+            selectTab('info');
+        }
+    }, [props.account.service, selectedTab]);
 
     const visibleWebhookEvents = useMemo(() => {
         const facebookHooks = ['received', 'read', 'sent'];

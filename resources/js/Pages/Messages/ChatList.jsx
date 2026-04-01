@@ -37,6 +37,37 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
 
+function formatSelectedAccountLabel(accountName, category) {
+    const rawName = String(accountName || "").trim();
+
+    if (!rawName) {
+        return "AESSEFIN";
+    }
+
+    if (category === "instagram") {
+        return rawName.replace(/\s*-\s*$/, "");
+    }
+
+    if (category === "facebook" || category === "email") {
+        if (category === "email") {
+            const emailMatch = rawName.match(/\(([^()]+@[^()]+)\)/);
+
+            if (emailMatch?.[1]) {
+                return emailMatch[1].trim().toUpperCase();
+            }
+        }
+
+        const parts = rawName
+            .split("-")
+            .map((part) => part.trim())
+            .filter(Boolean);
+
+        return parts.length > 1 ? parts[parts.length - 1] : rawName;
+    }
+
+    return rawName;
+}
+
 const DEFAULT_NEW_MESSAGE_LABEL = "New Message";
 const ADD_CONTACT_LABEL = "Add Contact";
 const EMAIL_COMPOSE_LABEL = "Compose";
@@ -166,11 +197,56 @@ function ChatList(props) {
     const selectedConversation = selectedContact
         ? chatList["contact_id_" + selectedContact]
         : null;
+    const selectedAccountLabel = formatSelectedAccountLabel(
+        selectedAccount ? accountList[selectedAccount] : "",
+        containerCategory,
+    );
 
     const listRef = useRef(null);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [pageLoading, setPageLoad] = useState(false);
+
+    function renderAccountStatusDot(accountId) {
+        if (!accountId) {
+            return null;
+        }
+
+        if (containerCategory === "whatsapp") {
+            if (!selectedContact) {
+                return null;
+            }
+
+            const hasActiveSession =
+                props.sessions[selectedContact] &&
+                props.sessions[selectedContact][accountId];
+
+            return (
+                <span
+                    title={
+                        hasActiveSession
+                            ? "Session active"
+                            : "Session inactive"
+                    }
+                    className={classNames(
+                        "rounded-full p-1",
+                        hasActiveSession ? "bg-green-500" : "bg-red-500",
+                    )}
+                ></span>
+            );
+        }
+
+        if (["facebook", "instagram", "email"].includes(containerCategory)) {
+            return (
+                <span
+                    title="Unavailable"
+                    className="rounded-full p-1 bg-red-500"
+                ></span>
+            );
+        }
+
+        return null;
+    }
 
     useEffect(() => {
         setChatList(props.contact_list);
@@ -1419,42 +1495,14 @@ function ChatList(props) {
                                             <div className="flex items-center gap-2">
                                                 <span className="font-medium uppercase tracking-[0.04em]">
                                                     {selectedAccount ? (
-                                                        <>
-                                                            {
-                                                                accountList[
-                                                                    selectedAccount
-                                                                ]
-                                                            }
-                                                        </>
+                                                        <>{selectedAccountLabel}</>
                                                     ) : (
                                                         "AESSEFIN"
                                                     )}
                                                 </span>
-                                                {containerCategory ==
-                                                    "whatsapp" &&
-                                                    selectedAccount &&
-                                                    selectedContact && (
-                                                        <>
-                                                            {props.sessions[
-                                                                selectedContact
-                                                            ] &&
-                                                            props.sessions[
-                                                                selectedContact
-                                                            ][
-                                                                selectedAccount
-                                                            ] ? (
-                                                                <span
-                                                                    title="Session active"
-                                                                    className="rounded-full p-1 bg-green-500"
-                                                                ></span>
-                                                            ) : (
-                                                                <span
-                                                                    title="Session inactive"
-                                                                    className="rounded-full p-1 bg-red-500"
-                                                                ></span>
-                                                            )}
-                                                        </>
-                                                    )}
+                                                {renderAccountStatusDot(
+                                                    selectedAccount,
+                                                )}
                                                 <span className="ml-1">
                                                     <ChevronDownIcon className="h-3 w-3 text-white/60" />
                                                 </span>
@@ -1491,36 +1539,14 @@ function ChatList(props) {
                                                                 }
                                                                 className="block text-sm text-white/85 hover:text-white w-full cursor-pointer"
                                                             >
-                                                                {name}
-                                                            </span>
-
-                                                            {containerCategory ==
-                                                                "whatsapp" &&
-                                                                selectedContact &&
-                                                                selectedContact && (
-                                                                    <>
-                                                                        {props
-                                                                            .sessions[
-                                                                            selectedContact
-                                                                        ] &&
-                                                                        props
-                                                                            .sessions[
-                                                                            selectedContact
-                                                                        ][
-                                                                            id
-                                                                        ] ? (
-                                                                            <span
-                                                                                title="Session active"
-                                                                                className="rounded-full p-1 bg-green-500"
-                                                                            ></span>
-                                                                        ) : (
-                                                                            <span
-                                                                                title="Session inactive"
-                                                                                className="rounded-full p-1 bg-red-500"
-                                                                            ></span>
-                                                                        )}
-                                                                    </>
+                                                                {formatSelectedAccountLabel(
+                                                                    name,
+                                                                    containerCategory,
                                                                 )}
+                                                            </span>
+                                                            {renderAccountStatusDot(
+                                                                id,
+                                                            )}
                                                         </div>
                                                     </Menu.Item>
                                                 ),
