@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export COMPOSER_ALLOW_SUPERUSER=1
+
 APP_DIR="${APP_DIR:-/var/www/allmessagechat}"
 BRANCH="${BRANCH:-nishant}"
 
@@ -37,7 +39,7 @@ php artisan route:cache
 php artisan view:cache
 php artisan storage:link || true
 
-chown -R www-data:www-data storage bootstrap/cache
-chmod -R ug+rwX storage bootstrap/cache
+sudo chown -R www-data:www-data storage bootstrap/cache || true
+sudo chmod -R ug+rwX storage bootstrap/cache || true
 
 echo "Deploy finished."
