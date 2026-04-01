@@ -707,4 +707,30 @@ a:focus {
   background: linear-gradient(180deg, rgba(255, 132, 234, 0.98), rgba(178, 83, 255, 0.96));
 }
 
+.chat-message-scrollbar {
+  scrollbar-gutter: stable;
+  scrollbar-width: auto;
+  scrollbar-color: rgba(230, 142, 255, 0.98) rgba(255, 255, 255, 0.08);
+}
+
+.chat-message-scrollbar::-webkit-scrollbar {
+  width: 12px;
+}
+
+.chat-message-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+}
+
+.chat-message-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: linear-gradient(180deg, rgba(255, 126, 235, 1), rgba(191, 89, 255, 0.98));
+  border: 2px solid rgba(10, 8, 16, 0.88);
+  box-shadow: 0 0 12px rgba(167, 52, 255, 0.28);
+}
+
+.chat-message-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(255, 156, 240, 1), rgba(207, 117, 255, 0.98));
+}
+
 

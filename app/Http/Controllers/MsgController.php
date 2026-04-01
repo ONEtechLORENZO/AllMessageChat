@@ -769,6 +769,12 @@ class MsgController extends Controller
             return;
         }
 
+        // Guard heavy dedupe work; the request path should never scan all duplicates.
+        $cacheKey = sprintf('chat-duplicate-collapse:%d:%s', $userId, $service);
+        if (Cache::has($cacheKey)) {
+            return;
+        }
+
         $duplicateGroups = ChatListContact::query()
             ->select('contact_id', 'account_id', 'channel', DB::raw('COUNT(*) as duplicate_count'))
             ->where('user_id', $userId)
@@ -776,6 +782,7 @@ class MsgController extends Controller
             ->whereNotNull('contact_id')
             ->groupBy('contact_id', 'account_id', 'channel')
             ->havingRaw('COUNT(*) > 1')
+            ->limit(200)
             ->get();
 
         foreach ($duplicateGroups as $group) {
@@ -786,6 +793,8 @@ class MsgController extends Controller
                 $group->account_id !== null ? (int) $group->account_id : null
             );
         }
+
+        Cache::put($cacheKey, true, now()->addMinutes(10));
     }
 
     protected function mergeDuplicateConversationGroup(

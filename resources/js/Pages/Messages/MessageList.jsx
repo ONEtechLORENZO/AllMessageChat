@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import ReactAudioPlayer from 'react-audio-player';
 import {
     WhatsAppIcon,
@@ -16,10 +16,20 @@ import { BsFacebook, BsInstagram } from "react-icons/bs";
 import { PopoverHeader, PopoverBody, UncontrolledPopover } from "reactstrap";
 
 export default function MessageList(props) {
+    const messagesContainerRef = useRef(null);
+
+    useEffect(() => {
+        if (!messagesContainerRef.current) {
+            return;
+        }
+
+        messagesContainerRef.current.scrollTop =
+            messagesContainerRef.current.scrollHeight;
+    }, [props.messages, props.containerCategory]);
 
     return (
         <>
-            <div className="chat-pattern-bg relative h-full overflow-hidden rounded-[2rem] bg-[#0a0810]">
+            <div className="chat-pattern-bg relative flex h-full min-h-0 flex-col overflow-hidden rounded-[2rem] bg-[#0a0810]">
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                     {props.containerCategory === "facebook" ? (
                         <BsFacebook
@@ -60,9 +70,11 @@ export default function MessageList(props) {
                 </div>
                 <div
                     id="messages"
-                    className="relative z-10 flex h-full min-h-0 flex-col justify-end gap-4 overflow-y-auto overscroll-contain px-5 py-6"
-                    style={{ scrollbarGutter: "stable" }}
+                    ref={messagesContainerRef}
+                    className="chat-message-scrollbar relative z-10 flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-6 pr-3"
+                    style={{ scrollbarGutter: "stable both-edges" }}
                 >
+                    <div className="flex min-h-full flex-col justify-end gap-4">
                     {Object.entries(props.messages).map(([key, message], j) => {
                     var content = message.content;
                     var mediaClass = "object-contain h-48 w-96";
@@ -222,6 +234,7 @@ export default function MessageList(props) {
                             </>
                         )
                     })}
+                    </div>
                 </div>
             </div>
         </>
