@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import TemplateBody from './TemplateBody';
 import Dropdown from '@/Components/Forms/Dropdown';
 import { useForm, Link, router as Inertia } from '@inertiajs/react';
 import InputError from '@/Components/Forms/InputError';
@@ -30,7 +29,9 @@ export default function TemplateContent(props) {
     const incomingButtons = Array.isArray(props.buttons) ? props.buttons : [];
     const initialSamples = props.samples ?? {};
     const inputClass =
-        'mt-1 block w-full rounded-2xl border border-white/10 bg-[#12041f] px-4 py-3 text-sm text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] placeholder:text-white/30 focus:border-fuchsia-500/60 focus:outline-none';
+        'mt-2 block w-full rounded-xl bg-white/[0.10] px-4 py-3 text-sm text-white ' +
+        'shadow-[0_10px_30px_rgba(0,0,0,0.18)] placeholder:text-white/35 ' +
+        'focus:outline-none focus:ring-2 focus:ring-fuchsia-500/30';
 
     const { data, setData, post, processing, reset } = useForm({
         language: message.language ? message.language : props.language,
@@ -249,45 +250,33 @@ export default function TemplateContent(props) {
     }
 
     return (
-        <div className="grid w-full gap-6 py-6 lg:grid-cols-[minmax(0,1.15fr)_380px]">
-            <div className="space-y-5">
-                <div className="rounded-[28px] border border-white/10 bg-[#140816]/75 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.35)] ring-1 ring-white/5 backdrop-blur-3xl">
-                    <div className="flex flex-col gap-4 border-b border-white/10 pb-5 md:flex-row md:items-start md:justify-between">
-                        <div className="space-y-2">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-fuchsia-200">
-                                {props.translator['Template editor'] ?? 'Template editor'}
-                            </div>
-                            <div className="flex flex-wrap items-center gap-3">
-                                <h1 className="text-3xl font-semibold tracking-tight text-white">
-                                    {data.status == 'draft'
-                                        ? (props.translator['Create new message template'] ?? 'Create new message template')
-                                        : props.template.name}
-                                </h1>
-                                <span
-                                    className={classNames(
-                                        statusClass,
-                                        'inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]'
-                                    )}
-                                >
-                                    {(data.status || 'draft').toUpperCase()}
-                                </span>
-                            </div>
-                            <p className='max-w-3xl text-sm leading-6 text-white/60'>
-                                {props.translator['Through this page you can modify your template following the Whatsapp guidelines. Check out']}{' '}
-                                <a className='text-fuchsia-200 underline decoration-white/20 underline-offset-4'>
-                                    {props.translator['whatsapp suggestions.']}
-                                </a>
-                            </p>
-                        </div>
+        <div className="w-full py-6">
+            <div className="mb-6 text-lg font-black tracking-[0.22em] text-white/90">
+                {String(props.translator['Template editor'] ?? 'Template editor').toUpperCase()}
+            </div>
 
-                        <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/60">
-                            {props.translator['Good Work!']}
-                        </div>
-                    </div>
+            <div className="grid w-full rounded-[28px] bg-[radial-gradient(circle_at_0%_0%,rgba(124,58,237,0.35),rgba(20,8,22,0.92)_55%,rgba(8,4,16,0.98)_100%)] shadow-[0_40px_140px_rgba(0,0,0,0.55)] lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start" style={{overflow: 'clip'}}>
+                <div className="px-8 py-10 sm:px-10">
+                    <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl">
+                        {data.status == 'draft'
+                            ? (props.translator['Create new message template'] ?? 'Create new message template')
+                            : props.template.name}
+                    </h1>
 
-                    <div className='mt-6 space-y-6'>
-                        <div className='form-group'>
-                            <label className='text-base font-medium text-white'>{props.translator['Header type']}</label>
+                    <p className="mt-4 max-w-2xl text-sm leading-6 text-white/70">
+                        {props.translator['Through this page you can modify your template following the Whatsapp guidelines. Check out']}{' '}
+                        <a className="text-white underline decoration-white/30 underline-offset-4">
+                            {props.translator['whatsapp suggestions.']}
+                        </a>
+                    </p>
+
+                    <div className="mt-6 h-px w-full bg-white/25" />
+
+                    <div className="mt-10 space-y-10">
+                        <div className="space-y-4">
+                            <label className="text-base font-medium text-white">
+                                {props.translator['Header type']}
+                            </label>
                             <Dropdown
                                 required={true}
                                 id="header_type"
@@ -296,6 +285,7 @@ export default function TemplateContent(props) {
                                 options={header_templates}
                                 value={data.header_type}
                                 readOnly={data.status == 'draft' ? false : true}
+                                variant="soft"
                             />
                             <InputError message={errors.header_type} />
                         </div>
@@ -305,9 +295,7 @@ export default function TemplateContent(props) {
                                 <label htmlFor="header_text" className="block text-sm font-medium text-white/75">
                                     {props.translator['Header Text']}
                                 </label>
-                                <div className="mt-1">
-                                    <input name='header_text' id='header_text' type={'text'} className={inputClass} maxLength={'60'} onChange={(e) => handleChange(e)} value={data.header_text} required={data.header_type == 'text' ? true : false} />
-                                </div>
+                                <input name='header_text' id='header_text' type={'text'} className={inputClass} maxLength={'60'} onChange={(e) => handleChange(e)} value={data.header_text} required={data.header_type == 'text' ? true : false} />
                                 <small className="form-text text-white/45">{props.translator['Max']} {header_text_max_length - headerTextLength} {props.translator['characters']} </small>
                                 <InputError message={errors.header_text} />
                             </div>
@@ -335,7 +323,16 @@ export default function TemplateContent(props) {
                                 <button type="button" className='flex justify-end font-medium text-fuchsia-200 transition hover:text-white' onClick={() => setTemplateMapping(true)}>{props.translator['Template mapping']}</button>
                             </div>
                             <div className="mt-1">
-                                <TextArea id="body" readOnly={data.status == 'draft' ? false : true} name="body" required={true} handleChange={handleChange} value={data.body} maxLength={'1024'} className="border-white/10 bg-[#12041f] px-4 py-3 text-white placeholder:text-white/30 focus:border-fuchsia-500/60 focus:ring-fuchsia-500/20" />
+                                <TextArea
+                                    id="body"
+                                    readOnly={data.status == 'draft' ? false : true}
+                                    name="body"
+                                    required={true}
+                                    handleChange={handleChange}
+                                    value={data.body}
+                                    maxLength={'1024'}
+                                    variant="soft"
+                                />
                             </div>
                             <div className='grid grid-cols-2'>
                                 <small className="form-text justify-start text-white/45" >{props.translator['Max']} {body_max_length - bodyLength} {props.translator['characters']} </small>
@@ -360,80 +357,147 @@ export default function TemplateContent(props) {
                             />
                         }
 
-                        <div className='form-group'>
-                            <label className='text-base font-medium text-white'>{props.translator['Footer']}</label>
+                        <div className="space-y-3">
+                            <label className="text-base font-medium text-white">
+                                {props.translator['Footer']}
+                            </label>
                             <input name='body_footer' id='body_footer' readOnly={data.status == 'draft' ? false : true} type={'text'} className={inputClass} maxLength={'60'} onChange={(e) => handleChange(e)} value={data.body_footer} />
                             <small className="form-text text-white/45">{props.translator['Max']} {footer_text_max_length - footerLength} {props.translator['characters']} </small>
                             <InputError message={errors.body_footer} />
                         </div>
-                    </div>
-                    <hr className="my-6 border-white/10" />
 
-                    <div className='grid grid-cols-2 text-base font-medium'>
-                        <div className='flex justify-start text-white'>{props.translator['Buttons (Optional)']}</div>
-                        <div className='flex justify-end'>
-                            <button type="button" className="inline-flex items-center rounded-full bg-fuchsia-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-fuchsia-500" onClick={addNewButton}>{props.translator['Add Button']}</button>
+                        <div className="h-px w-full bg-white/25" />
+
+                        <div>
+                            <div className="flex items-center justify-between gap-4">
+                                <div className="text-base font-medium text-white">
+                                    {props.translator['Buttons (Optional)']}
+                                </div>
+                                <button
+                                    type="button"
+                                    className="inline-flex items-center rounded-full bg-fuchsia-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-fuchsia-500"
+                                    onClick={addNewButton}
+                                >
+                                    {props.translator['Add Button']}
+                                </button>
+                            </div>
+                            <p className="mt-2 text-sm text-white/55">
+                                {props.translator['Create up to 3 buttons that let customers respond to your message or take action.']}
+                            </p>
+
+                            <div className="button-container mt-6 space-y-4">
+                                {buttons.map((button, index) => {
+                                    return (
+                                        <CreateButton
+                                            key={button.id || `button-${index}`}
+                                            index={index}
+                                            data={button}
+                                            quick_reply_max_length={quick_reply_max_length}
+                                            url_max_length={url_max_length}
+                                            errors={errors}
+                                            handleChange={(e) => handleButtonChange(e, index)}
+                                            deleteButton={deleteButton}
+                                            {...props}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="pt-4">
+                            <div className="flex w-full items-center justify-between gap-4">
+                                <Link
+                                    href={route('account_view', props.template.account_id)}
+                                    className="inline-flex items-center rounded-full bg-white/10 px-6 py-2.5 text-sm font-semibold text-white/90 ring-1 ring-white/10 transition hover:bg-white/15"
+                                >
+                                    {props.translator['Back']}
+                                </Link>
+                                {data.status == 'draft' &&
+                                    <button
+                                        type="button"
+                                        className="inline-flex items-center rounded-full bg-fuchsia-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-fuchsia-500"
+                                        onClick={() => validateAndSubmitForm()}
+                                    >
+                                        {props.translator['Send for review']}
+                                    </button>
+                                }
+                            </div>
                         </div>
                     </div>
-                    <p className='mt-2 text-white/55'>{props.translator['Create up to 3 buttons that let customers respond to your message or take action.']}</p>
-
-                    <div className='button-container mt-6 space-y-3'>
-                        {buttons.map((button, index) => {
-                            return (
-                                <CreateButton
-                                    key={button.id || `button-${index}`}
-                                    index={index}
-                                    data={button}
-                                    quick_reply_max_length={quick_reply_max_length}
-                                    url_max_length={url_max_length}
-                                    errors={errors}
-                                    handleChange={(e) => handleButtonChange(e, index)}
-                                    deleteButton={deleteButton}
-                                    {...props}
-                                />
-                            );
-                        })}
-                    </div>
-
-                    <p className='mt-6 text-center text-white/55'>{props.translator['Look, whatsapp takes up to 24 hours to review this template.']}</p>
-
-                    <div className='mt-6 flex w-full justify-between'>
-                        <Link
-                            href={route('account_view', props.template.account_id)}
-                            className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-white/80 transition hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
-                        >
-                            {props.translator['Back']}
-                        </Link>
-                        {data.status == 'draft' &&
-                            <button type="button" className="inline-flex items-center rounded-full bg-fuchsia-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-fuchsia-500" onClick={() => validateAndSubmitForm()}>{props.translator['Send for review']}</button>
-                        }
-                    </div>
                 </div>
-            </div>
 
-            <div className="lg:sticky lg:top-6">
-                <div className="rounded-[28px] border border-white/10 bg-[#100517]/85 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.35)] ring-1 ring-white/5 backdrop-blur-xl">
-                    <div className='mb-6 text-center text-2xl font-semibold leading-6 text-white'>{props.translator['Preview']}</div>
-                    <div className='mx-auto w-[300px] rounded-[32px] border border-white/10 bg-black/25 p-4'>
-                        <div className='relative h-[600px] w-[300px]'>
-                            <img src='/img/mockup-trans.png' width={'300'} className="absolute inset-0" />
-                            <div className='h-full w-full'>
-                                <div className='flex h-full flex-col !px-3 pt-[14px] !pb-[10px]'>
-                                    <img src='/img/WhatsApp-header.png' className='rounded-t-xl' width={'300'} />
-                                    <TemplateBody
-                                        template={data}
-                                        buttons={buttons}
+                <div className="relative flex flex-col items-center bg-[linear-gradient(180deg,rgba(88,28,135,0.95),rgba(67,22,120,0.92))] px-8 py-10 sm:px-10 lg:self-start lg:sticky lg:top-0 lg:min-h-screen">
+                    <div className="text-center text-4xl font-black tracking-[0.08em] text-white">
+                        {String(props.translator['Preview'] ?? 'Preview').toUpperCase()}
+                    </div>
+
+                    {/* Phone mockup - always pinned below the title, never re-centers */}
+                    <div className="mt-10 flex justify-center">
+                        <div className="relative w-[270px] h-[540px]">
+                            {/* Phone frame image */}
+                            <img
+                                src="/img/mockup-trans.png"
+                                width="270"
+                                className="absolute inset-0 z-10 pointer-events-none select-none"
+                                alt=""
+                            />
+                            {/* Chat content inside phone */}
+                            <div className="absolute inset-0 flex flex-col overflow-hidden">
+                                <div className="px-[11px] pt-[13px] pb-[9px] flex flex-col h-full">
+                                    <img
+                                        src="/img/WhatsApp-header.png"
+                                        className="rounded-t-xl w-full"
+                                        alt=""
                                     />
-                                    <div className='w-full rounded-b-xl bg-[#EEE3DE]' >
-                                        <img src='/img/whatapp-chat.png' className='rounded-b-xl' width={'300'} />
+                                    {/* Scrollable chat body */}
+                                    <div className="flex-1 bg-[#EEE3DE] overflow-y-auto px-2 py-2 space-y-2">
+                                        <div className="flex justify-center">
+                                            <span className="text-[10px] text-[#6C6C6C] bg-white/60 rounded-full px-2 py-0.5">TODAY</span>
+                                        </div>
+
+                                        {/* Message bubble */}
+                                        <div className="w-4/5 bg-white rounded-lg p-2 shadow-sm">
+                                            {(data.header_type === 'image' || data.header_type === 'video' || data.header_type === 'document') && (
+                                                <img src="/img/dummy-img.png" className="w-full object-cover mb-1.5 rounded" alt="" />
+                                            )}
+                                            {data.header_type === 'text' && data.header_text && (
+                                                <p className="text-[11px] font-bold text-black mb-1 leading-tight">{data.header_text}</p>
+                                            )}
+                                            <p className="text-[11px] text-black leading-relaxed">
+                                                {data.body || <span className="text-[#aaa] italic">Your message body will appear here…</span>}
+                                            </p>
+                                            {data.body_footer && (
+                                                <p className="text-[10px] text-[#777] mt-1">{data.body_footer}</p>
+                                            )}
+                                            <div className="flex justify-end mt-1">
+                                                <span className="text-[9px] text-[#aaa]">9:41 AM ✓✓</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Button previews */}
+                                        {buttons.length > 0 && (
+                                            <div className="w-4/5 space-y-1">
+                                                {buttons.map((btn, i) => (
+                                                    <div key={i} className="bg-white rounded-md py-1.5 text-center text-[11px] text-[#46A5EE] font-medium shadow-sm cursor-default">
+                                                        {btn.button_text || `Button ${i + 1}`}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
+
+                                    {/* Chat input bar */}
+                                    <img
+                                        src="/img/whatapp-chat.png"
+                                        className="rounded-b-xl w-full"
+                                        alt=""
+                                    />
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
     );
 }

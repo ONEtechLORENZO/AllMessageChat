@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* Prevent layout shift (background narrowing) when dialogs open.
+   overflow-y:scroll keeps the scrollbar always visible so HeadlessUI never
+   needs to inject/remove padding-right when it locks scroll on a dialog open. */
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
 /* Global link reset to remove blue underlines */
 a,
 a:link,
@@ -357,6 +365,29 @@ a:focus {
   margin: 0;
   font-size: 0.875rem;
   font-weight: 600;
+}
+
+.manage-btn {
+  background-color: #eab308;
+  color: #0f0b1a;
+  width: 8.5em;
+  height: 2.9em;
+  border: #eab308 0.2em solid;
+  border-radius: 33px;
+  transition: all 0.6s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1em;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.manage-btn:hover {
+  background-color: #ca8a04;
+  border-color: #ca8a04;
 }
 
 .social-stagger-item {

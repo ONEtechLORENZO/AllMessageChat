@@ -15,10 +15,12 @@ export default function CreateButton(props) {
         url_type: props.data?.url_type ?? '',
     };
     const inputClass =
-        "mt-1 block w-full rounded-2xl border border-white/10 bg-[#12041f] px-4 py-3 text-sm text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] placeholder:text-white/30 focus:border-fuchsia-500/60 focus:outline-none";
+        "mt-2 block w-full rounded-xl bg-white/[0.10] px-4 py-3 text-sm text-white " +
+        "shadow-[0_10px_30px_rgba(0,0,0,0.18)] placeholder:text-white/35 " +
+        "focus:outline-none focus:ring-2 focus:ring-fuchsia-500/30";
 
     return (
-        <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+        <div className="rounded-3xl bg-white/[0.04] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.26)]">
             <input type="hidden" name="id" value={buttonData.id} />
             <div className="form-group col-span-6 sm:col-span-4">
                 <div className='grid grid-cols-2'>
@@ -27,7 +29,7 @@ export default function CreateButton(props) {
                     </label>
                     <button
                         type="button"
-                        className='flex justify-end text-white/50 transition hover:text-red-300'
+                        className='flex justify-end text-red-400 transition hover:text-red-300'
                         onClick={() => {props.deleteButton(props.index)}}
                     >
                         <DeleteIcon className="cursor-pointer" /> 
@@ -41,6 +43,7 @@ export default function CreateButton(props) {
                         handleChange={props.handleChange}
                         options={button_types}
                         value={buttonData.button_type}
+                        variant="soft"
                     />
                 </div>
                 <InputError message={props.errors.button_type} />

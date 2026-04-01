@@ -90,14 +90,7 @@ export default function Step1(props) {
             </div>
 
             <div className="space-y-5">
-                {lockedService ? (
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 text-sm text-white/60">
-                        <div className="font-medium text-white/85">
-                            {serivceOption[selectedService]}
-                        </div>
-                        <p className="mt-1 leading-6">{helperNote}</p>
-                    </div>
-                ) : (
+                {!lockedService && (
                     <div>
                         <label
                             htmlFor="service"
@@ -127,7 +120,7 @@ export default function Step1(props) {
                 )}
 
                 {isSocialOauthService ? (
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4">
+                    <div className="rounded-2xl bg-white/[0.03] px-4 py-4">
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <div className="text-sm text-white/65">
                                 {oauthHelperText}
@@ -146,7 +139,7 @@ export default function Step1(props) {
                         </div>
                     </div>
                 ) : (
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 text-sm text-white/60">
+                    <div className="rounded-2xl bg-white/[0.03] px-4 py-4 text-sm text-white/60">
                         <div className="font-medium text-white/85">
                             {selectedService ? serivceOption[selectedService] : "WhatsApp"}
                         </div>
@@ -155,7 +148,7 @@ export default function Step1(props) {
                 )}
             </div>
 
-            <div className="flex flex-col-reverse gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col-reverse gap-3 pt-5 sm:flex-row sm:items-center sm:justify-between">
                 <Link
                     href={route("social_profile")}
                     className="inline-flex items-center justify-center rounded-2xl border border-white/25 bg-transparent px-5 py-3 text-sm font-medium text-white transition hover:border-white/40 hover:bg-white/6"

@@ -11,7 +11,8 @@ export default function TextArea({
     row="4",
     placeholder,
     defaultValue,
-    maxLength
+    maxLength,
+    variant = "default",
 }) {
     const input = useRef();
 
@@ -27,14 +28,23 @@ export default function TextArea({
     // }
     // required = requiredFlag;
 
+    const baseDefault =
+        "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md ";
+
+    const baseSoft =
+        "mt-2 block w-full rounded-xl bg-white/[0.10] px-4 py-3 text-sm text-white " +
+        "shadow-[0_10px_30px_rgba(0,0,0,0.18)] placeholder:text-white/35 " +
+        "focus:outline-none focus:ring-2 focus:ring-fuchsia-500/30 ";
+
+    const base = variant === "soft" ? baseSoft : baseDefault;
+
     return (
         <textarea
             name={name}
             id={id}
             rows={row}
             className={
-                `shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md ` +
-                (className || "")
+                base + (className || "")
             }
             placeholder={placeholder}
             defaultValue={defaultValue}

@@ -1,4 +1,4 @@
-import { LinkIcon } from "@heroicons/react/24/outline";
+import { GoMail } from "react-icons/go";
 
 export default function StepEmail({
     setCurrentPage,
@@ -6,53 +6,56 @@ export default function StepEmail({
     googleConfigured,
     lockedService,
 }) {
-    const buttonBase =
-        "inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition";
-
     return (
-        <div className="space-y-6 p-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-white/55">
-                Gmail Only
+        <div className="flex flex-col items-center text-center space-y-6 px-4 py-2">
+
+            {/* Title */}
+            <div className="space-y-1 pt-2">
+                <h1 className="text-2xl font-black uppercase tracking-wider text-white leading-tight">
+                    Google OAuth<br />Mailbox Link
+                </h1>
             </div>
 
-            <div className="space-y-2">
-                <h2 className="text-2xl font-semibold text-white">
-                    {translator?.["Connect Gmail"] ?? "Connect Gmail"}
-                </h2>
-                <p className="max-w-2xl text-sm leading-6 text-white/60">
-                    Gmail is the only supported email integration. We use Google
-                    OAuth to link the mailbox, send mail, and sync inbox and sent
-                    threads without storing raw SMTP credentials.
-                </p>
-            </div>
+            {/* Feature list */}
+            <ul className="space-y-2 text-sm text-white/65">
+                <li>Send email through the Gmail API</li>
+                <li>Sync inbox and sent threads into chat</li>
+                <li>Store OAuth tokens encrypted at rest</li>
+                <li>Never expose tokens back to the frontend</li>
+            </ul>
 
-            <div className="rounded-3xl border border-white/10 bg-black/20 p-5">
-                <div className="flex items-start gap-4">
-                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#4285F4]/15 text-[#8ab4ff]">
-                        <LinkIcon className="h-6 w-6" />
-                    </div>
-                    <div className="space-y-3">
-                        <h3 className="text-lg font-semibold text-white">
-                            Google OAuth mailbox link
-                        </h3>
-                        <ul className="space-y-2 text-sm text-white/65">
-                            <li>Send email through the Gmail API</li>
-                            <li>Sync inbox and sent threads into chat</li>
-                            <li>Store OAuth tokens encrypted at rest</li>
-                            <li>Never expose tokens back to the frontend</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
+            {/* Warning */}
             {!googleConfigured && (
-                <div className="rounded-3xl border border-amber-500/20 bg-amber-500/10 px-5 py-4 text-sm text-amber-100">
+                <p className="text-sm text-amber-400 leading-relaxed max-w-xs">
                     Google OAuth is not configured yet. Add the Google client ID,
-                    client secret, and redirect URI before linking Gmail.
-                </div>
+                    client secret, and redirect URI before linking Gmail
+                </p>
             )}
 
-            <div className="flex justify-between pt-2">
+            {/* Connect with Google button */}
+            <div className="w-full pt-1">
+                {googleConfigured ? (
+                    <a
+                        href={route("connect_gmail")}
+                        className="flex items-center justify-center gap-3 w-full rounded-full py-3 px-6 text-sm font-semibold text-white bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] hover:opacity-90 transition"
+                    >
+                        <GoMail size={20} />
+                        {translator?.["Connect with Google"] ?? "Connect with Google"}
+                    </a>
+                ) : (
+                    <button
+                        type="button"
+                        disabled
+                        className="flex items-center justify-center gap-3 w-full rounded-full py-3 px-6 text-sm font-semibold text-white/40 bg-gradient-to-r from-[#f58529]/40 via-[#dd2a7b]/40 to-[#8134af]/40 cursor-not-allowed"
+                    >
+                        <GoMail size={20} />
+                        {translator?.["Connect with Google"] ?? "Connect with Google"}
+                    </button>
+                )}
+            </div>
+
+            {/* Cancel button */}
+            <div className="w-full flex justify-start">
                 <button
                     type="button"
                     onClick={() => {
@@ -60,32 +63,12 @@ export default function StepEmail({
                             window.location.href = route("social_profile");
                             return;
                         }
-
                         setCurrentPage(1);
                     }}
-                    className={`${buttonBase} border border-white/10 bg-white/5 text-white/75 hover:bg-white/10 hover:text-white`}
+                    className="inline-flex items-center justify-center rounded-full bg-violet-600 hover:bg-violet-500 px-6 py-2.5 text-sm font-semibold text-white transition"
                 >
-                    {translator?.["Back"] ?? "Back"}
+                    {translator?.["Cancel"] ?? "Cancel"}
                 </button>
-
-                {googleConfigured ? (
-                    <a
-                        href={route("connect_gmail")}
-                        className={`${buttonBase} bg-[#4285F4] text-white hover:bg-[#3674db]`}
-                    >
-                        {translator?.["Connect with Google"] ??
-                            "Connect with Google"}
-                    </a>
-                ) : (
-                    <button
-                        type="button"
-                        disabled
-                        className={`${buttonBase} cursor-not-allowed bg-white/10 text-white/35`}
-                    >
-                        {translator?.["Connect with Google"] ??
-                            "Connect with Google"}
-                    </button>
-                )}
             </div>
         </div>
     );

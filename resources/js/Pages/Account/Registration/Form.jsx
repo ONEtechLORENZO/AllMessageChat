@@ -4,6 +4,8 @@ import { Head, Link, router as Inertia } from "@inertiajs/react";
 import {
     XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { BsFacebook, BsInstagram } from "react-icons/bs";
+import { GoMail } from "react-icons/go";
 import Authenticated from "@/Layouts/Authenticated";
 import Accounts from "@/Pages/Wallet/Accounts";
 import Step1 from "./Step1";
@@ -19,6 +21,24 @@ import notie from "notie";
 import nProgress from "nprogress";
 
 const mandatoryField = ["display_name", "phone_number", "company_name"];
+
+const LEFT_PANEL_CONFIG = {
+    facebook: {
+        name: "FACEBOOK",
+        description: "Bring Facebook page conversations into your workspace for unified messaging.",
+        Icon: BsFacebook,
+    },
+    instagram: {
+        name: "INSTAGRAM",
+        description: "Connect your Instagram business profile to manage DMs in one place.",
+        Icon: BsInstagram,
+    },
+    email: {
+        name: "GMAIL",
+        description: "Link your Gmail inbox to sync emails and reply directly from the workspace.",
+        Icon: GoMail,
+    },
+};
 
 export function GlassCard({ className = "", children }) {
     return (
@@ -258,6 +278,8 @@ export default function AccountRegistration(props) {
     }
 
     const stepCardClassName = "bg-white/[0.02] border-white/10";
+    const isTwoPanelService = ["facebook", "instagram", "email"].includes(lockedService);
+    const leftPanel = LEFT_PANEL_CONFIG[lockedService] || null;
 
     return (
         <Authenticated
@@ -305,6 +327,76 @@ export default function AccountRegistration(props) {
                                 leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                                 leaveTo="opacity-0 translate-y-6 sm:scale-95"
                             >
+                                {isTwoPanelService && leftPanel ? (
+                                    /* ── Two-panel layout for Facebook / Instagram / Email ── */
+                                    <Dialog.Panel className="relative w-full max-w-3xl overflow-hidden rounded-[28px] shadow-[0_24px_70px_rgba(0,0,0,0.45)] transition-all flex min-h-[520px]">
+                                        {/* Left panel – purple branding */}
+                                        <div className="relative hidden sm:flex w-[42%] flex-col items-center justify-center p-8 overflow-hidden bg-gradient-to-br from-violet-600 via-purple-700 to-purple-900">
+                                            {/* Watermark icon */}
+                                            <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-[0.08]">
+                                                <leftPanel.Icon style={{ width: 220, height: 220 }} />
+                                            </div>
+                                            {/* Glow blobs */}
+                                            <div className="pointer-events-none absolute -top-16 -left-16 h-64 w-64 rounded-full bg-fuchsia-500/25 blur-3xl" />
+                                            <div className="pointer-events-none absolute -bottom-16 -right-16 h-56 w-56 rounded-full bg-violet-400/20 blur-3xl" />
+
+                                            <div className="relative z-10 text-center space-y-5">
+                                                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-white/15 backdrop-blur-sm shadow-[0_8px_24px_rgba(0,0,0,0.25)]">
+                                                    <leftPanel.Icon style={{ width: 40, height: 40, color: "white" }} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-bold tracking-[0.28em] uppercase text-white/50 mb-1">Connect</p>
+                                                    <h1 className="text-3xl font-black uppercase tracking-wider text-white leading-none">
+                                                        {leftPanel.name}
+                                                    </h1>
+                                                </div>
+                                                <p className="text-sm text-white/60 leading-relaxed max-w-[16rem] mx-auto">
+                                                    {leftPanel.description}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Right panel – dark content */}
+                                        <div className="flex-1 bg-[rgba(20,8,30,0.98)] flex flex-col text-left relative">
+                                            {/* Close button */}
+                                            <button
+                                                ref={cancelButtonRef}
+                                                type="button"
+                                                onClick={closeModal}
+                                                className="absolute top-4 right-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/60 transition hover:bg-white/10 hover:text-white"
+                                                aria-label="Close dialog"
+                                            >
+                                                <XMarkIcon className="h-4 w-4" />
+                                            </button>
+
+                                            <div className="flex-1 flex flex-col justify-center p-7 pt-12">
+                                                <div className={curretpage == 1 ? "block" : "hidden"}>
+                                                    <Step1
+                                                        data={data}
+                                                        setOpen={setOpen}
+                                                        formHandler={formHandler}
+                                                        serviceHandler={serviceHandler}
+                                                        socialProfiles={socialProfiles}
+                                                        lockedService={lockedService}
+                                                        presetAccountId={props.presetAccountId}
+                                                        {...props}
+                                                    />
+                                                </div>
+                                                <div className={curretpage == 8 ? "block" : "hidden"}>
+                                                    <StepEmail
+                                                        data={data}
+                                                        formHandler={formHandler}
+                                                        setCurrentPage={setCurrentPage}
+                                                        setAccountid={setAccountid}
+                                                        lockedService={lockedService}
+                                                        {...props}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Dialog.Panel>
+                                ) : (
+                                /* ── Standard layout for WhatsApp and other services ── */
                                 <Dialog.Panel className="relative w-full max-w-4xl overflow-hidden rounded-[28px] border border-white/15 bg-[rgba(24,10,34,0.96)] text-left shadow-[0_24px_70px_rgba(0,0,0,0.38)] ring-1 ring-white/10 transition-all">
 
                                     <div className="relative">
@@ -446,6 +538,7 @@ export default function AccountRegistration(props) {
                                         </div>
                                     </div>
                                 </Dialog.Panel>
+                                )}
                             </Transition.Child>
                         </div>
                     </div>

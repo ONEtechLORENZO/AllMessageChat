@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { Dialog, Transition } from "@headlessui/react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 import { BsPlusLg } from "react-icons/bs";
 import { useForm, router as Inertia } from '@inertiajs/react';
 import Axios from "axios";
@@ -631,7 +632,7 @@ export default function NewForm(props) {
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-black bg-opacity-25" />
+                    <div className="fixed inset-0 bg-black/75 backdrop-blur-sm" />
                 </Transition.Child>
 
                 <div className="fixed inset-0 overflow-y-auto">
@@ -645,61 +646,48 @@ export default function NewForm(props) {
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="flex h-[calc(100vh-2rem)] w-full max-w-4xl max-h-[720px] transform flex-col overflow-hidden rounded-2xl border border-white/10 bg-transparent text-left align-middle shadow-xl transition-all">
+                            <Dialog.Panel className="flex h-[calc(100vh-2rem)] w-full max-w-4xl max-h-[720px] transform overflow-hidden rounded-[28px] shadow-[0_24px_70px_rgba(0,0,0,0.55)] text-left align-middle transition-all">
                                 <div className="flex min-h-0 flex-1">
-                                    <div className="w-2/6 min-h-0 overflow-y-auto border-r border-white/10 bg-black p-6 text-white flex flex-col gap-4 items-center">
-                                        <div className="text-xl font-semibold text-white">
-                                            {getCreateTitle(props)}
+
+                                    {/* ── Left panel – dark with contact watermark ── */}
+                                    <div className="relative w-2/6 min-h-0 bg-[#0a0012] pt-7 pr-4 pb-7 pl-0 text-white flex flex-col overflow-hidden">
+                                        {/* Watermark contact icon */}
+                                        <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex items-end justify-center pb-4 opacity-[0.07] text-white">
+                                            <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 220, height: 220 }}>
+                                                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+                                            </svg>
                                         </div>
-                                        {/* <div className="flex items-center gap-2">
-                                            <div className="w-8 h-8 rounded-full bg-[#D4D4D4] flex justify-center items-center">
-                                                <svg
-                                                    width={22}
-                                                    height={22}
-                                                    viewBox="0 0 22 22"
-                                                    fill="none"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                >
-                                                    <path
-                                                        opacity="0.2"
-                                                        d="M11.2548 13.75C8.35534 13.75 6.00484 11.2876 6.00484 8.25C6.00484 5.21243 8.35534 2.75 11.2548 2.75C14.1543 2.75 16.5048 5.21243 16.5048 8.25C16.5048 11.2876 14.1543 13.75 11.2548 13.75Z"
-                                                        fill="#FBFBFB"
-                                                    />
-                                                    <path
-                                                        d="M2.73179 18.2192C3.9563 16.0094 5.91632 14.3508 8.23609 13.5614C7.12417 12.8687 6.26009 11.8127 5.7766 10.5557C5.2931 9.29865 5.21694 7.91006 5.5598 6.60327C5.90266 5.29647 6.64559 4.14375 7.67445 3.32219C8.7033 2.50062 9.96118 2.05566 11.2548 2.05566C12.5485 2.05566 13.8064 2.50062 14.8352 3.32219C15.8641 4.14375 16.607 5.29647 16.9499 6.60327C17.2927 7.91006 17.2166 9.29865 16.7331 10.5557C16.2496 11.8127 15.3855 12.8687 14.2736 13.5614C16.5934 14.3508 18.5534 16.0094 19.7779 18.2192C19.8292 18.2973 19.8646 18.3856 19.8818 18.4787C19.899 18.5718 19.8977 18.6676 19.8779 18.7601C19.858 18.8526 19.8201 18.9398 19.7666 19.0162C19.713 19.0926 19.645 19.1566 19.5667 19.2042C19.4884 19.2517 19.4016 19.2818 19.3116 19.2925C19.2217 19.3032 19.1307 19.2943 19.0442 19.2664C18.9577 19.2384 18.8777 19.1921 18.8091 19.1302C18.7406 19.0683 18.685 18.9922 18.6459 18.9067C17.8958 17.5489 16.818 16.4216 15.5208 15.6379C14.2235 14.8541 12.7523 14.4416 11.2548 14.4416C9.75733 14.4416 8.28615 14.8541 6.98889 15.6379C5.69163 16.4216 4.6139 17.5489 3.86382 18.9067C3.82468 18.9922 3.76909 19.0683 3.70054 19.1302C3.63199 19.1921 3.55196 19.2384 3.46548 19.2664C3.37901 19.2943 3.28795 19.3032 3.19803 19.2925C3.10811 19.2818 3.02127 19.2517 2.94298 19.2042C2.86469 19.1566 2.79663 19.0926 2.74308 19.0162C2.68953 18.9398 2.65165 18.8526 2.63182 18.7601C2.61198 18.6676 2.61063 18.5718 2.62783 18.4787C2.64503 18.3856 2.68043 18.2973 2.73179 18.2192ZM15.8486 8.25047C15.8486 7.29865 15.5792 6.3682 15.0744 5.57679C14.5696 4.78538 13.8522 4.16855 13.0128 3.8043C12.1734 3.44006 11.2497 3.34475 10.3586 3.53044C9.46754 3.71614 8.64901 4.17448 8.00657 4.84752C7.36412 5.52056 6.9266 6.37807 6.74935 7.3116C6.5721 8.24513 6.66307 9.21277 7.01077 10.0921C7.35845 10.9715 7.94725 11.7231 8.70269 12.2519C9.45812 12.7807 10.3463 13.063 11.2548 13.063C12.4732 13.063 13.6416 12.5559 14.5031 11.6534C15.3646 10.7509 15.8486 9.52683 15.8486 8.25047Z"
-                                                        fill="#7666B4"
-                                                    />
-                                                </svg>
-                                            </div>
-                                            <div className="flex text-white gap-1.5 items-center text-sm">
-                                                <BsPlusLg/>
-                                                Add photo
-                                            </div>                                                
-                                        </div> */}
-                                        <ul className="divide-y divide-white/10 w-full pl-0">
-                                            {fieldGroupList && Object.entries(fieldGroupList).map(([index, grouplist]) => (
-                                                <li
-                                                    key={index}
-                                                    className={classNames(
-                                                        group == grouplist
-                                                            ? 'text-[#878787] bg-white/5 border-l-2 border-white/40'
-                                                            : 'text-[#878787]',
-                                                        'flex gap-2 items-center w-full !p-3 cursor-pointer'
-                                                    )}
-                                                    onClick={() => setGroup(grouplist)}
-                                                >
-                                                    <div
-                                                        className={classNames(
-                                                            group == grouplist
-                                                                ? 'bg-white'
-                                                                : 'bg-white/30',
-                                                            'w-3 h-3 rounded-full'
-                                                        )}
-                                                    ></div>
-                                                    {props.translator[grouplist] ?? grouplist}
-                                                </li>
-                                            ))}
-                                        </ul>
+                                        {/* Glow blob */}
+                                        <div className="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-violet-700/20 blur-3xl" />
+
+                                        {/* Title */}
+                                        <div className="relative z-10 mb-8 pl-5">
+                                            <h1 className="text-3xl font-black uppercase tracking-wider text-white leading-tight">
+                                                {getCreateTitle(props)}
+                                            </h1>
+                                        </div>
+
+                                        {/* Navigation – flush to left edge */}
+                                        <nav className="relative z-10 flex-1">
+                                            <ul className="space-y-0.5">
+                                                {fieldGroupList && Object.entries(fieldGroupList).map(([index, grouplist]) => (
+                                                    <li key={index}>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setGroup(grouplist)}
+                                                            className={classNames(
+                                                                group == grouplist
+                                                                    ? 'bg-violet-600/30 text-violet-200 border-l-2 border-violet-400'
+                                                                    : 'text-white/50 hover:text-white/80 hover:bg-white/5 border-l-2 border-transparent',
+                                                                'w-full text-left pl-4 pr-3 py-2.5 text-sm font-medium transition-all'
+                                                            )}
+                                                        >
+                                                            {props.translator[grouplist] ?? grouplist}
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </nav>
                                     </div>
 
                                     {Object.keys(formErrors) > 0 ?
@@ -707,8 +695,20 @@ export default function NewForm(props) {
                                             <ValidationErrors errors={formErrors} />
                                         </div>
                                         : ''}
-                                    <div className="flex w-4/6 min-h-0 flex-col bg-[#140816]/70 text-white backdrop-blur-xl">
-                                        <div className="p-6 flex-1 overflow-y-auto min-h-0">
+                                    {/* ── Right panel – form ── */}
+                                    <div className="relative flex w-4/6 min-h-0 flex-col bg-[rgba(20,8,30,0.98)] text-white">
+                                        {/* Violet X close button – sits in its own header row */}
+                                        <div className="flex-shrink-0 flex justify-end px-4 pt-4 pb-0">
+                                            <button
+                                                type="button"
+                                                onClick={() => props.hideForm()}
+                                                className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-violet-600 text-white transition hover:bg-violet-500"
+                                                aria-label="Close"
+                                            >
+                                                <XMarkIcon className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                        <div className="px-6 pt-4 pb-4 flex-1 min-h-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                                             <div className="flex-1">
                                                 <form id='form'>
                                                     <div className="space-y-2">
@@ -751,7 +751,7 @@ export default function NewForm(props) {
                                                                             case "text":
                                                                                 element = <Input
                                                                                     type="text"
-                                                                                    className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                                                    className={`mt-1 appearance-none block w-full px-3 py-2 border-0 bg-white/[0.06] rounded-xl text-white placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-violet-500/40 sm:text-sm`}
                                                                                     id={field.field_name}
                                                                                     name={field.field_name}
                                                                                     value={field_value}
@@ -764,7 +764,7 @@ export default function NewForm(props) {
                                                                             case "url":
                                                                                 element = <Input
                                                                                     type="text"
-                                                                                    className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                                                    className={`mt-1 appearance-none block w-full px-3 py-2 border-0 bg-white/[0.06] rounded-xl text-white placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-violet-500/40 sm:text-sm`}
                                                                                     id={field.field_name}
                                                                                     name={field.field_name}
                                                                                     value={field_value}
@@ -801,7 +801,7 @@ export default function NewForm(props) {
 
                                                                                     <Number
                                                                                         type="text"
-                                                                                        className={`pl-6 mt-1 appearance-none block w-full pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                                                        className={`pl-6 mt-1 appearance-none block w-full pr-3 py-2 border-0 bg-white/[0.06] rounded-xl text-white placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-violet-500/40 sm:text-sm`}
                                                                                         id={field.field_name}
                                                                                         name={field.field_name}
                                                                                         value={field_value}
@@ -816,7 +816,7 @@ export default function NewForm(props) {
                                                                                     name={field.field_name}
                                                                                     required={mandatory}
                                                                                     rows="2"
-                                                                                    className={`mt-1 max-w-lg shadow-sm block w-full focus:ring-skin-primary focus:border-skin-primary sm:text-sm border border-gray-300 rounded-md`}
+                                                                                    className={`mt-1 block w-full border-0 bg-white/[0.06] rounded-xl text-white placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-violet-500/40 sm:text-sm`}
                                                                                     value={field_value}
                                                                                     handleChange={handleChange}
                                                                                 />
@@ -852,7 +852,7 @@ export default function NewForm(props) {
                                                                             case 'number':
                                                                                 element = <Number
                                                                                     type="text"
-                                                                                    className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                                                    className={`mt-1 appearance-none block w-full px-3 py-2 border-0 bg-white/[0.06] rounded-xl text-white placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-violet-500/40 sm:text-sm`}
                                                                                     id={field.field_name}
                                                                                     name={field.field_name}
                                                                                     value={field_value}
@@ -909,7 +909,7 @@ export default function NewForm(props) {
                                                                             case 'email':
                                                                                 element = <Input
                                                                                     type="email"
-                                                                                    className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                                                    className={`mt-1 appearance-none block w-full px-3 py-2 border-0 bg-white/[0.06] rounded-xl text-white placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-violet-500/40 sm:text-sm`}
                                                                                     id={field.field_name}
                                                                                     name={field.field_name}
                                                                                     value={field_value}
@@ -944,7 +944,7 @@ export default function NewForm(props) {
                                                                             case "file":
                                                                                 element = <Input
                                                                                     type="file"
-                                                                                    className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                                                    className={`mt-1 appearance-none block w-full px-3 py-2 border-0 bg-white/[0.06] rounded-xl text-white placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-violet-500/40 sm:text-sm`}
                                                                                     id={field.field_name}
                                                                                     name={field.field_name}
                                                                                     handleChange={fileHandler}
@@ -954,7 +954,7 @@ export default function NewForm(props) {
                                                                             default:
                                                                                 element = <Input
                                                                                     type="text"
-                                                                                    className={`mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`}
+                                                                                    className={`mt-1 appearance-none block w-full px-3 py-2 border-0 bg-white/[0.06] rounded-xl text-white placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-violet-500/40 sm:text-sm`}
                                                                                     id={field.field_name}
                                                                                     name={field.field_name}
                                                                                     value={field_value}
@@ -1068,19 +1068,19 @@ export default function NewForm(props) {
                                                 </form>
                                             </div>
                                         </div>
-                                        <div className="flex items-center justify-between gap-3 border-t border-white/10 bg-[#140816] px-6 py-4">
+                                        <div className="flex items-center justify-end gap-3 border-t border-white/[0.06] bg-[rgba(20,8,30,0.98)] px-6 py-4">
                                             <button
                                                 type="button"
-                                                className="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-6 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm"
-                                                onClick={() => props.hideForm()}
                                                 ref={cancelButtonRef}
+                                                onClick={() => props.hideForm()}
+                                                className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
                                             >
                                                 {props.translator['Cancel']}
                                             </button>
                                             <button
                                                 type="button"
-                                                className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-6 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:w-auto sm:text-sm"
                                                 onClick={() => saveForm()}
+                                                className="inline-flex items-center rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-2.5 text-sm font-semibold text-white shadow-[0_4px_20px_rgba(124,58,237,0.4)] transition hover:opacity-90"
                                             >
                                                 {getSubmitLabel(props)}
                                             </button>

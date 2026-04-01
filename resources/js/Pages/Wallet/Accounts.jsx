@@ -424,16 +424,6 @@ export default function Accounts(props) {
                             <p className="text-3xl font-light uppercase tracking-[0.08em] text-white/90">
                                 Connect Channel
                             </p>
-                            <a
-                                href={route("account_registration", { service: "whatsapp" })}
-                                className="connect-btn"
-                            >
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="5" y1="12" x2="19" y2="12" />
-                                    <polyline points="12 5 19 12 12 19" />
-                                </svg>
-                                <span className="connect-btn-text">Connect</span>
-                            </a>
                         </div>
                         <div className="h-72 w-px bg-gradient-to-b from-transparent via-[#7c3aed] to-transparent opacity-90" />
                     </div>
@@ -475,12 +465,19 @@ export default function Accounts(props) {
                                 </div>
 
                                 <div className="mt-auto flex items-end justify-between gap-3 pt-2">
-                                    <a
-                                        href={card.primaryActionHref}
-                                        className="inline-flex h-11 min-w-[9.25rem] items-center justify-center rounded-[1rem] border border-white/70 bg-white/[0.04] px-5 text-sm font-semibold text-white transition hover:bg-white/[0.08]"
-                                    >
-                                        Manage
-                                    </a>
+                                    {card.status === "connected" ? (
+                                        <a href={card.primaryActionHref} className="manage-btn">
+                                            Manage
+                                        </a>
+                                    ) : (
+                                        <a href={card.primaryActionHref} className="connect-btn">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <line x1="5" y1="12" x2="19" y2="12" />
+                                                <polyline points="12 5 19 12 12 19" />
+                                            </svg>
+                                            <span className="connect-btn-text">Connect</span>
+                                        </a>
+                                    )}
 
                                     <button
                                         type="button"

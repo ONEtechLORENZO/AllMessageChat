@@ -10,6 +10,7 @@ import {
     MagnifyingGlassIcon,
     PlusIcon,
     TrashIcon,
+    XMarkIcon,
 } from "@heroicons/react/24/solid";
 import { FolderPlusIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
@@ -433,39 +434,39 @@ function Templates(props) {
             normalizedStatus === "active" ||
             normalizedStatus === "live"
         ) {
-            return "border-emerald-400/20 bg-emerald-400/10 text-emerald-200";
+            return "bg-emerald-400/10 text-emerald-200";
         }
 
         if (
             normalizedStatus === "inactive" ||
             normalizedStatus === "disabled"
         ) {
-            return "border-rose-400/20 bg-rose-400/10 text-rose-200";
+            return "bg-rose-400/10 text-rose-200";
         }
 
         if (normalizedStatus === "sandbox") {
-            return "border-amber-400/20 bg-amber-400/10 text-amber-200";
+            return "bg-amber-400/10 text-amber-200";
         }
 
         if (normalizedStatus === "approved") {
-            return "border-emerald-400/20 bg-emerald-400/10 text-emerald-200";
+            return "bg-emerald-400/10 text-emerald-200";
         }
 
         if (
             normalizedStatus === "rejected" ||
             normalizedStatus.includes("rejected")
         ) {
-            return "border-amber-400/20 bg-amber-400/10 text-amber-200";
+            return "bg-amber-400/10 text-amber-200";
         }
 
         if (
             normalizedStatus === "submitted" ||
             normalizedStatus === "pending"
         ) {
-            return "border-sky-400/20 bg-sky-400/10 text-sky-200";
+            return "bg-sky-400/10 text-sky-200";
         }
 
-        return "border-white/10 bg-white/[0.04] text-white/70";
+        return "bg-white/[0.04] text-white/70";
     }
 
     return (
@@ -709,100 +710,104 @@ function Templates(props) {
                                 </div>
 
                                 {filteredTemplates.map((data) => {
+                                    const statusNorm = (data.status || "").toLowerCase();
+                                    const accentColor =
+                                        statusNorm === "active" || statusNorm === "live" || statusNorm === "approved"
+                                            ? "bg-emerald-400"
+                                            : statusNorm === "rejected" || statusNorm.includes("rejected")
+                                            ? "bg-amber-400"
+                                            : statusNorm === "submitted" || statusNorm === "pending"
+                                            ? "bg-sky-400"
+                                            : statusNorm === "inactive" || statusNorm === "disabled"
+                                            ? "bg-rose-400"
+                                            : "bg-violet-500";
+
                                     return (
                                         <div
                                             key={data.id}
-                                            className="group overflow-hidden rounded-2xl bg-[#100517]/85 px-5 py-4 shadow-[0_16px_40px_rgba(0,0,0,0.24)] transition hover:bg-[#14081d]/90"
+                                            className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#16082a]/90 to-[#0d0516]/95 shadow-[0_2px_16px_rgba(0,0,0,0.3)] transition-all duration-300 hover:shadow-[0_6px_28px_rgba(124,58,237,0.14)]"
                                         >
-                                            <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1.25fr)_140px_180px_140px_184px] lg:items-center lg:gap-5">
+                                            {/* Left status accent bar */}
+                                            <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${accentColor} opacity-75 rounded-l-2xl`} />
+
+                                            {/* Top shimmer on hover */}
+                                            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-400/25 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+                                            <div className="pl-6 pr-5 py-4 flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1.25fr)_140px_180px_140px_184px] lg:items-center lg:gap-5">
+
+                                                {/* Name */}
                                                 <div className="min-w-0 flex-1 space-y-2">
-                                                    <div className="min-w-0 space-y-1">
+                                                    <div className="min-w-0 space-y-0.5">
                                                         <Link
-                                                            className="block truncate text-lg font-semibold text-white transition group-hover:text-fuchsia-100"
-                                                            href={route(
-                                                                "template_detail_view",
-                                                                [
-                                                                    data.account_id,
-                                                                data.id,
-                                                            ],
-                                                        )}
+                                                            className="block truncate text-base font-bold text-white/90 transition-colors duration-200 group-hover:text-violet-200"
+                                                            href={route("template_detail_view", [data.account_id, data.id])}
                                                         >
                                                             {data.name}
                                                         </Link>
                                                         {data.subject ? (
-                                                            <div className="truncate text-sm text-white/50">
-                                                                Subject: {data.subject}
+                                                            <div className="truncate text-xs text-white/40">
+                                                                {data.subject}
                                                             </div>
                                                         ) : data.preview ? (
-                                                            <div className="truncate text-sm text-white/50">
+                                                            <div className="truncate text-xs text-white/40">
                                                                 {data.preview}
                                                             </div>
                                                         ) : null}
                                                     </div>
-
-                                                    <div className="flex flex-wrap gap-2">
+                                                    <div className="flex flex-wrap gap-1.5">
                                                         {!data.type ? (
-                                                            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-white/70">
-                                                                {data.service === "email"
-                                                                    ? "Email"
-                                                                    : data.language}
+                                                            <span className="rounded-full bg-violet-500/10 px-2.5 py-0.5 text-[11px] font-medium text-violet-300/75">
+                                                                {data.service === "email" ? "Email" : data.language}
                                                             </span>
                                                         ) : null}
                                                         {data.template_uid ? (
-                                                            <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 font-mono text-xs text-white/55">
+                                                            <span className="rounded-full bg-white/[0.04] px-2.5 py-0.5 font-mono text-[11px] text-white/35">
                                                                 {data.template_uid}
                                                             </span>
                                                         ) : null}
                                                     </div>
                                                 </div>
 
-                                                <div className="text-center text-sm text-white/65">
-                                                    {data.type
-                                                        ? String(data.type).replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase())
+                                                {/* Type */}
+                                                <div className="text-center">
+                                                    {data.type ? (
+                                                        <span className="inline-flex items-center rounded-full bg-white/[0.05] px-3 py-1 text-xs font-medium text-white/55">
+                                                            {String(data.type).replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-sm text-white/25">—</span>
+                                                    )}
+                                                </div>
+
+                                                {/* Date */}
+                                                <div className="text-center text-xs text-white/40">
+                                                    {data.created_at
+                                                        ? new Date(data.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
                                                         : "—"}
                                                 </div>
 
-                                                <div className="text-center text-sm text-white/60">
-                                                    {data.created_at
-                                                        ? new Date(
-                                                              data.created_at,
-                                                          ).toLocaleDateString(
-                                                              "en-US",
-                                                          )
-                                                        : "-"}
-                                                </div>
-
+                                                {/* Status */}
                                                 <div className="flex items-center justify-center">
-                                                    <span
-                                                        className={`inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${getStatusClasses(data.status)}`}
-                                                    >
+                                                    <span className={`inline-flex w-fit items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${getStatusClasses(data.status)}`}>
                                                         {data.status ?? "Unknown"}
                                                     </span>
                                                 </div>
 
-                                                <div className="flex items-center justify-start gap-4 self-center lg:justify-end">
+                                                {/* Actions */}
+                                                <div className="flex items-center justify-start gap-2 self-center lg:justify-end">
                                                     <button
                                                         type="button"
-                                                        onClick={() =>
-                                                            deleteTemplate(data.id)
-                                                        }
-                                                        className="inline-flex h-9 w-9 items-center justify-center text-red-400 transition hover:text-red-300"
+                                                        onClick={() => deleteTemplate(data.id)}
+                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-rose-400/50 transition hover:bg-rose-500/10 hover:text-rose-300"
                                                     >
-                                                        <TrashIcon className="h-5 w-5" />
+                                                        <TrashIcon className="h-4 w-4" />
                                                     </button>
                                                     <Link
-                                                        className="inline-flex items-center gap-2 rounded-full border border-fuchsia-400/20 bg-fuchsia-500/10 px-4 py-1.5 text-sm font-semibold text-fuchsia-100 transition hover:bg-fuchsia-500/20"
-                                                        href={route(
-                                                            "template_detail_view",
-                                                            [
-                                                                data.account_id,
-                                                                data.id,
-                                                            ],
-                                                        )}
+                                                        className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-1.5 text-xs font-semibold text-white shadow-[0_2px_12px_rgba(124,58,237,0.35)] transition hover:shadow-[0_4px_18px_rgba(124,58,237,0.5)] hover:brightness-110"
+                                                        href={route("template_detail_view", [data.account_id, data.id])}
                                                     >
-                                                        {props.translator["Open"] ??
-                                                            "Open"}
-                                                        <ChevronRightIcon className="h-4 w-4" />
+                                                        {props.translator["Open"] ?? "Open"}
+                                                        <ChevronRightIcon className="h-3 w-3" />
                                                     </Link>
                                                 </div>
                                             </div>
@@ -870,185 +875,165 @@ function Templates(props) {
                                 leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                                 leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                             >
-                                <Dialog.Panel className="inline-block w-full max-w-lg transform overflow-hidden rounded-3xl border border-white/10 bg-[#12041f] px-4 pt-5 pb-4 text-left shadow-[0_24px_80px_rgba(0,0,0,0.45)] transition-all sm:p-6">
-                                    <div>
-                                        <Dialog.Title
-                                            as="h3"
-                                            className="text-3xl font-semibold leading-6 text-white"
-                                        >
-                                            {createTemplateTitle}
-                                        </Dialog.Title>
-                                        <div className="mt-2">
-                                            <p className="pb-4 pt-3 text-sm leading-7 text-white/60">
-                                                {createTemplateDescription}
-                                            </p>
+                                <Dialog.Panel className="relative w-full max-w-5xl transform overflow-hidden rounded-[2.5rem] bg-[#140816]/95 text-white shadow-2xl ring-1 ring-white/5 transition-all">
+                                    <button
+                                        type="button"
+                                        onClick={closeCreateTemplateModal}
+                                        className="absolute right-6 top-6 z-20 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-600/80 text-white shadow-[0_14px_30px_rgba(0,0,0,0.25)] ring-1 ring-white/10 transition hover:bg-violet-500/80"
+                                        aria-label={props.translator["Close"] ?? "Close"}
+                                    >
+                                        <XMarkIcon className="h-6 w-6" />
+                                    </button>
 
-                                            <form id="new_template">
-                                                <div className="grid gap-6">
-                                                    <div className="form-group col-span-6 sm:col-span-4">
-                                                        <label
-                                                            htmlFor="template_name"
-                                                            className="block text-sm font-medium text-white/80"
-                                                        >
-                                                            {isSocialTemplateAccount
-                                                                ? "Template name"
-                                                                : props.translator["Name"] ?? "Name"}{" "}
-                                                            <span className="text-red-500">*</span>
-                                                        </label>
-                                                        <div className="mt-1 flex rounded-md shadow-sm">
-                                                            <Input
-                                                                name="template_name"
-                                                                required={true}
-                                                                id="template_name"
-                                                                value={data.template_name}
-                                                                placeholder={
-                                                                    isSocialTemplateAccount
-                                                                        ? "e.g. Welcome message, Promo April"
-                                                                        : props.translator["Template name"] ??
-                                                                          "Template name"
-                                                                }
-                                                                handleChange={handleCreateTemplateChange}
-                                                                className="border-0 bg-[#171717] px-4 py-3 text-white placeholder:text-white/35 focus:border-fuchsia-500/60 focus:ring-fuchsia-500/20"
-                                                            />
-                                                        </div>
-                                                        <InputError message={errors.template_name} />
-                                                    </div>
-
-                                                    {isEmailAccount ? (
-                                                        <div className="form-group col-span-6 sm:col-span-4">
-                                                            <label
-                                                                htmlFor="subject"
-                                                                className="block text-sm font-medium text-white/80"
-                                                            >
-                                                                Subject
-                                                            </label>
-                                                            <div className="mt-1 flex rounded-md shadow-sm">
-                                                                <Input
-                                                                    name="subject"
-                                                                    id="subject"
-                                                                    value={data.subject}
-                                                                    placeholder="Optional. Defaults to the template name"
-                                                                    handleChange={handleCreateTemplateChange}
-                                                                    className="border-0 bg-[#171717] px-4 py-3 text-white placeholder:text-white/35 focus:border-fuchsia-500/60 focus:ring-fuchsia-500/20"
-                                                                />
-                                                            </div>
-                                                            <InputError message={errors.subject} />
-                                                        </div>
-                                                    ) : isSocialTemplateAccount ? (
-                                                        <div className="form-group col-span-6 sm:col-span-4">
-                                                            <label
-                                                                htmlFor="template_type"
-                                                                className="block text-sm font-medium text-white/80"
-                                                            >
-                                                                Message format{" "}
-                                                                <span className="text-red-500">*</span>
-                                                            </label>
-                                                            <div className="mt-1">
-                                                                <select
-                                                                    id="template_type"
-                                                                    name="template_type"
-                                                                    value={data.template_type}
-                                                                    data-pristine-required
-                                                                    onChange={handleCreateTemplateChange}
-                                                                    className="block w-full rounded-xl border border-white/10 bg-[#171717] px-4 py-3 text-sm text-white focus:border-fuchsia-500/60 focus:outline-none focus:ring-fuchsia-500/20"
-                                                                >
-                                                                    {templateTypeOptions.map((option) => (
-                                                                        <option key={option.value} value={option.value}>
-                                                                            {option.label}
-                                                                        </option>
-                                                                    ))}
-                                                                </select>
-                                                            </div>
-                                                            <p className="mt-2 text-sm text-white/50">
-                                                                Defines how the message will be structured when sent.
-                                                            </p>
-                                                            <InputError message={errors.template_type} />
-                                                        </div>
-                                                    ) : (
-                                                        <>
-                                                            <div className="form-group col-span-6 sm:col-span-4">
-                                                                <label
-                                                                    htmlFor="category"
-                                                                    className="block text-sm font-medium text-white/80"
-                                                                >
-                                                                    {props.translator["Category"] ?? "Category"}{" "}
-                                                                    <span className="text-red-500">*</span>
-                                                                </label>
-                                                                <div className="mt-1">
-                                                                    <select
-                                                                        id="category"
-                                                                        name="category"
-                                                                        value={data.category}
-                                                                        data-pristine-required
-                                                                        onChange={handleCreateTemplateChange}
-                                                                        className="block w-full rounded-xl border border-white/10 bg-[#171717] px-4 py-3 text-sm text-white focus:border-fuchsia-500/60 focus:outline-none focus:ring-fuchsia-500/20"
-                                                                    >
-                                                                        <option value="">
-                                                                            Select
-                                                                        </option>
-                                                                        {templateCategories.map((category) => (
-                                                                            <option
-                                                                                key={category}
-                                                                                value={category}
-                                                                            >
-                                                                                {category}
-                                                                            </option>
-                                                                        ))}
-                                                                    </select>
-                                                                </div>
-                                                                <InputError message={errors.category} />
-                                                            </div>
-
-                                                            <div className="form-group col-span-6 sm:col-span-4">
-                                                                <label
-                                                                    htmlFor="languages"
-                                                                    className="block text-sm font-medium text-white/80"
-                                                                >
-                                                                    {props.translator["Languages"] ?? "Languages"}{" "}
-                                                                    <span className="text-red-500">*</span>
-                                                                </label>
-                                                                <div className="mt-1">
-                                                                    <Select
-                                                                        options={languages}
-                                                                        isMulti
-                                                                        getOptionLabel={(option) => option.name}
-                                                                        getOptionValue={(option) => option.code}
-                                                                        id="languages"
-                                                                        name="languages"
-                                                                        value={languages.filter((language) =>
-                                                                            data.languages?.includes(language.code),
-                                                                        )}
-                                                                        onChange={handleCreateTemplateLanguageChange}
-                                                                        placeholder="Select..."
-                                                                        className="text-sm"
-                                                                        classNamePrefix="react-select"
-                                                                        styles={createTemplateLanguageSelectStyles}
-                                                                    />
-                                                                </div>
-                                                                <InputError message={errors.languages} />
-                                                            </div>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </form>
+                                    <div className="grid min-h-[34rem] grid-cols-1 md:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
+                                        {/* Left info panel */}
+                                        <div className="flex items-center justify-center bg-[linear-gradient(180deg,rgba(124,58,237,0.92),rgba(168,85,247,0.62))] px-8 py-10 md:px-10">
+                                            <div className="max-w-[18rem] space-y-7 text-center">
+                                                <Dialog.Title
+                                                    as="h3"
+                                                    className="text-4xl font-black tracking-tight text-white sm:text-5xl"
+                                                >
+                                                    {String(createTemplateTitle).toUpperCase()}
+                                                </Dialog.Title>
+                                                <p className="text-sm leading-7 text-white/90">
+                                                    {createTemplateDescription}
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-                                        <button
-                                            type="button"
-                                            disabled={processing}
-                                            className="inline-flex w-full justify-center rounded-xl border border-transparent bg-fuchsia-600 px-4 py-3 text-base font-medium text-white shadow-sm transition hover:bg-fuchsia-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/40 focus:ring-offset-0 disabled:opacity-60 sm:col-start-2 sm:text-sm"
-                                            onClick={createTemplate}
-                                        >
-                                            {isSocialTemplateAccount ? "Continue" : props.translator["Create"] ?? "Create"}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="mt-3 inline-flex w-full justify-center rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-base font-medium text-white/85 shadow-sm transition hover:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-fuchsia-500/40 focus:ring-offset-0 sm:col-start-1 sm:mt-0 sm:text-sm"
-                                            onClick={closeCreateTemplateModal}
-                                        >
-                                            {isSocialTemplateAccount ? "Cancel" : props.translator["Close"] ?? "Close"}
-                                        </button>
+
+                                        {/* Right form panel */}
+                                        <div className="flex flex-col bg-[linear-gradient(180deg,rgba(25,10,37,0.96),rgba(18,9,30,0.98))] px-8 py-10 md:px-12">
+                                            <form id="new_template" className="grid flex-1 gap-6">
+                                                <div>
+                                                    <label htmlFor="template_name" className="mb-2 block text-sm font-medium text-white/80">
+                                                        {isSocialTemplateAccount ? "Template name" : props.translator["Name"] ?? "Name"}
+                                                        {" "}<span className="text-fuchsia-400">*</span>
+                                                    </label>
+                                                    <Input
+                                                        name="template_name"
+                                                        required={true}
+                                                        id="template_name"
+                                                        value={data.template_name}
+                                                        placeholder={
+                                                            isSocialTemplateAccount
+                                                                ? "e.g. Welcome message, Promo April"
+                                                                : props.translator["Template name"] ?? "Template name"
+                                                        }
+                                                        handleChange={handleCreateTemplateChange}
+                                                        className="rounded-xl border-0 bg-white/[0.06] px-4 py-3 text-white placeholder:text-white/25 focus:border-fuchsia-500/60 focus:ring-fuchsia-500/20"
+                                                    />
+                                                    <InputError message={errors.template_name} />
+                                                </div>
+
+                                                {isEmailAccount ? (
+                                                    <div>
+                                                        <label htmlFor="subject" className="mb-2 block text-sm font-medium text-white/80">
+                                                            Subject
+                                                        </label>
+                                                        <Input
+                                                            name="subject"
+                                                            id="subject"
+                                                            value={data.subject}
+                                                            placeholder="Optional. Defaults to the template name"
+                                                            handleChange={handleCreateTemplateChange}
+                                                            className="rounded-xl border-0 bg-white/[0.06] px-4 py-3 text-white placeholder:text-white/25 focus:border-fuchsia-500/60 focus:ring-fuchsia-500/20"
+                                                        />
+                                                        <InputError message={errors.subject} />
+                                                    </div>
+                                                ) : isSocialTemplateAccount ? (
+                                                    <div>
+                                                        <label htmlFor="template_type" className="mb-2 block text-sm font-medium text-white/80">
+                                                            Message format{" "}<span className="text-fuchsia-400">*</span>
+                                                        </label>
+                                                        <select
+                                                            id="template_type"
+                                                            name="template_type"
+                                                            value={data.template_type}
+                                                            data-pristine-required
+                                                            onChange={handleCreateTemplateChange}
+                                                            className="block w-full rounded-xl border-0 bg-white/[0.06] px-4 py-3 text-sm text-white focus:border-fuchsia-500/60 focus:outline-none focus:ring-fuchsia-500/20"
+                                                        >
+                                                            {templateTypeOptions.map((option) => (
+                                                                <option key={option.value} value={option.value} className="bg-[#1a0828]">
+                                                                    {option.label}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        <p className="mt-2 text-xs text-white/45">
+                                                            Defines how the message will be structured when sent.
+                                                        </p>
+                                                        <InputError message={errors.template_type} />
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <div>
+                                                            <label htmlFor="category" className="mb-2 block text-sm font-medium text-white/80">
+                                                                {props.translator["Category"] ?? "Category"}{" "}
+                                                                <span className="text-fuchsia-400">*</span>
+                                                            </label>
+                                                            <select
+                                                                id="category"
+                                                                name="category"
+                                                                value={data.category}
+                                                                data-pristine-required
+                                                                onChange={handleCreateTemplateChange}
+                                                                className="block w-full rounded-xl border-0 bg-white/[0.06] px-4 py-3 text-sm text-white focus:border-fuchsia-500/60 focus:outline-none focus:ring-fuchsia-500/20"
+                                                            >
+                                                                <option value="" className="bg-[#1a0828]">Select</option>
+                                                                {templateCategories.map((category) => (
+                                                                    <option key={category} value={category} className="bg-[#1a0828]">
+                                                                        {category}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                            <InputError message={errors.category} />
+                                                        </div>
+
+                                                        <div>
+                                                            <label htmlFor="languages" className="mb-2 block text-sm font-medium text-white/80">
+                                                                {props.translator["Languages"] ?? "Languages"}{" "}
+                                                                <span className="text-fuchsia-400">*</span>
+                                                            </label>
+                                                            <Select
+                                                                options={languages}
+                                                                isMulti
+                                                                getOptionLabel={(option) => option.name}
+                                                                getOptionValue={(option) => option.code}
+                                                                id="languages"
+                                                                name="languages"
+                                                                value={languages.filter((language) =>
+                                                                    data.languages?.includes(language.code),
+                                                                )}
+                                                                onChange={handleCreateTemplateLanguageChange}
+                                                                placeholder="Select..."
+                                                                className="text-sm"
+                                                                classNamePrefix="react-select"
+                                                                styles={createTemplateLanguageSelectStyles}
+                                                            />
+                                                            <InputError message={errors.languages} />
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </form>
+
+                                            <div className="mt-10 flex items-center justify-between gap-4">
+                                                <button
+                                                    type="button"
+                                                    onClick={closeCreateTemplateModal}
+                                                    className="inline-flex min-w-[9.5rem] items-center justify-center rounded-full bg-white/10 px-6 py-2.5 text-sm font-semibold text-white/90 ring-1 ring-white/10 transition hover:bg-white/15"
+                                                >
+                                                    {isSocialTemplateAccount ? "Cancel" : props.translator["Close"] ?? "Close"}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    disabled={processing}
+                                                    onClick={createTemplate}
+                                                    className="inline-flex min-w-[9.5rem] items-center justify-center rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-7 py-2.5 text-sm font-semibold text-white shadow-[0_8px_28px_rgba(124,58,237,0.35)] transition hover:opacity-90 disabled:opacity-50"
+                                                >
+                                                    {isSocialTemplateAccount ? "Continue" : props.translator["Create"] ?? "Create"}
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </Dialog.Panel>
                             </Transition.Child>
