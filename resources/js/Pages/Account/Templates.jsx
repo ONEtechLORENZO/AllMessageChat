@@ -214,7 +214,11 @@ function Templates(props) {
         );
     }, [isSocialTemplateAccount, templates]);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const TEMPLATES_PER_PAGE = 15;
+
     const filteredTemplates = useMemo(() => {
+        setCurrentPage(1);
         const normalizedNameSearch = templateNameSearch.trim().toLowerCase();
 
         return (templates ?? []).filter((template) => {
@@ -515,8 +519,57 @@ function Templates(props) {
                         ) : null}
                     </div>
 
+                    {/* Account selection list — no GlassCard wrapper */}
+                    {!hasAccount ? (
+                        <div className="space-y-3">
+                            {(props.accounts ?? []).length > 0 ? (
+                                (props.accounts ?? []).map((account, index) => (
+                                    <div
+                                        key={account.id}
+                                        className="flex items-center overflow-hidden rounded-xl bg-[#170024]/80"
+                                    >
+                                        {/* Number column */}
+                                        <div className="flex w-14 shrink-0 items-center justify-center self-stretch border-r-2 border-[#d946a8]">
+                                            <span className="text-base font-bold text-[#d946a8]">{index + 1}</span>
+                                        </div>
+
+                                        {/* Content */}
+                                        <button
+                                            type="button"
+                                            onClick={() => openAccount(account.id)}
+                                            className="flex flex-1 items-center justify-between gap-4 px-5 py-4 text-left transition hover:bg-white/[0.03]"
+                                        >
+                                            <div className="min-w-0 space-y-0.5">
+                                                <div className="text-base font-extrabold uppercase tracking-wide text-white">
+                                                    {account.company_name} ({account.service})
+                                                </div>
+                                                <div className="text-sm text-white/45">
+                                                    Account Id : {account.id}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex shrink-0 items-center gap-2">
+                                                <span className="rounded-lg bg-[#5b6af0] px-4 py-2 text-sm font-semibold text-white">
+                                                    {account.status ?? "Active"}
+                                                </span>
+                                                <span className="rounded-lg bg-[#d946a8] px-4 py-2 text-sm font-semibold text-white">
+                                                    open
+                                                </span>
+                                            </div>
+                                        </button>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="py-12 text-center">
+                                    <FolderPlusIcon className="mx-auto h-12 w-12 text-white/40" />
+                                    <h3 className="mt-3 text-sm font-medium text-white">
+                                        No accounts found
+                                    </h3>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
                     <GlassCard className="overflow-hidden shadow-[0_24px_90px_rgba(0,0,0,0.35)]">
-                    {hasAccount ? (
                         <div className="flex flex-col gap-4 border-b border-white/10 pb-5 md:flex-row md:items-start md:justify-between">
                             <div className="space-y-2">
                                 <div className="inline-flex items-center gap-2 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-fuchsia-200">
@@ -564,58 +617,9 @@ function Templates(props) {
                                 ) : null}
                             </div>
                         </div>
-                    ) : null}
 
-                    <div className={`${hasAccount ? "mt-5" : ""} overflow-hidden`}>
-                        {!hasAccount ? (
-                            <div className="space-y-4">
-                                {(props.accounts ?? []).length > 0 ? (
-                                    <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#100517]/40">
-                                        {(props.accounts ?? []).map((account) => (
-                                            <button
-                                                key={account.id}
-                                                type="button"
-                                                onClick={() => openAccount(account.id)}
-                                                className="w-full border-b border-white/10 px-5 py-4 text-left transition last:border-b-0 hover:bg-white/[0.03]"
-                                            >
-                                                <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1.8fr)_auto_auto] lg:items-center lg:gap-5">
-                                                    <div className="min-w-0 space-y-1">
-                                                        <div className="text-lg font-semibold text-white">
-                                                            {account.company_name} ({account.service})
-                                                        </div>
-                                                        <div className="text-sm text-white/60">
-                                                            Account Id : {account.id}
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex items-center lg:justify-center">
-                                                        <span
-                                                            className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${getStatusClasses(account.status)}`}
-                                                        >
-                                                            {account.status ?? "Unknown"}
-                                                        </span>
-                                                    </div>
-
-                                                    <div className="flex items-center justify-start lg:justify-end">
-                                                        <span className="inline-flex items-center gap-2 rounded-full border border-fuchsia-400/20 bg-fuchsia-500/10 px-4 py-1.5 text-sm font-semibold text-fuchsia-100 transition hover:bg-fuchsia-500/20">
-                                                            Open
-                                                            <ChevronRightIcon className="h-3.5 w-3.5" />
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="py-12 text-center">
-                                        <FolderPlusIcon className="mx-auto h-12 w-12 text-white/40" />
-                                        <h3 className="mt-3 text-sm font-medium text-white">
-                                            No accounts found
-                                        </h3>
-                                    </div>
-                                )}
-                            </div>
-                        ) : isLoading ? (
+                    <div className="mt-5 overflow-hidden">
+                        {isLoading ? (
                             <div className="py-12 text-center text-sm text-white/70">
                                 {props.translator["Loading templates..."] ??
                                     "Loading templates..."}
@@ -709,7 +713,7 @@ function Templates(props) {
                                     <div />
                                 </div>
 
-                                {filteredTemplates.map((data) => {
+                                {filteredTemplates.slice((currentPage - 1) * TEMPLATES_PER_PAGE, currentPage * TEMPLATES_PER_PAGE).map((data) => {
                                     const statusNorm = (data.status || "").toLowerCase();
                                     const accentColor =
                                         statusNorm === "active" || statusNorm === "live" || statusNorm === "approved"
@@ -814,6 +818,43 @@ function Templates(props) {
                                         </div>
                                     );
                                 })}
+                                {/* Pagination */}
+                                {filteredTemplates.length > TEMPLATES_PER_PAGE && (
+                                    <div className="mt-6 flex items-center justify-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#170024]/80 text-white/60 transition hover:bg-[#2a0040] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                                        >
+                                            <ChevronLeftIcon className="h-4 w-4" />
+                                        </button>
+
+                                        {Array.from({ length: Math.ceil(filteredTemplates.length / TEMPLATES_PER_PAGE) }, (_, i) => i + 1).map((page) => (
+                                            <button
+                                                key={page}
+                                                type="button"
+                                                onClick={() => setCurrentPage(page)}
+                                                className={`inline-flex h-9 w-9 items-center justify-center rounded-lg text-sm font-semibold transition ${
+                                                    page === currentPage
+                                                        ? "bg-[#BF00FF] text-white shadow-[0_4px_14px_rgba(191,0,255,0.35)]"
+                                                        : "bg-[#170024]/80 text-white/60 hover:bg-[#2a0040] hover:text-white"
+                                                }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        ))}
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setCurrentPage((p) => Math.min(Math.ceil(filteredTemplates.length / TEMPLATES_PER_PAGE), p + 1))}
+                                            disabled={currentPage === Math.ceil(filteredTemplates.length / TEMPLATES_PER_PAGE)}
+                                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#170024]/80 text-white/60 transition hover:bg-[#2a0040] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                                        >
+                                            <ChevronRightIcon className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -843,6 +884,7 @@ function Templates(props) {
                         ) : null}
                     </div>
                     </GlassCard>
+                    )}
                 </div>
             </div>
 
