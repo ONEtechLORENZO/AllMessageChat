@@ -1299,12 +1299,11 @@ function ChatList(props) {
                                                                     : (person.name || person.number)
                                                                 }
                                                             </span>
-                                                            <span className="flex items-start truncate text-sm text-white/45">
-                                                                {containerCategory === "email"
-                                                                    ? (person.email || "")
-                                                                    : person.number
-                                                                }
-                                                            </span>
+                                                            {containerCategory === "email" ? null : (
+                                                                <span className="flex items-start truncate text-sm text-white/45">
+                                                                    {person.number}
+                                                                </span>
+                                                            )}
                                                         </button>
                                                     </div>
                                                     <div
