@@ -16,40 +16,50 @@ export default function Navigator(props){
     const isNew = props.status == 'new';
 
     return(
-       <div className="w-full max-w-[760px] px-2 py-1">
+       <div className="w-full max-w-[980px] px-6 py-1">
          <nav aria-label="Progress">
-           <ol role="list" className="flex items-center justify-between">
-              {steps.map((step, index) => (  
-             <li key={step.name} className="relative flex flex-1 items-center last:flex-none">
-               {index !== steps.length - 1 ? (
-                <div
-                    className={classNames(
-                        Number(step.status) < currentStep || isNew
-                            ? 'bg-[#6E45E2]/70'
-                            : 'bg-white/15',
-                        'mx-4 h-px flex-1 transition-colors duration-300'
-                    )}
-                    aria-hidden="true"
-                />
-               ) : null}
-               <div className="relative z-10 flex items-center justify-center">
-                    <div
-                        className={classNames(
-                            Number(step.status) === currentStep
-                                ? 'border-[#8B5CF6] bg-[#13091d] text-white shadow-[0_12px_32px_rgba(139,92,246,0.3)]'
-                                : Number(step.status) < currentStep || isNew
-                                    ? 'border-[#6E45E2]/70 bg-[#1A1126] text-white'
-                                    : 'border-white/30 bg-[#120a1b]/60 text-white/60',
-                            'flex h-14 w-14 items-center justify-center rounded-full border-2 text-lg font-black tracking-[0.08em] transition-all duration-300'
-                        )}
-                        aria-current={Number(step.status) === currentStep ? 'step' : undefined}
-                    >
-                        {step.label}
-                    </div>
-                    <span className="sr-only">{step.name}</span>
-               </div>
-            </li>
-             ))}
+           <ol role="list" className="flex w-full items-center">
+             {steps.map((step, index) => {
+               const isLast = index === steps.length - 1;
+               const isActive = Number(step.status) === currentStep;
+               const isComplete = Number(step.status) < currentStep || isNew;
+               return (
+                 <li
+                   key={step.name}
+                   className={classNames(
+                     'flex items-center',
+                     isLast ? 'flex-none' : 'flex-1'
+                   )}
+                 >
+                   <div className="relative z-10 flex items-center justify-center">
+                     <div
+                       className={classNames(
+                         isActive
+                           ? 'border-fuchsia-400 bg-fuchsia-500/25 text-white shadow-[0_14px_34px_rgba(217,70,239,0.28)]'
+                           : isComplete
+                             ? 'border-fuchsia-500/50 bg-[#1A1126] text-white'
+                             : 'border-white/25 bg-[#120a1b]/60 text-white/60',
+                         'flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-black tracking-[0.08em] transition-all duration-300'
+                       )}
+                       aria-current={isActive ? 'step' : undefined}
+                     >
+                       {step.label}
+                     </div>
+                     <span className="sr-only">{step.name}</span>
+                   </div>
+
+                   {!isLast ? (
+                     <div
+                       className={classNames(
+                         isComplete ? 'bg-fuchsia-500/70' : 'bg-white/15',
+                         'mx-6 h-px flex-1 transition-colors duration-300'
+                       )}
+                       aria-hidden="true"
+                     />
+                   ) : null}
+                 </li>
+               );
+             })}
            </ol>
          </nav>
        </div>

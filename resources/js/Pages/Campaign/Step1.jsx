@@ -3,7 +3,7 @@ import Input from "@/Components/Input";
 
 function Information(props) {
     return (
-        <div className="grid items-center gap-8 lg:min-h-[540px] lg:grid-cols-[minmax(0,1.09fr)_minmax(430px,0.92fr)]">
+        <div className="grid items-center gap-10 lg:min-h-[560px] lg:grid-cols-[minmax(0,1fr)_minmax(560px,0.95fr)] lg:gap-16">
             <div className="px-2 sm:px-4 lg:px-8">
                 <div className="max-w-xl">
                     <div>
@@ -20,27 +20,24 @@ function Information(props) {
                 </div>
             </div>
 
-            <div className="lg:-ml-8 rounded-[20px] border border-white/8 bg-[linear-gradient(180deg,rgba(18,10,27,0.98),rgba(10,7,17,0.98))] shadow-[0_28px_70px_rgba(0,0,0,0.4)]">
-                <div className="flex h-full flex-col px-7 py-8 sm:px-10 sm:py-10">
-                    <div className="max-w-sm">
-                        <div className="text-[2.2rem] font-black uppercase leading-[0.95] tracking-[-0.04em] text-white sm:text-[3.4rem]">
+            <div className="rounded-[28px] bg-[radial-gradient(circle_at_10%_0%,rgba(217,70,239,0.18),rgba(20,8,22,0.92)_55%,rgba(8,4,16,0.98)_100%)] shadow-[0_32px_90px_rgba(0,0,0,0.5)]">
+                <div className="flex h-full flex-col px-8 py-10 sm:px-12 sm:py-12">
+                    <div className="max-w-md">
+                        <div className="text-3xl font-black uppercase tracking-tight text-white sm:text-4xl">
                             {props.translator['Name Your Campaign'] ?? 'Name Your Campaign'}
                         </div>
-                        <p className="mt-5 text-sm font-medium uppercase tracking-[0.24em] text-white/45">
-                            {props.translator['Add Title'] ?? 'Add Title'}
-                        </p>
                     </div>
 
-                    <div className="mt-12 flex-1">
-                        <label htmlFor="campaign_name" className="block text-sm font-semibold text-white/75">
-                            {props.translator['Title']}
-                        </label>
-                        <div className="mt-4">
+                    <div className="mt-10 flex-1">
+                        <div className="text-sm font-semibold text-white/75">
+                            {props.translator['Add Title'] ?? 'Add Title'}
+                        </div>
+                        <div className="mt-4 max-w-[520px]">
                             <Input
                                 type="text"
                                 name="name"
                                 id="campaign_name"
-                                className="w-full rounded-[22px] border border-white/8 bg-white/10 px-6 py-5 text-lg text-white shadow-none placeholder-white/35 focus:border-[#8B5CF6]/60 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/30"
+                                className="w-full rounded-2xl border-0 bg-black/45 px-6 py-5 text-lg text-white shadow-none placeholder-white/35 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/30"
                                 placeholder={props.translator['Title']}
                                 value={props.data.name}
                                 handleChange={props.handleChange}
@@ -49,13 +46,10 @@ function Information(props) {
                         </div>
                     </div>
 
-                    <div className="mt-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-                        <p className="max-w-xs text-sm leading-6 text-white/45">
-                            Next: choose your audience with filters.
-                        </p>
+                    <div className="mt-auto flex justify-end pt-10">
                         <button
                             type='button'
-                            className="inline-flex items-center justify-center self-start rounded-2xl bg-[linear-gradient(135deg,#8B5CF6,#C026D3)] px-7 py-3 text-base font-semibold text-white shadow-[0_14px_30px_rgba(168,85,247,0.35)] transition hover:translate-y-[-1px] hover:shadow-[0_18px_36px_rgba(168,85,247,0.42)]"
+                            className="inline-flex items-center justify-center rounded-xl bg-[#BF00FF] px-10 py-3 text-base font-semibold text-white shadow-[0_18px_36px_rgba(191,0,255,0.28)] transition hover:bg-[#a100df]"
                             onClick={props.saveCampaign}
                         >
                             {props.translator['Next']}
