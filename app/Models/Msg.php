@@ -409,6 +409,35 @@ class Msg extends Model
             $result = [];
             $messageIds = [];
             foreach ($messages as $message) {
+                if (isset($message['quick_replies']) && is_array($message['quick_replies'])) {
+                    $normalizedReplies = [];
+                    foreach ($message['quick_replies'] as $reply) {
+                        if (! is_array($reply)) {
+                            continue;
+                        }
+                        $title = trim((string) ($reply['title'] ?? ''));
+                        if ($title === '') {
+                            continue;
+                        }
+                        $payload = trim((string) ($reply['payload'] ?? ''));
+                        if ($payload === '') {
+                            $payload = $title;
+                        }
+                        $normalizedReplies[] = [
+                            'content_type' => 'text',
+                            'title' => mb_substr($title, 0, 20),
+                            'payload' => mb_substr($payload, 0, 1000),
+                        ];
+                    }
+                    $message = [
+                        'text' => (string) ($message['text'] ?? ''),
+                        'quick_replies' => $normalizedReplies,
+                    ];
+                    Log::info('Meta quick replies payload', [
+                        'recipient' => $recipient,
+                        'message' => $message,
+                    ]);
+                }
                 $post_data = [
                     'recipient' => [ 'id' => $recipient ],
                     'message' => $message,

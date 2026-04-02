@@ -97,23 +97,6 @@ export default function SharedPreviewPanel({
                         </div>
                     ) : null}
 
-                    {payload.type === "quick_replies" ? (
-                        <div>
-                            <div className="max-w-[260px] whitespace-pre-wrap break-words rounded-[24px] bg-fuchsia-500/20 px-4 py-3 text-sm leading-6 text-white">
-                                {applySampleData(payload.body || "Hi John, how can we help today?", sampleData)}
-                            </div>
-                            <div className="mt-3 flex flex-wrap gap-2">
-                                {(payload.quick_replies || []).map((reply, index) => (
-                                    <span
-                                        key={`quick-reply-${index}`}
-                                        className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-white/80"
-                                    >
-                                        {applySampleData(reply.title || "Reply", sampleData)}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    ) : null}
                 </div>
             </div>
         </div>

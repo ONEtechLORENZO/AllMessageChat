@@ -117,7 +117,6 @@ function Templates(props) {
         { value: "media", label: "Media" },
         { value: "card", label: "Card" },
         { value: "carousel", label: "Carousel" },
-        ...(!isInstagramAccount ? [{ value: "quick_replies", label: "Quick replies" }] : []),
     ];
 
     function openAccount(accountId) {

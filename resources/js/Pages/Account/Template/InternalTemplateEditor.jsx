@@ -34,12 +34,6 @@ function defaultPayload(type) {
                 type: "carousel",
                 cards: [{ title: "", subtitle: "", image_url: "", buttons: [] }],
             };
-        case "quick_replies":
-            return {
-                type: "quick_replies",
-                body: "",
-                quick_replies: [{ title: "", payload: "" }],
-            };
         case "text":
         default:
             return { type: "text", body: "" };
@@ -129,7 +123,6 @@ function defaultVariableInsertPath(type) {
             return "cards.0.title";
         case "text":
         case "media":
-        case "quick_replies":
         default:
             return "body";
     }
@@ -240,41 +233,6 @@ export default function InternalTemplateEditor(props) {
             payload_json: {
                 ...current.payload_json,
                 cards: (current.payload_json.cards || []).filter((_, cardIndex) => cardIndex !== index),
-            },
-        }));
-    }
-
-    function addQuickReply() {
-        setForm((current) => ({
-            ...current,
-            payload_json: {
-                ...current.payload_json,
-                quick_replies: [
-                    ...(current.payload_json.quick_replies || []),
-                    { title: "", payload: "" },
-                ].slice(0, 11),
-            },
-        }));
-    }
-
-    function updateQuickReply(index, key, value) {
-        setForm((current) => ({
-            ...current,
-            payload_json: {
-                ...current.payload_json,
-                quick_replies: (current.payload_json.quick_replies || []).map((item, replyIndex) =>
-                    replyIndex === index ? { ...item, [key]: value } : item,
-                ),
-            },
-        }));
-    }
-
-    function removeQuickReply(index) {
-        setForm((current) => ({
-            ...current,
-            payload_json: {
-                ...current.payload_json,
-                quick_replies: (current.payload_json.quick_replies || []).filter((_, replyIndex) => replyIndex !== index),
             },
         }));
     }
@@ -434,10 +392,7 @@ export default function InternalTemplateEditor(props) {
                                                 <option value="text">Text</option>
                                                 <option value="media">Media</option>
                                                 <option value="card">Card</option>
-                                                <option value="carousel">Carousel</option>
-                                                {!isInstagramTemplate && (
-                                                    <option value="quick_replies">Quick replies</option>
-                                                )}
+                                            <option value="carousel">Carousel</option>
                                             </select>
                                             <p className="mt-2 text-sm text-white/50">
                                                 Defines how the message will be structured when sent.
@@ -673,62 +628,6 @@ export default function InternalTemplateEditor(props) {
                                                         Remove card
                                                     </button>
                                                 </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : null}
-
-                                {form.type === "quick_replies" ? (
-                                    <div className="space-y-5">
-                                        <label className="block">
-                                            <span className="mb-2 block text-sm font-medium text-white/70">Message content</span>
-                                            <textarea
-                                                value={form.payload_json.body || ""}
-                                                onFocus={() => setFocusedPath("body")}
-                                                onChange={(event) => setPayload("body", event.target.value)}
-                                                rows={5}
-                                                placeholder="Hi {first_name}, welcome to our service 👋"
-                                                className="w-full rounded-2xl border border-white/10 bg-[#12041f] px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-fuchsia-500/60 focus:outline-none"
-                                            />
-                                            <p className="mt-2 text-sm text-white/50">
-                                                Use variables like {"{first_name}"} to personalize messages.
-                                            </p>
-                                        </label>
-
-                                        <div className="flex items-center justify-between">
-                                            <div className="text-base font-medium text-white">Quick replies</div>
-                                            <button
-                                                type="button"
-                                                onClick={addQuickReply}
-                                                className="inline-flex items-center rounded-full bg-fuchsia-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-fuchsia-500"
-                                            >
-                                                Add reply
-                                            </button>
-                                        </div>
-
-                                        {(form.payload_json.quick_replies || []).map((quickReply, index) => (
-                                            <div key={`reply-${index}`} className="grid gap-4 rounded-2xl border border-white/10 bg-[#12041f] p-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
-                                                <input
-                                                    type="text"
-                                                    value={quickReply.title || ""}
-                                                    onChange={(event) => updateQuickReply(index, "title", event.target.value)}
-                                                    placeholder="Reply label"
-                                                    className="w-full rounded-xl border border-white/10 bg-[#171717] px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-fuchsia-500/60 focus:outline-none"
-                                                />
-                                                <input
-                                                    type="text"
-                                                    value={quickReply.payload || ""}
-                                                    onChange={(event) => updateQuickReply(index, "payload", event.target.value)}
-                                                    placeholder="Payload value"
-                                                    className="w-full rounded-xl border border-white/10 bg-[#171717] px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-fuchsia-500/60 focus:outline-none"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeQuickReply(index)}
-                                                    className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-white/75 transition hover:bg-white/[0.08]"
-                                                >
-                                                    Remove
-                                                </button>
                                             </div>
                                         ))}
                                     </div>

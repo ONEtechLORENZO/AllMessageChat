@@ -1646,7 +1646,7 @@ class UserController extends Controller
         if ($this->isInternalSocialTemplateFlow($account)) {
             $request->validate([
                 'template_name' => ['required', 'max:255'],
-                'template_type' => ['required', Rule::in(['text', 'media', 'card', 'carousel', 'quick_replies'])],
+                'template_type' => ['required', Rule::in(['text', 'media', 'card', 'carousel'])],
             ]);
 
             $templateRenderService = app(TemplateRenderService::class);
@@ -1971,7 +1971,7 @@ class UserController extends Controller
                 'template_name' => ['required', 'max:255'],
                 'status' => ['nullable', Rule::in(['draft', 'active'])],
                 'status_action' => ['nullable', Rule::in(['save', 'activate', 'draft'])],
-                'type' => ['required', Rule::in(['text', 'media', 'card', 'carousel', 'quick_replies'])],
+            'type' => ['required', Rule::in(['text', 'media', 'card', 'carousel'])],
                 'payload_json' => ['required', 'array'],
             ]);
 

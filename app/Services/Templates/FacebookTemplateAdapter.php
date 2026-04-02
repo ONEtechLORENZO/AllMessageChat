@@ -11,7 +11,7 @@ class FacebookTemplateAdapter extends AbstractMetaTemplateAdapter
 
     protected function supportedTemplateTypes(): array
     {
-        return ['text', 'media', 'card', 'carousel', 'quick_replies'];
+        return ['text', 'media', 'card', 'carousel'];
     }
 
     protected function supportedButtonTypes(): array

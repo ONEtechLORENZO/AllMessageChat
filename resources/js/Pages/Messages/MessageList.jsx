@@ -68,25 +68,6 @@ export default function MessageList(props) {
             );
         }
 
-        if (type === "quick_replies") {
-            const replies = Array.isArray(payload.quick_replies) ? payload.quick_replies : [];
-            return (
-                <div className="flex flex-col gap-2">
-                    <div className="text-sm">{payload.body || ""}</div>
-                    <div className="flex flex-wrap gap-2">
-                        {replies.map((reply, index) => (
-                            <span
-                                key={`${reply.title || "reply"}-${index}`}
-                                className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-black"
-                            >
-                                {reply.title || reply.payload || "Reply"}
-                            </span>
-                        ))}
-                    </div>
-                </div>
-            );
-        }
-
         if (type === "media") {
             return payload.media_url ? (
                 <img

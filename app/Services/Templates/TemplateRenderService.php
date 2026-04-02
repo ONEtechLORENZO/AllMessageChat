@@ -139,14 +139,6 @@ class TemplateRenderService
                     'buttons' => [],
                 ]],
             ],
-            'quick_replies' => [
-                'type' => 'quick_replies',
-                'body' => 'How can we help?',
-                'quick_replies' => [[
-                    'title' => 'Reply',
-                    'payload' => 'reply',
-                ]],
-            ],
             default => [
                 'type' => 'text',
                 'body' => '',
@@ -164,7 +156,7 @@ class TemplateRenderService
         $type = (string) ($payload['type'] ?? '');
 
         return match ($type) {
-            'text', 'quick_replies', 'media' => (string) ($payload['body'] ?? $template->name),
+            'text', 'media' => (string) ($payload['body'] ?? $template->name),
             'card' => (string) ($payload['title'] ?? $template->name),
             'carousel' => (string) data_get($payload, 'cards.0.title', $template->name),
             default => (string) $template->name,

@@ -142,13 +142,25 @@ abstract class AbstractMetaTemplateAdapter
             ]],
             'quick_replies' => [[
                 'text' => (string) ($rendered['body'] ?? ''),
-                'quick_replies' => array_map(function (array $quickReply) {
+                'quick_replies' => array_values(array_filter(array_map(function (array $quickReply) {
+                    $title = trim((string) ($quickReply['title'] ?? ''));
+                    if ($title === '') {
+                        return null;
+                    }
+
+                    $payload = trim((string) ($quickReply['payload'] ?? ''));
+                    if ($payload === '') {
+                        $payload = $title;
+                    }
+
                     return [
                         'content_type' => 'text',
-                        'title' => (string) ($quickReply['title'] ?? ''),
-                        'payload' => (string) ($quickReply['payload'] ?? ($quickReply['title'] ?? '')),
+                        'title' => mb_substr($title, 0, 20),
+                        'payload' => mb_substr($payload, 0, 1000),
                     ];
-                }, array_values((array) ($rendered['quick_replies'] ?? []))),
+                }, array_values((array) ($rendered['quick_replies'] ?? []))), function ($reply) {
+                    return is_array($reply);
+                })),
             ]],
             default => throw new TemplateAdapterException('Unsupported template type for ' . $this->channel() . '.'),
         };
