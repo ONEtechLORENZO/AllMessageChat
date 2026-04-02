@@ -84,6 +84,20 @@ function FilterGroups (props) {
         }
     };
 
+    function normalizeCampaignConditions(nextFilter) {
+        if (!isCampaignWizard) return nextFilter;
+        const normalized = Object.assign({}, nextFilter);
+        Object.entries(normalized).forEach(([grpConditionIndex, grpConditions]) => {
+            Object.entries(grpConditions).forEach(([grpCondition, conditions]) => {
+                normalized[grpConditionIndex][grpCondition] = (conditions || []).map((condition) => ({
+                    ...condition,
+                    record_condition: 'equal',
+                }));
+            });
+        });
+        return normalized;
+    }
+
     const [filter, setFilter] = useState([
         {'AND': [newCondition]}
     ]);
@@ -188,7 +202,7 @@ function FilterGroups (props) {
     
     useEffect(() => {
         if(props.filterCondition){
-            setFilter(props.filterCondition);
+            setFilter(normalizeCampaignConditions(props.filterCondition));
         }
         fetchModuleFields();
     }, []);
@@ -289,6 +303,9 @@ function FilterGroups (props) {
                                         var field_type =  optionElement.getAttribute('field_type');
                                         newData[grpCondition_index][grpCondition][condition_index]['field_type'] = field_type;
                                         newData[grpCondition_index][grpCondition][condition_index]['condition_value'] = '';
+                                        if (isCampaignWizard) {
+                                            newData[grpCondition_index][grpCondition][condition_index]['record_condition'] = 'equal';
+                                        }
                                     }
                                 }
                             });
@@ -374,12 +391,12 @@ function FilterGroups (props) {
         let newData = Object.assign({}, filter);
         Object.entries(newData).map(([grpCondition_index, grpConditions]) => {
             Object.entries(grpConditions).map(([grpCondition, conditions], group_index) => {
-                Object.entries(conditions).map(([condition_index, condition]) => {
-                    if(! condition.field_name){
-                        newError['field_name'] = true;
-                        returnFlag =  false; 
-                    }
-                });
+            Object.entries(conditions).map(([condition_index, condition]) => {
+                if(! condition.field_name){
+                    newError['field_name'] = true;
+                    returnFlag =  false; 
+                }
+            });
                 
             });
         });
@@ -628,19 +645,9 @@ function FilterGroups (props) {
 
                                                                     <div className="lg:col-span-2">
                                                                         <div className={wizardMiniLabelClass}>&nbsp;</div>
-                                                                        <select
-                                                                            name="record_condition"
-                                                                            group_index={grpCondition_index} 
-                                                                            condition_index={condition_index}
-                                                                            id="record_condition"
-                                                                            value={condition.record_condition}
-                                                                            onChange={ (e) => handleChange(e)}
-                                                                            className={`${selectClass} mt-2`}
-                                                                        >
-                                                                            {Object.entries(condition_operators[condition.field_type]).map(([name, label]) => 
-                                                                                <option defaultValue={condition.record_condition === name} value={name}> {label} </option>
-                                                                            )}
-                                                                        </select>
+                                                                        <div className={`${selectClass} mt-2 flex items-center justify-center`}>
+                                                                            {props.translator['Equal'] ?? 'Equal'}
+                                                                        </div>
                                                                     </div>
 
                                                                     <div className="lg:col-span-4">
@@ -703,19 +710,25 @@ function FilterGroups (props) {
                                                                     </select>
                                                                 </div>
                                                                 <div className="flex-1 flex items-center">
-                                                                    <select
-                                                                        name="record_condition"
-                                                                        group_index={grpCondition_index} 
-                                                                        condition_index={condition_index}
-                                                                        id="record_condition"
-                                                                        value={condition.record_condition}
-                                                                        onChange={ (e) => handleChange(e)}
-                                                                        className={selectClass}
-                                                                    >
-                                                                        {Object.entries(condition_operators[condition.field_type]).map(([name, label]) => 
-                                                                            <option defaultValue={condition.record_condition === name} value={name}> {label} </option>
-                                                                        )}
-                                                                    </select>
+                                                                    {isCampaignWizard ? (
+                                                                        <div className={`${selectClass} flex items-center justify-center`}>
+                                                                            {props.translator['Equal'] ?? 'Equal'}
+                                                                        </div>
+                                                                    ) : (
+                                                                        <select
+                                                                            name="record_condition"
+                                                                            group_index={grpCondition_index} 
+                                                                            condition_index={condition_index}
+                                                                            id="record_condition"
+                                                                            value={condition.record_condition}
+                                                                            onChange={ (e) => handleChange(e)}
+                                                                            className={selectClass}
+                                                                        >
+                                                                            {Object.entries(condition_operators[condition.field_type]).map(([name, label]) => 
+                                                                                <option defaultValue={condition.record_condition === name} value={name}> {label} </option>
+                                                                            )}
+                                                                        </select>
+                                                                    )}
                                                                 </div>
                                                                 <div className="flex-1 flex items-center">
                                                                     
