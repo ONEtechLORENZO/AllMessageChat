@@ -1695,6 +1695,34 @@ class MsgController extends Controller
             ->first();
     }
 
+    protected function resolveRenderedTemplatePreview(Template $template, ?array $renderedPayload = null): string
+    {
+        $preview = '';
+
+        if (is_array($renderedPayload)) {
+            $messages = (array) ($renderedPayload['messages'] ?? []);
+            foreach ($messages as $message) {
+                if (is_array($message)) {
+                    $text = trim((string) ($message['text'] ?? ''));
+                    if ($text !== '') {
+                        $preview = $text;
+                        break;
+                    }
+                }
+            }
+
+            if ($preview === '') {
+                $preview = (string) data_get($renderedPayload, 'messages.0.attachment.payload.elements.0.title', '');
+            }
+        }
+
+        if ($preview === '') {
+            $preview = app(TemplateRenderService::class)->resolvePreviewText($template);
+        }
+
+        return $preview;
+    }
+
     /**
      * Return contact conversation history
      */
@@ -1835,14 +1863,60 @@ class MsgController extends Controller
         }
 
         foreach ($messageCollection as $message) {
+            $content = $message->body_text ?: $message->message;
+            $templatePayload = null;
+            $templateType = null;
+            if (! $content || trim((string) $content) === '') {
+                if (! empty($message->template_id)) {
+                    $template = Template::find($message->template_id);
+                    if ($template) {
+                        $content = app(TemplateRenderService::class)->resolvePreviewText($template);
+                        if (is_array($template->payload_json)) {
+                            $templatePayload = $template->payload_json;
+                            $templateType = (string) ($template->type ?? ($templatePayload['type'] ?? ''));
+                        }
+                    } else {
+                        $legacyTemplate = Message::find($message->template_id);
+                        if ($legacyTemplate && isset($legacyTemplate->body)) {
+                            $content = (string) $legacyTemplate->body;
+                        }
+                    }
+                }
+
+                if ((! $content || trim((string) $content) === '') && is_string($message->message)) {
+                    $decoded = json_decode($message->message, true);
+                    if (is_array($decoded)) {
+                        $content = (string) (
+                            $decoded['text']
+                            ?? $decoded['body']
+                            ?? $decoded['message']
+                            ?? $decoded['content']
+                            ?? data_get($decoded, 'payload.text')
+                            ?? data_get($decoded, 'payload.body')
+                        );
+                    }
+                }
+
+                if ((! $content || trim((string) $content) === '') && ($message->template_id || $message->msg_type === 'template')) {
+                    $content = 'Template message';
+                }
+            } elseif (! empty($message->template_id) && $templatePayload === null) {
+                $template = Template::find($message->template_id);
+                if ($template && is_array($template->payload_json)) {
+                    $templatePayload = $template->payload_json;
+                    $templateType = (string) ($template->type ?? ($templatePayload['type'] ?? ''));
+                }
+            }
             $messages[] = [
-                'content' => $message->body_text ?: $message->message,
+                'content' => $content,
                 'type' => $message->msg_type,
                 'path' => ($message->file_path),
                 'status' => $message->status,
                 'date' => date_format(($message->received_at ?: $message->sent_at ?: $message->created_at), $this->dateChatView),
                 'mode' => $message->msg_mode,
                 'category' => $message->service,
+                'template_payload' => $templatePayload,
+                'template_type' => $templateType,
                 'error' => $message->error_response,
                 'delivered' => $message->is_delivered,
                 'read' => $message->is_read,
@@ -2288,10 +2362,14 @@ class MsgController extends Controller
             $pageToken = $helper->getFbPageAccessToken($account);
             $internalTemplate = $this->resolveInternalSocialTemplate($account, $request->template_id, (string) $request->channel);
             $renderedTemplate = null;
+            $templatePreview = null;
 
             if ($internalTemplate) {
                 try {
                     $renderedTemplate = app(TemplateRenderService::class)->renderForContact($internalTemplate, $contact);
+                    $templatePreview = $this->resolveRenderedTemplatePreview($internalTemplate, $renderedTemplate);
+                    $_POST['content'] = $templatePreview;
+                    $request->merge(['content' => $templatePreview]);
                 } catch (TemplateAdapterException $e) {
                     return response()->json([
                         'status' => 'Failed',
@@ -2395,6 +2473,12 @@ class MsgController extends Controller
             }
 
             $result['status'] = $status;
+            if ($internalTemplate && isset($internalTemplate->id)) {
+                $result['result']['template_id'] = $internalTemplate->id;
+                if ($templatePreview !== null) {
+                    $result['result']['template_preview'] = $templatePreview;
+                }
+            }
         } else {
             // Send Message to Whatsapp
             $template = ($request->template_id) ? $request->template_id : '';
@@ -2562,11 +2646,27 @@ class MsgController extends Controller
         $_REQUEST['is_sent'] = 'sent';
         $msgable_id = $this->getInfoUsingContactUniqueId($request->destination, $request->channel, $user_id);
         $msgable_type = 'App\Models\Contact';
+        $messageContent = (string) ($_POST['content'] ?? '');
+
+        if ($messageContent === '') {
+            $previewFromResult = (string) data_get($data, 'result.template_preview', '');
+            if ($previewFromResult !== '') {
+                $messageContent = $previewFromResult;
+            } else {
+                $templateId = data_get($data, 'result.template_id');
+                if ($templateId) {
+                    $template = Template::find($templateId);
+                    if ($template) {
+                        $messageContent = app(TemplateRenderService::class)->resolvePreviewText($template);
+                    }
+                }
+            }
+        }
 
         $messageData = [
             'service_id' => $data['messageId'],
             'service' => $request->channel,
-            'message' => $_POST['content'],
+            'message' => $messageContent,
             'account_id' => $accountId,
             'msgable_id' => $msgable_id,
             'msgable_type' => $msgable_type,

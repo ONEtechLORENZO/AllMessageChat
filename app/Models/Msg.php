@@ -416,7 +416,7 @@ class Msg extends Model
                     'access_token' => $token,
                 ];
 
-                $response = Http::asForm()->post($url, $post_data);
+                $response = Http::asJson()->post($url, $post_data);
                 $result = json_decode($response->body(), true);
 
                 if(isset($result['error']) && isset($result['error']['code']) && $result['error']['code'] == 100) {
@@ -425,8 +425,8 @@ class Msg extends Model
                         'recipient' => [ 'id' => $recipient ],
                         'access_token' => $token,
                     ];
-                    Http::asForm()->post($controlUrl, $controlData);
-                    $response = Http::asForm()->post($url, $post_data);
+                    Http::asJson()->post($controlUrl, $controlData);
+                    $response = Http::asJson()->post($url, $post_data);
                     $result = json_decode($response->body(), true);
                 }
 
