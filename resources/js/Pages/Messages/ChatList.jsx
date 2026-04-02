@@ -2,8 +2,9 @@ import React, { useEffect, useState, useRef, Fragment } from "react";
 import { Head, Link } from "@inertiajs/react";
 import MessageList from "./MessageList";
 import Authenticated from "../../Layouts/Authenticated";
-import Dropdown from "@/Components/Dropdown";
-import ContactSelection from "@/Components/ContactSelection";
+import Dropdown from "../../Components/Dropdown.jsx";
+import ContactSelection from "../../Components/ContactSelection.jsx";
+import EmailComposeModal from "./EmailComposeModal";
 import notie from "notie";
 import { router as Inertia } from "@inertiajs/react";
 import nProgress from "nprogress";
@@ -36,8 +37,40 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
 
+function formatSelectedAccountLabel(accountName, category) {
+    const rawName = String(accountName || "").trim();
+
+    if (!rawName) {
+        return "AESSEFIN";
+    }
+
+    if (category === "instagram") {
+        return rawName.replace(/\s*-\s*$/, "");
+    }
+
+    if (category === "facebook" || category === "email") {
+        if (category === "email") {
+            const emailMatch = rawName.match(/\(([^()]+@[^()]+)\)/);
+
+            if (emailMatch?.[1]) {
+                return emailMatch[1].trim().toUpperCase();
+            }
+        }
+
+        const parts = rawName
+            .split("-")
+            .map((part) => part.trim())
+            .filter(Boolean);
+
+        return parts.length > 1 ? parts[parts.length - 1] : rawName;
+    }
+
+    return rawName;
+}
+
 const DEFAULT_NEW_MESSAGE_LABEL = "New Message";
-const WHATSAPP_NEW_CHAT_LABEL = "New chat";
+const ADD_CONTACT_LABEL = "Add Contact";
+const EMAIL_COMPOSE_LABEL = "Compose";
 
 function extractRelationFilterValues(filterCondition) {
     if (!filterCondition) {
@@ -104,11 +137,20 @@ function ChatList(props) {
     const [messages, setMessages] = useState({});
     const [containerCategory, setContainerCategory] = useState(props.category);
     const [showForm, setShowForm] = useState(false);
+    const [showEmailComposeModal, setShowEmailComposeModal] = useState(false);
+    const [isSending, setIsSending] = useState(false);
     const [chatList, setChatList] = useState(props.contact_list);
     const [data, setData] = useState({
         destination: "",
         channel: containerCategory,
         content: "",
+        email_subject: "",
+        attachment: "",
+        template_id: "",
+        catalog_id: "",
+        product_retailer_id: "",
+        template_options: "",
+        template_type: "",
     });
     const [selectedAccount, setSelectedAccount] = useState("");
     const [searchKey, setSearchKey] = useState(props.search);
@@ -155,11 +197,56 @@ function ChatList(props) {
     const selectedConversation = selectedContact
         ? chatList["contact_id_" + selectedContact]
         : null;
+    const selectedAccountLabel = formatSelectedAccountLabel(
+        selectedAccount ? accountList[selectedAccount] : "",
+        containerCategory,
+    );
 
     const listRef = useRef(null);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [pageLoading, setPageLoad] = useState(false);
+
+    function renderAccountStatusDot(accountId) {
+        if (!accountId) {
+            return null;
+        }
+
+        if (containerCategory === "whatsapp") {
+            if (!selectedContact) {
+                return null;
+            }
+
+            const hasActiveSession =
+                props.sessions[selectedContact] &&
+                props.sessions[selectedContact][accountId];
+
+            return (
+                <span
+                    title={
+                        hasActiveSession
+                            ? "Session active"
+                            : "Session inactive"
+                    }
+                    className={classNames(
+                        "rounded-full p-1",
+                        hasActiveSession ? "bg-green-500" : "bg-red-500",
+                    )}
+                ></span>
+            );
+        }
+
+        if (["facebook", "instagram", "email"].includes(containerCategory)) {
+            return (
+                <span
+                    title="Unavailable"
+                    className="rounded-full p-1 bg-red-500"
+                ></span>
+            );
+        }
+
+        return null;
+    }
 
     useEffect(() => {
         setChatList(props.contact_list);
@@ -338,7 +425,12 @@ function ChatList(props) {
         });
 
         const params = [];
-        const allowRelationFilter = category === "whatsapp";
+        const allowRelationFilter = [
+            "whatsapp",
+            "instagram",
+            "facebook",
+            "email",
+        ].includes(category);
 
         if (allowRelationFilter && filterCondition) {
             params.push(`filter=${encodeURIComponent(filterCondition)}`);
@@ -365,7 +457,7 @@ function ChatList(props) {
         return url;
     }
 
-    function updateWhatsAppRelationFilter(nextTagValue = "", nextListValue = "") {
+    function updateChatRelationFilter(nextTagValue = "", nextListValue = "") {
         const nextFilterCondition = buildRelationFilterCondition(
             nextTagValue,
             nextListValue,
@@ -376,17 +468,18 @@ function ChatList(props) {
         setSelectedContact("");
         setChatList({});
         setPage(1);
-        setContainerCategory("whatsapp");
+        setContainerCategory(containerCategory || "whatsapp");
 
-        fetchContactList(true, current_tab, "whatsapp", {
+        fetchContactList(true, current_tab, containerCategory || "whatsapp", {
             search: searchKey,
             filterCondition: nextFilterCondition,
             filterId: "",
         });
     }
 
-    function handleKeyUp(e) {
-        if (e.key == "Enter" && !e.shiftKey && containerCategory) {
+    function handleKeyDown(e) {
+        if (e.key === "Enter" && !e.shiftKey && containerCategory) {
+            e.preventDefault();
             sendMessage();
         }
     }
@@ -395,8 +488,27 @@ function ChatList(props) {
         let newState = Object.assign({}, data);
 
         if (e.target.type == "file" && e.target.files) {
-            newState[e.target.name] = e.target.files[0];
-            newState["content"] = e.target.files[0].name;
+            const file = e.target.files[0];
+            const isInstagram = containerCategory === "instagram";
+            const isAllowedInstagramAttachment =
+                file &&
+                ["image/", "video/", "audio/"].some((prefix) =>
+                    String(file.type || "").startsWith(prefix),
+                );
+
+            if (isInstagram && file && !isAllowedInstagramAttachment) {
+                notie.alert({
+                    type: "error",
+                    text: "Instagram only supports image, video, or audio attachments.",
+                    time: 5,
+                });
+                newState[e.target.name] = "";
+                newState["content"] = "";
+                e.target.value = "";
+            } else {
+                newState[e.target.name] = file;
+                newState["content"] = file ? file.name : "";
+            }
         } else {
             newState[e.target.name] = e.target.value;
         }
@@ -441,9 +553,16 @@ function ChatList(props) {
             category: name,
             search: searchKey,
             tab: current_tab,
-            filterCondition:
-                name === "whatsapp" ? activeChatFilterCondition : "",
-            filterId: name === "whatsapp" ? activeChatFilterId : "",
+            filterCondition: ["whatsapp", "instagram", "facebook", "email"].includes(
+                name,
+            )
+                ? activeChatFilterCondition
+                : "",
+            filterId: ["whatsapp", "instagram", "facebook", "email"].includes(
+                name,
+            )
+                ? activeChatFilterId
+                : "",
         });
         Inertia.get(url, {}, {
             onSuccess: () => {},
@@ -469,13 +588,17 @@ function ChatList(props) {
         const effectiveFilterCondition =
             overrides.filterCondition !== undefined
                 ? overrides.filterCondition
-                : category === "whatsapp"
+                : ["whatsapp", "instagram", "facebook", "email"].includes(
+                      category,
+                  )
                   ? activeChatFilterCondition
                   : "";
         const effectiveFilterId =
             overrides.filterId !== undefined
                 ? overrides.filterId
-                : category === "whatsapp"
+                : ["whatsapp", "instagram", "facebook", "email"].includes(
+                      category,
+                  )
                   ? activeChatFilterId
                   : "";
         const url = getChatListUrl({
@@ -571,6 +694,10 @@ function ChatList(props) {
 
     function sendMessage() {
         var formData = new FormData();
+        const isEmailComposeFlow =
+            containerCategory === "email" &&
+            showEmailComposeModal &&
+            String(data.destination || "").trim() !== "";
 
         if (containerCategory == "all" || !selectedAccount) {
             notie.alert({
@@ -586,6 +713,10 @@ function ChatList(props) {
             destination = chatList["contact_id_" + selectedContact].insta_id;
         } else if (containerCategory == "facebook") {
             destination = chatList["contact_id_" + selectedContact].fb_id;
+        } else if (containerCategory == "email") {
+            destination = isEmailComposeFlow
+                ? String(data.destination || "").trim()
+                : chatList["contact_id_" + selectedContact].email;
         }
 
         formData.append("account_id", selectedAccount);
@@ -598,6 +729,13 @@ function ChatList(props) {
         formData.append("product_retailer_id", data.product_retailer_id);
         formData.append("template_options", data.template_options);
         formData.append("template_type", data.template_type);
+        if (containerCategory == "email") {
+            formData.append(
+                "conversation_id",
+                isEmailComposeFlow ? "" : selectedContact || "",
+            );
+            formData.append("email_subject", data.email_subject || "");
+        }
 
         if (!destination) {
             notie.alert({
@@ -606,7 +744,8 @@ function ChatList(props) {
                 time: 5,
             });
         }
-        if (data.content && destination && selectedAccount) {
+        if ((data.content || data.attachment) && destination && selectedAccount) {
+            setIsSending(true);
             nProgress.start(0.5);
             nProgress.inc(0.2);
 
@@ -623,31 +762,104 @@ function ChatList(props) {
                     notie.alert({ type: "error", text: result.error, time: 5 });
                 } else if (
                     result.status == "Queued" ||
+                    result.status == "Sent" ||
                     response.data.status == "Send"
                 ) {
                     let newState = Object.assign({}, data);
+                    const shouldCloseEmailCompose =
+                        containerCategory === "email" && showEmailComposeModal;
                     newState["content"] = "";
                     newState["template_id"] = "";
                     newState["attachment"] = "";
                     newState["template_type"] = "";
                     newState["template_options"] = "";
+                    newState["catalog_id"] = "";
+                    newState["product_retailer_id"] = "";
+                    if (containerCategory === "email") {
+                        newState["destination"] = "";
+                        newState["email_subject"] = "";
+                    }
                     setData(newState);
+                    if (shouldCloseEmailCompose) {
+                        setShowEmailComposeModal(false);
+                    }
                 }
 
                 getMessageList();
-            });
+                if (containerCategory === "email") {
+                    fetchContactList(true, current_tab, containerCategory);
+                }
+            })
+                .catch((error) => {
+                    notie.alert({
+                        type: "error",
+                        text:
+                            error?.response?.data?.error ||
+                            "Unable to send the message right now.",
+                        time: 5,
+                    });
+                })
+                .finally(() => {
+                    setIsSending(false);
+                    nProgress.done(true);
+                });
         }
+    }
+
+    function openPrimaryAction() {
+        if (containerCategory === "email") {
+            setData((prevState) => ({
+                ...prevState,
+                destination: "",
+                content: "",
+                attachment: "",
+                template_id: "",
+                catalog_id: "",
+                product_retailer_id: "",
+                template_options: "",
+                template_type: "",
+                email_subject: "",
+            }));
+            setShowEmailComposeModal(true);
+            return;
+        }
+
+        setShowForm(true);
+    }
+
+    function closeEmailComposeModal() {
+        setShowEmailComposeModal(false);
+        setData((prevState) => ({
+            ...prevState,
+            destination: "",
+            content: "",
+            attachment: "",
+            template_id: "",
+            catalog_id: "",
+            product_retailer_id: "",
+            template_options: "",
+            template_type: "",
+            email_subject:
+                containerCategory === "email"
+                    ? selectedConversation?.subject || ""
+                    : "",
+        }));
     }
 
     function setTemplateInfo(template) {
         let newState = Object.assign({}, data);
-        const isInternalSocialTemplate = ["facebook", "instagram"].includes(
+        const isDirectBodyTemplate = ["facebook", "instagram", "email"].includes(
             String(template?.service || "").toLowerCase(),
         );
-        newState["content"] = isInternalSocialTemplate
+        newState["content"] = isDirectBodyTemplate
             ? String(template?.body || template?.name || "Template selected")
             : template.name + " template selected ";
         newState["template_id"] = template.template_uid || template.id;
+        if (String(template?.service || "").toLowerCase() === "email") {
+            newState["email_subject"] = String(
+                template?.email_subject || newState["email_subject"] || "",
+            );
+        }
         setData(newState);
     }
 
@@ -699,7 +911,12 @@ function ChatList(props) {
     const showNewMessageButton = !["instagram", "facebook"].includes(
         containerCategory,
     );
-    const showWhatsAppQuickFilters = containerCategory === "whatsapp";
+    const showChatRelationFilters = [
+        "whatsapp",
+        "instagram",
+        "facebook",
+        "email",
+    ].includes(containerCategory);
     const relationFilterValues = extractRelationFilterValues(
         activeChatFilterCondition,
     );
@@ -713,8 +930,10 @@ function ChatList(props) {
     const selectedListLabel =
         listOptions.find((list) => String(list.value) === selectedListValue)
             ?.label || props.translator.List;
-    const newMessageLabel = showWhatsAppQuickFilters
-        ? WHATSAPP_NEW_CHAT_LABEL
+    const newMessageLabel = showChatRelationFilters
+        ? containerCategory === "email"
+            ? EMAIL_COMPOSE_LABEL
+            : ADD_CONTACT_LABEL
         : DEFAULT_NEW_MESSAGE_LABEL;
 
     return (
@@ -775,7 +994,7 @@ function ChatList(props) {
                         <div
                             className={classNames(
                                 "mt-2",
-                                showWhatsAppQuickFilters
+                                showChatRelationFilters
                                     ? "space-y-2.5"
                                     : "flex items-center gap-3",
                             )}
@@ -797,7 +1016,7 @@ function ChatList(props) {
                                     onKeyDown={(e) => handleSearchContact(e)}
                                     className={classNames(
                                         "w-full border border-white/7 bg-white/[0.05] pl-12 pr-4 text-sm text-white placeholder-white/45 focus:border-[#BF00FF]/40 focus:ring-[#BF00FF]/40",
-                                        showWhatsAppQuickFilters
+                                        showChatRelationFilters
                                             ? "h-11 rounded-[1.15rem]"
                                             : "h-12 rounded-2xl",
                                     )}
@@ -808,18 +1027,15 @@ function ChatList(props) {
                                 <button
                                     type="button"
                                     className="chat-new-message-button shrink-0 focus:outline-none focus:ring-2 focus:ring-[#BF00FF]/40"
-                                    onClick={() => setShowForm(true)}
+                                    onClick={openPrimaryAction}
                                 >
                                     <span className="chat-new-message-button__outline" />
                                     <span className="chat-new-message-button__inner" />
-                                    <span className="chat-new-message-button__state">
-                                        <span className="chat-new-message-button__icon">
-                                            <PaperAirplaneIcon className="h-4 w-4" />
-                                        </span>
-                                        <span className="chat-new-message-button__label">
-                                            {newMessageLabel.split("").map(
-                                                (char, index) => (
-                                                    <span
+                                        <span className="chat-new-message-button__state">
+                                            <span className="chat-new-message-button__label">
+                                                {newMessageLabel.split("").map(
+                                                    (char, index) => (
+                                                        <span
                                                         key={`${char}-${index}`}
                                                         style={{ "--i": index }}
                                                         className="chat-new-message-button__letter"
@@ -835,7 +1051,7 @@ function ChatList(props) {
                                 </button>
                             )}
                             </div>
-                            {showWhatsAppQuickFilters && (
+                            {showChatRelationFilters && (
                                 <div className="flex flex-wrap items-center gap-2">
                                     <Dropdown>
                                         <Dropdown.Trigger>
@@ -863,7 +1079,7 @@ function ChatList(props) {
                                                 <button
                                                     type="button"
                                                     onClick={() =>
-                                                        updateWhatsAppRelationFilter(
+                                                        updateChatRelationFilter(
                                                             "",
                                                             selectedListValue,
                                                         )
@@ -882,7 +1098,7 @@ function ChatList(props) {
                                                         key={`tag-${tag.value}`}
                                                         type="button"
                                                         onClick={() =>
-                                                            updateWhatsAppRelationFilter(
+                                                            updateChatRelationFilter(
                                                                 String(
                                                                     tag.value,
                                                                 ),
@@ -930,7 +1146,7 @@ function ChatList(props) {
                                                 <button
                                                     type="button"
                                                     onClick={() =>
-                                                        updateWhatsAppRelationFilter(
+                                                        updateChatRelationFilter(
                                                             selectedTagValue,
                                                             "",
                                                         )
@@ -949,7 +1165,7 @@ function ChatList(props) {
                                                         key={`list-${list.value}`}
                                                         type="button"
                                                         onClick={() =>
-                                                            updateWhatsAppRelationFilter(
+                                                            updateChatRelationFilter(
                                                                 selectedTagValue,
                                                                 String(
                                                                     list.value,
@@ -977,7 +1193,7 @@ function ChatList(props) {
                                         <button
                                             type="button"
                                             onClick={() =>
-                                                updateWhatsAppRelationFilter()
+                                                updateChatRelationFilter()
                                             }
                                             className="inline-flex h-9 items-center rounded-xl border border-white/10 bg-white/[0.03] px-3 text-[0.82rem] font-medium text-white/70 transition hover:bg-white/[0.06] hover:text-white"
                                         >
@@ -1004,7 +1220,7 @@ function ChatList(props) {
                                                 tab.id == current_tab
                                                     ? "bg-[linear-gradient(135deg,rgba(255,79,216,0.28),rgba(163,30,255,0.26))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_22px_rgba(127,0,190,0.16)]"
                                                     : "text-white/72 hover:bg-white/[0.04] hover:text-white",
-                                                showWhatsAppQuickFilters
+                                                showChatRelationFilters
                                                     ? "flex min-h-[3.4rem] flex-col justify-center px-4 py-1.5 text-left transition first:rounded-l-[1.55rem] last:rounded-r-[1.55rem]"
                                                     : "flex min-h-[4.35rem] flex-col justify-center px-5 py-2.5 text-left transition first:rounded-l-[1.55rem] last:rounded-r-[1.55rem]",
                                             )}
@@ -1012,7 +1228,7 @@ function ChatList(props) {
                                             <span
                                                 className={classNames(
                                                     "font-semibold leading-tight",
-                                                    showWhatsAppQuickFilters
+                                                    showChatRelationFilters
                                                         ? "text-[0.82rem]"
                                                         : "text-[0.9rem]",
                                                 )}
@@ -1022,7 +1238,7 @@ function ChatList(props) {
                                             <span
                                                 className={classNames(
                                                     "font-medium text-white/50",
-                                                    showWhatsAppQuickFilters
+                                                    showChatRelationFilters
                                                         ? "mt-1 text-[0.75rem]"
                                                         : "mt-1.5 text-[0.8rem]",
                                                 )}
@@ -1279,42 +1495,14 @@ function ChatList(props) {
                                             <div className="flex items-center gap-2">
                                                 <span className="font-medium uppercase tracking-[0.04em]">
                                                     {selectedAccount ? (
-                                                        <>
-                                                            {
-                                                                accountList[
-                                                                    selectedAccount
-                                                                ]
-                                                            }
-                                                        </>
+                                                        <>{selectedAccountLabel}</>
                                                     ) : (
                                                         "AESSEFIN"
                                                     )}
                                                 </span>
-                                                {containerCategory ==
-                                                    "whatsapp" &&
-                                                    selectedAccount &&
-                                                    selectedContact && (
-                                                        <>
-                                                            {props.sessions[
-                                                                selectedContact
-                                                            ] &&
-                                                            props.sessions[
-                                                                selectedContact
-                                                            ][
-                                                                selectedAccount
-                                                            ] ? (
-                                                                <span
-                                                                    title="Session active"
-                                                                    className="rounded-full p-1 bg-green-500"
-                                                                ></span>
-                                                            ) : (
-                                                                <span
-                                                                    title="Session inactive"
-                                                                    className="rounded-full p-1 bg-red-500"
-                                                                ></span>
-                                                            )}
-                                                        </>
-                                                    )}
+                                                {renderAccountStatusDot(
+                                                    selectedAccount,
+                                                )}
                                                 <span className="ml-1">
                                                     <ChevronDownIcon className="h-3 w-3 text-white/60" />
                                                 </span>
@@ -1351,36 +1539,14 @@ function ChatList(props) {
                                                                 }
                                                                 className="block text-sm text-white/85 hover:text-white w-full cursor-pointer"
                                                             >
-                                                                {name}
-                                                            </span>
-
-                                                            {containerCategory ==
-                                                                "whatsapp" &&
-                                                                selectedContact &&
-                                                                selectedContact && (
-                                                                    <>
-                                                                        {props
-                                                                            .sessions[
-                                                                            selectedContact
-                                                                        ] &&
-                                                                        props
-                                                                            .sessions[
-                                                                            selectedContact
-                                                                        ][
-                                                                            id
-                                                                        ] ? (
-                                                                            <span
-                                                                                title="Session active"
-                                                                                className="rounded-full p-1 bg-green-500"
-                                                                            ></span>
-                                                                        ) : (
-                                                                            <span
-                                                                                title="Session inactive"
-                                                                                className="rounded-full p-1 bg-red-500"
-                                                                            ></span>
-                                                                        )}
-                                                                    </>
+                                                                {formatSelectedAccountLabel(
+                                                                    name,
+                                                                    containerCategory,
                                                                 )}
+                                                            </span>
+                                                            {renderAccountStatusDot(
+                                                                id,
+                                                            )}
                                                         </div>
                                                     </Menu.Item>
                                                 ),
@@ -1403,7 +1569,7 @@ function ChatList(props) {
                         <div className="flex-shrink-0">
                             <ChatBox
                                 handleChange={handleChange}
-                                handleKeyUp={handleKeyUp}
+                                handleKeyDown={handleKeyDown}
                                 templates={props.templates}
                                 products={props.products}
                                 interactiveMessages={props.interactiveMessages}
@@ -1429,11 +1595,27 @@ function ChatList(props) {
                 <ContactSelection
                     setShowForm={setShowForm}
                     parent_module="Chat"
+                    startWithCreateForm={true}
                     {...props}
                 />
             ) : (
                 ""
             )}
+            <EmailComposeModal
+                open={showEmailComposeModal}
+                onClose={closeEmailComposeModal}
+                onSend={sendMessage}
+                onChange={handleChange}
+                data={data}
+                templates={props.templates}
+                products={props.products}
+                interactiveMessages={props.interactiveMessages}
+                setInteractiveMessage={setInteractiveMessage}
+                setProductInfo={setProductInfo}
+                setTemplateInfo={setTemplateInfo}
+                selectedAccount={selectedAccount}
+                sending={isSending}
+            />
         </Authenticated>
     );
 }

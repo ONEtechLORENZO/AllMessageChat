@@ -181,6 +181,7 @@ class GmailService
             htmlBody: $htmlBody,
             inReplyTo: $payload['in_reply_to'] ?? null,
             referencesHeader: $payload['references_header'] ?? null,
+            attachments: (array) ($payload['attachments'] ?? []),
         );
 
         $requestPayload = [
@@ -793,8 +794,10 @@ class GmailService
         string $htmlBody,
         ?string $inReplyTo = null,
         ?string $referencesHeader = null,
+        array $attachments = [],
     ): string {
         $boundary = 'om_' . Str::random(24);
+        $mixedBoundary = 'om_mixed_' . Str::random(24);
         $headers = [
             'From: ' . $this->formatMailbox($fromEmail, $fromName),
             'To: ' . implode(', ', array_map(fn ($email) => $this->formatMailbox((string) $email), $to)),
@@ -810,7 +813,10 @@ class GmailService
 
         $headers[] = 'Subject: ' . $subject;
         $headers[] = 'MIME-Version: 1.0';
-        $headers[] = 'Content-Type: multipart/alternative; boundary="' . $boundary . '"';
+        $hasAttachments = ! empty($attachments);
+        $headers[] = $hasAttachments
+            ? 'Content-Type: multipart/mixed; boundary="' . $mixedBoundary . '"'
+            : 'Content-Type: multipart/alternative; boundary="' . $boundary . '"';
 
         if ($inReplyTo) {
             $headers[] = 'In-Reply-To: ' . $inReplyTo;
@@ -820,7 +826,7 @@ class GmailService
             $headers[] = 'References: ' . $referencesHeader;
         }
 
-        $parts = [
+        $alternativeParts = [
             '--' . $boundary,
             'Content-Type: text/plain; charset=UTF-8',
             'Content-Transfer-Encoding: 7bit',
@@ -835,6 +841,38 @@ class GmailService
             '',
             '--' . $boundary . '--',
         ];
+
+        if (! $hasAttachments) {
+            return implode("\r\n", array_merge($headers, ['', implode("\r\n", $alternativeParts)]));
+        }
+
+        $parts = [
+            '--' . $mixedBoundary,
+            'Content-Type: multipart/alternative; boundary="' . $boundary . '"',
+            '',
+            implode("\r\n", $alternativeParts),
+        ];
+
+        foreach ($attachments as $attachment) {
+            $filename = (string) ($attachment['filename'] ?? 'attachment');
+            $mime = (string) ($attachment['mime'] ?? 'application/octet-stream');
+            $content = (string) ($attachment['content'] ?? '');
+
+            if ($content === '') {
+                continue;
+            }
+
+            $encoded = chunk_split(base64_encode($content), 76, "\r\n");
+
+            $parts[] = '--' . $mixedBoundary;
+            $parts[] = 'Content-Type: ' . $mime . '; name="' . $filename . '"';
+            $parts[] = 'Content-Disposition: attachment; filename="' . $filename . '"';
+            $parts[] = 'Content-Transfer-Encoding: base64';
+            $parts[] = '';
+            $parts[] = $encoded;
+        }
+
+        $parts[] = '--' . $mixedBoundary . '--';
 
         return implode("\r\n", array_merge($headers, ['', implode("\r\n", $parts)]));
     }

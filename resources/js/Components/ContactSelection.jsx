@@ -18,7 +18,8 @@ export default function ContactSelection(props) {
     const cancelButtonRef = useRef(null);
 
     const [isOpen, setIsOpen] = useState(true);
-    const [createForm, setCreateForm] = useState(false);
+    const startWithCreateForm = props.startWithCreateForm ?? false;
+    const [createForm, setCreateForm] = useState(startWithCreateForm);
 
     const [contactList, setContactList] = useState([]);     // must be array
     const [selectedContact, setSelectedContact] = useState([]); // must be array for isMulti
@@ -180,6 +181,9 @@ export default function ContactSelection(props) {
 
     function hideForm() {
         setCreateForm(false);
+        if (startWithCreateForm) {
+            closeModal();
+        }
     }
 
     function addNewContact() {
@@ -202,6 +206,7 @@ export default function ContactSelection(props) {
 
     return (
         <>
+            {!startWithCreateForm && (
             <Transition show={isOpen} as={Fragment}>
                 <Dialog
                     open={isOpen}
@@ -334,6 +339,7 @@ export default function ContactSelection(props) {
                     </div>
                 </Dialog>
             </Transition>
+            )}
 
             {createForm ? (
                 <NewForm

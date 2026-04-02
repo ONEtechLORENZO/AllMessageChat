@@ -18,6 +18,92 @@ import { PopoverHeader, PopoverBody, UncontrolledPopover } from "reactstrap";
 export default function MessageList(props) {
     const messagesContainerRef = useRef(null);
 
+    function renderFacebookTemplate(payload) {
+        if (!payload || typeof payload !== "object") {
+            return null;
+        }
+
+        const type = payload.type;
+        const card =
+            type === "card"
+                ? payload
+                : type === "carousel"
+                    ? (payload.cards && payload.cards[0]) || null
+                    : null;
+
+        if (card) {
+            const buttons = Array.isArray(card.buttons) ? card.buttons : [];
+            return (
+                <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white text-black shadow-[0_18px_48px_rgba(0,0,0,0.22)]">
+                    {card.image_url ? (
+                        <img
+                            src={card.image_url}
+                            alt={card.title || "Card image"}
+                            className="h-40 w-full object-cover"
+                        />
+                    ) : null}
+                    <div className="px-4 py-3">
+                        <div className="text-sm font-semibold">{card.title}</div>
+                        {card.subtitle ? (
+                            <div className="text-xs text-black/60">{card.subtitle}</div>
+                        ) : null}
+                    </div>
+                    {buttons.length > 0 ? (
+                        <div className="border-t border-black/10">
+                            {buttons.map((button, index) => (
+                                <div
+                                    key={`${button.title || "btn"}-${index}`}
+                                    className="px-4 py-2 text-center text-sm font-medium text-black/80"
+                                    style={{
+                                        borderTop:
+                                            index === 0 ? "none" : "1px solid rgba(0,0,0,0.08)",
+                                    }}
+                                >
+                                    {button.title || button.payload || "Action"}
+                                </div>
+                            ))}
+                        </div>
+                    ) : null}
+                </div>
+            );
+        }
+
+        if (type === "quick_replies") {
+            const replies = Array.isArray(payload.quick_replies) ? payload.quick_replies : [];
+            return (
+                <div className="flex flex-col gap-2">
+                    <div className="text-sm">{payload.body || ""}</div>
+                    <div className="flex flex-wrap gap-2">
+                        {replies.map((reply, index) => (
+                            <span
+                                key={`${reply.title || "reply"}-${index}`}
+                                className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-black"
+                            >
+                                {reply.title || reply.payload || "Reply"}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        if (type === "media") {
+            return payload.media_url ? (
+                <img
+                    src={payload.media_url}
+                    alt="Media"
+                    className="h-40 w-full max-w-sm rounded-2xl object-cover"
+                />
+            ) : null;
+        }
+
+        if (type === "text") {
+            return payload.body || null;
+        }
+
+        return null;
+    }
+
     useEffect(() => {
         if (!messagesContainerRef.current) {
             return;
@@ -78,6 +164,14 @@ export default function MessageList(props) {
                     {Object.entries(props.messages).map(([key, message], j) => {
                     var content = message.content;
                     var mediaClass = "object-contain h-48 w-96";
+                    var templateContent = null;
+
+                    if (message.category === "facebook" && message.template_payload) {
+                        templateContent = renderFacebookTemplate(message.template_payload);
+                        if (templateContent) {
+                            content = templateContent;
+                        }
+                    }
                     switch (message.type) {
                         case 'image':
                             content = <div className=" ">
@@ -139,9 +233,15 @@ export default function MessageList(props) {
                                         <div className="flex items-end">
                                             <div className="order-2 mx-2 flex max-w-[min(30rem,78%)] flex-col space-y-2 text-sm items-start">
                                             <div className="rounded-[1.5rem] rounded-bl-md bg-white/[0.04] px-4 py-3 text-white/90 shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
-                                                    <span className="inline-block text-sm">
-                                                        {content}
-                                                    </span>
+                                                    {templateContent ? (
+                                                        <div className="w-full">
+                                                            {content}
+                                                        </div>
+                                                    ) : (
+                                                        <span className="inline-block text-sm">
+                                                            {content}
+                                                        </span>
+                                                    )}
                                                     <div className='flex w-full !mt-4 items-center gap-2'>
                                                         <span className="text-xs text-left">
                                                             {props.containerCategory == 'all' &&
@@ -170,9 +270,15 @@ export default function MessageList(props) {
                                         <div className="flex items-end justify-end">
                                             <div className="order-1 mx-2 flex max-w-[min(32rem,78%)] flex-col space-y-2 text-sm items-end">
                                                 <div className="rounded-[1.5rem] rounded-br-md bg-[linear-gradient(135deg,rgba(163,30,255,0.28),rgba(255,59,194,0.16))] px-4 py-3 text-white/90 shadow-[0_20px_60px_rgba(127,0,190,0.18)]">
-                                                    <span className="inline-block text-sm">
-                                                        {content}
-                                                    </span>
+                                                    {templateContent ? (
+                                                        <div className="w-full">
+                                                            {content}
+                                                        </div>
+                                                    ) : (
+                                                        <span className="inline-block text-sm">
+                                                            {content}
+                                                        </span>
+                                                    )}
                                                     <div className='flex w-full !mt-4 items-center gap-2'>
                                                         <span className="text-xs text-left">
                                                             {props.containerCategory == 'all' &&
