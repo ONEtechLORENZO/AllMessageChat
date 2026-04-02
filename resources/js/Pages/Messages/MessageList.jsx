@@ -18,6 +18,47 @@ import { PopoverHeader, PopoverBody, UncontrolledPopover } from "reactstrap";
 export default function MessageList(props) {
     const messagesContainerRef = useRef(null);
 
+    function isImageFile(value) {
+        if (!value || typeof value !== "string") return false;
+        const lower = value.toLowerCase();
+        return (
+            lower.startsWith("data:image/") ||
+            /\.(png|jpe?g|gif|webp|bmp|svg)$/.test(lower)
+        );
+    }
+
+    function resolveEmailImageUrl(message) {
+        if (!message || message.category !== "email") return "";
+        const path = typeof message.path === "string" ? message.path.trim() : "";
+        if (path && isImageFile(path)) {
+            return path;
+        }
+        const content = typeof message.content === "string" ? message.content.trim() : "";
+        if (!content || !isImageFile(content)) {
+            return "";
+        }
+        if (/^https?:\/\//i.test(content) || content.startsWith("data:image/")) {
+            return content;
+        }
+        return `/uploads/sent_files/${encodeURIComponent(content)}`;
+    }
+
+    function isLikelyFileName(value) {
+        if (!value || typeof value !== "string") return false;
+        const lower = value.toLowerCase();
+        return /\.(pdf|docx?|xlsx?|pptx?|csv|txt|zip|rar|7z|mp3|mp4|mov|avi|mkv|html?)$/.test(lower);
+    }
+
+    function resolveEmailFileUrl(message) {
+        if (!message || message.category !== "email") return "";
+        const path = typeof message.path === "string" ? message.path.trim() : "";
+        if (path) return path;
+        const content = typeof message.content === "string" ? message.content.trim() : "";
+        if (!content || !isLikelyFileName(content)) return "";
+        if (/^https?:\/\//i.test(content)) return content;
+        return `/uploads/sent_files/${encodeURIComponent(content)}`;
+    }
+
     function CardPreview({ card }) {
         if (!card) return null;
         const buttons = Array.isArray(card.buttons) ? card.buttons : [];
@@ -194,6 +235,9 @@ export default function MessageList(props) {
                     var content = message.content;
                     var mediaClass = "object-contain h-48 w-96";
                     var templateContent = null;
+                    var emailImageUrl = resolveEmailImageUrl(message);
+                    var messageType = String(message.type || "").toLowerCase();
+                    var emailFileUrl = resolveEmailFileUrl(message);
 
                     if (
                         (message.category === "facebook" || message.category === "instagram")
@@ -204,7 +248,55 @@ export default function MessageList(props) {
                             content = templateContent;
                         }
                     }
-                    switch (message.type) {
+                    if (
+                        message.category === "email"
+                        && emailImageUrl
+                        && !templateContent
+                        && !message.path
+                    ) {
+                        content = (
+                            <div className=" ">
+                                <img
+                                    src={emailImageUrl}
+                                    alt={message.content || "Email image"}
+                                    className={mediaClass}
+                                />
+                                {message.content}
+                            </div>
+                        );
+                    }
+                    if (
+                        message.category === "email"
+                        && !emailImageUrl
+                        && emailFileUrl
+                        && !templateContent
+                        && !message.path
+                    ) {
+                        content = (
+                            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        className="h-5 w-5 text-white/80"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M14 3v5h5" />
+                                    </svg>
+                                </div>
+                                <div className="min-w-0">
+                                    <a href={emailFileUrl} className="block truncate text-sm font-semibold text-white/90">
+                                        {message.content || "Attachment"}
+                                    </a>
+                                    <div className="text-xs text-white/50">File attachment</div>
+                                </div>
+                            </div>
+                        );
+                    }
+                    switch (messageType) {
                         case 'image':
                             content = <div className=" ">
                                 <img
@@ -240,14 +332,51 @@ export default function MessageList(props) {
                             break;
 
                         case 'application':
-                            content = <div className=" ">
-                                <a href={message.path} >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                </a>
-                                {message.content}
-                            </div>;
+                            if (message.category === "email" && emailImageUrl) {
+                                content = (
+                                    <div className=" ">
+                                        <img
+                                            src={emailImageUrl}
+                                            alt={message.content || "Email image"}
+                                            className={mediaClass}
+                                        />
+                                        {message.content}
+                                    </div>
+                                );
+                            } else if (message.category === "email" && emailFileUrl) {
+                                content = (
+                                    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                className="h-5 w-5 text-white/80"
+                                            >
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M14 3v5h5" />
+                                            </svg>
+                                        </div>
+                                        <div className="min-w-0">
+                                            <a href={emailFileUrl} className="block truncate text-sm font-semibold text-white/90">
+                                                {message.content || "Attachment"}
+                                            </a>
+                                            <div className="text-xs text-white/50">File attachment</div>
+                                        </div>
+                                    </div>
+                                );
+                            } else {
+                                content = <div className=" ">
+                                    <a href={message.path} >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </a>
+                                    {message.content}
+                                </div>;
+                            }
                             break;
                         case 'story':
                             content = <StoryContent

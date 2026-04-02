@@ -2318,6 +2318,16 @@ class MsgController extends Controller
                     ];
                 }
             }
+            if ($emailAttachments === [] && $attachment && isset($attachment_name, $path)) {
+                $attachmentPath = $path . '/' . $attachment_name;
+                if (file_exists($attachmentPath)) {
+                    $emailAttachments[] = [
+                        'filename' => $attachment_name,
+                        'mime' => $mimeType ?? 'application/octet-stream',
+                        'content' => file_get_contents($attachmentPath),
+                    ];
+                }
+            }
 
             try {
                 $sendResult = $gmailService->sendMessage($account, [
@@ -2330,6 +2340,38 @@ class MsgController extends Controller
                     'references_header' => $latestEmailMessage?->references_header ?: $latestEmailMessage?->internet_message_id,
                     'attachments' => $emailAttachments,
                 ]);
+
+                $serviceId = optional($sendResult['message'])->gmail_message_id;
+                if (! $serviceId) {
+                    $serviceId = (string) Str::uuid();
+                }
+
+                $messageData = [
+                    'service_id' => $serviceId,
+                    'service' => 'email',
+                    'message' => (string) $request->content,
+                    'account_id' => $account->id,
+                    'msgable_id' => $conversation?->contact_id ?: null,
+                    'msgable_type' => $conversation?->contact_id ? Contact::class : null,
+                    'msg_mode' => 'outgoing',
+                    'status' => 'Sent',
+                    'msg_type' => 'Text',
+                    'file_path' => '',
+                    'email_subject' => $subject,
+                    'sender_email' => $account->email ?? null,
+                ];
+
+                if ($attachment && $attachment_name && $path) {
+                    $attachmentMime = (string) ($mimeType ?? '');
+                    $type = $attachmentMime !== '' ? explode('/', $attachmentMime)[0] : '';
+                    if (! in_array($type, ['image', 'video', 'audio'], true)) {
+                        $type = 'application';
+                    }
+                    $messageData['msg_type'] = $type;
+                    $messageData['file_path'] = url('uploads/sent_files/' . $attachment_name);
+                }
+
+                $this->processMessage($messageData);
 
                 return response()->json([
                     'status' => 'Sent',
