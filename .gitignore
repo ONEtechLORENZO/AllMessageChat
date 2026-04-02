@@ -19,3 +19,5 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
+lightsail_deploy_key
+lightsail_deploy_key.pub
