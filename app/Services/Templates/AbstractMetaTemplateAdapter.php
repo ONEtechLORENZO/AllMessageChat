@@ -267,6 +267,7 @@ abstract class AbstractMetaTemplateAdapter
         return $element;
     }
 
+
     /**
      * @return array<string>
      */

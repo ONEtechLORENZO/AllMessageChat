@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactAudioPlayer from 'react-audio-player';
 import {
     WhatsAppIcon,
@@ -18,54 +18,102 @@ import { PopoverHeader, PopoverBody, UncontrolledPopover } from "reactstrap";
 export default function MessageList(props) {
     const messagesContainerRef = useRef(null);
 
+    function CardPreview({ card }) {
+        if (!card) return null;
+        const buttons = Array.isArray(card.buttons) ? card.buttons : [];
+        return (
+            <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white text-black shadow-[0_18px_48px_rgba(0,0,0,0.22)]">
+                {card.image_url ? (
+                    <img
+                        src={card.image_url}
+                        alt={card.title || "Card image"}
+                        className="h-40 w-full object-cover"
+                    />
+                ) : null}
+                <div className="px-4 py-3">
+                    <div className="text-sm font-semibold">{card.title}</div>
+                    {card.subtitle ? (
+                        <div className="text-xs text-black/60">{card.subtitle}</div>
+                    ) : null}
+                </div>
+                {buttons.length > 0 ? (
+                    <div className="border-t border-black/10">
+                        {buttons.map((button, index) => (
+                            <div
+                                key={`${button.title || "btn"}-${index}`}
+                                className="px-4 py-2 text-center text-sm font-medium text-black/80"
+                                style={{
+                                    borderTop:
+                                        index === 0 ? "none" : "1px solid rgba(0,0,0,0.08)",
+                                }}
+                            >
+                                {button.title || button.payload || "Action"}
+                            </div>
+                        ))}
+                    </div>
+                ) : null}
+            </div>
+        );
+    }
+
+    function CarouselPreview({ cards }) {
+        const safeCards = Array.isArray(cards) ? cards.filter(Boolean) : [];
+        const [index, setIndex] = useState(0);
+
+        if (safeCards.length === 0) {
+            return null;
+        }
+
+        const current = safeCards[index] || safeCards[0];
+        const canPrev = index > 0;
+        const canNext = index < safeCards.length - 1;
+
+        return (
+            <div className="relative w-full max-w-sm">
+                <CardPreview card={current} />
+                <div className="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2">
+                    <button
+                        type="button"
+                        onClick={() => setIndex((prev) => Math.max(0, prev - 1))}
+                        disabled={!canPrev}
+                        className={`pointer-events-auto inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white transition ${
+                            canPrev ? "hover:bg-black/60" : "opacity-40"
+                        }`}
+                        aria-label="Previous card"
+                    >
+                        {"<"}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setIndex((prev) => Math.min(safeCards.length - 1, prev + 1))}
+                        disabled={!canNext}
+                        className={`pointer-events-auto inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white transition ${
+                            canNext ? "hover:bg-black/60" : "opacity-40"
+                        }`}
+                        aria-label="Next card"
+                    >
+                        {">"}
+                    </button>
+                </div>
+                <div className="mt-2 text-center text-xs text-white/60">
+                    {index + 1} / {safeCards.length}
+                </div>
+            </div>
+        );
+    }
+
     function renderFacebookTemplate(payload) {
         if (!payload || typeof payload !== "object") {
             return null;
         }
 
         const type = payload.type;
-        const card =
-            type === "card"
-                ? payload
-                : type === "carousel"
-                    ? (payload.cards && payload.cards[0]) || null
-                    : null;
+        if (type === "carousel") {
+            return <CarouselPreview cards={payload.cards} />;
+        }
 
-        if (card) {
-            const buttons = Array.isArray(card.buttons) ? card.buttons : [];
-            return (
-                <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white text-black shadow-[0_18px_48px_rgba(0,0,0,0.22)]">
-                    {card.image_url ? (
-                        <img
-                            src={card.image_url}
-                            alt={card.title || "Card image"}
-                            className="h-40 w-full object-cover"
-                        />
-                    ) : null}
-                    <div className="px-4 py-3">
-                        <div className="text-sm font-semibold">{card.title}</div>
-                        {card.subtitle ? (
-                            <div className="text-xs text-black/60">{card.subtitle}</div>
-                        ) : null}
-                    </div>
-                    {buttons.length > 0 ? (
-                        <div className="border-t border-black/10">
-                            {buttons.map((button, index) => (
-                                <div
-                                    key={`${button.title || "btn"}-${index}`}
-                                    className="px-4 py-2 text-center text-sm font-medium text-black/80"
-                                    style={{
-                                        borderTop:
-                                            index === 0 ? "none" : "1px solid rgba(0,0,0,0.08)",
-                                    }}
-                                >
-                                    {button.title || button.payload || "Action"}
-                                </div>
-                            ))}
-                        </div>
-                    ) : null}
-                </div>
-            );
+        if (type === "card") {
+            return <CardPreview card={payload} />;
         }
 
         if (type === "media") {
@@ -147,7 +195,10 @@ export default function MessageList(props) {
                     var mediaClass = "object-contain h-48 w-96";
                     var templateContent = null;
 
-                    if (message.category === "facebook" && message.template_payload) {
+                    if (
+                        (message.category === "facebook" || message.category === "instagram")
+                        && message.template_payload
+                    ) {
                         templateContent = renderFacebookTemplate(message.template_payload);
                         if (templateContent) {
                             content = templateContent;
