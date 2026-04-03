@@ -537,6 +537,15 @@ class PlanController extends Controller
         $company = Company::first();
         $stripe_public_key = config('stripe.stripe_key');
         $plans = DB::table('plans')->where('default_plan', 'true')->get();
+        $hasPaymentMethod = false;
+
+        if ($user) {
+            if (method_exists($user, 'hasPaymentMethod')) {
+                $hasPaymentMethod = $user->hasPaymentMethod();
+            } elseif (method_exists($user, 'paymentMethods')) {
+                $hasPaymentMethod = count($user->paymentMethods()) > 0;
+            }
+        }
 
         return Inertia::render('PlanComponent', [
             'user' => $user,
@@ -544,7 +553,10 @@ class PlanController extends Controller
             'stripe_public_key' => $stripe_public_key,
             'plans' => $plans,
             'translator' => Controller::getTranslations(),
-            'status' => 'update'
+            'status' => 'update',
+            'hasPaymentMethod' => $hasPaymentMethod,
+            'hasSubscription' => (bool) ($company?->subscription_id),
+            'redirectAfterSubscribeRoute' => 'wallet_subscription',
         ]);
     }
 }

@@ -339,6 +339,10 @@ export default function PlanSubscription(props) {
     const [showForm, setShowForm] = useState(false);
     const [subscriptionId, setSubscriptionId] = useState(null);
     const [status, setStatus] = useState("new");
+    const [subscribeStatus, setSubscribeStatus] = useState("new");
+
+    const hasPaymentMethod = Boolean(props.hasPaymentMethod);
+    const hasSubscription = Boolean(props.company?.subscription_id);
 
     const availablePlansFromBackend = Array.isArray(props.plans)
         ? props.plans
@@ -435,15 +439,23 @@ export default function PlanSubscription(props) {
 
     function buySubscription(planId) {
         const backendPlanId = getMatchedBackendPlanId(planId);
+        const shouldCollectPayment = !hasPaymentMethod || !hasSubscription;
 
         if (!checkToChangePlan(backendPlanId)) return;
 
         if (status === "update") {
+            if (shouldCollectPayment) {
+                setSubscriptionId(backendPlanId);
+                setSubscribeStatus("new");
+                setShowForm(true);
+                return;
+            }
             confirmToSubscribe(backendPlanId);
             return;
         }
 
         setSubscriptionId(backendPlanId);
+        setSubscribeStatus("new");
         setShowForm(true);
     }
 
@@ -490,11 +502,15 @@ export default function PlanSubscription(props) {
                 {
                     user_id: props.user.id,
                     is_register_step: true,
-                    status: "new",
+                    status: subscribeStatus,
                 },
             );
 
-            props.redirectDashBoard();
+            if (props.redirectAfterSubscribeRoute) {
+                Inertia.get(route(props.redirectAfterSubscribeRoute));
+            } else {
+                props.redirectDashBoard?.();
+            }
         } catch (error) {
             notie.alert({
                 type: "error",
