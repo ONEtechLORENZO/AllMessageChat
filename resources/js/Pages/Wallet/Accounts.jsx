@@ -117,14 +117,6 @@ function normalizeStatus(account) {
     }
 
     if (account.service === "instagram") {
-        if (
-            account.legacy_connection ||
-            account.connection_model === "legacy_page_linked" ||
-            account.requires_reconnect
-        ) {
-            return "needs_setup";
-        }
-
         if (account.connection_status === "connected") {
             return "connected";
         }
@@ -209,14 +201,6 @@ function serviceDetail(service, status, account, profileCount) {
         }
 
         if (status === "needs_setup") {
-            if (
-                account.legacy_connection ||
-                account.connection_model === "legacy_page_linked" ||
-                account.requires_reconnect
-            ) {
-                return "Legacy Instagram connection. Reconnect to upgrade";
-            }
-
             return account.connection_setup?.message || "Connect Instagram";
         }
 
@@ -318,7 +302,7 @@ export default function Accounts(props) {
     function deleteAccount(accountId) {
         confirmAlert({
             customUI: ({ onClose }) => (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-transparent px-4 backdrop-blur-sm">
                     <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#140816]/95 p-6 text-white shadow-2xl ring-1 ring-white/5">
                         <div className="space-y-2">
                             <div className="inline-flex rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-red-200">

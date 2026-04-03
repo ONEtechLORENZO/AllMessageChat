@@ -84,11 +84,6 @@ Route::get('/msglogin', [MessageLogController::class, 'msglogin']);
 Route::get('/fb-whatsapp', [MsgController::class, 'incomingFBWhatsApp']);
 Route::post('/fb-whatsapp', [MsgController::class, 'incomingFBWhatsApp']);
 
-// Legacy Instagram webhook route retained for compatibility while the
-// dedicated Meta webhook lives at /integrations/meta/webhook.
-Route::get('/fb-insta', [MetaIntegrationController::class, 'verifyLegacyInstagramWebhook']);
-Route::post('/fb-insta', [MetaIntegrationController::class, 'receiveLegacyInstagramWebhook']);
-
 Route::get('/integrations/meta/webhook', [MetaIntegrationController::class, 'verifyWebhook'])->name('meta_webhook_verify');
 Route::post('/integrations/meta/webhook', [MetaIntegrationController::class, 'receiveWebhook'])->name('meta_webhook_receive');
 Route::get('/integrations/instagram/webhook', [MetaIntegrationController::class, 'verifyInstagramWebhook'])->name('instagram_webhook_verify');
@@ -124,9 +119,6 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/integrations/meta/accounts/{account}/facebook-setup', [MetaIntegrationController::class, 'facebookSetupState'])->name('meta_facebook_setup');
         Route::post('/integrations/meta/accounts/{account}/facebook-page', [MetaIntegrationController::class, 'saveFacebookPage'])->name('meta_facebook_page');
         Route::get('/integrations/instagram/status/{account}', [MetaIntegrationController::class, 'instagramStatus'])->name('instagram_status');
-        Route::get('/integrations/instagram/pages/{account}', [MetaIntegrationController::class, 'instagramPages'])->name('instagram_pages');
-        Route::post('/integrations/instagram/select-page/{account}', [MetaIntegrationController::class, 'selectInstagramPage'])->name('instagram_select_page');
-        Route::post('/integrations/instagram/finalize/{account}', [MetaIntegrationController::class, 'finalizeInstagram'])->name('instagram_finalize');
         Route::get('/integrations/gmail/connect', [UserController::class, 'connectGmail'])->name('connect_gmail');
         Route::get('/store-access-token/{app_name}/{token}', [WhatsAppUsersController::class, 'storeUserToken'])->name('store_user_code');
 
