@@ -49,6 +49,10 @@ class PlanRestriction
 
             if ($request->is('contact*')) {
                 $access = $plan->crm_contacts;
+
+                if ($access !== 'true' && $plan->chat_conversation == 'true') {
+                    $access = true;
+                }
             }
 
             if ($request->is('field/store')) {

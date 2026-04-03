@@ -59,10 +59,13 @@ import {
     GraphIcon,
 } from "@/Pages/icons";
 
+const appRoute = (name, params = {}, absolute = false) =>
+    route(name, params, absolute);
+
 const navigation = [
     {
         name: "Dashboard",
-        href: route("dashboard"),
+        href: appRoute("dashboard"),
         icon: DashboardIcon,
         show: ["all"],
     },
@@ -74,29 +77,29 @@ const navigation = [
         subMenu: [
             {
                 name: "Chats",
-                href: route("chat_list"),
+                href: appRoute("chat_list"),
             },
             {
                 name: "Templates",
-                href: route("account_templates"),
+                href: appRoute("account_templates"),
             },
             {
                 name: "Interactive Messages",
-                href: route("listInteractiveMessage"),
+                href: appRoute("listInteractiveMessage"),
             },
             {
                 name: "Campaigns",
-                href: route("listCampaign"),
+                href: appRoute("listCampaign"),
             },
             {
                 name: "Contacts",
-                href: route("listContact"),
+                href: appRoute("listContact"),
             },
         ],
     },
     {
         name: "Reports",
-        href: route("listMessage"),
+        href: appRoute("listMessage"),
         icon: GraphIcon,
         show: ["all"],
     },
@@ -132,25 +135,25 @@ const navigation = [
 const bottomNavigation = [
     {
         name: "Billing",
-        href: route("wallet"),
+        href: appRoute("wallet"),
         icon: BillingIcon,
         show: ["all"],
     },
     {
         name: "API Documentation",
-        href: route("api_documentation"),
+        href: appRoute("api_documentation"),
         icon: CodeBracketIcon,
         show: ["all"],
     },
     {
         name: "Roles",
-        href: route("listRole"),
+        href: appRoute("listRole"),
         icon: AdjustmentsHorizontalIcon,
         show: ["admin", "global_admin"],
     },
     {
         name: "Settings",
-        href: route("wallet_subscription"),
+        href: appRoute("wallet_subscription"),
         icon: Setting2Icon,
         show: ["admin", "global_admin"],
     },
@@ -158,7 +161,7 @@ const bottomNavigation = [
 const adminNavigation = [
     {
         name: "Dashboard",
-        href: route("dashboard"),
+        href: appRoute("dashboard"),
         icon: DashboardIcon,
         show: ["global_admin"],
     },
@@ -170,15 +173,15 @@ const adminNavigation = [
         subMenu: [
             {
                 name: "Workspaces",
-                href: route("listCompany"),
+                href: appRoute("listCompany"),
             },
             {
                 name: "Social profiles",
-                href: route("listAccount"),
+                href: appRoute("listAccount"),
             },
             {
                 name: "Users",
-                href: route("list_global_user"),
+                href: appRoute("list_global_user"),
             },
         ],
     },
@@ -210,15 +213,15 @@ const adminNavigation = [
         subMenu: [
             {
                 name: "Plans",
-                href: route("listPlan"),
+                href: appRoute("listPlan"),
             },
             {
                 name: "Pricing",
-                href: route("listPrice"),
+                href: appRoute("listPrice"),
             },
             {
                 name: "Addons",
-                href: route("listPrice"),
+                href: appRoute("listPrice"),
             },
         ],
     },
@@ -246,7 +249,7 @@ const adminNavigation = [
     // },
     {
         name: "Support Requests",
-        href: route("list_global_SupportRequest"),
+        href: appRoute("list_global_SupportRequest"),
         icon: QuestionMarkCircleIcon,
         show: ["global_admin"],
     },
@@ -255,7 +258,7 @@ const adminNavigation = [
 const menuBar = [
     {
         name: "Dashboard",
-        href: route("dashboard"),
+        href: appRoute("dashboard"),
         icon: Squares2X2Icon,
     },
     {
@@ -265,38 +268,38 @@ const menuBar = [
         subMenu: [
             {
                 name: "Social Profiles",
-                href: route("social_profile"),
+                href: appRoute("social_profile"),
             },
             {
                 name: "Chats",
-                href: route("chat_list"),
+                href: appRoute("chat_list"),
             },
             {
                 name: "Templates",
-                href: route("account_templates"),
+                href: appRoute("account_templates"),
             },
             {
                 name: "Interactive Messages",
-                href: route("listInteractiveMessage"),
+                href: appRoute("listInteractiveMessage"),
             },
             {
                 name: "Campaigns",
-                href: route("listCampaign"),
+                href: appRoute("listCampaign"),
             },
             {
                 name: "Contacts",
-                href: route("listContact"),
+                href: appRoute("listContact"),
             },
         ],
     },
     {
         name: "AI Agent",
-        href: route("ai_agent.choose"),
+        href: "/ai-agent",
         icon: CpuChipIcon,
     },
     {
         name: "Reports",
-        href: route("listMessage"),
+        href: appRoute("listMessage"),
         icon: ChartBarIcon,
     },
 ];
@@ -326,21 +329,18 @@ function NavItem({
     preserveState,
     onClick,
 }) {
-    return (
-        <Link
-            href={href}
-            preserveState={preserveState}
-            onClick={onClick}
-            className={[
-                "group flex items-center gap-3 rounded-2xl px-3.5 py-2.5 no-underline hover:no-underline focus:outline-none focus-visible:outline-none",
-                "transition-colors duration-200",
-                active
-                    ? compact
-                        ? "bg-transparent"
-                        : "bg-[linear-gradient(90deg,rgba(191,0,255,0.18),rgba(88,28,135,0.14))] border-0 ring-0"
-                    : "bg-transparent hover:bg-white/[0.03]",
-            ].join(" ")}
-        >
+    const sharedClassName = [
+        "group flex items-center gap-3 rounded-2xl px-3.5 py-2.5 no-underline hover:no-underline focus:outline-none focus-visible:outline-none",
+        "transition-colors duration-200",
+        active
+            ? compact
+                ? "bg-transparent"
+                : "bg-[linear-gradient(90deg,rgba(191,0,255,0.18),rgba(88,28,135,0.14))] border-0 ring-0"
+            : "bg-transparent hover:bg-white/[0.03]",
+    ].join(" ");
+
+    const content = (
+        <>
             <div
                 className={[
                     "h-10 w-10 shrink-0 rounded-2xl flex items-center justify-center",
@@ -379,7 +379,21 @@ function NavItem({
                     {rightSlot}
                 </div>
             ) : null}
-        </Link>
+        </>
+    );
+
+    if (onClick) {
+        return (
+            <button type="button" onClick={onClick} className={sharedClassName}>
+                {content}
+            </button>
+        );
+    }
+
+    return (
+        <a href={href} className={sharedClassName}>
+            {content}
+        </a>
     );
 }
 
@@ -1095,10 +1109,8 @@ export default function Authenticated({
                                                                     <li
                                                                         key={`${header}-${subItem.name}`}
                                                                     >
-                                                                        <Link
-                                                                            href={
-                                                                                subItem.href
-                                                                            }
+                                                                        <a
+                                                                            href={subItem.href}
                                                                             className={classNames(
                                                                                 subItem.name ===
                                                                                     current_page
@@ -1112,7 +1124,7 @@ export default function Authenticated({
                                                                                     .name
                                                                             ] ??
                                                                                 subItem.name}
-                                                                        </Link>
+                                                                        </a>
                                                                     </li>
                                                                 );
                                                             },

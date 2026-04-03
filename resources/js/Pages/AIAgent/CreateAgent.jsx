@@ -46,7 +46,7 @@ export default function CreateAgent(props) {
         setIsTesting(true);
 
         try {
-            const response = await axios.post(route("ai_agent.test"), {
+            const response = await axios.post("/ai-agent/test", {
                 message: msg,
                 agent_name: agentName,
                 tone,

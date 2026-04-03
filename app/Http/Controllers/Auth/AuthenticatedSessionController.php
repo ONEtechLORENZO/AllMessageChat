@@ -37,7 +37,13 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(RouteServiceProvider::HOME);
+        $target = redirect()->intended(RouteServiceProvider::HOME)->getTargetUrl();
+
+        if ($request->header('X-Inertia')) {
+            return Inertia::location($target);
+        }
+
+        return redirect()->to($target);
     }
 
     /**

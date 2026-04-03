@@ -1,6 +1,7 @@
 import React from "react";
 import Authenticated from "@/Layouts/Authenticated";
 import { Head, Link } from "@inertiajs/react";
+import oneTechLogo from "../../../../public/images/O-logootech.svg";
 
 const cards = [
     {
@@ -12,9 +13,9 @@ const cards = [
         href: null,
         icon: (
             <img
-                src="/images/O-logootech.svg"
+                src={oneTechLogo}
                 alt="ONE TECH"
-                className="h-12 w-12"
+                className="h-12 w-12 object-contain"
             />
         ),
     },
@@ -24,7 +25,7 @@ const cards = [
         description:
             "Build your own AI agents and customize them your way with a more flexible workflow.",
         buttonLabel: "Create Agent",
-        href: route("ai_agent.create"),
+        href: "/ai-agent/create",
         icon: (
             <svg
                 viewBox="0 0 24 24"
@@ -146,8 +147,8 @@ export default function ChooseAgent(props) {
 
                         {/* ── Right panel — stacked cards ── */}
                         <div className="flex flex-col gap-5">
-                            {cards.map((card) => (
-                                <AgentCard key={card.key} {...card} />
+                            {cards.map(({ key, ...card }) => (
+                                <AgentCard key={key} {...card} />
                             ))}
                         </div>
                     </div>
