@@ -38,6 +38,7 @@ import {
     PlusIcon,
     ShoppingCartIcon,
     CodeBracketIcon,
+    CpuChipIcon,
 } from "@heroicons/react/24/outline";
 import { createTranslator, getLocale, setLocale } from "@/i18n/translator";
 
@@ -289,6 +290,11 @@ const menuBar = [
         ],
     },
     {
+        name: "AI Agent",
+        href: route("ai_agent.choose"),
+        icon: CpuChipIcon,
+    },
+    {
         name: "Reports",
         href: route("listMessage"),
         icon: ChartBarIcon,
@@ -301,6 +307,9 @@ function classNames(...classes) {
 
 function isMenuItemActive(itemName, currentPage) {
     if (itemName === "Reports" && currentPage === "Message Logs") {
+        return true;
+    }
+    if (itemName === "AI Agent" && (currentPage === "AI Agent" || currentPage === "Create AI Agent")) {
         return true;
     }
 

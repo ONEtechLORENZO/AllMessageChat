@@ -548,7 +548,7 @@ function Templates(props) {
                                             </div>
 
                                             <div className="flex shrink-0 items-center gap-2">
-                                                <span className="rounded-lg bg-[#5b6af0] px-4 py-2 text-sm font-semibold text-white">
+                                                <span className="inline-flex items-center rounded-full border border-emerald-400/35 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200">
                                                     {account.status ?? "Active"}
                                                 </span>
                                                 <span className="rounded-lg bg-[#d946a8] px-4 py-2 text-sm font-semibold text-white">

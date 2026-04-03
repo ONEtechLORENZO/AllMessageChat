@@ -243,110 +243,108 @@ function ContactFilter(props) {
     }
 
     return (
-        <div className="w-full overflow-hidden rounded-[28px] bg-[radial-gradient(circle_at_0%_0%,rgba(124,58,237,0.35),rgba(20,8,22,0.92)_55%,rgba(8,4,16,0.98)_100%)] shadow-[0_40px_140px_rgba(0,0,0,0.55)]">
-            <div className="relative overflow-hidden bg-[linear-gradient(90deg,rgba(124,58,237,0.95),rgba(168,85,247,0.9))] px-8 py-6 sm:px-10">
-                <div className="pointer-events-none absolute inset-y-0 right-0 w-[55%] opacity-70">
-                    <div className="absolute -right-16 -bottom-40 h-[360px] w-[360px] rounded-full bg-white/12 ring-4 ring-white/10" />
-                    <div className="absolute right-28 -top-10 h-48 w-48 rounded-full bg-white/12 ring-4 ring-white/10" />
-                    <div className="absolute -right-10 -top-6 h-44 w-44 rounded-full bg-white/10 ring-4 ring-white/10" />
+        <div className="w-full overflow-hidden rounded-2xl bg-[#0d0516] shadow-[0_40px_140px_rgba(0,0,0,0.55)]">
+
+            {/* Header */}
+            <div className="relative overflow-hidden bg-[linear-gradient(135deg,#7c3aed,#9333ea)] px-8 py-7 sm:px-10">
+                {/* Decorative circles */}
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-10 opacity-60">
+                    <div className="relative h-24 w-24">
+                        <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-white/20" />
+                        <div className="absolute left-0 top-2 h-14 w-14 rounded-full bg-white/20" />
+                        <div className="absolute -right-2 bottom-0 h-12 w-12 rounded-full bg-white/20" />
+                    </div>
                 </div>
                 <div className="relative z-10 space-y-1">
-                    <div className="text-3xl font-black uppercase tracking-tight text-white">
+                    <div className="text-2xl font-black uppercase tracking-wide text-white">
                         {props.translator["Contact"] ?? "Contact"}
                     </div>
-                    <p className="text-sm text-white/85">
+                    <p className="max-w-md text-sm text-white/85">
                         Select who will receive this campaign. Use filters to build your audience.
                     </p>
                 </div>
             </div>
 
-            <div className="bg-[linear-gradient(180deg,rgba(18,10,27,0.92),rgba(10,7,17,0.98))] px-8 py-10 sm:px-10">
-                <div className="w-full max-w-none">
-                    <div className="text-2xl font-black uppercase tracking-tight text-white">
+            {/* Body */}
+            <div className="px-8 py-8 sm:px-10">
+
+                {/* Filter header + search row */}
+                <div className="mb-2">
+                    <div className="text-lg font-black uppercase tracking-wide text-white">
                         {props.translator["Filter"] ?? "Filter"}
                     </div>
-                    <p className="mt-1 text-sm text-white/55">
-                        Search contacts, or narrow the audience by tag and list.
+                    <p className="text-sm text-white/50">
+                        Tip: AND narrows the audience - OR expands it.
                     </p>
+                </div>
 
-                    <div className="mt-8 rounded-[28px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_18px_55px_rgba(0,0,0,0.3)]">
-                        <div className="flex flex-wrap items-center gap-3">
-                            <label className="relative block min-w-[360px] flex-1">
-                                <MagnifyingGlassIcon className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/40" />
-                                <input
-                                    type="text"
-                                    value={audienceState.search}
-                                    onChange={(event) => handleAudienceChange("search", event.target.value)}
-                                    onKeyDown={(event) => {
-                                        if (event.key === "Enter") {
-                                            event.preventDefault();
-                                            triggerSearch();
-                                        }
-                                    }}
-                                    placeholder="Search"
-                                    className="w-full rounded-[22px] border border-white/80 bg-transparent py-3 pl-14 pr-5 text-base text-white placeholder:text-white/45 focus:border-white focus:outline-none"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={triggerSearch}
-                                    className="absolute right-2 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-white/75 transition hover:bg-white/10 hover:text-white"
-                                    aria-label="Search audience"
-                                >
-                                    <MagnifyingGlassIcon className="h-5 w-5" />
-                                </button>
-                            </label>
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                    {/* Search input */}
+                    <div className="relative min-w-[280px] flex-1">
+                        <MagnifyingGlassIcon className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/50" />
+                        <input
+                            type="text"
+                            value={audienceState.search}
+                            onChange={(event) => handleAudienceChange("search", event.target.value)}
+                            onKeyDown={(event) => {
+                                if (event.key === "Enter") {
+                                    event.preventDefault();
+                                    triggerSearch();
+                                }
+                            }}
+                            placeholder="Search by name..."
+                            className="w-full rounded-lg bg-[#1a0a2e] py-3 pl-12 pr-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:bg-[#220d3a] transition"
+                        />
+                    </div>
 
-                            <div className="relative min-w-[140px]">
-                                <select
-                                    value={audienceState.tagValue}
-                                    onChange={(event) => handleAudienceChange("tagValue", event.target.value)}
-                                    className="w-full appearance-none rounded-none border border-white/80 bg-transparent px-5 py-3 pr-11 text-lg font-semibold text-white focus:border-white focus:outline-none"
-                                >
-                                    <option value="" className="bg-[#140816] text-white">Tag</option>
-                                    {tagOptions.map((option) => (
-                                        <option key={option.key} value={option.value} className="bg-[#140816] text-white">
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-                                <ChevronDownIcon className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/70" />
-                            </div>
+                    {/* Tag button-select */}
+                    <div className="relative">
+                        <select
+                            value={audienceState.tagValue}
+                            onChange={(event) => handleAudienceChange("tagValue", event.target.value)}
+                            className="appearance-none rounded-lg bg-[#22d3ee] px-6 py-3 text-sm font-bold text-white focus:outline-none cursor-pointer hover:bg-[#06b6d4] transition"
+                        >
+                            <option value="" className="bg-[#0a0212] text-white">Tag</option>
+                            {tagOptions.map((option) => (
+                                <option key={option.key} value={option.value} className="bg-[#0a0212] text-white">
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
-                            <div className="relative min-w-[140px]">
-                                <select
-                                    value={audienceState.listValue}
-                                    onChange={(event) => handleAudienceChange("listValue", event.target.value)}
-                                    className="w-full appearance-none rounded-none border border-white/80 bg-transparent px-5 py-3 pr-11 text-lg font-semibold text-white focus:border-white focus:outline-none"
-                                >
-                                    <option value="" className="bg-[#140816] text-white">List</option>
-                                    {listOptions.map((option) => (
-                                        <option key={option.key} value={option.value} className="bg-[#140816] text-white">
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-                                <ChevronDownIcon className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/70" />
-                            </div>
-                        </div>
+                    {/* List button-select */}
+                    <div className="relative">
+                        <select
+                            value={audienceState.listValue}
+                            onChange={(event) => handleAudienceChange("listValue", event.target.value)}
+                            className="appearance-none rounded-lg bg-[#3b0764] px-6 py-3 text-sm font-bold text-white focus:outline-none cursor-pointer hover:bg-[#4c1d95] transition"
+                        >
+                            <option value="" className="bg-[#0a0212] text-white">List</option>
+                            {listOptions.map((option) => (
+                                <option key={option.key} value={option.value} className="bg-[#0a0212] text-white">
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 </div>
 
-                {openList ? (
-                    <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.04] p-6 shadow-[0_18px_55px_rgba(0,0,0,0.3)]">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                            <div>
-                                <div className="text-lg font-semibold text-white">
-                                    {props.translator?.["Audience Preview"] ?? "Audience Preview"}
-                                </div>
-                                <div className="text-sm text-white/55">
-                                    {recordCount != null
-                                        ? `${recordCount} ${recordCount === 1 ? "contact" : "contacts"}`
-                                        : ""}
-                                </div>
-                            </div>
+                {/* Filter results table */}
+                <div className="mt-6 rounded-lg bg-[#0a0212] px-5 py-4">
+                    <div className="mb-3">
+                        <div className="text-sm font-black uppercase tracking-wide text-white">
+                            {props.translator["Filter"] ?? "Filter"}
                         </div>
+                        {openList && recordCount != null && (
+                            <div className="text-xs text-white/45">
+                                {recordCount} {recordCount === 1 ? "contact" : "contacts"}
+                            </div>
+                        )}
+                    </div>
 
-                        <div className="mt-5 max-h-[420px] overflow-auto rounded-xl border border-white/10">
+                    <div className="max-h-[320px] overflow-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#7c3aed]/60 [&::-webkit-scrollbar-thumb:hover]:bg-[#9333ea]">
+                        {openList ? (
                             <ListViewTable
                                 records={records || []}
                                 customHeader={(() => {
@@ -372,21 +370,26 @@ function ContactFilter(props) {
                                     return undefined;
                                 }}
                             />
-                        </div>
+                        ) : (
+                            <div className="py-8 text-center text-sm text-white/30">
+                                Apply a filter to preview the audience.
+                            </div>
+                        )}
                     </div>
-                ) : null}
+                </div>
 
-                <div className="mt-10 flex items-center justify-between gap-4">
+                {/* Navigation */}
+                <div className="mt-8 flex items-center justify-between gap-4">
                     <button
                         type="button"
-                        className="inline-flex items-center justify-center rounded-xl bg-white/10 px-6 py-2.5 text-sm font-semibold text-white/90 ring-1 ring-white/10 transition hover:bg-white/15"
+                        className="rounded-lg bg-[#5b21b6] px-7 py-2.5 text-sm font-semibold text-white transition hover:bg-[#4c1d95]"
                         onClick={() => props.previous(1)}
                     >
                         {props.translator["Previous"] ?? "Previous"}
                     </button>
                     <button
                         type="button"
-                        className="inline-flex items-center justify-center rounded-xl bg-[linear-gradient(135deg,#A855F7,#D946EF)] px-8 py-2.5 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(168,85,247,0.26)] transition hover:translate-y-[-1px] hover:shadow-[0_20px_40px_rgba(168,85,247,0.32)]"
+                        className="rounded-lg bg-[#BF00FF] px-8 py-2.5 text-sm font-semibold text-white shadow-[0_8px_24px_rgba(191,0,255,0.3)] transition hover:bg-[#a100df]"
                         onClick={props.saveCampaign}
                     >
                         {props.translator["Next"] ?? "Next"}
