@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Hash;
 
 use Cache;
 use DB;
+use Stripe\StripeClient;
 
 class SettingsController extends Controller
 {
@@ -485,6 +486,144 @@ class SettingsController extends Controller
         }
 
         return Redirect::route('wallet_subscription');
+    }
+
+    /**
+     * Create a Stripe Checkout Session and return the redirect URL.
+     */
+    public function createCheckoutSession(Request $request)
+    {
+        $request->validate([
+            'plan' => 'required|string',
+        ]);
+
+        $user = $request->user();
+        $company = Company::first();
+        $plan = strtoupper(trim($request->plan));
+
+        $priceId = $this->resolvePlanPriceId($plan);
+        if (!$priceId) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Stripe price not configured for this plan.',
+            ], 422);
+        }
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not authenticated.',
+            ], 401);
+        }
+
+        $customerId = $user->stripe_id;
+
+        if (method_exists($user, 'createOrGetStripeCustomer')) {
+            $stripeCustomer = $user->createOrGetStripeCustomer();
+            $customerId = $stripeCustomer?->id ?? $user->stripe_id;
+        }
+
+        $lineItems = [];
+
+        if ($plan === 'CONVERSATION_API') {
+            $lineItems[] = ['price' => $priceId, 'quantity' => 1];
+        } else {
+            $addOnPrices = [
+                config('stripe.instagram'),
+                config('stripe.facebook'),
+                config('stripe.whatsapp'),
+                config('stripe.api_whatsapp'),
+                config('stripe.top_up_50'),
+                config('stripe.top_up_100'),
+                config('stripe.top_up_150'),
+                config('stripe.top_up_200'),
+                config('stripe.top_up_250'),
+            ];
+
+            foreach ($addOnPrices as $addOnPrice) {
+                if ($addOnPrice) {
+                    $lineItems[] = ['price' => $addOnPrice, 'quantity' => 1];
+                }
+            }
+
+            $lineItems[] = ['price' => $priceId, 'quantity' => 1];
+        }
+
+        $stripe = new StripeClient(config('stripe.stripe_secret'));
+
+        $sessionParams = [
+            'mode' => 'subscription',
+            'line_items' => $lineItems,
+            'metadata' => [
+                'company_id' => $company?->id,
+                'plan' => $plan,
+                'user_id' => $user->id,
+            ],
+            'success_url' => route('stripe_checkout_success', ['plan' => $plan]) . '?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => route('update_plan'),
+        ];
+
+        if ($customerId) {
+            $sessionParams['customer'] = $customerId;
+        } else {
+            $sessionParams['customer_email'] = $user->email;
+        }
+
+        $session = $stripe->checkout->sessions->create($sessionParams);
+
+        return response()->json(['status' => true, 'url' => $session->url]);
+    }
+
+    /**
+     * Handle Stripe Checkout success and update company subscription details.
+     */
+    public function checkoutSuccess(Request $request, $plan)
+    {
+        $sessionId = $request->get('session_id');
+        if (!$sessionId) {
+            return Redirect::route('update_plan')->withErrors(['message' => 'Missing checkout session.']);
+        }
+
+        $stripe = new StripeClient(config('stripe.stripe_secret'));
+        $session = $stripe->checkout->sessions->retrieve($sessionId, []);
+
+        $subscriptionId = $session->subscription ?? null;
+        if (!$subscriptionId) {
+            return Redirect::route('update_plan')->withErrors(['message' => 'Subscription not found.']);
+        }
+
+        $company = Company::first();
+        if ($company) {
+            $company->subscription_id = $subscriptionId;
+            $company->plan = strtoupper($plan);
+            $company->save();
+        }
+
+        return Redirect::route('wallet_subscription');
+    }
+
+    private function resolvePlanPriceId(string $plan): ?string
+    {
+        if ($plan === 'STARTER') {
+            return config('stripe.starter') ?: config('stripe.stripe_starter');
+        }
+        if ($plan === 'PRO') {
+            return config('stripe.pro') ?: config('stripe.stripe_pro');
+        }
+        if ($plan === 'BUSINESS') {
+            return config('stripe.business') ?: config('stripe.stripe_business');
+        }
+        if ($plan === 'ENTERPRISE') {
+            return config('stripe.stripe_enterprise') ?: config('stripe.enterprise');
+        }
+        if ($plan === 'PLATINUM') {
+            return config('stripe.stripe_enterprise') ?: config('stripe.platinum');
+        }
+        if ($plan === 'CONVERSATION_API') {
+            return config('stripe.conversation');
+        }
+
+        return null;
     }
 
     public function getPlanDetails(Request $request)

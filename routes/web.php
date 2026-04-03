@@ -144,6 +144,8 @@ Route::middleware('planrestriction')->group(function () {
         // Stripe
         Route::get('/createStripeSetupIntent', [UserController::class, 'createStripeSetupIntent'])->name('createStripeSetupIntent');
         Route::post('/relatePaymentMethod', [UserController::class, 'relatePaymentMethod'])->name('relatePaymentMethod');
+        Route::post('/stripe/checkout/session', [SettingsController::class, 'createCheckoutSession'])->name('stripe_checkout_session');
+        Route::get('/stripe/checkout/success/{plan}', [SettingsController::class, 'checkoutSuccess'])->name('stripe_checkout_success');
 
         // Subscription
         Route::get('/workspace/settings', [SettingsController::class, 'walletSubscription'])->name('wallet_subscription');

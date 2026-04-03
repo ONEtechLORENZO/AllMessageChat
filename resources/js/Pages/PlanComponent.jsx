@@ -341,9 +341,6 @@ export default function PlanSubscription(props) {
     const [status, setStatus] = useState("new");
     const [subscribeStatus, setSubscribeStatus] = useState("new");
 
-    const hasPaymentMethod = Boolean(props.hasPaymentMethod);
-    const hasSubscription = Boolean(props.company?.subscription_id);
-
     const availablePlansFromBackend = Array.isArray(props.plans)
         ? props.plans
         : [];
@@ -439,24 +436,37 @@ export default function PlanSubscription(props) {
 
     function buySubscription(planId) {
         const backendPlanId = getMatchedBackendPlanId(planId);
-        const shouldCollectPayment = !hasPaymentMethod || !hasSubscription;
 
         if (!checkToChangePlan(backendPlanId)) return;
 
-        if (status === "update") {
-            if (shouldCollectPayment) {
-                setSubscriptionId(backendPlanId);
-                setSubscribeStatus("new");
-                setShowForm(true);
+        createCheckoutSession(backendPlanId);
+    }
+
+    async function createCheckoutSession(planId) {
+        try {
+            const response = await axios.post(
+                route("stripe_checkout_session"),
+                { plan: planId },
+            );
+
+            if (response?.data?.url) {
+                window.location.href = response.data.url;
                 return;
             }
-            confirmToSubscribe(backendPlanId);
-            return;
-        }
 
-        setSubscriptionId(backendPlanId);
-        setSubscribeStatus("new");
-        setShowForm(true);
+            throw new Error("Stripe checkout URL not found.");
+        } catch (error) {
+            notie.alert({
+                type: "error",
+                text:
+                    error?.response?.data?.message ||
+                    t(
+                        props.translator,
+                        "Unable to start the Stripe checkout session.",
+                    ),
+                time: 5,
+            });
+        }
     }
 
     function confirmToSubscribe(planId) {
