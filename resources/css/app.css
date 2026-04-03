@@ -189,6 +189,68 @@ html {
   transform: translate(2px, 2px);
 }
 
+/* Inline word loader above Choose Agent (Uiverse.io: kennyotsu, scoped) */
+.ai-agent-inline-loader-card {
+  --bg-color: rgba(7, 1, 17, 0.88);
+  background-color: transparent;
+  padding: 0;
+  border-radius: 1.25rem;
+}
+
+.ai-agent-inline-loader {
+  color: rgb(170, 170, 170);
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-weight: 500;
+  font-size: 25px;
+  box-sizing: content-box;
+  height: 40px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  letter-spacing: 0.2px;
+}
+
+.ai-agent-inline-loader-words {
+  overflow: hidden;
+  position: relative;
+  height: 40px;
+}
+
+.ai-agent-inline-loader-words::after {
+  /* Remove the "box" overlay so only text is visible. */
+  content: none;
+}
+
+.ai-agent-inline-loader-word {
+  display: block;
+  height: 100%;
+  padding-left: 6px;
+  color: #956afa;
+  animation: ai_agent_inline_spin_4991 3.6s infinite;
+}
+
+@keyframes ai_agent_inline_spin_4991 {
+  0%,
+  16% {
+    transform: translateY(0%);
+  }
+
+  33%,
+  49% {
+    transform: translateY(-100%);
+  }
+
+  66%,
+  82% {
+    transform: translateY(-200%);
+  }
+
+  100% {
+    transform: translateY(0%);
+  }
+}
+
 /* Global link reset to remove blue underlines */
 a,
 a:link,

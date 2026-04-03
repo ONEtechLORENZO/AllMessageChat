@@ -111,7 +111,31 @@ export default function ChooseAgent(props) {
 
             <div className="dashboard-page relative px-4 py-6 sm:px-6 lg:px-8">
                 <div className="relative z-10 mx-auto flex min-h-[calc(100vh-140px)] w-full max-w-6xl items-center py-10">
-                    <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-[320px_1fr] lg:gap-8">
+                    <div className="relative w-full pt-14">
+                        {/* Inline loader above CHOOSE AGENT (keeps both columns aligned) */}
+                        <div className="pointer-events-none absolute left-0 top-0">
+                            <div className="ai-agent-inline-loader-card">
+                                <div className="ai-agent-inline-loader">
+                                    <span>AI Agent</span>
+                                    <div
+                                        className="ai-agent-inline-loader-words"
+                                        aria-hidden="true"
+                                    >
+                                        <span className="ai-agent-inline-loader-word">
+                                            build,
+                                        </span>
+                                        <span className="ai-agent-inline-loader-word">
+                                            customize,
+                                        </span>
+                                        <span className="ai-agent-inline-loader-word">
+                                            deploy
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-[320px_1fr] lg:gap-8">
 
                         {/* ── Left panel ── */}
                         <div className="relative overflow-hidden rounded-2xl bg-[#7c3aed] p-8 shadow-[0_20px_60px_rgba(124,58,237,0.5)]">
@@ -149,6 +173,7 @@ export default function ChooseAgent(props) {
                             {cards.map((card) => (
                                 <AgentCard key={card.key} {...card} />
                             ))}
+                        </div>
                         </div>
                     </div>
                 </div>
