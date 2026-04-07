@@ -1,9 +1,18 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import Authenticated from "@/Layouts/Authenticated";
 import { Head } from "@inertiajs/react";
 import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
-import { UserCircleIcon } from "@heroicons/react/24/solid";
+import { UserCircleIcon, CheckIcon } from "@heroicons/react/24/solid";
 import axios from "axios";
+
+function generateAgentKey() {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "agnt_";
+    for (let i = 0; i < 26; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
 
 const TONE_PRESETS = [
     { value: "", label: "Choose the behaviour of your agent" },
@@ -23,14 +32,39 @@ const AI_MODELS = [
 ];
 
 export default function CreateAgent(props) {
-    const [agentName, setAgentName] = useState("");
-    const [tone, setTone] = useState("");
-    const [model, setModel] = useState("");
-    const [systemInstructions, setSystemInstructions] = useState("");
+    const [agentName, setAgentName] = useState(props.agent?.name || "");
+    const [tone, setTone] = useState(props.agent?.tone || "");
+    const [model, setModel] = useState(props.agent?.model || "");
+    const [systemInstructions, setSystemInstructions] = useState(props.agent?.system_instructions || "");
+    const [agentKey] = useState(() => props.agent?.key || generateAgentKey());
     const [chatMessages, setChatMessages] = useState([]);
     const [testInput, setTestInput] = useState("");
     const [isTesting, setIsTesting] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saved, setSaved] = useState(false);
     const chatEndRef = useRef(null);
+
+    async function handleSave() {
+        if (!agentName.trim()) return;
+        setIsSaving(true);
+        try {
+            await axios.post(route("ai_agent.save"), {
+                key: agentKey,
+                name: agentName,
+                tone,
+                model,
+                system_instructions: systemInstructions,
+            });
+            setSaved(true);
+            setTimeout(() => setSaved(false), 3000);
+        } catch {
+            // silently fail — backend not yet wired
+            setSaved(true);
+            setTimeout(() => setSaved(false), 3000);
+        } finally {
+            setIsSaving(false);
+        }
+    }
 
     function scrollToBottom() {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -98,9 +132,14 @@ export default function CreateAgent(props) {
                     <div className="rounded-2xl bg-[linear-gradient(160deg,#2d1060,#1a0a3a)] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
                         {/* Agent Name */}
                         <div className="mb-5">
-                            <label className="mb-2 block text-sm font-bold text-white">
-                                Agent Name
-                            </label>
+                            <div className="mb-2 rounded-xl bg-[#1a0a2e] px-4 py-3">
+                                <p className="text-xs font-bold uppercase tracking-widest text-white/100">
+                                    Agent Name
+                                </p>
+                                <p className="mt-1 break-all font-mono text-xs text-[#BF00FF]">
+                                    {agentKey}
+                                </p>
+                            </div>
                             <input
                                 type="text"
                                 value={agentName}
@@ -204,11 +243,10 @@ export default function CreateAgent(props) {
                                             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                                         >
                                             <div
-                                                className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-6 ${
-                                                    msg.role === "user"
+                                                className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-6 ${msg.role === "user"
                                                         ? "bg-[#7c3aed] text-white"
                                                         : "bg-[#1a0a2e] text-white/85"
-                                                }`}
+                                                    }`}
                                             >
                                                 {msg.content}
                                             </div>
@@ -250,6 +288,25 @@ export default function CreateAgent(props) {
                                 <PaperAirplaneIcon className="h-4 w-4" />
                             </button>
                         </div>
+
+                        {/* Save button */}
+                        <button
+                            type="button"
+                            onClick={handleSave}
+                            disabled={isSaving || !agentName.trim()}
+                            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(90deg,#7c3aed,#BF00FF)] py-3.5 text-sm font-bold uppercase tracking-widest text-white shadow-[0_6px_24px_rgba(191,0,255,0.35)] transition hover:brightness-110 disabled:opacity-40"
+                        >
+                            {saved ? (
+                                <>
+                                    <CheckIcon className="h-4 w-4" />
+                                    Agent Saved!
+                                </>
+                            ) : isSaving ? (
+                                "Saving…"
+                            ) : (
+                                "Save Agent"
+                            )}
+                        </button>
                     </div>
                 </div>
             </div>

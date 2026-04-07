@@ -49,12 +49,9 @@ function AgentCard({ title, description, buttonLabel, icon, href }) {
 
     return (
         <div className="group relative overflow-hidden rounded-2xl bg-[#160830] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition hover:bg-[#1e0d40]">
-            {/* Subtle glow orb */}
-            <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#7c3aed]/20 blur-2xl transition duration-500 group-hover:bg-[#9333ea]/30" />
-
             <div className="relative z-10 flex items-start gap-5">
                 {/* Icon */}
-                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-[#2e1060] shadow-[0_4px_20px_rgba(124,58,237,0.4)] transition group-hover:bg-[#3d1a80]">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-[#2e1060] transition group-hover:bg-[#3d1a80]">
                     {icon}
                 </div>
 
@@ -99,6 +96,8 @@ function AgentCard({ title, description, buttonLabel, icon, href }) {
 }
 
 export default function ChooseAgent(props) {
+    const agents = props.agents || [];
+
     return (
         <Authenticated
             auth={props.auth}
@@ -107,85 +106,96 @@ export default function ChooseAgent(props) {
             message={props.message}
             navigationMenu={props.menuBar}
             subduedBackground={true}
+            hidePageTitle={true}
         >
             <Head title="AI Agent" />
 
-            <div className="dashboard-page relative px-4 py-6 sm:px-6 lg:px-8">
-                {/* Orbiting background text rings (kept behind cards, above the purple arc) */}
-                <div className="pointer-events-none fixed -right-69 -top-99 z-[1] opacity-[0.38]">
-                    <OrbitingTextRings
-                        text="one tech • "
-                        size={980}
-                        strokeColor="#28004D"
-                        glowColor="rgba(40,0,77,0.25)"
-                        className="mix-blend-screen"
-                    />
-                </div>
+            <div className="flex h-full min-h-[calc(100vh-64px)]">
 
-                <div className="relative z-10 mx-auto flex min-h-[calc(100vh-140px)] w-full max-w-6xl items-center py-10">
-                    <div className="relative w-full pt-14">
-                        {/* Inline loader above CHOOSE AGENT (keeps both columns aligned) */}
-                        <div className="pointer-events-none absolute left-0 top-0">
-                            <div className="ai-agent-inline-loader-card">
-                                <div className="ai-agent-inline-loader">
-                                    <span>AI Agent</span>
-                                    <div
-                                        className="ai-agent-inline-loader-words"
-                                        aria-hidden="true"
-                                    >
-                                        <span className="ai-agent-inline-loader-word">
-                                            build,
-                                        </span>
-                                        <span className="ai-agent-inline-loader-word">
-                                            customize,
-                                        </span>
-                                        <span className="ai-agent-inline-loader-word">
-                                            deploy
-                                        </span>
+                {/* ── Agents sidebar ── */}
+                <aside className="w-64 shrink-0 border-r border-white/5 bg-[#0b0118] px-4 py-6">
+                    <h2 className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/40">
+                        Your Agents
+                    </h2>
+                    <div className="mt-2 h-px bg-white/[0.07]" />
+
+                    <div className="mt-4 space-y-1">
+                        {agents.length === 0 ? (
+                            <p className="mt-6 text-center text-xs text-white/20">
+                                No agents created yet.
+                            </p>
+                        ) : (
+                            agents.map((agent) => (
+                                <Link
+                                    key={agent.id}
+                                    href={route("ai_agent.create") + "?agent=" + agent.id}
+                                    className="group flex flex-col rounded-xl px-3 py-2.5 transition hover:bg-[#2d1060]"
+                                >
+                                    <span className="truncate text-sm font-semibold text-white/85 group-hover:text-white">
+                                        {agent.name}
+                                    </span>
+                                    <span className="mt-0.5 truncate font-mono text-[10px] text-white/30 group-hover:text-white/50">
+                                        {agent.key}
+                                    </span>
+                                </Link>
+                            ))
+                        )}
+                    </div>
+                </aside>
+
+                {/* ── Main content ── */}
+                <div className="relative flex-1 overflow-hidden px-6 py-6 sm:px-8 lg:px-10">
+                    {/* Orbiting background rings */}
+                    <div className="pointer-events-none fixed -right-69 -top-99 z-[1] opacity-[0.38]">
+                        <OrbitingTextRings
+                            text="one tech • "
+                            size={980}
+                            strokeColor="#28004D"
+                            glowColor="rgba(40,0,77,0.25)"
+                            className="mix-blend-screen"
+                        />
+                    </div>
+
+                    <div className="relative z-10 mx-auto flex min-h-[calc(100vh-140px)] w-full max-w-5xl items-center py-10">
+                        <div className="w-full">
+                            <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-[300px_1fr] lg:gap-8">
+
+                                {/* ── Left panel ── */}
+                                <div className="relative overflow-hidden rounded-2xl bg-[#7c3aed] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
+                                    {/* dot grid bg */}
+                                    <div className="pointer-events-none absolute inset-0">
+                                        <svg className="absolute inset-0 h-full w-full opacity-[0.07]" xmlns="http://www.w3.org/2000/svg">
+                                            <defs>
+                                                <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                                                    <circle cx="2" cy="2" r="1.5" fill="white" />
+                                                </pattern>
+                                            </defs>
+                                            <rect width="100%" height="100%" fill="url(#dots)" />
+                                        </svg>
+                                    </div>
+
+                                    <div className="relative z-10 flex h-full flex-col">
+                                        <div className="mt-24 mb-8">
+                                            <h2 className="text-5xl font-black uppercase leading-none tracking-tight text-white">
+                                                CHOOSE
+                                                <br />
+                                                AGENT
+                                            </h2>
+                                            <p className="mt-5 text-sm leading-7 text-white/75">
+                                                Pick a ready-made agent flow created by ONE TECH or build a custom one from scratch.
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-[320px_1fr] lg:gap-8">
-
-                        {/* ── Left panel ── */}
-                        <div className="relative overflow-hidden rounded-2xl bg-[#7c3aed] p-8 shadow-[0_20px_60px_rgba(124,58,237,0.5)]">
-                            {/* Background decoration */}
-                            <div className="pointer-events-none absolute inset-0">
-                                <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
-                                <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-[#BF00FF]/30 blur-3xl" />
-                                {/* Grid dots */}
-                                <svg className="absolute inset-0 h-full w-full opacity-[0.07]" xmlns="http://www.w3.org/2000/svg">
-                                    <defs>
-                                        <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                                            <circle cx="2" cy="2" r="1.5" fill="white" />
-                                        </pattern>
-                                    </defs>
-                                    <rect width="100%" height="100%" fill="url(#dots)" />
-                                </svg>
-                            </div>
-
-                            <div className="relative z-10 flex h-full flex-col">
-                                <div className="mt-24 mb-8">
-                                    <h2 className="text-5xl font-black uppercase leading-none tracking-tight text-white">
-                                        CHOOSE
-                                        <br />
-                                        AGENT
-                                    </h2>
-                                    <p className="mt-5 text-sm leading-7 text-white/75">
-                                        Pick a ready-made agent flow created by ONE TECH or build a custom one from scratch.
-                                    </p>
+                                {/* ── Right panel — stacked cards ── */}
+                                <div className="flex flex-col gap-5">
+                                    {cards.map((card) => (
+                                        <AgentCard key={card.key} {...card} />
+                                    ))}
                                 </div>
-                            </div>
-                        </div>
 
-                        {/* ── Right panel — stacked cards ── */}
-                        <div className="flex flex-col gap-5">
-                            {cards.map((card) => (
-                                <AgentCard key={card.key} {...card} />
-                            ))}
-                        </div>
+                            </div>
                         </div>
                     </div>
                 </div>
