@@ -1,52 +1,10 @@
-import { useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { EnvelopeIcon } from "@heroicons/react/24/solid";
-import Axios from "axios";
 
 import SearchTemplate from "./SearchTemplate";
 import { AttachIcon } from "../icons";
 
 function EmailComposeModal(props) {
-    const [templates, setTemplates] = useState(props.templates || []);
-    const [products, setProducts] = useState(props.products || []);
-    const [interactiveMessages, setInteractiveMessages] = useState(
-        props.interactiveMessages || [],
-    );
-
-    function searchTemplates(key) {
-        const templateList = [];
-
-        (props.templates || []).forEach((template) => {
-            if (String(template.name || "").indexOf(key) !== -1) {
-                templateList.push(template);
-            }
-        });
-
-        setTemplates(templateList);
-    }
-
-    function searchInteractiveMessages(key) {
-        const templateList = [];
-
-        (props.interactiveMessages || []).forEach((interactiveMessage) => {
-            if (String(interactiveMessage.name || "").indexOf(key) !== -1) {
-                templateList.push(interactiveMessage);
-            }
-        });
-
-        setInteractiveMessages(templateList);
-    }
-
-    function searchProduct(key) {
-        const url = route("search_product", { search: key });
-
-        Axios.get(url).then((response) => {
-            if (response.data.status === true) {
-                setProducts(response.data.products);
-            }
-        });
-    }
-
     if (!props.open) {
         return null;
     }
@@ -178,26 +136,20 @@ function EmailComposeModal(props) {
                                 </label>
 
                                 <SearchTemplate
-                                    templates={templates}
-                                    products={products}
-                                    interactiveMessages={interactiveMessages}
-                                    searchProduct={searchProduct}
-                                    searchTemplates={searchTemplates}
-                                    searchInteractiveMessages={
-                                        searchInteractiveMessages
-                                    }
-                                    setInteractiveMessage={
-                                        props.setInteractiveMessage
-                                    }
-                                    setProductInfo={props.setProductInfo}
+                                    templates={props.templates}
+                                    interactiveMessages={props.interactiveMessages}
+                                    setInteractiveMessage={props.setInteractiveMessage}
                                     setTemplateInfo={props.setTemplateInfo}
                                     selectedAccount={props.selectedAccount}
                                     allowProducts={false}
                                     allowInteractiveMessages={false}
                                     theme="dark"
-                                    hideTemplateSearch={true}
+                                    hideTemplateSearch={false}
                                     filterTemplatesByService={true}
                                     templateService="email"
+                                    templatesLoaded={props.templatesLoaded}
+                                    templatesLoading={props.templatesLoading}
+                                    onOpen={props.onTemplatePickerOpen}
                                 />
 
                                 {attachedFileName ? (

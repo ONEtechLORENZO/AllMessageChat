@@ -1,34 +1,20 @@
-import { useState } from 'react'
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
 import { AttachIcon } from "../icons";
 
 import SearchTemplate from './SearchTemplate';
-import Axios from 'axios';
 
 function ChatBox(props) 
 {
-    const [products, setProducts] = useState(props.products);
     const templateService = String(props.containerCategory || '').toLowerCase();
     const hasTypedContent = String(props.data?.content || '').trim().length > 0;
     const hasAttachment = !!props.data?.attachment;
     const hasSelectedTemplate = !!props.data?.template_id;
-    const hasSelectedProduct = !!props.data?.catalog_id || !!props.data?.product_retailer_id;
     const hasInteractiveContent = !!props.data?.template_options;
     const hasSendableContent =
         hasTypedContent ||
         hasAttachment ||
         hasSelectedTemplate ||
-        hasSelectedProduct ||
         hasInteractiveContent;
-
-    function searchProduct(key) {
-        let url = route('search_product', {'search': key});
-        Axios.get(url).then((response) => {
-            if(response.data.status === true) {
-                setProducts(response.data.products);
-            }
-        });
-    }
 
     function countTemplatesForService(service) {
         const normalizedService = String(service || '').toLowerCase();
@@ -71,15 +57,18 @@ function ChatBox(props)
                             <div className="flex h-10 w-10 items-center justify-center rounded-full text-white/78 transition hover:bg-white/[0.06] hover:text-white">
                                 <SearchTemplate
                                    templates={props.templates}
-                                   products={products}
                                    interactiveMessages={props.interactiveMessages}
-                                   searchProduct={searchProduct}
                                    allowProducts={false}
                                    allowInteractiveMessages={props.containerCategory == 'whatsapp'}
-                                   hideTemplateSearch={!hasTemplates}
+                                   hideTemplateSearch={false}
                                    setInteractiveMessage={props.setInteractiveMessage}
-                                   setProductInfo={props.setProductInfo}
                                    setTemplateInfo={props.setTemplateInfo}
+                                   templatesLoaded={props.templatesLoaded}
+                                   interactiveLoaded={props.interactiveLoaded}
+                                   templatesLoading={props.templatesLoading}
+                                   interactiveLoading={props.interactiveLoading}
+                                   onOpen={props.onTemplatePickerOpen}
+                                   onTabChange={props.onTemplatePickerTabChange}
                                    selectedAccount={props.selectedAccount}
                                    filterTemplatesByService={['whatsapp', 'instagram', 'facebook', 'email'].includes(templateService)}
                                    templateService={templateService}

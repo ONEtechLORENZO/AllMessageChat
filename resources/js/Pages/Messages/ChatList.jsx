@@ -132,14 +132,14 @@ function buildRelationFilterCondition(tagValue = "", listValue = "") {
 
 function ChatList(props) {
     const [selectedContact, setSelectedContact] = useState(
-        props.selected_contact,
+        props.selected_contact || "",
     );
-    const [messages, setMessages] = useState({});
+    const [messages, setMessages] = useState(props.messages || []);
     const [containerCategory, setContainerCategory] = useState(props.category);
     const [showForm, setShowForm] = useState(false);
     const [showEmailComposeModal, setShowEmailComposeModal] = useState(false);
     const [isSending, setIsSending] = useState(false);
-    const [chatList, setChatList] = useState(props.contact_list);
+    const [chatList, setChatList] = useState(props.contact_list || {});
     const [data, setData] = useState({
         destination: "",
         channel: containerCategory,
@@ -152,6 +152,21 @@ function ChatList(props) {
         template_options: "",
         template_type: "",
     });
+    const [templates, setTemplates] = useState(props.templates || []);
+    const [interactiveMessages, setInteractiveMessages] = useState(
+        props.interactiveMessages || [],
+    );
+    const [templatesLoaded, setTemplatesLoaded] = useState(
+        (props.templates || []).length > 0,
+    );
+    const [interactiveLoaded, setInteractiveLoaded] = useState(
+        (props.interactiveMessages || []).length > 0,
+    );
+    const [templatesLoading, setTemplatesLoading] = useState(false);
+    const [interactiveLoading, setInteractiveLoading] = useState(false);
+    const [bootstrapLoading, setBootstrapLoading] = useState(
+        Object.keys(props.account_list || {}).length > 0,
+    );
     const [selectedAccount, setSelectedAccount] = useState("");
     const [accountMeta, setAccountMeta] = useState(props.account_meta || {});
     const [searchKey, setSearchKey] = useState(props.search);
@@ -192,9 +207,9 @@ function ChatList(props) {
         },
     ];
 
-    const [time, setTime] = useState(Date.now());
     const accountList = props.account_list;
     const [loadedStory, setLoadedStory] = useState({});
+    const [sessionMap, setSessionMap] = useState({});
     const selectedConversation = selectedContact
         ? chatList["contact_id_" + selectedContact]
         : null;
@@ -207,6 +222,14 @@ function ChatList(props) {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [pageLoading, setPageLoad] = useState(false);
+    const bootstrapKey = [
+        props.category || "whatsapp",
+        props.search || "",
+        props.filter_condition || "",
+        props.filter_id || "",
+        props.mode || "all",
+        props.initial_contact_id || "",
+    ].join("|");
 
     function renderAccountStatusDot(accountId) {
         if (!accountId) {
@@ -218,9 +241,7 @@ function ChatList(props) {
                 return null;
             }
 
-            const hasActiveSession =
-                props.sessions[selectedContact] &&
-                props.sessions[selectedContact][accountId];
+            const hasActiveSession = Boolean(sessionMap[String(accountId)]);
 
             return (
                 <span
@@ -250,27 +271,6 @@ function ChatList(props) {
     }
 
     useEffect(() => {
-        setChatList(props.contact_list);
-        const interval = setInterval(() => getMessageList(), 5000);
-        return () => {
-            clearInterval(interval);
-        };
-    }, [props]);
-
-    useEffect(() => {
-        if (
-            Object.keys(props.contact_list ?? {}).length === 0 &&
-            Object.keys(props.account_list ?? {}).length > 0
-        ) {
-            fetchContactList(true);
-        }
-    }, []);
-
-    useEffect(() => {
-        setCounts(props.counts || { all: 0, unread: 0, archived: 0 });
-    }, [props.counts]);
-
-    useEffect(() => {
         setAccountMeta(props.account_meta || {});
     }, [props.account_meta]);
 
@@ -285,6 +285,98 @@ function ChatList(props) {
     useEffect(() => {
         setActiveChatFilterId(props.filter_id || "");
     }, [props.filter_id]);
+
+    useEffect(() => {
+        setCurrentTabId(props.mode || "all");
+    }, [props.mode]);
+
+    useEffect(() => {
+        setContainerCategory(props.category || "whatsapp");
+    }, [props.category]);
+
+    useEffect(() => {
+        let isCancelled = false;
+
+        if (Object.keys(props.account_list || {}).length === 0) {
+            setBootstrapLoading(false);
+            setChatList({});
+            setMessages([]);
+            setSelectedContact("");
+            setCounts({ all: 0, unread: 0, archived: 0 });
+            setHasMore(false);
+            setPage(1);
+            setSessionMap({});
+            return undefined;
+        }
+
+        const category = props.category || "whatsapp";
+        const params = {
+            category,
+            mode: props.mode || "all",
+        };
+
+        if (props.search) {
+            params.search = props.search;
+        }
+        if (props.filter_condition) {
+            params.filter = props.filter_condition;
+        } else if (props.filter_id) {
+            params.filter_id = props.filter_id;
+        }
+        if (props.initial_contact_id) {
+            params.contact_id = props.initial_contact_id;
+        }
+
+        setBootstrapLoading(true);
+        setPageLoad(false);
+        setChatList({});
+        setMessages([]);
+        setSelectedContact("");
+        setCounts({ all: 0, unread: 0, archived: 0 });
+        setHasMore(false);
+        setPage(1);
+        setSessionMap({});
+
+        Axios.get(route("chat_bootstrap"), { params })
+            .then((response) => {
+                if (isCancelled || !response.data?.status) {
+                    return;
+                }
+
+                setChatList(response.data.contact_list || {});
+                setSelectedContact(response.data.selected_contact || "");
+                setMessages(response.data.messages || []);
+                setCounts(
+                    response.data.counts || {
+                        all: 0,
+                        unread: 0,
+                        archived: 0,
+                    },
+                );
+                setHasMore(Boolean(response.data.has_more));
+                setPage(response.data.page || 1);
+            })
+            .catch(() => {
+                if (isCancelled) {
+                    return;
+                }
+
+                setChatList({});
+                setSelectedContact("");
+                setMessages([]);
+                setCounts({ all: 0, unread: 0, archived: 0 });
+                setHasMore(false);
+            })
+            .finally(() => {
+                if (!isCancelled) {
+                    setBootstrapLoading(false);
+                }
+            });
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [bootstrapKey]);
 
     useEffect(() => {
         if (containerCategory !== "instagram" || !selectedContact) {
@@ -309,10 +401,7 @@ function ChatList(props) {
     }, [containerCategory, selectedContact, selectedConversation?.id]);
 
     useEffect(() => {
-        if (
-            containerCategory !== "instagram" &&
-            containerCategory !== "facebook"
-        ) {
+        if (!selectedContact || (containerCategory !== "instagram" && containerCategory !== "facebook")) {
             return undefined;
         }
 
@@ -330,7 +419,7 @@ function ChatList(props) {
     }, [containerCategory, current_tab, selectedContact]);
 
     useEffect(() => {
-        if (containerCategory !== "email") {
+        if (!selectedContact || containerCategory !== "email") {
             return undefined;
         }
 
@@ -359,6 +448,48 @@ function ChatList(props) {
             setSelectedAccount("");
         }
     }, [accountList, selectedAccount]);
+
+    useEffect(() => {
+        if (containerCategory !== "whatsapp" || !selectedContact) {
+            setSessionMap({});
+            return undefined;
+        }
+
+        let isCancelled = false;
+
+        Axios.get(route("chat_session_status"), {
+            params: {
+                contact_id: selectedContact,
+            },
+        })
+            .then((response) => {
+                if (isCancelled || !response.data?.status) {
+                    return;
+                }
+
+                setSessionMap(response.data.sessions || {});
+            })
+            .catch(() => {
+                if (!isCancelled) {
+                    setSessionMap({});
+                }
+            });
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [containerCategory, selectedContact, selectedConversation?.account_id]);
+
+    useEffect(() => {
+        if (!selectedContact) {
+            return undefined;
+        }
+
+        const interval = setInterval(() => getMessageList(), 5000);
+        return () => {
+            clearInterval(interval);
+        };
+    }, [selectedContact, containerCategory]);
 
     useEffect(() => {
         const conversationAccountId = selectedConversation?.account_id
@@ -402,16 +533,6 @@ function ChatList(props) {
         selectedConversation?.id,
         selectedConversation?.subject,
     ]);
-
-    function updateContactData(contact) {
-        /*
-       // setSelectedContact(contact);
-        //getMessageList(contact);
-        let newState = Object.assign({}, data);
-        newState['destination'] = chatList[contact].number;
-        setData(newState);
-        */
-    }
 
     function getChatListUrl({
         category = containerCategory,
@@ -482,6 +603,47 @@ function ChatList(props) {
         });
     }
 
+    function ensureTemplatesLoaded() {
+        if (templatesLoaded || templatesLoading) {
+            return Promise.resolve(templates);
+        }
+
+        setTemplatesLoading(true);
+
+        return Axios.get(route("chat_templates"))
+            .then((response) => {
+                const nextTemplates = response.data?.templates || [];
+                setTemplates(nextTemplates);
+                setTemplatesLoaded(true);
+                return nextTemplates;
+            })
+            .catch(() => [])
+            .finally(() => {
+                setTemplatesLoading(false);
+            });
+    }
+
+    function ensureInteractiveMessagesLoaded() {
+        if (interactiveLoaded || interactiveLoading) {
+            return Promise.resolve(interactiveMessages);
+        }
+
+        setInteractiveLoading(true);
+
+        return Axios.get(route("chat_interactive_messages"))
+            .then((response) => {
+                const nextInteractiveMessages =
+                    response.data?.interactiveMessages || [];
+                setInteractiveMessages(nextInteractiveMessages);
+                setInteractiveLoaded(true);
+                return nextInteractiveMessages;
+            })
+            .catch(() => [])
+            .finally(() => {
+                setInteractiveLoading(false);
+            });
+    }
+
     function handleKeyDown(e) {
         if (e.key === "Enter" && !e.shiftKey && containerCategory) {
             e.preventDefault();
@@ -524,6 +686,7 @@ function ChatList(props) {
     function getContactMessage(contact, channel) {
         setSelectedContact(contact);
         setContainerCategory(channel);
+        setSessionMap({});
         if (!contact) {
             return false;
         }
@@ -644,21 +807,32 @@ function ChatList(props) {
                 return response.data;
             })
             .catch(() => ({ status: false }))
+            .then((responseData) => {
+                if (!responseData?.status || !reset) {
+                    return responseData;
+                }
+
+                const nextContacts = responseData.contact_list || {};
+                const firstContact = Object.values(nextContacts)[0];
+
+                if (firstContact?.id) {
+                    setSelectedContact(firstContact.id);
+                    getContactMessage(
+                        firstContact.id,
+                        firstContact.channel || category || "whatsapp",
+                    );
+                } else {
+                    setSelectedContact("");
+                    setMessages([]);
+                    setSessionMap({});
+                }
+
+                return responseData;
+            })
             .finally(() => {
                 setPageLoad(false);
             });
     }
-
-    useEffect(() => {
-        if (!selectedContact && Object.keys(chatList).length > 0) {
-            const firstContact = Object.values(chatList)[0];
-            setSelectedContact(firstContact.id);
-            getContactMessage(
-                firstContact.id,
-                firstContact.channel || containerCategory || "whatsapp",
-            );
-        }
-    }, [chatList, selectedContact, current_tab]);
 
     function getMessageList() {
         if (!selectedContact) {
@@ -1385,7 +1559,7 @@ function ChatList(props) {
                                     {Object.entries(chatList).length == 0 && (
                                         <li>
                                             <div className="flex items-center justify-center px-6 py-8 text-center text-sm text-white/45">
-                                                {pageLoading ? (
+                                                {bootstrapLoading || pageLoading ? (
                                                     <span
                                                         className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/5"
                                                         aria-label="Loading conversations"
@@ -1399,7 +1573,7 @@ function ChatList(props) {
                                         </li>
                                     )}
                                 </ul>
-                                {pageLoading && (
+                                {pageLoading && !bootstrapLoading && (
                                     <div className="flex justify-center py-4">
                                         <div className="flex space-x-2 animate-pulse">
                                             <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
@@ -1580,26 +1754,44 @@ function ChatList(props) {
                         </div>
 
                         <div className="flex-1 min-h-0 overflow-hidden rounded-[2rem] bg-[linear-gradient(180deg,rgba(8,7,11,0.98),rgba(6,5,10,0.98))] p-4 shadow-[0_28px_90px_rgba(0,0,0,0.34)]">
-                            <MessageList
-                                messages={messages}
-                                containerCategory={containerCategory}
-                                loadedStory={loadedStory}
-                                setLoadedStory={setLoadedStory}
-                            />
+                            {bootstrapLoading ? (
+                                <div className="flex h-full items-center justify-center">
+                                    <div className="flex space-x-2 animate-pulse">
+                                        <div className="h-3 w-3 rounded-full bg-gray-500"></div>
+                                        <div className="h-3 w-3 rounded-full bg-gray-500"></div>
+                                        <div className="h-3 w-3 rounded-full bg-gray-500"></div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <MessageList
+                                    messages={messages}
+                                    containerCategory={containerCategory}
+                                    loadedStory={loadedStory}
+                                    setLoadedStory={setLoadedStory}
+                                />
+                            )}
                         </div>
 
                         <div className="flex-shrink-0">
                             <ChatBox
                                 handleChange={handleChange}
                                 handleKeyDown={handleKeyDown}
-                                templates={props.templates}
-                                products={props.products}
-                                interactiveMessages={props.interactiveMessages}
+                                templates={templates}
+                                interactiveMessages={interactiveMessages}
                                 setTemplateInfo={setTemplateInfo}
                                 selectedAccount={selectedAccount}
                                 clearContent={clearContent}
-                                setProductInfo={setProductInfo}
                                 setInteractiveMessage={setInteractiveMessage}
+                                templatesLoaded={templatesLoaded}
+                                interactiveLoaded={interactiveLoaded}
+                                templatesLoading={templatesLoading}
+                                interactiveLoading={interactiveLoading}
+                                onTemplatePickerOpen={ensureTemplatesLoaded}
+                                onTemplatePickerTabChange={(tab) => {
+                                    if (tab === "interactive_template_search") {
+                                        ensureInteractiveMessagesLoaded();
+                                    }
+                                }}
                                 containerCategory={containerCategory}
                                 data={data}
                                 sendMessage={sendMessage}
@@ -1629,14 +1821,15 @@ function ChatList(props) {
                 onSend={sendMessage}
                 onChange={handleChange}
                 data={data}
-                templates={props.templates}
-                products={props.products}
-                interactiveMessages={props.interactiveMessages}
+                templates={templates}
+                interactiveMessages={interactiveMessages}
                 setInteractiveMessage={setInteractiveMessage}
-                setProductInfo={setProductInfo}
                 setTemplateInfo={setTemplateInfo}
                 selectedAccount={selectedAccount}
                 sending={isSending}
+                templatesLoaded={templatesLoaded}
+                templatesLoading={templatesLoading}
+                onTemplatePickerOpen={ensureTemplatesLoaded}
             />
         </Authenticated>
     );

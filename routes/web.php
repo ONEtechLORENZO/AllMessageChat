@@ -191,6 +191,10 @@ Route::middleware('planrestriction')->group(function () {
 
         // Conversation Page
         Route::get('/chat', [MsgController::class, 'ChatList'])->name('chat_list');
+        Route::get('/chat/bootstrap', [MsgController::class, 'chatBootstrap'])->name('chat_bootstrap');
+        Route::get('/chat/templates', [MsgController::class, 'chatTemplates'])->name('chat_templates');
+        Route::get('/chat/interactive-messages', [MsgController::class, 'chatInteractiveMessages'])->name('chat_interactive_messages');
+        Route::get('/chat/session-status', [MsgController::class, 'chatSessionStatus'])->name('chat_session_status');
         Route::post('/chat/sync-email-account', [MsgController::class, 'syncEmailAccount'])->name('sync_email_chat_account');
         Route::post('/chat/sync-facebook-account', [MsgController::class, 'syncFacebookAccount'])->name('sync_facebook_chat_account');
         Route::get('/getMessages', [MsgController::class, 'getMessageList'])->name('get_message_list');

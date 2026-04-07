@@ -61,6 +61,8 @@ export default function SearchTemplate(props) {
     ];
 
     const [tab, setTab] = useState(availableNavigators[0]?.name || 'template_search');
+    const templatesLoading = props.templatesLoading === true;
+    const interactiveLoading = props.interactiveLoading === true;
     const panelClassName = isDarkTheme
         ? 'absolute z-10 -ml-6 w-60 !px-5 rounded-2xl border border-white/10 bg-[#18101f] py-3 text-base shadow-[0_18px_48px_rgba(0,0,0,0.38)] focus:outline-none sm:ml-auto sm:w-96 sm:text-sm bottom-full h-60 overflow-auto'
         : 'absolute z-10 -ml-6 w-60 !px-5 rounded-lg bg-white py-3 text-base shadow ring-1 ring-black ring-opacity-5 focus:outline-none sm:ml-auto sm:w-96 sm:text-sm bottom-full h-60 overflow-auto';
@@ -83,6 +85,11 @@ export default function SearchTemplate(props) {
         ? 'relative inline-flex h-10 w-10 items-center justify-center rounded-xl text-white/60 transition hover:bg-white/8 hover:text-white'
         : 'relative -m-2 inline-flex h-10 w-10 items-center justify-center rounded-full text-gray-400 hover:text-gray-500';
 
+    function handleTabChange(nextTab) {
+        setTab(nextTab);
+        props.onTabChange && props.onTabChange(nextTab);
+    }
+
     return(
 
         <Listbox  horizontal >
@@ -90,7 +97,7 @@ export default function SearchTemplate(props) {
                 <>
                 <Listbox.Label className="sr-only">Templates</Listbox.Label>
                     <div className="relative inline-flex items-center">
-                        <Listbox.Button className={triggerClassName}>
+                        <Listbox.Button className={triggerClassName} onClick={() => props.onOpen && props.onOpen()}>
                             <span className="flex items-center justify-center">
                                 <span>
                                     <PlusIcon className="h-6 w-6 flex-shrink-0" aria-hidden="true" />
@@ -121,7 +128,7 @@ export default function SearchTemplate(props) {
                                                     : tabInactiveClassName,
                                                 'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm'
                                                 )}
-                                                onClick={() => setTab(navigator.name)}
+                                                onClick={() => handleTabChange(navigator.name)}
                                             >
                                                 {navigator.label}
                                             </div>
@@ -183,7 +190,12 @@ export default function SearchTemplate(props) {
                                                     </Listbox.Option>
                                                 )
                                             })}
-                                            {visibleTemplates.length === 0 && (
+                                            {templatesLoading && (
+                                                <div className={emptyStateClassName}>
+                                                    Loading templates...
+                                                </div>
+                                            )}
+                                            {!templatesLoading && visibleTemplates.length === 0 && (
                                                 <div className={emptyStateClassName}>
                                                     No templates found.
                                                 </div>
@@ -283,8 +295,13 @@ export default function SearchTemplate(props) {
                                                     </Listbox.Option>
                                                 )
                                             })}
-                                            {filteredInteractiveMessages.length === 0 && (
-                                                <div className="px-3 py-2 text-sm text-gray-400">
+                                            {interactiveLoading && (
+                                                <div className={emptyStateClassName}>
+                                                    Loading interactive messages...
+                                                </div>
+                                            )}
+                                            {!interactiveLoading && filteredInteractiveMessages.length === 0 && (
+                                                <div className={emptyStateClassName}>
                                                     No interactive messages found.
                                                 </div>
                                             )}

@@ -452,28 +452,13 @@ class MsgController extends Controller
      */
     public function ChatList(Request $request)
     {
-        $limit = $this->limit;
-        $contactFields = ['contacts.id', 'contacts.first_name', 'contacts.last_name', 'contacts.phone_number', 'contacts.instagram_username'];
-        $condition = $selectedContact = '';
-        $category = ($request->category) ? $request->category : '';
-        $contactList = $messages = $accoutList = [];
+        $category = $request->category ? (string) $request->category : 'whatsapp';
         $user = $request->user();
-        $shouldHydrateInitialContactList = $request->boolean('fetchContact') || $request->filled('contact_id');
-        $recordData = $shouldHydrateInitialContactList
-            ? $this->getChatContactList($request)
-            : [
-                'contact_list' => [],
-                'filter_condition' => $request->get('filter', ''),
-                'filter_id' => $request->get('filter_id', ''),
-                'search' => $request->get('search', ''),
-                'mode' => (string) $request->get('mode', 'all'),
-                'has_more' => true,
-                'page' => 1,
-                'counts' => ['all' => 0, 'unread' => 0, 'archived' => 0],
-            ];
         [$accoutList, $accountMeta] = $this->buildChatAccountCollections($user->id, $category);
 
         if ($request->boolean('fetchContact')) {
+            $recordData = $this->getChatContactList($request);
+
             return response()->json([
                 'status' => true,
                 'contact_list' => $recordData['contact_list'] ?? [],
@@ -485,34 +470,128 @@ class MsgController extends Controller
         }
 
         $menuBar = $this->fetchMenuBar();
-        $sessions = [];
-        if ($request->contact_id) {
-            $isRecordContainCategory = array_key_exists("contact_id_{$request->contact_id}", $recordData['contact_list']);
-            if ($isRecordContainCategory) {
-                $selectedContact = $request->contact_id;
-                $contactChaneel = ChatListContact::where('user_id', $user->id)
-                    ->where('id', $selectedContact)
-                    ->first();
-                $category = ($request->category) ? $request->category : ($contactChaneel ? $contactChaneel->channel : 'whatsapp');
-                $messages = $this->getMessageList($request);
-                if ($contactChaneel && $contactChaneel->channel !== 'email') {
-                    $condition = ['contact_id' => $contactChaneel->contact_id];
-                    $getSessions = Session::where($condition)->where('created_at', '>=', Carbon::now()->subDay())->get();
-                    foreach ($getSessions as $session) {
-                        $sessions[$contactChaneel->id][$session->account_id] = true;
-                    }
-                }
-            }
-        }
         $filterData = $this->getFiltersInfo($user->id, 'Contact', true);
         $translator = ['Your Profile' => __('Your Profile'), 'Settings' => __('Settings'), 'Sign out' => __('Sign out'), 'All Chats' => __('All Chats'), 'Unread' => __('Unread'), 'Archive' => __('Archived'), 'Add Column' => __('Add Column'), 'New Message' => __('New Message'), 'Conversation not start yet.' => __('Conversation not start yet.'), 'View notifications' => __('View notifications'), 'Junior Developer' => __('Junior Developer'), 'All Channel' => __('All Channel'), 'Account list' => __('Account list'), 'Write your message!' => __('Write your message!'), 'Select Contact' => __('Select Contact'), 'Add a contact' => __('Add a contact'), 'Add' => __('Add'), 'Cancel' => __('Cancel'), 'No conversations found for this channel.' => __('No conversations found for this channel.'), 'No account connected for this channel.' => __('No account connected for this channel.'), 'No WhatsApp account connected. Connect one WhatsApp account to use this channel.' => __('No WhatsApp account connected. Connect one WhatsApp account to use this channel.'), 'No Instagram account connected. This workspace supports one Instagram account per social profile.' => __('No Instagram account connected. This workspace supports one Instagram account per social profile.'), 'No Facebook account connected. This workspace supports one Facebook account per social profile.' => __('No Facebook account connected. This workspace supports one Facebook account per social profile.'), 'No Email account connected. Connect one Email account to use this channel.' => __('No Email account connected. Connect one Email account to use this channel.'),];
         $translator = array_merge($translator, $this->getTranslations());
-        $templates = $this->getTemplates();
-        $products = $this->getProducts();
-        $interactiveMessages = $this->getInteractiveMessages();
-        $data = ['contact_list' => $contactList, 'account_list' => $accoutList, 'account_meta' => $accountMeta, 'messages' => $messages, 'selected_contact' => $selectedContact, 'templates' => $templates, 'current_page' => 'Chat', 'category' => ($category) ? $category : 'whatsapp', 'translator' => $translator, 'filter' => $filterData, 'menuBar' => $menuBar, 'sessions' => $sessions, 'products' => $products, 'interactiveMessages' => $interactiveMessages, 'has_channel_account' => count($accoutList) > 0,];
-        $data = array_merge($data, $recordData);
+
+        $data = [
+            'contact_list' => [],
+            'account_list' => $accoutList,
+            'account_meta' => $accountMeta,
+            'messages' => [],
+            'selected_contact' => '',
+            'initial_contact_id' => $request->filled('contact_id') ? (string) $request->contact_id : '',
+            'current_page' => 'Chat',
+            'category' => $category ?: 'whatsapp',
+            'translator' => $translator,
+            'filter' => $filterData,
+            'filter_condition' => $request->get('filter', ''),
+            'filter_id' => $request->get('filter_id', ''),
+            'search' => $request->get('search', ''),
+            'mode' => (string) $request->get('mode', 'all'),
+            'menuBar' => $menuBar,
+            'sessions' => [],
+            'templates' => [],
+            'interactiveMessages' => [],
+            'has_more' => false,
+            'page' => 1,
+            'counts' => ['all' => 0, 'unread' => 0, 'archived' => 0],
+            'has_channel_account' => count($accoutList) > 0,
+        ];
+
         return Inertia::render('Messages/ChatList', $data);
+    }
+
+    public function chatBootstrap(Request $request)
+    {
+        $user = $request->user();
+        $category = $request->category ? (string) $request->category : 'whatsapp';
+        $recordData = $this->getChatContactList($request);
+        $contactList = $recordData['contact_list'] ?? [];
+        $selectedContactId = '';
+        $messages = [];
+
+        if ($request->filled('contact_id') && array_key_exists("contact_id_{$request->contact_id}", $contactList)) {
+            $selectedContactId = (string) $request->contact_id;
+        } elseif (!empty($contactList)) {
+            $firstConversation = reset($contactList);
+            $selectedContactId = (string) data_get($firstConversation, 'id', '');
+        }
+
+        if ($selectedContactId !== '') {
+            $messageRequest = $request->duplicate(
+                array_merge($request->query(), [
+                    'contact_id' => $selectedContactId,
+                    'category' => $category,
+                ])
+            );
+            $messageRequest->setUserResolver(fn () => $user);
+            $messages = $this->getMessageList($messageRequest);
+        }
+
+        return response()->json([
+            'status' => true,
+            'contact_list' => $contactList,
+            'selected_contact' => $selectedContactId,
+            'messages' => $messages,
+            'counts' => $recordData['counts'] ?? ['all' => 0, 'unread' => 0, 'archived' => 0],
+            'has_more' => $recordData['has_more'] ?? false,
+            'page' => $recordData['page'] ?? (int) $request->get('page', 1),
+        ]);
+    }
+
+    public function chatTemplates()
+    {
+        return response()->json([
+            'status' => true,
+            'templates' => $this->getTemplates()->values(),
+        ]);
+    }
+
+    public function chatInteractiveMessages()
+    {
+        return response()->json([
+            'status' => true,
+            'interactiveMessages' => $this->getInteractiveMessages()->values(),
+        ]);
+    }
+
+    public function chatSessionStatus(Request $request)
+    {
+        $user = $request->user();
+        $conversationId = (int) $request->get('contact_id');
+        $conversation = $this->findConversationForUser($user->id, $conversationId);
+
+        if (! $conversation || $conversation->channel !== 'whatsapp') {
+            return response()->json([
+                'status' => true,
+                'conversation_id' => $conversationId,
+                'sessions' => [],
+            ]);
+        }
+
+        if (! Schema::hasColumns('sessions', ['account_id', 'contact_id', 'created_at'])) {
+            return response()->json([
+                'status' => true,
+                'conversation_id' => $conversation->id,
+                'sessions' => [],
+            ]);
+        }
+
+        $sessionMap = [];
+        $getSessions = Session::where('contact_id', $conversation->contact_id)
+            ->where('created_at', '>=', Carbon::now()->subDay())
+            ->get();
+
+        foreach ($getSessions as $session) {
+            $sessionMap[$session->account_id] = true;
+        }
+
+        return response()->json([
+            'status' => true,
+            'conversation_id' => $conversation->id,
+            'sessions' => $sessionMap,
+        ]);
     }
 
     protected function buildChatAccountCollections(int $userId, string $category = ''): array
