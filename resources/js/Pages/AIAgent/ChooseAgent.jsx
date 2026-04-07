@@ -1,6 +1,6 @@
 import React from "react";
 import Authenticated from "@/Layouts/Authenticated";
-import { Head, Link } from "@inertiajs/react";
+import { Head } from "@inertiajs/react";
 import oneTechLogo from "../../../../public/images/O-logootech.svg";
 
 const cards = [
@@ -10,7 +10,7 @@ const cards = [
         description:
             "Use ONE TECH Agents to deploy task-specific agents for support, triage, and customer sales automation.",
         buttonLabel: "Browse Agents",
-        href: null,
+        href: "/ai-agent/agents",
         icon: (
             <img
                 src={oneTechLogo}
@@ -44,11 +44,25 @@ const cards = [
 ];
 
 function AgentCard({ title, description, buttonLabel, icon, href }) {
-    const Wrapper = href ? Link : "button";
-    const wrapperProps = href ? { href } : { type: "button", onClick: () => {} };
+    const handleNavigate = () => {
+        if (href) {
+            window.location.assign(href);
+        }
+    };
 
     return (
-        <div className="group relative overflow-hidden rounded-2xl bg-[#160830] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition hover:bg-[#1e0d40]">
+        <div
+            className={`group relative overflow-hidden rounded-2xl bg-[#160830] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition hover:bg-[#1e0d40] ${href ? "cursor-pointer" : ""}`}
+            onClick={handleNavigate}
+            role={href ? "link" : undefined}
+            tabIndex={href ? 0 : undefined}
+            onKeyDown={(event) => {
+                if (href && (event.key === "Enter" || event.key === " ")) {
+                    event.preventDefault();
+                    handleNavigate();
+                }
+            }}
+        >
             {/* Subtle glow orb */}
             <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#7c3aed]/20 blur-2xl transition duration-500 group-hover:bg-[#9333ea]/30" />
 
@@ -70,8 +84,12 @@ function AgentCard({ title, description, buttonLabel, icon, href }) {
                 </div>
 
                 {/* Button */}
-                <Wrapper
-                    {...wrapperProps}
+                <a
+                    href={href ?? "#"}
+                    onClick={(event) => {
+                        event.preventDefault();
+                        handleNavigate();
+                    }}
                     className="custom-button ml-4 mt-1 shrink-0"
                 >
                     <span className="button-background" />
@@ -92,7 +110,7 @@ function AgentCard({ title, description, buttonLabel, icon, href }) {
                             </svg>
                         </span>
                     </span>
-                </Wrapper>
+                </a>
             </div>
         </div>
     );
@@ -112,7 +130,31 @@ export default function ChooseAgent(props) {
 
             <div className="dashboard-page relative px-4 py-6 sm:px-6 lg:px-8">
                 <div className="relative z-10 mx-auto flex min-h-[calc(100vh-140px)] w-full max-w-6xl items-center py-10">
-                    <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-[320px_1fr] lg:gap-8">
+                    <div className="relative w-full pt-14">
+                        {/* Inline loader above CHOOSE AGENT (keeps both columns aligned) */}
+                        <div className="pointer-events-none absolute left-0 top-0">
+                            <div className="ai-agent-inline-loader-card">
+                                <div className="ai-agent-inline-loader">
+                                    <span>AI Agent</span>
+                                    <div
+                                        className="ai-agent-inline-loader-words"
+                                        aria-hidden="true"
+                                    >
+                                        <span className="ai-agent-inline-loader-word">
+                                            build,
+                                        </span>
+                                        <span className="ai-agent-inline-loader-word">
+                                            customize,
+                                        </span>
+                                        <span className="ai-agent-inline-loader-word">
+                                            deploy
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-[320px_1fr] lg:gap-8">
 
                         {/* ── Left panel ── */}
                         <div className="relative overflow-hidden rounded-2xl bg-[#7c3aed] p-8 shadow-[0_20px_60px_rgba(124,58,237,0.5)]">
@@ -150,6 +192,7 @@ export default function ChooseAgent(props) {
                             {cards.map(({ key, ...card }) => (
                                 <AgentCard key={key} {...card} />
                             ))}
+                        </div>
                         </div>
                     </div>
                 </div>

@@ -32,7 +32,15 @@ return [
 
     'openai' => [
         'api_key' => env('OPENAI_API_KEY'),
+        'secondary_api_key' => env('OPENAI_API_KEY_2'),
         'assistant_id' => env('OPENAI_ASSISTANT_ID'),
+        'assistant_id_sales' => env('OPENAI_ASSISTANT_ID_SALES'),
+        'assistant_id_banking' => env('OPENAI_ASSISTANT_ID_BANKING'),
+        'assistant_id_banking_bo' => env('OPENAI_ASSISTANT_ID_BANKING_BO'),
+        'assistant_id_fashion' => env('OPENAI_ASSISTANT_ID_FASHION'),
+        'assistant_id_fashion_bo' => env('OPENAI_ASSISTANT_ID_FASHION_BO'),
+        'assistant_id_hospitality' => env('OPENAI_ASSISTANT_ID_HOSPITALITY'),
+        'assistant_id_hospitality_bo' => env('OPENAI_ASSISTANT_ID_HOSPITALITY_BO'),
         'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
         'analysis_model' => env('OPENAI_ANALYSIS_MODEL', env('OPENAI_MODEL', 'gpt-4o-mini')),
         'analysis_timeout' => env('OPENAI_ANALYSIS_TIMEOUT', env('OPENAI_TIMEOUT', 30)),
