@@ -17,6 +17,7 @@ use App\Models\Company;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\InteractiveMessage;
 
 class Msg extends Model
 {
@@ -43,6 +44,11 @@ class Msg extends Model
     public function conversation(): BelongsTo
     {
         return $this->belongsTo(ChatListContact::class, 'chat_list_contact_id');
+    }
+
+    public function interactiveMessage(): BelongsTo
+    {
+        return $this->belongsTo(InteractiveMessage::class, 'interactive_message_id');
     }
 
     /**
@@ -81,15 +87,20 @@ class Msg extends Model
                 'to' => $destination,
             ];
 
+            if($interactiveMessage) {
+                $post_data['recipient_type'] = 'individual';
+                $post_data['type'] = 'interactive';
+                $post_data['interactive'] = json_encode($interactiveMessage);
+
             // set data if is template  
-            if($templateId && $templateId != "undefined" ){  
+            } else if($templateId && $templateId != "undefined" ){  
 
                 $template =  Message::join('templates', 'templates.id' , 'template_id')
                     ->where('messages.template_uid', $templateId)
                     ->where('account_id', $account->id)
                     ->first();
                 
-            //    $template = Template::where('template_uid' , $template)->first();
+                $tempButtons = collect();
                 $tempMessage = Message::where('template_uid', $templateId)->first();
                 if($tempMessage) {
                     $tempButtons = MessageButton::where('message_id', $tempMessage->id)->get();
@@ -203,6 +214,42 @@ class Msg extends Model
                     ];
                     array_push($components , json_encode($body));
                 }
+                if($tempButtons && $tempButtons->count()) {
+                    foreach($tempButtons as $key => $tempButton) {
+                        $buttonComponent = null;
+
+                        if($tempButton->button_type == 'Quick Reply') {
+                            $buttonComponent = [
+                                'type' => 'button',
+                                'index' => (string) $key,
+                                'sub_type' => 'quick_reply',
+                            ];
+                        } elseif($tempButton->action == 'call_phone_number') {
+                            $buttonComponent = [
+                                'type' => 'button',
+                                'index' => (string) $key,
+                                'sub_type' => 'phone_number',
+                            ];
+                        } elseif($tempButton->action == 'visit_website') {
+                            $buttonComponent = [
+                                'type' => 'button',
+                                'index' => (string) $key,
+                                'sub_type' => 'url',
+                            ];
+
+                            if($tempButton->url_type != 'Static' && $tempButton->url) {
+                                $buttonComponent['parameters'] = [[
+                                    'type' => 'text',
+                                    'text' => $tempButton->url,
+                                ]];
+                            }
+                        }
+
+                        if($buttonComponent) {
+                            array_push($components, json_encode($buttonComponent));
+                        }
+                    }
+                }
                 if($components) {
                     $message['components'] = ($components);
                 }
@@ -273,7 +320,10 @@ class Msg extends Model
                 'disablePreview' => null
             ];
 
-            if($templateId && $templateId != "undefined" ){  
+            if($interactiveMessage) {
+                $post_data['message'] = json_encode($interactiveMessage);
+
+            } else if($templateId && $templateId != "undefined" ){  
                 // Set template type object
                 if($templateId == '9cfa1504-86b3-4b78-a544-a3c6530fcf5b') {     //TODO Need to fix 
                     $content[]= 'test';
@@ -327,9 +377,6 @@ class Msg extends Model
                 'Accept' => 'application/json',
                 'apikey' => config('app.apiKey')
             ];
-            if($interactiveMessage) {
-                $post_data['message'] = json_encode($interactiveMessage);
-            }
             log::info(['send_message_info', $url, $post_data]);
             
             $response = Http::asForm()->withHeaders($headers)->post($url, $post_data);

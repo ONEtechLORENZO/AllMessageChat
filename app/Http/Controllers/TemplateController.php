@@ -789,7 +789,11 @@ class TemplateController extends Controller
                     if (isset($templates['status']) && $templates['status'] == 'success') {
                         foreach ($templates['templates'] as $templateData) {
                             $templateStatus = strtoupper($templateData['status'] ?? '');
-                            if (in_array($templateStatus, ['APPROVED', 'PENDING'])) {
+                            $hasBodyContent = trim((string) ($templateData['data'] ?? '')) !== '';
+                            if ($templateStatus === 'APPROVED' && ! $hasBodyContent) {
+                                $templateStatus = 'DRAFT';
+                            }
+                            if (in_array($templateStatus, ['APPROVED', 'PENDING', 'DRAFT'])) {
                                 $template = Template::where('template_uid', $templateData['id'])->where('account_id', $account->id)->first();
 
                                 if (!$template) {
@@ -903,6 +907,8 @@ class TemplateController extends Controller
                                 }
                                 $templateContent[$component['type']] = $content;
                             }
+                            $hasBodyContent = trim((string) ($templateContent['BODY'] ?? '')) !== '';
+                            $templateStatus = $hasBodyContent ? 'APPROVED' : 'DRAFT';
 
                             if (!$template) {
                                 $template = new Template();
@@ -912,10 +918,13 @@ class TemplateController extends Controller
                                 $template->template_name_space = $templateData['name'];
                                 $template->category = $templateData['category'];
                                 $template->languages = [$templateData['language']];
-                                $template->status = 'APPROVED';
+                                $template->status = $templateStatus;
                                 //    $template->template_uid = $templateData['id'];
                                 $template->type = isset($templateData['type']) ? strtolower($templateData['type']) : strtolower($templateContent['type']);
                                 $template->created_by = $request->user()->id;
+                                $template->save();
+                            } else {
+                                $template->status = $templateStatus;
                                 $template->save();
                             }
 
@@ -925,6 +934,15 @@ class TemplateController extends Controller
                                 'language' => $templateData['language'],
                             ])
                                 ->first();
+
+                            if ($message) {
+                                $message->status = $templateStatus;
+                                $message->body = isset($templateContent['BODY']) ? $templateContent['BODY'] : '';
+                                $message->header_content = isset($templateContent['HEADER']) ? $templateContent['HEADER'] : '';
+                                $message->footer_content = isset($templateContent['FOOTER']) ? $templateContent['FOOTER'] : '';
+                                $message->header_type = isset($templateContent['type']) ? strtolower($templateContent['type']) : 'text';
+                                $message->save();
+                            }
 
                             if (!$message) {
 
@@ -968,7 +986,7 @@ class TemplateController extends Controller
                                 $message = new Message();
                                 $message->template_id = $template->id;
                                 $message->template_uid = $templateData['id'];
-                                $message->status = 'APPROVED';
+                                $message->status = $templateStatus;
                                 $message->body = isset($templateContent['BODY']) ? $templateContent['BODY'] : '';
                                 $message->header_content = isset($templateContent['HEADER']) ? $templateContent['HEADER'] : '';
                                 $message->footer_content = isset($templateContent['FOOTER']) ? $templateContent['FOOTER'] : '';

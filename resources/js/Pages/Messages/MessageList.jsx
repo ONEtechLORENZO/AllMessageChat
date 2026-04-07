@@ -174,6 +174,50 @@ export default function MessageList(props) {
         return null;
     }
 
+    function renderWhatsAppTemplate(payload, fallbackContent) {
+        if (!payload || typeof payload !== "object") {
+            return null;
+        }
+
+        const buttons = Array.isArray(payload.buttons)
+            ? payload.buttons.filter((button) => String(button?.text || "").trim() !== "")
+            : [];
+        const footer = String(payload.footer || "").trim();
+
+        if (buttons.length === 0 && !footer) {
+            return null;
+        }
+
+        return (
+            <div className="w-full min-w-[16rem] max-w-[26rem]">
+                <div className="whitespace-pre-wrap break-words text-sm leading-6 text-white/90">
+                    {fallbackContent}
+                </div>
+                {footer ? (
+                    <div className="mt-3 border-t border-white/10 pt-2 text-xs text-white/50">
+                        {footer}
+                    </div>
+                ) : null}
+                {buttons.length > 0 ? (
+                    <div className="mt-3 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04]">
+                        {buttons.map((button, index) => (
+                            <div
+                                key={`${button.text || "button"}-${index}`}
+                                className="px-4 py-2.5 text-center text-sm font-medium text-white/90"
+                                style={{
+                                    borderTop:
+                                        index === 0 ? "none" : "1px solid rgba(255,255,255,0.08)",
+                                }}
+                            >
+                                {button.text}
+                            </div>
+                        ))}
+                    </div>
+                ) : null}
+            </div>
+        );
+    }
+
     useEffect(() => {
         if (!messagesContainerRef.current) {
             return;
@@ -244,6 +288,18 @@ export default function MessageList(props) {
                         && message.template_payload
                     ) {
                         templateContent = renderFacebookTemplate(message.template_payload);
+                        if (templateContent) {
+                            content = templateContent;
+                        }
+                    }
+                    if (
+                        message.category === "whatsapp"
+                        && message.template_payload
+                        && ["whatsapp_template", "whatsapp_interactive"].includes(
+                            String(message.template_type || "").toLowerCase()
+                        )
+                    ) {
+                        templateContent = renderWhatsAppTemplate(message.template_payload, content);
                         if (templateContent) {
                             content = templateContent;
                         }

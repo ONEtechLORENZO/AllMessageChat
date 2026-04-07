@@ -13,6 +13,13 @@ export default function SearchTemplate(props) {
     const templateService = String(props.templateService || '').toLowerCase();
     const isDarkTheme = props.theme === 'dark';
     const hideTemplateSearch = props.hideTemplateSearch === true;
+    const [templateQuery, setTemplateQuery] = useState('');
+    const [interactiveQuery, setInteractiveQuery] = useState('');
+
+    function normalizeValue(value) {
+        return String(value || '').toLowerCase().trim();
+    }
+
     const filteredTemplates = (props.templates || []).filter((template) => {
         if (!filterTemplatesByAccount) {
             return true;
@@ -30,6 +37,20 @@ export default function SearchTemplate(props) {
         }
 
         return true;
+    });
+    const filteredInteractiveMessages = (props.interactiveMessages || []).filter((interactiveMessage) => {
+        if (!interactiveQuery) {
+            return true;
+        }
+
+        return normalizeValue(interactiveMessage.name).includes(normalizeValue(interactiveQuery));
+    });
+    const visibleTemplates = filteredTemplates.filter((template) => {
+        if (!templateQuery) {
+            return true;
+        }
+
+        return normalizeValue(template.name).includes(normalizeValue(templateQuery));
     });
     const availableNavigators = [
         {name: 'template_search', label: 'Template'},
@@ -93,6 +114,7 @@ export default function SearchTemplate(props) {
                                     <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                                         {availableNavigators.map((navigator) => (
                                             <div
+                                                key={navigator.name}
                                                 className={classNames(
                                                 navigator.name == tab
                                                     ? tabActiveClassName
@@ -123,18 +145,30 @@ export default function SearchTemplate(props) {
                                                                 name="search_template"
                                                                 id="search_template"
                                                                 placeholder="Search template"
-                                                                onChange={(e) => props.searchTemplates(e.target.value)}
+                                                                value={templateQuery}
+                                                                onChange={(e) => {
+                                                                    const value = e.target.value;
+                                                                    setTemplateQuery(value);
+                                                                    props.searchTemplates && props.searchTemplates(value);
+                                                                }}
                                                                 className={` appearance-none block w-full pl-6 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`} 
                                                             />
                                                         </div>
                                                     </span>
                                                 </div>
                                             )}
-                                    
-                                            {filteredTemplates.map((template) => {
+                                            
+                                            {visibleTemplates.map((template) => {
+                                                const templateKey = [
+                                                    template.account_id,
+                                                    template.service,
+                                                    template.template_uid || template.id,
+                                                    template.name,
+                                                ].join('-');
+
                                                 return(
                                                     <Listbox.Option
-                                                        key={template.template_uid || template.id || template.name}
+                                                        key={templateKey}
                                                         className={({ active }) =>
                                                             classNames(
                                                                 active ? optionActiveClassName : optionInactiveClassName,
@@ -149,7 +183,7 @@ export default function SearchTemplate(props) {
                                                     </Listbox.Option>
                                                 )
                                             })}
-                                            {filteredTemplates.length === 0 && (
+                                            {visibleTemplates.length === 0 && (
                                                 <div className={emptyStateClassName}>
                                                     No templates found.
                                                 </div>
@@ -214,22 +248,31 @@ export default function SearchTemplate(props) {
                                                             name="interactive_template_search"
                                                             id="interactive_template_search"
                                                             placeholder="Search Interactive Message"
-                                                            onChange={(e) => props.searchInteractiveMessages(e.target.value)}
+                                                            value={interactiveQuery}
+                                                            onChange={(e) => {
+                                                                const value = e.target.value;
+                                                                setInteractiveQuery(value);
+                                                                props.searchInteractiveMessages && props.searchInteractiveMessages(value);
+                                                            }}
                                                             className={` appearance-none block w-full pl-6 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-skin-primary focus:border-skin-primary sm:text-sm`} 
                                                         />
                                                     </div>
                                                 </span>
                                             </div>
                                     
-                                            {props.interactiveMessages && (props.interactiveMessages).map((interactiveMessage, key) => {
+                                            {filteredInteractiveMessages.map((interactiveMessage) => {
+                                                const interactiveKey = [
+                                                    interactiveMessage.id,
+                                                    interactiveMessage.name,
+                                                ].join('-');
                                                 
                                                 return(
                                                     <Listbox.Option
-                                                        key={interactiveMessage.id}
+                                                        key={interactiveKey}
                                                         className={({ active }) =>
                                                             classNames(
-                                                                active ? 'bg-gray-100' : 'bg-white',
-                                                                'relative cursor-default select-none py-2 px-3'
+                                                                active ? optionActiveClassName : optionInactiveClassName,
+                                                                'relative cursor-pointer select-none rounded-xl py-2 px-3 transition-colors'
                                                             )
                                                         }
                                                         onClick={() => props.setInteractiveMessage(interactiveMessage)}
@@ -240,7 +283,7 @@ export default function SearchTemplate(props) {
                                                     </Listbox.Option>
                                                 )
                                             })}
-                                            {(!props.interactiveMessages || props.interactiveMessages.length === 0) && (
+                                            {filteredInteractiveMessages.length === 0 && (
                                                 <div className="px-3 py-2 text-sm text-gray-400">
                                                     No interactive messages found.
                                                 </div>

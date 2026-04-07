@@ -8,6 +8,22 @@ export default function TemplateBodyMapping (props) {
 
     const [open, setOpen] = useState(true)
     const cancelButtonRef = useRef(null)
+    const excludedFieldLabels = new Set([
+        'Languages Spoken',
+        'Organization Role',
+        'Subscription status',
+        'Telegram Number',
+        'Tiktok Username',
+        'Origin',
+        'Source',
+        'Medium',
+        'Campaign',
+        'Content',
+        'Term',
+    ]);
+    const filteredFields = Object.entries(props.fields ?? {}).filter(([, field]) => {
+        return !excludedFieldLabels.has(String(field).trim());
+    });
 
     useEffect(() => {
         if(props.data && props.data.body) {
@@ -51,7 +67,7 @@ export default function TemplateBodyMapping (props) {
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                    <div className="fixed inset-0 bg-black/10 backdrop-blur-[3px] transition-opacity" />
                 </Transition.Child>
 
                 <div className="fixed z-10 inset-0 overflow-y-auto">
@@ -65,11 +81,11 @@ export default function TemplateBodyMapping (props) {
                             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         >
-                            <Dialog.Panel className="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-xl sm:w-full p-1">
-                                <div className="bg-gray-50 px-4 pb-2 sm:p-3 sm:pb-2">
+                            <Dialog.Panel className="relative overflow-hidden rounded-[24px] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(124,58,237,0.22),rgba(23,10,28,0.96)_55%,rgba(10,6,18,0.98)_100%)] text-left shadow-[0_40px_120px_rgba(0,0,0,0.55)] transform transition-all sm:my-8 sm:max-w-2xl sm:w-full">
+                                <div className="px-6 pb-3 pt-6 sm:px-7">
                                     <div className="sm:flex sm:items-start">
                                         <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                                            <Dialog.Title as="h3" className="text-lg leading-6 font-semibold text-gray-900 flex">
+                                            <Dialog.Title as="h3" className="flex text-xl font-black tracking-[0.12em] uppercase" style={{ color: '#ffffff', opacity: 1 }}>
                                                 Sample value
                                             </Dialog.Title>
                                         </div>
@@ -77,16 +93,16 @@ export default function TemplateBodyMapping (props) {
                                 </div>
 
                                 <form id='form'>
-                                    <div className='px-4 py-2 space-y-4'>
+                                    <div className='px-6 py-2 space-y-4 sm:px-7'>
                                         <div className='form-group' >
                                         {props.sampleValues && Object.entries(props.sampleValues).length ?
                                             <div className="form-group col-span-6 sm:col-span-4">
-                                                <div className="mt-1">
+                                                <div className="mt-1 space-y-4">
                                                     {Object.entries(props.sampleValues).map(([key, value]) => {
                                                         var label = "{{"+ key +"}}";
                                                         return(
-                                                            <div className='flex'>
-                                                                <label className="block w-1/4 mt-2 mr-2 text-sm font-medium text-gray-700"> {label} </label>
+                                                            <div key={key} className='flex flex-col gap-3 rounded-2xl border border-white/8 bg-white/[0.03] p-4 sm:flex-row sm:items-center'>
+                                                                <label className="block text-sm font-semibold text-white/75 sm:mt-2 sm:w-1/4"> {label} </label>
                                                                 
                                                                 <select
                                                                     name="module_field"
@@ -94,16 +110,30 @@ export default function TemplateBodyMapping (props) {
                                                                     id="module_field"
                                                                     value={value}
                                                                     onChange={ (e) => props.sampleValueHandler(e)}
-                                                                    className='mt-1 block w-3/4 py-2 px-3 bg-[#9BFFF2] border-0 rounded-sm shadow-sm focus:outline-none focus:ring-[#9BFFF2] focus:border-[#9BFFF2] sm:text-sm'
+                                                                    className='block w-full rounded-xl border border-white/10 bg-white/[0.08] px-4 py-3 text-sm text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] focus:outline-none focus:ring-2 focus:ring-fuchsia-500/30 sm:w-3/4'
                                                                 >
-                                                                    <option value=""> Select field</option>
-                                                                    {Object.entries(props.fields).map(([index, field]) => 
-                                                                        <option map_index={key} value={"{{"+ index +"}}"} > {field} </option>
+                                                                    <option
+                                                                        value=""
+                                                                        className="bg-[#1b1324] text-white"
+                                                                        style={{ backgroundColor: '#1b1324', color: '#ffffff' }}
+                                                                    >
+                                                                        Select field
+                                                                    </option>
+                                                                    {filteredFields.map(([index, field]) => 
+                                                                        <option
+                                                                            key={`${key}-${index}`}
+                                                                            map_index={key}
+                                                                            value={"{{"+ index +"}}"}
+                                                                            className="bg-[#1b1324] text-white"
+                                                                            style={{ backgroundColor: '#1b1324', color: '#ffffff' }}
+                                                                        >
+                                                                            {field}
+                                                                        </option>
                                                                     )}
                                                                 </select>
-                                                                <div className="flex items-center justify-between ml-5 w-3/4">
+                                                                <div className="flex items-center justify-between sm:ml-5 sm:w-3/4">
                                                                 <input
-                                                                    className="focus:ring-[#9BFFF2] focus:border-[#9BFFF2] bg-[#F6FFFD] flex-1 block w-full rounded-sm sm:text-sm border border-[#67e8f9]"
+                                                                    className="block w-full flex-1 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/30"
                                                                     type="text"
                                                                     name={'field_value'}
                                                                     fieldIndex={key}
@@ -117,9 +147,9 @@ export default function TemplateBodyMapping (props) {
                                                 </div>
                                             </div>
                                         :
-                                        <div className="rounded-md bg-blue-50 p-4">
-                                            <div className="ml-3 flex-1 md:flex md:justify-between">
-                                                <p className="text-sm text-blue-700"> Body has no sample value container </p>
+                                        <div className="rounded-2xl border border-white/8 bg-white/[0.04] p-5">
+                                            <div className="flex-1 md:flex md:justify-between">
+                                                <p className="text-sm text-white/65"> Body has no sample value container </p>
                                             </div>
                                         </div>
                                         }
@@ -127,11 +157,11 @@ export default function TemplateBodyMapping (props) {
                                     </div>
                                 </form>
 
-                                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                <div className="mt-4 flex flex-col-reverse gap-3 border-t border-white/10 px-6 py-5 sm:flex-row sm:justify-end sm:px-7">
                                     {props.sampleValues && Object.entries(props.sampleValues).length ?
                                         <button
                                             type="button"
-                                            className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+                                            className="inline-flex w-full justify-center rounded-full bg-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-fuchsia-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/30 sm:w-auto"
                                             onClick={() => tmpBodyFieldMapping()}
                                         >
                                             Save
@@ -141,7 +171,7 @@ export default function TemplateBodyMapping (props) {
                                     }
                                     <button
                                         type="button"
-                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                                        className="inline-flex w-full justify-center rounded-full bg-white/10 px-5 py-2.5 text-sm font-semibold text-white/85 ring-1 ring-white/10 transition hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/10 sm:w-auto"
                                         onClick={() => props.setTemplateMapping(false)}
                                         ref={cancelButtonRef}
                                     >

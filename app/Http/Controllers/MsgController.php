@@ -1790,7 +1790,12 @@ class MsgController extends Controller
                 'templates.category',
                 'templates.email_subject',
                 'templates.type',
-            ]);
+            ])
+            ->map(function ($template) {
+                $template->is_internal_template = false;
+
+                return $template;
+            });
 
         $emailTemplates = Template::query()
             ->where(function ($query) {
@@ -1842,7 +1847,18 @@ class MsgController extends Controller
                 ];
             });
 
-        return $messageTemplates->concat($emailTemplates)->concat($socialTemplates)->values();
+        return $messageTemplates
+            ->concat($emailTemplates)
+            ->concat($socialTemplates)
+            ->unique(function ($template) {
+                return implode('|', [
+                    (string) data_get($template, 'account_id', ''),
+                    strtolower((string) data_get($template, 'service', '')),
+                    (string) data_get($template, 'template_uid', data_get($template, 'id', '')),
+                    strtolower((string) data_get($template, 'name', '')),
+                ]);
+            })
+            ->values();
     }
 
     protected function resolveInternalSocialTemplate(Account $account, $templateReference, string $channel): ?Template
@@ -2060,7 +2076,10 @@ class MsgController extends Controller
                     }
                 }
 
-                if ((! $content || trim((string) $content) === '') && ($message->template_id || $message->msg_type === 'template')) {
+                if (
+                    (! $content || trim((string) $content) === '')
+                    && ($message->template_id || $message->interactive_message_id || $message->msg_type === 'template')
+                ) {
                     $content = 'Template message';
                 }
             } elseif (! empty($message->template_id) && $templatePayload === null) {
@@ -2068,6 +2087,69 @@ class MsgController extends Controller
                 if ($template && is_array($template->payload_json)) {
                     $templatePayload = $template->payload_json;
                     $templateType = (string) ($template->type ?? ($templatePayload['type'] ?? ''));
+                }
+            }
+
+            if (
+                $message->service === 'whatsapp'
+                && ! empty($message->interactive_message_id)
+                && strtolower((string) ($message->msg_type ?? '')) === 'interactive'
+                && (
+                    $templatePayload === null
+                    || $templateType === null
+                    || $templateType === ''
+                )
+            ) {
+                $interactiveTemplate = InteractiveMessage::find($message->interactive_message_id);
+
+                if ($interactiveTemplate) {
+                    $templatePayload = $this->buildInteractiveMessagePayload($interactiveTemplate);
+                    $templateType = 'whatsapp_interactive';
+                }
+            }
+
+            if (
+                $message->service === 'whatsapp'
+                && ! empty($message->template_id)
+                && (
+                    $templatePayload === null
+                    || $templateType === null
+                    || $templateType === ''
+                    || empty($templatePayload['buttons'])
+                )
+            ) {
+                $templateMessage = Message::query()
+                    ->where('template_id', $message->template_id)
+                    ->orderByDesc('id')
+                    ->first();
+
+                if ($templateMessage) {
+                    $buttons = \App\Models\MessageButton::query()
+                        ->where('message_id', $templateMessage->id)
+                        ->get()
+                        ->map(function ($button) {
+                            return [
+                                'type' => (string) ($button->button_type ?? ''),
+                                'text' => (string) ($button->body ?? ''),
+                                'action' => (string) ($button->action ?? ''),
+                                'phone_number' => (string) ($button->phone_number ?? ''),
+                                'url' => (string) ($button->url ?? ''),
+                            ];
+                        })
+                        ->filter(function ($button) {
+                            return trim((string) ($button['text'] ?? '')) !== '';
+                        })
+                        ->values()
+                        ->all();
+
+                    if ($buttons !== []) {
+                        $templatePayload = array_merge(is_array($templatePayload) ? $templatePayload : [], [
+                            'type' => 'whatsapp_template',
+                            'footer' => (string) ($templateMessage->footer_content ?? ''),
+                            'buttons' => $buttons,
+                        ]);
+                        $templateType = 'whatsapp_template';
+                    }
                 }
             }
             $messages[] = [
@@ -2094,6 +2176,46 @@ class MsgController extends Controller
         }
 
         return $messages;
+    }
+
+    protected function buildInteractiveMessagePayload(InteractiveMessage $interactiveMessage): array
+    {
+        $rawOptions = json_decode((string) $interactiveMessage->options, true);
+        $buttons = [];
+
+        if ($interactiveMessage->option_type === 'list_option') {
+            $buttons = collect(data_get($rawOptions, 'list_option', []))
+                ->map(function ($option) {
+                    return [
+                        'text' => (string) data_get($option, 'title', ''),
+                        'description' => (string) data_get($option, 'description', ''),
+                    ];
+                })
+                ->filter(function ($button) {
+                    return trim((string) ($button['text'] ?? '')) !== '';
+                })
+                ->values()
+                ->all();
+        } else {
+            $buttons = collect(is_array($rawOptions) ? $rawOptions : [])
+                ->map(function ($option) {
+                    return [
+                        'text' => (string) (data_get($option, 'title') ?? data_get($option, 'text') ?? ''),
+                        'description' => (string) data_get($option, 'description', ''),
+                    ];
+                })
+                ->filter(function ($button) {
+                    return trim((string) ($button['text'] ?? '')) !== '';
+                })
+                ->values()
+                ->all();
+        }
+
+        return [
+            'type' => 'whatsapp_interactive',
+            'buttons' => $buttons,
+            'button_title' => (string) data_get($rawOptions, 'menu_data.button_title', ''),
+        ];
     }
 
     /**
@@ -2672,18 +2794,32 @@ class MsgController extends Controller
             $template = ($request->template_id) ? $request->template_id : '';
             $catalog_id = ($request->catalog_id) ? $request->catalog_id : '';
             $template_options = ($request->template_options) ? $request->template_options : '';
+            $isInteractiveRequest = $template_options && $template_options != 'undefined';
 
             $product_retailer_id = ($request->product_retailer_id && $request->product_retailer_id != 'undefined') ? $request->product_retailer_id : '';
 
             $content = $request->content;
 
-            if ($template && $template != 'undefined') {
+            $linkedTemplateId = null;
+            if (! $isInteractiveRequest && $template && $template != 'undefined') {
 
                 $content = [];
                 $message =  Message::join('templates', 'templates.id', 'template_id')
+                    ->select('messages.*', 'templates.id as linked_template_id')
                     ->where('messages.template_uid', $template)
                     ->where('account_id', $account->id)
                     ->first();
+
+                if (! $message) {
+                    return response()->json([
+                        'status' => 'Failed',
+                        'error' => 'Template not found.',
+                    ], 400);
+                }
+
+                if ($message) {
+                    $linkedTemplateId = $message->linked_template_id;
+                }
 
                 $_POST['content'] = $messageBody = $message->body;
 
@@ -2729,7 +2865,7 @@ class MsgController extends Controller
 
             $interactiveMessage = [];
 
-            if ($template_options && $template_options != 'undefined') {
+            if ($isInteractiveRequest) {
                 if ($request->template_type == 'list_option') {
                     $menuData = json_decode($template_options)->menu_data;
                     $options = json_decode($template_options)->list_option;
@@ -2758,6 +2894,10 @@ class MsgController extends Controller
                         'options' => json_decode($template_options),
                     ];
                 }
+
+                // Interactive messages are not WhatsApp template messages and must
+                // not be routed through the template endpoint.
+                $template = '';
             }
 
             $result = $msg->sendWhatsAppMessage($content, $request->destination, $account, $template, $document, $productData, $interactiveMessage);
@@ -2767,6 +2907,13 @@ class MsgController extends Controller
                     $result['status'] = 'Queued';
                 }
                 $result['messageId'] = $result['result']['messageId'];
+                if ($linkedTemplateId) {
+                    $result['result']['template_id'] = $linkedTemplateId;
+                }
+                if ($interactiveMessage && $request->template_id) {
+                    $result['result']['interactive_message_id'] = $request->template_id;
+                    $result['result']['msg_type'] = 'interactive';
+                }
             } else {
                 $result['status'] = 'Failed';
                 $error = isset($result['result']['error']) ? ($result['result']['error']) : ($result['result']['message']);
@@ -2780,7 +2927,7 @@ class MsgController extends Controller
             $docId = (new Document)->saveDocument($attachment_name, $mimeType, $file, $parent, 'Contact', $path, '');
             $result['result']['file_path'] = $docId;
             $result['result']['msg_type'] = ($type) ? $type[0] : '';
-        } else {
+        } else if (! isset($result['result']['msg_type'])) {
             $result['result']['msg_type'] = 'Text';
         }
 
@@ -2862,7 +3009,8 @@ class MsgController extends Controller
             'status' => $data['status'],
             'msg_type' => isset($data['result']['msg_type']) ? $data['result']['msg_type'] : 'Text',
             'file_path' => isset($data['result']['file_path']) ? $data['result']['file_path'] : '',
-            'template_id' => isset($data['result']['template_id']) ? $data['result']['template_id'] : '',
+            'template_id' => isset($data['result']['template_id']) && $data['result']['template_id'] !== '' ? $data['result']['template_id'] : null,
+            'interactive_message_id' => isset($data['result']['interactive_message_id']) && $data['result']['interactive_message_id'] !== '' ? $data['result']['interactive_message_id'] : null,
             'is_delivered' => 0,
             'is_read' => 0
         ];
@@ -2900,6 +3048,10 @@ class MsgController extends Controller
         foreach ($data as $field => $value) {
             if (in_array($field, ['instagram_user_id', 'instagram_username', 'instagram_conversation_id', 'contact_name', 'raw_payload'], true)) {
                 continue;
+            }
+
+            if (in_array($field, ['template_id', 'interactive_message_id'], true) && ($value === '' || $value === false)) {
+                $value = null;
             }
 
             $message->$field = $value;
@@ -3436,6 +3588,7 @@ class MsgController extends Controller
                 $message = Msg::where('service_id', $replyTo)->first();
                 if ($message) {
                     $templateId = $message->template_id;
+                    $interactiveMessageId = $message->interactive_message_id;
                 }
             }
 
@@ -3457,6 +3610,7 @@ class MsgController extends Controller
                 'is_read' => 0,
                 'reply_to' => $replyTo,
                 'template_id' => $templateId,
+                'interactive_message_id' => $interactiveMessageId ?? null,
             ];
 
             if (isset($data['payload']['contentType'])) {
@@ -3694,7 +3848,8 @@ class MsgController extends Controller
             $request->channel = 'whatsapp';
 
             if ($interactiveMessage) {
-                $result['result']['template_id'] = $request->template_id;
+                $result['result']['interactive_message_id'] = $request->template_id;
+                $result['result']['msg_type'] = 'interactive';
             }
             $this->handleMessageResult($request, $account->id, $result);
         }

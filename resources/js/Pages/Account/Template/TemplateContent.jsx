@@ -13,6 +13,21 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
+function hasRenderableButtonContent(button) {
+    if (!button || typeof button !== 'object') {
+        return false;
+    }
+
+    return [
+        button.button_type,
+        button.button_text,
+        button.action,
+        button.phone_number,
+        button.url,
+        button.url_type,
+    ].some((value) => String(value ?? '').trim().length > 0);
+}
+
 export default function TemplateContent(props) {
 
     const header_text_max_length = 60;
@@ -49,7 +64,9 @@ export default function TemplateContent(props) {
     const footerLength = (data?.body_footer || '').length;
     const headerTextLength = (data?.header_text || '').length;
     const bodyLength = (data?.body || '').length;
+    const hasBodyContent = String(data?.body || '').trim().length > 0;
     const normalizedStatus = (data?.status || 'draft').toLowerCase();
+    const isReadOnly = normalizedStatus !== 'draft';
     const statusClass = normalizedStatus == 'approved'
         ? 'border-emerald-400/20 bg-emerald-400/10 text-emerald-200'
         : (normalizedStatus == 'rejected' || normalizedStatus.indexOf('rejected') != -1)
@@ -60,6 +77,9 @@ export default function TemplateContent(props) {
     const [errors, setError] = useState({});
     const [sampleValues, setSampleValue] = useState(initialSamples);
     const [templateMapping, setTemplateMapping] = useState(false);
+    const visibleButtons = isReadOnly
+        ? buttons.filter(hasRenderableButtonContent)
+        : buttons;
 
     useEffect(() => {
         const tmpButtons = [];
@@ -105,7 +125,7 @@ export default function TemplateContent(props) {
         else {
             newState[name] = value;
         }
-        if (data.status == 'draft') {
+        if (!isReadOnly) {
             setData(newState);
         }
     }
@@ -189,6 +209,10 @@ export default function TemplateContent(props) {
     }
 
     function addNewButton() {
+        if (isReadOnly) {
+            return;
+        }
+
         let tmpButtons = Object.assign([], buttons);
         tmpButtons.push({
             id: '',
@@ -233,6 +257,10 @@ export default function TemplateContent(props) {
     }
 
     function handleButtonChange(event, index) {
+        if (isReadOnly) {
+            return;
+        }
+
         const name = event.target.name;
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         let newState = Object.assign([], buttons);
@@ -241,6 +269,10 @@ export default function TemplateContent(props) {
     }
 
     function deleteButton(index) {
+        if (isReadOnly) {
+            return;
+        }
+
         let newButton = Object.assign([], buttons);
         let buttonLength = newButton.length;
         if (buttonLength != 1) {
@@ -274,9 +306,16 @@ export default function TemplateContent(props) {
 
                     <div className="mt-10 space-y-10">
                         <div className="space-y-4">
-                            <label className="text-base font-medium text-white">
-                                {props.translator['Header type']}
-                            </label>
+                            <div className="flex items-center gap-3">
+                                <label className="text-base font-medium text-white">
+                                    {props.translator['Header type']}
+                                </label>
+                                {isReadOnly && (
+                                    <span className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-300/90">
+                                        Read only
+                                    </span>
+                                )}
+                            </div>
                             <Dropdown
                                 required={true}
                                 id="header_type"
@@ -284,7 +323,7 @@ export default function TemplateContent(props) {
                                 handleChange={handleChange}
                                 options={header_templates}
                                 value={data.header_type}
-                                readOnly={data.status == 'draft' ? false : true}
+                                readOnly={isReadOnly}
                                 variant="soft"
                             />
                             <InputError message={errors.header_type} />
@@ -319,13 +358,20 @@ export default function TemplateContent(props) {
 
                         <div className='form-group'>
                             <div className='grid grid-cols-2 items-center'>
-                                <label className='text-base font-medium text-white'>{props.translator['Body']}</label>
+                                <div className="flex items-center gap-3">
+                                    <label className='text-base font-medium text-white'>{props.translator['Body']}</label>
+                                    {isReadOnly && (
+                                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-300/90">
+                                            Read only
+                                        </span>
+                                    )}
+                                </div>
                                 <button type="button" className='flex justify-end font-medium text-fuchsia-200 transition hover:text-white' onClick={() => setTemplateMapping(true)}>{props.translator['Template mapping']}</button>
                             </div>
                             <div className="mt-1">
                                 <TextArea
                                     id="body"
-                                    readOnly={data.status == 'draft' ? false : true}
+                                    readOnly={isReadOnly}
                                     name="body"
                                     required={true}
                                     handleChange={handleChange}
@@ -335,9 +381,11 @@ export default function TemplateContent(props) {
                                 />
                             </div>
                             <div className='grid grid-cols-2'>
-                                <small className="form-text justify-start text-white/45" >{props.translator['Max']} {body_max_length - bodyLength} {props.translator['characters']} </small>
-                                <small className="form-text flex justify-end text-white/45" >
-                                    <a href="https://developers.facebook.com/docs/whatsapp/message-templates/guidelines/#common-rejection-reasons" target={"_blank"}> {props.translator['Please follow the']} <span className='text-blue-500'> {props.translator['criteria']} </span> </a>
+                                <small className="block text-sm justify-start" style={{ color: '#9f95ad', opacity: 1 }}>{props.translator['Max']} {body_max_length - bodyLength} {props.translator['characters']} </small>
+                                <small className="flex justify-end text-sm" style={{ color: '#9f95ad', opacity: 1 }}>
+                                    <a href="https://developers.facebook.com/docs/whatsapp/message-templates/guidelines/#common-rejection-reasons" target={"_blank"} rel="noreferrer" style={{ color: '#9f95ad', opacity: 1 }}>
+                                        {props.translator['Please follow the']} <span className='text-blue-500'> {props.translator['criteria']} </span>
+                                    </a>
                                 </small>
                             </div>
                             <InputError message={errors.body} />
@@ -358,11 +406,18 @@ export default function TemplateContent(props) {
                         }
 
                         <div className="space-y-3">
-                            <label className="text-base font-medium text-white">
-                                {props.translator['Footer']}
-                            </label>
-                            <input name='body_footer' id='body_footer' readOnly={data.status == 'draft' ? false : true} type={'text'} className={inputClass} maxLength={'60'} onChange={(e) => handleChange(e)} value={data.body_footer} />
-                            <small className="form-text text-white/45">{props.translator['Max']} {footer_text_max_length - footerLength} {props.translator['characters']} </small>
+                            <div className="flex items-center gap-3">
+                                <label className="text-base font-medium text-white">
+                                    {props.translator['Footer']}
+                                </label>
+                                {isReadOnly && (
+                                    <span className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-300/90">
+                                        Read only
+                                    </span>
+                                )}
+                            </div>
+                            <input name='body_footer' id='body_footer' readOnly={isReadOnly} type={'text'} className={inputClass} maxLength={'60'} onChange={(e) => handleChange(e)} value={data.body_footer} />
+                            <small className="block text-sm" style={{ color: '#9f95ad', opacity: 1 }}>{props.translator['Max']} {footer_text_max_length - footerLength} {props.translator['characters']} </small>
                             <InputError message={errors.body_footer} />
                         </div>
 
@@ -375,18 +430,24 @@ export default function TemplateContent(props) {
                                 </div>
                                 <button
                                     type="button"
-                                    className="inline-flex items-center rounded-full bg-fuchsia-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-fuchsia-500"
+                                    className={classNames(
+                                        "inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold transition",
+                                        isReadOnly
+                                            ? "cursor-not-allowed bg-white/10 text-white/35"
+                                            : "bg-fuchsia-600 text-white hover:bg-fuchsia-500"
+                                    )}
                                     onClick={addNewButton}
+                                    disabled={isReadOnly}
                                 >
                                     {props.translator['Add Button']}
                                 </button>
                             </div>
-                            <p className="mt-2 text-sm text-white/55">
+                            <p className="mt-2 text-sm text-[#9f95ad]">
                                 {props.translator['Create up to 3 buttons that let customers respond to your message or take action.']}
                             </p>
 
                             <div className="button-container mt-6 space-y-4">
-                                {buttons.map((button, index) => {
+                                {visibleButtons.map((button, index) => {
                                     return (
                                         <CreateButton
                                             key={button.id || `button-${index}`}
@@ -395,6 +456,7 @@ export default function TemplateContent(props) {
                                             quick_reply_max_length={quick_reply_max_length}
                                             url_max_length={url_max_length}
                                             errors={errors}
+                                            isReadOnly={isReadOnly}
                                             handleChange={(e) => handleButtonChange(e, index)}
                                             deleteButton={deleteButton}
                                             {...props}
@@ -407,7 +469,7 @@ export default function TemplateContent(props) {
                         <div className="pt-4">
                             <div className="flex w-full items-center justify-between gap-4">
                                 <Link
-                                    href={route('account_view', props.template.account_id)}
+                                    href={`/templates?account_id=${props.template.account_id}`}
                                     className="inline-flex items-center rounded-full bg-white/10 px-6 py-2.5 text-sm font-semibold text-white/90 ring-1 ring-white/10 transition hover:bg-white/15"
                                 >
                                     {props.translator['Back']}
@@ -415,7 +477,13 @@ export default function TemplateContent(props) {
                                 {data.status == 'draft' &&
                                     <button
                                         type="button"
-                                        className="inline-flex items-center rounded-full bg-fuchsia-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-fuchsia-500"
+                                        className={classNames(
+                                            "inline-flex items-center rounded-full px-6 py-2.5 text-sm font-semibold transition",
+                                            hasBodyContent
+                                                ? "bg-fuchsia-600 text-white hover:bg-fuchsia-500"
+                                                : "cursor-not-allowed bg-white/10 text-white/35"
+                                        )}
+                                        disabled={!hasBodyContent}
                                         onClick={() => validateAndSubmitForm()}
                                     >
                                         {props.translator['Send for review']}
@@ -475,9 +543,9 @@ export default function TemplateContent(props) {
                                         </div>
 
                                         {/* Button previews */}
-                                        {buttons.length > 0 && (
+                                        {visibleButtons.length > 0 && (
                                             <div className="w-4/5 space-y-1">
-                                                {buttons.map((btn, i) => (
+                                                {visibleButtons.map((btn, i) => (
                                                     <div key={i} className="bg-white rounded-md py-1.5 text-center text-[11px] text-[#46A5EE] font-medium shadow-sm cursor-default">
                                                         {btn.button_text || `Button ${i + 1}`}
                                                     </div>

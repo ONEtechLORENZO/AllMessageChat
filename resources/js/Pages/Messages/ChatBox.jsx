@@ -7,30 +7,19 @@ import Axios from 'axios';
 
 function ChatBox(props) 
 {
-    const [templates, setTemplates] = useState(props.templates);
     const [products, setProducts] = useState(props.products);
-    const [interactiveMessages, setInteractiveMessage] = useState(props.interactiveMessages);
     const templateService = String(props.containerCategory || '').toLowerCase();
-
-    function searchTemplates(key){
-        var templateList = [];
-        (props.templates).map((template)=>{
-            if((template.name).indexOf(key) !== -1){
-                templateList.push(template);
-            }
-        });
-        setTemplates(templateList);
-    }
-
-    function searchInteractiveMessages(key) {
-        var templateList = [];
-        (props.interactiveMessages).map((interactiveMessage)=>{
-            if((interactiveMessage.name).indexOf(key) !== -1){
-                templateList.push(interactiveMessage);
-            }
-        });
-        setInteractiveMessage(templateList);
-    }
+    const hasTypedContent = String(props.data?.content || '').trim().length > 0;
+    const hasAttachment = !!props.data?.attachment;
+    const hasSelectedTemplate = !!props.data?.template_id;
+    const hasSelectedProduct = !!props.data?.catalog_id || !!props.data?.product_retailer_id;
+    const hasInteractiveContent = !!props.data?.template_options;
+    const hasSendableContent =
+        hasTypedContent ||
+        hasAttachment ||
+        hasSelectedTemplate ||
+        hasSelectedProduct ||
+        hasInteractiveContent;
 
     function searchProduct(key) {
         let url = route('search_product', {'search': key});
@@ -81,12 +70,10 @@ function ChatBox(props)
                         {showTemplatePicker && (
                             <div className="flex h-10 w-10 items-center justify-center rounded-full text-white/78 transition hover:bg-white/[0.06] hover:text-white">
                                 <SearchTemplate
-                                   templates={templates}
+                                   templates={props.templates}
                                    products={products}
-                                   interactiveMessages={interactiveMessages}
+                                   interactiveMessages={props.interactiveMessages}
                                    searchProduct={searchProduct}
-                                   searchTemplates={searchTemplates}
-                                   searchInteractiveMessages={searchInteractiveMessages}
                                    allowProducts={false}
                                    allowInteractiveMessages={props.containerCategory == 'whatsapp'}
                                    hideTemplateSearch={!hasTemplates}
@@ -94,7 +81,7 @@ function ChatBox(props)
                                    setProductInfo={props.setProductInfo}
                                    setTemplateInfo={props.setTemplateInfo}
                                    selectedAccount={props.selectedAccount}
-                                   filterTemplatesByService={['instagram', 'facebook', 'email'].includes(templateService)}
+                                   filterTemplatesByService={['whatsapp', 'instagram', 'facebook', 'email'].includes(templateService)}
                                    templateService={templateService}
                                    theme="dark"
                                 />
@@ -131,13 +118,15 @@ function ChatBox(props)
                                 </svg>
                             </button>
                         :''}
-                        <button
-                            type="button"
-                            onClick={props.sendMessage}
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,#ff5bdf,#b22cff)] text-white shadow-[0_10px_26px_rgba(163,30,255,0.28)] transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/30 focus:ring-offset-0"
-                        >
-                            <PaperAirplaneIcon className="h-7 w-7 -rotate-12" />
-                        </button>
+                        {hasSendableContent && (
+                            <button
+                                type="button"
+                                onClick={props.sendMessage}
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,#ff5bdf,#b22cff)] text-white shadow-[0_10px_26px_rgba(163,30,255,0.28)] transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-[#A31EFF]/30 focus:ring-offset-0"
+                            >
+                                <PaperAirplaneIcon className="h-7 w-7 -rotate-12" />
+                            </button>
+                        )}
                     </div>
                 </div>
             </form>

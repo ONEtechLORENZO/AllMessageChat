@@ -891,6 +891,7 @@ function ChatList(props) {
     function setInteractiveMessage(interactiveMessage) {
         let newState = Object.assign({}, data);
         newState["content"] = interactiveMessage.content;
+        newState["template_id"] = interactiveMessage.id || "";
         newState["template_options"] = interactiveMessage.options;
         newState["template_type"] = interactiveMessage.option_type;
 

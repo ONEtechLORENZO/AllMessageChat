@@ -52,11 +52,93 @@ const optionField = {
 }
 
 const hiddenContactModalFields = new Set([
+    "assigned_to",
+    "organization_id",
+    "organization_role",
+    "emails",
     "telegram_number",
     "tiktok_username",
     "linkedin_username",
     "personal_website",
 ]);
+
+const hiddenContactModalGroups = new Set(["Source info"]);
+const syntheticContactEmailField = {
+    field_name: "email",
+    field_label: "Email",
+    field_type: "email",
+    is_mandatory: 0,
+    is_custom: 0,
+    readonly_on_edit: "false",
+    options: "",
+};
+
+function normalizeContactFieldGroups(fieldGroup, groupedFields) {
+    const nextGroupedFields = { ...(groupedFields ?? {}) };
+    const groupOrder = Array.isArray(fieldGroup)
+        ? [...fieldGroup]
+        : { ...(fieldGroup ?? {}) };
+
+    if (!nextGroupedFields["Contact info"]) {
+        nextGroupedFields["Contact info"] = [];
+
+        if (Array.isArray(groupOrder)) {
+            groupOrder.push("Contact info");
+        } else {
+            groupOrder.contact_info = "Contact info";
+        }
+    }
+
+    const emailFieldNames = new Set(["email", "emails"]);
+
+    Object.entries(nextGroupedFields).forEach(([groupName, fields]) => {
+        if (!Array.isArray(fields)) {
+            nextGroupedFields[groupName] = [];
+            return;
+        }
+
+        nextGroupedFields[groupName] = fields.filter((field) => {
+            if (!field || typeof field !== "object") {
+                return false;
+            }
+            return !emailFieldNames.has(field.field_name);
+        });
+    });
+
+    const contactInfoFields = Array.isArray(nextGroupedFields["Contact info"])
+        ? [...nextGroupedFields["Contact info"]]
+        : [];
+    const instagramIndex = contactInfoFields.findIndex(
+        (field) => field?.field_name === "instagram_username",
+    );
+    const insertIndex = instagramIndex >= 0 ? instagramIndex + 1 : contactInfoFields.length;
+    contactInfoFields.splice(insertIndex, 0, syntheticContactEmailField);
+    nextGroupedFields["Contact info"] = contactInfoFields;
+
+    const visibleGroupNames = new Set(
+        Object.keys(nextGroupedFields).filter(
+            (groupName) => !hiddenContactModalGroups.has(groupName),
+        ),
+    );
+
+    if (Array.isArray(groupOrder)) {
+        return {
+            fieldGroup: groupOrder.filter(
+                (groupName) => visibleGroupNames.has(groupName) && !hiddenContactModalGroups.has(groupName),
+            ),
+            groupedFields: nextGroupedFields,
+        };
+    }
+
+    const filteredGroupOrder = Object.fromEntries(
+        Object.entries(groupOrder).filter(([, groupName]) => visibleGroupNames.has(groupName) && !hiddenContactModalGroups.has(groupName)),
+    );
+
+    return {
+        fieldGroup: filteredGroupOrder,
+        groupedFields: nextGroupedFields,
+    };
+}
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
@@ -328,6 +410,14 @@ export default function NewForm(props) {
                     }
 
                     groupedFields.Setup = groupedFields.Setup ?? [];
+
+                    const normalizedContactGroups = normalizeContactFieldGroups(
+                        fieldGroup,
+                        groupedFields,
+                    );
+
+                    fieldGroup = normalizedContactGroups.fieldGroup;
+                    Object.assign(groupedFields, normalizedContactGroups.groupedFields);
                 }
 
                 setFields(response.data.fields);
@@ -475,6 +565,9 @@ export default function NewForm(props) {
     function DataHandler(name, value) {
         let newState = Object.assign({}, data);
         let customfields = (data.custom) ? data.custom : {};
+        if (props.module === 'Contact' && name === 'email') {
+            newState[name] = value;
+        }
         Object.entries(fields).map(([key, field]) => {
             if (name == field.field_name && field.is_custom == 0) {
                 newState[name] = value;

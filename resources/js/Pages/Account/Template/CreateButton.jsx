@@ -5,6 +5,7 @@ import InputError from '@/Components/Forms/InputError';
 import { DeleteIcon } from '@/Pages/icons';
 
 export default function CreateButton(props) {
+    const isReadOnly = !!props.isReadOnly;
     const buttonData = {
         id: props.data?.id ?? '',
         button_type: props.data?.button_type ?? '',
@@ -29,8 +30,9 @@ export default function CreateButton(props) {
                     </label>
                     <button
                         type="button"
-                        className='flex justify-end text-red-400 transition hover:text-red-300'
+                        className={`flex justify-end transition ${isReadOnly ? 'cursor-not-allowed text-white/20' : 'text-red-400 hover:text-red-300'}`}
                         onClick={() => {props.deleteButton(props.index)}}
+                        disabled={isReadOnly}
                     >
                         <DeleteIcon className="cursor-pointer" /> 
                     </button>
@@ -43,6 +45,7 @@ export default function CreateButton(props) {
                         handleChange={props.handleChange}
                         options={button_types}
                         value={buttonData.button_type}
+                        readOnly={isReadOnly}
                         variant="soft"
                     />
                 </div>
@@ -52,7 +55,7 @@ export default function CreateButton(props) {
             {buttonData.button_type == 'Quick Reply' ?                                         
                 <div className="form-group col-span-6 sm:col-span-4">
                     <div className="mt-1">
-                        <input name='button_text' id='button_text' type={'text'} className={inputClass} maxLength={'20'} onChange={(e) => props.handleChange(e)} value={buttonData.button_text} required={true}/>
+                        <input name='button_text' id='button_text' type={'text'} className={inputClass} maxLength={'20'} onChange={(e) => props.handleChange(e)} value={buttonData.button_text} required={true} readOnly={isReadOnly}/>
                     </div>
                     <small className="form-text text-white/45"> {props.quick_reply_max_length - buttonData.button_text.length} / {props.quick_reply_max_length} </small>
                     <InputError message={props.errors.button_text} />
@@ -73,6 +76,7 @@ export default function CreateButton(props) {
                                 handleChange={props.handleChange}
                                 options={call_to_action_lists}
                                 value={buttonData.action}
+                                readOnly={isReadOnly}
                             />
                         </div>
                         <InputError message={props.errors.action} />
@@ -85,7 +89,7 @@ export default function CreateButton(props) {
                                     Button text
                                 </label>
                                 <div className="mt-1">
-                                   <input name='button_text' id='button_text' type={'text'} className={inputClass} maxLength={'60'} onChange={(e) => props.handleChange(e)} value={buttonData.button_text} required={true}/>
+                                   <input name='button_text' id='button_text' type={'text'} className={inputClass} maxLength={'60'} onChange={(e) => props.handleChange(e)} value={buttonData.button_text} required={true} readOnly={isReadOnly}/>
                                 </div>
                                 <small className="form-text text-white/45"> {props.quick_reply_max_length - buttonData.button_text.length} / {props.quick_reply_max_length} </small>
                                 <InputError message={props.errors.button_text} />
@@ -95,7 +99,7 @@ export default function CreateButton(props) {
                                     Phone number (format: +XXXXXXXXXX)
                                 </label>
                                 <div className="mt-1">
-                                   <input name='phone_number' id='phone_number' type={'text'} className={inputClass} maxLength={'60'} onChange={(e) => props.handleChange(e)} value={buttonData.phone_number} required={true}/>
+                                   <input name='phone_number' id='phone_number' type={'text'} className={inputClass} maxLength={'60'} onChange={(e) => props.handleChange(e)} value={buttonData.phone_number} required={true} readOnly={isReadOnly}/>
                                 </div>
                                 <small className="form-text text-white/45">Max {props.quick_reply_max_length - buttonData.phone_number.length} characters </small>
                                 <InputError message={props.errors.phone_number} />
@@ -107,7 +111,7 @@ export default function CreateButton(props) {
                         <>
                             <div className="form-group col-span-6 sm:col-span-4">
                                 <div className="mt-1">
-                                    <input name='button_text' id='button_text' type={'text'} className={inputClass} maxLength={'20'} onChange={(e) => props.handleChange(e)} value={buttonData.button_text} required={true}/>
+                                    <input name='button_text' id='button_text' type={'text'} className={inputClass} maxLength={'20'} onChange={(e) => props.handleChange(e)} value={buttonData.button_text} required={true} readOnly={isReadOnly}/>
                                 </div>
                                 <small className="form-text text-white/45"> {props.quick_reply_max_length - buttonData.button_text.length} / {props.quick_reply_max_length} </small>
                                 <InputError message={props.errors.button_text} />
@@ -125,6 +129,7 @@ export default function CreateButton(props) {
                                         handleChange={props.handleChange}
                                         options={url_types}
                                         value={buttonData.url_type}
+                                        readOnly={isReadOnly}
                                     />
                                 </div>
                                 <InputError message={props.errors.url_type} />
@@ -134,7 +139,7 @@ export default function CreateButton(props) {
                                     URL
                                 </label>
                                 <div className="mt-1">
-                                   <input name='url' id='url' type={'text'} maxlength="2000" className={inputClass} onChange={(e) => props.handleChange(e)} value={buttonData.url} required={true}/>
+                                   <input name='url' id='url' type={'text'} maxlength="2000" className={inputClass} onChange={(e) => props.handleChange(e)} value={buttonData.url} required={true} readOnly={isReadOnly}/>
                                 </div>
                                 <small className="form-text text-white/45"> {props.url_max_length - buttonData.url.length} / {props.url_max_length} </small>
                                 <InputError message={props.errors.url} />
