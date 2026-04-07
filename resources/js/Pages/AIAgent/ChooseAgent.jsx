@@ -124,10 +124,11 @@ export default function ChooseAgent(props) {
             navigationMenu={props.menuBar}
             subduedBackground={true}
             hidePageTitle={true}
+            disableContentScroll={true}
         >
             <Head title="AI Agent" />
 
-            <div className="flex h-full min-h-[calc(100vh-64px)]">
+            <div className="flex h-full overflow-hidden">
                 <aside className="w-64 shrink-0 border-r border-white/5 bg-[#0b0118] px-4 py-6">
                     <h2 className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/40">
                         Your Agents

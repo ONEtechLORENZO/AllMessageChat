@@ -106,10 +106,12 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/social-profile', [UserController::class, 'socialProfile'])->name('social_profile');
         Route::get('/templates', [UserController::class, 'accountTemplates'])->name('account_templates');
         Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
-        Route::get('/ai-agent', function () { return inertia('AIAgent/ChooseAgent'); })->name('ai_agent.choose');
+        Route::get('/ai-agent', function () {
+            return inertia('AIAgent/ChooseAgent');
+        })->name('ai_agent.choose');
         Route::get('/ai-agent/agents', [AiAgentController::class, 'browse'])->name('ai_agent.browse');
-        Route::get('/ai-agent/create', function () { return inertia('AIAgent/CreateAgent'); })->name('ai_agent.create');
-        Route::post('/ai-agent/save', function (\Illuminate\Http\Request $request) { return response()->json(['success' => true]); })->name('ai_agent.save');
+        Route::get('/ai-agent/create', [AiAgentController::class, 'create'])->name('ai_agent.create');
+        Route::post('/ai-agent/save', [AiAgentController::class, 'store'])->name('ai_agent.save');
         Route::post('/ai-agent/test', [AiAgentController::class, 'test'])->name('ai_agent.test');
         Route::post('/ai-agent/chat', [AiAgentController::class, 'chat'])->name('ai_agent.chat');
         Route::post('/assistant/command', [DashboardAssistantController::class, 'handle'])->name('assistant.command');

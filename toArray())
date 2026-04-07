@@ -17,6 +17,6 @@
       Psy\Exception\ParseErrorException::fromParseError(Object(PhpParser\Error))
 
   2   vendor\psy\psysh\src\CodeCleaner.php:269
-      Psy\CodeCleaner::parse("<?php dump(\App\Models\Msg::query()-,'whatsapp')-,'msgable_id','message','template_id','msg_type','service_id','created_at'])-;
+      Psy\CodeCleaner::parse("<?php dump(App\Models\AiAgent::query()-,'user_id','key','name','assistant_id','openai_synced_at','created_at'])-;
 ")
 

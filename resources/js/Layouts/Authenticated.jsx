@@ -407,6 +407,7 @@ export default function Authenticated({
     pageTitle,
     message,
     navigationMenu,
+    disableContentScroll,
 }) {
     const { props: pageProps } = usePage();
     const [locale, setLocaleState] = useState(
@@ -1176,7 +1177,7 @@ export default function Authenticated({
                     <main
                         className={[
                             "flex-1 min-w-0 flex h-screen flex-col",
-                            current_page === "Chats"
+                            current_page === "Chats" || disableContentScroll
                                 ? "overflow-hidden"
                                 : "overflow-y-auto",
                         ].join(" ")}

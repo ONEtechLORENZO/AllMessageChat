@@ -6,14 +6,13 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 use Laravel\Cashier\Billable;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
-
     use Billable;
 
     /**
@@ -60,21 +59,27 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Company::class);
     }
+
     public function groups()
     {
         return $this->belongsToMany(Group::class, 'group_user');
     }
 
+    public function aiAgents()
+    {
+        return $this->hasMany(AiAgent::class);
+    }
+
     public function getListViewFields()
     {
         $list_view_columns = [
-            'first_name'  => ['label' => 'First Name', 'type' => 'text'],
+            'first_name' => ['label' => 'First Name', 'type' => 'text'],
             'last_name' => ['label' => 'Last Name', 'type' => 'text'],
             'email' => ['label' => 'Email', 'type' => 'text'],
-            'phone_number'=> ['label' => 'Phone number', 'type' => 'phone_number'],  
-            'role' => ['label' => 'Role' ,'type' => 'text'],
-            
+            'phone_number' => ['label' => 'Phone number', 'type' => 'phone_number'],
+            'role' => ['label' => 'Role', 'type' => 'text'],
         ];
+
         return $list_view_columns;
     }
 }
