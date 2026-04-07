@@ -297,6 +297,11 @@ const menuBar = [
         icon: CpuChipIcon,
     },
     {
+        name: "Automations",
+        href: appRoute("listAutomation"),
+        icon: NetworkIcon,
+    },
+    {
         name: "Reports",
         href: appRoute("listMessage"),
         icon: ChartBarIcon,
