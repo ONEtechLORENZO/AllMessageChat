@@ -2,6 +2,7 @@ import React from "react";
 import Authenticated from "@/Layouts/Authenticated";
 import { Head, Link } from "@inertiajs/react";
 import OrbitingTextRings from "@/Components/OrbitingTextRings";
+import oneTechLogo from "../../../../public/images/O-logootech.svg";
 
 const cards = [
     {
@@ -10,12 +11,12 @@ const cards = [
         description:
             "Use ONE TECH Agents to deploy task-specific agents for support, triage, and customer sales automation.",
         buttonLabel: "Browse Agents",
-        href: null,
+        href: "/ai-agent/agents",
         icon: (
             <img
-                src="/images/O-logootech.svg"
+                src={oneTechLogo}
                 alt="ONE TECH"
-                className="h-12 w-12"
+                className="h-12 w-12 object-contain"
             />
         ),
     },
@@ -25,7 +26,7 @@ const cards = [
         description:
             "Build your own AI agents and customize them your way with a more flexible workflow.",
         buttonLabel: "Create Agent",
-        href: route("ai_agent.create"),
+        href: "/ai-agent/create",
         icon: (
             <svg
                 viewBox="0 0 24 24"
@@ -44,19 +45,32 @@ const cards = [
 ];
 
 function AgentCard({ title, description, buttonLabel, icon, href }) {
-    const Wrapper = href ? Link : "button";
-    const wrapperProps = href ? { href } : { type: "button", onClick: () => {} };
+    const handleNavigate = () => {
+        if (href) {
+            window.location.assign(href);
+        }
+    };
 
     return (
-        <div className="group relative overflow-hidden rounded-2xl bg-[#160830] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition hover:bg-[#1e0d40]">
+        <div
+            className={`group relative overflow-hidden rounded-2xl bg-[#160830] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition hover:bg-[#1e0d40] ${href ? "cursor-pointer" : ""}`}
+            onClick={handleNavigate}
+            role={href ? "link" : undefined}
+            tabIndex={href ? 0 : undefined}
+            onKeyDown={(event) => {
+                if (href && (event.key === "Enter" || event.key === " ")) {
+                    event.preventDefault();
+                    handleNavigate();
+                }
+            }}
+        >
+            <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#7c3aed]/20 blur-2xl transition duration-500 group-hover:bg-[#9333ea]/30" />
             <div className="relative z-10 flex items-start gap-5">
-                {/* Icon */}
                 <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-[#2e1060] transition group-hover:bg-[#3d1a80]">
                     {icon}
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                     <h3 className="whitespace-pre-line text-2xl font-black uppercase leading-tight tracking-tight text-[#ff6a35] sm:text-3xl">
                         {title}
                     </h3>
@@ -66,9 +80,12 @@ function AgentCard({ title, description, buttonLabel, icon, href }) {
                     </p>
                 </div>
 
-                {/* Button */}
-                <Wrapper
-                    {...wrapperProps}
+                <a
+                    href={href ?? "#"}
+                    onClick={(event) => {
+                        event.preventDefault();
+                        handleNavigate();
+                    }}
                     className="custom-button ml-4 mt-1 shrink-0"
                 >
                     <span className="button-background" />
@@ -89,7 +106,7 @@ function AgentCard({ title, description, buttonLabel, icon, href }) {
                             </svg>
                         </span>
                     </span>
-                </Wrapper>
+                </a>
             </div>
         </div>
     );
@@ -111,8 +128,6 @@ export default function ChooseAgent(props) {
             <Head title="AI Agent" />
 
             <div className="flex h-full min-h-[calc(100vh-64px)]">
-
-                {/* ── Agents sidebar ── */}
                 <aside className="w-64 shrink-0 border-r border-white/5 bg-[#0b0118] px-4 py-6">
                     <h2 className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/40">
                         Your Agents
@@ -143,9 +158,7 @@ export default function ChooseAgent(props) {
                     </div>
                 </aside>
 
-                {/* ── Main content ── */}
                 <div className="relative flex-1 overflow-hidden px-6 py-6 sm:px-8 lg:px-10">
-                    {/* Orbiting background rings */}
                     <div className="pointer-events-none fixed -right-69 -top-99 z-[1] opacity-[0.38]">
                         <OrbitingTextRings
                             text="one tech • "
@@ -159,14 +172,21 @@ export default function ChooseAgent(props) {
                     <div className="relative z-10 mx-auto flex min-h-[calc(100vh-140px)] w-full max-w-5xl items-center py-10">
                         <div className="w-full">
                             <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-[300px_1fr] lg:gap-8">
-
-                                {/* ── Left panel ── */}
                                 <div className="relative overflow-hidden rounded-2xl bg-[#7c3aed] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
-                                    {/* dot grid bg */}
                                     <div className="pointer-events-none absolute inset-0">
-                                        <svg className="absolute inset-0 h-full w-full opacity-[0.07]" xmlns="http://www.w3.org/2000/svg">
+                                        <svg
+                                            className="absolute inset-0 h-full w-full opacity-[0.07]"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
                                             <defs>
-                                                <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                                                <pattern
+                                                    id="dots"
+                                                    x="0"
+                                                    y="0"
+                                                    width="20"
+                                                    height="20"
+                                                    patternUnits="userSpaceOnUse"
+                                                >
                                                     <circle cx="2" cy="2" r="1.5" fill="white" />
                                                 </pattern>
                                             </defs>
@@ -175,7 +195,7 @@ export default function ChooseAgent(props) {
                                     </div>
 
                                     <div className="relative z-10 flex h-full flex-col">
-                                        <div className="mt-24 mb-8">
+                                        <div className="mb-8 mt-24">
                                             <h2 className="text-5xl font-black uppercase leading-none tracking-tight text-white">
                                                 CHOOSE
                                                 <br />
@@ -188,13 +208,11 @@ export default function ChooseAgent(props) {
                                     </div>
                                 </div>
 
-                                {/* ── Right panel — stacked cards ── */}
                                 <div className="flex flex-col gap-5">
                                     {cards.map((card) => (
                                         <AgentCard key={card.key} {...card} />
                                     ))}
                                 </div>
-
                             </div>
                         </div>
                     </div>

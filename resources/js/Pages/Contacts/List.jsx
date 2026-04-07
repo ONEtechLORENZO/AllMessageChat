@@ -86,36 +86,35 @@ function List(props) {
                     </Link> 
                 ))} 
             </nav> */}
-            {tabs.map((tab) => (
-                <>
-                    {tab.name == "Contacts" && (
-                        <ListView
-                            headers={props.list_view_columns}
-                            search={props.search}
-                            filter={props.filter}
-                            filter_condition={props.filter_condition}
-                            filter_id={props.filter_id}
-                            {...props}
-                            actions={contactActions}
-                            headerActions={
-                                <button
-                                    type="button"
-                                    onClick={() => setShowImportModal(true)}
-                                    className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-white/10"
-                                >
-                                    <ArrowUpTrayIcon className="h-4 w-4" />
-                                    Import Contacts
-                                </button>
-                            }
-                            add_button_text={
-                                props.translator?.["Add Contact"] ??
-                                `${props.translator?.Add ?? "Add"} ${props.singular ?? "Contact"}`
-                            }
-                            translator={props.translator}
-                        />
-                    )}
-                </>
-            ))}
+            {tabs.map((tab) =>
+                tab.name == "Contacts" ? (
+                    <ListView
+                        key={tab.name}
+                        headers={props.list_view_columns}
+                        search={props.search}
+                        filter={props.filter}
+                        filter_condition={props.filter_condition}
+                        filter_id={props.filter_id}
+                        {...props}
+                        actions={contactActions}
+                        headerActions={
+                            <button
+                                type="button"
+                                onClick={() => setShowImportModal(true)}
+                                className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-white/10"
+                            >
+                                <ArrowUpTrayIcon className="h-4 w-4" />
+                                Import Contacts
+                            </button>
+                        }
+                        add_button_text={
+                            props.translator?.["Add Contact"] ??
+                            `${props.translator?.Add ?? "Add"} ${props.singular ?? "Contact"}`
+                        }
+                        translator={props.translator}
+                    />
+                ) : null,
+            )}
             {showImportModal ? (
                 <ImportContactsModal
                     translator={props.translator}
