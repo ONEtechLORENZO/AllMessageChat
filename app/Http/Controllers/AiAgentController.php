@@ -78,7 +78,14 @@ class AiAgentController extends Controller
 
     public function store(Request $request, AiAgentPlaygroundService $playgroundService)
     {
+        if (! $playgroundService->isConfigured()) {
+            return response()->json([
+                'message' => 'OpenAI is not configured yet. Add OPENAI_ONE_API_KEY in .env before saving agents.',
+            ], 422);
+        }
+
         $validated = $request->validate([
+            'agent_id' => ['nullable', 'integer'],
             'key' => ['required', 'string', 'regex:/^agnt_[A-Za-z0-9]{26}$/'],
             'name' => ['required', 'string', 'max:120'],
             'tone_preset_key' => [
@@ -91,7 +98,7 @@ class AiAgentController extends Controller
                 'string',
                 Rule::in($playgroundService->allowedModels()),
             ],
-            'system_instructions' => ['nullable', 'string', 'max:20000'],
+            'system_instructions' => ['required', 'string', 'max:20000'],
             'locale' => [
                 'nullable',
                 'string',
@@ -99,31 +106,86 @@ class AiAgentController extends Controller
             ],
         ]);
 
-        $existing = AiAgent::query()
+        $requestedAgent = null;
+
+        if (filled($validated['agent_id'] ?? null)) {
+            $requestedAgent = AiAgent::query()
+                ->where('id', $validated['agent_id'])
+                ->where('user_id', $request->user()->id)
+                ->first();
+
+            if (! $requestedAgent) {
+                return response()->json([
+                    'message' => 'The selected agent could not be found.',
+                ], 404);
+            }
+        }
+
+        $existingByKey = AiAgent::query()
             ->where('key', $validated['key'])
             ->first();
 
-        if ($existing && (int) $existing->user_id !== (int) $request->user()->id) {
+        if ($existingByKey && (int) $existingByKey->user_id !== (int) $request->user()->id) {
             return response()->json([
                 'message' => 'This agent key already belongs to another user.',
             ], 422);
         }
 
-        $agent = AiAgent::query()->updateOrCreate(
-            [
-                'key' => $validated['key'],
+        $duplicateByName = AiAgent::query()
+            ->where('user_id', $request->user()->id)
+            ->whereRaw('LOWER(name) = ?', [Str::lower($validated['name'])])
+            ->when(
+                $requestedAgent,
+                fn($query) => $query->where('id', '!=', $requestedAgent->id)
+            )
+            ->orderByDesc('updated_at')
+            ->first();
+
+        $agent = $requestedAgent
+            ?? $existingByKey
+            ?? $duplicateByName
+            ?? new AiAgent([
                 'user_id' => $request->user()->id,
-            ],
-            [
-                'name' => $validated['name'],
-                'tone_preset_key' => $validated['tone_preset_key'],
-                'model' => $validated['model'],
-                'system_instructions' => $validated['system_instructions'] ?? null,
-                'locale' => $this->normalizeLocale(
-                    $validated['locale'] ?? $request->user()?->language
-                ),
-            ]
-        );
+                'key' => $validated['key'],
+            ]);
+
+        $agent->fill([
+            'name' => $validated['name'],
+            'tone_preset_key' => $validated['tone_preset_key'],
+            'model' => $validated['model'],
+            'system_instructions' => $validated['system_instructions'],
+            'locale' => $this->normalizeLocale(
+                $validated['locale'] ?? $request->user()?->language
+            ),
+        ]);
+
+        if (! filled($agent->key)) {
+            $agent->key = $validated['key'];
+        }
+
+        $agent->user_id = $request->user()->id;
+        $agent->save();
+
+        $instructions = app(AiAgentInstructionResolver::class)->resolve([
+            'agent_name' => $agent->name,
+            'tone_preset_key' => $agent->tone_preset_key,
+            'system_instructions' => $agent->system_instructions,
+            'locale' => $agent->locale,
+            'fallback_locale' => $request->user()?->language,
+        ]);
+
+        try {
+            $assistant = $playgroundService->syncAssistant($agent, $instructions);
+        } catch (Throwable $exception) {
+            return response()->json([
+                'message' => 'OpenAI assistant sync failed: ' . $exception->getMessage(),
+            ], 422);
+        }
+
+        $agent->forceFill([
+            'assistant_id' => data_get($assistant, 'id'),
+            'openai_synced_at' => now(),
+        ])->save();
 
         return response()->json([
             'success' => true,
@@ -131,6 +193,7 @@ class AiAgentController extends Controller
                 'id' => $agent->id,
                 'key' => $agent->key,
                 'name' => $agent->name,
+                'assistant_id' => $agent->assistant_id,
                 'tone_preset_key' => $agent->tone_preset_key,
                 'model' => $agent->model,
                 'system_instructions' => $agent->system_instructions,
@@ -160,30 +223,12 @@ class AiAgentController extends Controller
 
     public function test(
         Request $request,
-        AiAgentInstructionResolver $instructionResolver,
         AiAgentPlaygroundService $playgroundService
     ) {
         $validated = $request->validate([
-            'messages' => ['required', 'array', 'min:1'],
-            'messages.*.role' => ['required', 'string', 'in:user,assistant'],
-            'messages.*.content' => ['required', 'string'],
-            'agent_name' => ['nullable', 'string', 'max:120'],
-            'tone_preset_key' => [
-                'required',
-                'string',
-                Rule::in(array_keys(config('ai_agents.tone_presets', []))),
-            ],
-            'model' => [
-                'required',
-                'string',
-                Rule::in($playgroundService->allowedModels()),
-            ],
-            'system_instructions' => ['nullable', 'string', 'max:20000'],
-            'locale' => [
-                'nullable',
-                'string',
-                Rule::in(config('ai_agents.supported_locales', ['en', 'it'])),
-            ],
+            'agent_id' => ['required', 'integer'],
+            'message' => ['required', 'string'],
+            'thread_id' => ['nullable', 'string', 'max:120'],
         ]);
 
         if (! $playgroundService->isConfigured()) {
@@ -193,19 +238,27 @@ class AiAgentController extends Controller
             );
         }
 
-        $instructions = $instructionResolver->resolve([
-            'agent_name' => $validated['agent_name'] ?? null,
-            'tone_preset_key' => $validated['tone_preset_key'],
-            'system_instructions' => $validated['system_instructions'] ?? null,
-            'locale' => $validated['locale'] ?? null,
-            'fallback_locale' => $request->user()?->language,
-        ]);
+        $agent = AiAgent::query()
+            ->where('id', $validated['agent_id'])
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (! $agent) {
+            return $playgroundService->streamError('The selected agent could not be found.', 404);
+        }
+
+        if (! filled($agent->assistant_id)) {
+            return $playgroundService->streamError(
+                'This agent is missing its OpenAI assistant ID. Save it again to resync.',
+                422
+            );
+        }
 
         try {
-            return $playgroundService->stream(
-                $validated['messages'],
-                $instructions,
-                $validated['model']
+            return $playgroundService->streamAssistantReply(
+                $agent,
+                $validated['message'],
+                $validated['thread_id'] ?? null
             );
         } catch (Throwable $exception) {
             return $playgroundService->streamError(

@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import Authenticated from "@/Layouts/Authenticated";
-import { Head } from "@inertiajs/react";
+import { Head, Link } from "@inertiajs/react";
 import {
     PaperAirplaneIcon,
     UserCircleIcon,
     CheckIcon,
+    ArrowLeftIcon,
 } from "@heroicons/react/24/solid";
 import axios from "axios";
 import { streamAgentResponse } from "@/lib/responseStream";
@@ -21,13 +22,6 @@ function generateAgentKey() {
     return result;
 }
 
-function messagesForApi(messages) {
-    return messages.map(({ role, content }) => ({
-        role,
-        content,
-    }));
-}
-
 export default function CreateAgent(props) {
     const locale = props.defaultLocale === "it" ? "it" : "en";
     const isItalian = locale === "it";
@@ -35,6 +29,7 @@ export default function CreateAgent(props) {
     const t = isItalian
         ? {
               pageTitle: "Crea AI Agent",
+              back: "Torna indietro",
               subtitle:
                   "Progetta i tuoi agenti AI con piena personalizzazione.",
               agentName: "Nome agente",
@@ -44,8 +39,7 @@ export default function CreateAgent(props) {
               modelLabel: "Seleziona modello",
               modelPlaceholder: "Seleziona un modello",
               systemInstructions: "System instructions",
-              systemInstructionsPlaceholder:
-                  "Addestra il tuo agente scrivendo prompt",
+              systemInstructionsPlaceholder: "Sei un assistente utile...",
               emptyChat: "Testa il tuo agente inviando un messaggio qui sotto.",
               testPlaceholder: "Scrivi qui le domande per testare il tuo AGENT",
               save: "Salva agente",
@@ -61,9 +55,12 @@ export default function CreateAgent(props) {
               validationMessage:
                   "Compila nome, tono, modello e istruzioni di sistema prima di continuare.",
               testError: "Errore: impossibile raggiungere l'agente.",
+              testDisabledUnsaved:
+                  "Salva l'agente prima di testarlo con l'assistente OpenAI.",
           }
         : {
               pageTitle: "Create AI Agent",
+              back: "Back",
               subtitle: "Design your own AI agents with full customization.",
               agentName: "Agent Name",
               agentNamePlaceholder: "Write your Agent name",
@@ -72,8 +69,7 @@ export default function CreateAgent(props) {
               modelLabel: "Select Model",
               modelPlaceholder: "Select a model",
               systemInstructions: "System instructions",
-              systemInstructionsPlaceholder:
-                  "Train your agent by writing prompts",
+              systemInstructionsPlaceholder: "You are a helpful assistant...",
               emptyChat: "Test your agent by sending a message below.",
               testPlaceholder: "Write here the questions to test your AGENT",
               save: "Save Agent",
@@ -89,23 +85,32 @@ export default function CreateAgent(props) {
               validationMessage:
                   "Fill in name, tone, model, and system instructions before continuing.",
               testError: "Error: could not reach the agent.",
+              testDisabledUnsaved:
+                  "Save the agent before testing it with the OpenAI assistant.",
           };
 
     const tonePresets = props.tonePresets ?? [];
     const models = props.models ?? [];
 
-    const initialAgentName = props.agent?.name || "";
-    const initialTonePresetKey = props.agent?.tone_preset_key || "";
-    const initialModel = props.agent?.model || "";
-    const initialSystemInstructions = props.agent?.system_instructions || "";
+    const [persistedForm, setPersistedForm] = useState({
+        agentName: props.agent?.name || "",
+        tonePresetKey: props.agent?.tone_preset_key || "",
+        model: props.agent?.model || "",
+        systemInstructions: props.agent?.system_instructions || "",
+        agentId: props.agent?.id || null,
+        assistantId: props.agent?.assistant_id || "",
+    });
 
-    const [agentName, setAgentName] = useState(initialAgentName);
-    const [tonePresetKey, setTonePresetKey] = useState(initialTonePresetKey);
-    const [model, setModel] = useState(initialModel);
-    const [systemInstructions, setSystemInstructions] = useState(
-        initialSystemInstructions,
+    const [agentName, setAgentName] = useState(persistedForm.agentName);
+    const [tonePresetKey, setTonePresetKey] = useState(
+        persistedForm.tonePresetKey,
     );
-    const [agentId, setAgentId] = useState(props.agent?.id || null);
+    const [model, setModel] = useState(persistedForm.model);
+    const [systemInstructions, setSystemInstructions] = useState(
+        persistedForm.systemInstructions,
+    );
+    const [agentId, setAgentId] = useState(persistedForm.agentId);
+    const [assistantId, setAssistantId] = useState(persistedForm.assistantId);
     const [agentKey] = useState(() => props.agent?.key || generateAgentKey());
     const [chatMessages, setChatMessages] = useState([]);
     const [testInput, setTestInput] = useState("");
@@ -113,27 +118,41 @@ export default function CreateAgent(props) {
     const [isSaving, setIsSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [saveFeedback, setSaveFeedback] = useState("");
+    const [threadId, setThreadId] = useState(null);
+    const [copiedIdentifier, setCopiedIdentifier] = useState(false);
+    const chatContainerRef = useRef(null);
     const chatEndRef = useRef(null);
+    const visibleIdentifier = assistantId || "";
 
+    const hasFormChanges =
+        agentName !== persistedForm.agentName ||
+        tonePresetKey !== persistedForm.tonePresetKey ||
+        model !== persistedForm.model ||
+        systemInstructions !== persistedForm.systemInstructions;
     const hasChanges =
-        agentName !== initialAgentName ||
-        tonePresetKey !== initialTonePresetKey ||
-        model !== initialModel ||
-        systemInstructions !== initialSystemInstructions ||
-        testInput.trim() !== "" ||
-        chatMessages.length > 0;
+        hasFormChanges || testInput.trim() !== "" || chatMessages.length > 0;
 
     const canSave =
+        agentName.trim() && tonePresetKey && model && systemInstructions.trim();
+    const canTest =
         agentName.trim() &&
         tonePresetKey &&
         model &&
-        systemInstructions.trim();
-    const canTest =
-        agentName.trim() && tonePresetKey && model && testInput.trim();
-    const canUsePlayground = Boolean(agentId);
+        systemInstructions.trim() &&
+        testInput.trim();
+    const canUsePlayground = Boolean(agentId) && !hasFormChanges;
 
     useEffect(() => {
-        chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        const container = chatContainerRef.current;
+
+        if (!container) {
+            return;
+        }
+
+        container.scrollTo({
+            top: container.scrollHeight,
+            behavior: "smooth",
+        });
     }, [chatMessages, isTesting]);
 
     async function handleSave() {
@@ -147,6 +166,7 @@ export default function CreateAgent(props) {
 
         try {
             const response = await axios.post(route("ai_agent.save"), {
+                agent_id: agentId,
                 key: agentKey,
                 name: agentName,
                 tone_preset_key: tonePresetKey,
@@ -156,18 +176,32 @@ export default function CreateAgent(props) {
             });
 
             const returnedId = response?.data?.agent?.id;
+            const returnedAssistantId = response?.data?.agent?.assistant_id || "";
             if (returnedId) {
                 setAgentId(returnedId);
             }
+            setAssistantId(returnedAssistantId);
+
+            setPersistedForm({
+                agentName,
+                tonePresetKey,
+                model,
+                systemInstructions,
+                agentId: returnedId || agentId,
+                assistantId: returnedAssistantId,
+            });
+            setThreadId(null);
+            setChatMessages([]);
 
             setSaved(true);
             setSaveFeedback(t.saveSuccess);
             setTimeout(() => setSaved(false), 3000);
         } catch (error) {
             const message =
-                error?.response?.data?.message || error?.response?.data?.errors
+                error?.response?.data?.message ||
+                (error?.response?.data?.errors
                     ? Object.values(error.response.data.errors).flat()[0]
-                    : null;
+                    : null);
 
             setSaveFeedback(message || t.saveError);
         } finally {
@@ -182,7 +216,12 @@ export default function CreateAgent(props) {
             return;
         }
 
-        if (!agentName.trim() || !tonePresetKey || !model || !systemInstructions.trim()) {
+        if (
+            !agentName.trim() ||
+            !tonePresetKey ||
+            !model ||
+            !systemInstructions.trim()
+        ) {
             setChatMessages((prev) => [
                 ...prev,
                 { role: "assistant", content: t.validationMessage },
@@ -195,8 +234,7 @@ export default function CreateAgent(props) {
                 ...prev,
                 {
                     role: "assistant",
-                    content:
-                        "Save the agent before using the test playground.",
+                    content: t.testDisabledUnsaved,
                 },
             ]);
             return;
@@ -224,12 +262,14 @@ export default function CreateAgent(props) {
             await streamAgentResponse({
                 url: route("ai_agent.test"),
                 body: {
-                    messages: messagesForApi(nextMessages),
-                    agent_name: agentName,
-                    tone_preset_key: tonePresetKey,
-                    model,
-                    system_instructions: systemInstructions,
-                    locale,
+                    agent_id: agentId,
+                    message,
+                    thread_id: threadId,
+                },
+                onMeta: (payload) => {
+                    if (payload?.thread_id) {
+                        setThreadId(payload.thread_id);
+                    }
                 },
                 onDelta: (delta) => {
                     setChatMessages((prev) => {
@@ -334,15 +374,31 @@ export default function CreateAgent(props) {
     }
 
     function handleClear() {
-        setAgentName(initialAgentName);
-        setTonePresetKey(initialTonePresetKey);
-        setModel(initialModel);
-        setSystemInstructions(initialSystemInstructions);
+        setAgentName(persistedForm.agentName);
+        setTonePresetKey(persistedForm.tonePresetKey);
+        setModel(persistedForm.model);
+        setSystemInstructions(persistedForm.systemInstructions);
         setChatMessages([]);
         setTestInput("");
         setSaveFeedback("");
         setSaved(false);
-        setAgentId(props.agent?.id || null);
+        setAgentId(persistedForm.agentId);
+        setAssistantId(persistedForm.assistantId);
+        setThreadId(null);
+    }
+
+    async function handleCopyIdentifier() {
+        if (!visibleIdentifier) {
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(visibleIdentifier);
+            setCopiedIdentifier(true);
+            window.setTimeout(() => setCopiedIdentifier(false), 2000);
+        } catch {
+            setCopiedIdentifier(false);
+        }
     }
 
     return (
@@ -354,31 +410,39 @@ export default function CreateAgent(props) {
             navigationMenu={props.menuBar}
             subduedBackground={true}
             hidePageTitle={true}
+            disableContentScroll={true}
         >
             <Head title={t.pageTitle} />
 
-            <div className="px-6 py-6 sm:px-10">
-                <div className="mb-6">
-                    <h1 className="text-3xl font-black tracking-tight">
-                        <span className="text-[#BF00FF]">AI</span>
-                        <span className="ml-2 text-xl font-extrabold uppercase tracking-widest text-white/90">
-                            AGENT
-                        </span>
-                    </h1>
-                    <p className="mt-1 text-sm text-white/50">{t.subtitle}</p>
+            <div className="-mt-1 px-6 pb-6 pt-5 sm:-mt-2 sm:px-10 sm:pt-6">
+                <div className="mb-3 flex items-start justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl font-black tracking-tight">
+                            <span className="text-[#BF00FF]">AI</span>
+                            <span className="ml-2 text-xl font-extrabold uppercase tracking-widest text-white/90">
+                                AGENT
+                            </span>
+                        </h1>
+                        <p className="mt-1 text-sm text-white/50">
+                            {t.subtitle}
+                        </p>
+                    </div>
+
+                    <Link
+                        href={route("ai_agent.choose")}
+                        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-semibold text-white/70 no-underline transition hover:bg-white/[0.06] hover:text-white hover:no-underline"
+                    >
+                        <ArrowLeftIcon className="h-4 w-4" />
+                        {t.back}
+                    </Link>
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <div className="rounded-2xl bg-[linear-gradient(160deg,#2d1060,#1a0a3a)] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
-                        <div className="mb-5">
-                            <div className="mb-2 rounded-xl bg-[#1a0a2e] px-4 py-3">
-                                <p className="text-xs font-bold uppercase tracking-widest text-white/100">
-                                    {t.agentName}
-                                </p>
-                                <p className="mt-1 break-all font-mono text-xs text-[#BF00FF]">
-                                    {agentKey}
-                                </p>
-                            </div>
+                        <div className="mb-4">
+                            <label className="mb-2 block text-sm font-bold text-white">
+                                {t.agentName}
+                            </label>
 
                             <input
                                 type="text"
@@ -387,9 +451,23 @@ export default function CreateAgent(props) {
                                 placeholder={t.agentNamePlaceholder}
                                 className="w-full rounded-xl bg-[#1a0a2e] px-4 py-3 text-sm text-white placeholder:text-white/50 focus:outline-none focus:bg-[#220d3a] transition"
                             />
+                            <div className="group mt-2 flex items-center gap-3 px-1">
+                                <p className="min-w-0 flex-1 break-all font-mono text-xs text-[#BF00FF]">
+                                    {visibleIdentifier}
+                                </p>
+                                {visibleIdentifier ? (
+                                    <button
+                                        type="button"
+                                        onClick={handleCopyIdentifier}
+                                        className="pointer-events-none inline-flex shrink-0 items-center rounded-lg border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-white/85 opacity-0 transition hover:bg-white/[0.1] group-hover:pointer-events-auto group-hover:opacity-100"
+                                    >
+                                        {copiedIdentifier ? "Copied" : "Copy"}
+                                    </button>
+                                ) : null}
+                            </div>
                         </div>
 
-                        <div className="mb-5">
+                        <div className="mb-4">
                             <label className="mb-2 block text-sm font-bold text-white">
                                 {t.toneLabel}
                             </label>
@@ -417,7 +495,7 @@ export default function CreateAgent(props) {
                             </select>
                         </div>
 
-                        <div className="mb-5">
+                        <div className="mb-4">
                             <label className="mb-2 block text-sm font-bold text-white">
                                 {t.modelLabel}
                             </label>
@@ -454,8 +532,8 @@ export default function CreateAgent(props) {
                                     setSystemInstructions(e.target.value)
                                 }
                                 placeholder={t.systemInstructionsPlaceholder}
-                                rows={7}
-                                className="w-full resize-none rounded-xl bg-[#1a0a2e] px-4 py-3 text-sm text-white placeholder:text-white/50 focus:outline-none focus:bg-[#220d3a] transition"
+                                rows={5}
+                                className="w-full resize-none overflow-y-auto rounded-xl bg-[#1a0a2e] px-4 py-3 text-sm text-white placeholder:text-white/50 focus:outline-none focus:bg-[#220d3a] transition"
                             />
                         </div>
                     </div>
@@ -494,7 +572,10 @@ export default function CreateAgent(props) {
                             </div>
                         )}
 
-                        <div className="flex-1 rounded-2xl bg-[#0a0212] p-4 min-h-[340px] max-h-[400px] overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#7c3aed]/60">
+                        <div
+                            ref={chatContainerRef}
+                            className="flex-1 rounded-2xl bg-[#0a0212] p-4 min-h-[340px] max-h-[400px] overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#7c3aed]/60"
+                        >
                             {chatMessages.length === 0 ? (
                                 <div className="flex h-full items-center justify-center text-sm text-white/20">
                                     {t.emptyChat}
@@ -544,7 +625,9 @@ export default function CreateAgent(props) {
                             <button
                                 type="button"
                                 onClick={handleTestSend}
-                                disabled={isTesting || !canTest || !canUsePlayground}
+                                disabled={
+                                    isTesting || !canTest || !canUsePlayground
+                                }
                                 className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#BF00FF] text-white transition hover:bg-[#a100df] shadow-[0_4px_16px_rgba(191,0,255,0.4)] disabled:opacity-40"
                             >
                                 <PaperAirplaneIcon className="h-4 w-4" />

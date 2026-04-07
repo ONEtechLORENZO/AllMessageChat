@@ -15,7 +15,7 @@ function parseNonStreamError(text) {
     }
 }
 
-export async function streamAgentResponse({ url, body, onDelta, onError, onDone }) {
+export async function streamAgentResponse({ url, body, onDelta, onError, onDone, onMeta }) {
     const headers = {
         "Content-Type": "application/json",
         Accept: "text/event-stream",
@@ -78,6 +78,11 @@ export async function streamAgentResponse({ url, body, onDelta, onError, onDone 
                 onDelta?.(payload.text);
             }
 
+            return;
+        }
+
+        if (payload.type === "meta") {
+            onMeta?.(payload);
             return;
         }
 

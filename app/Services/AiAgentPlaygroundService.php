@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\AiAgent;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
@@ -24,29 +26,78 @@ class AiAgentPlaygroundService
             ->all();
     }
 
-    public function stream(array $messages, string $instructions, string $model): StreamedResponse
+    public function syncAssistant(AiAgent $agent, string $instructions): array
     {
         $payload = [
-            'model' => $model,
+            'name' => $agent->name,
+            'model' => $agent->model,
             'instructions' => $instructions,
-            'input' => $this->formatMessages($messages),
             'tools' => [],
-            'tool_choice' => 'none',
-            'stream' => true,
+            'response_format' => 'auto',
+            'metadata' => [
+                'source' => 'crm-ai-agent',
+                'agent_key' => $agent->key,
+                'app_user_id' => (string) $agent->user_id,
+            ],
         ];
 
-        return response()->stream(function () use ($payload) {
+        if (filled($agent->assistant_id)) {
+            try {
+                $response = $this->assistantRequest()
+                    ->post('/assistants/' . $agent->assistant_id, $payload)
+                    ->throw()
+                    ->json();
+            } catch (RequestException $exception) {
+                if ($exception->response?->status() !== 404) {
+                    throw $exception;
+                }
+
+                $response = $this->assistantRequest()
+                    ->post('/assistants', $payload)
+                    ->throw()
+                    ->json();
+            }
+        } else {
+            $response = $this->assistantRequest()
+                ->post('/assistants', $payload)
+                ->throw()
+                ->json();
+        }
+
+        return is_array($response) ? $response : [];
+    }
+
+    public function streamAssistantReply(AiAgent $agent, string $message, ?string $threadId = null): StreamedResponse
+    {
+        return response()->stream(function () use ($agent, $message, $threadId) {
             $this->bootStreamingOutput();
 
             try {
-                $response = $this->request()
+                $activeThreadId = $threadId ?: $this->createThread();
+
+                $this->emit([
+                    'type' => 'meta',
+                    'thread_id' => $activeThreadId,
+                ]);
+
+                $this->assistantRequest()
+                    ->post("/threads/{$activeThreadId}/messages", [
+                        'role' => 'user',
+                        'content' => $message,
+                    ])
+                    ->throw();
+
+                $response = $this->assistantRequest()
                     ->withHeaders([
                         'Accept' => 'text/event-stream',
                         'Content-Type' => 'application/json',
                     ])
                     ->withOptions(['stream' => true])
-                    ->send('POST', '/responses', [
-                        'body' => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                    ->send('POST', "/threads/{$activeThreadId}/runs", [
+                        'body' => json_encode([
+                            'assistant_id' => $agent->assistant_id,
+                            'stream' => true,
+                        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                     ]);
 
                 if ($response->failed()) {
@@ -61,7 +112,7 @@ class AiAgentPlaygroundService
                 $dataLines = [];
 
                 while (! $stream->eof()) {
-                    $buffer .= $stream->read(1024);
+                    $buffer .= $stream->read(2048);
 
                     while (($position = strpos($buffer, "\n")) !== false) {
                         $line = substr($buffer, 0, $position);
@@ -69,7 +120,7 @@ class AiAgentPlaygroundService
                         $line = rtrim($line, "\r");
 
                         if ($line === '') {
-                            $this->handleOpenAiEvent($eventName, $dataLines);
+                            $this->handleAssistantEvent($eventName, $dataLines);
                             $eventName = null;
                             $dataLines = [];
                             continue;
@@ -87,7 +138,7 @@ class AiAgentPlaygroundService
                 }
 
                 if ($eventName !== null || $dataLines !== []) {
-                    $this->handleOpenAiEvent($eventName, $dataLines);
+                    $this->handleAssistantEvent($eventName, $dataLines);
                 }
             } catch (Throwable $exception) {
                 $this->emitError('OpenAI request failed: ' . $exception->getMessage());
@@ -106,10 +157,29 @@ class AiAgentPlaygroundService
         }, $status, $this->sseHeaders());
     }
 
-    private function request(): PendingRequest
+    private function createThread(): string
+    {
+        $response = $this->assistantRequest()
+            ->post('/threads', [])
+            ->throw()
+            ->json();
+
+        $threadId = (string) data_get($response, 'id', '');
+
+        if ($threadId === '') {
+            throw new \RuntimeException('OpenAI did not return a thread ID.');
+        }
+
+        return $threadId;
+    }
+
+    private function assistantRequest(): PendingRequest
     {
         $request = Http::baseUrl('https://api.openai.com/v1')
             ->withToken(config('services.openai_one.api_key'))
+            ->withHeaders([
+                'OpenAI-Beta' => 'assistants=v2',
+            ])
             ->timeout((int) config('services.openai_one.timeout', 120));
 
         $caBundle = config('services.openai_one.ca_bundle');
@@ -123,20 +193,7 @@ class AiAgentPlaygroundService
         return $request;
     }
 
-    private function formatMessages(array $messages): array
-    {
-        return collect($messages)
-            ->map(function (array $message) {
-                return [
-                    'role' => $message['role'],
-                    'content' => (string) $message['content'],
-                ];
-            })
-            ->values()
-            ->all();
-    }
-
-    private function handleOpenAiEvent(?string $eventName, array $dataLines): void
+    private function handleAssistantEvent(?string $eventName, array $dataLines): void
     {
         $rawData = trim(implode("\n", $dataLines));
 
@@ -150,27 +207,30 @@ class AiAgentPlaygroundService
             return;
         }
 
-        $type = $eventName ?: ($payload['type'] ?? null);
+        $type = $eventName ?: ($payload['event'] ?? null) ?: ($payload['type'] ?? null);
 
-        if ($type === 'response.output_text.delta') {
-            $delta = (string) ($payload['delta'] ?? '');
+        if ($type === 'thread.message.delta') {
+            foreach ((array) data_get($payload, 'delta.content', []) as $contentItem) {
+                $delta = (string) data_get($contentItem, 'text.value', '');
 
-            if ($delta !== '') {
-                $this->emit([
-                    'type' => 'delta',
-                    'text' => $delta,
-                ]);
+                if ($delta !== '') {
+                    $this->emit([
+                        'type' => 'delta',
+                        'text' => $delta,
+                    ]);
+                }
             }
 
             return;
         }
 
-        if ($type === 'response.failed' || $type === 'error') {
-            $message = data_get($payload, 'error.message')
+        if (in_array($type, ['thread.run.failed', 'error'], true)) {
+            $message = data_get($payload, 'data.last_error.message')
+                ?? data_get($payload, 'error.message')
                 ?? data_get($payload, 'message')
                 ?? 'OpenAI request failed.';
 
-            $this->emitError($message);
+            $this->emitError((string) $message);
         }
     }
 

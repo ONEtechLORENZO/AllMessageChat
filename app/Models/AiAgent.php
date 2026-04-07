@@ -13,10 +13,16 @@ class AiAgent extends Model
         'user_id',
         'key',
         'name',
+        'assistant_id',
         'tone_preset_key',
         'system_instructions',
         'model',
         'locale',
+        'openai_synced_at',
+    ];
+
+    protected $casts = [
+        'openai_synced_at' => 'datetime',
     ];
 
     public function user()
