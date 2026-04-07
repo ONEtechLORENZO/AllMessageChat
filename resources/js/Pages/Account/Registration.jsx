@@ -650,56 +650,50 @@ function Registration(props) {
                     id="account_registration"
                 >
                     <input type="hidden" value={data.id} name="id" />
-                    <div className="space-y-6">
-                        <div className="bg-[#140816]/70 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5 shadow px-4 py-5 sm:rounded-2xl sm:p-6">
-                            <div className="md:grid md:grid-cols-3 md:gap-6">
-                                <div className="md:col-span-1">
-                                    <h3 className="text-lg font-semibold leading-6 text-white">
-                                        {
-                                            props.translator[
-                                                "Account Information"
-                                            ]
-                                        }
-                                    </h3>
-                                    <p className="mt-1 text-sm text-[#878787]">
-                                        {
-                                            props.translator[
-                                                "Enter your company information. We will be using this information to create your business account"
-                                            ]
-                                        }
-                                    </p>
-                                </div>
-                                <div className="mt-5 md:mt-0 md:col-span-2">
-                                    <div className="grid grid-cols-6 gap-6">
+                    <div className="space-y-10">
+                        {/* ── Account Information ── */}
+                        <div className="md:grid md:grid-cols-3 md:gap-8">
+                            {/* Left: bare text, no box */}
+                            <div className="md:col-span-1">
+                                <h3 className="text-xl font-black uppercase tracking-wide text-white">
+                                    {props.translator["Account Information"]}
+                                </h3>
+                                <p className="mt-2 text-sm leading-6 text-white/50">
+                                    {props.translator["Enter your company information. We will be using this information to create your business account"]}
+                                </p>
+                            </div>
+
+                            {/* Right: themed card */}
+                            <div className="mt-6 md:mt-0 md:col-span-2">
+                                <div className="relative overflow-hidden rounded-2xl bg-[#7c3aed] p-7 shadow-[0_12px_40px_rgba(124,58,237,0.4)]">
+                                    {/* Decorative people icon */}
+                                    <div className="pointer-events-none absolute right-4 top-4 opacity-20">
+                                        <svg viewBox="0 0 80 60" className="h-28 w-28 text-white" fill="currentColor">
+                                            <circle cx="28" cy="18" r="13"/>
+                                            <path d="M0 56c0-15.464 12.536-28 28-28s28 12.536 28 28H0Z"/>
+                                            <circle cx="56" cy="14" r="10" opacity="0.7"/>
+                                            <path d="M38 56c0-12.15 8.059-22.5 19.5-26.5C75.5 33.5 80 44 80 56H38Z" opacity="0.7"/>
+                                        </svg>
+                                    </div>
+
+                                    <div className="relative z-10 grid grid-cols-6 gap-5">
                                         <div className="form-group col-span-6 sm:col-span-4">
-                                            <label
-                                                htmlFor="company_name"
-                                                className="block text-sm font-medium text-[#878787]"
-                                            >
+                                            <label htmlFor="company_name" className="block text-sm font-semibold text-white/90">
                                                 {props.translator["Name"]}
-                                                <span className="text-sm text-red-700 mx-1">
-                                                    {" "}
-                                                    *{" "}
-                                                </span>
+                                                <span className="text-red-300 mx-1">*</span>
                                             </label>
-                                            <div className="mt-1 flex rounded-md shadow-sm">
+                                            <div className="mt-2">
                                                 <Input
                                                     name="company_name"
                                                     value={data.company_name}
                                                     required={true}
                                                     id="company_name"
-                                                    placeholder={
-                                                        props.translator[
-                                                            "Enter your Account name"
-                                                        ]
-                                                    }
+                                                    placeholder={props.translator["Enter your Account name"]}
                                                     handleChange={handleChange}
-                                                    className="bg-[#0F0B1A] text-white border-white/10 placeholder:text-[#6c6c6c] focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
+                                                    className="!bg-white/15 !border-white/10 ring-1 ring-white/10 text-white placeholder:text-white/40 !focus:ring-white/30 backdrop-blur-sm rounded-xl"
                                                 />
                                             </div>
-                                            <InputError
-                                                message={errors.company_name}
-                                            />
+                                            <InputError message={errors.company_name} />
                                         </div>
 
                                         {props.auth.user.role == "admin" && (
@@ -720,7 +714,7 @@ function Registration(props) {
                                                         />
                                                     </div>
                                                     <InputError message={errors.service_engine} />
-                                                </div> 
+                                                </div>
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="status" className="block text-sm font-medium text-gray-700" >
                                                         Status
@@ -743,10 +737,10 @@ function Registration(props) {
                                         <div className="form-group col-span-6 sm:col-span-4">
                                             <label
                                                 htmlFor="services"
-                                                className="block text-sm font-medium text-[#878787]"
+                                                className="block text-sm font-semibold text-white/90"
                                             >
                                                 {props.translator["Service"]}
-                                                <span className="text-sm text-red-700 mx-1">
+                                                <span className="text-red-300 mx-1">
                                                     {" "}
                                                     *{" "}
                                                 </span>
@@ -773,26 +767,27 @@ function Registration(props) {
                         </div>
 
                         {data.service == "whatsapp" ? (
-                            <div className="bg-[#140816]/70 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5 shadow px-4 py-5 sm:rounded-2xl sm:p-6">
-                                <div className="md:grid md:grid-cols-3 md:gap-6">
-                                    <div className="md:col-span-1">
-                                        <h3 className="text-lg font-semibold leading-6 text-white">
-                                            {
-                                                props.translator[
-                                                    "Whatsapp Information"
-                                                ]
-                                            }
-                                        </h3>
-                                        <p className="mt-1 text-sm text-[#878787]">
-                                            {
-                                                props.translator[
-                                                    "Information will be used to create your whatsapp business account"
-                                                ]
-                                            }
-                                        </p>
-                                    </div>
-                                    <div className="mt-5 md:mt-0 md:col-span-2">
-                                        <div className="grid grid-cols-6 gap-6">
+                            <div className="md:grid md:grid-cols-3 md:gap-8">
+                                {/* Left: bare text */}
+                                <div className="md:col-span-1">
+                                    <h3 className="text-xl font-black uppercase tracking-wide text-white">
+                                        {props.translator["Whatsapp Information"]}
+                                    </h3>
+                                    <p className="mt-2 text-sm leading-6 text-white/50">
+                                        {props.translator["Information will be used to create your whatsapp business account"]}
+                                    </p>
+                                </div>
+
+                                {/* Right: themed dark card */}
+                                <div className="mt-6 md:mt-0 md:col-span-2">
+                                    <div className="relative overflow-hidden rounded-2xl bg-[#1a0a2e] p-7 shadow-[0_12px_40px_rgba(0,0,0,0.4)]">
+                                        {/* WhatsApp decorative icon */}
+                                        <div className="pointer-events-none absolute right-4 top-4 opacity-[0.07]">
+                                            <svg viewBox="0 0 24 24" className="h-36 w-36 text-white" fill="currentColor">
+                                                <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 15 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M8.53 7.33C8.37 7.33 8.1 7.39 7.87 7.64C7.65 7.89 7 8.5 7 9.71C7 10.93 7.89 12.1 8 12.27C8.14 12.44 9.76 14.94 12.25 16C12.84 16.27 13.3 16.42 13.66 16.53C14.25 16.72 14.79 16.69 15.22 16.63C15.7 16.56 16.68 16.03 16.89 15.45C17.1 14.87 17.1 14.38 17.04 14.27C16.97 14.17 16.81 14.1 16.56 13.98C16.31 13.86 15.09 13.26 14.87 13.18C14.64 13.1 14.5 13.06 14.31 13.31C14.22 13.46 13.9 13.93 13.73 14.12C13.57 14.31 13.41 14.33 13.16 14.21C12.91 14.1 12.07 13.83 11.07 12.9C10.33 12.2 9.81 11.37 9.65 11.12C9.49 10.87 9.65 10.74 9.78 10.61C9.89 10.5 10.03 10.33 10.15 10.17C10.27 10.01 10.31 9.89 10.39 9.73C10.47 9.56 10.43 9.4 10.37 9.28C10.31 9.17 9.8 7.94 9.59 7.43C9.38 6.93 9.17 7 9 6.99C8.84 6.99 8.68 6.99 8.53 7.33Z"/>
+                                            </svg>
+                                        </div>
+                                        <div className="relative z-10 grid grid-cols-6 gap-5">
                                             {props.company.service_engine ==
                                                 "Facebook" &&
                                             data.service_engine ==
@@ -801,7 +796,7 @@ function Registration(props) {
                                                     <div className="form-group col-span-6 sm:col-span-4">
                                                         <label
                                                             htmlFor="business_manager_id"
-                                                            className="block text-sm font-medium text-[#878787]"
+                                                            className="block text-sm font-semibold text-white/90"
                                                         >
                                                             Business Manager
                                                         </label>
@@ -809,7 +804,7 @@ function Registration(props) {
                                                             <select
                                                                 required={true}
                                                                 name="business_manager_id"
-                                                                className="mt-1 block w-full py-2 px-3 rounded-md shadow-sm border border-white/20 bg-[#0F0B1A] text-white focus:outline-none focus:ring-2 focus:ring-[#1C9AE1] focus:border-[#1C9AE1] sm:text-sm"
+                                                                className="mt-2 block w-full rounded-xl bg-white/8 px-4 py-2.5 text-sm text-white border border-white/10 ring-1 ring-white/10 focus:outline-none backdrop-blur-sm"
                                                                 value={
                                                                     data.business_manager_id
                                                                 }
@@ -856,7 +851,7 @@ function Registration(props) {
                                                         <div className="form-group col-span-6 sm:col-span-4">
                                                             <label
                                                                 htmlFor="fb_phone_number_id"
-                                                                className="block text-sm font-medium text-[#878787]"
+                                                                className="block text-sm font-semibold text-white/90"
                                                             >
                                                                 Whatsapp Account
                                                             </label>
@@ -867,7 +862,7 @@ function Registration(props) {
                                                                         true
                                                                     }
                                                                     name="fb_phone_number_id"
-                                                                    className="mt-1 block w-full py-2 px-3 rounded-md shadow-sm border border-white/20 bg-[#0F0B1A] text-white focus:outline-none focus:ring-2 focus:ring-[#1C9AE1] focus:border-[#1C9AE1] sm:text-sm"
+                                                                    className="mt-2 block w-full rounded-xl bg-white/8 px-4 py-2.5 text-sm text-white border border-white/10 ring-1 ring-white/10 focus:outline-none backdrop-blur-sm"
                                                                     value={
                                                                         data.fb_phone_number_id
                                                                     }
@@ -923,7 +918,7 @@ function Registration(props) {
                                                     <div className="form-group col-span-6 sm:col-span-4">
                                                         <label
                                                             htmlFor="phone_number"
-                                                            className="block text-sm font-medium text-[#878787]"
+                                                            className="block text-sm font-semibold text-white/90"
                                                         >
                                                             {
                                                                 props
@@ -932,7 +927,7 @@ function Registration(props) {
                                                                 ]
                                                             }
                                                         </label>
-                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                        <div className="mt-2">
                                                             <Input
                                                                 required={true}
                                                                 name="display_name"
@@ -944,7 +939,7 @@ function Registration(props) {
                                                                 handleChange={
                                                                     handleChange
                                                                 }
-                                                                className="bg-[#0F0B1A] text-white border-white/10 placeholder:text-[#6c6c6c] focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
+                                                                className="!bg-white/8 !border-white/10 ring-1 ring-white/10 text-white placeholder:text-white/35 backdrop-blur-sm rounded-xl"
                                                             />
                                                         </div>
                                                         <InputError
@@ -956,7 +951,7 @@ function Registration(props) {
                                                     <div className="form-group col-span-6 sm:col-span-4">
                                                         <label
                                                             htmlFor="phone_number"
-                                                            className="block text-sm font-medium text-[#878787]"
+                                                            className="block text-sm font-semibold text-white/90"
                                                         >
                                                             {
                                                                 props
@@ -965,7 +960,7 @@ function Registration(props) {
                                                                 ]
                                                             }
                                                         </label>
-                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                        <div className="mt-2">
                                                             <Input
                                                                 required={true}
                                                                 name="phone_number"
@@ -977,7 +972,7 @@ function Registration(props) {
                                                                 handleChange={
                                                                     handleChange
                                                                 }
-                                                                className="bg-[#0F0B1A] text-white border-white/10 placeholder:text-[#6c6c6c] focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
+                                                                className="!bg-white/8 !border-white/10 ring-1 ring-white/10 text-white placeholder:text-white/35 backdrop-blur-sm rounded-xl"
                                                             />
                                                         </div>
                                                         <InputError
@@ -1004,7 +999,7 @@ function Registration(props) {
                                                                 <div className="ml-3 text-sm">
                                                                     <label
                                                                         htmlFor="api_partner"
-                                                                        className="font-medium text-[#878787]"
+                                                                        className="font-semibold text-white/90"
                                                                     >
                                                                         {
                                                                             props
@@ -1026,7 +1021,7 @@ function Registration(props) {
                                                         <div className="form-group col-span-6 sm:col-span-4">
                                                             <label
                                                                 htmlFor="api_partner_name"
-                                                                className="block text-sm font-medium text-[#878787]"
+                                                                className="block text-sm font-semibold text-white/90"
                                                             >
                                                                 {
                                                                     props
@@ -1035,7 +1030,7 @@ function Registration(props) {
                                                                     ]
                                                                 }
                                                             </label>
-                                                            <div className="mt-1 flex rounded-md shadow-sm">
+                                                            <div className="mt-2">
                                                                 <Input
                                                                     required={
                                                                         true
@@ -1049,7 +1044,7 @@ function Registration(props) {
                                                                     handleChange={
                                                                         handleChange
                                                                     }
-                                                                    className="bg-[#0F0B1A] text-white border-white/10 placeholder:text-[#6c6c6c] focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
+                                                                    className="!bg-white/8 !border-white/10 ring-1 ring-white/10 text-white placeholder:text-white/35 backdrop-blur-sm rounded-xl"
                                                                 />
                                                             </div>
                                                             <InputError
@@ -1062,11 +1057,11 @@ function Registration(props) {
                                                     <div className="form-group col-span-6 sm:col-span-4">
                                                         <label
                                                             htmlFor="business_manager_id"
-                                                            className="block text-sm font-medium text-[#878787]"
+                                                            className="block text-sm font-semibold text-white/90"
                                                         >
                                                             Facebook BM ID
                                                         </label>
-                                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                                        <div className="mt-2">
                                                             <Input
                                                                 name="business_manager_id"
                                                                 value={
@@ -1077,7 +1072,7 @@ function Registration(props) {
                                                                 handleChange={
                                                                     handleChange
                                                                 }
-                                                                className="bg-[#0F0B1A] text-white border-white/10 placeholder:text-[#6c6c6c] focus:ring-[#1C9AE1] focus:border-[#1C9AE1]"
+                                                                className="!bg-white/8 !border-white/10 ring-1 ring-white/10 text-white placeholder:text-white/35 backdrop-blur-sm rounded-xl"
                                                             />
                                                         </div>
                                                         <InputError
@@ -1106,7 +1101,7 @@ function Registration(props) {
                                                 <InputError message={errors.src_name} />
                                             </div> */}
 
-                                            {/* 
+                                            {/*
                                                 <div className="form-group col-span-6 sm:col-span-4">
                                                     <label htmlFor="profile_picture" className="block text-sm font-medium text-gray-700">
                                                         Profile picture
@@ -1683,10 +1678,10 @@ function Registration(props) {
                         </div>
                     )}
 
-                    <div className="flex justify-end">
+                    <div className="flex justify-end gap-3">
                         <Link
                             href={route("social_profile")}
-                            className="bg-[#2b2b2b] py-2 px-4 border border-white/10 rounded-md shadow-sm text-sm font-medium text-white hover:bg-[#3a3a3a] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1C9AE1]"
+                            className="inline-flex items-center justify-center rounded-xl bg-[#2d1060] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3d1a80] focus:outline-none"
                         >
                             {props.translator["Cancel"]}
                         </Link>
@@ -1699,7 +1694,7 @@ function Registration(props) {
                                 id="save"
                                 title=""
                                 onClick={validateAndSubmitForm}
-                                className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1C9AE1]"
+                                className="inline-flex items-center justify-center rounded-xl bg-[#BF00FF] px-6 py-2.5 text-sm font-semibold text-white shadow-[0_8px_24px_rgba(191,0,255,0.35)] transition hover:bg-[#a100df] focus:outline-none"
                             >
                                 {props.translator["Save"]}
                             </button>

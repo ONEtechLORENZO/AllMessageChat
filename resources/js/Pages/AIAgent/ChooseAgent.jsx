@@ -1,6 +1,7 @@
 import React from "react";
 import Authenticated from "@/Layouts/Authenticated";
 import { Head, Link } from "@inertiajs/react";
+import OrbitingTextRings from "@/Components/OrbitingTextRings";
 
 const cards = [
     {
@@ -110,6 +111,17 @@ export default function ChooseAgent(props) {
             <Head title="AI Agent" />
 
             <div className="dashboard-page relative px-4 py-6 sm:px-6 lg:px-8">
+                {/* Orbiting background text rings (kept behind cards, above the purple arc) */}
+                <div className="pointer-events-none fixed -right-69 -top-99 z-[1] opacity-[0.38]">
+                    <OrbitingTextRings
+                        text="one tech • "
+                        size={980}
+                        strokeColor="#28004D"
+                        glowColor="rgba(40,0,77,0.25)"
+                        className="mix-blend-screen"
+                    />
+                </div>
+
                 <div className="relative z-10 mx-auto flex min-h-[calc(100vh-140px)] w-full max-w-6xl items-center py-10">
                     <div className="relative w-full pt-14">
                         {/* Inline loader above CHOOSE AGENT (keeps both columns aligned) */}
