@@ -262,9 +262,38 @@ class UserController extends Controller
      */
     public function dashboard(Request $request)
     {
+        $menuBar = $this->fetchMenuBar();
+
+        // Demo-only dashboard values for the current UI showcase.
+        // Keep the original live queries below for later reactivation.
+        $dashboardStats = [
+            'total_messages' => 48690,
+            'total_amount' => 4869.000,
+            'BIC' => [
+                'count' => 3422,
+            ],
+            'UIC' => [
+                'count' => 45268,
+            ],
+        ];
+
+        $service = [
+            'instagram' => ['count' => 54],
+            'whatsapp' => ['count' => 11],
+            'facebook' => ['count' => 15],
+        ];
+
+        $msgTransactionList = [
+            'list_view_columns' => [],
+            'records' => [],
+            'paginator' => [],
+            'actions' => [],
+            'filter' => [],
+        ];
+
+        /*
         $user = $request->user();
         $amountDeduction = $this->getMsgAmountDeduction($request, $user->id);
-        $menuBar = $this->fetchMenuBar();
 
         //wallet balance
         $balance = Wallet::where('user_id', $user->id)
@@ -305,15 +334,16 @@ class UserController extends Controller
         // Get Session count
         $sessions = $this->getDashboardSessionCount();
         $totalSessionLimit = $this->getDashboardSessionLimit();
+        */
 
         return Inertia::render('new_ui/DashboardNew', [
             'users' => $request->user(),
-            'message_details' => $amountDeduction,
-            'balance' => $balance,
+            'message_details' => $dashboardStats,
+            'balance' => 0,
             'services' => $service,
-            'total_session_limit' => $totalSessionLimit,
-            'current_session_count' => $sessions,
-            'per_day_count' =>  $chart_input,
+            'total_session_limit' => 250,
+            'current_session_count' => 559,
+            'per_day_count' => '',
             'msgTransactionList' => $msgTransactionList,
             'translator' => [
                 'Dashboard' => __('Dashboard'),
