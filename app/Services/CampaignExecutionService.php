@@ -15,6 +15,7 @@ use App\Services\Templates\TemplateAdapterException;
 use App\Services\Templates\TemplateRenderService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class CampaignExecutionService
 {
@@ -295,14 +296,16 @@ class CampaignExecutionService
 
     protected function resolveInstagramDestination(Contact $contact, ?Account $account = null): string
     {
-        $destination = trim((string) ($contact->instagram_username ?? ''));
+        $destination = Schema::hasColumn('contacts', 'instagram_user_id')
+            ? trim((string) ($contact->instagram_user_id ?? ''))
+            : '';
 
-        if (
-            (string) ($account?->connection_model ?? '') === 'instagram_login'
-            && $destination !== ''
-            && ! preg_match('/^\d+$/', $destination)
-        ) {
-            return '';
+        if ($destination === '') {
+            $legacyDestination = trim((string) ($contact->instagram_username ?? ''));
+
+            if ($legacyDestination !== '' && preg_match('/^\d+$/', $legacyDestination)) {
+                $destination = $legacyDestination;
+            }
         }
 
         return $destination;
@@ -406,7 +409,7 @@ class CampaignExecutionService
         if ($offset === 0) {
             $destinationField = match ($channel) {
                 'facebook'  => 'facebook_username',
-                'instagram' => 'instagram_username',
+                'instagram' => Schema::hasColumn('contacts', 'instagram_user_id') ? 'instagram_user_id' : 'instagram_username',
                 'whatsapp'  => 'phone_number',
                 'email'     => 'email',
                 default     => null,
@@ -491,7 +494,7 @@ class CampaignExecutionService
                         }
                     }
 
-                    if ($channel === 'instagram' && (string) ($account->connection_model ?? '') === 'instagram_login') {
+                    if ($channel === 'instagram') {
                         try {
                             $response = app(\App\Services\MetaIntegrationService::class)->sendInstagramMessage(
                                 $account,
@@ -541,8 +544,6 @@ class CampaignExecutionService
                                 return 0;
                             }
                         }
-                    } else {
-                        $response = $msg->sendInstagramMessage($messageBody, $destination, $account->src_name);
                     }
                 }
             }

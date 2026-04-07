@@ -17,6 +17,8 @@ class Account extends Model
         'instagram_user_access_token_encrypted' => 'encrypted',
         'instagram_token_expires_at' => 'datetime',
         'instagram_token_last_refreshed_at' => 'datetime',
+        'instagram_initial_sync_started_at' => 'datetime',
+        'instagram_initial_sync_completed_at' => 'datetime',
         'sync_last_at' => 'datetime',
         'gmail_watch_expires_at' => 'datetime',
         'connection_metadata' => 'array',

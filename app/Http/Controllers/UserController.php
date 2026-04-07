@@ -844,7 +844,6 @@ class UserController extends Controller
 
             // Instagram / Facebook-specific
             'fb_page_name' => ['label' => 'Facebook Page', 'show' => ['facebook']],
-            'meta_page_name' => ['label' => 'Facebook Page', 'show' => ['instagram']],
             'instagram_name' => ['label' => 'Instagram account', 'show' => ['instagram']],
             'instagram_username' => ['label' => 'Instagram username', 'show' => ['instagram']],
 
@@ -988,22 +987,11 @@ class UserController extends Controller
         $facebookSetup = null;
         $instagramSetup = null;
         $instaAccounts = [];
-        if ($account->service == 'instagram' || $account->service == 'facebook') {
-            if (! ($account->service === 'instagram' && $account->connection_model === 'instagram_login')) {
-                $pagesList = $metaIntegrationService->availablePagesForAccount($account, true);
-                $pages = [];
-                foreach ($pagesList as $id => $page) {
-                    $pages[$id] = isset($page['name']) ? $page['name'] : $page;
-                    if ($account->service == 'instagram' && ! empty($page['instagram'])) {
-                        $instaAccounts[$id] = [
-                            (string) $page['instagram']['id'] => trim(sprintf(
-                                '%s (%s)',
-                                (string) ($page['instagram']['name'] ?? $page['instagram']['username'] ?? 'Instagram account'),
-                                (string) ($page['instagram']['username'] ?? '')
-                            ), ' ()'),
-                        ];
-                    }
-                }
+        if ($account->service === 'facebook') {
+            $pagesList = $metaIntegrationService->availablePagesForAccount($account, true);
+            $pages = [];
+            foreach ($pagesList as $id => $page) {
+                $pages[$id] = isset($page['name']) ? $page['name'] : $page;
             }
         }
         if ($account->service === 'facebook') {
@@ -1162,18 +1150,15 @@ class UserController extends Controller
             $setup = $metaIntegrationService->buildInstagramSetupPayload($account);
             $accountData['connection_setup'] = $setup;
             $accountData['connection_model'] = $setup['connection_model'] ?? $account->connection_model;
-            $accountData['legacy_connection'] = (bool) ($setup['legacy_connection'] ?? false);
             $accountData['requires_reconnect'] = (bool) ($setup['requires_reconnect'] ?? false);
             $accountData['connection_status'] = $setup['status'];
             $accountData['connection_status_label'] = $setup['status_label'];
             $accountData['requires_action'] = ! $setup['setup_complete'];
-            $accountData['page_label'] = data_get($setup, 'selected_page.name')
-                ?: ($setup['connection_model'] === 'instagram_login' ? null : 'Not selected');
+            $accountData['page_label'] = null;
             $accountData['profile_name'] = data_get($setup, 'selected_instagram_account.name')
                 ?: data_get($setup, 'selected_instagram_account.username')
                 ?: $setup['account_name']
                 ?: $account->company_name;
-            $accountData['meta_page_name'] = data_get($setup, 'selected_page.name');
             $accountData['instagram_username'] = data_get($setup, 'selected_instagram_account.username');
             $accountData['instagram_name'] = data_get($setup, 'selected_instagram_account.name');
         }
