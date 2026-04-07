@@ -108,6 +108,7 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/ai-agent', function () { return inertia('AIAgent/ChooseAgent'); })->name('ai_agent.choose');
         Route::get('/ai-agent/create', function () { return inertia('AIAgent/CreateAgent'); })->name('ai_agent.create');
         Route::post('/ai-agent/test', function (\Illuminate\Http\Request $request) { return response()->json(['reply' => 'Agent response coming soon.']); })->name('ai_agent.test');
+        Route::post('/ai-agent/save', function (\Illuminate\Http\Request $request) { return response()->json(['success' => true]); })->name('ai_agent.save');
         Route::post('/assistant/command', [DashboardAssistantController::class, 'handle'])->name('assistant.command');
         Route::get('/user/timezone', [UserController::class, 'getUserTimeZone'])->name('get_time_zone');
         Route::post('/show_register_step', [RegisteredUserController::class, 'create'])->name('show_register_step');

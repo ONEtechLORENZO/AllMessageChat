@@ -45,6 +45,10 @@ export default function Index(props) {
 
     const [showForm, setShowForm] = useState(false);
 
+    const isInteractiveMessage = props.module === 'InteractiveMessage';
+    const recordTitle =
+        record?.name ?? record?.subject ?? props.translator?.[props.module] ?? props.module;
+
     useEffect(() => {
         fetchModuleFields();
         setRecord(props.record);
@@ -384,9 +388,66 @@ export default function Index(props) {
             <div>
                 <Head title={props.translator[props.module]} />
                 <ul className="py-4 space-y-2 sm:px-6 sm:space-y-4 lg:px-8" role="list">
-                    <li className="border border-white/10 bg-[#120b1f]/80 shadow-[0_20px_40px_rgba(0,0,0,0.35)] px-4 py-6 sm:rounded-xl sm:px-6">
-                        <div className="sm:flex sm:justify-between sm:items-baseline">
-                            <h3 className="text-base font-medium flex w-full">
+                    <li
+                        className={
+                            isInteractiveMessage
+                                ? "rounded-2xl bg-[#7c3aed] px-5 py-5 shadow-[0_20px_40px_rgba(0,0,0,0.35)] sm:px-6"
+                                : "border border-white/10 bg-[#120b1f]/80 shadow-[0_20px_40px_rgba(0,0,0,0.35)] px-4 py-6 sm:rounded-xl sm:px-6"
+                        }
+                    >
+                        {isInteractiveMessage ? (
+                            <div className="flex items-center justify-between gap-4">
+                                <div className="flex min-w-0 items-center gap-4">
+                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#2e1060]/60">
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            className="h-6 w-6 text-white"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="1.8"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            aria-hidden="true"
+                                        >
+                                            <path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
+                                        </svg>
+                                    </div>
+                                    <div className="min-w-0">
+                                        <div className="truncate text-2xl font-black tracking-tight text-white">
+                                            {recordTitle}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    {((!props.action || props.action == 'undefined') ||
+                                        props.action.delete === true) && (
+                                        <button
+                                            type="button"
+                                            onClick={() => deleteRecord()}
+                                            className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#2e1060]/40 text-red-200 hover:bg-[#2e1060]/55 hover:text-red-100 focus:outline-none focus:ring-2 focus:ring-[#BF00FF]/50"
+                                            aria-label={props.translator['Delete'] ?? 'Delete'}
+                                        >
+                                            <TrashIcon className="h-6 w-6" aria-hidden="true" />
+                                        </button>
+                                    )}
+
+                                    {((!props.action || props.action == 'undefined') ||
+                                        props.action.edit === true) && (
+                                        <button
+                                            type="button"
+                                            onClick={() => props.updateRecord(record.id)}
+                                            className="inline-flex items-center gap-2 rounded-xl bg-[#2e1060]/40 px-4 py-2 text-sm font-semibold text-white/95 hover:bg-[#2e1060]/55 focus:outline-none focus:ring-2 focus:ring-[#BF00FF]/50"
+                                        >
+                                            <PencilIcon className="h-5 w-5" aria-hidden="true" />
+                                            {props.translator['Edit'] ?? 'Edit'}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="sm:flex sm:justify-between sm:items-baseline">
+                                <h3 className="text-base font-medium flex w-full">
                                 {(props.module != 'SupportRequest') &&
                                     <>
                                         {(props.module == 'Product' && record.media_id) ?
@@ -570,8 +631,22 @@ export default function Index(props) {
                                 </div>
                             </div>
                         </div>
+                        )}
                     </li>
-                    <li className="border border-white/10 bg-[#120b1f]/80 shadow-[0_20px_40px_rgba(0,0,0,0.35)] px-4 py-6 sm:rounded-xl sm:px-6">
+                    <li
+                        className={
+                            isInteractiveMessage
+                                ? "rounded-2xl bg-[#160830]/90 shadow-[0_20px_50px_rgba(0,0,0,0.45)] p-4 sm:p-6"
+                                : "border border-white/10 bg-[#120b1f]/80 shadow-[0_20px_40px_rgba(0,0,0,0.35)] px-4 py-6 sm:rounded-xl sm:px-6"
+                        }
+                    >
+                        <div
+                            className={
+                                isInteractiveMessage
+                                    ? "min-h-[420px] rounded-2xl bg-[#0d031a] border border-[#2e1060]/40 p-5 sm:p-6"
+                                    : ""
+                            }
+                        >
                         <ul id="props.tabs" className="inline-flex w-full px-1 pt-2 border-bottom">
                             {props.tabs && Object.entries(props.tabs).map(([key, tab]) => {
                                 var activeClassName = "px-3 py-2 -mb-px font-semibold text-white rounded-t";
@@ -959,6 +1034,7 @@ export default function Index(props) {
                                     />
                                 </div>
                             }
+                        </div>
                         </div>
                     </li>
                 </ul>
