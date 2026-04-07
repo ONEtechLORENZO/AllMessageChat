@@ -19,7 +19,6 @@ class VerifyCsrfToken extends Middleware
         '/integrations/instagram/webhook',
         '/stripe-incoming',
         '/v1/send-wa-message',
-        '/fb-insta'
 
     ];
 }

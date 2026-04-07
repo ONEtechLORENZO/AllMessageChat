@@ -52,6 +52,35 @@ class MsgController extends Controller
 
     public $limit = 15;
 
+    protected function hasInstagramUserIdColumn(): bool
+    {
+        return Schema::hasColumn('contacts', 'instagram_user_id');
+    }
+
+    protected function hasInstagramConversationIdColumn(): bool
+    {
+        return Schema::hasColumn('chat_list_contacts', 'instagram_conversation_id');
+    }
+
+    protected function applyInstagramChatAccountScope($query, int $userId): void
+    {
+        $instagramAccountIds = Account::query()
+            ->where('user_id', $userId)
+            ->where('service', 'instagram')
+            ->where('status', 'Active')
+            ->pluck('id')
+            ->filter()
+            ->values();
+
+        if ($instagramAccountIds->isEmpty()) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $query->whereIn('chat_list_contacts.account_id', $instagramAccountIds->all());
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -528,6 +557,32 @@ class MsgController extends Controller
         }
 
         if (
+            $selectedCategory === 'instagram'
+            && ($request->boolean('fetchContact') || $request->filled('contact_id'))
+        ) {
+            $accounts = Account::query()
+                ->where('user_id', $user->id)
+                ->where('service', 'instagram')
+                ->where('status', 'Active')
+                ->get();
+
+            $staleCutoff = now()->subMinutes(2);
+            $metaIntegrationService = app(MetaIntegrationService::class);
+
+            foreach ($accounts as $account) {
+                $shouldReconcile = ! $account->sync_last_at
+                    || $account->sync_last_at->lte($staleCutoff)
+                    || ! empty($account->instagram_initial_sync_error);
+
+                if (! $shouldReconcile) {
+                    continue;
+                }
+
+                $metaIntegrationService->syncInstagramConversationIndexSafely($account);
+            }
+        }
+
+        if (
             $selectedCategory !== 'all'
             && !Account::where('user_id', $user->id)
                 ->where('service', $selectedCategory)
@@ -555,10 +610,26 @@ class MsgController extends Controller
         }
 
         $searchData = ($filter) ? json_decode($filter) : '';
+        $contactSelect = [
+            'chat_list_contacts.*',
+            'contacts.first_name',
+            'contacts.last_name',
+            'contacts.phone_number',
+            'contacts.instagram_username',
+            'contacts.facebook_username',
+            'contacts.email as contact_email',
+        ];
+
+        if ($this->hasInstagramUserIdColumn()) {
+            $contactSelect[] = 'contacts.instagram_user_id';
+        } else {
+            $contactSelect[] = DB::raw('NULL as instagram_user_id');
+        }
+
         $query = ChatListContact::query()
             ->where('chat_list_contacts.user_id', $user->id)
             ->join('contacts', 'contact_id', 'contacts.id')
-            ->select('chat_list_contacts.*', 'contacts.first_name', 'contacts.last_name', 'contacts.phone_number', 'contacts.instagram_username', 'contacts.facebook_username', 'contacts.email as contact_email')
+            ->select($contactSelect)
             ->addSelect([
                 'last_message_preview' => Msg::query()
                     ->selectRaw("COALESCE(NULLIF(body_text, ''), NULLIF(message, ''))")
@@ -568,6 +639,10 @@ class MsgController extends Controller
 
         if ($selectedCategory !== 'all') {
             $query->where('chat_list_contacts.channel', $selectedCategory);
+        }
+
+        if ($selectedCategory === 'instagram') {
+            $this->applyInstagramChatAccountScope($query, $user->id);
         }
 
         if ($selectedCategory === 'whatsapp') {
@@ -612,6 +687,9 @@ class MsgController extends Controller
 
         if ($search) {
             $list_view_columns = ['first_name', 'last_name', 'phone_number', 'instagram_username', 'email'];
+            if ($this->hasInstagramUserIdColumn()) {
+                $list_view_columns[] = 'instagram_user_id';
+            }
 
             $query->where(function ($query) use ($search, $list_view_columns) {
                 foreach ($list_view_columns as $field_name) {
@@ -632,6 +710,11 @@ class MsgController extends Controller
 
         if ($selectedCategory !== 'all') {
             $countQuery->where('chat_list_contacts.channel', $selectedCategory);
+        }
+
+        if ($selectedCategory === 'instagram') {
+            $countQuery->join('contacts', 'contact_id', 'contacts.id');
+            $this->applyInstagramChatAccountScope($countQuery, $user->id);
         }
 
         if ($selectedCategory === 'whatsapp') {
@@ -684,11 +767,21 @@ class MsgController extends Controller
                 $name = trim(($conversation->first_name ?: '') . ' ' . ($conversation->last_name ?: ' '));
             }
 
+            if (
+                $conversation->channel === 'instagram'
+                && $this->isInstagramPlaceholderName($conversation->first_name, $conversation->last_name)
+                && $conversation->instagram_username
+            ) {
+                $name = (string) $conversation->instagram_username;
+            }
+
             if (trim($name) === '') {
                 if ($conversation->phone_number) {
                     $name = $conversation->phone_number;
                 } elseif ($conversation->instagram_username) {
                     $name = $conversation->instagram_username;
+                } elseif ($conversation->instagram_user_id) {
+                    $name = $conversation->instagram_user_id;
                 } elseif ($conversation->facebook_username) {
                     $name = $conversation->facebook_username;
                 } elseif ($conversation->email_address ?: $conversation->contact_email) {
@@ -702,7 +795,7 @@ class MsgController extends Controller
                 'account_id' => $conversation->account_id,
                 'name' => trim($name),
                 'number' => $conversation->phone_number,
-                'insta_id' => $conversation->instagram_username,
+                'insta_id' => ($this->hasInstagramUserIdColumn() ? ($conversation->instagram_user_id ?: '') : '') ?: $conversation->instagram_username,
                 'channel' => $conversation->channel,
                 'fb_id' => $conversation->facebook_username,
                 'email' => (string) ($conversation->email_address ?: $conversation->contact_email ?: ''),
@@ -766,10 +859,10 @@ class MsgController extends Controller
     protected function collapseDuplicateChatListContacts(int $userId, string $service): void
     {
         $channels = $service === 'all'
-            ? ['whatsapp', 'facebook', 'instagram']
+            ? ['whatsapp', 'facebook']
             : [$service];
 
-        if ($channels === ['email']) {
+        if ($channels === ['email'] || $channels === ['instagram']) {
             return;
         }
 
@@ -833,6 +926,59 @@ class MsgController extends Controller
 
         $primaryConversation->account_id = $primaryConversation->account_id
             ?: $conversations->pluck('account_id')->filter()->first();
+        $primaryConversation->last_msg_id = $primaryConversation->last_msg_id
+            ?: $conversations->pluck('last_msg_id')->filter()->first();
+        $primaryConversation->unread_count = (int) $conversations->max(function ($conversation) {
+            return (int) ($conversation->unread_count ?? 0);
+        });
+        $primaryConversation->unread = $conversations->contains(function ($conversation) {
+            return (bool) $conversation->unread || (int) ($conversation->unread_count ?? 0) > 0;
+        });
+
+        if ($latestConversationAt) {
+            $primaryConversation->last_message_at = $latestConversationAt;
+        }
+
+        $primaryConversation->save();
+
+        if ($duplicateConversationIds !== []) {
+            Msg::whereIn('chat_list_contact_id', $duplicateConversationIds)
+                ->update(['chat_list_contact_id' => $primaryConversation->id]);
+
+            ChatListContact::whereIn('id', $duplicateConversationIds)->delete();
+        }
+
+        return $primaryConversation;
+    }
+
+    protected function mergeInstagramConversationDuplicates(
+        int $userId,
+        int $accountId,
+        string $conversationId
+    ): ?ChatListContact {
+        if (! $this->hasInstagramConversationIdColumn() || $conversationId === '') {
+            return null;
+        }
+
+        $conversations = ChatListContact::query()
+            ->where('user_id', $userId)
+            ->where('channel', 'instagram')
+            ->where('account_id', $accountId)
+            ->where('instagram_conversation_id', $conversationId)
+            ->orderByRaw('COALESCE(last_message_at, updated_at, created_at) desc')
+            ->orderByDesc('id')
+            ->get();
+
+        if ($conversations->count() <= 1) {
+            return $conversations->first();
+        }
+
+        $primaryConversation = $conversations->first();
+        $duplicateConversationIds = $conversations->slice(1)->pluck('id')->values()->all();
+        $latestConversationAt = $conversations->pluck('last_message_at')->filter()->sortDesc()->first();
+
+        $primaryConversation->contact_id = $primaryConversation->contact_id
+            ?: $conversations->pluck('contact_id')->filter()->first();
         $primaryConversation->last_msg_id = $primaryConversation->last_msg_id
             ?: $conversations->pluck('last_msg_id')->filter()->first();
         $primaryConversation->unread_count = (int) $conversations->max(function ($conversation) {
@@ -1582,10 +1728,23 @@ class MsgController extends Controller
     {
         if ($account->service === 'email') {
             $label = $account->company_name . ' (' . $account->email . ')';
+        } elseif ($account->service === 'instagram') {
+            $label = (string) ($account->instagram_name ?: $account->instagram_username ?: $account->company_name);
         } elseif ($account->service !== 'whatsapp') {
             $label = $account->company_name . "- {$account->fb_page_name}";
         } else {
             $label = $account->company_name;
+        }
+
+        $instagramInitialSyncStatus = 'idle';
+        if ($account->service === 'instagram') {
+            if ($account->instagram_initial_sync_completed_at) {
+                $instagramInitialSyncStatus = 'completed';
+            } elseif ($account->instagram_initial_sync_error) {
+                $instagramInitialSyncStatus = 'error';
+            } elseif ($account->instagram_initial_sync_started_at) {
+                $instagramInitialSyncStatus = 'running';
+            }
         }
 
         return [
@@ -1594,6 +1753,10 @@ class MsgController extends Controller
             'service' => $account->service,
             'service_engine' => $account->service_engine,
             'last_sync_at' => optional($account->sync_last_at)->toIso8601String(),
+            'instagram_initial_sync_status' => $instagramInitialSyncStatus,
+            'instagram_initial_sync_started_at' => optional($account->instagram_initial_sync_started_at)->toIso8601String(),
+            'instagram_initial_sync_completed_at' => optional($account->instagram_initial_sync_completed_at)->toIso8601String(),
+            'instagram_initial_sync_error' => (string) ($account->instagram_initial_sync_error ?? ''),
         ];
     }
 
@@ -2423,42 +2586,25 @@ class MsgController extends Controller
             if ($request->channel == 'instagram') {
                 $instagramStatus = (string) ($account->connection_status ?? '');
                 $instagramAccountId = (string) ($account->instagram_account_id ?? '');
-                $connectionModel = (string) ($account->connection_model ?? '');
+                if ($instagramStatus !== 'connected' || $instagramAccountId === '') {
+                    return response()->json([
+                        'status' => 'Failed',
+                        'error' => 'Instagram setup is incomplete. Reconnect Instagram to continue.',
+                    ], 422);
+                }
 
-                if ($connectionModel === 'instagram_login') {
-                    if ($instagramStatus !== 'connected' || $instagramAccountId === '') {
-                        return response()->json([
-                            'status' => 'Failed',
-                            'error' => 'Instagram setup is incomplete. Reconnect Instagram to continue.',
-                        ], 422);
-                    }
-
-                    try {
-                        $response = app(MetaIntegrationService::class)->sendInstagramMessage(
-                            $account,
-                            (string) $request->destination,
-                            $renderedTemplate ?: (string) $request->content,
-                            is_array($document ?? null) ? $document : []
-                        );
-                    } catch (\Throwable $e) {
-                        return response()->json([
-                            'status' => 'Failed',
-                            'error' => $e->getMessage(),
-                        ], 422);
-                    }
-                } else {
-                    $pageId = $account->meta_page_id ?: $account->fb_phone_number_id;
-                    $pageToken = $account->meta_page_token ?: $pageToken;
-
-                    if ($instagramStatus !== 'connected' || $instagramAccountId === '' || $pageId === '' || $pageToken === '') {
-                        return response()->json([
-                            'status' => 'Failed',
-                            'error' => 'Instagram setup is incomplete. Reconnect Instagram to continue.',
-                        ], 422);
-                    }
-
-                    $msg = new Msg();
-                    $response = $msg->sendInstaMessage($renderedTemplate ?: $request->content, $request->destination, $pageId, $pageToken, $document);
+                try {
+                    $response = app(MetaIntegrationService::class)->sendInstagramMessage(
+                        $account,
+                        (string) $request->destination,
+                        $renderedTemplate ?: (string) $request->content,
+                        is_array($document ?? null) ? $document : []
+                    );
+                } catch (\Throwable $e) {
+                    return response()->json([
+                        'status' => 'Failed',
+                        'error' => $e->getMessage(),
+                    ], 422);
                 }
             } else {
                 $msg = new Msg();
@@ -2729,12 +2875,33 @@ class MsgController extends Controller
      */
     public function processMessage($data)
     {
-        $message = Msg::where('service_id', $data['service_id'])->first();
+        $instagramContext = [
+            'instagram_user_id' => $data['instagram_user_id'] ?? null,
+            'instagram_username' => $data['instagram_username'] ?? null,
+            'instagram_conversation_id' => $data['instagram_conversation_id'] ?? null,
+            'contact_name' => $data['contact_name'] ?? null,
+            'raw_payload' => $data['raw_payload'] ?? null,
+        ];
+
+        if (($data['service'] ?? '') === 'instagram') {
+            $message = Msg::query()
+                ->where('service', 'instagram')
+                ->where('account_id', $data['account_id'] ?? null)
+                ->where('service_id', $data['service_id'] ?? '')
+                ->first();
+        } else {
+            $message = Msg::where('service_id', $data['service_id'])->first();
+        }
+
         if (!$message) {
             $message = new Msg();
         }
 
         foreach ($data as $field => $value) {
+            if (in_array($field, ['instagram_user_id', 'instagram_username', 'instagram_conversation_id', 'contact_name', 'raw_payload'], true)) {
+                continue;
+            }
+
             $message->$field = $value;
         }
 
@@ -2745,10 +2912,10 @@ class MsgController extends Controller
         }
 
         $message->save();
-        $this->syncConversationFromMessage($message);
+        $this->syncConversationFromMessage($message, $instagramContext);
     }
 
-    protected function syncConversationFromMessage(Msg $message): void
+    protected function syncConversationFromMessage(Msg $message, array $context = []): void
     {
         if (
             ! $message->account_id
@@ -2769,10 +2936,26 @@ class MsgController extends Controller
         $this->refreshSocialContactNameIfMissing($contact, $account, (string) $message->service);
 
         $conversation = null;
+        $instagramConversationId = trim((string) ($context['instagram_conversation_id'] ?? ''));
 
         if ($message->chat_list_contact_id) {
             $conversation = ChatListContact::where('id', $message->chat_list_contact_id)
                 ->where('user_id', $account->user_id)
+                ->first();
+        }
+
+        if (
+            ! $conversation
+            && $message->service === 'instagram'
+            && $instagramConversationId !== ''
+            && $this->hasInstagramConversationIdColumn()
+        ) {
+            $conversation = ChatListContact::query()
+                ->where('user_id', $account->user_id)
+                ->where('channel', 'instagram')
+                ->where('account_id', $message->account_id)
+                ->where('instagram_conversation_id', $instagramConversationId)
+                ->orderByDesc('id')
                 ->first();
         }
 
@@ -2813,6 +2996,14 @@ class MsgController extends Controller
         $conversation->last_msg_id = $message->id;
         $conversation->last_message_at = $message->received_at ?: $message->sent_at ?: $message->created_at;
 
+        if (
+            $message->service === 'instagram'
+            && $instagramConversationId !== ''
+            && $this->hasInstagramConversationIdColumn()
+        ) {
+            $conversation->instagram_conversation_id = $instagramConversationId;
+        }
+
         if ($message->msg_mode === 'incoming') {
             $conversation->unread = ! (bool) $message->is_read;
         } else {
@@ -2821,12 +3012,24 @@ class MsgController extends Controller
 
         $conversation->save();
 
-        $conversation = $this->mergeDuplicateConversationGroup(
-            $account->user_id,
-            (string) $message->service,
-            (int) $message->msgable_id,
-            (int) $message->account_id
-        ) ?: $conversation;
+        if (
+            $message->service !== 'instagram'
+            || $instagramConversationId === ''
+            || ! $this->hasInstagramConversationIdColumn()
+        ) {
+            $conversation = $this->mergeDuplicateConversationGroup(
+                $account->user_id,
+                (string) $message->service,
+                (int) $message->msgable_id,
+                (int) $message->account_id
+            ) ?: $conversation;
+        } else {
+            $conversation = $this->mergeInstagramConversationDuplicates(
+                $account->user_id,
+                (int) $message->account_id,
+                $instagramConversationId
+            ) ?: $conversation;
+        }
 
         if ((int) $message->chat_list_contact_id !== (int) $conversation->id) {
             Msg::withoutEvents(function () use ($message, $conversation) {
@@ -2856,10 +3059,7 @@ class MsgController extends Controller
             return;
         }
 
-        if (
-            $service === 'instagram'
-            && (string) ($account->connection_model ?? '') === 'instagram_login'
-        ) {
+        if ($service === 'instagram') {
             return;
         }
 
@@ -2970,14 +3170,100 @@ class MsgController extends Controller
     /**
      * Return record id using instagram ID
      */
-    public function getInfoUsingContactUniqueId($uniqueId, $type, $user_id, $name = '')
+    protected function isNumericInstagramIdentifier(?string $value): bool
+    {
+        $value = trim((string) $value);
+
+        return $value !== '' && preg_match('/^\d+$/', $value) === 1;
+    }
+
+    protected function isInstagramPlaceholderName(?string $firstName, ?string $lastName): bool
+    {
+        $firstName = trim((string) $firstName);
+        $lastName = trim((string) $lastName);
+
+        return $firstName === 'Instagram' && $lastName === 'User';
+    }
+
+    protected function resolveInstagramContact(
+        string $remoteUserId,
+        int $userId,
+        string $name = '',
+        ?string $username = null
+    ): Contact {
+        if ($this->hasInstagramUserIdColumn()) {
+            $contact = Contact::query()
+                ->where('creater_id', $userId)
+                ->where(function ($query) use ($remoteUserId) {
+                    $query->where('instagram_user_id', $remoteUserId)
+                        ->orWhere(function ($fallbackQuery) use ($remoteUserId) {
+                            $fallbackQuery->whereNull('instagram_user_id')
+                                ->where('instagram_username', $remoteUserId);
+                        });
+                })
+                ->orderByRaw('CASE WHEN instagram_user_id = ? THEN 0 ELSE 1 END', [$remoteUserId])
+                ->orderByDesc('id')
+                ->first();
+        } else {
+            $contact = Contact::query()
+                ->where('creater_id', $userId)
+                ->where('instagram_username', $remoteUserId)
+                ->orderByDesc('id')
+                ->first();
+        }
+
+        if (! $contact) {
+            $contact = new Contact();
+
+            $displayName = trim((string) ($_POST['first_name'] ?? $name));
+            $lastName = trim((string) ($_POST['last_name'] ?? ''));
+
+            if ($displayName !== '' && $lastName === '' && str_contains($displayName, ' ')) {
+                $nameParts = preg_split('/\s+/', $displayName, 2) ?: [];
+                $contact->first_name = $nameParts[0] ?? 'Instagram';
+                $contact->last_name = $nameParts[1] ?? 'User';
+            } else {
+                $contact->first_name = $displayName !== '' ? $displayName : 'Instagram';
+                $contact->last_name = $lastName !== '' ? $lastName : 'User';
+            }
+
+            $contact->creater_id = $userId;
+        }
+
+        if ($this->hasInstagramUserIdColumn()) {
+            $contact->instagram_user_id = $remoteUserId;
+        }
+
+        $username = trim((string) $username);
+        if ($username !== '') {
+            $contact->instagram_username = $username;
+            $contact->first_name = $username;
+            $contact->last_name = '';
+        }
+
+        $contact->save();
+
+        return $contact;
+    }
+
+    public function upsertInstagramContactByRemoteId(
+        string $remoteUserId,
+        int $userId,
+        string $name = '',
+        ?string $username = null
+    ): Contact {
+        return $this->resolveInstagramContact($remoteUserId, $userId, $name, $username);
+    }
+
+    public function getInfoUsingContactUniqueId($uniqueId, $type, $user_id, $name = '', ?string $username = null)
     {
         $phoneNumber = $instagramId = '';
         $field = '';
+        $hasInstagramUserIdColumn = $this->hasInstagramUserIdColumn();
         if ($type == 'whatsapp') {
             $field = 'phone_number';
         } elseif ($type == 'instagram') {
-            $field = 'instagram_username';
+            $field = $hasInstagramUserIdColumn ? 'instagram_user_id' : 'instagram_username';
         } elseif ($type == 'facebook') {
             $field = 'facebook_username';
         } elseif ($type == 'email') {
@@ -2990,7 +3276,11 @@ class MsgController extends Controller
             $uniqueId = ($type == 'whatsapp') ? '+' . $uniqueId : $uniqueId;
         }
 
-        $contact = Contact::where($field, $uniqueId)->first();
+        if ($type === 'instagram') {
+            $contact = $this->resolveInstagramContact((string) $uniqueId, (int) $user_id, (string) $name, $username);
+        } else {
+            $contact = Contact::where($field, $uniqueId)->first();
+        }
 
         if (!$contact) {
             // Create new contact if instagram id is not found
@@ -3047,7 +3337,9 @@ class MsgController extends Controller
             }
         }
 
-        $this->mergeDuplicateConversationGroup($user_id, $type, (int) $contact->id);
+        if ($type !== 'instagram') {
+            $this->mergeDuplicateConversationGroup($user_id, $type, (int) $contact->id);
+        }
 
         return $contact->id;
     }
@@ -3606,48 +3898,23 @@ class MsgController extends Controller
             return response()->json(['status' => false, 'message' => 'Invalid Instagram account.'], 400);
         }
 
-        if ((string) ($account->connection_model ?? '') === 'instagram_login') {
-            try {
-                $result = app(MetaIntegrationService::class)->sendInstagramMessage(
-                    $account,
-                    (string) $request->destination,
-                    (string) $request->content
-                );
-            } catch (\Throwable $e) {
-                return response()->json(['status' => false, 'message' => $e->getMessage()], 422);
-            }
+        try {
+            $result = app(MetaIntegrationService::class)->sendInstagramMessage(
+                $account,
+                (string) $request->destination,
+                (string) $request->content
+            );
+        } catch (\Throwable $e) {
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 422);
+        }
 
-            if (isset($result['error'])) {
-                $result['status'] = 'Failed';
-                $result['result']['msg_type'] = 'TEXT';
-                $request->channel = 'instgram';
-            } else {
-                $result['status'] = 'Sent';
-                $result['messageId'] = $result['message_id'] ?? $result['id'] ?? null;
-            }
+        if (isset($result['error'])) {
+            $result['status'] = 'Failed';
+            $result['result']['msg_type'] = 'TEXT';
+            $request->channel = 'instgram';
         } else {
-            $access_token = $account->fb_token;
-            $pageId = $account->fb_phone_number_id;
-            if (!$access_token) {
-                return response()->json(['status' => false, 'message' => 'Access token not generated.'], 400);
-            }
-            if (!$pageId) {
-                return response()->json(['status' => false, 'message' => 'This account has not connected to any page.'], 400);
-            }
-
-            $helper = new WhatsAppUsers();
-            $pageToken = $helper->getFbPageAccessToken($account);
-
-            $msg = new Msg();
-            $result = $msg->sendInstaMessage($request->content, $request->destination, $pageId, $pageToken);
-            if (isset($result['error'])) {
-                $result['status'] = 'Failed';
-                $result['result']['msg_type'] = 'TEXT';
-                $request->channel = 'instgram';
-            } else {
-                $result['status'] = 'Sent';
-                $result['messageId'] = $result['message_id'];
-            }
+            $result['status'] = 'Sent';
+            $result['messageId'] = $result['message_id'] ?? $result['id'] ?? null;
         }
 
         $this->handleMessageResult($request, $account->id, $result);
@@ -3698,10 +3965,34 @@ class MsgController extends Controller
 
         $contactServiceId = ($request->type == 'incoming') ? $request->sender : $request->recipient;
         $status = ($request->type == 'incoming') ? 'Received' : $request->status;
+        $instagramUserId = trim((string) $request->input('instagram_user_id', ''));
+        $instagramUsername = trim((string) $request->input('instagram_username', ''));
+        $contactDisplayName = trim((string) (
+            $request->input('contact_name')
+            ?: $request->input('sender_name')
+            ?: $request->input('username')
+            ?: ''
+        ));
 
         if ($request->service != 'whatsapp') {
-            $field = ($request->service == 'instagram') ?  'instagram_username' : 'facebook_username';
-            $contact = Contact::where($field, $contactServiceId)->first();
+            if ($request->service == 'instagram') {
+                if ($instagramUserId === '') {
+                    $instagramUserId = $contactServiceId;
+                }
+
+                $contact = $instagramUserId !== ''
+                    ? $this->upsertInstagramContactByRemoteId(
+                        $instagramUserId,
+                        (int) $account->user_id,
+                        $contactDisplayName,
+                        $instagramUsername !== '' ? $instagramUsername : null
+                    )
+                    : null;
+                $field = $this->hasInstagramUserIdColumn() ? 'instagram_user_id' : 'instagram_username';
+            } else {
+                $field = 'facebook_username';
+                $contact = Contact::where($field, $contactServiceId)->first();
+            }
         } else {
             $field = 'phone_number';
             $contactServiceId = '+' . $contactServiceId;
@@ -3715,19 +4006,9 @@ class MsgController extends Controller
             if ($request->service != 'whatsapp') {
                 $contact = new Contact();
 
-                if (
-                    $request->service === 'instagram'
-                    && (string) ($account->connection_model ?? '') === 'instagram_login'
-                ) {
-                    $displayName = trim((string) (
-                        $request->input('contact_name')
-                        ?: $request->input('sender_name')
-                        ?: $request->input('username')
-                        ?: ''
-                    ));
-
-                    if ($displayName !== '') {
-                        $nameParts = preg_split('/\s+/', $displayName, 2) ?: [];
+                if ($request->service === 'instagram') {
+                    if ($contactDisplayName !== '') {
+                        $nameParts = preg_split('/\s+/', $contactDisplayName, 2) ?: [];
                         $contact->first_name = $nameParts[0] ?? 'Instagram';
                         $contact->last_name = $nameParts[1] ?? 'User';
                     } else {
@@ -3755,11 +4036,24 @@ class MsgController extends Controller
             } else {
                 $contact->last_name = $request->name;
             }
-            $contact->$field = $contactServiceId;
             $contact->creater_id = $account->user_id;
-
-            $contact->save();
         }
+
+        if ($request->service === 'instagram') {
+            if ($instagramUserId === '') {
+                return response()->json(['status' => false, 'message' => 'Instagram contact identity is missing.'], 422);
+            }
+
+            if ($contactDisplayName !== '') {
+                $nameParts = preg_split('/\s+/', $contactDisplayName, 2) ?: [];
+                $contact->first_name = $contact->first_name ?: ($nameParts[0] ?? $contactDisplayName);
+                $contact->last_name = $contact->last_name ?: ($nameParts[1] ?? '');
+            }
+        } else {
+            $contact->$field = $contactServiceId;
+        }
+
+        $contact->save();
         $msgable_type = 'App\Models\Contact';
         $messagableId = $contact->id;
 
@@ -3775,6 +4069,11 @@ class MsgController extends Controller
             'file_path' => $fileUrl,
             'is_delivered' => $request->has('is_delivered') ? $request->boolean('is_delivered') : (($request->status == 'Delivered') ? true : false),
             'is_read' => $request->has('is_read') ? $request->boolean('is_read') : (($request->status == 'Read') ? true : false),
+            'instagram_user_id' => $request->service === 'instagram' ? $instagramUserId : null,
+            'instagram_username' => $request->service === 'instagram' ? $instagramUsername : null,
+            'instagram_conversation_id' => $request->service === 'instagram' ? trim((string) $request->input('instagram_conversation_id', '')) : null,
+            'contact_name' => $request->service === 'instagram' ? $contactDisplayName : null,
+            'raw_payload' => $request->input('raw_payload'),
         ];
         if ($request->type == 'incoming' && $request->service == 'whatsapp') {
             $messageData['message'] = $request->message;

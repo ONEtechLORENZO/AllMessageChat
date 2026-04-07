@@ -93,7 +93,6 @@ function Registration(props) {
     );
     const [instagramSetupLoading, setInstagramSetupLoading] = useState(false);
     const [instagramSetupError, setInstagramSetupError] = useState("");
-    const [instagramFinalizing, setInstagramFinalizing] = useState(false);
     const gmailConnected = Boolean(data.gmail_connected);
     const gmailConnectUrl = data.id
         ? route("connect_gmail", { account_id: data.id })
@@ -138,64 +137,15 @@ function Registration(props) {
     const instagramConnectUrl = data.id
         ? route("connect_instagram", { account_id: data.id })
         : route("connect_instagram");
-    const instagramConnectionModel =
-        instagramSetup?.connection_model ||
-        data.connection_model ||
-        "instagram_login";
     const instagramSetupStatus =
         instagramSetup?.status || data.connection_status || "incomplete";
     const instagramSetupMessage =
         instagramSetup?.message ||
         data.connection_error ||
         "Connect Instagram to continue.";
-    const instagramLegacyConnection = Boolean(
-        instagramSetup?.legacy_connection ||
-            data.legacy_connection ||
-            instagramConnectionModel === "legacy_page_linked",
-    );
     const instagramRequiresReconnect = Boolean(
-        instagramSetup?.requires_reconnect ??
-            data.requires_reconnect ??
-            instagramLegacyConnection,
+        instagramSetup?.requires_reconnect ?? data.requires_reconnect,
     );
-    const instagramAvailablePages = instagramSetup?.available_pages || [];
-    const instagramPageOptions = useMemo(() => {
-        const options = {};
-
-        instagramAvailablePages.forEach((page) => {
-            options[page.id] = page.name;
-        });
-
-        return options;
-    }, [instagramAvailablePages]);
-    const instagramSelectedPageId =
-        instagramSetup?.selected_page?.id || data.meta_page_id || "";
-    const instagramSelectedPageName =
-        instagramSetup?.selected_page?.name || data.meta_page_name || "";
-    const instagramLinkedAccounts = instagramSetup?.linked_instagram_accounts || [];
-    const instagramAccountOptions = useMemo(() => {
-        const options = {};
-
-        instagramLinkedAccounts.forEach((account) => {
-            const labelParts = [];
-
-            if (account.name) {
-                labelParts.push(account.name);
-            }
-
-            if (account.username) {
-                labelParts.push(
-                    account.username.startsWith("@")
-                        ? account.username
-                        : `@${account.username}`,
-                );
-            }
-
-            options[account.id] = labelParts.join(" ") || account.id;
-        });
-
-        return options;
-    }, [instagramLinkedAccounts]);
     const instagramSelectedAccountId =
         instagramSetup?.selected_instagram_account?.id ||
         data.instagram_account_id ||
@@ -208,32 +158,10 @@ function Registration(props) {
         instagramSetup?.selected_instagram_account?.username ||
         data.instagram_username ||
         "";
-    const instagramOAuthConnected = Boolean(
-        instagramSetup?.oauth_connected,
-    );
-    const instagramSetupComplete = Boolean(
-        instagramSetup?.setup_complete &&
-            (instagramSetup?.selected_instagram_account?.id ||
-                data.instagram_account_id),
-    );
-    const instagramIsLoginConnection =
-        instagramConnectionModel === "instagram_login" &&
-        !instagramLegacyConnection;
+    const instagramOAuthConnected = Boolean(instagramSetup?.oauth_connected);
     const instagramConnected =
-        instagramIsLoginConnection &&
         instagramSetupStatus === "connected" &&
         Boolean(instagramSelectedAccountId || data.instagram_account_id);
-    const instagramNeedsConnect =
-        data.service === "instagram" &&
-        (!instagramConnected ||
-            instagramSetupStatus === "incomplete" ||
-            instagramSetupStatus === "error" ||
-            instagramRequiresReconnect);
-    const instagramNeedsPage =
-        data.service === "instagram" && instagramSetupStatus === "needs_page";
-    const instagramNeedsInstagramAccount =
-        data.service === "instagram" &&
-        instagramSetupStatus === "needs_instagram";
     const facebookStatusBadgeMeta =
         facebookSetupStatus === "connected"
             ? {
@@ -318,14 +246,9 @@ function Registration(props) {
                 setInstagramSetup(setup);
                 setData((prev) => ({
                     ...prev,
-                    connection_model:
-                        setup.connection_model || prev.connection_model || "",
                     requires_reconnect: Boolean(setup.requires_reconnect),
-                    legacy_connection: Boolean(setup.legacy_connection),
                     connection_status: setup.status,
                     connection_status_label: setup.status_label,
-                    meta_page_id: setup.selected_page?.id || "",
-                    meta_page_name: setup.selected_page?.name || "",
                     instagram_account_id:
                         setup.selected_instagram_account?.id || "",
                     instagram_username:
@@ -388,99 +311,6 @@ function Registration(props) {
                     setFacebookAutoSelecting(false);
                 }
             });
-    }
-
-    function saveInstagramPageSelection(
-        pageId = data.meta_page_id || instagramSelectedPageId,
-    ) {
-        if (!data.id || !pageId) {
-            setInstagramSetupError("Select a Facebook Page to continue.");
-            return;
-        }
-
-        setInstagramSetupLoading(true);
-        setInstagramSetupError("");
-
-        axios
-            .post(route("instagram_select_page", { account: data.id }), {
-                page_id: pageId,
-            })
-            .then((response) => {
-                const setup = response.data.setup;
-                setInstagramSetup(setup);
-                setData((prev) => ({
-                    ...prev,
-                    connection_status: setup.status,
-                    connection_status_label: setup.status_label,
-                    meta_page_id: setup.selected_page?.id || "",
-                    meta_page_name: setup.selected_page?.name || "",
-                    instagram_account_id:
-                        setup.selected_instagram_account?.id || "",
-                    instagram_username:
-                        setup.selected_instagram_account?.username || "",
-                    instagram_name:
-                        setup.selected_instagram_account?.name || "",
-                }));
-            })
-            .catch((error) => {
-                setInstagramSetupError(
-                    error.response?.data?.message ||
-                        "Unable to save the selected Facebook Page for Instagram.",
-                );
-            })
-            .finally(() => setInstagramSetupLoading(false));
-    }
-
-    function finalizeInstagramConnection(
-        pageId = data.meta_page_id || instagramSelectedPageId,
-        instagramAccountId =
-            data.instagram_account_id || instagramSelectedAccountId,
-    ) {
-        if (!data.id || !pageId) {
-            setInstagramSetupError("Select a Facebook Page to continue.");
-            return;
-        }
-
-        if (!instagramAccountId) {
-            setInstagramSetupError(
-                "Select a linked Instagram account to finish setup.",
-            );
-            return;
-        }
-
-        setInstagramFinalizing(true);
-        setInstagramSetupError("");
-
-        axios
-            .post(route("instagram_finalize", { account: data.id }), {
-                page_id: pageId,
-                instagram_account_id: instagramAccountId,
-            })
-            .then((response) => {
-                const setup = response.data.setup;
-                setInstagramSetup(setup);
-                setData((prev) => ({
-                    ...prev,
-                    status: response.data.account.status,
-                    connection_status: setup.status,
-                    connection_status_label: setup.status_label,
-                    meta_page_id: setup.selected_page?.id || "",
-                    meta_page_name: setup.selected_page?.name || "",
-                    instagram_account_id:
-                        setup.selected_instagram_account?.id || "",
-                    instagram_username:
-                        setup.selected_instagram_account?.username || "",
-                    instagram_name:
-                        setup.selected_instagram_account?.name || "",
-                }));
-            })
-            .catch((error) => {
-                setInstagramSetupError(
-                    error.response?.data?.message ||
-                        "Unable to finish Instagram setup.",
-                );
-            })
-            .finally(() => setInstagramFinalizing(false));
     }
 
     useEffect(() => {
@@ -582,17 +412,6 @@ function Registration(props) {
         if (name == "fb_phone_number_id") {
             newState["fb_page_name"] =
                 facebookPageOptions[value] || props.pages[value] || "";
-        }
-        if (name == "meta_page_id") {
-            newState["meta_page_name"] = instagramPageOptions[value] || "";
-        }
-        if (name == "instagram_account_id") {
-            const selectedInstagramAccount = instagramLinkedAccounts.find(
-                (account) => account.id === value,
-            );
-            newState["instagram_username"] =
-                selectedInstagramAccount?.username || "";
-            newState["instagram_name"] = selectedInstagramAccount?.name || "";
         }
         if (
             name == "business_manager_id" &&
@@ -1477,9 +1296,8 @@ function Registration(props) {
                                         </h3>
                                         <p className="mt-1 text-sm text-[#878787]">
                                             Connect Instagram directly with
-                                            Instagram Login. Legacy Page-linked
-                                            Instagram connections must be
-                                            reconnected to upgrade.
+                                            Instagram Login to manage DMs in
+                                            one place.
                                         </p>
                                     </div>
                                     <div className="mt-5 space-y-5 md:mt-0 md:col-span-2">
@@ -1487,36 +1305,29 @@ function Registration(props) {
                                             <div className="flex flex-wrap items-start justify-between gap-4">
                                                 <div>
                                                     <div className="text-sm font-semibold text-white">
-                                                        Step 1. Connect Instagram
+                                                        Connect Instagram
                                                     </div>
                                                     <div className="mt-1 text-sm text-white/70">
-                                                        {instagramLegacyConnection
-                                                            ? "This Instagram connection uses the legacy Page-linked model."
-                                                            : instagramConnected
-                                                              ? "Instagram professional account connected."
-                                                              : instagramOAuthConnected
-                                                                ? "Instagram Login authorization completed."
-                                                                : "Connect your Instagram professional account to start."}
+                                                        {instagramConnected
+                                                            ? "Instagram professional account connected."
+                                                            : instagramOAuthConnected
+                                                              ? "Instagram Login authorization completed."
+                                                              : "Connect your Instagram professional account to start."}
                                                     </div>
                                                 </div>
                                                 <span
                                                     className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
                                                         instagramConnected
                                                             ? "bg-emerald-500/15 text-emerald-200"
-                                                            : instagramLegacyConnection
-                                                              ? "bg-amber-500/15 text-amber-200"
-                                                              : "bg-slate-500/15 text-slate-100"
+                                                            : "bg-slate-500/15 text-slate-100"
                                                     }`}
                                                 >
                                                     {instagramConnected
                                                         ? "Connected"
-                                                        : instagramLegacyConnection
-                                                          ? "Reconnect required"
-                                                          : "Not connected"}
+                                                        : "Not connected"}
                                                 </span>
                                             </div>
-                                            {(!instagramConnected ||
-                                                instagramLegacyConnection) && (
+                                            {!instagramConnected && (
                                                 <div className="mt-4">
                                                     <button
                                                         type="button"
@@ -1526,7 +1337,7 @@ function Registration(props) {
                                                         }}
                                                         className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
                                                     >
-                                                        {instagramLegacyConnection
+                                                        {instagramRequiresReconnect
                                                             ? "Reconnect Instagram"
                                                             : "Connect Instagram"}
                                                     </button>
@@ -1534,33 +1345,12 @@ function Registration(props) {
                                             )}
                                         </div>
 
-                                        {instagramLegacyConnection && (
-                                            <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 space-y-4">
-                                                <div className="flex flex-wrap items-start justify-between gap-4">
-                                                    <div>
-                                                        <div className="text-sm font-semibold text-white">
-                                                            Legacy connection
-                                                        </div>
-                                                        <div className="mt-1 text-sm text-white/70">
-                                                            This Instagram connection still uses the old Facebook Page-linked transport. Reconnect with Instagram Login to upgrade it safely.
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-                                                    {instagramSetupMessage ||
-                                                        "This Instagram connection uses the legacy Page-linked model. Reconnect to upgrade."}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {!instagramLegacyConnection &&
-                                            instagramConnected && (
+                                        {instagramConnected && (
                                                 <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 space-y-4">
                                                     <div className="flex flex-wrap items-start justify-between gap-4">
                                                         <div>
                                                             <div className="text-sm font-semibold text-white">
-                                                                Step 2. Confirm connected Instagram professional account
+                                                                Connected Instagram professional account
                                                             </div>
                                                             <div className="mt-1 text-sm text-white/70">
                                                                 Ready to manage Instagram DMs
@@ -1587,14 +1377,13 @@ function Registration(props) {
                                                 </div>
                                             )}
 
-                                        {!instagramLegacyConnection &&
-                                            instagramOAuthConnected &&
+                                        {instagramOAuthConnected &&
                                             !instagramConnected && (
                                                 <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 space-y-4">
                                                     <div className="flex flex-wrap items-start justify-between gap-4">
                                                         <div>
                                                             <div className="text-sm font-semibold text-white">
-                                                                Step 2. Complete Instagram Login authorization
+                                                                Complete Instagram Login authorization
                                                             </div>
                                                             <div className="mt-1 text-sm text-white/70">
                                                                 {instagramSetupMessage}

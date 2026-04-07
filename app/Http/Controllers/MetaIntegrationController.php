@@ -183,6 +183,12 @@ class MetaIntegrationController extends Controller
                 $existingAccount
             );
 
+            Log::info('Instagram Login connection persisted successfully.', [
+                'user_id' => $userId,
+                'account_id' => $account->id,
+                'instagram_account_id' => (string) ($account->instagram_account_id ?? ''),
+            ]);
+
             $this->clearOauthState($state);
 
             return Redirect::route('account_view', $account->id);
@@ -332,19 +338,21 @@ class MetaIntegrationController extends Controller
 
     public function receiveInstagramWebhook(Request $request, MetaIntegrationService $metaIntegrationService)
     {
+        error_log('[Instagram webhook] ' . json_encode([
+            'method' => $request->method(),
+            'path' => $request->path(),
+            'query' => $request->query(),
+            'headers' => [
+                'content_type' => $request->header('content-type'),
+                'user_agent' => $request->header('user-agent'),
+                'x_hub_signature' => $request->header('x-hub-signature'),
+                'x_hub_signature_256' => $request->header('x-hub-signature-256'),
+            ],
+            'payload' => $request->all(),
+            'raw_body' => $request->getContent(),
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+
         $metaIntegrationService->handleWebhookPayload($request);
-
-        return response()->json(['status' => 'ok'], 200);
-    }
-
-    public function verifyLegacyInstagramWebhook(Request $request, MetaIntegrationService $metaIntegrationService)
-    {
-        return $metaIntegrationService->verifyWebhookSubscription($request, true);
-    }
-
-    public function receiveLegacyInstagramWebhook(Request $request, MetaIntegrationService $metaIntegrationService)
-    {
-        $metaIntegrationService->handleWebhookPayload($request, true);
 
         return response()->json(['status' => 'ok'], 200);
     }
@@ -414,110 +422,6 @@ class MetaIntegrationController extends Controller
         );
     }
 
-    public function instagramPages(Request $request, Account $account, MetaIntegrationService $metaIntegrationService)
-    {
-        $this->authorizeOwnedAccount($request, $account);
-
-        if ($account->service !== 'instagram') {
-            abort(404);
-        }
-
-        $payload = $metaIntegrationService->listAvailablePagesForInstagram($account);
-
-        return response()->json([
-            'available_pages' => $payload['available_pages'],
-            'selected_page' => $payload['selected_page'],
-            'linked_instagram_accounts' => $payload['linked_instagram_accounts'],
-            'status' => $payload['status'],
-            'message' => $payload['message'],
-        ]);
-    }
-
-    public function selectInstagramPage(Request $request, Account $account, MetaIntegrationService $metaIntegrationService)
-    {
-        $this->authorizeOwnedAccount($request, $account);
-
-        if ($account->service !== 'instagram') {
-            abort(404);
-        }
-
-        $validated = $request->validate([
-            'page_id' => ['required', 'string'],
-        ]);
-
-        try {
-            $payload = $metaIntegrationService->saveInstagramPageSelection(
-                $account,
-                (string) $validated['page_id']
-            );
-        } catch (\Throwable $e) {
-            Log::warning('Saving Instagram page selection failed.', [
-                'account_id' => $account->id,
-                'message' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'message' => 'Unable to save the selected Facebook Page for Instagram.',
-            ], 422);
-        }
-
-        return response()->json([
-            'account' => [
-                'id' => $account->id,
-                'status' => $account->status,
-                'meta_page_id' => $account->meta_page_id,
-                'meta_page_name' => $account->meta_page_name,
-                'instagram_account_id' => $account->instagram_account_id,
-                'instagram_username' => $account->instagram_username,
-            ],
-            'setup' => $payload,
-        ]);
-    }
-
-    public function finalizeInstagram(Request $request, Account $account, MetaIntegrationService $metaIntegrationService)
-    {
-        $this->authorizeOwnedAccount($request, $account);
-
-        if ($account->service !== 'instagram') {
-            abort(404);
-        }
-
-        $validated = $request->validate([
-            'page_id' => ['required', 'string'],
-            'instagram_account_id' => ['nullable', 'string'],
-        ]);
-
-        try {
-            $payload = $metaIntegrationService->finalizeInstagramConnection(
-                $account,
-                (string) $validated['page_id'],
-                $validated['instagram_account_id'] ?? null
-            );
-        } catch (\Throwable $e) {
-            Log::warning('Finalizing Instagram connection failed.', [
-                'account_id' => $account->id,
-                'message' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'message' => 'Unable to finalize the Instagram connection.',
-            ], 422);
-        }
-
-        return response()->json([
-            'account' => [
-                'id' => $account->id,
-                'status' => $account->status,
-                'meta_page_id' => $account->meta_page_id,
-                'meta_page_name' => $account->meta_page_name,
-                'instagram_account_id' => $account->instagram_account_id,
-                'instagram_username' => $account->instagram_username,
-                'instagram_name' => $account->instagram_name,
-            ],
-            'setup' => $payload,
-        ]);
-    }
-
     private function finalizeConnection(
         MetaIntegrationService $metaIntegrationService,
         string $service,
@@ -543,7 +447,7 @@ class MetaIntegrationController extends Controller
             return Redirect::route('listCatalog', ['fbToken' => $fbToken->id]);
         }
 
-        if (! in_array($service, ['facebook', 'instagram'], true)) {
+        if ($service !== 'facebook') {
             return Redirect::route('account_registration', [
                 'error' => 'Unsupported Meta service.',
             ]);
@@ -557,18 +461,6 @@ class MetaIntegrationController extends Controller
             $tokenPayload,
             $existingAccount
         );
-
-        if ($service === 'instagram') {
-            $setup = $metaIntegrationService->buildInstagramSetupPayload($account, true);
-            if ($setup['setup_complete']) {
-                return Redirect::route('account_view', $account->id);
-            }
-
-            return Redirect::route('edit_account', [
-                'id' => $account->id,
-                'completion' => 'instagram-setup',
-            ]);
-        }
 
         $setup = $metaIntegrationService->buildFacebookSetupPayload($account);
 

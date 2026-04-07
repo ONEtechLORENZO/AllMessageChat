@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Http\Controllers\MsgController;
+use App\Jobs\InitialInstagramHistorySyncJob;
 use App\Models\Account;
+use App\Models\ChatListContact;
 use App\Models\Contact;
 use App\Models\FaceBookAppToken;
 use App\Models\Msg;
@@ -14,10 +16,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 
 class MetaIntegrationService
 {
+    private function hasInstagramUserIdColumn(): bool
+    {
+        return Schema::hasColumn('contacts', 'instagram_user_id');
+    }
+
+    private function hasInstagramConversationIdColumn(): bool
+    {
+        return Schema::hasColumn('chat_list_contacts', 'instagram_conversation_id');
+    }
+
     /**
      * OAuth and webhooks are separate protocols, so they intentionally
      * use different routes and different handlers.
@@ -254,6 +267,10 @@ class MetaIntegrationService
         array $tokenPayload = [],
         ?Account $existingAccount = null
     ): Account {
+        if ($service === 'instagram') {
+            throw new RuntimeException('Legacy Instagram Page-linked connections are no longer supported.');
+        }
+
         $pages = $this->fetchPages($accessToken);
 
         $account = $existingAccount ?: new Account();
@@ -274,11 +291,7 @@ class MetaIntegrationService
             ? 'Active'
             : 'Draft';
 
-        if ($service === 'instagram') {
-            $this->synchronizeInstagramConnection($account, $pages);
-        } else {
-            $this->applySelectedAssetData($account, $pages);
-        }
+        $this->applySelectedAssetData($account, $pages);
         $account->save();
         $this->syncHistoricalChatsIfNeeded($account);
 
@@ -342,10 +355,12 @@ class MetaIntegrationService
         $account->setup_state = 'complete';
         $account->status = 'Active';
         $account->sync_last_at = null;
+        $account->instagram_initial_sync_started_at = null;
+        $account->instagram_initial_sync_completed_at = null;
+        $account->instagram_initial_sync_error = null;
         $account->save();
 
         $this->subscribeInstagramLoginWebhook($account);
-        $this->syncHistoricalChatsIfNeeded($account, true);
 
         return $account;
     }
@@ -416,193 +431,7 @@ class MetaIntegrationService
 
     public function buildInstagramSetupPayload(Account $account, bool $refreshPagesIfMissing = false): array
     {
-        if ($this->isInstagramLoginConnection($account)) {
-            return $this->buildInstagramLoginSetupPayload($account);
-        }
-
-        if ($this->isLegacyInstagramConnection($account)) {
-            return $this->buildLegacyInstagramSetupPayload($account, $refreshPagesIfMissing);
-        }
-
-        $pages = $this->availablePagesForAccount($account, $refreshPagesIfMissing);
-        $this->synchronizeInstagramConnection($account, $pages, true);
-
-        $selectedPageId = (string) ($account->meta_page_id ?: $account->fb_phone_number_id ?: '');
-        $selectedPage = $selectedPageId !== '' ? ($pages[$selectedPageId] ?? null) : null;
-        $linkedInstagramAccounts = $this->linkedInstagramAccountsForPage($selectedPage);
-        $selectedInstagramId = (string) ($account->instagram_account_id ?: '');
-        $selectedInstagramAccount = $selectedInstagramId !== ''
-            ? collect($linkedInstagramAccounts)->firstWhere('id', $selectedInstagramId)
-            : null;
-        $profileName = (string) (
-            Arr::get($account->connection_metadata, 'meta.user.name')
-            ?: $account->company_name
-            ?: ''
-        );
-        $status = $this->instagramConnectionStatus($account, $linkedInstagramAccounts);
-
-        return [
-            'service' => 'instagram',
-            'account_id' => $account->id,
-            'provider' => 'instagram',
-            'connection_model' => 'legacy_page_linked',
-            'account_name' => $profileName,
-            'oauth_connected' => ! empty($account->fb_token),
-            'page_selected' => $selectedPageId !== '',
-            'selected_page' => $selectedPageId !== ''
-                ? array_filter([
-                    'id' => $selectedPageId,
-                    'name' => (string) ($account->meta_page_name ?: $account->fb_page_name ?: ''),
-                ], static fn ($value) => $value !== null && $value !== '')
-                : null,
-            'available_pages' => array_values(array_map(function (array $page) {
-                return [
-                    'id' => (string) ($page['id'] ?? ''),
-                    'name' => (string) ($page['name'] ?? ''),
-                    'linked_instagram_accounts' => $this->linkedInstagramAccountsForPage($page),
-                ];
-            }, $pages)),
-            'linked_instagram_accounts' => $linkedInstagramAccounts,
-            'instagram_selected' => ! empty($selectedInstagramAccount),
-            'selected_instagram_account' => $selectedInstagramAccount ?: null,
-            'setup_complete' => $status === 'connected',
-            'legacy_connection' => true,
-            'requires_reconnect' => (bool) ($account->requires_reconnect ?? false),
-            'status' => $status,
-            'status_label' => $this->instagramConnectionStatusLabel($status),
-            'message' => $this->instagramConnectionMessage($status, $linkedInstagramAccounts),
-        ];
-    }
-
-    public function listAvailablePagesForInstagram(Account $account): array
-    {
-        if ($this->isInstagramLoginConnection($account)) {
-            return $this->buildInstagramLoginSetupPayload($account);
-        }
-
-        return $this->buildInstagramSetupPayload($account, true);
-    }
-
-    public function saveInstagramPageSelection(Account $account, string $pageId): array
-    {
-        if ($this->isInstagramLoginConnection($account)) {
-            throw new RuntimeException('Instagram Login connections do not require Facebook Page selection.');
-        }
-
-        $pages = $this->availablePagesForAccount($account, true);
-
-        if (! isset($pages[$pageId])) {
-            throw new RuntimeException('The selected Facebook Page is not available for this Meta connection.');
-        }
-
-        $selectedPage = $pages[$pageId];
-        $account->meta_provider = 'instagram';
-        $account->meta_page_id = $pageId;
-        $account->meta_page_name = (string) ($selectedPage['name'] ?? '');
-        $account->meta_page_token = (string) ($selectedPage['token'] ?? '');
-        $account->fb_phone_number_id = $pageId;
-        $account->fb_page_name = $account->meta_page_name;
-        $account->page_token = $account->meta_page_token;
-        $account->instagram_account_id = null;
-        $account->instagram_username = null;
-        $account->instagram_name = null;
-        $account->fb_insta_app_id = null;
-        $account->insta_user_name = null;
-
-        $connectionMetadata = is_array($account->connection_metadata) ? $account->connection_metadata : [];
-        $connectionMetadata['instagram']['selected_page'] = [
-            'id' => $pageId,
-            'name' => $account->meta_page_name,
-            'selected_at' => now()->toIso8601String(),
-        ];
-        $account->connection_metadata = $connectionMetadata;
-
-        $linkedAccounts = $this->linkedInstagramAccountsForPage($selectedPage);
-        if (count($linkedAccounts) === 1) {
-            $selectedInstagram = $linkedAccounts[0];
-            $this->applyInstagramAccountSelection($account, $selectedInstagram);
-            $this->setInstagramConnectionState($account, 'connected');
-        } else {
-            $this->setInstagramConnectionState($account, 'needs_instagram');
-        }
-
-        $this->storeInstagramMetaData($account, $pages);
-        $account->save();
-        $this->subscribeSelectedFacebookPage($account);
-        $this->syncHistoricalChatsIfNeeded($account);
-
-        return $this->buildInstagramSetupPayload($account);
-    }
-
-    public function finalizeInstagramConnection(Account $account, string $pageId, ?string $instagramAccountId = null): array
-    {
-        if ($this->isInstagramLoginConnection($account)) {
-            throw new RuntimeException('Instagram Login connections are completed during Instagram authorization.');
-        }
-
-        $pages = $this->availablePagesForAccount($account, true);
-
-        if (! isset($pages[$pageId])) {
-            throw new RuntimeException('The selected Facebook Page is not available for this Meta connection.');
-        }
-
-        $selectedPage = $pages[$pageId];
-        $linkedAccounts = $this->linkedInstagramAccountsForPage($selectedPage);
-
-        if ($linkedAccounts === []) {
-            $account->meta_provider = 'instagram';
-            $account->meta_page_id = $pageId;
-            $account->meta_page_name = (string) ($selectedPage['name'] ?? '');
-            $account->meta_page_token = (string) ($selectedPage['token'] ?? '');
-            $account->fb_phone_number_id = $pageId;
-            $account->fb_page_name = $account->meta_page_name;
-            $account->page_token = $account->meta_page_token;
-            $account->instagram_account_id = null;
-            $account->instagram_username = null;
-            $account->instagram_name = null;
-            $account->fb_insta_app_id = null;
-            $account->insta_user_name = null;
-            $this->setInstagramConnectionState($account, 'needs_instagram');
-            $this->storeInstagramMetaData($account, $pages);
-            $account->save();
-
-            return $this->buildInstagramSetupPayload($account);
-        }
-
-        if ($instagramAccountId === null && count($linkedAccounts) === 1) {
-            $instagramAccountId = (string) ($linkedAccounts[0]['id'] ?? '');
-        }
-
-        $selectedInstagram = collect($linkedAccounts)->firstWhere('id', (string) $instagramAccountId);
-        if (! $selectedInstagram) {
-            throw new RuntimeException('The selected Instagram account is not available for this Facebook Page.');
-        }
-
-        $account->meta_provider = 'instagram';
-        $account->meta_page_id = $pageId;
-        $account->meta_page_name = (string) ($selectedPage['name'] ?? '');
-        $account->meta_page_token = (string) ($selectedPage['token'] ?? '');
-        $account->fb_phone_number_id = $pageId;
-        $account->fb_page_name = $account->meta_page_name;
-        $account->page_token = $account->meta_page_token;
-        $this->applyInstagramAccountSelection($account, $selectedInstagram);
-        $this->setInstagramConnectionState($account, 'connected');
-
-        $connectionMetadata = is_array($account->connection_metadata) ? $account->connection_metadata : [];
-        $connectionMetadata['instagram']['selected_page'] = [
-            'id' => $pageId,
-            'name' => $account->meta_page_name,
-            'selected_at' => now()->toIso8601String(),
-        ];
-        $connectionMetadata['instagram']['selected_instagram_account'] = $selectedInstagram;
-        $account->connection_metadata = $connectionMetadata;
-
-        $this->storeInstagramMetaData($account, $pages);
-        $account->save();
-        $this->subscribeSelectedFacebookPage($account);
-        $this->syncHistoricalChatsIfNeeded($account);
-
-        return $this->buildInstagramSetupPayload($account);
+        return $this->buildInstagramLoginSetupPayload($account);
     }
 
     public function getInstagramConnectionStatus(Account $account): array
@@ -612,7 +441,7 @@ class MetaIntegrationService
 
     public function availablePagesForAccount(Account $account, bool $refreshPagesIfMissing = false): array
     {
-        if ($account->service === 'instagram' && $this->isInstagramLoginConnection($account)) {
+        if ($account->service === 'instagram') {
             return [];
         }
 
@@ -645,11 +474,7 @@ class MetaIntegrationService
             $pages,
             Arr::get($account->connection_metadata, 'meta.token', [])
         );
-        if ($account->service === 'instagram') {
-            $this->synchronizeInstagramConnection($account, $pages);
-        } else {
-            $this->applySelectedAssetData($account, $pages);
-        }
+        $this->applySelectedAssetData($account, $pages);
         $account->save();
 
         return $pages;
@@ -904,22 +729,6 @@ class MetaIntegrationService
         return false;
     }
 
-    private function isLegacyInstagramConnection(Account $account): bool
-    {
-        if ($account->service !== 'instagram') {
-            return false;
-        }
-
-        if ((string) ($account->connection_model ?? '') === 'legacy_page_linked') {
-            return true;
-        }
-
-        return ! empty($account->meta_page_id)
-            || ! empty($account->meta_page_token)
-            || ! empty($account->fb_token)
-            || ! empty($account->fb_meta_data);
-    }
-
     private function applySelectedAssetData(Account $account, array $pages): void
     {
         $selectedPageId = (string) ($account->fb_phone_number_id ?? '');
@@ -930,72 +739,6 @@ class MetaIntegrationService
         $selectedPage = $pages[$selectedPageId];
         $account->page_token = (string) ($selectedPage['token'] ?? $account->page_token);
         $account->fb_page_name = (string) ($selectedPage['name'] ?? $account->fb_page_name);
-
-        if ($account->service === 'instagram' && ! empty($selectedPage['instagram'])) {
-            $account->insta_user_name = (string) ($selectedPage['instagram']['username'] ?? $account->insta_user_name);
-        }
-    }
-
-    private function synchronizeInstagramConnection(Account $account, array $pages, bool $save = false): void
-    {
-        if ($account->service !== 'instagram') {
-            return;
-        }
-
-        $account->meta_provider = 'instagram';
-
-        $selectedPageId = (string) ($account->meta_page_id ?: $account->fb_phone_number_id ?: '');
-        $selectedPage = $selectedPageId !== '' ? ($pages[$selectedPageId] ?? null) : null;
-        $linkedAccounts = $this->linkedInstagramAccountsForPage($selectedPage);
-        $selectedInstagramId = (string) ($account->instagram_account_id ?: $account->fb_insta_app_id ?: '');
-
-        if ($selectedPage) {
-            $account->meta_page_id = $selectedPageId;
-            $account->meta_page_name = (string) ($selectedPage['name'] ?? $account->meta_page_name ?? $account->fb_page_name);
-            $account->meta_page_token = (string) ($selectedPage['token'] ?? $account->meta_page_token ?? $account->page_token);
-            $account->fb_phone_number_id = $selectedPageId;
-            $account->fb_page_name = $account->meta_page_name;
-            $account->page_token = $account->meta_page_token;
-        } else {
-            $account->meta_page_id = $selectedPageId !== '' ? $selectedPageId : null;
-            $account->meta_page_name = $account->meta_page_name ?: $account->fb_page_name;
-            $account->meta_page_token = $account->meta_page_token ?: $account->page_token;
-        }
-
-        if ($linkedAccounts !== [] && ($selectedInstagramId === '' || ! collect($linkedAccounts)->contains('id', $selectedInstagramId))) {
-            if (count($linkedAccounts) === 1) {
-                $selectedInstagramId = (string) ($linkedAccounts[0]['id'] ?? '');
-            }
-        }
-
-        $selectedInstagram = $selectedInstagramId !== ''
-            ? collect($linkedAccounts)->firstWhere('id', $selectedInstagramId)
-            : null;
-
-        if ($selectedInstagram) {
-            $this->applyInstagramAccountSelection($account, $selectedInstagram);
-            $this->setInstagramConnectionState($account, 'connected');
-        } else {
-            $account->instagram_account_id = null;
-            $account->instagram_username = null;
-            $account->instagram_name = null;
-            $account->fb_insta_app_id = null;
-            $account->insta_user_name = null;
-
-            if (empty($account->fb_token) && empty($account->fb_meta_data) && empty(Arr::get($account->connection_metadata, 'meta'))) {
-                $this->setInstagramConnectionState($account, 'incomplete');
-            } elseif ($selectedPageId === '') {
-                $this->setInstagramConnectionState($account, 'needs_page');
-            } else {
-                $this->setInstagramConnectionState($account, 'needs_instagram');
-            }
-        }
-
-        $this->storeInstagramMetaData($account, $pages);
-
-        if ($save) {
-            $account->save();
-        }
     }
 
     private function buildInstagramLoginSetupPayload(Account $account): array
@@ -1020,7 +763,6 @@ class MetaIntegrationService
             'page_selected' => false,
             'selected_page' => null,
             'available_pages' => [],
-            'linked_instagram_accounts' => [],
             'instagram_selected' => ! empty($account->instagram_account_id),
             'selected_instagram_account' => ! empty($account->instagram_account_id)
                 ? [
@@ -1030,73 +772,10 @@ class MetaIntegrationService
                 ]
                 : null,
             'setup_complete' => $status === 'connected',
-            'legacy_connection' => false,
             'requires_reconnect' => (bool) ($account->requires_reconnect ?? false),
             'status' => $status,
             'status_label' => $this->instagramLoginConnectionStatusLabel($status),
             'message' => $this->instagramLoginConnectionMessage($account, $status),
-        ];
-    }
-
-    private function buildLegacyInstagramSetupPayload(Account $account, bool $refreshPagesIfMissing = false): array
-    {
-        $payload = $this->buildInstagramSetupPayloadLegacyCore($account, $refreshPagesIfMissing);
-        $payload['legacy_connection'] = true;
-        $payload['requires_reconnect'] = true;
-        $payload['connection_model'] = 'legacy_page_linked';
-        $payload['message'] = 'This Instagram connection uses the legacy Page-linked model. Reconnect to upgrade.';
-
-        return $payload;
-    }
-
-    private function buildInstagramSetupPayloadLegacyCore(Account $account, bool $refreshPagesIfMissing = false): array
-    {
-        $pages = $this->availablePagesForAccount($account, $refreshPagesIfMissing);
-        $this->synchronizeInstagramConnection($account, $pages, true);
-
-        $selectedPageId = (string) ($account->meta_page_id ?: $account->fb_phone_number_id ?: '');
-        $selectedPage = $selectedPageId !== '' ? ($pages[$selectedPageId] ?? null) : null;
-        $linkedInstagramAccounts = $this->linkedInstagramAccountsForPage($selectedPage);
-        $selectedInstagramId = (string) ($account->instagram_account_id ?: '');
-        $selectedInstagramAccount = $selectedInstagramId !== ''
-            ? collect($linkedInstagramAccounts)->firstWhere('id', $selectedInstagramId)
-            : null;
-        $profileName = (string) (
-            Arr::get($account->connection_metadata, 'meta.user.name')
-            ?: $account->company_name
-            ?: ''
-        );
-
-        $status = $this->instagramConnectionStatus($account, $linkedInstagramAccounts);
-
-        return [
-            'service' => 'instagram',
-            'account_id' => $account->id,
-            'provider' => 'instagram',
-            'connection_model' => 'legacy_page_linked',
-            'account_name' => $profileName,
-            'oauth_connected' => ! empty($account->fb_token),
-            'page_selected' => $selectedPageId !== '',
-            'selected_page' => $selectedPageId !== ''
-                ? array_filter([
-                    'id' => $selectedPageId,
-                    'name' => (string) ($account->meta_page_name ?: $account->fb_page_name ?: ''),
-                ], static fn ($value) => $value !== null && $value !== '')
-                : null,
-            'available_pages' => array_values(array_map(function (array $page) {
-                return [
-                    'id' => (string) ($page['id'] ?? ''),
-                    'name' => (string) ($page['name'] ?? ''),
-                    'linked_instagram_accounts' => $this->linkedInstagramAccountsForPage($page),
-                ];
-            }, $pages)),
-            'linked_instagram_accounts' => $linkedInstagramAccounts,
-            'instagram_selected' => ! empty($selectedInstagramAccount),
-            'selected_instagram_account' => $selectedInstagramAccount ?: null,
-            'setup_complete' => $status === 'connected',
-            'status' => $status,
-            'status_label' => $this->instagramConnectionStatusLabel($status),
-            'message' => $this->instagramConnectionMessage($status, $linkedInstagramAccounts),
         ];
     }
 
@@ -1137,86 +816,14 @@ class MetaIntegrationService
     private function instagramLoginConnectionMessage(Account $account, string $status): string
     {
         if ((bool) ($account->requires_reconnect ?? false)) {
-            return 'This Instagram connection uses the legacy Page-linked model. Reconnect to upgrade.';
+            return $account->connection_error ?: 'Reconnect Instagram to continue.';
         }
 
         return match ($status) {
             'connected' => 'Instagram connected',
-            'error' => $account->connection_error ?: 'Reconnect Instagram to finish upgrading this channel.',
+            'error' => $account->connection_error ?: 'Reconnect Instagram to continue.',
             default => 'Complete Instagram Login authorization.',
         };
-    }
-
-    private function linkedInstagramAccountsForPage(?array $page): array
-    {
-        if (! $page) {
-            return [];
-        }
-
-        $linkedAccounts = [];
-
-        if (! empty($page['instagram']) && is_array($page['instagram'])) {
-            $linkedAccounts[] = array_filter([
-                'id' => (string) ($page['instagram']['id'] ?? ''),
-                'username' => (string) ($page['instagram']['username'] ?? ''),
-                'name' => (string) ($page['instagram']['name'] ?? ''),
-            ], static fn ($value) => $value !== null && $value !== '');
-        }
-
-        return array_values(array_filter($linkedAccounts, static function (array $account) {
-            return ! empty($account['id']);
-        }));
-    }
-
-    private function applyInstagramAccountSelection(Account $account, array $selectedInstagram): void
-    {
-        $account->instagram_account_id = (string) ($selectedInstagram['id'] ?? '');
-        $account->instagram_username = (string) ($selectedInstagram['username'] ?? '');
-        $account->instagram_name = (string) ($selectedInstagram['name'] ?? '');
-        $account->fb_insta_app_id = $account->instagram_account_id;
-        $account->insta_user_name = $account->instagram_username;
-    }
-
-    private function storeInstagramMetaData(Account $account, array $pages): void
-    {
-        if ($account->service !== 'instagram') {
-            return;
-        }
-
-        $selectedInstagramAccount = $account->instagram_account_id
-            ? array_filter([
-                'id' => (string) $account->instagram_account_id,
-                'username' => (string) ($account->instagram_username ?? ''),
-                'name' => (string) ($account->instagram_name ?? ''),
-            ], static fn ($value) => $value !== null && $value !== '')
-            : null;
-
-        $account->instagram_meta_data = [
-            'pages' => array_values(array_map(function (array $page) {
-                return [
-                    'id' => (string) ($page['id'] ?? ''),
-                    'name' => (string) ($page['name'] ?? ''),
-                    'linked_instagram_accounts' => $this->linkedInstagramAccountsForPage($page),
-                ];
-            }, $pages)),
-            'selected_page' => $account->meta_page_id ? [
-                'id' => (string) $account->meta_page_id,
-                'name' => (string) ($account->meta_page_name ?? ''),
-            ] : null,
-            'selected_instagram_account' => $selectedInstagramAccount,
-        ];
-    }
-
-    private function setInstagramConnectionState(Account $account, string $status): void
-    {
-        $account->connection_status = $status;
-        $account->setup_state = $status === 'connected' ? 'complete' : 'incomplete';
-        $account->connection_error = match ($status) {
-            'needs_instagram' => 'No Instagram Business account linked to this Facebook Page',
-            'error' => $account->connection_error ?: 'Instagram connection is incomplete.',
-            default => null,
-        };
-        $account->status = $status === 'connected' ? 'Active' : 'Draft';
     }
 
     public function syncInstagramMessages(Account $account, bool $force = false): void
@@ -1225,13 +832,134 @@ class MetaIntegrationService
             return;
         }
 
-        if ($this->isInstagramLoginConnection($account)) {
-            $this->hydrateInstagramLoginIdentity($account, true);
-            $this->syncInstagramLoginConversations($account, 25, 75, $force);
+        $this->hydrateInstagramLoginIdentity($account, true);
+        $this->syncInstagramLoginConversations($account, 25, 75, $force);
+    }
+
+    public function dispatchInitialInstagramHistorySync(Account $account, bool $force = false): bool
+    {
+        $account->refresh();
+
+        if (
+            $account->service !== 'instagram'
+            || $account->status !== 'Active'
+            || (string) ($account->connection_status ?? '') !== 'connected'
+            || empty($account->instagram_account_id)
+            || empty($account->instagram_user_access_token_encrypted)
+        ) {
+            return false;
+        }
+
+        if (! $force) {
+            if ($account->instagram_initial_sync_completed_at) {
+                return false;
+            }
+
+            if ($account->instagram_initial_sync_started_at && empty($account->instagram_initial_sync_error)) {
+                return false;
+            }
+        }
+
+        $account->instagram_initial_sync_started_at = now();
+        $account->instagram_initial_sync_error = null;
+        $account->save();
+
+        InitialInstagramHistorySyncJob::dispatch($account->id);
+
+        return true;
+    }
+
+    public function startInitialInstagramHistorySyncSafely(Account $account, bool $force = false): void
+    {
+        try {
+            $dispatched = $this->dispatchInitialInstagramHistorySync($account, $force);
+
+            if ($dispatched) {
+                Log::info('Initial Instagram history sync dispatched.', [
+                    'account_id' => $account->id,
+                    'force' => $force,
+                    'queue_connection' => (string) config('queue.default'),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Initial Instagram history sync could not be started.', [
+                'account_id' => $account->id,
+                'force' => $force,
+                'queue_connection' => (string) config('queue.default'),
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    public function runInitialInstagramHistorySync(Account $account): void
+    {
+        $account->refresh();
+        $this->hydrateInstagramLoginIdentity($account, true);
+
+        if (
+            $account->service !== 'instagram'
+            || $account->status !== 'Active'
+            || (string) ($account->connection_status ?? '') !== 'connected'
+            || empty($account->instagram_account_id)
+            || empty($account->instagram_user_access_token_encrypted)
+        ) {
             return;
         }
 
-        $this->syncHistoricalChatsIfNeeded($account, $force);
+        $account->instagram_initial_sync_started_at = $account->instagram_initial_sync_started_at ?: now();
+        $account->instagram_initial_sync_error = null;
+        $account->save();
+
+        try {
+            $token = $this->resolveInstagramUserAccessToken($account, false);
+            if ($token === '') {
+                throw new RuntimeException('Instagram Login connection is missing the Instagram User access token.');
+            }
+
+            $nextUrl = $this->instagramGraphUrl('/' . $account->instagram_account_id . '/conversations');
+            $query = [
+                'platform' => 'instagram',
+                'access_token' => $token,
+            ];
+
+            while ($nextUrl !== '') {
+                $conversationPayload = $this->fetchInstagramGraphPage($nextUrl, $query);
+                $query = [];
+
+                foreach ((array) ($conversationPayload['data'] ?? []) as $conversation) {
+                    $conversationId = trim((string) ($conversation['id'] ?? ''));
+                    if ($conversationId === '') {
+                        continue;
+                    }
+
+                    $this->upsertInstagramConversationStub(
+                        $account,
+                        $conversationId,
+                        (string) ($conversation['updated_time'] ?? ''),
+                        (array) data_get($conversation, 'participants.data', [])
+                    );
+
+                    $this->importInstagramConversationHistory($account, $token, $conversationId);
+                }
+
+                $nextUrl = trim((string) data_get($conversationPayload, 'paging.next', ''));
+            }
+
+            $account->instagram_initial_sync_completed_at = now();
+            $account->instagram_initial_sync_error = null;
+            $account->sync_last_at = now();
+            $account->save();
+        } catch (\Throwable $e) {
+            $account->instagram_initial_sync_error = $e->getMessage();
+            $account->save();
+
+            Log::warning('Initial Instagram history sync failed.', [
+                'account_id' => $account->id,
+                'message' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
     }
 
     public function syncInstagramConversationMessages(Account $account, Contact $contact, int $messageLimit = 50): void
@@ -1251,80 +979,7 @@ class MetaIntegrationService
             throw new RuntimeException('Instagram account is not fully connected.');
         }
 
-        if ($this->isInstagramLoginConnection($account)) {
-            $this->syncInstagramLoginConversationMessages($account, $contact, $messageLimit);
-            return;
-        }
-
-        $recipientId = (string) ($contact->instagram_username ?? '');
-        if ($recipientId === '') {
-            throw new RuntimeException('Instagram contact is missing the Instagram account identifier.');
-        }
-
-        $pageId = (string) ($account->meta_page_id ?: $account->fb_phone_number_id ?: '');
-        $pageToken = (string) ($account->meta_page_token ?: $account->page_token ?: '');
-
-        if ($pageId === '') {
-            throw new RuntimeException('Instagram connection is missing the selected Facebook Page.');
-        }
-
-        if ($pageToken === '') {
-            $pageToken = (string) ((new WhatsAppUsers())->getFbPageAccessToken($account) ?: '');
-        }
-
-        if ($pageToken === '') {
-            throw new RuntimeException('Instagram connection is missing the page access token.');
-        }
-
-        $conversationPayload = Http::timeout(20)
-            ->retry(2, 250)
-            ->get($this->graphUrl("/{$pageId}/conversations"), [
-                'platform' => 'instagram',
-                'user_id' => $recipientId,
-                'fields' => 'id,updated_time,message_count,unread_count,participants{id,name,email}',
-                'limit' => 1,
-                'access_token' => $pageToken,
-            ])
-            ->throw()
-            ->json();
-
-        foreach ((array) ($conversationPayload['data'] ?? []) as $conversation) {
-            $conversationId = (string) ($conversation['id'] ?? '');
-            if ($conversationId === '') {
-                continue;
-            }
-
-            $participants = [];
-            foreach ((array) data_get($conversation, 'participants.data', []) as $participant) {
-                $participantId = (string) ($participant['id'] ?? '');
-                if ($participantId === '') {
-                    continue;
-                }
-
-                $participants[$participantId] = (string) ($participant['name'] ?? '');
-            }
-
-            $messagesPayload = Http::timeout(20)
-                ->retry(2, 250)
-                ->get($this->graphUrl("/{$conversationId}/messages"), [
-                    'fields' => 'id,message,created_time,from,to,attachments',
-                    'limit' => $messageLimit,
-                    'access_token' => $pageToken,
-                ])
-                ->throw()
-                ->json();
-
-            $messages = collect((array) ($messagesPayload['data'] ?? []))
-                ->sortBy(fn (array $message) => (string) ($message['created_time'] ?? ''))
-                ->values();
-
-            foreach ($messages as $message) {
-                $this->ingestHistoricalSocialMessage($account, $participants, (array) $message);
-            }
-        }
-
-        $account->sync_last_at = now();
-        $account->save();
+        $this->syncInstagramLoginConversationMessages($account, $contact, $messageLimit);
     }
 
     public function syncHistoricalChatsIfNeeded(Account $account, bool $force = false): void
@@ -1340,38 +995,35 @@ class MetaIntegrationService
         }
 
         if ($account->service === 'instagram') {
-            if ($this->isInstagramLoginConnection($account)) {
-                if (
-                    empty($account->instagram_account_id)
-                    || empty($account->instagram_user_access_token_encrypted)
-                    || (string) ($account->connection_status ?? '') !== 'connected'
-                ) {
-                    return;
-                }
-
-                if (! $force && $account->sync_last_at) {
-                    return;
-                }
-
-                try {
-                    $this->syncInstagramLoginConversations($account, 25, 75, true);
-                    $account->sync_last_at = now();
-                    $account->save();
-                } catch (\Throwable $e) {
-                    Log::warning('Historical Instagram Login sync failed after connection.', [
-                        'account_id' => $account->id,
-                        'message' => $e->getMessage(),
-                    ]);
-                }
-
+            if (
+                empty($account->instagram_account_id)
+                || empty($account->instagram_user_access_token_encrypted)
+                || (string) ($account->connection_status ?? '') !== 'connected'
+            ) {
                 return;
             }
 
-            $instagramAccountId = (string) ($account->instagram_account_id ?? '');
-            if ($instagramAccountId === '' || (string) ($account->connection_status ?? '') !== 'connected') {
+            $this->startInitialInstagramHistorySyncSafely($account);
+
+            if (! $force && $account->sync_last_at) {
                 return;
             }
-        } elseif (empty($account->fb_phone_number_id)) {
+
+            try {
+                $this->syncInstagramLoginConversations($account, 25, 75, false);
+                $account->sync_last_at = now();
+                $account->save();
+            } catch (\Throwable $e) {
+                Log::warning('Historical Instagram Login sync failed after connection.', [
+                    'account_id' => $account->id,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+
+            return;
+        }
+
+        if (empty($account->fb_phone_number_id)) {
             return;
         }
 
@@ -1394,18 +1046,9 @@ class MetaIntegrationService
 
     private function syncSocialAccountConversations(Account $account, int $conversationLimit = 25, int $messageLimit = 75): void
     {
-        if ($account->service === 'instagram' && $this->isInstagramLoginConnection($account)) {
-            $this->syncInstagramLoginConversations($account, $conversationLimit, $messageLimit, true);
-            return;
-        }
-
         $service = (string) $account->service;
-        $pageId = (string) (
-            $service === 'instagram'
-                ? ($account->meta_page_id ?: $account->fb_phone_number_id ?: '')
-                : ($account->fb_phone_number_id ?: '')
-        );
-        $pageToken = (string) ($account->meta_page_token ?: $account->page_token ?: '');
+        $pageId = (string) ($account->fb_phone_number_id ?: '');
+        $pageToken = (string) ($account->page_token ?: '');
 
         if ($pageId === '') {
             return;
@@ -1424,11 +1067,7 @@ class MetaIntegrationService
             'limit' => $conversationLimit,
         ];
 
-        if ($service === 'facebook') {
-            $query['platform'] = 'messenger';
-        } elseif ($service === 'instagram') {
-            $query['platform'] = 'instagram';
-        }
+        $query['platform'] = 'messenger';
 
         $conversationPayload = Http::timeout(20)
             ->retry(2, 250)
@@ -1469,7 +1108,7 @@ class MetaIntegrationService
                 ->values();
 
             foreach ($messages as $message) {
-                $this->ingestHistoricalSocialMessage($account, $participants, (array) $message);
+                $this->ingestHistoricalSocialMessage($account, $participants, (array) $message, $conversationId);
             }
         }
     }
@@ -1505,15 +1144,24 @@ class MetaIntegrationService
                 continue;
             }
 
+            $this->upsertInstagramConversationStub(
+                $account,
+                $conversationId,
+                (string) ($conversation['updated_time'] ?? ''),
+                (array) data_get($conversation, 'participants.data', [])
+            );
+
             $messagesPayload = $this->fetchInstagramConversationMessages($token, $conversationId, $messageLimit);
-            $participants = $this->mapConversationParticipants((array) data_get($conversation, 'participants.data', []));
+            $participants = $this->mapConversationParticipants(
+                (array) data_get($conversation, 'participants.data', data_get($messagesPayload, 'participants.data', []))
+            );
 
             $messages = collect((array) ($messagesPayload['data'] ?? []))
                 ->sortBy(fn (array $message) => (string) ($message['created_time'] ?? ''))
                 ->values();
 
             foreach ($messages as $message) {
-                $this->ingestHistoricalSocialMessage($account, $participants, (array) $message);
+                $this->ingestHistoricalSocialMessage($account, $participants, (array) $message, $conversationId);
             }
         }
 
@@ -1531,12 +1179,24 @@ class MetaIntegrationService
         $conversation = $account->chatThreads()
             ->where('channel', 'instagram')
             ->where('contact_id', $contact->id)
+            ->when($this->hasInstagramConversationIdColumn(), function ($query) {
+                $query->orderByRaw('CASE WHEN instagram_conversation_id IS NULL OR instagram_conversation_id = \'\' THEN 1 ELSE 0 END');
+            })
+            ->latest('last_message_at')
             ->latest('updated_at')
             ->first();
 
-        $conversationId = (string) ($conversation->service_id ?? '');
+        $conversationId = $this->hasInstagramConversationIdColumn()
+            ? trim((string) ($conversation->instagram_conversation_id ?? ''))
+            : '';
         if ($conversationId === '') {
-            $recipientId = (string) ($contact->instagram_username ?? '');
+            $recipientId = $this->hasInstagramUserIdColumn()
+                ? trim((string) ($contact->instagram_user_id ?? ''))
+                : '';
+            if ($recipientId === '' && preg_match('/^\d+$/', trim((string) ($contact->instagram_username ?? '')))) {
+                $recipientId = trim((string) $contact->instagram_username);
+            }
+
             if ($recipientId === '') {
                 throw new RuntimeException('Instagram contact is missing the Instagram-scoped user identifier.');
             }
@@ -1544,6 +1204,7 @@ class MetaIntegrationService
             $conversationPayload = Http::timeout(20)
                 ->retry(2, 250)
                 ->get($this->instagramGraphUrl('/' . $account->instagram_account_id . '/conversations'), [
+                    'platform' => 'instagram',
                     'user_id' => $recipientId,
                     'access_token' => $token,
                 ])
@@ -1556,16 +1217,21 @@ class MetaIntegrationService
                 $account->save();
                 return;
             }
+
+            if ($conversation && $this->hasInstagramConversationIdColumn()) {
+                $conversation->instagram_conversation_id = $conversationId;
+                $conversation->save();
+            }
         }
 
         $messagesPayload = $this->fetchInstagramConversationMessages($token, $conversationId, $messageLimit);
-        $participants = [];
+        $participants = $this->mapConversationParticipants((array) data_get($messagesPayload, 'participants.data', []));
         $messages = collect((array) ($messagesPayload['data'] ?? []))
             ->sortBy(fn (array $message) => (string) ($message['created_time'] ?? ''))
             ->values();
 
         foreach ($messages as $message) {
-            $this->ingestHistoricalSocialMessage($account, $participants, (array) $message);
+            $this->ingestHistoricalSocialMessage($account, $participants, (array) $message, $conversationId);
         }
 
         $account->sync_last_at = now();
@@ -1582,7 +1248,8 @@ class MetaIntegrationService
         return Http::timeout(20)
             ->retry(2, 250)
             ->get($this->instagramGraphUrl("/{$instagramAccountId}/conversations"), [
-                'fields' => 'id,updated_time',
+                'platform' => 'instagram',
+                'fields' => 'id,updated_time,participants{id,name,username}',
                 'limit' => $limit,
                 'access_token' => $token,
             ])
@@ -1595,7 +1262,7 @@ class MetaIntegrationService
         $conversationPayload = Http::timeout(20)
             ->retry(2, 250)
             ->get($this->instagramGraphUrl("/{$conversationId}"), [
-                'fields' => sprintf('messages.limit(%d)', max(1, $limit)),
+                'fields' => sprintf('participants{id,name,username},messages.limit(%d)', max(1, $limit)),
                 'access_token' => $token,
             ])
             ->throw()
@@ -1609,10 +1276,293 @@ class MetaIntegrationService
 
         $messages = [];
         foreach ($messageIds as $messageId) {
-            $messages[] = $this->fetchInstagramMessageDetails($token, (string) $messageId);
+            $details = $this->fetchInstagramMessageDetails($token, (string) $messageId);
+            if ($details !== []) {
+                $messages[] = $details;
+            }
         }
 
-        return ['data' => $messages];
+        return [
+            'data' => $messages,
+            'participants' => data_get($conversationPayload, 'participants', []),
+        ];
+    }
+
+    private function fetchInstagramGraphPage(string $url, array $query = []): array
+    {
+        $response = Http::timeout(30)
+            ->retry(2, 250)
+            ->get($url, $query)
+            ->throw()
+            ->json();
+
+        return is_array($response) ? $response : [];
+    }
+
+    private function importInstagramConversationHistory(Account $account, string $token, string $conversationId): void
+    {
+        $nextUrl = $this->instagramGraphUrl("/{$conversationId}");
+        $query = [
+            'fields' => 'messages{id,created_time}',
+            'access_token' => $token,
+        ];
+        $isFirstPage = true;
+
+        while ($nextUrl !== '') {
+            $payload = $this->fetchInstagramGraphPage($nextUrl, $query);
+            $query = [];
+
+            $messageData = $isFirstPage
+                ? (array) data_get($payload, 'messages.data', [])
+                : (array) ($payload['data'] ?? []);
+            $nextMessagesUrl = $isFirstPage
+                ? trim((string) data_get($payload, 'messages.paging.next', ''))
+                : trim((string) data_get($payload, 'paging.next', ''));
+
+            foreach ($messageData as $messageSummary) {
+                $messageId = trim((string) ($messageSummary['id'] ?? ''));
+                if ($messageId === '') {
+                    continue;
+                }
+
+                try {
+                    $details = $this->fetchInstagramMessageDetails($token, $messageId, [
+                        'account_id' => $account->id,
+                        'conversation_id' => $conversationId,
+                    ]);
+                } catch (\Throwable $e) {
+                    Log::info('Skipping Instagram message detail during initial import.', [
+                        'account_id' => $account->id,
+                        'conversation_id' => $conversationId,
+                        'message_id' => $messageId,
+                        'reason' => $e->getMessage(),
+                    ]);
+
+                    continue;
+                }
+
+                if ($details === []) {
+                    $this->upsertInstagramConversationStub(
+                        $account,
+                        $conversationId,
+                        (string) ($messageSummary['created_time'] ?? '')
+                    );
+
+                    continue;
+                }
+
+                $participants = $this->participantsFromInstagramMessageDetails($details);
+                $this->ingestHistoricalSocialMessage($account, $participants, $details, $conversationId);
+            }
+
+            $nextUrl = $nextMessagesUrl;
+            $isFirstPage = false;
+        }
+    }
+
+    private function participantsFromInstagramMessageDetails(array $message): array
+    {
+        $participants = [];
+
+        $fromId = trim((string) data_get($message, 'from.id', ''));
+        if ($fromId !== '') {
+            $participants[$fromId] = [
+                'name' => (string) (
+                    data_get($message, 'from.name')
+                    ?: data_get($message, 'from.username')
+                    ?: ''
+                ),
+                'username' => (string) data_get($message, 'from.username', ''),
+            ];
+        }
+
+        foreach ((array) data_get($message, 'to.data', []) as $recipient) {
+            $recipientId = trim((string) ($recipient['id'] ?? ''));
+            if ($recipientId === '') {
+                continue;
+            }
+
+            $participants[$recipientId] = [
+                'name' => (string) (($recipient['name'] ?? $recipient['username'] ?? '')),
+                'username' => (string) ($recipient['username'] ?? ''),
+            ];
+        }
+
+        return $participants;
+    }
+
+    private function upsertInstagramConversationStub(Account $account, string $conversationId, ?string $updatedTime = null, array $participants = []): void
+    {
+        if (! $this->hasInstagramConversationIdColumn()) {
+            return;
+        }
+
+        $contactId = $this->resolveInstagramConversationContactId($account, $participants);
+
+        $conversation = ChatListContact::query()
+            ->where('user_id', $account->user_id)
+            ->where('channel', 'instagram')
+            ->where('account_id', $account->id)
+            ->where('instagram_conversation_id', $conversationId)
+            ->first();
+
+        if (! $conversation && $contactId) {
+            $conversation = ChatListContact::query()
+                ->where('user_id', $account->user_id)
+                ->where('channel', 'instagram')
+                ->where('contact_id', $contactId)
+                ->where(function ($query) use ($account) {
+                    $query->where('account_id', $account->id)
+                        ->orWhereNull('account_id');
+                })
+                ->where(function ($query) {
+                    $query->whereNull('instagram_conversation_id')
+                        ->orWhere('instagram_conversation_id', '');
+                })
+                ->orderByRaw('CASE WHEN account_id IS NULL THEN 1 ELSE 0 END')
+                ->orderByDesc('id')
+                ->first();
+        }
+
+        if (! $conversation && $contactId) {
+            $conversation = ChatListContact::query()
+                ->where('user_id', $account->user_id)
+                ->where('channel', 'instagram')
+                ->where('contact_id', $contactId)
+                ->orderByDesc('id')
+                ->first();
+        }
+
+        if (! $conversation) {
+            $conversation = new ChatListContact();
+            $conversation->user_id = $account->user_id;
+            $conversation->channel = 'instagram';
+            $conversation->account_id = $account->id;
+            $conversation->instagram_conversation_id = $conversationId;
+        }
+
+        if ($contactId) {
+            $conversation->contact_id = $contactId;
+        }
+
+        $conversation->account_id = $account->id;
+        $conversation->channel = 'instagram';
+        $conversation->user_id = $account->user_id;
+
+        if (! $conversation->instagram_conversation_id) {
+            $conversation->instagram_conversation_id = $conversationId;
+        }
+
+        if ($updatedTime) {
+            $conversation->last_message_at = $updatedTime;
+        }
+
+        $conversation->save();
+    }
+
+    private function resolveInstagramConversationContactId(Account $account, array $participants): ?int
+    {
+        if ($participants === []) {
+            return null;
+        }
+
+        $assetIds = $this->instagramAssetIds($account);
+
+        foreach ($participants as $participant) {
+            $participantId = trim((string) ($participant['id'] ?? ''));
+            if ($participantId === '' || in_array($participantId, $assetIds, true)) {
+                continue;
+            }
+
+            $contact = app(MsgController::class)->upsertInstagramContactByRemoteId(
+                $participantId,
+                (int) $account->user_id,
+                (string) ($participant['name'] ?? $participant['username'] ?? ''),
+                (string) ($participant['username'] ?? '')
+            );
+
+            if (! $contact) {
+                return null;
+            }
+
+            return (int) $contact->id;
+        }
+
+        return null;
+    }
+
+    public function syncInstagramConversationIndex(Account $account, int $conversationLimit = 50, int $messageLimit = 75): void
+    {
+        $account->refresh();
+
+        if (
+            $account->service !== 'instagram'
+            || ! $this->isInstagramLoginConnection($account)
+            || $account->status !== 'Active'
+            || (string) ($account->connection_status ?? '') !== 'connected'
+            || empty($account->instagram_account_id)
+            || empty($account->instagram_user_access_token_encrypted)
+        ) {
+            return;
+        }
+
+        $token = $this->resolveInstagramUserAccessToken($account, false);
+        if ($token === '') {
+            throw new RuntimeException('Instagram Login connection is missing the Instagram User access token.');
+        }
+
+        $conversationPayload = $this->fetchInstagramConversations($account, $token, $conversationLimit);
+        $localThreads = $account->chatThreads()
+            ->where('channel', 'instagram')
+            ->whereNotNull('instagram_conversation_id')
+            ->get()
+            ->keyBy(fn (ChatListContact $thread) => (string) $thread->instagram_conversation_id);
+
+        foreach ((array) ($conversationPayload['data'] ?? []) as $conversation) {
+            $conversationId = trim((string) ($conversation['id'] ?? ''));
+            if ($conversationId === '') {
+                continue;
+            }
+
+            $updatedTime = trim((string) ($conversation['updated_time'] ?? ''));
+            $participants = (array) data_get($conversation, 'participants.data', []);
+
+            $this->upsertInstagramConversationStub($account, $conversationId, $updatedTime, $participants);
+
+            $localThread = $localThreads->get($conversationId);
+            $localUpdatedAt = $localThread?->last_message_at ?: $localThread?->updated_at;
+            $remoteUpdatedAt = $updatedTime !== '' ? Carbon::parse($updatedTime) : null;
+            $shouldImport = ! $localThread;
+
+            if (! $shouldImport && $remoteUpdatedAt) {
+                $shouldImport = ! $localUpdatedAt || $remoteUpdatedAt->gt(Carbon::parse($localUpdatedAt));
+            }
+
+            if (! $shouldImport) {
+                continue;
+            }
+
+            $this->importInstagramConversationHistory($account, $token, $conversationId);
+        }
+
+        $account->sync_last_at = now();
+        $account->save();
+    }
+
+    public function syncInstagramConversationIndexSafely(Account $account, int $conversationLimit = 50, int $messageLimit = 75): void
+    {
+        try {
+            $this->syncInstagramConversationIndex($account, $conversationLimit, $messageLimit);
+        } catch (\Throwable $e) {
+            $account->refresh();
+            $account->instagram_initial_sync_error = $e->getMessage();
+            $account->save();
+
+            Log::warning('Instagram conversation index reconciliation failed.', [
+                'account_id' => $account->id,
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function sendInstagramMessage(Account $account, string $recipientId, $content, array $attachment = []): array
@@ -1802,13 +1752,21 @@ class MetaIntegrationService
                 continue;
             }
 
-            $mapped[$participantId] = (string) ($participant['name'] ?? $participant['username'] ?? '');
+            $mapped[$participantId] = [
+                'name' => (string) ($participant['name'] ?? $participant['username'] ?? ''),
+                'username' => (string) ($participant['username'] ?? ''),
+            ];
         }
 
         return $mapped;
     }
 
-    private function ingestHistoricalSocialMessage(Account $account, array $participants, array $message): void
+    private function ingestHistoricalSocialMessage(
+        Account $account,
+        array $participants,
+        array $message,
+        ?string $conversationId = null
+    ): void
     {
         $service = (string) $account->service;
         $assetIds = $service === 'instagram'
@@ -1832,7 +1790,17 @@ class MetaIntegrationService
             return;
         }
 
-        $counterpartyName = $participants[$counterpartyId] ?? ($isOutgoing ? '' : $fromName);
+        $participantProfile = $participants[$counterpartyId] ?? [];
+        $counterpartyName = is_array($participantProfile)
+            ? (string) ($participantProfile['name'] ?? '')
+            : (string) $participantProfile;
+        $counterpartyUsername = is_array($participantProfile)
+            ? (string) ($participantProfile['username'] ?? '')
+            : '';
+
+        if ($counterpartyName === '' && ! $isOutgoing) {
+            $counterpartyName = $fromName;
+        }
 
         $payload = [
             'account' => $account->id,
@@ -1845,6 +1813,10 @@ class MetaIntegrationService
             'message' => (string) ($message['message'] ?? ''),
             'occurred_at' => (string) ($message['created_time'] ?? ''),
             'is_read' => $isOutgoing ? false : true,
+            'instagram_user_id' => $service === 'instagram' ? $counterpartyId : null,
+            'instagram_conversation_id' => $service === 'instagram' ? trim((string) ($conversationId ?? '')) : null,
+            'instagram_username' => $service === 'instagram' ? $counterpartyUsername : null,
+            'raw_payload' => $message,
         ];
 
         $attachment = collect((array) data_get($message, 'attachments.data', []))->first();
@@ -2021,50 +1993,6 @@ class MetaIntegrationService
         $account->save();
     }
 
-    private function instagramConnectionStatus(Account $account, array $linkedInstagramAccounts): string
-    {
-        if (! empty($account->connection_status) && in_array($account->connection_status, ['connected', 'needs_page', 'needs_instagram', 'incomplete', 'error'], true)) {
-            return (string) $account->connection_status;
-        }
-
-        if (empty($account->fb_token) && empty($account->fb_meta_data) && empty(Arr::get($account->connection_metadata, 'meta'))) {
-            return 'incomplete';
-        }
-
-        if (empty($account->meta_page_id) && empty($account->fb_phone_number_id)) {
-            return 'needs_page';
-        }
-
-        if (! empty($account->instagram_account_id) && ! empty($account->instagram_username)) {
-            return 'connected';
-        }
-
-        return $linkedInstagramAccounts === [] ? 'needs_instagram' : 'needs_instagram';
-    }
-
-    private function instagramConnectionStatusLabel(string $status): string
-    {
-        return match ($status) {
-            'connected' => 'Connected',
-            'needs_page', 'needs_instagram' => 'Needs setup',
-            'error' => 'Not connected',
-            default => 'Not connected',
-        };
-    }
-
-    private function instagramConnectionMessage(string $status, array $linkedInstagramAccounts = []): string
-    {
-        return match ($status) {
-            'needs_page' => 'Select a Facebook Page to continue',
-            'needs_instagram' => $linkedInstagramAccounts === []
-                ? 'No Instagram Business account linked to this Facebook Page'
-                : 'Choose the linked Instagram account for this Facebook Page',
-            'connected' => 'Ready to manage Instagram DMs',
-            'error' => 'Connect Instagram again',
-            default => 'Connect Meta account',
-        };
-    }
-
     private function webhookVerificationValues(Request $request, bool $allowLegacyKeys): array
     {
         $rawQuery = $this->rawQueryParameters($request);
@@ -2130,7 +2058,7 @@ class MetaIntegrationService
 
     private function subscribeSelectedFacebookPage(Account $account): void
     {
-        if (! in_array($account->service, ['facebook', 'instagram'], true) || empty($account->fb_phone_number_id)) {
+        if ($account->service !== 'facebook' || empty($account->fb_phone_number_id)) {
             return;
         }
 
@@ -2201,22 +2129,8 @@ class MetaIntegrationService
             return Account::query()
                 ->where('service', 'instagram')
                 ->where(function ($query) use ($candidateIds) {
-                    $query->where(function ($subQuery) use ($candidateIds) {
-                        $subQuery->where('connection_model', 'instagram_login')
-                            ->where(function ($loginQuery) use ($candidateIds) {
-                                $loginQuery->whereIn('instagram_account_id', $candidateIds)
-                                    ->orWhereIn('instagram_app_scoped_user_id', $candidateIds);
-                            });
-                    })->orWhere(function ($subQuery) use ($candidateIds) {
-                        $subQuery->where(function ($legacyQuery) {
-                            $legacyQuery->whereNull('connection_model')
-                                ->orWhere('connection_model', 'legacy_page_linked');
-                        })->where(function ($legacyAssetQuery) use ($candidateIds) {
-                            $legacyAssetQuery->whereIn('meta_page_id', $candidateIds)
-                                ->orWhereIn('fb_phone_number_id', $candidateIds)
-                                ->orWhereIn('instagram_account_id', $candidateIds);
-                        });
-                    });
+                    $query->whereIn('instagram_account_id', $candidateIds)
+                        ->orWhereIn('instagram_app_scoped_user_id', $candidateIds);
                 })
                 ->orderByDesc('id')
                 ->first();
@@ -2272,7 +2186,18 @@ class MetaIntegrationService
                 ?: Arr::get($event, 'from.name')
                 ?: ''
             ),
+            'raw_payload' => $event,
         ];
+
+        if ($service === 'instagram') {
+            $normalized['instagram_user_id'] = $type === 'incoming' ? $senderId : $recipientId;
+            $normalized['instagram_conversation_id'] = (string) Arr::get($event, 'conversation.id', '');
+            $normalized['instagram_username'] = (string) (
+                Arr::get($event, 'sender.username')
+                ?: Arr::get($event, 'from.username')
+                ?: ''
+            );
+        }
 
         $attachment = Arr::first((array) Arr::get($event, 'message.attachments', []));
         if (is_array($attachment)) {
@@ -2302,12 +2227,28 @@ class MetaIntegrationService
             return;
         }
 
-        $contactField = $service === 'instagram' ? 'instagram_username' : 'facebook_username';
-
-        $contact = Contact::query()
-            ->where($contactField, $contactServiceId)
-            ->where('creater_id', $account->user_id)
-            ->first();
+        if ($service === 'instagram' && $this->hasInstagramUserIdColumn()) {
+            $contact = Contact::query()
+                ->where('creater_id', $account->user_id)
+                ->where(function ($query) use ($contactServiceId) {
+                    $query->where('instagram_user_id', $contactServiceId)
+                        ->orWhere(function ($fallbackQuery) use ($contactServiceId) {
+                            $fallbackQuery->whereNull('instagram_user_id')
+                                ->where('instagram_username', $contactServiceId);
+                        });
+                })
+                ->first();
+        } elseif ($service === 'instagram') {
+            $contact = Contact::query()
+                ->where('instagram_username', $contactServiceId)
+                ->where('creater_id', $account->user_id)
+                ->first();
+        } else {
+            $contact = Contact::query()
+                ->where('facebook_username', $contactServiceId)
+                ->where('creater_id', $account->user_id)
+                ->first();
+        }
 
         if (! $contact) {
             return;
@@ -2334,42 +2275,33 @@ class MetaIntegrationService
 
     private function instagramAssetIds(Account $account): array
     {
-        if ($this->isInstagramLoginConnection($account)) {
-            return array_values(array_filter([
-                (string) ($account->instagram_account_id ?: ''),
-                (string) ($account->instagram_app_scoped_user_id ?: ''),
-            ]));
-        }
-
         return array_values(array_filter([
             (string) ($account->instagram_account_id ?: ''),
-            (string) ($account->meta_page_id ?: ''),
-            (string) ($account->fb_phone_number_id ?: ''),
+            (string) ($account->instagram_app_scoped_user_id ?: ''),
         ]));
     }
 
-    private function fetchInstagramMessageDetails(string $token, string $messageId): array
+    private function fetchInstagramMessageDetails(string $token, string $messageId, array $context = []): array
     {
-        try {
-            $payload = Http::timeout(20)
-                ->retry(2, 250)
-                ->get($this->instagramGraphUrl("/{$messageId}"), [
-                    'fields' => 'id,created_time,from,to,message,attachments,shares,story',
-                    'access_token' => $token,
-                ])
-                ->throw()
-                ->json();
-        } catch (\Throwable $e) {
-            $payload = Http::timeout(20)
-                ->retry(2, 250)
-                ->get($this->instagramGraphUrl("/{$messageId}"), [
-                    'fields' => 'id,created_time,from,to,message',
-                    'access_token' => $token,
-                ])
-                ->throw()
-                ->json();
+        $payload = Http::timeout(20)
+            ->retry(2, 250)
+            ->get($this->instagramGraphUrl("/{$messageId}"), [
+                'fields' => 'id,created_time,from,to,message',
+                'access_token' => $token,
+            ])
+            ->throw()
+            ->json();
+
+        if (! is_array($payload) || ! isset($payload['id'])) {
+            Log::warning('Instagram message details response was empty.', [
+                'account_id' => $context['account_id'] ?? null,
+                'conversation_id' => $context['conversation_id'] ?? null,
+                'message_id' => $messageId,
+            ]);
+
+            return [];
         }
 
-        return is_array($payload) ? $payload : [];
+        return $payload;
     }
 }

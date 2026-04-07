@@ -153,6 +153,7 @@ function ChatList(props) {
         template_type: "",
     });
     const [selectedAccount, setSelectedAccount] = useState("");
+    const [accountMeta, setAccountMeta] = useState(props.account_meta || {});
     const [searchKey, setSearchKey] = useState(props.search);
     const [activeChatFilterCondition, setActiveChatFilterCondition] = useState(
         props.filter_condition || "",
@@ -268,6 +269,10 @@ function ChatList(props) {
     useEffect(() => {
         setCounts(props.counts || { all: 0, unread: 0, archived: 0 });
     }, [props.counts]);
+
+    useEffect(() => {
+        setAccountMeta(props.account_meta || {});
+    }, [props.account_meta]);
 
     useEffect(() => {
         setSearchKey(props.search || "");
@@ -629,6 +634,7 @@ function ChatList(props) {
                             archived: 0,
                         },
                     );
+                    setAccountMeta(response.data.account_meta || {});
                     setHasMore(Boolean(response.data.has_more));
                     if (reset) {
                         setPage(1);
@@ -935,6 +941,16 @@ function ChatList(props) {
             ? EMAIL_COMPOSE_LABEL
             : ADD_CONTACT_LABEL
         : DEFAULT_NEW_MESSAGE_LABEL;
+    const hasInstagramImportRunning =
+        containerCategory === "instagram" &&
+        Object.values(accountMeta || {}).some(
+            (meta) => meta?.instagram_initial_sync_status === "running",
+        );
+    const emptyConversationMessage =
+        containerCategory === "instagram" &&
+        Object.keys(props.account_list ?? {}).length > 0
+            ? "No Instagram conversations are currently available from Meta for this account."
+            : props.translator["Conversation not start yet."];
 
     return (
         <Authenticated
@@ -1051,6 +1067,14 @@ function ChatList(props) {
                                 </button>
                             )}
                             </div>
+                            {containerCategory === "instagram" &&
+                                hasInstagramImportRunning && (
+                                <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/75 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                                    <div className="font-medium text-white/90">
+                                        Importing Instagram history...
+                                    </div>
+                                </div>
+                            )}
                             {showChatRelationFilters && (
                                 <div className="flex flex-wrap items-center gap-2">
                                     <Dropdown>
@@ -1368,9 +1392,7 @@ function ChatList(props) {
                                                         <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-[#ff7de5]" />
                                                     </span>
                                                 ) : (
-                                                    props.translator[
-                                                        "Conversation not start yet."
-                                                    ]
+                                                    emptyConversationMessage
                                                 )}
                                             </div>
                                         </li>
