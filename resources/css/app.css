@@ -3,11 +3,60 @@
 /* Prevent layout shift (background narrowing) when dialogs open.
    overflow-y:scroll keeps the scrollbar always visible so HeadlessUI never
    needs to inject/remove padding-right when it locks scroll on a dialog open. */
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
 html {
-  overflow-y: scroll;
   scrollbar-gutter: stable;
 }
 
+body {
+  overflow: hidden;
+  background: #000;
+}
+
+.app-main-scroll {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(191, 0, 255, 0.38) transparent;
+}
+
+.app-main-scroll:hover {
+  scrollbar-color: rgba(191, 0, 255, 0.58) transparent;
+}
+
+@supports selector(::-webkit-scrollbar) {
+  .app-main-scroll::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .app-main-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .app-main-scroll::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    background: linear-gradient(180deg,
+        rgba(191, 0, 255, 0.45),
+        rgba(99, 102, 241, 0.42));
+  }
+
+  .app-main-scroll::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg,
+        rgba(217, 70, 239, 0.72),
+        rgba(139, 92, 246, 0.68));
+  }
+
+  .app-main-scroll::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
 /* Modern gradient button (Uiverse.io: SamiBouchareb) */
 .custom-button {
   position: relative;

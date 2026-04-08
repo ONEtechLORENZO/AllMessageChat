@@ -354,7 +354,9 @@ function NavItem({
                 <Icon
                     className={[
                         "h-5 w-5 transition-colors duration-200",
-                        active ? "text-white" : "text-white/70 group-hover:text-white",
+                        active
+                            ? "text-white"
+                            : "text-white/70 group-hover:text-white",
                     ].join(" ")}
                 />
             </div>
@@ -410,9 +412,7 @@ export default function Authenticated({
     disableContentScroll,
 }) {
     const { props: pageProps } = usePage();
-    const [locale, setLocaleState] = useState(
-        pageProps?.locale ?? getLocale(),
-    );
+    const [locale, setLocaleState] = useState(pageProps?.locale ?? getLocale());
     const translator = useMemo(
         () => createTranslator(pageProps?.translator ?? {}, locale),
         [pageProps?.translator, locale],
@@ -443,7 +443,7 @@ export default function Authenticated({
         pageProps?.plural ??
         null;
     const translatedPageTitle = resolvedPageTitle
-        ? translator[resolvedPageTitle] ?? resolvedPageTitle
+        ? (translator[resolvedPageTitle] ?? resolvedPageTitle)
         : null;
     const showPageTitle = hidePageTitle !== true && !!translatedPageTitle;
 
@@ -654,7 +654,12 @@ export default function Authenticated({
                 const existingSubmenu =
                     resolvedNavigationMenuBar[item.name].submenu ?? {};
                 item.subMenu.forEach((sub) => {
-                    if (!Object.prototype.hasOwnProperty.call(existingSubmenu, sub.name)) {
+                    if (
+                        !Object.prototype.hasOwnProperty.call(
+                            existingSubmenu,
+                            sub.name,
+                        )
+                    ) {
                         existingSubmenu[sub.name] = true;
                     }
                 });
@@ -760,7 +765,7 @@ export default function Authenticated({
                 </div>
             </div>
 
-            <div className="authenticated-shell min-h-screen bg-black text-white relative overflow-x-hidden flex font-sans selection:bg-[#38bdf8]/30">
+            <div className="authenticated-shell h-dvh w-full bg-black text-white relative overflow-hidden flex font-sans selection:bg-[#38bdf8]/30">
                 {/* Tech grid background with spotlight effect */}
                 <div
                     className="fixed inset-0 opacity-40 transition-opacity duration-1000 pointer-events-none"
@@ -797,7 +802,10 @@ export default function Authenticated({
                     />
                     <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[420px] w-[900px] rounded-full bg-white/5 blur-[120px] opacity-40" />
                 </div>
-                <div className="purple-giant-arc platform-purple-arc" aria-hidden="true" />
+                <div
+                    className="purple-giant-arc platform-purple-arc"
+                    aria-hidden="true"
+                />
                 <Transition.Root show={sidebarOpen} as={Fragment}>
                     <Dialog
                         as="div"
@@ -882,14 +890,14 @@ export default function Authenticated({
                 </Transition.Root>
 
                 {/* Main Layout Container */}
-                <div className="relative z-10 flex h-screen w-full overflow-hidden">
+                <div className="relative z-10 flex h-full w-full overflow-hidden">
                     {/* Sidebar */}
                     <aside
                         className={[
-                            "hidden md:flex flex-col",
+                            "hidden md:flex shrink-0 flex-col h-full overflow-hidden",
                             showSidebarText ? "w-72" : "w-[86px]",
                             "transition-all duration-300",
-                            "border-r border-white/10 bg-white/[0.02] backdrop-blur-3xl sticky top-0 h-screen overflow-y-auto",
+                            "border-r border-white/10 bg-white/[0.02] backdrop-blur-3xl",
                         ].join(" ")}
                     >
                         <div className="px-6 py-6 flex items-center justify-between">
@@ -1111,7 +1119,9 @@ export default function Authenticated({
                                                                         key={`${header}-${subItem.name}`}
                                                                     >
                                                                         <a
-                                                                            href={subItem.href}
+                                                                            href={
+                                                                                subItem.href
+                                                                            }
                                                                             className={classNames(
                                                                                 subItem.name ===
                                                                                     current_page
@@ -1174,16 +1184,9 @@ export default function Authenticated({
                     </aside>
 
                     {/* Content Area */}
-                    <main
-                        className={[
-                            "flex-1 min-w-0 flex h-screen flex-col",
-                            current_page === "Chats" || disableContentScroll
-                                ? "overflow-hidden"
-                                : "overflow-y-auto",
-                        ].join(" ")}
-                    >
+                    <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
                         {hideHeader !== true ? (
-                            <header className="sticky top-0 z-20 border-b border-white/10 bg-black/40 backdrop-blur-2xl">
+                            <header className="shrink-0 z-20 border-b border-white/10 bg-black/40 backdrop-blur-2xl">
                                 <nav>
                                     <div className="px-4 md:px-8 py-3 flex items-center justify-between">
                                         <div className="flex items-center gap-4 min-w-0">
@@ -1218,15 +1221,16 @@ export default function Authenticated({
                                         <div className="flex items-center gap-3">
                                             <div className="hidden sm:flex items-center gap-3">
                                                 <div className="relative">
-                                                    {/* 
-                                                <Notification 
-                                                    notificationClick={notificationClick}
-                                                    showMore={showMore}
-                                                    count={count}
-                                                    notifications={notifications}
-                                                />
-                                                 */}
+                                                    {/*
+                                <Notification 
+                                    notificationClick={notificationClick}
+                                    showMore={showMore}
+                                    count={count}
+                                    notifications={notifications}
+                                />
+                                */}
                                                 </div>
+
                                                 {auth &&
                                                 auth.user &&
                                                 (auth.user.role ==
@@ -1234,17 +1238,19 @@ export default function Authenticated({
                                                     auth.user.role ==
                                                         "admin") ? (
                                                     <div className="relative">
-                                                        {/* <Link
-                                                preserveState
-                                                key="supportrequest"
-                                                href={route("listSupportRequest")}  
-                                                className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"                                                                                    
-                                            >
-                                                <QuestionMarkCircleIcon
-                                                    className="h-6 w-6"                                                 
-                                                    aria-hidden="true"                                               
-                                                />                                            
-                                            </Link> */}
+                                                        {/*
+                                    <Link
+                                        preserveState
+                                        key="supportrequest"
+                                        href={route("listSupportRequest")}  
+                                        className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                    >
+                                        <QuestionMarkCircleIcon
+                                            className="h-6 w-6"
+                                            aria-hidden="true"
+                                        />
+                                    </Link>
+                                    */}
                                                     </div>
                                                 ) : (
                                                     ""
@@ -1345,37 +1351,6 @@ export default function Authenticated({
                                                             ring={false}
                                                             contentClasses="p-0 bg-transparent"
                                                         >
-                                                            {/*                                                      
-                                                    <Dropdown.Link href={route('profile')} method="get" as="button">
-                                                        Profile
-                                                    </Dropdown.Link>
-
-                                                    <button className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" onClick={() => setSelectedCompany(true)} as="button">
-                                                        Switch Workspace
-                                                    </button>
-
-                                                    {auth && auth.user && auth.user.role == 'global_admin' ? 
-                                                        <>  
-                                                            <Dropdown.Link href={route('settings')} method="get" as="button">
-                                                                Settings
-                                                            </Dropdown.Link> 
-                                                            <button className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" onClick={(e)=>{showadminpage(e)}} as="button">
-                                                                {adminMenuText}                                                                                                                                                                                                          
-                                                            </button>
-                                                        </>
-                                                    : ''}
-
-                                                    {returnMainUser &&
-                                                        <button className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" 
-                                                        onClick={() => setImpersonate()} 
-                                                        as="button">
-                                                            Return to global admin
-                                                        </button>
-                                                    }
-
-                                                    <Dropdown.Link href={route('logout')} method="post" as="button">
-                                                        Log Out
-                                                    </Dropdown.Link> */}
                                                             <Container className="rounded-xl border-0 bg-[#170024]/95 text-white shadow-2xl backdrop-blur-sm">
                                                                 <div className="w-full flex justify-center">
                                                                     <div className="flex gap-2 mx-auto py-4 items-center">
@@ -1385,12 +1360,11 @@ export default function Authenticated({
                                                                         <div className="flex flex-col">
                                                                             <span className="text-white">
                                                                                 <b>
-                                                                                    {" "}
                                                                                     {
                                                                                         auth
                                                                                             .user
                                                                                             .name
-                                                                                    }{" "}
+                                                                                    }
                                                                                 </b>
                                                                             </span>
                                                                             <span className="text-white/60">
@@ -1417,21 +1391,17 @@ export default function Authenticated({
                                                                                     return (
                                                                                         <li
                                                                                             key={
-                                                                                                companyKey
+                                                                                                key
                                                                                             }
                                                                                             className="p-1 text-center"
                                                                                         >
                                                                                             <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#38BDF8] text-white shadow-sm">
                                                                                                 <span className="text-lg font-medium leading-none">
-                                                                                                    {company && (
-                                                                                                        <>
-                                                                                                            {" "}
-                                                                                                            {company.substring(
-                                                                                                                0,
-                                                                                                                2,
-                                                                                                            )}{" "}
-                                                                                                        </>
-                                                                                                    )}
+                                                                                                    {company &&
+                                                                                                        company.substring(
+                                                                                                            0,
+                                                                                                            2,
+                                                                                                        )}
                                                                                                 </span>
                                                                                             </span>
                                                                                         </li>
@@ -1461,7 +1431,6 @@ export default function Authenticated({
                                                                             className="text-white/70"
                                                                         >
                                                                             <li className="p-1">
-                                                                                {" "}
                                                                                 <Link
                                                                                     className="hover:text-white"
                                                                                     href={route(
@@ -1469,12 +1438,11 @@ export default function Authenticated({
                                                                                     )}
                                                                                     method="get"
                                                                                 >
-                                                                                    {" "}
                                                                                     {translator[
                                                                                         "Workspace settings"
                                                                                     ] ??
-                                                                                        "Workspace settings"}{" "}
-                                                                                </Link>{" "}
+                                                                                        "Workspace settings"}
+                                                                                </Link>
                                                                             </li>
                                                                         </List>
                                                                     </Col>
@@ -1484,18 +1452,15 @@ export default function Authenticated({
                                                                             className="text-white/70"
                                                                         >
                                                                             <li className="p-1 text-white">
-                                                                                {" "}
                                                                                 <b>
-                                                                                    {" "}
                                                                                     {
                                                                                         auth
                                                                                             .user
                                                                                             .name
-                                                                                    }{" "}
-                                                                                </b>{" "}
+                                                                                    }
+                                                                                </b>
                                                                             </li>
                                                                             <li className="p-1">
-                                                                                {" "}
                                                                                 <Link
                                                                                     className="hover:text-white"
                                                                                     href={route(
@@ -1503,12 +1468,11 @@ export default function Authenticated({
                                                                                     )}
                                                                                     method="get"
                                                                                 >
-                                                                                    {" "}
                                                                                     {translator[
                                                                                         "Profile"
                                                                                     ] ??
-                                                                                        "Profile"}{" "}
-                                                                                </Link>{" "}
+                                                                                        "Profile"}
+                                                                                </Link>
                                                                             </li>
                                                                             {auth &&
                                                                                 auth.user &&
@@ -1517,7 +1481,6 @@ export default function Authenticated({
                                                                                     .role ==
                                                                                     "global_admin" && (
                                                                                     <li className="p-1">
-                                                                                        {" "}
                                                                                         <Link
                                                                                             className="hover:text-white"
                                                                                             href={route(
@@ -1526,17 +1489,15 @@ export default function Authenticated({
                                                                                             method="get"
                                                                                             as="button"
                                                                                         >
-                                                                                            {" "}
                                                                                             {translator[
                                                                                                 "Global Admin"
                                                                                             ] ??
-                                                                                                "Global Admin"}{" "}
-                                                                                        </Link>{" "}
+                                                                                                "Global Admin"}
+                                                                                        </Link>
                                                                                     </li>
                                                                                 )}
                                                                             {returnMainUser && (
                                                                                 <li className="p-1">
-                                                                                    {" "}
                                                                                     <button
                                                                                         className="hover:text-white"
                                                                                         onClick={() =>
@@ -1544,12 +1505,11 @@ export default function Authenticated({
                                                                                         }
                                                                                         type="button"
                                                                                     >
-                                                                                        {" "}
                                                                                         {translator[
                                                                                             "Return to global admin"
                                                                                         ] ??
-                                                                                            "Return to global admin"}{" "}
-                                                                                    </button>{" "}
+                                                                                            "Return to global admin"}
+                                                                                    </button>
                                                                                 </li>
                                                                             )}
                                                                             <li className="p-1">
@@ -1560,7 +1520,6 @@ export default function Authenticated({
                                                                                     )}
                                                                                     method="get"
                                                                                 >
-                                                                                    {" "}
                                                                                     {translator[
                                                                                         "API keys"
                                                                                     ] ??
@@ -1568,7 +1527,6 @@ export default function Authenticated({
                                                                                 </Link>
                                                                             </li>
                                                                             <li className="p-1">
-                                                                                {" "}
                                                                                 <Link
                                                                                     className="hover:text-white"
                                                                                     href={route(
@@ -1577,12 +1535,11 @@ export default function Authenticated({
                                                                                     method="post"
                                                                                     as="button"
                                                                                 >
-                                                                                    {" "}
                                                                                     {translator[
                                                                                         "Log Out"
                                                                                     ] ??
-                                                                                        "Log Out"}{" "}
-                                                                                </Link>{" "}
+                                                                                        "Log Out"}
+                                                                                </Link>
                                                                             </li>
                                                                         </List>
                                                                     </Col>
@@ -1690,35 +1647,47 @@ export default function Authenticated({
                             </header>
                         ) : null}
 
-                        <div
+                        <main
                             className={[
-                                "flex-1",
-                                current_page === "Chats" ? "min-h-0 overflow-hidden" : "",
-                                showPageTitle
-                                    ? "px-3 pb-3 pt-0 md:px-8 md:pb-8 md:pt-0"
-                                    : "p-3 md:p-8",
+                                "app-main-scroll min-h-0 flex-1",
+                                current_page === "Chats" || disableContentScroll
+                                    ? "overflow-hidden"
+                                    : "overflow-y-auto",
                             ].join(" ")}
                         >
-                            {showPageTitle ? (
-                                <div className="px-1 pt-4 md:px-0 md:pt-6">
-                                    <h1 className="platform-page-title one-tech-special">
-                                        {translatedPageTitle}
-                                    </h1>
-                                </div>
-                            ) : null}
-
                             <div
                                 className={[
-                                    showPageTitle ? "pt-4 md:pt-5" : "",
-                                    current_page === "Chats" ? "h-full min-h-0 overflow-hidden" : "",
-                                ]
-                                    .filter(Boolean)
-                                    .join(" ")}
+                                    current_page === "Chats"
+                                        ? "h-full min-h-0 overflow-hidden"
+                                        : "",
+                                    showPageTitle
+                                        ? "px-3 pb-3 pt-0 md:px-8 md:pb-8 md:pt-0"
+                                        : "p-3 md:p-8",
+                                ].join(" ")}
                             >
-                                {children}
+                                {showPageTitle ? (
+                                    <div className="px-1 pt-4 md:px-0 md:pt-6">
+                                        <h1 className="platform-page-title one-tech-special">
+                                            {translatedPageTitle}
+                                        </h1>
+                                    </div>
+                                ) : null}
+
+                                <div
+                                    className={[
+                                        showPageTitle ? "pt-4 md:pt-5" : "",
+                                        current_page === "Chats"
+                                            ? "h-full min-h-0 overflow-hidden"
+                                            : "",
+                                    ]
+                                        .filter(Boolean)
+                                        .join(" ")}
+                                >
+                                    {children}
+                                </div>
                             </div>
-                        </div>
-                    </main>
+                        </main>
+                    </div>
                 </div>
             </div>
 
