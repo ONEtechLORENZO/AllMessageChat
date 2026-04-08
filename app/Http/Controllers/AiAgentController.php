@@ -17,7 +17,6 @@ class AiAgentController extends Controller
     public function choose(Request $request)
     {
         $agents = AiAgent::query()
-            ->where('user_id', $request->user()->id)
             ->orderByDesc('updated_at')
             ->get(['id', 'key', 'name']);
 
@@ -42,7 +41,6 @@ class AiAgentController extends Controller
 
         if ($agentId) {
             $agent = AiAgent::query()
-                ->where('user_id', $request->user()->id)
                 ->where('id', $agentId)
                 ->first();
         }
@@ -111,7 +109,6 @@ class AiAgentController extends Controller
         if (filled($validated['agent_id'] ?? null)) {
             $requestedAgent = AiAgent::query()
                 ->where('id', $validated['agent_id'])
-                ->where('user_id', $request->user()->id)
                 ->first();
 
             if (! $requestedAgent) {
@@ -125,14 +122,7 @@ class AiAgentController extends Controller
             ->where('key', $validated['key'])
             ->first();
 
-        if ($existingByKey && (int) $existingByKey->user_id !== (int) $request->user()->id) {
-            return response()->json([
-                'message' => 'This agent key already belongs to another user.',
-            ], 422);
-        }
-
         $duplicateByName = AiAgent::query()
-            ->where('user_id', $request->user()->id)
             ->whereRaw('LOWER(name) = ?', [Str::lower($validated['name'])])
             ->when(
                 $requestedAgent,
@@ -145,7 +135,6 @@ class AiAgentController extends Controller
             ?? $existingByKey
             ?? $duplicateByName
             ?? new AiAgent([
-                'user_id' => $request->user()->id,
                 'key' => $validated['key'],
             ]);
 
@@ -163,7 +152,6 @@ class AiAgentController extends Controller
             $agent->key = $validated['key'];
         }
 
-        $agent->user_id = $request->user()->id;
         $agent->save();
 
         $instructions = app(AiAgentInstructionResolver::class)->resolve([
@@ -240,7 +228,6 @@ class AiAgentController extends Controller
 
         $agent = AiAgent::query()
             ->where('id', $validated['agent_id'])
-            ->where('user_id', $request->user()->id)
             ->first();
 
         if (! $agent) {

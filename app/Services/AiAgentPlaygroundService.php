@@ -37,7 +37,6 @@ class AiAgentPlaygroundService
             'metadata' => [
                 'source' => 'crm-ai-agent',
                 'agent_key' => $agent->key,
-                'app_user_id' => (string) $agent->user_id,
             ],
         ];
 

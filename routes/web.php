@@ -106,9 +106,7 @@ Route::middleware('planrestriction')->group(function () {
         Route::get('/social-profile', [UserController::class, 'socialProfile'])->name('social_profile');
         Route::get('/templates', [UserController::class, 'accountTemplates'])->name('account_templates');
         Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
-        Route::get('/ai-agent', function () {
-            return inertia('AIAgent/ChooseAgent');
-        })->name('ai_agent.choose');
+        Route::get('/ai-agent', [AiAgentController::class, 'choose'])->name('ai_agent.choose');
         Route::get('/ai-agent/agents', [AiAgentController::class, 'browse'])->name('ai_agent.browse');
         Route::get('/ai-agent/create', [AiAgentController::class, 'create'])->name('ai_agent.create');
         Route::post('/ai-agent/save', [AiAgentController::class, 'store'])->name('ai_agent.save');

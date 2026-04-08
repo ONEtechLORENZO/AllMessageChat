@@ -10,7 +10,6 @@ class AiAgent extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
         'key',
         'name',
         'assistant_id',
@@ -24,9 +23,4 @@ class AiAgent extends Model
     protected $casts = [
         'openai_synced_at' => 'datetime',
     ];
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
 }
