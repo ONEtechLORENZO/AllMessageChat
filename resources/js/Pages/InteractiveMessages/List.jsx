@@ -11,6 +11,7 @@ import {
     XMarkIcon,
 } from "@heroicons/react/24/solid";
 import axios from "axios";
+import showThemedConfirm from "@/lib/showThemedConfirm";
 
 const ITEMS_PER_PAGE = 15;
 
@@ -114,8 +115,15 @@ function List(props) {
         });
     }
 
-    function deleteRecord(id) {
-        if (!window.confirm("Are you sure you want to delete this message?")) return;
+    async function deleteRecord(id) {
+        const confirmed = await showThemedConfirm({
+            eyebrow: "Delete",
+            title: props.translator?.["Confirm to Delete"] ?? "Confirm to Delete",
+            message: "Are you sure you want to delete this message?",
+            confirmLabel: props.translator?.["Confirm"] ?? "Confirm",
+            cancelLabel: props.translator?.["No"] ?? "No",
+        });
+        if (!confirmed) return;
         axios
             .delete(route("deleteInteractiveMessage", id))
             .then(() => Inertia.reload({ preserveScroll: true }));

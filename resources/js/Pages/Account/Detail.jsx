@@ -17,6 +17,7 @@ import {
     XMarkIcon,
 } from '@heroicons/react/24/solid';
 import Checkbox from '@/Components/Forms/Checkbox';
+import showThemedConfirm from '@/lib/showThemedConfirm';
 
 function Detail(props) {
     const [webhookData, setWebhookData] = useState({});
@@ -90,8 +91,14 @@ function Detail(props) {
         });
     }
 
-    function deleteWebhookEvent(id) {
-        const confirmation = window.confirm(props.translator['Are you sure you want to delete this webhook event?']);
+    async function deleteWebhookEvent(id) {
+        const confirmation = await showThemedConfirm({
+            eyebrow: props.translator['Delete'] ?? 'Delete',
+            title: props.translator['Confirm to Delete'] ?? 'Confirm to Delete',
+            message: props.translator['Are you sure you want to delete this webhook event?'],
+            confirmLabel: props.translator['Confirm'] ?? 'Confirm',
+            cancelLabel: props.translator['No'] ?? 'No',
+        });
         if (!confirmation) {
             return;
         }

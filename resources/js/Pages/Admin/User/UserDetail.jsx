@@ -9,6 +9,7 @@ import Input from '@/Components/Forms/Input';
 import InputError from '@/Components/Forms/InputError';
 import { currencies, countries } from '@/Pages/Constants';
 import { BriefcaseIcon } from '@heroicons/react/24/solid';
+import showThemedConfirm from '@/lib/showThemedConfirm';
 
 export default function UserDetail(props) {
 
@@ -71,11 +72,19 @@ export default function UserDetail(props) {
             });
     }
 
-    function setImpersonate() {
+    async function setImpersonate() {
         var data = {
             user_id: props.user.id
         }
-        if (!confirm('Do you want to change the user?')) {
+        const confirmed = await showThemedConfirm({
+            eyebrow: 'Confirm',
+            title: 'Confirm impersonation',
+            message: 'Do you want to change the user?',
+            confirmLabel: 'Confirm',
+            cancelLabel: 'No',
+            confirmButtonClassName: 'bg-[#BF00FF] hover:bg-[#a100df]',
+        });
+        if (!confirmed) {
             return false;
         }
 

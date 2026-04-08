@@ -12,6 +12,7 @@ import { router as Inertia } from "@inertiajs/react";
 import nProgress from "nprogress";
 import axios from "axios";
 import notie from "notie";
+import showThemedConfirm from "@/lib/showThemedConfirm";
 
 const PLAN_ORDER = ["PRO", "BUSINESS", "ENTERPRISE", "PLATINUM"];
 
@@ -474,10 +475,15 @@ export default function PlanSubscription(props) {
         setShowForm(true);
     }
 
-    function confirmToSubscribe(planId) {
-        const confirmUpdate = window.confirm(
-            t(props.translator, "Are you sure you want to update your plan?"),
-        );
+    async function confirmToSubscribe(planId) {
+        const confirmUpdate = await showThemedConfirm({
+            eyebrow: t(props.translator, "Confirm"),
+            title: t(props.translator, "Confirm update"),
+            message: t(props.translator, "Are you sure you want to update your plan?"),
+            confirmLabel: t(props.translator, "Confirm"),
+            cancelLabel: t(props.translator, "No"),
+            confirmButtonClassName: "bg-[#BF00FF] hover:bg-[#a100df]",
+        });
 
         if (!confirmUpdate) return;
 

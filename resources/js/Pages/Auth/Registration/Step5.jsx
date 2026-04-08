@@ -5,6 +5,7 @@ import { Link } from "@inertiajs/react";
 import axios from "axios";
 import { router as Inertia } from "@inertiajs/react";
 import ApplicationLogo from "@/Components/ApplicationLogo";
+import showThemedConfirm from "@/lib/showThemedConfirm";
 
 const tiers = [
     { name: 'Lite', href: '#', priceMonthly: 0, currency: '€',description: '' , original: 'lite', label : 'Lite'},
@@ -33,10 +34,16 @@ export default function Step5 (props) {
 
     },[]);
 
-    function Subscribe(plan_id, name){
-       
-        let confirm = window.confirm(['Are you sure to subscribe this plan']);
-        if(!confirm) {
+    async function Subscribe(plan_id, name){
+        const confirmed = await showThemedConfirm({
+            eyebrow: "Confirm",
+            title: "Confirm subscription",
+            message: "Are you sure to subscribe this plan",
+            confirmLabel: "Confirm",
+            cancelLabel: "No",
+            confirmButtonClassName: "bg-[#BF00FF] hover:bg-[#a100df]",
+        });
+        if(!confirmed) {
             return;
         }
         if(name == 'Lite') {

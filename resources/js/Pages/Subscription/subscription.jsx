@@ -5,6 +5,7 @@ import { CheckIcon, XMarkIcon  } from "@heroicons/react/24/solid";
 import { router as Inertia } from "@inertiajs/react";
 import { Link } from "@inertiajs/react";
 import notie from 'notie';
+import showThemedConfirm from "@/lib/showThemedConfirm";
 
 const tiers = [
     { name: 'Lite', href: '#', priceMonthly: 0, currency: '€',description: '' , original: 'lite'},
@@ -82,9 +83,16 @@ export default function Subscription(props){
 
     const [plans, setPlans] = useState(props.plans);
 
-    function Subscribe(plan){
-        let confirm = window.confirm(['Are you sure to subscribe this plan']);
-        if(!confirm) {
+    async function Subscribe(plan){
+        const confirmed = await showThemedConfirm({
+            eyebrow: "Confirm",
+            title: "Confirm subscription",
+            message: "Are you sure to subscribe this plan",
+            confirmLabel: "Confirm",
+            cancelLabel: "No",
+            confirmButtonClassName: "bg-[#BF00FF] hover:bg-[#a100df]",
+        });
+        if(!confirmed) {
             return;
         }
    

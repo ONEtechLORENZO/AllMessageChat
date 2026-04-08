@@ -42,6 +42,8 @@ function Templates(props) {
     );
     const [isLoading, setIsLoading] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [templateToDelete, setTemplateToDelete] = useState(null);
     const [templateNameSearch, setTemplateNameSearch] = useState("");
     const [templateStatusFilter, setTemplateStatusFilter] = useState("");
     const [templateCreatedOnFilter, setTemplateCreatedOnFilter] = useState("");
@@ -181,15 +183,23 @@ function Templates(props) {
             });
     }
 
-    function deleteTemplate(id) {
-        const confirmation = window.confirm(
-            props.translator["Are you sure you want to delete this Templete?"],
-        );
-        if (confirmation) {
-            axios.post(route("delete_template", id)).then(() => {
-                refreshTemplates();
-            });
-        }
+    function openDeleteTemplateModal(template) {
+        setTemplateToDelete(template);
+        setIsDeleteModalOpen(true);
+    }
+
+    function closeDeleteTemplateModal() {
+        setIsDeleteModalOpen(false);
+        setTemplateToDelete(null);
+    }
+
+    function deleteTemplate() {
+        if (!templateToDelete?.id) return;
+
+        axios.post(route("delete_template", templateToDelete.id)).then(() => {
+            closeDeleteTemplateModal();
+            refreshTemplates();
+        });
     }
 
     const hasAccount = !!resolvedAccount;
@@ -800,7 +810,7 @@ function Templates(props) {
                                                 <div className="flex items-center justify-start gap-2 self-center lg:justify-end">
                                                     <button
                                                         type="button"
-                                                        onClick={() => deleteTemplate(data.id)}
+                                                        onClick={() => openDeleteTemplateModal(data)}
                                                         className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-rose-400/50 transition hover:bg-rose-500/10 hover:text-rose-300"
                                                     >
                                                         <TrashIcon className="h-4 w-4" />
@@ -1075,6 +1085,66 @@ function Templates(props) {
                                                 </button>
                                             </div>
                                         </div>
+                                    </div>
+                                </Dialog.Panel>
+                            </Transition.Child>
+                        </div>
+                    </div>
+                </Dialog>
+            </Transition.Root>
+            <Transition.Root show={isDeleteModalOpen} as={Fragment}>
+                <Dialog as="div" className="relative z-[120]" onClose={closeDeleteTemplateModal}>
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-200"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-150"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="fixed inset-0 bg-[rgba(4,1,12,0.18)]" />
+                    </Transition.Child>
+
+                    <div className="fixed inset-0 overflow-y-auto">
+                        <div className="flex min-h-full items-center justify-center p-4 text-center">
+                            <Transition.Child
+                                as={Fragment}
+                                enter="ease-out duration-200"
+                                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                                enterTo="opacity-100 translate-y-0 sm:scale-100"
+                                leave="ease-in duration-150"
+                                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                            >
+                                <Dialog.Panel className="w-full max-w-md rounded-3xl border border-white/30 bg-gradient-to-br from-[#24112d] via-[#1b0b23] to-[#120616] p-6 text-left align-middle text-white shadow-[0_30px_80px_rgba(0,0,0,0.55)] ring-1 ring-white/15 transition-all">
+                                    <div className="space-y-2">
+                                        <div className="inline-flex rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-red-200">
+                                            {props.translator["Delete"] ?? "Delete"}
+                                        </div>
+                                        <Dialog.Title as="h3" className="text-2xl font-semibold text-white">
+                                            {props.translator["Confirm to Delete"] ?? "Confirm to Delete"}
+                                        </Dialog.Title>
+                                        <p className="text-sm leading-6 text-white/60">
+                                            {props.translator["Are you sure you want to delete this Templete?"] ?? "Are you sure you want to delete this template?"}
+                                        </p>
+                                    </div>
+
+                                    <div className="mt-6 flex justify-end gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={closeDeleteTemplateModal}
+                                            className="inline-flex min-w-[120px] items-center justify-center rounded-full border border-white/30 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+                                        >
+                                            {props.translator["No"] ?? "No"}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={deleteTemplate}
+                                            className="inline-flex min-w-[156px] items-center justify-center rounded-full bg-[#ff2b3a] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#ff4150]"
+                                        >
+                                            {props.translator["Confirm"] ?? "Confirm"}
+                                        </button>
                                     </div>
                                 </Dialog.Panel>
                             </Transition.Child>

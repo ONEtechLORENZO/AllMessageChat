@@ -8,6 +8,7 @@ import Form from "@/Components/Forms/Form";
 import { router as Inertia } from "@inertiajs/react";
 import notie from "notie";
 import axios from "axios";
+import showThemedConfirm from "@/lib/showThemedConfirm";
 
 function SubPanels(props) {
     const [showForm, setShowForm] = useState(false);
@@ -103,7 +104,7 @@ function SubPanels(props) {
         setRecordId("");
     }
 
-    function deleteRecord(record_id, soft_delete = false) {
+    async function deleteRecord(record_id, soft_delete = false) {
         var recordData = { id: record_id };
 
         if (props.module == "User") {
@@ -121,14 +122,24 @@ function SubPanels(props) {
                 recordData["is_soft"] = true;
                 msg = "Are you sure you want to unlink the user?";
             }
-            let confirmUserDelete = window.confirm(msg);
+            const confirmUserDelete = await showThemedConfirm({
+                eyebrow: "Delete",
+                title: props.translator["Confirm to Delete"] ?? "Confirm to Delete",
+                message: msg,
+                confirmLabel: props.translator["Confirm"] ?? "Confirm",
+                cancelLabel: props.translator["No"] ?? "No",
+            });
             if (!confirmUserDelete) {
                 return;
             }
         } else {
-            let confirm = window.confirm(
-                props.translator["Are you sure you want to delete the record?"],
-            );
+            const confirm = await showThemedConfirm({
+                eyebrow: props.translator["Delete"] ?? "Delete",
+                title: props.translator["Confirm to Delete"] ?? "Confirm to Delete",
+                message: props.translator["Are you sure you want to delete the record?"],
+                confirmLabel: props.translator["Confirm"] ?? "Confirm",
+                cancelLabel: props.translator["No"] ?? "No",
+            });
             if (!confirm) {
                 return;
             }

@@ -21,6 +21,7 @@ import Acitivies from "@/Pages/Company/Acitivies";
 import Alert from '@/Components/Alert';
 import CatalogDetail from "@/Pages/Catalog/CatalogDetail";
 import ModulePermission from "@/Pages/Roles/ModulePermission";
+import showThemedConfirm from "@/lib/showThemedConfirm";
 
 export default function Index(props) {
     const [record, setRecord] = useState(props.record);
@@ -308,10 +309,17 @@ export default function Index(props) {
         }
     }
 
-    function generateApiToken() {
-        let confirm = window.confirm('Do you want add the user token?');
+    async function generateApiToken() {
+        const confirmed = await showThemedConfirm({
+            eyebrow: "Confirm",
+            title: "Generate API token",
+            message: "Do you want add the user token?",
+            confirmLabel: "Confirm",
+            cancelLabel: "No",
+            confirmButtonClassName: "bg-[#BF00FF] hover:bg-[#a100df]",
+        });
 
-        if (confirm) {
+        if (confirmed) {
             axios({
                 method: 'post',
                 url: route('regenerate_token'),
@@ -361,25 +369,53 @@ export default function Index(props) {
     }
 
     function deleteRecord() {
-
         confirmAlert({
-            message: ('Are you sure you want to delete this record?'),
-            buttons: [
-                {
-                    label: ('Confirm'),
-                    onClick: () => {
-                        Inertia.delete(route('delete' + props.module, { id: record.id }), {}, {
-                            onSuccess: (response) => {
-                                notie.alert({ type: 'success', text: 'Record deleted successfully', time: 5 });
-                            },
-                            onError: (errors) => {
-                                notie.alert({ type: 'error', text: errors.message, time: 5 });
-                            }
-                        });
-                    }
-                }, {
-                    label: 'No',
-                }]
+            overlayClassName: '!bg-[rgba(4,1,12,0.18)] !backdrop-blur-none',
+            customUI: ({ onClose }) => (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+                    <div className="w-full max-w-md rounded-3xl border border-white/30 bg-gradient-to-br from-[#24112d] via-[#1b0b23] to-[#120616] p-6 text-white shadow-[0_30px_80px_rgba(0,0,0,0.55)] ring-1 ring-white/15">
+                        <div className="space-y-2">
+                            <div className="inline-flex rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-red-200">
+                                {props.translator['Delete'] ?? 'Delete'}
+                            </div>
+                            <h2 className="text-2xl font-semibold text-white">
+                                {props.translator['Confirm to Delete'] ?? 'Confirm to Delete'}
+                            </h2>
+                            <p className="text-sm leading-6 text-white/60">
+                                {props.translator['Are you sure you want to delete the record?'] ?? 'Are you sure you want to delete this record?'}
+                            </p>
+                        </div>
+
+                        <div className="mt-6 flex justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+                            >
+                                {props.translator['No'] ?? 'No'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    Inertia.delete(route('delete' + props.module, { id: record.id }), {}, {
+                                        onSuccess: () => {
+                                            notie.alert({ type: 'success', text: 'Record deleted successfully', time: 5 });
+                                            onClose();
+                                        },
+                                        onError: (errors) => {
+                                            notie.alert({ type: 'error', text: errors.message, time: 5 });
+                                            onClose();
+                                        }
+                                    });
+                                }}
+                                className="inline-flex items-center rounded-full bg-red-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-400"
+                            >
+                                {props.translator['Confirm'] ?? 'Confirm'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ),
         });
     }
 

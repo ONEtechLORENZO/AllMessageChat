@@ -5,6 +5,7 @@ import { useForm, Link, router as Inertia } from '@inertiajs/react';
 import Filter from "./Filter";
 import axios from "axios";
 import Dropdown from "@/Components/Dropdown";
+import showThemedConfirm from "@/lib/showThemedConfirm";
 
 
 function ListView(props) {
@@ -81,8 +82,15 @@ function ListView(props) {
     /**
      * DeleteFilter
      */
-    function deleteFilter(filter_id) {
-        if (confirm('Do you want to delete the filter?')) {
+    async function deleteFilter(filter_id) {
+        const confirmed = await showThemedConfirm({
+            eyebrow: "Delete",
+            title: props.translator?.['Confirm to Delete'] ?? 'Confirm to Delete',
+            message: 'Do you want to delete the filter?',
+            confirmLabel: props.translator?.['Confirm'] ?? 'Confirm',
+            cancelLabel: props.translator?.['No'] ?? 'No',
+        });
+        if (confirmed) {
             var data = { 'filter_id': filter_id };
             Inertia.post(route('delete_filter'), data, {
                 onSuccess: (response) => {

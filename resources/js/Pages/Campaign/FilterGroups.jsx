@@ -5,6 +5,7 @@ import Axios from "axios";
 import notie from 'notie';
 import nProgress from 'nprogress';
 import CreatableSelect from 'react-select'
+import showThemedConfirm from "@/lib/showThemedConfirm";
 
 function FilterGroups (props) {
   
@@ -245,8 +246,15 @@ function FilterGroups (props) {
      /**
      * Delete Filte Group
      */
-         function deleteGroup(group_count){
-            if(confirm(props.translator['Do you want to delete group?'])){
+         async function deleteGroup(group_count){
+            const confirmed = await showThemedConfirm({
+                eyebrow: "Delete",
+                title: props.translator['Confirm to Delete'] ?? 'Confirm to Delete',
+                message: props.translator['Do you want to delete group?'],
+                confirmLabel: props.translator['Confirm'] ?? 'Confirm',
+                cancelLabel: props.translator['No'] ?? 'No',
+            });
+            if(confirmed){
                 let newData = Object.assign({}, filter);
                 delete newData[group_count]; 
                 setFilter(newData);

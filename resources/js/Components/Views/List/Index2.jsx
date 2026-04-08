@@ -20,6 +20,7 @@ import CustomCalender from './CustomCalender';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import nProgress from 'nprogress';
+import showThemedConfirm from '@/lib/showThemedConfirm';
 
 function ListView(props) {
     const [showForm, setShowForm] = useState(false);
@@ -63,7 +64,7 @@ function ListView(props) {
      * @param {Boolean} soft_delete 
      * @returns 
      */
-    function deleteRecord(record_id, soft_delete = false) {
+    async function deleteRecord(record_id, soft_delete = false) {
 
         var recordData = { id: record_id };
 
@@ -79,13 +80,25 @@ function ListView(props) {
                 recordData['is_soft'] = true;
                 msg = 'Are you sure you want to unlink the user?'
             }
-            let confirmUserDelete = window.confirm(msg);
+            const confirmUserDelete = await showThemedConfirm({
+                eyebrow: 'Delete',
+                title: props.translator['Confirm to Delete'] ?? 'Confirm to Delete',
+                message: msg,
+                confirmLabel: props.translator['Confirm'] ?? 'Confirm',
+                cancelLabel: props.translator['No'] ?? 'No',
+            });
             if (!confirmUserDelete) {
                 return;
             }
 
         } else {
-            let confirm = window.confirm(props.translator['Are you sure you want to delete the record?']);
+            const confirm = await showThemedConfirm({
+                eyebrow: props.translator['Delete'] ?? 'Delete',
+                title: props.translator['Confirm to Delete'] ?? 'Confirm to Delete',
+                message: props.translator['Are you sure you want to delete the record?'],
+                confirmLabel: props.translator['Confirm'] ?? 'Confirm',
+                cancelLabel: props.translator['No'] ?? 'No',
+            });
             if (!confirm) {
                 return;
             }

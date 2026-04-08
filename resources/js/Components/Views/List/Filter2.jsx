@@ -7,6 +7,7 @@ import notie from 'notie';
 import nProgress from 'nprogress';
 import { router as Inertia } from "@inertiajs/react";
 import CreatableSelect from 'react-select';
+import showThemedConfirm from "@/lib/showThemedConfirm";
 
 function Filter(props) {
     const listRouteParams = props.listRouteParams ?? {};
@@ -193,8 +194,15 @@ function Filter(props) {
     }
 
     // Delete Filter
-    function deleteFilter(filter) {
-        if (confirm('Do you want to delete the filter?')) {
+    async function deleteFilter(filter) {
+        const confirmed = await showThemedConfirm({
+            eyebrow: "Delete",
+            title: props.translator['Confirm to Delete'] ?? 'Confirm to Delete',
+            message: 'Do you want to delete the filter?',
+            confirmLabel: props.translator['Confirm'] ?? 'Confirm',
+            cancelLabel: props.translator['No'] ?? 'No',
+        });
+        if (confirmed) {
             var data = { 'filter_id': filter };
             nProgress.start(0.5);
             nProgress.inc(0.2);
@@ -244,8 +252,15 @@ function Filter(props) {
     /**
      * Delete Filte Group
      */
-    function deleteGroup(group_count) {
-        if (confirm(props.translator['Do you want to delete group?'])) {
+    async function deleteGroup(group_count) {
+        const confirmed = await showThemedConfirm({
+            eyebrow: "Delete",
+            title: props.translator['Confirm to Delete'] ?? 'Confirm to Delete',
+            message: props.translator['Do you want to delete group?'],
+            confirmLabel: props.translator['Confirm'] ?? 'Confirm',
+            cancelLabel: props.translator['No'] ?? 'No',
+        });
+        if (confirmed) {
             let newData = Object.assign({}, filter);
             delete newData[group_count];
             setFilter(newData);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ItemTable from "./itemTable";
+import showThemedConfirm from "@/lib/showThemedConfirm";
 
 export default function LineItem(props)
 {
@@ -24,8 +25,14 @@ export default function LineItem(props)
     }
     
     //delete the LineItem
-    function deleteItem(index){
-        let confirmDeleteItem = window.confirm('Are you sure you want to delete the item?');
+    async function deleteItem(index){
+        const confirmDeleteItem = await showThemedConfirm({
+            eyebrow: "Delete",
+            title: "Confirm to Delete",
+            message: "Are you sure you want to delete the item?",
+            confirmLabel: "Confirm",
+            cancelLabel: "No",
+        });
         if(!confirmDeleteItem) {
             return;
         }
